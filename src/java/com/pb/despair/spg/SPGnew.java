@@ -449,7 +449,7 @@ public class SPGnew {
 	public void spg2 () {
 	    
 		logger.info ("Start of SPG2\n");
-        
+        long time = System.currentTimeMillis();
 		PrintWriter hhOutStream = null;
 		PrintWriter personOutStream = null;
 
@@ -926,7 +926,8 @@ public class SPGnew {
 		
 		logger.info ( employedZone0 + " households with at least one employee assigned zone 0.");
 		logger.info ( unemployedZone0 + " households with no employees assigned zone 0.");
-		
+
+        logger.info("SPG2 runtime: " + (System.currentTimeMillis()-time)/1000.0);
 	}
 	
 
