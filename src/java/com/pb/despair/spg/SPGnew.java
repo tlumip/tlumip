@@ -454,8 +454,7 @@ public class SPGnew {
 		int numOccupations = occ.getNumberOccupations();
 		int numIncomeSizes = incSize.getNumberIncomeSizes();
 
-		int[] zonalHhs = new int[zoneIndex.length+1];
-		int[] hhsByZoneIndex = new int[zoneIndex.length+1];
+		int[] hhsByZoneIndex = new int[indexZone.length+1];
 
 		double[][] regionJobs = new double[numOccupations][numIncomeSizes];
 		int[][] regionJobsAllocated = new int[numOccupations][numIncomeSizes];
@@ -528,8 +527,6 @@ public class SPGnew {
 		// and for allocating zones when SPG2 densities are all zero.
 		for (int i=0; i < hhsIncomeSizePI.length; i++) {
 			for (int j=0; j < hhsIncomeSizePI[i].length; j++) {
-				int z =  indexZone[i];
-				zonalHhs[z] += hhsIncomeSizePI[i][j];
 				hhsByZoneIndex[i] += hhsIncomeSizePI[i][j];
 				regionalHhsIncomeSize[j] += hhsIncomeSizePI[i][j]; 
 			}
@@ -1789,7 +1786,7 @@ public class SPGnew {
 				pumsIncomeCode = hhArray[i][k][HH_INCOME_ATTRIB_INDEX];
 
 				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons); 
-				householdsByIncomeSize[incomeSizeCode] += hhArray[i][k][HH_SELECTED_INDEX];
+				householdsByIncomeSize[incomeSizeCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 
 			}
 		    
