@@ -136,10 +136,10 @@ public class WorkBasedTourModel{
 
            //cycle through zones and compute total exponentiated utility
           float totalExpUtility=0;
-          Enumeration enum = tazs.tazData.elements();
+          Enumeration tazEnum = tazs.tazData.elements();
           for(int i=0; i<tazs.tazData.size();i++){
 
-              Taz destinationTaz = (Taz) enum.nextElement();
+              Taz destinationTaz = (Taz) tazEnum.nextElement();
                   
               float expUtility=expUtilities.getValueAt(thisTour.begin.location.zoneNumber,destinationTaz.zoneNumber);
                   
@@ -150,10 +150,10 @@ public class WorkBasedTourModel{
            //pick random number and choose a taz
            rNumber=SeededRandom.getRandom();
            double culmProbability=0;
-           enum = tazs.tazData.elements();
+           tazEnum = tazs.tazData.elements();
            for(int i=0; i<tazs.tazData.size();i++){
 
-               Taz destinationTaz = (Taz) enum.nextElement();
+               Taz destinationTaz = (Taz) tazEnum.nextElement();
                   
                float expUtility=expUtilities.getValueAt(thisTour.begin.location.zoneNumber,destinationTaz.zoneNumber);
                culmProbability += (double) (expUtility/totalExpUtility);
