@@ -14,6 +14,7 @@ import com.pb.despair.ed.EDControl;
 import com.pb.despair.pi.PIModel;
 import com.pb.despair.ald.ALDModel;
 import com.pb.despair.spg.SPG;
+import com.pb.despair.spg.SPGnew;
 import com.pb.despair.ct.CTModel;
 import com.pb.despair.ts.TS;
 import com.pb.common.datafile.TableDataSet;
@@ -132,7 +133,7 @@ public class ApplicationOrchestrator {
 
     public void runSPG1Model(int timeInterval, ResourceBundle rb){
 
-		SPG testSPG = new SPG(rb);
+		SPGnew testSPG = new SPGnew(rb);
 
 		testSPG.getHHAttributesFromPUMS();
 		testSPG.spg1();
@@ -159,7 +160,7 @@ public class ApplicationOrchestrator {
 
     public void runSPG2Model(int timeInterval, ResourceBundle rb){
 
-		SPG testSPG = new SPG(rb);
+		SPGnew testSPG = new SPGnew(rb);
         testSPG.spg2();
         testSPG.writeHHOutputAttributesFromPUMS();
 
