@@ -22,8 +22,8 @@ public class PIServerTask extends Task{
     private int maxIterations = 300; //default value in case none is set in properties file
     private int nIterations = 0; //a counter to keep track of how many iterations it takes before the meritMeasure is within tolerance.
     protected static BooleanLock signal = new BooleanLock(false);
-    OregonPIPProcessor piReaderWriter;
-    String scenarioName = "pleaseWork";
+    PIPProcessor piReaderWriter;
+    String scenarioName = null;
     ResourceBundle piRb = null;
     ResourceBundle globalRb = null;
     ResourceBundle pidafRb = null;
@@ -33,34 +33,49 @@ public class PIServerTask extends Task{
         logger.info("Reading data and setting up for PI run");
         long startTime = System.currentTimeMillis();
 
-        pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
-        
-        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
+        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.properties file
         //that was written by the Application Orchestrator
-        BufferedReader reader = null;
         int timeInterval = -1;
         String pathToPiRb = null;
         String pathToGlobalRb = null;
-        try {
-            logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
-            scenarioName = reader.readLine();
-            logger.info("\tScenario Name: " + scenarioName);
-            timeInterval = Integer.parseInt(reader.readLine());
-            logger.info("\tTime Interval: " + timeInterval);
-            pathToPiRb = reader.readLine();
-            logger.info("\tResourceBundle Path: " + pathToPiRb);
-            pathToGlobalRb = reader.readLine();
-            logger.info("\tResourceBundle Path: " + pathToGlobalRb);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        
+        logger.info("Reading RunParams.properties file");
+        ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/daf/RunParams.properties"));
+        scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
+        logger.info("\tScenario Name: " + scenarioName);
+        timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));
+        logger.info("\tTime Interval: " + timeInterval);
+        pathToPiRb = ResourceUtil.getProperty(runParamsRb,"pathToAppRb");
+        logger.info("\tResourceBundle Path: " + pathToPiRb);
+        pathToGlobalRb = ResourceUtil.getProperty(runParamsRb,"pathToGlobalRb");
+        logger.info("\tResourceBundle Path: " + pathToGlobalRb);
+
         piRb = ResourceUtil.getPropertyBundle(new File(pathToPiRb));
         globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
+        pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
 
+//        piReaderWriter = new OregonPIPProcessor(timeInterval, piRb, globalRb);
+        String pProcessorClass = ResourceUtil.getProperty(piRb,"pprocessor.class");
+        logger.info("PI will be using the " + pProcessorClass + " for pre and post PI processing");
+        Class ppClass = null;
+        piReaderWriter = null;
+        try {
+            ppClass = Class.forName(pProcessorClass);
+            piReaderWriter = (PIPProcessor) ppClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            logger.fatal("Can't create new instance of PiPProcessor of type "+ppClass.getName());
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            logger.fatal("Can't create new instance of PiPProcessor of type "+ppClass.getName());
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
 
-        //TODO get the PProcessor class name from the properties file and instantiate using Class.newInstance()
-        piReaderWriter = new OregonPIPProcessor(timeInterval, piRb, globalRb);
+        piReaderWriter.setResourceBundles(piRb, globalRb);
+        piReaderWriter.setTimePeriod(timeInterval);
         piReaderWriter.doProjectSpecificInputProcessing();
 
         piReaderWriter.setUpPi();

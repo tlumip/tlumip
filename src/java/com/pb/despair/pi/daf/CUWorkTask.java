@@ -16,7 +16,6 @@ import com.pb.despair.pi.Commodity;
  */
 public class CUWorkTask extends MessageProcessingTask {
     private PIModel pi;
-    String scenarioName = "pleaseWork";
     private boolean firstMessage = true;
 
     public void onStart() {

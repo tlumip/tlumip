@@ -3,15 +3,8 @@ package com.pb.despair.pi.daf;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Message;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.pi.Commodity;
-import com.pb.despair.pi.BuyingZUtility;
-import com.pb.despair.pi.SellingZUtility;
 
-import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.File;
 
 /**
@@ -28,24 +21,17 @@ public class SetupResultProcessorTask extends MessageProcessingTask {
     static int nodeCounter = 0;
     private int nWorkQueues = 0;
     private ResourceBundle pidafRb;
-    String scenarioName = "pleaseWork";
+    String scenarioName;
 
     public void onStart(){
         logger.info( "***" + getName() + " started");
+        
+        logger.info("Reading RunParams.properties file");
+        ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/daf/RunParams.properties"));
+        scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
+        logger.info("\tScenario Name: " + scenarioName);
 
         pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
-//        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
-//        //that was written by the Application Orchestrator
-//        BufferedReader reader = null;
-//        String scenarioName = null;
-//        try {
-//            logger.info("Reading RunParams.txt file");
-//            reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
-//            scenarioName = reader.readLine();
-//            logger.info("\tScenario Name: " + scenarioName);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
         nWorkQueues = (Integer.parseInt(ResourceUtil.getProperty(pidafRb,"nNodes"))-1);
     }
 

@@ -10,7 +10,6 @@ import com.pb.despair.pi.PIModel;
  */
 public class SDWorkTask extends MessageProcessingTask {
     private PIModel pi;
-    String scenarioName = "pleaseWork";
     private boolean firstMessage = true;
 
     public void onStart() {

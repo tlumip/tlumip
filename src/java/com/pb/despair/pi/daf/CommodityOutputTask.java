@@ -1,17 +1,10 @@
 package com.pb.despair.pi.daf;
 
-import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.pi.Commodity;
-import com.pb.despair.pi.Exchange;
-import com.pb.despair.pi.OregonPIPProcessor;
 import com.pb.despair.pi.PIModel;
 import com.pb.despair.pi.PIPProcessor;
 
@@ -28,38 +21,12 @@ public class CommodityOutputTask extends MessageProcessingTask {
     private PIModel pi;
     private PIPProcessor pwriter;
     private ResourceBundle pidafRb;
-    String scenarioName = "pleaseWork";
     private boolean firstMessage = true;
 
     public void onStart(){
 
         logger.info("***************************" + getName() + " begin onStart() *****************************************");
-//        logger.info( "***" + getName() + " is starting...");
 
-//        pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
-//        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
-//        //that was written by the Application Orchestrator
-//        BufferedReader reader = null;
-//        int timeInterval = -1;
-//        String pathToRb = null;
-//        String scenarioName = null;
-//        try {
-//            logger.info("Reading RunParams.txt file");
-//            reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
-//            scenarioName = reader.readLine();
-//            logger.info("\tScenario Name: " + scenarioName);
-//            timeInterval = Integer.parseInt(reader.readLine());
-//            logger.info("\tTime Interval: " + timeInterval);
-//            pathToRb = reader.readLine();
-//            logger.info("\tResourceBundle Path: " + pathToRb);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
-//        logger.info("  *" + getName() + " is creating a PIModel Object");
-//        pi = new PIModel(rb);
-//        logger.info("  *" + getName() + " is creating a PIPProcessor Object");
-//        pwriter = new OregonPIPProcessor(timeInterval, rb);
         logger.info("***************************" + getName() + " end onStart()****************************************");
     }
     
@@ -67,7 +34,28 @@ public class CommodityOutputTask extends MessageProcessingTask {
         logger.info( getName() + " received " + msg.getStringValue("Name") + " from" + msg.getSender() );
         if(firstMessage){
             pi = new PIModel(SetupWorkTask.piRb, SetupWorkTask.globalRb);
-            pwriter = new OregonPIPProcessor(SetupWorkTask.timeInterval,SetupWorkTask.piRb,SetupWorkTask.globalRb);
+//            pwriter = new OregonPIPProcessor(SetupWorkTask.timeInterval,SetupWorkTask.piRb,SetupWorkTask.globalRb);
+            String pProcessorClass = ResourceUtil.getProperty(SetupWorkTask.piRb,"pprocessor.class");
+            logger.info("ComodityOutputTask will be using the " + pProcessorClass + " for pre and post PI processing");
+            Class ppClass = null;
+            pwriter = null;
+            try {
+                ppClass = Class.forName(pProcessorClass);
+                pwriter = (PIPProcessor) ppClass.newInstance();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                logger.fatal("Can't create new instance of PiPProcessor of type "+ppClass.getName());
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                logger.fatal("Can't create new instance of PiPProcessor of type "+ppClass.getName());
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+
+            pwriter.setResourceBundles(SetupWorkTask.piRb, SetupWorkTask.globalRb);
+            pwriter.setTimePeriod(SetupWorkTask.timeInterval);
             firstMessage = false;
         }
         String name = msg.getStringValue("Name");
@@ -84,7 +72,6 @@ public class CommodityOutputTask extends MessageProcessingTask {
 
         pi.allocateQuantitiesToFlowsAndExchanges(name, tc, tp, dtc, dtp, price);
 
-        //TODO get the PProcessor class name from the properties file and instantiate using Class.newInstance()
         pwriter.writeExchangeResults(name);
         pwriter.writeFlowZipMatrices(name,null);
 
