@@ -555,7 +555,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         // this is too slow too, use double[][] instead.
         //mt.DenseMatrix dSellingProductionByDPrices = new mt.DenseMatrix(pf.size(),pf.size());
         // mt.DenseMatrix productionDerivatives = new mt.DenseMatrix(pfl.productionUtilitiesDerivatives(sellingCommodityUtilities)); //0.94% of time here
-        double[][] productionDerivatives = pfl.productionUtilitiesDerivatives(sellingCommodityUtilities);
+        double[][] productionDerivatives = pfl.derivativesOfQuantitiesWRTUtilities(sellingCommodityUtilities);
         // multiplying by a diagonal is very slow in mtj; not (by default) smart enough to do it quickly.  
         // so instead we transpose, and premultiply, then transpose again.
         // but that's still too slow, so just do it in double[][] manually
@@ -574,7 +574,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         
         //mt.DenseMatrix dBuyingProductionByDPrices = new mt.DenseMatrix(cf.size(),cf.size());
         //mt.DenseMatrix consumptionDerivatives = new mt.DenseMatrix(cfl.productionUtilitiesDerivatives(buyingCommodityUtilities)); // 1.2% here
-        double[][] consumptionDerivatives = cfl.productionUtilitiesDerivatives(buyingCommodityUtilities);
+        double[][] consumptionDerivatives = cfl.derivativesOfQuantitiesWRTUtilities(buyingCommodityUtilities);
         
         // fancy way with transpose
         //dSellingUtilitiesByDPrices.mult(getQuantity(),consumptionDerivatives.transpose(),dBuyingProductionByDPrices); //3.27% of time here // 0.25% of time here

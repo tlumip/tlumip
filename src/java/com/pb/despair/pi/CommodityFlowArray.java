@@ -326,7 +326,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
         Collection theExchanges = com.getAllExchanges();
         Iterator it = theExchanges.iterator();
         weights = new double[theExchanges.size()];
-        if ((com.exchangeType == 'p' && theCommodityZUtility instanceof SellingZUtility) || com.exchangeType == 's' &&
+        if ((com.exchangeType == 'p' && theCommodityZUtility instanceof SellingZUtility) || com.exchangeType == 'c' &&
                 theCommodityZUtility instanceof BuyingZUtility || com.exchangeType == 'n') {
             double[][] returns = new double[theExchanges.size()][theExchanges.size()];
             return returns;
@@ -349,9 +349,9 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
             for (i = 0; i < weights.length; i++) {
                 for (int j =0;j<weights.length;j++) {
                     if (i==j) { 
-                       returns[i][j] = dispersionParameter*(weights[i]/sum*(1-weights[i]/sum));
+                       returns[i][j] = dispersionParameter*((weights[i]/sum)*(1-weights[i]/sum));
                     } else {
-                        returns[i][j] = -dispersionParameter*weights[i]*weights[j]/sum/sum;
+                        returns[i][j] = -dispersionParameter*(weights[i]/sum)*weights[j]/sum;
                     }
                 }
             }
@@ -364,7 +364,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
         Commodity com = theCommodityZUtility.getCommodity();
         double[] weights;
         List theExchanges = com.getAllExchanges();
-        if ((com.exchangeType == 'p' && theCommodityZUtility instanceof SellingZUtility) || com.exchangeType == 's' &&
+        if ((com.exchangeType == 'p' && theCommodityZUtility instanceof SellingZUtility) || com.exchangeType == 'c' &&
                 theCommodityZUtility instanceof BuyingZUtility || com.exchangeType == 'n') {
             weights = new double[theExchanges.size()];
             Exchange thisExchangeHere = com.getExchange(theCommodityZUtility.getTaz().getZoneIndex());

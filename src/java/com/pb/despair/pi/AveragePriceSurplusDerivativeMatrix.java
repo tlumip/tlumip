@@ -117,7 +117,7 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
 //     * @see drasys.or.matrix.MatrixI#setElementAt(int, int, double)
 //     */
 //    public void setElementAt(int arg0, int arg1, double arg2) {
-//        if (arg0==62 && arg1==62) {
+//        if ((arg0==62 && arg1==0) || (arg0 == 0 && arg1 == 62)) {
 //            System.out.print("\t"+arg2);
 //        }
 //        super.setElementAt(arg0, arg1, arg2);

@@ -145,7 +145,7 @@ public class PIPProcessor {
 
     protected void setUpProductionActivities() {
         logger.info("Setting up Production Activities");
-        boolean logitProduction = (ResourceUtil.getProperty(piRb, "pi.useLogitProduction").equalsIgnoreCase("true"));
+        logitProduction = (ResourceUtil.getProperty(piRb, "pi.useLogitProduction").equalsIgnoreCase("true"));
         if (logitProduction) {
             if(logger.isDebugEnabled()) {
                 logger.debug("using logit substitution production function");
@@ -313,6 +313,7 @@ public class PIPProcessor {
         }
     }
     private final int maxHistogramBands = 100;
+    private boolean logitProduction;
     
     protected String[] readInHistogramSpecifications() {
          ArrayList newSkimNames = new ArrayList();
@@ -700,7 +701,19 @@ public class PIPProcessor {
         while (pit.hasNext()) {
             AggregateActivity aa = (AggregateActivity) pit.next();
             aa.getConsumptionFunction().sortToMatch(Commodity.getAllCommodities());
+            if (aa.getConsumptionFunction() instanceof LogitSubstitution) {
+                LogitSubstitution cf = (LogitSubstitution) aa.getConsumptionFunction();
+                if (!cf.isLogitScaleOk(false)) {
+                    logger.warn("logit scale for consumption for activity "+aa+" is too high");
+                }
+            }
             aa.getProductionFunction().sortToMatch(Commodity.getAllCommodities());
+            if (aa.getProductionFunction() instanceof LogitSubstitution) {
+                LogitSubstitution pf = (LogitSubstitution) aa.getConsumptionFunction();
+                if (!pf.isLogitScaleOk(true)) {
+                    logger.warn("logit scale for production for activity "+aa+" is too high");
+                }
+            }
         }
 
     }

@@ -113,6 +113,27 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
         }
     }
 
+    public boolean isLogitScaleOk(boolean selling) {
+        double totalScale = 0;
+        double maxAdditionalScale = 0;
+        for (int c = 0; c < sortedQuantitiesToUse.size(); c++) {
+            Quantity q = (Quantity) sortedQuantitiesToUse.get(c);
+            if (q != null) {
+                double scale = q.com.getDefaultBuyingDispersionParameter();
+                if (selling) scale = q.com.getDefaultSellingDispersionParameter();
+                double minAddition = (q.minimum/scale)*(q.minimum/scale)*q.utilityScale*q.utilityScale;
+                double maxAddition = ((q.minimum+q.discretionary)/scale)*((q.minimum+q.discretionary)/scale)*q.utilityScale*q.utilityScale;
+                if ((maxAddition-minAddition)>maxAdditionalScale) maxAdditionalScale = maxAddition-minAddition;
+                totalScale += minAddition;
+            }
+        }
+        totalScale += maxAdditionalScale;
+        double maxThisScale = 1/Math.sqrt(totalScale);
+        if (this.lambda<maxThisScale) return true;
+        logger.warn("Dispersion parameter for "+this+" is too high, maximum "+maxThisScale);
+        return false;
+    }
+
     public double[] overallUtilityDerivatives(double[] individualCommodityUtilities) {
         double[] d1 = new double[sortedQuantitiesToUse.size()];
         double[] d2 = new double[sortedQuantitiesToUse.size()];
@@ -205,35 +226,35 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
         return amounts;
     }
     
-    public double[][] probabilitiesFullDerivatives(double[] individualCommodityUtilities, double[][] commodityUtilitiesDerivativeWRTPrices) {
-        return probabilitiesFullDerivativesMultiply(individualCommodityUtilities,productionUtilitiesDerivativeWRTPrices(commodityUtilitiesDerivativeWRTPrices));
-    }
+//    public double[][] probabilitiesFullDerivatives(double[] individualCommodityUtilities, double[][] commodityUtilitiesDerivativeWRTPrices) {
+//        return probabilitiesFullDerivativesMultiply(individualCommodityUtilities,productionUtilitiesDerivativeWRTPrices(commodityUtilitiesDerivativeWRTPrices));
+//    }
   
-    private double[][] productionUtilitiesDerivativeWRTPrices(double[][] commodityUtilitiesDerivativeWRTPrices) {
-        double[] amounts = new double[sortedQuantitiesToUse.size()];
-        if (commodityUtilitiesDerivativeWRTPrices.length != amounts.length) {
-            throw new Error("Incorrect number of commodities for production/consumption function calculation");
-        }
-        double[][] utilityDerivatives = new double[amounts.length][commodityUtilitiesDerivativeWRTPrices[0].length];
-        Quantity q = null;
-        for (int c = 0; c < amounts.length; c++) {
-
-            // first use the amounts array to store the numerator of the logit choice
-            q = (Quantity) sortedQuantitiesToUse.get(c);
-            if (q != null) {
-                for (int p=0;p<commodityUtilitiesDerivativeWRTPrices[0].length;p++) {
-                    for (int i=0;i<utilityDerivatives.length;i++) {
-                        // TODO add in utility scaling effect
-                        utilityDerivatives[i][p] += q.minimum*commodityUtilitiesDerivativeWRTPrices[i][p];
-                    }
-                    utilityDerivatives[c][p]+= q.discretionary*commodityUtilitiesDerivativeWRTPrices[c][p];
-                }
-            }
-        }
-        return utilityDerivatives;
-    }
+//    private double[][] productionUtilitiesDerivativeWRTPrices(double[][] commodityUtilitiesDerivativeWRTPrices) {
+//        double[] amounts = new double[sortedQuantitiesToUse.size()];
+//        if (commodityUtilitiesDerivativeWRTPrices.length != amounts.length) {
+//            throw new Error("Incorrect number of commodities for production/consumption function calculation");
+//        }
+//        double[][] utilityDerivatives = new double[amounts.length][commodityUtilitiesDerivativeWRTPrices[0].length];
+//        Quantity q = null;
+//        for (int c = 0; c < amounts.length; c++) {
+//
+//            // first use the amounts array to store the numerator of the logit choice
+//            q = (Quantity) sortedQuantitiesToUse.get(c);
+//            if (q != null) {
+//                for (int p=0;p<commodityUtilitiesDerivativeWRTPrices[0].length;p++) {
+//                    for (int i=0;i<utilityDerivatives.length;i++) {
+//                        // TODO add in utility scaling effect
+//                        utilityDerivatives[i][p] += q.minimum*commodityUtilitiesDerivativeWRTPrices[i][p];
+//                    }
+//                    utilityDerivatives[c][p]+= q.discretionary*commodityUtilitiesDerivativeWRTPrices[c][p];
+//                }
+//            }
+//        }
+//        return utilityDerivatives;
+//    }
     
-    public double[][] productionUtilitiesDerivatives(double[] commodityUtilities) {
+    public double[][] derivativesOfQuantitiesWRTUtilities(double[] commodityUtilities) {
         // TODO check this calculation numerically.
         double[] amounts = new double[sortedQuantitiesToUse.size()];
         double[][] utilityDerivatives = new double[amounts.length][amounts.length];

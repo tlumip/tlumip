@@ -31,14 +31,14 @@ public class CommodityPriceSurplusDerivativeMatrix extends DenseMatrix {
     public static Algebra a = new Algebra();
 
     public CommodityPriceSurplusDerivativeMatrix(Commodity c) {
-        super(c.getAllExchanges().size() + 1, c.getAllExchanges().size());
+        super(c.getAllExchanges().size(), c.getAllExchanges().size());
         commodity = c;
 
-        Exchange[] exchanges = (Exchange[]) c.getAllExchanges().toArray(new Exchange[1]);
+        //Exchange[] exchanges = (Exchange[]) c.getAllExchanges().toArray(new Exchange[1]);
         AbstractTAZ[] allZones = AbstractTAZ.getAllZones();
 
         // need this for adding to the array
-        int[] rows = new int[exchanges.length];
+        //int[] rows = new int[exchanges.length];
         //        for (int r=0;r<exchanges.length;r++) {
         //            rows[r] = r;
         //        }
@@ -48,20 +48,23 @@ public class CommodityPriceSurplusDerivativeMatrix extends DenseMatrix {
                 // first add in the effect of exchange choice
                 CommodityZUtility bzu = c.retrieveCommodityZUtility(allZones[z], false);
                 CommodityZUtility szu = c.retrieveCommodityZUtility(allZones[z], true);
-                double[][] temp = bzu.myFlows.getChoiceDerivatives();
-                double scale = -bzu.getQuantity() * c.getBuyingUtilityPriceCoefficient();
-                for (int i = 0; i < temp.length; i++) {
-                    for (int j = 0; j < temp[i].length; j++) {
-                        setElementAt(i, j, elementAt(i, j) + temp[i][j] * scale);
+                if ((c.exchangeType != 'n' && c.exchangeType != 'c')) {
+                    double[][] temp = bzu.myFlows.getChoiceDerivatives();
+                    double scale = -bzu.getQuantity() * c.getBuyingUtilityPriceCoefficient();
+                    for (int i = 0; i < temp.length; i++) {
+                        for (int j = 0; j < temp[i].length; j++) {
+                            setElementAt(i, j, elementAt(i, j) + temp[i][j] * scale);
+                        }
                     }
                 }
                 //            MatrixI bzuDerivatives = new DenseMatrix(temp);
-
-                temp = szu.myFlows.getChoiceDerivatives();
-                scale = szu.getQuantity() * c.getSellingUtilityPriceCoefficient();
-                for (int i = 0; i < temp.length; i++) {
-                    for (int j = 0; j < temp[i].length; j++) {
-                        setElementAt(i, j, elementAt(i, j) + temp[i][j] * scale);
+                if ((c.exchangeType != 'n' && c.exchangeType != 'p')) {
+                    double[][] temp = szu.myFlows.getChoiceDerivatives();
+                    double scale = szu.getQuantity() * c.getSellingUtilityPriceCoefficient();
+                    for (int i = 0; i < temp.length; i++) {
+                        for (int j = 0; j < temp[i].length; j++) {
+                            setElementAt(i, j, elementAt(i, j) + temp[i][j] * scale);
+                        }
                     }
                 }
                 //            MatrixI szuDerivatives= new DenseMatrix(temp);
@@ -82,10 +85,14 @@ public class CommodityPriceSurplusDerivativeMatrix extends DenseMatrix {
                 // and location
                 DenseVector xProbabilities = new DenseVector(bzu.getExchangeProbabilities());
                 // create a column matrix;
-                DenseMatrix xProbabilitiesMatrix = new DenseMatrix(xProbabilities);
+                DenseMatrix xProbabilitiesMatrix = new DenseMatrix(xProbabilities.size(),1);
+                xProbabilitiesMatrix.setColumn(0,xProbabilities);
+//                DenseMatrix xProbabilitiesMatrix = new DenseMatrix(xProbabilities);
                 DenseVector logSumDerivatives = new DenseVector(bzu.myFlows.getLogsumDerivativesWRTPrices());
-                DenseMatrix logSumDerivativesMatrixTranspose = new DenseMatrix(logSumDerivatives);
-                DenseMatrix logSumDerivativesMatrix = a.transpose(logSumDerivativesMatrixTranspose);
+                DenseMatrix logSumDerivativesMatrix = new DenseMatrix(1,logSumDerivatives.size());
+                logSumDerivativesMatrix.setRow(0,logSumDerivatives);
+//                DenseMatrix logSumDerivativesMatrixTranspose = new DenseMatrix(logSumDerivatives);
+//                DenseMatrix logSumDerivativesMatrix = a.transpose(logSumDerivativesMatrixTranspose);
                 //            DenseMatrix logSumDerivativesMatrix = new
                 // DenseMatrix(1,logSumDerivatives.size());
                 //            logSumDerivativesMatrixTranspose.transpose(logSumDerivativesMatrix);
@@ -108,10 +115,11 @@ public class CommodityPriceSurplusDerivativeMatrix extends DenseMatrix {
                 // now for selling
                 xProbabilities = new DenseVector(szu.getExchangeProbabilities());
                 // create a column matrix;
-                xProbabilitiesMatrix = new DenseMatrix(xProbabilities);
+                xProbabilitiesMatrix = new DenseMatrix(xProbabilities.size(),1);
+                xProbabilitiesMatrix.setColumn(0,xProbabilities);
                 logSumDerivatives = new DenseVector(szu.myFlows.getLogsumDerivativesWRTPrices());
-                logSumDerivativesMatrixTranspose = new DenseMatrix(logSumDerivatives);
-                logSumDerivativesMatrix = a.transpose(logSumDerivativesMatrixTranspose);
+                logSumDerivativesMatrix = new DenseMatrix(1,logSumDerivatives.size());
+                logSumDerivativesMatrix.setRow(0,logSumDerivatives);
                 //            new DenseMatrix(1,logSumDerivatives.size());
                 //            logSumDerivativesMatrixTranspose.transpose(logSumDerivativesMatrix);
                 //            exchangeQuantityChangeByPrice = new
@@ -132,26 +140,18 @@ public class CommodityPriceSurplusDerivativeMatrix extends DenseMatrix {
                 throw new RuntimeException(e);
 
             }
-
-            // add in the effects of imports and exports
-            Iterator exIt = c.getAllExchanges().iterator();
-            int xNum = 0;
-            while (exIt.hasNext()) {
-                Exchange x = (Exchange) exIt.next();
-                double[] importsAndExports = x.importsAndExports(x.getPrice());
-                setElementAt(xNum, xNum, elementAt(xNum, xNum) + importsAndExports[2] - importsAndExports[3]);
-                //            add(xNum,xNum,importsAndExports[2]-importsAndExports[3]);
-                xNum++;
-            }
-
-            // now we need to add the additional equation that the sum of all
-            // the delta prices equals zero
-            // TODO this last row should be scaled for the relative size of the
-            // units of price vs the units of commodity quantity.
-            int row = sizeOfRows() - 1;
-            for (int col = 0; col < sizeOfColumns(); col++) {
-                setElementAt(row, col, 1.0);
-            }
         }
+
+        // add in the effects of imports and exports
+        Iterator exIt = c.getAllExchanges().iterator();
+        int xNum = 0;
+        while (exIt.hasNext()) {
+            Exchange x = (Exchange) exIt.next();
+            double[] importsAndExports = x.importsAndExports(x.getPrice());
+            setElementAt(xNum, xNum, elementAt(xNum, xNum) + importsAndExports[2] - importsAndExports[3]);
+            //            add(xNum,xNum,importsAndExports[2]-importsAndExports[3]);
+            xNum++;
+        }
+
     }
 }
