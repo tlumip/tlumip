@@ -26,6 +26,15 @@ public class Pattern implements Alternative, Serializable, Cloneable {
      public int shopActivities;
      public int recreateActivities;
      public int otherActivities;
+    public int nWorkTours;
+     public int nSchoolTours;
+     public int nShopTours;
+     public int nRecreateTours;
+     public int nOtherTours;
+     public int nWorkBasedTours;
+     public int numberOfToursGT2;
+
+    //boolean values 1=true, 0=false
      public int t1Dummy;
      public int t2Dummy;
      public int t3Dummy;
@@ -39,6 +48,7 @@ public class Pattern implements Alternative, Serializable, Cloneable {
      public int wkbDummy;
      public int toursEquals1;
      public int toursEquals2;
+     public int toursEquals2Plus;
      public int toursEquals3Plus;
      public int toursEquals3;
      public int toursEquals4;
@@ -50,15 +60,11 @@ public class Pattern implements Alternative, Serializable, Cloneable {
      public int recreateOnly;
      public int otherOnly;
      public int isWeekend;
-     public int workTours;
-     public int schoolTours;
      public int shopTours;
-     public int recreateTours;
+     public int socRecTours;
      public int otherTours;
-     public int workBasedTours;
-     public int numberOfToursGT2;
-     
-     //Number of intermediate stop variables     
+
+     //Number of intermediate stop variables
      public int tour1IStops;
      public int tour2IStops;
      public int tour3IStops;
@@ -166,7 +172,7 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                }
                if(thisChar=='b'){
                     ++workActivities;
-                    ++workBasedTours;
+                    ++nWorkBasedTours;
                     wkbDummy=1;
                }
           }
@@ -190,6 +196,8 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                toursEquals3=1;
          if(homeActivities==5)
                toursEquals4=1;
+         if(homeActivities >= 3)
+                toursEquals3Plus=1;
          if(homeActivities>=4)
                toursEquals3Plus=1;
           if(homeActivities>=5)
@@ -405,17 +413,17 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                     //increment tour count variables
                     if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK || 
                             thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK_BASED)
-                         ++workTours;
+                         ++nWorkTours;
                     else if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.SCHOOL)
-                         ++schoolTours;
+                         ++nSchoolTours;
                     else if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.SHOP)
-                         ++shopTours;
+                         ++nShopTours;
                     else if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.RECREATE)
-                         ++recreateTours;
+                         ++nRecreateTours;
                     else if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.OTHER)
-                         ++otherTours;
+                         ++nOtherTours;
                     else if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK_BASED)
-                         ++workBasedTours;
+                         ++nWorkBasedTours;
                          
                     if((thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK || 
                    thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK_BASED) && i>1)
@@ -426,6 +434,10 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                          
                     if(i>2)
                          ++numberOfToursGT2;
+
+                   if(nShopTours > 0) shopTours=1;
+                   if(nRecreateTours > 0) socRecTours = 1;
+                   if(nOtherTours > 0) otherTours = 1;
                }
           }
                
@@ -466,12 +478,12 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
           logger.info("recreateOnly =         "+ recreateOnly);
           logger.info("otherOnly =            "+ otherOnly);
           logger.info("isWeekend =            "+ isWeekend);
-          logger.info("workTours =            "+ workTours);
-          logger.info("schoolTours =          "+ schoolTours);
-          logger.info("shopTours =            "+ shopTours);
-          logger.info("recreateTours =        "+ recreateTours);
-          logger.info("otherTours =           "+ otherTours);
-          logger.info("workBasedTours =       "+ workBasedTours);
+          logger.info("nWorkTours =            "+ nWorkTours);
+          logger.info("nSchoolTours =          "+ nSchoolTours);
+          logger.info("nShopTours =            "+ nShopTours);
+          logger.info("nRecreateTours =        "+ nRecreateTours);
+          logger.info("nOtherTours =           "+ nOtherTours);
+          logger.info("nWorkBasedTours =       "+ nWorkBasedTours);
           logger.info("numberOfToursGT2 =     "+ numberOfToursGT2);
                                                                                                                
                                                                                                                
@@ -530,7 +542,7 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                shopActivities+" "+
                recreateActivities+" "+
                otherActivities+" "+
-               workBasedTours+" "+
+               nWorkBasedTours+" "+
                tour1IStops+" "+
                tour2IStops+" "+
                tour3IStops+" "+
@@ -734,17 +746,20 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                + params.shopActivities                          * shopActivities                                           
                + params.recreateActivities                      * recreateActivities                                       
                + params.otherActivities                         * otherActivities                                          
-               + params.workBasedWorker                         * workBasedTours * persAttr.worker        
-//               + params.shopTours                               * shopTours  
-//               + params.otherTours                              * otherTours                   
-               + params.workBasedTours                          * workBasedTours                   
-               + params.shopToursByShopDCLogsum                 * shopTours * persAttr.shopDCLogsum                   
-               + params.otherToursByOtherDCLogsum               * otherTours * persAttr.otherDCLogsum
-               + params.workBasedToursByWorkBasedDCLogsum       * workBasedTours * persAttr.workBasedDCLogsum
-               + params.homeBasedToursGT2ByWorkBasedTours       * numberOfToursGT2*workBasedTours
-               + params.shopToursAutos0                         * shopTours * persAttr.autos0
-               + params.otherToursAutos0                        * otherTours * persAttr.autos0
-               + params.workBasedToursAutos0                    * workBasedTours * persAttr.autos0
+               + params.workBasedWorker                         * nWorkBasedTours * persAttr.worker
+//               + params.nShopTours                          * nShopTours
+//               + params.nOtherTours                          * nOtherTours
+               + params.nWorkBasedTours                          * nWorkBasedTours
+               + params.shopTours                                   * shopTours
+               + params.otherTours                                  * otherTours
+               + params.socRecTours                                * socRecTours
+               + params.shopToursByShopDCLogsum                 * nShopTours * persAttr.shopDCLogsum
+               + params.otherToursByOtherDCLogsum               * nOtherTours * persAttr.otherDCLogsum
+               + params.workBasedToursByWorkBasedDCLogsum       * nWorkBasedTours * persAttr.workBasedDCLogsum
+               + params.homeBasedToursGT2ByWorkBasedTours       * numberOfToursGT2*nWorkBasedTours
+               + params.shopToursAutos0                         * nShopTours * persAttr.autos0
+               + params.otherToursAutos0                        * nOtherTours * persAttr.autos0
+               + params.workBasedToursAutos0                    * nWorkBasedTours * persAttr.autos0
                + params.numberToursIfChildren0_5                * (homeActivities-1) * persAttr.child00To05
                + params.numberToursIfChildren5_15               * (homeActivities-1) * persAttr.child05To10
                + params.numberToursIfChildren5_15               * (homeActivities-1) * persAttr.child10To15
@@ -843,17 +858,17 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
           logger.info("params.shopActivities  * shopActivities                                                                               "+(params.shopActivities                          * shopActivities                                                                    ));        
           logger.info("params.recreateActivities  * recreateActivities                                                                       "+(params.recreateActivities                      * recreateActivities                                                                ));        
           logger.info("params.otherActivities  * otherActivities                                                                             "+(params.otherActivities                         * otherActivities                                                                   ));        
-          logger.info("params.workBasedWorker  * workBasedTours * persAttr.worker                                                            "+(params.workBasedWorker                         * workBasedTours * persAttr.worker                                                  ));        
-//          logger.info("params.shopTours  * shopTours                                                                                         "+(params.shopTours                               * shopTours                                                                         ));        
-//          logger.info("params.otherTours  * otherTours                                                                                       "+(params.otherTours                              * otherTours                                                                        ));        
-          logger.info("params.workBasedTours  * workBasedTours                                                                               "+(params.workBasedTours                          * workBasedTours                                                                    ));        
-          logger.info("params.shopToursByShopDCLogsum  * shopTours * persAttr.shopDCLogsum                                                   "+(params.shopToursByShopDCLogsum                 * shopTours * persAttr.shopDCLogsum                                                 ));        
-          logger.info("params.otherToursByOtherDCLogsum * otherTours * persAttr.otherDCLogsum                                                "+(params.otherToursByOtherDCLogsum               * otherTours * persAttr.otherDCLogsum                                               ));        
-          logger.info("params.workBasedToursByWorkBasedDCLogsum * workBasedTours * persAttr.workBasedDCLogsum                                "+(params.workBasedToursByWorkBasedDCLogsum       * workBasedTours * persAttr.workBasedDCLogsum                                       ));        
-          logger.info("params.homeBasedToursGT2ByWorkBasedTours * numberOfToursGT2*workBasedTours                                "+(params.homeBasedToursGT2ByWorkBasedTours       * numberOfToursGT2*workBasedTours                                       ));        
-          logger.info("params.shopToursAutos0  * shopTours * persAttr.autos0                                                                 "+(params.shopToursAutos0                         * shopTours * persAttr.autos0                                                       ));        
-          logger.info("params.otherToursAutos0  * otherTours * persAttr.autos0                                                               "+(params.otherToursAutos0                        * otherTours * persAttr.autos0                                                      ));        
-          logger.info("params.workBasedToursAutos0  * workBasedTours * persAttr.autos0                                                       "+(params.workBasedToursAutos0                    * workBasedTours * persAttr.autos0                                                  ));        
+          logger.info("params.workBasedWorker  * nWorkBasedTours * persAttr.worker                                                            "+(params.workBasedWorker                         * nWorkBasedTours * persAttr.worker                                                  ));
+//          logger.info("params.nShopTours  * nShopTours                                                                                         "+(params.nShopTours                               * nShopTours                                                                         ));
+//          logger.info("params.nOtherTours  * nOtherTours                                                                                       "+(params.nOtherTours                              * nOtherTours                                                                        ));
+          logger.info("params.nWorkBasedTours  * nWorkBasedTours                                                                               "+(params.nWorkBasedTours                          * nWorkBasedTours                                                                    ));
+          logger.info("params.shopToursByShopDCLogsum  * nShopTours * persAttr.shopDCLogsum                                                   "+(params.shopToursByShopDCLogsum                 * nShopTours * persAttr.shopDCLogsum                                                 ));
+          logger.info("params.otherToursByOtherDCLogsum * nOtherTours * persAttr.otherDCLogsum                                                "+(params.otherToursByOtherDCLogsum               * nOtherTours * persAttr.otherDCLogsum                                               ));
+          logger.info("params.workBasedToursByWorkBasedDCLogsum * nWorkBasedTours * persAttr.workBasedDCLogsum                                "+(params.workBasedToursByWorkBasedDCLogsum       * nWorkBasedTours * persAttr.workBasedDCLogsum                                       ));
+          logger.info("params.homeBasedToursGT2ByWorkBasedTours * numberOfToursGT2*nWorkBasedTours                                "+(params.homeBasedToursGT2ByWorkBasedTours       * numberOfToursGT2*nWorkBasedTours                                       ));
+          logger.info("params.shopToursAutos0  * nShopTours * persAttr.autos0                                                                 "+(params.shopToursAutos0                         * nShopTours * persAttr.autos0                                                       ));
+          logger.info("params.otherToursAutos0  * nOtherTours * persAttr.autos0                                                               "+(params.otherToursAutos0                        * nOtherTours * persAttr.autos0                                                      ));
+          logger.info("params.workBasedToursAutos0  * nWorkBasedTours * persAttr.autos0                                                       "+(params.workBasedToursAutos0                    * nWorkBasedTours * persAttr.autos0                                                  ));
      }
 
     public Object clone(){
@@ -892,12 +907,12 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
              newPattern.recreateOnly=recreateOnly;
              newPattern.otherOnly=otherOnly;
              newPattern.isWeekend=isWeekend;
-             newPattern.workTours=workTours;
-             newPattern.schoolTours=schoolTours;
-             newPattern.shopTours=shopTours;
-             newPattern.recreateTours=recreateTours;
-             newPattern.otherTours=otherTours;
-             newPattern.workBasedTours=workBasedTours;
+             newPattern.nWorkTours=nWorkTours;
+             newPattern.nSchoolTours=nSchoolTours;
+             newPattern.nShopTours=nShopTours;
+             newPattern.nRecreateTours=nRecreateTours;
+             newPattern.nOtherTours=nOtherTours;
+             newPattern.nWorkBasedTours=nWorkBasedTours;
              newPattern.numberOfToursGT2=numberOfToursGT2;
 
              //Number of intermediate stop variables

@@ -1,12 +1,13 @@
 package com.pb.despair.pt;
 
-import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.ResourceUtil;
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
-import org.apache.log4j.Logger;
 
 /**  
  * A class to access Duration Model Parameters from TableDataSet
@@ -34,7 +35,7 @@ public class DurationModelParametersData {
 
         TableDataSet table = loadTableDataSet(rb, fileName);
 
-        parameters = new DurationModelParameters[table.getRowCount()];  //there will be as many durationModelParameters object
+        parameters = new DurationModelParameters[table.getRowCount()];  //there will be as many durationModelParameters objects
                                                                         //as there are rows in the table.
 
         purposeIndex = new String[table.getRowCount()];
@@ -51,7 +52,8 @@ public class DurationModelParametersData {
                 parameterObject.IStopsInPatternEquals4Plus             = table.getValueAt(rowNumber,table.getColumnPosition("IStopsInPatternEquals4Plus"));
                 parameterObject.IStopsOnTourEquals1                    = table.getValueAt(rowNumber,table.getColumnPosition("IStopsOnTourEquals1"));
                 parameterObject.IStopsOnTourEquals2                    = table.getValueAt(rowNumber,table.getColumnPosition("IStopsOnTourEquals2"));
-                parameterObject.toursEquals2                           = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals3"));
+                parameterObject.toursEquals2                           = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals2"));
+                parameterObject.toursEquals2Plus                           = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals2Plus"));
                 parameterObject.toursEquals3                           = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals3"));
                 parameterObject.toursEquals3Plus                       = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals3Plus"));
                 parameterObject.toursEquals4                           = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals4"));

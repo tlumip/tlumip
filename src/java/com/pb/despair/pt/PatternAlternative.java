@@ -138,17 +138,17 @@ public class PatternAlternative implements Alternative{
                + params.shopActivities                          * thisPattern.shopActivities                                           
                + params.recreateActivities                      * thisPattern.recreateActivities                                       
                + params.otherActivities                         * thisPattern.otherActivities                                          
-               + params.workBasedWorker                         * thisPattern.workBasedTours * persAttr.worker        
-//               + params.shopTours                               * thisPattern.shopTours  
-//               + params.otherTours                              * thisPattern.otherTours                   
-               + params.workBasedTours                          * thisPattern.workBasedTours                   
-               + params.shopToursByShopDCLogsum                 * thisPattern.shopTours * persAttr.shopDCLogsum                   
-               + params.otherToursByOtherDCLogsum               * thisPattern.otherTours * persAttr.otherDCLogsum
-               + params.workBasedToursByWorkBasedDCLogsum       * thisPattern.workBasedTours * persAttr.workBasedDCLogsum
-               + params.homeBasedToursGT2ByWorkBasedTours       * thisPattern.numberOfToursGT2*thisPattern.workBasedTours
-               + params.shopToursAutos0                         * thisPattern.shopTours * persAttr.autos0
-               + params.otherToursAutos0                        * thisPattern.otherTours * persAttr.autos0
-               + params.workBasedToursAutos0                    * thisPattern.workBasedTours * persAttr.autos0
+               + params.workBasedWorker                         * thisPattern.nWorkBasedTours * persAttr.worker
+//               + params.nShopTours                               * thisPattern.nShopTours
+//               + params.nOtherTours                              * thisPattern.nOtherTours
+               + params.nWorkBasedTours                          * thisPattern.nWorkBasedTours
+               + params.shopToursByShopDCLogsum                 * thisPattern.nShopTours * persAttr.shopDCLogsum
+               + params.otherToursByOtherDCLogsum               * thisPattern.nOtherTours * persAttr.otherDCLogsum
+               + params.workBasedToursByWorkBasedDCLogsum       * thisPattern.nWorkBasedTours * persAttr.workBasedDCLogsum
+               + params.homeBasedToursGT2ByWorkBasedTours       * thisPattern.numberOfToursGT2*thisPattern.nWorkBasedTours
+               + params.shopToursAutos0                         * thisPattern.nShopTours * persAttr.autos0
+               + params.otherToursAutos0                        * thisPattern.nOtherTours * persAttr.autos0
+               + params.workBasedToursAutos0                    * thisPattern.nWorkBasedTours * persAttr.autos0
                + params.numberToursIfChildren0_5                * (thisPattern.homeActivities-1) * persAttr.child00To05
                + params.numberToursIfChildren5_15               * (thisPattern.homeActivities-1) * persAttr.child05To10
                + params.numberToursIfChildren5_15               * (thisPattern.homeActivities-1) * persAttr.child10To15
@@ -241,17 +241,17 @@ public class PatternAlternative implements Alternative{
           System.out.println("params.shopActivities  * thisPattern.shopActivities                                                                               "+(params.shopActivities                          * thisPattern.shopActivities                                                                    ));        
           System.out.println("params.recreateActivities  * thisPattern.recreateActivities                                                                       "+(params.recreateActivities                      * thisPattern.recreateActivities                                                                ));        
           System.out.println("params.otherActivities  * thisPattern.otherActivities                                                                             "+(params.otherActivities                         * thisPattern.otherActivities                                                                   ));        
-          System.out.println("params.workBasedWorker  * thisPattern.workBasedTours * persAttr.worker                                                            "+(params.workBasedWorker                         * thisPattern.workBasedTours * persAttr.worker                                                  ));        
-//          System.out.println("params.shopTours  * thisPattern.shopTours                                                                                         "+(params.shopTours                               * thisPattern.shopTours                                                                         ));        
-//          System.out.println("params.otherTours  * thisPattern.otherTours                                                                                       "+(params.otherTours                              * thisPattern.otherTours                                                                        ));        
-          System.out.println("params.workBasedTours  * thisPattern.workBasedTours                                                                               "+(params.workBasedTours                          * thisPattern.workBasedTours                                                                    ));        
-          System.out.println("params.shopToursByShopDCLogsum  * thisPattern.shopTours * persAttr.shopDCLogsum                                                   "+(params.shopToursByShopDCLogsum                 * thisPattern.shopTours * persAttr.shopDCLogsum                                                 ));        
-          System.out.println("params.otherToursByOtherDCLogsum * thisPattern.otherTours * persAttr.otherDCLogsum                                                "+(params.otherToursByOtherDCLogsum               * thisPattern.otherTours * persAttr.otherDCLogsum                                               ));        
-          System.out.println("params.workBasedToursByWorkBasedDCLogsum * thisPattern.workBasedTours * persAttr.workBasedDCLogsum                                "+(params.workBasedToursByWorkBasedDCLogsum       * thisPattern.workBasedTours * persAttr.workBasedDCLogsum                                       ));        
-          System.out.println("params.homeBasedToursGT2ByWorkBasedTours * thisPattern.numberOfToursGT2*thisPattern.workBasedTours                                "+(params.homeBasedToursGT2ByWorkBasedTours       * thisPattern.numberOfToursGT2*thisPattern.workBasedTours                                       ));        
-          System.out.println("params.shopToursAutos0  * thisPattern.shopTours * persAttr.autos0                                                                 "+(params.shopToursAutos0                         * thisPattern.shopTours * persAttr.autos0                                                       ));        
-          System.out.println("params.otherToursAutos0  * thisPattern.otherTours * persAttr.autos0                                                               "+(params.otherToursAutos0                        * thisPattern.otherTours * persAttr.autos0                                                      ));        
-          System.out.println("params.workBasedToursAutos0  * thisPattern.workBasedTours * persAttr.autos0                                                       "+(params.workBasedToursAutos0                    * thisPattern.workBasedTours * persAttr.autos0                                                  ));        
+          System.out.println("params.workBasedWorker  * thisPattern.nWorkBasedTours * persAttr.worker                                                            "+(params.workBasedWorker                         * thisPattern.nWorkBasedTours * persAttr.worker                                                  ));
+//          System.out.println("params.nShopTours  * thisPattern.nShopTours                                                                                         "+(params.nShopTours                               * thisPattern.nShopTours                                                                         ));
+//          System.out.println("params.nOtherTours  * thisPattern.nOtherTours                                                                                       "+(params.nOtherTours                              * thisPattern.nOtherTours                                                                        ));
+          System.out.println("params.nWorkBasedTours  * thisPattern.nWorkBasedTours                                                                               "+(params.nWorkBasedTours                          * thisPattern.nWorkBasedTours                                                                    ));
+          System.out.println("params.shopToursByShopDCLogsum  * thisPattern.nShopTours * persAttr.shopDCLogsum                                                   "+(params.shopToursByShopDCLogsum                 * thisPattern.nShopTours * persAttr.shopDCLogsum                                                 ));
+          System.out.println("params.otherToursByOtherDCLogsum * thisPattern.nOtherTours * persAttr.otherDCLogsum                                                "+(params.otherToursByOtherDCLogsum               * thisPattern.nOtherTours * persAttr.otherDCLogsum                                               ));
+          System.out.println("params.workBasedToursByWorkBasedDCLogsum * thisPattern.nWorkBasedTours * persAttr.workBasedDCLogsum                                "+(params.workBasedToursByWorkBasedDCLogsum       * thisPattern.nWorkBasedTours * persAttr.workBasedDCLogsum                                       ));
+          System.out.println("params.homeBasedToursGT2ByWorkBasedTours * thisPattern.numberOfToursGT2*thisPattern.nWorkBasedTours                                "+(params.homeBasedToursGT2ByWorkBasedTours       * thisPattern.numberOfToursGT2*thisPattern.nWorkBasedTours                                       ));
+          System.out.println("params.shopToursAutos0  * thisPattern.nShopTours * persAttr.autos0                                                                 "+(params.shopToursAutos0                         * thisPattern.nShopTours * persAttr.autos0                                                       ));
+          System.out.println("params.otherToursAutos0  * thisPattern.nOtherTours * persAttr.autos0                                                               "+(params.otherToursAutos0                        * thisPattern.nOtherTours * persAttr.autos0                                                      ));
+          System.out.println("params.workBasedToursAutos0  * thisPattern.nWorkBasedTours * persAttr.autos0                                                       "+(params.workBasedToursAutos0                    * thisPattern.nWorkBasedTours * persAttr.autos0                                                  ));
      }
 
 

@@ -191,7 +191,7 @@ public void buildLogitModels(){
                     Pattern wkdayPattern = thisPerson.weekdayPattern;
                     
                     thisPerson.weekdayTours = new Tour[(wkdayPattern.homeActivities-1)];
-                    thisPerson.weekdayWorkBasedTours = new Tour[(thisPerson.weekdayPattern.workBasedTours)];
+                    thisPerson.weekdayWorkBasedTours = new Tour[(thisPerson.weekdayPattern.nWorkBasedTours)];
                     int job=0;
                     //weekday tours
                     for(int tourNumber=0;tourNumber<thisHousehold.persons[personNumber].weekdayTours.length;++tourNumber){                                               
@@ -245,7 +245,7 @@ public void buildLogitModels(){
                     Pattern wkendPattern = thisPerson.weekendPattern;
                     
                     thisPerson.weekendTours = new Tour[(wkendPattern.homeActivities-1)];
-                    thisPerson.weekendWorkBasedTours = new Tour[(thisPerson.weekendPattern.workBasedTours)];
+                    thisPerson.weekendWorkBasedTours = new Tour[(thisPerson.weekendPattern.nWorkBasedTours)];
                     int job=0;
 
                     //weekend tours

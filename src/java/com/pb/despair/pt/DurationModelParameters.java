@@ -21,6 +21,7 @@ public class DurationModelParameters {
                  IStopsOnTourEquals1,                           /* tour has 1 intermediate stop total */
                  IStopsOnTourEquals2,                           /* tour has 2 intermediate stops total */
                  toursEquals2,                                  /* pattern has 2 tours total */
+                 toursEquals2Plus,                            /* pattern has 2+ tours total */
                  toursEquals3,                                  /* pattern has 3 tours total */
                  toursEquals3Plus,                              /* pattern has 3+ tours total */
                  toursEquals4,                                  /* pattern has 4 tours total */
@@ -57,7 +58,7 @@ public class DurationModelParameters {
 
 
 
-     
+
     public DurationModelParameters(){};   /* pattern will be initialized to null
                                              and all float variables will be
                                              initialized to 0 on construction. */
@@ -75,6 +76,7 @@ public class DurationModelParameters {
              +"\n"+ IStopsOnTourEquals1
              +"\n"+ IStopsOnTourEquals2
              +"\n"+ toursEquals2
+             +"\n"+ toursEquals2Plus
              +"\n"+ toursEquals3
              +"\n"+ toursEquals3Plus
              +"\n"+ toursEquals4

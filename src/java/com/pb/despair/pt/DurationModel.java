@@ -71,7 +71,10 @@ public class DurationModel{
           //calculate duration for first activity, depends on if first tour of day or second+ tour of day     
           if(tourNumber==0){
                thisTour.begin.startTime = 300;
-               thisTour.begin.duration = calculateFirstHomeDuration(thisTour.begin);
+               if(thisPattern.tour1IsWork == 1 || thisPattern.tour1IsSchool == 1){
+                    thisTour.begin.duration = calculateFirstHomeDurationBeforeWorkOrSchool(thisTour.begin);
+               }
+               else thisTour.begin.duration = calculateFirstHomeDurationBeforeShopOtherOrRec(thisTour.begin);
           }else{
                thisTour.begin.startTime = tours[tourNumber-1].end.startTime;
                thisTour.begin.duration = calculateIntermediateHomeDuration(thisTour.begin);
@@ -231,31 +234,49 @@ public class DurationModel{
 
          return (new Double(minutes)).floatValue();
      }
-          
-     public short calculateFirstHomeDuration(Activity thisActivity){
-          DurationModelParameters param = getParametersFromParametersDataArray("firstHome");
-          double expression=          
-                 param.IStopsInPatternEquals1*thisPattern.IStopsEquals1           //One intermediate stop in pattern
+
+    public short calculateFirstHomeDurationBeforeWorkOrSchool(Activity thisActivity){
+          DurationModelParameters param = getParametersFromParametersDataArray("firstHomeBeforeWorkOrSchool");
+          double expression=
+                   param.IStopsInPatternEquals1*thisPattern.IStopsEquals1           //One intermediate stop in pattern
                + param.IStopsInPatternEquals2Plus*thisPattern.IStopsEquals2Plus     //Two or more intermediate stops in pattern
-               + param.toursEquals2*thisPattern.toursEquals2          //Two tours in pattern
-               + param.toursEquals3Plus*thisPattern.toursEquals3Plus     //Three or more tours in pattern
-               + param.singleAdultWithOnePlusChildren*thisPersonAttributes.singleAdultWithOnePlusChildren//Single adult with 1+ children
+               + param.toursEquals2Plus*thisPattern.toursEquals2Plus          //Two or more tours in pattern
+               + param.industryEqualsRetail*thisPersonAttributes.industryEqualsRetail //Retail Employee
                + param.autos0*thisPersonAttributes.autos0     //0 Autos
-               + param.age19to21*thisPersonAttributes.age19to21 //Age 19to21
-               + param.shopOnlyInPattern*thisPattern.shopOnly                //Only shop activities in pattern
-               + param.recreateOnlyInPattern*thisPattern.recreateOnly           //Only recreate activities in pattern
-               + param.otherOnlyInPattern*thisPattern.otherOnly           //Only other activities in pattern
-               + param.tour1IsWork*thisPattern.tour1IsWork          //First tour is work
-               + param.tour1IsSchool*thisPattern.tour1IsSchool          //First tour is school
                + param.constant;                                        //constant
-               
-          double shape= (double) param.shape;
+
+         double shape=(double) param.shape;
+
           if(logger.isDebugEnabled() && !firstHomeLogged) {
-              logger.debug("Shape Param for First Home: " + param.shape);
+              logger.debug("Shape Param for First Home Before Work or School: " + param.shape);
               firstHomeLogged = true;
           }
           return (short)(Math.round(solveForT(shape,expression,thisActivity)));
      }
+
+     public short calculateFirstHomeDurationBeforeShopOtherOrRec(Activity thisActivity){
+          DurationModelParameters param = getParametersFromParametersDataArray("firstHomeBeforeShopOtherOrRec");
+          double expression=
+                   param.IStopsInPatternEquals1*thisPattern.IStopsEquals1           //One intermediate stop in pattern
+               + param.IStopsInPatternEquals2Plus*thisPattern.IStopsEquals2Plus     //Two or more intermediate stops in pattern
+               + param.toursEquals2*thisPattern.toursEquals2          //Two tours in pattern
+               + param.toursEquals3Plus*thisPattern.toursEquals3Plus          //Two or more tours in pattern
+               + param.recreateOnlyInPattern*thisPattern.recreateOnly           //Only recreate activities in pattern
+               + param.shopOnlyInPattern*thisPattern.shopOnly                //Only shop activities in pattern
+               + param.otherOnlyInPattern*thisPattern.otherOnly           //Only other activities in pattern
+               + param.wkDummy*thisPattern.wrkDummy          //work dummy
+               + param.constant;                                        //constant
+
+         double shape=(double) param.shape;
+
+          if(logger.isDebugEnabled() && !firstHomeLogged) {
+              logger.debug("Shape Param for First Home Before Shop, Other or Rec: " + param.shape);
+              firstHomeLogged = true;
+          }
+          return (short)(Math.round(solveForT(shape,expression,thisActivity)));
+     }
+
+
 
      public short calculateIntermediateHomeDuration(Activity thisActivity){
           DurationModelParameters param = getParametersFromParametersDataArray("intermedHome");
