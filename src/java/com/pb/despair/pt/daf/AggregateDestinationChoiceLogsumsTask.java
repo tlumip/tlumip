@@ -90,7 +90,7 @@ public class AggregateDestinationChoiceLogsumsTask  extends MessageProcessingTas
         if (firstDCLogsum) {
             logger.info(getName() + " is setting population, school occupation and collapsing employment " +
                     "in the ptModel tazs");
-            dcLogsumCalculator.buildModel(PTModelInputs.tazs);
+            dcLogsumCalculator.buildModel(PTModelInputs.tazs, PTModelInputs.getSkims());
             firstDCLogsum=false;
         }
 
