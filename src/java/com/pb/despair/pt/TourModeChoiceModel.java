@@ -82,7 +82,7 @@ public class TourModeChoiceModel{
 
           //set tour mode choice attributes
           TourModeParameters params = new TourModeParameters();
-          //char actPurpose = ActivityPurpose.ACTIVITY_PURPOSE[thisTour.primaryDestination.activityPurpose];
+          //char actPurpose = ActivityPurpose.ACTIVITY_PURPOSES[thisTour.primaryDestination.activityPurpose];
           params = (TourModeParameters) allParams.getTourModeParameters(thisTour.primaryDestination.activityPurpose);
                
           //set taz attributes (only parking cost at this point)

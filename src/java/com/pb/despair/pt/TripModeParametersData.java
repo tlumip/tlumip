@@ -22,7 +22,7 @@ public class TripModeParametersData {
      String tripModeParametersTableName="TripModeParameters";
      
      //a hashtable of taz objects
-     private TripModeParameters[] tripModeParameters = new TripModeParameters[ActivityPurpose.ACTIVITY_PURPOSE.length];
+     private TripModeParameters[] tripModeParameters = new TripModeParameters[ActivityPurpose.ACTIVITY_PURPOSES.length];
      
      public TripModeParameters getTripModeParameters(int activityPurpose){
          return tripModeParameters[activityPurpose];  

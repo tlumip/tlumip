@@ -15,11 +15,11 @@ import java.util.logging.Logger;
 public class PTHousehold implements Comparable, Serializable{
 
 //     public static int numberOfCurrentHousehold;
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");  
+     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
 
-     final static String householdDataTableName = new String("SynPopH");
-     final static String personDataTableName = new String("SynPopP");
-     
+    public static final int NUM_WORK_SEGMENTS = 9;
+    public static final int NUM_NONWORK_SEGMENTS = 9;
+
      public int ID;
      public byte size;
      public byte autos;
@@ -31,7 +31,7 @@ public class PTHousehold implements Comparable, Serializable{
      
      
      //the auto/income segment
-     public byte compositSegment;
+     public byte compositeSegment;
      
      public PTPerson[] persons;
      
@@ -45,10 +45,7 @@ public class PTHousehold implements Comparable, Serializable{
      
      //constructor
      public PTHousehold(){
-          
-//          ++numberOfCurrentHousehold;
-//          ID=numberOfCurrentHousehold;
-          
+
      }
 
 
@@ -92,15 +89,10 @@ public class PTHousehold implements Comparable, Serializable{
      
      }
      
-     
-     
-     
-     
      /*
      * for the Mode/DC Logsums market segment
      *
      */
-     
      public int calcWorkLogsumSegment(){
           
           int segment=0;
@@ -172,19 +164,19 @@ public class PTHousehold implements Comparable, Serializable{
      public int calcCompositeSegment(){
          return   (calcNonWorkLogsumSegment()*10)+calcWorkLogsumSegment();
      }
-     /* to sort households, use a composite of worker segment
+
+    /* to sort households, use a composite of worker segment
         and nonworker segment xx = 10*nonworksegment+worksegment
      */
-     
      public int compareTo(Object household){
      	  
           PTHousehold h = (PTHousehold)household;
 
               int cs = (h.calcNonWorkLogsumSegment()*10)+h.calcWorkLogsumSegment();
-              compositSegment = (byte)((this.calcNonWorkLogsumSegment()*10)+this.calcWorkLogsumSegment());
+              compositeSegment = (byte)((this.calcNonWorkLogsumSegment()*10)+this.calcWorkLogsumSegment());
     
-              if(compositSegment<cs) return -1;
-              else if(compositSegment>cs) return 1;
+              if(compositeSegment<cs) return -1;
+              else if(compositeSegment>cs) return 1;
               else return 0;
     }
         
@@ -225,28 +217,7 @@ public class PTHousehold implements Comparable, Serializable{
      
      public static void main(String[] args){          
          
-          logger.info("Testing PTHousehold");
-  
-  //Note - these methods are now in PTDataReader
-  /*         PTHousehold hhObject= new PTHousehold();
-          hhObject.addHouseholdsAndPersonsToJDataStore();
-
-          PTHousehold[] households = hhObject.readHouseholdsAndPersonsFromJDataStore(1,1109);
-          
-          List l = Arrays.asList(households);
-          Collections.sort(l);
-        
-          households = (PTHousehold[]) l.toArray();
-          
-          for(int i=0;i<households.length;++i)
-               logger.info("Work segment: "+households[i].calcWorkLogsumSegment()+
-                                  "Nwrk segment: "+households[i].calcNonWorkLogsumSegment());
-          logger.info("Finished Testing PTHousehold");
-          System.exit(4);*/
      }
-
-
-
 
 }
 

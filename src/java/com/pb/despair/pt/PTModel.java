@@ -26,7 +26,7 @@ import java.io.Serializable;
 
 public class PTModel extends ModelComponent implements Serializable{
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
-    public static final boolean RUN_WEEKEND_MODEL = false;
+    public static boolean RUN_WEEKEND_MODEL = false; //default is false but can be set in properties file to true
     public TazData tazs;
     Patterns wkdayPatterns;
     Patterns wkendPatterns;
@@ -45,11 +45,9 @@ public class PTModel extends ModelComponent implements Serializable{
 
     }
 
-    //This constructor should no longer be called as
-    //we are moving the TazData to the PTModelInputs class
-    //to keep all of the inputs together. 9/7/04
     public PTModel(ResourceBundle rb){
       this.rb = rb;
+      RUN_WEEKEND_MODEL = ResourceUtil.getProperty(this.rb, "RUN_WEEKEND_MODEL").equalsIgnoreCase("true");
       logger.info("Reading TazData into PTModel");
       tazs = new TazData();
       tazs.readData(rb,"tazData.file");
@@ -192,10 +190,10 @@ public void buildLogitModels(){
                         thisWeekdayTour.tourNumber=tourNumber+1;
                         thisWeekdayTour.tourString = wkdayPattern.getTourString(tourNumber+1);                      
                         //set taz numbers, first for home activities
-                        if(thisWeekdayTour.tourString.charAt(0)==ActivityPurpose.ACTIVITY_PURPOSE[ActivityPurpose.HOME])
+                        if(thisWeekdayTour.tourString.charAt(0)==ActivityPurpose.ACTIVITY_PURPOSES[ActivityPurpose.HOME])
                             thisWeekdayTour.begin.location.zoneNumber=thisHousehold.homeTaz;
                         if(thisWeekdayTour.tourString.charAt(
-                            thisWeekdayTour.tourString.length()-1)==ActivityPurpose.ACTIVITY_PURPOSE[ActivityPurpose.HOME])
+                            thisWeekdayTour.tourString.length()-1)==ActivityPurpose.ACTIVITY_PURPOSES[ActivityPurpose.HOME])
                               thisWeekdayTour.end.location.zoneNumber=thisHousehold.homeTaz;
 
                         //now for work activities
@@ -256,10 +254,10 @@ public void buildLogitModels(){
                         thisWeekendTour.tourString = wkendPattern.getTourString(tourNumber+1);                      
                          
                         //set taz numbers, first for home activities
-                        if(thisWeekendTour.tourString.charAt(0)==ActivityPurpose.ACTIVITY_PURPOSE[ActivityPurpose.HOME])
+                        if(thisWeekendTour.tourString.charAt(0)==ActivityPurpose.ACTIVITY_PURPOSES[ActivityPurpose.HOME])
                               thisWeekendTour.begin.location.zoneNumber=thisHousehold.homeTaz;
                         if(thisWeekendTour.tourString.charAt(
-                            thisWeekendTour.tourString.length()-1)==ActivityPurpose.ACTIVITY_PURPOSE[ActivityPurpose.HOME])
+                            thisWeekendTour.tourString.length()-1)==ActivityPurpose.ACTIVITY_PURPOSES[ActivityPurpose.HOME])
                               thisWeekendTour.end.location.zoneNumber=thisHousehold.homeTaz;
 
                          //now for work activities

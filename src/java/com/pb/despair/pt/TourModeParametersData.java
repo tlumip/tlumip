@@ -24,7 +24,7 @@ public class TourModeParametersData {
     //DataManager dm = new DataManager();  //Create a data manager, connect to default data-store
      
      //a hashtable of taz objects
-     private TourModeParameters[] tourModeParameters = new TourModeParameters[ActivityPurpose.ACTIVITY_PURPOSE.length];
+     private TourModeParameters[] tourModeParameters = new TourModeParameters[ActivityPurpose.ACTIVITY_PURPOSES.length];
      
      public TourModeParameters getTourModeParameters(int activityPurpose){
         return tourModeParameters[activityPurpose];

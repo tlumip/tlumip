@@ -350,7 +350,8 @@ public class CreateModeChoiceLogsums {
           
     public static void main (String[] args){
         logger.info("creating tour mode choice logsums");
-        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/global.properties"));
         CreateModeChoiceLogsums createMCLogsums = new CreateModeChoiceLogsums();
         //createMCLogsums.buildTourModeChoiceModel();
         //read the skims into memory
@@ -361,11 +362,11 @@ public class CreateModeChoiceLogsums {
         //read the tourModeParameters from jDataStore; if they don't exist, write them to jDataStore first from csv
         TourModeParametersData tmp = new TourModeParametersData();
         tmp.readData(rb,"tourModeParameters.file");
-        SkimsInMemory skims = new SkimsInMemory();
+        SkimsInMemory skims = new SkimsInMemory(globalRb);
         skims.readSkims(rb);
         //enter loop on purposes
         for(int purpose=ActivityPurpose.WORK;purpose<2/*purposes.length()*/;++purpose){
-            char thisPurpose=ActivityPurpose.ACTIVITY_PURPOSE[purpose];
+            char thisPurpose=ActivityPurpose.ACTIVITY_PURPOSES[purpose];
             //get tour mode choice parameters based on purpose
             TourModeParameters theseParameters = 
                 (TourModeParameters) tmp.getTourModeParameters(purpose);

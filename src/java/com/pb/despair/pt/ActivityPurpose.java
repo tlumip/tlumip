@@ -27,9 +27,11 @@ public final class ActivityPurpose{
     public static final byte TOTAL_ACTIVITIES=7;
     
     /** Array of activity purpose characters */
-    public static final char[] ACTIVITY_PURPOSE = {'h','w','b','c','s','r','o'};
-    
-    /** converts an activity purpose character to a number 
+    public static final char[] ACTIVITY_PURPOSES = {'h','w','b','c','s','r','o'};
+
+    public static final String[] DC_LOGSUM_PURPOSES = {"c1","c2","c3","s","r","o","b"};  //school,shop,recreate,other,workbased
+
+    /** converts an activity purpose character to a number
      * 
      * @param activity activity character 
      * @return activity purpose number
@@ -38,7 +40,7 @@ public final class ActivityPurpose{
         short activityPurposeValue=-1;
 
         for(short i=0;i<=6;i++)
-        if (ACTIVITY_PURPOSE[i]==activity)
+        if (ACTIVITY_PURPOSES[i]==activity)
             activityPurposeValue=i;           
         return activityPurposeValue;
     }
@@ -46,9 +48,9 @@ public final class ActivityPurpose{
     public static final char getActivityPurposeChar(short activityValue){
         char activity = '-';
 
-        for(short i=0;i<ACTIVITY_PURPOSE.length;i++){
-            if(activityValue == getActivityPurposeValue(ACTIVITY_PURPOSE[i])){
-                activity = ACTIVITY_PURPOSE[i];
+        for(short i=0;i<ACTIVITY_PURPOSES.length;i++){
+            if(activityValue == getActivityPurposeValue(ACTIVITY_PURPOSES[i])){
+                activity = ACTIVITY_PURPOSES[i];
                 break;
             }
         }
@@ -82,23 +84,5 @@ public final class ActivityPurpose{
         }
         return segments;
     }
-    public static String getMCLogsumMatrixName(int purpose, int segment){
-        //char actPurpose = ACTIVITY_PURPOSE[purpose];
-        //logger.fine("purpose: "+actPurpose);
 
-        //logger.fine("segment: "+segment);
-        if(purpose==WORK||purpose==SCHOOL){
-            String name = new String(String.valueOf(ACTIVITY_PURPOSE[purpose])+String.valueOf(segment)+"ls.zip");
-            return name;
-        }
-        else {
-            String name = new String(ACTIVITY_PURPOSE[purpose]+"ls.zip");
-            return name;
-        }
-    }
-    
-    public static void main(String[] args){
-        logger.fine("name: "+ActivityPurpose.getMCLogsumMatrixName(1,3));
-        
-    }
 }

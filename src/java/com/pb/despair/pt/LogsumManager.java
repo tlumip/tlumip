@@ -45,7 +45,7 @@ public class LogsumManager implements Serializable{
             //loop through activity purposes, updating work activity logsums
             for(int i=0;i<ActivityPurpose.TOTAL_ACTIVITIES;++i){
                 if(i==ActivityPurpose.WORK||i==ActivityPurpose.WORK_BASED)
-                    logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSE[i],workSegment);
+                    logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSES[i],workSegment);
                 currentWorkSegment=workSegment;
             }
          }
@@ -56,7 +56,7 @@ public class LogsumManager implements Serializable{
             //loop through activity purposes, updating non-work activity logsums
             for(int i=0;i<ActivityPurpose.TOTAL_ACTIVITIES;++i){
                 if(i!=ActivityPurpose.WORK && i!=ActivityPurpose.WORK_BASED && i!=ActivityPurpose.HOME)
-                    logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSE[i],nonWorkSegment);
+                    logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSES[i],nonWorkSegment);
                     currentNonWorkSegment=nonWorkSegment;
                 }         
             }
@@ -72,7 +72,7 @@ public class LogsumManager implements Serializable{
         //loop through activity purposes, updating non-work activity logsums
         for(int i=0;i<ActivityPurpose.TOTAL_ACTIVITIES;++i){
             if(i!=ActivityPurpose.WORK && i!=ActivityPurpose.WORK_BASED && i!=ActivityPurpose.HOME)
-                logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSE[i],nonWorkSegment);
+                logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSES[i],nonWorkSegment);
         }
          if(debug) logger.fine("Free memory after updating logsums: "+Runtime.getRuntime().freeMemory());
 
@@ -86,7 +86,7 @@ public class LogsumManager implements Serializable{
         //loop through activity purposes, updating work activity logsums
         for(int i=0;i<ActivityPurpose.TOTAL_ACTIVITIES;++i){
             if(i==ActivityPurpose.WORK||i==ActivityPurpose.WORK_BASED)
-                logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSE[i],workSegment);
+                logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSES[i],workSegment);
         }
      }
 

@@ -20,7 +20,7 @@ public class TourDestinationParametersData {
     boolean debug = false;
      String tourDestinationParametersTableName="TourDestinationParameters";
 
-     private TourDestinationParameters tourDestinationParameters[][] = new TourDestinationParameters[ActivityPurpose.ACTIVITY_PURPOSE.length][];
+     private TourDestinationParameters tourDestinationParameters[][] = new TourDestinationParameters[ActivityPurpose.ACTIVITY_PURPOSES.length][];
      public TourDestinationParameters getParameters(int activityPurpose, int segment){
         //work segments 1,2,3, and 4 are stored in array positions 0,1,2,3 respectively
         //Same for schools segments.  that is why [segment-1]
@@ -99,7 +99,7 @@ public class TourDestinationParametersData {
 //        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
          TourDestinationParametersData tdpd = new TourDestinationParametersData();
          tdpd.readData(rb, "tourDestinationParameters.file");
-         for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSE.length;i++){
+         for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSES.length;i++){
             int length = tdpd.tourDestinationParameters[i].length;
             System.out.println("purpose " + ActivityPurpose.getActivityPurposeChar((short)i));
             for(int j=1;j<=length;j++){

@@ -125,13 +125,14 @@ public class PTModelInputs extends ModelComponent implements Serializable{
         dcLogsums.readBinaryDCLogsums(rb);
     }
     
-    public void readSkims(){
+    public void readSkims(ResourceBundle globalRb){
         
         //only read in if they haven't been read in already
         if(skims==null){
 
             //read skims into memory
-            skims = new SkimsInMemory();
+            skims = new SkimsInMemory(globalRb); //global Rb sets some skim definitions such
+                                                //as walk speed and peak times.
             skims.readSkims(rb);
         }
         //logger.fine("Size of skims: "+ObjectUtil.sizeOf(skims));

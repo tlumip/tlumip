@@ -138,7 +138,7 @@ public class PersonTourModeAttributes {
         destinationZone=thisTour.primaryDestination.location.zoneNumber;
      
         primaryDuration=thisTour.primaryDestination.duration;
-        tourPurpose=ActivityPurpose.ACTIVITY_PURPOSE[thisTour.primaryDestination.activityPurpose];
+        tourPurpose=ActivityPurpose.ACTIVITY_PURPOSES[thisTour.primaryDestination.activityPurpose];
      
           if(thisTour.iStopsCheck(1,thisTour.tourString)==1)
                totalStops=1;

@@ -1014,7 +1014,7 @@ public class PTSummarizer {
             pw.println("Total Tour Distance by purpose and mode");
             pw.println(",driver,passenger,walk,bike,wtransit,transitp,ptransit,dtransit,totals");
             for(int s=0;s<purposeModeDist.length;s++){
-                pw.println(ActivityPurpose.ACTIVITY_PURPOSE[s+1]+","+purposeDistString[s]);
+                pw.println(ActivityPurpose.ACTIVITY_PURPOSES[s+1]+","+purposeDistString[s]);
             }
             pw.println("totals,"+purposeDistString[purposeDistString.length-1]);
 
@@ -1025,7 +1025,7 @@ public class PTSummarizer {
             pw.println("Tour Frequency by purpose and mode");
             pw.println(",driver,passenger,walk,bike,wtransit,transitp,ptransit,dtransit,totals");
             for(int s=0;s<purposeMode.length;s++){
-                pw.println(ActivityPurpose.ACTIVITY_PURPOSE[s+1]+","+purposeString[s]);
+                pw.println(ActivityPurpose.ACTIVITY_PURPOSES[s+1]+","+purposeString[s]);
             }
             pw.println("totals,"+purposeString[purposeString.length-1]);
 
@@ -1036,7 +1036,7 @@ public class PTSummarizer {
             pw.println("Average Tour Distance by purpose and mode");
             pw.println(",driver,passenger,walk,bike,wtransit,transitp,ptransit,dtransit,averages");
             for(int s=0;s<purposeModeAvgDist.length;s++){
-                pw.println(ActivityPurpose.ACTIVITY_PURPOSE[s+1]+","+purposeModeAvgString[s]);
+                pw.println(ActivityPurpose.ACTIVITY_PURPOSES[s+1]+","+purposeModeAvgString[s]);
             }
             pw.println("averages,"+purposeModeAvgString[purposeModeAvgString.length-1]);
 
@@ -1079,7 +1079,7 @@ public class PTSummarizer {
                 pw.println();
                 pw.println();
 
-                pw.println("Total Tour Distance by non-work segment and mode - Purpose " + ActivityPurpose.ACTIVITY_PURPOSE[p+2]);
+                pw.println("Total Tour Distance by non-work segment and mode - Purpose " + ActivityPurpose.ACTIVITY_PURPOSES[p+2]);
                 pw.println(",driver,passenger,walk,bike,wtransit,transitp,ptransit,dtransit,totals");
                 for(int s=0; s<nwSegMode[0].length; s++){
                     pw.println(s+"," + nwDistString[p][s]);
@@ -1089,7 +1089,7 @@ public class PTSummarizer {
                 pw.println();
                 pw.println();
 
-                pw.println("Tour Frequency by non-work segment and mode - Purpose " + ActivityPurpose.ACTIVITY_PURPOSE[p+2] );
+                pw.println("Tour Frequency by non-work segment and mode - Purpose " + ActivityPurpose.ACTIVITY_PURPOSES[p+2] );
                 pw.println(",driver,passenger,walk,bike,wtransit,transitp,ptransit,dtransit,totals");
                 for(int s=0; s<nwSegMode[0].length;s++){
                     pw.println(s+","+nwString[p][s]);
@@ -1099,7 +1099,7 @@ public class PTSummarizer {
                 pw.println();
                 pw.println();
 
-                pw.println("Average Tour Distance by non-work segment and mode - Purpose " + ActivityPurpose.ACTIVITY_PURPOSE[p+2]);
+                pw.println("Average Tour Distance by non-work segment and mode - Purpose " + ActivityPurpose.ACTIVITY_PURPOSES[p+2]);
                 pw.println(",driver,passenger,walk,bike,wtransit,transitp,ptransit,dtransit,totals");
                 for(int s=0; s<nwSegMode[0].length;s++){
                     pw.println(s+","+nwAvgString[p][s]);
@@ -1124,7 +1124,7 @@ public class PTSummarizer {
             pw.println("Non-work Trips by non-work segment and mode");
             for(int p=0; p<nwTripString.length; p++){
                 pw.println();
-                pw.println("Purpose " + ActivityPurpose.ACTIVITY_PURPOSE[p+2]+" - Total trips in table: " + nwTripSum[p]);
+                pw.println("Purpose " + ActivityPurpose.ACTIVITY_PURPOSES[p+2]+" - Total trips in table: " + nwTripSum[p]);
                 pw.println(",driver,passenger,walk,bike,wtransit,transitp,ptransit,dtransit,driveAlone,shared2,shared3+");
                 for(int s=0;s<nwTripString[0].length; s++){
                     pw.println(s+","+nwTripString[p][s]);

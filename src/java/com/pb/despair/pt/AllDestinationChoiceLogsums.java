@@ -21,9 +21,8 @@ import java.util.logging.Logger;
 public class AllDestinationChoiceLogsums {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");    
     
-    static final int TOTALSEGMENTS = 9;
-    static final int TOTALPURPOSES = 7;
-    static final String[] purposes = {/*"w1","w2","w3","w4",*/"c1","c2","c3","s","r","o","b"};  //work,school,shop,recreate,other,workbased
+    static final int TOTALSEGMENTS = PTHousehold.NUM_WORK_SEGMENTS;
+
     static final String dcTableName="DC LOGSUMS";
     MatrixCollection mc;
     boolean debug = false;
@@ -35,10 +34,10 @@ public class AllDestinationChoiceLogsums {
          if(debug) logger.info("dcLogsumFile: "+dcLogsumFile);
 
          mc = new MatrixCollection();
-         for(int purpose=0;purpose<TOTALPURPOSES;purpose++){
+         for(int purpose=0;purpose<ActivityPurpose.DC_LOGSUM_PURPOSES.length;purpose++){
              for(int segment=0;segment<TOTALSEGMENTS;segment++){
                  MatrixReader reader = MatrixReader.createReader(MatrixType.ZIP, new File(dcLogsumFile
-                                                                +purposes[purpose]+segment+"dcls.zip"));
+                                                                +ActivityPurpose.DC_LOGSUM_PURPOSES[purpose]+segment+"dcls.zip"));
                  Matrix m = reader.readMatrix();
                  mc.addMatrix(m);
                  if(debug) logger.info("matrix name: "+m.getName()+".zip");
@@ -51,10 +50,10 @@ public class AllDestinationChoiceLogsums {
          if(debug) logger.info("dcLogsumFile: "+dcLogsumFile);
 
          mc = new MatrixCollection();
-         for(int purpose=0;purpose<TOTALPURPOSES;purpose++){
+         for(int purpose=0;purpose<ActivityPurpose.DC_LOGSUM_PURPOSES.length;purpose++){
              for(int segment=0;segment<TOTALSEGMENTS;segment++){
                  MatrixReader reader = MatrixReader.createReader(MatrixType.BINARY, new File(dcLogsumFile
-                                                                +purposes[purpose]+segment+"dcls.binary"));
+                                                                +ActivityPurpose.DC_LOGSUM_PURPOSES[purpose]+segment+"dcls.binary"));
                  Matrix m = reader.readMatrix();
                  mc.addMatrix(m);
                  if(debug) logger.info("matrix name: "+m.getName()+".binary");

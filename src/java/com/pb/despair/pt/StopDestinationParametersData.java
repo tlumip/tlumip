@@ -22,7 +22,7 @@ public class StopDestinationParametersData {
      String stopDestinationParametersTableName="StopDestinationParameters";
      
      //a hashtable of taz objects
-     public StopDestinationParameters[] stopDestinationParameters = new StopDestinationParameters[ActivityPurpose.ACTIVITY_PURPOSE.length];
+     public StopDestinationParameters[] stopDestinationParameters = new StopDestinationParameters[ActivityPurpose.ACTIVITY_PURPOSES.length];
 
 
      public static TableDataSet loadTableDataSet(ResourceBundle rb, String fileName) {

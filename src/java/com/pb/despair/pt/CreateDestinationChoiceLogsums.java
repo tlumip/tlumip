@@ -29,9 +29,7 @@ import java.util.ResourceBundle;
 
 public class CreateDestinationChoiceLogsums {
 
-    static final int TOTALSEGMENTS = 9;
-    static final int TOTALPURPOSES = 7;
-    static final String[] purposes = {"c1","c2","c3","s","r","o","b"};  //work,school,shop,recreate,other,workbased
+
 
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
     boolean debug = false;
@@ -229,14 +227,15 @@ public class CreateDestinationChoiceLogsums {
     }
 
     public static void main (String[] args){
-        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/global.properties"));
         CreateDestinationChoiceLogsums createDCLogsums = new CreateDestinationChoiceLogsums();
 //      Read in TazData
         TazData tazs = new TazData();
         tazs.readData(rb,"tazData.file");
 
         //Read in SkimData
-        SkimsInMemory skims = new SkimsInMemory();
+        SkimsInMemory skims = new SkimsInMemory(globalRb);
         skims.readSkims(rb);
         //collapse employment categories for tazs
         logger.info("Collapsing employment");
@@ -258,7 +257,7 @@ public class CreateDestinationChoiceLogsums {
         //try{
           String columnName;
           logger.info("creating tour destination choice logsums");
-         
+          String[] purposes = {"c1","c2","c3","s","r","o","b"};  //work,school,shop,recreate,other,workbased
           for(int purpose=1;purpose<2/*purposes.length*/;++purpose){ 
               String thisPurpose=purposes[purpose];
                 

@@ -98,7 +98,7 @@ public class TripModeChoiceModel{
                          
           //set tour mode choice attributes
           TripModeParameters params = new TripModeParameters();
-          //char actPurpose = ActivityPurpose.ACTIVITY_PURPOSE[thisTour.primaryDestination.activityPurpose];
+          //char actPurpose = ActivityPurpose.ACTIVITY_PURPOSES[thisTour.primaryDestination.activityPurpose];
           params = (TripModeParameters) allParams.getTripModeParameters(thisTour.primaryDestination.activityPurpose);
                
 

@@ -64,11 +64,11 @@ public class Taz implements Alternative, Cloneable{
      public double utility;
      float retailEmploymentWithin30MinutesTransit;
 
-     double[][] tourSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSE.length][];
-     double[] stopSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSE.length];
+     double[][] tourSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSES.length][];
+     double[] stopSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSES.length];
 
-    double[][] tourLnSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSE.length][];
-    double[] stopLnSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSE.length];
+    double[][] tourLnSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSES.length][];
+    double[] stopLnSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSES.length];
 
     double constant;
     double expConstant;
@@ -247,8 +247,8 @@ public class Taz implements Alternative, Cloneable{
         float sizeTerm;
         //start at 1 because don't need for home
         //TODO fix this segment thing
-        for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSE.length;i++){
-            int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSE[i]);
+        for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSES.length;i++){
+            int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSES[i]);
             for(int segmentMinusOne=0;segmentMinusOne<ActivityPurpose.getDCSegments(purpose);segmentMinusOne++){
                 destParams = (TourDestinationParameters) tdpd.getParameters(purpose,segmentMinusOne+1);
                 sizeTerm = (destParams.retail           * retail
@@ -274,8 +274,8 @@ public class Taz implements Alternative, Cloneable{
     public void setStopSizeTerms(StopDestinationParametersData sdpd){
         StopDestinationParameters stopdestinationparameters = new StopDestinationParameters();
         float sizeTerm;
-        for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSE.length;i++){
-            int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSE[i]);
+        for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSES.length;i++){
+            int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSES[i]);
         	stopdestinationparameters = 
                 (StopDestinationParameters) sdpd.stopDestinationParameters[purpose];
             
@@ -386,10 +386,10 @@ public class Taz implements Alternative, Cloneable{
                     logger.info("TAZ #: " + zoneNumber);
                     logger.info("TAZ acres: " + acres);
                     logger.info("TAZ tour size terms");
-                    for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSE.length;i++){
-                        int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSE[i]);
+                    for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSES.length;i++){
+                        int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSES[i]);
                         String output = new String();
-                        output = ActivityPurpose.ACTIVITY_PURPOSE[i] + ": \t";
+                        output = ActivityPurpose.ACTIVITY_PURPOSES[i] + ": \t";
                         for(int segmentMinusOne=0;segmentMinusOne<ActivityPurpose.getDCSegments(purpose);segmentMinusOne++){
                             output += tourSizeTerm[purpose][segmentMinusOne] + "\t";
                         }

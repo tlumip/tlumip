@@ -39,7 +39,7 @@ public class LaborFlows implements Serializable{
     public static MatrixCollection alphaProduction;
     public static MatrixCollection alphaConsumption;
     
-    final static double dispersionParameter = 0.54;
+    static double dispersionParameter = 0.54; //this is the default value but it is also set in the properties file
     
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
     static boolean debug = false;
@@ -47,6 +47,7 @@ public class LaborFlows implements Serializable{
 
     public LaborFlows(ResourceBundle rb){
         this.rb = rb;
+        dispersionParameter = Double.parseDouble(ResourceUtil.getProperty(rb,"labor.flow.dispersion.parameter"));
     }
 
     public void setZoneMap(TableDataSet table){
