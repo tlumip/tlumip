@@ -173,15 +173,15 @@ public class PTHousehold implements Comparable, Serializable{
          return   (calcNonWorkLogsumSegment()*10)+calcWorkLogsumSegment();
      }
      /* to sort households, use a composite of worker segment
-        and nonworker segment xx = 10*worksegment+nonworksegment
+        and nonworker segment xx = 10*nonworksegment+worksegment
      */
      
      public int compareTo(Object household){
      	  
           PTHousehold h = (PTHousehold)household;
 
-              int cs = (h.calcWorkLogsumSegment()*10)+h.calcNonWorkLogsumSegment();
-              compositSegment = (byte)((this.calcWorkLogsumSegment()*10)+this.calcNonWorkLogsumSegment());
+              int cs = (h.calcNonWorkLogsumSegment()*10)+h.calcWorkLogsumSegment();
+              compositSegment = (byte)((this.calcNonWorkLogsumSegment()*10)+this.calcWorkLogsumSegment());
     
               if(compositSegment<cs) return -1;
               else if(compositSegment>cs) return 1;
