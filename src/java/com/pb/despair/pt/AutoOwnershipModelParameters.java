@@ -6,7 +6,7 @@ import com.pb.common.util.ResourceUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /** A class that contains parameters for the Auto Ownership Model
@@ -14,10 +14,9 @@ import java.util.logging.Logger;
  * @author Joel Freedman
  */
 public class AutoOwnershipModelParameters {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");      
+    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.AutoOwnershipModelParameters");
      String autoOwnershipParametersTableName="AutoOwnershipParameters";
-    boolean debug = false;
-    
+
     public double auto0Con;
     public double hhsize10;
     public double hhsize20;
@@ -92,7 +91,7 @@ public class AutoOwnershipModelParameters {
                TableDataSet table = reader.readFile(new File(file));
                return table;
             } catch (IOException e) {
-               logger.severe("Can't find Patterns input table " + fileName);
+               logger.fatal("Can't find Patterns input table " + fileName);
                e.printStackTrace();
               }
             return null;
@@ -100,7 +99,9 @@ public class AutoOwnershipModelParameters {
          
         public void readData(ResourceBundle rb, String fileName){
           
-            if(debug) logger.fine("Getting table: "+fileName);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Getting table: "+fileName);
+            }
             TableDataSet table = loadTableDataSet(rb, fileName);
          
             for(int rowNumber=1;rowNumber<=table.getRowCount();rowNumber++) {

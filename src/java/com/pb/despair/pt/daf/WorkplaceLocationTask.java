@@ -12,7 +12,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.Date;
 
 import com.pb.common.daf.Message;
@@ -105,8 +105,10 @@ public class WorkplaceLocationTask  extends MessageProcessingTask{
          */
         public void createLaborFlowMatrix(Message msg) {
             //getting message information
-            logger.fine("Free memory before creating labor flow matrix: " +
+            if(logger.isDebugEnabled()) {
+                logger.debug("Free memory before creating labor flow matrix: " +
                 Runtime.getRuntime().freeMemory());
+            }
 
 
             Integer occupation = (Integer) msg.getValue("occupation");
@@ -128,8 +130,10 @@ public class WorkplaceLocationTask  extends MessageProcessingTask{
             laborFlowMessage.setId(MessageID.WORKPLACE_LOCATIONS_CALCULATED);
             laborFlowMessage.setValue("persons", persons);
             sendTo("TaskMasterQueue", laborFlowMessage);
-            logger.fine("Free memory after creating labor flow matrix: " +
+            if(logger.isDebugEnabled()) {
+                logger.debug("Free memory after creating labor flow matrix: " +
                 Runtime.getRuntime().freeMemory());
+            }
             m = null;
         }
 

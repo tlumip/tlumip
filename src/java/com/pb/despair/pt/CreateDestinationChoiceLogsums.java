@@ -9,7 +9,7 @@ import com.pb.common.model.LogitModel;
 import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.SkimsInMemory;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.ArrayList;
 
 import java.io.File;
@@ -32,7 +32,6 @@ public class CreateDestinationChoiceLogsums {
 
 
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
-    boolean debug = false;
     
     LogitModel tourDCModel;
     SkimsInMemory skims;
@@ -255,7 +254,6 @@ public class CreateDestinationChoiceLogsums {
         tazs.collapseEmployment(tdp,sdp);
         
         //try{
-          String columnName;
           logger.info("creating tour destination choice logsums");
           String[] purposes = {"c1","c2","c3","s","r","o","b"};  //work,school,shop,recreate,other,workbased
           for(int purpose=1;purpose<2/*purposes.length*/;++purpose){ 

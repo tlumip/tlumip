@@ -13,7 +13,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixType;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.File;
@@ -102,7 +102,9 @@ public class ImportEmme2Matrices {
         *
         */
         
-        logger.fine("Getting TAZ count from "+eName[0]);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Getting TAZ count from "+eName[0]);
+        }
         InTextFile tazCountText = new InTextFile();    
         tazCountText.open(eName[0]);
        
@@ -136,7 +138,6 @@ public class ImportEmme2Matrices {
                while(inToken.hasMoreTokens()){
                     ++sequentialTaz;
                     int colNumber = new Integer(inToken.nextToken()).intValue();
-                    float value = new Float(inToken.nextToken()).floatValue();
                     lookup[sequentialTaz]=colNumber;
                     logger.info("setting row1["+sequentialTaz+"]="+colNumber);
                }

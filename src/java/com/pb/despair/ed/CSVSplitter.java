@@ -11,7 +11,7 @@ package com.pb.despair.ed;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.Vector;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
@@ -44,7 +44,7 @@ public class CSVSplitter  {
 		collection = new float[dataSet.getRowCount()];
 	}catch (IOException e)
 	{
-		logger.severe("Could not read data file!");
+		logger.fatal("Could not read data file!");
 		//Debug.println("Could not read data file!");
 		e.printStackTrace();
 		return;
@@ -84,7 +84,7 @@ public class CSVSplitter  {
 								dataSet.getStringValueAt(i, dataSet.getColumnCount()), 
 								false);
 			ed.startModel();
-			eda = ed.getEDDataAccess();
+			eda = EDControl.getEDDataAccess();
 			tmpVal = (float)eda.getValue(dataSet.getStringValueAt(i,2));
 		}
 
@@ -119,8 +119,7 @@ public class CSVSplitter  {
         (new CSVFileWriter()).writeFile(outSet, outfile, new DecimalFormat("#.##########"));
 	}catch (IOException e)
 	{
-			logger.severe("Problem working with the outfile");
-			//Debug.println("Problem reading in the outfile");
+			logger.fatal("Problem working with the outfile");
 			e.printStackTrace();
 			return;
 	}

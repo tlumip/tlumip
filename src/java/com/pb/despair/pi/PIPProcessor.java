@@ -12,7 +12,7 @@ import com.pb.common.sql.JDBCConnection;
 import com.pb.despair.model.*;
 
 import java.util.*;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.*;
 
 /**
@@ -146,7 +146,11 @@ public class PIPProcessor {
     protected void setUpProductionActivities() {
         logger.info("Setting up Production Activities");
         boolean logitProduction = (ResourceUtil.getProperty(piRb, "pi.useLogitProduction").equalsIgnoreCase("true"));
-        if (logitProduction) logger.fine("using logit substitution production function");
+        if (logitProduction) {
+            if(logger.isDebugEnabled()) {
+                logger.debug("using logit substitution production function");
+            }
+        }
         int numMissingZonalValueErrors = 0;
         TableDataSet ptab = null;
         TableDataSet zonalData = null;
@@ -173,7 +177,9 @@ public class PIPProcessor {
 
         for (int pRow = 1; pRow <= ptab.getRowCount(); pRow++) {
             String activityName = ptab.getStringValueAt(pRow, "Activity");
-            logger.fine("Setting up production activity " + activityName);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Setting up production activity " + activityName);
+            }
             AggregateActivity aa =
                     new AggregateActivity(activityName, zones);
             aa.setLocationDispersionParameter(ptab.getValueAt(pRow, "LocationDispersionParameter"));
@@ -209,11 +215,11 @@ public class PIPProcessor {
 
                 } else {
                     if (++numMissingZonalValueErrors < 20) {
-                        logger.warning("Can't locate zonal data for AggregateActivity "+ aa
+                        logger.warn("Can't locate zonal data for AggregateActivity "+ aa
                                 + " zone "+ zones[z].getZoneUserNumber()
                                 + " using size term 1.0, quantity 0.0, location ASC 0.0");
                     }
-                    if (numMissingZonalValueErrors == 20) logger.warning("Surpressing further errors on missing zonal data");
+                    if (numMissingZonalValueErrors == 20) logger.warn("Surpressing further errors on missing zonal data");
                     aa.setDistribution(zones[z], 0.0, 1.0, 0.0);
                 }
             }
@@ -348,7 +354,7 @@ public class PIPProcessor {
                     Integer pecasZoneInteger = new Integer(pecasZoneInt);
                     floorspaceZoneCrossref.put(floorspaceZone,pecasZoneInteger);
                 } else {
-                    logger.warning("Bad spatial IO zone number "+pecasZoneInt+" in FloorspaceZonesI ... ignoring land use zone "+floorspaceZone.intValue());
+                    logger.warn("Bad spatial IO zone number "+pecasZoneInt+" in FloorspaceZonesI ... ignoring land use zone "+floorspaceZone.intValue());
                 }
             }
         } else {
@@ -416,7 +422,7 @@ public class PIPProcessor {
         int priceColumn = exchanges.getColumnPosition("Price");
         if (priceColumn == -1) logger.info("No price data in ExchangeImportExport table");
         int monitorColumn = exchanges.getColumnPosition("MonitorExchange");
-        if (monitorColumn == -1) logger.warning("No MonitorExchange column in ExchangeImportExport table -- not monitoring any exchanges");
+        if (monitorColumn == -1) logger.warn("No MonitorExchange column in ExchangeImportExport table -- not monitoring any exchanges");
         for (int row = 1; row <= exchanges.getRowCount(); row++) {
             String key = exchanges.getStringValueAt(row, "Commodity") + "$" + String.valueOf((int) exchanges.getValueAt(row, "ZoneNumber"));
             ExchangeInputData ex = new ExchangeInputData();
@@ -460,8 +466,8 @@ public class PIPProcessor {
         while (comit.hasNext()) {
             Commodity c = (Commodity) comit.next();
             for (int z = 0; z < zones.length; z++) {
-                SellingZUtility szu = new SellingZUtility(c, zones[z], zones.length, c.getCommodityTravelPreferences());
-                BuyingZUtility bzu = new BuyingZUtility(c, zones[z], zones.length, c.getCommodityTravelPreferences());
+                SellingZUtility szu = new SellingZUtility(c, zones[z],  c.getCommodityTravelPreferences());
+                BuyingZUtility bzu = new BuyingZUtility(c, zones[z], c.getCommodityTravelPreferences());
                 szu.setDispersionParameter(c.getDefaultSellingDispersionParameter());
                 bzu.setDispersionParameter(c.getDefaultBuyingDispersionParameter());
                 String key = c.name + "$" + zones[z].getZoneUserNumber();
@@ -474,7 +480,7 @@ public class PIPProcessor {
                     if (exData == null) {
                         found = false;
                     } else {
-                        logger.finer("Using default exchange data for commodity " + c + " zone " + zones[z].getZoneUserNumber());
+                        logger.info("Using default exchange data for commodity " + c + " zone " + zones[z].getZoneUserNumber());
                     }
                 }
                 boolean specifiedExchange = false;
@@ -489,9 +495,9 @@ public class PIPProcessor {
                         xc = new Exchange(c, zones[z], zones.length);
                     if (!found) {//backup default data.
                         if (++numExchangeNotFoundErrors < 20)
-                            logger.warning("Can't locate size term for Commodity " + c + " zone " +
+                            logger.warn("Can't locate size term for Commodity " + c + " zone " +
                                     zones[z].getZoneUserNumber() + " using 1.0 for size terms and setting imports/exports to zero");
-                        if (numExchangeNotFoundErrors == 20) logger.warning("Surpressing further warnings on missing size terms");
+                        if (numExchangeNotFoundErrors == 20) logger.warn("Surpressing further warnings on missing size terms");
                         xc.setBuyingSizeTerm(1.0);
                         xc.setSellingSizeTerm(1.0);
                         xc.setImportFunction(Commodity.zeroFunction);
@@ -519,9 +525,15 @@ public class PIPProcessor {
                     if (c.exchangeType == 'c' || c.exchangeType == 'a' || c.exchangeType == 'n') bzu.addExchange(xc);
                 }
             }
-            logger.fine("Created all exchanges for commodity " + c + " -- now linking exchanges to production and consumption for " + zones.length + " zones");
+            if(logger.isDebugEnabled()) {
+                logger.debug("Created all exchanges for commodity " + c + " -- now linking exchanges to production and consumption for " + zones.length + " zones");
+            }
             for (int z = 0; z < zones.length; z++) {
-                if (z % 100 == 0) logger.finer(" " + z + "(" + zones[z].getZoneUserNumber() + ")");
+                if (z % 100 == 0) {
+                    if(logger.isDebugEnabled()) {
+                        logger.debug(" " + z + "(" + zones[z].getZoneUserNumber() + ")");
+                    }
+                }
                 if (c.exchangeType == 'c' || c.exchangeType == 's' || c.exchangeType == 'a') {
                     CommodityZUtility czu = (CommodityZUtility) c.sellingTazZUtilities.get(zones[z]);
 //                    CommodityZUtility czu = (CommodityZUtility) zones[z].getSellingCommodityZUtilities().get(c); // get the selling zutility again
@@ -541,10 +553,10 @@ public class PIPProcessor {
         logger.info("Getting Exchange Prices");
         TableDataSet initialPrices = loadTableDataSet("ExchangeResultsI","pi.current.data");
         if (initialPrices == null) {
-            logger.warning("No special price data for current year, check for previous year prices");
+            logger.info("No special price data for current year, check for previous year prices");
             initialPrices = loadTableDataSet("ExchangeResults","pi.previous.data");
             if(initialPrices == null){
-                logger.warning("No previous year ExchangeResults to get prices from");
+                logger.error("No previous year ExchangeResults to get prices from");
                 return;
             }
             logger.info("ExchangeResults from the previous year have been found");
@@ -553,19 +565,19 @@ public class PIPProcessor {
         int priceColumn = initialPrices.checkColumnPosition("Price");
         int zoneNumberColumn = initialPrices.checkColumnPosition("ZoneNumber");
         if (commodityNameColumn * priceColumn * zoneNumberColumn <= 0) {
-            logger.severe("Missing column in Exchange Results -- check for Commodity, Price and ZoneNumber columns.  Continuing without initial prices");
+            logger.fatal("Missing column in Exchange Results -- check for Commodity, Price and ZoneNumber columns.  Continuing without initial prices");
         }
         for (int row = 1; row <= initialPrices.getRowCount(); row++) {
             String cname = initialPrices.getStringValueAt(row, commodityNameColumn);
             Commodity com = Commodity.retrieveCommodity(cname);
             if (com == null) {
-                logger.severe("Invalid commodity name " + cname + " in exchange results input price table");
+                logger.fatal("Invalid commodity name " + cname + " in exchange results input price table");
             } else {
                 int zoneUserNumber = (int) initialPrices.getValueAt(row, zoneNumberColumn);
                 int zoneIndex = TAZ.findZoneByUserNumber(zoneUserNumber).getZoneIndex();
                 Exchange x = com.getExchange(zoneIndex);
                 if (x == null) {
-                    logger.warning("No exchange for " + cname + " in " + zoneUserNumber + " check price input file");
+                    logger.fatal("No exchange for " + cname + " in " + zoneUserNumber + " check price input file");
                 } else {
                     x.setPrice(initialPrices.getValueAt(row, priceColumn));
                 }
@@ -589,7 +601,7 @@ public class PIPProcessor {
                 TransportKnowledge.globalTransportKnowledge = someSkims;
                 someSkims.addTableDataSetSkims(s,skimNames,10000);
             } catch (IOException e) {
-                logger.severe("Error loading in skims");
+                logger.fatal("Error loading in skims");
                 e.printStackTrace();
             }
 
@@ -620,7 +632,7 @@ public class PIPProcessor {
                     Commodity c =
                             Commodity.retrieveCommodity(commodityName);
                     if (c == null) {
-                        logger.severe("Incorrect commodity name \""
+                        logger.fatal("Incorrect commodity name \""
                                 + commodityName
                                 + "\" in MakeUse.csv");
                         throw new RuntimeException("Incorrect commodity name \""
@@ -708,7 +720,7 @@ public class PIPProcessor {
 
         String inputPath = ResourceUtil.getProperty(piRb, source);
         if(inputPath == null){
-            logger.warning("Property '" + source + "' could not be found in ResourceBundle");
+            logger.fatal("Property '" + source + "' could not be found in ResourceBundle");
             return null;
         }
         TableDataSet table = null;
@@ -722,7 +734,8 @@ public class PIPProcessor {
                 table = reader.readFile(new File(fileName));
             }
         } catch (IOException e) {
-            logger.severe("Can't find input table " + fileName);
+            logger.fatal("Can't find input table " + fileName);
+            e.printStackTrace();
         }
         return table;
     }
@@ -757,7 +770,7 @@ public class PIPProcessor {
         logger.info("Reading Activity Size Terms");
         TableDataSet activitySizeTermsCalculation = loadTableDataSet("ActivitySizeTermsI","pi.base.data");
         if (activitySizeTermsCalculation == null) {
-            logger.warning("No ActivitySizeTermsI table, not recalculating activity size terms from floorspace quantities");
+            logger.warn("No ActivitySizeTermsI table, not recalculating activity size terms from floorspace quantities");
             return;
         }
         Set zeroedOutActivities = new HashSet();
@@ -765,7 +778,7 @@ public class PIPProcessor {
             String activityName = activitySizeTermsCalculation.getStringValueAt(row,"Activity");
             ProductionActivity a = ProductionActivity.retrieveProductionActivity(activityName);
             if (a==null) {
-                logger.severe("Bad production activity in zone constant calculation "+activityName);
+                logger.error("Bad production activity in zone constant calculation "+activityName);
                 throw new Error("Bad production activity in zone constant calculation "+activityName);
             }
             if (!zeroedOutActivities.contains(a)) {
@@ -776,7 +789,7 @@ public class PIPProcessor {
             String commodityName = activitySizeTermsCalculation.getStringValueAt(row,"Floorspace");
             Commodity c = Commodity.retrieveCommodity(commodityName);
             if (c==null)  {
-                logger.severe("Bad commodity name in zone constant calculation "+commodityName);
+                logger.error("Bad commodity name in zone constant calculation "+commodityName);
                 throw new Error("Bad commodity name in zone constant calculation "+commodityName);
             }
             FloorspaceQuantityStorage fsi = (FloorspaceQuantityStorage) floorspaceInventory.get(commodityName);
@@ -799,10 +812,10 @@ public class PIPProcessor {
         try {
             floorspaceSizeTermsCalculation = loadTableDataSet("FloorspaceBuyingSizeTermsI","pi.base.data");
         } catch (RuntimeException e) {
-            logger.warning("Exception loading floorspace buying size terms "+e);
+            logger.fatal("Exception loading floorspace buying size terms "+e);
         }
         if (floorspaceSizeTermsCalculation == null) {
-            logger.warning("No FloorspaceBuyingSizeTermsI table, not recalculating floorspace buying size terms from floorspace quantities");
+            logger.warn("No FloorspaceBuyingSizeTermsI table, not recalculating floorspace buying size terms from floorspace quantities");
             return;
         }
         Hashtable floorspaceGroups = new Hashtable();
@@ -860,7 +873,7 @@ public class PIPProcessor {
         logger.info("Getting Floorspace Params from Property file");
         String deltaString = ResourceUtil.getProperty(piRb,"pi.floorspaceDelta");
         if (deltaString ==null) {
-            logger.warning("No pi.floorspaceDelta entry in properties file -- not calculating floorspace import from floorspace inventory");
+            logger.warn("No pi.floorspaceDelta entry in properties file -- not calculating floorspace import from floorspace inventory");
             return;
         }
         double delta=Double.valueOf(deltaString).doubleValue();
@@ -924,7 +937,7 @@ public class PIPProcessor {
             logger.info("ExchangeResults.csv has been written");
             exchangeResults.close();
         } catch (IOException e) {
-            logger.severe("Can't create exchange results output file");
+            logger.fatal("Can't create exchange results output file");
             e.printStackTrace();
         }
     }
@@ -949,7 +962,7 @@ public class PIPProcessor {
             }
             exchangeResults.close();
         } catch (IOException e) {
-            logger.severe("Can't create exchange results output file for commodity "+commodityName);
+            logger.fatal("Can't create exchange results output file for commodity "+commodityName);
             e.printStackTrace();
         }
     }
@@ -1061,7 +1074,7 @@ public class PIPProcessor {
                 try {
                     skim =((SomeSkims) TransportKnowledge.globalTransportKnowledge).getMatrix(hspec.categorizationSkim);
                 } catch (RuntimeException e) {
-                    logger.warning("Can't find skim name "+hspec.categorizationSkim+" in existing skims -- attempting to read it separately");
+                    logger.fatal("Can't find skim name "+hspec.categorizationSkim+" in existing skims -- attempting to read it separately");
                 }
                 if (skim==null) {
                     // try to read it in.
@@ -1079,7 +1092,7 @@ public class PIPProcessor {
                     mhBuying.writeHistogram(commodityName,"buying", histogramFile);
                     mhSelling.writeHistogram(commodityName,"selling", histogramFile);
                 } catch (IOException e) {
-                    logger.warning("IO exception "+e+" in writing out histogram file for "+this);
+                    logger.fatal("IO exception "+e+" in writing out histogram file for "+this);
                     e.printStackTrace();
                 }
             }
@@ -1104,7 +1117,7 @@ public class PIPProcessor {
             }
             histogramFile.close();
        } catch (IOException e) {
-           logger.severe("Problems writing histogram output file "+e);
+           logger.fatal("Problems writing histogram output file "+e);
            e.printStackTrace();
        }
     }
@@ -1119,7 +1132,7 @@ public class PIPProcessor {
             }
             histogramFile.close();
         } catch (IOException e) {
-            logger.severe("Problems writing histogram output file "+e);
+            logger.fatal("Problems writing histogram output file "+e);
             e.printStackTrace();
          }
     }
@@ -1156,7 +1169,7 @@ public class PIPProcessor {
             consumptionFlows.close();
             productionFlows.close();
         } catch (IOException e) {
-            logger.severe("Error writing flow tables to disk");
+            logger.fatal("Error writing flow tables to disk");
             e.printStackTrace();
         }
     }
@@ -1193,7 +1206,7 @@ public class PIPProcessor {
             logger.info("ActivitySummary.csv has been written");
             activityFile.close();
         } catch (IOException e) {
-            logger.severe("Can't create location output file");
+            logger.fatal("Can't create location output file");
             e.printStackTrace();
         }
     }
@@ -1223,7 +1236,7 @@ public class PIPProcessor {
             logger.info("\tActivityLocations.csv has been written");
             locationsFile.close();
         } catch (IOException e) {
-            logger.severe("Can't create location output file");
+            logger.fatal("Can't create location output file");
             e.printStackTrace();
         }
     }
@@ -1347,7 +1360,7 @@ public class PIPProcessor {
                 zMakeUseFile.close();
             }
         } catch (Exception e) {
-            logger.severe("Can't create ZonalMakeUse output file");
+            logger.fatal("Can't create ZonalMakeUse output file");
             e.printStackTrace();
         }
         if (binary) {
@@ -1362,7 +1375,7 @@ public class PIPProcessor {
                     out.flush();
                     out.close();
                 } catch (java.io.IOException e) {
-                    logger.severe("Can't write out zonal make use binary file "+e);
+                    logger.fatal("Can't write out zonal make use binary file "+e);
                 }
             }
         }
@@ -1444,7 +1457,7 @@ public class PIPProcessor {
             logger.info("\tActivityLocations2.csv has been written");
             locationsFile.close();
         } catch (IOException e) {
-            logger.severe("Can't create location output file");
+            logger.fatal("Can't create location output file");
             e.printStackTrace();
         }
     }
@@ -1493,9 +1506,10 @@ public class PIPProcessor {
                                 os.write(czu.getUtility(czu.getLastHigherLevelDispersionParameter()) + "\n");
                             }
                             } catch (IOException e) {
-                                logger.fine("unable to write zUtility to file");
+                                logger.fatal("unable to write zUtility to file");
+                                e.printStackTrace();
                             } catch (ChoiceModelOverflowException e) {
-                                logger.warning("Overflow exception in calculating utility for CommodityZUtilityoutput " + this);
+                                logger.error("Overflow exception in calculating utility for CommodityZUtilityoutput " + this);
                             }
                         }
                     }
@@ -1503,7 +1517,7 @@ public class PIPProcessor {
                 logger.info("CommodityZUtilities.csv has been written");
                 os.close();
             } catch (IOException e) {
-                logger.severe("Can't create CommodityZUtilities output file");
+                logger.fatal("Can't create CommodityZUtilities output file");
                 e.printStackTrace();
             }
         }

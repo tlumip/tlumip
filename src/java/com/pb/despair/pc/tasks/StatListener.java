@@ -5,8 +5,7 @@ import com.pb.despair.pc.StatCache;
 import com.pb.despair.pc.StatKey;
 import com.pb.despair.pc.beans.StatisticBean;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** Processes application status messages.
  *
@@ -54,7 +53,7 @@ public class StatListener extends Task {
             statBean = (StatisticBean) msg.getValue( StatKey.STATISTIC_BEAN );
         }
         catch (RuntimeException e) {
-            logger.log(Level.SEVERE, "", e);
+            logger.fatal( "", e);
             return;
         }
 

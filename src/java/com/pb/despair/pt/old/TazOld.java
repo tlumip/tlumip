@@ -16,7 +16,7 @@ import com.pb.despair.pt.TourDestinationParametersData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 
@@ -596,7 +596,7 @@ public class TazOld implements Alternative{
      public double getUtility(){
           if(!hasUtility){
           	   Exception e = new Exception();
-               logger.severe("Error: Utility not calculated for zone "+zoneNumber+"\n");   
+               logger.fatal("Error: Utility not calculated for zone "+zoneNumber+"\n");
                e.printStackTrace();
                System.exit(1);
           };

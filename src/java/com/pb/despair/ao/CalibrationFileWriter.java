@@ -5,7 +5,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.CSVFileWriter;
 
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 
@@ -46,7 +46,9 @@ public class CalibrationFileWriter {
         for(int i=0; i< dataSets.length; i++){
             String fileName = ResourceUtil.getProperty(rb, (dataSets[i].getName()+ ".file"));
             String fullPath = outputPath+fileName;
-            logger.fine("Full path to output file is: " + fullPath);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Full path to output file is: " + fullPath);
+            }
             writeCalibrationOutputFile(fullPath, dataSets[i]);
         }
 

@@ -7,7 +7,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.matrix.AlphaToBeta;
-import com.pb.common.matrix.MatrixCollection;
 import com.pb.common.util.ResourceUtil;
 
 import com.pb.despair.model.ModeChoiceLogsums;
@@ -24,7 +23,7 @@ import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -221,8 +220,10 @@ public class HouseholdWorker extends MessageProcessingTask {
     }
 
     public void createMCLogsums(Message msg) {
-        logger.fine("Free memory before creating MC logsum: " +
+        if(logger.isDebugEnabled()) {
+            logger.debug("Free memory before creating MC logsum: " +
             Runtime.getRuntime().freeMemory());
+        }
 
         String purpose = String.valueOf(msg.getValue("purpose"));
         Integer segment = (Integer) msg.getValue("segment");
@@ -239,9 +240,11 @@ public class HouseholdWorker extends MessageProcessingTask {
         Matrix m = mcLogsumCalculator.setModeChoiceLogsumMatrix(PTModelInputs.tazs,
                 theseParameters, purpose.charAt(0), segment.intValue(),
                 PTModelInputs.getSkims(), new TourModeChoiceModel());
-        logger.fine("Created ModeChoiceLogsumMatrix in " +
+        if(logger.isDebugEnabled()) {
+            logger.debug("Created ModeChoiceLogsumMatrix in " +
             ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
-        
+        }
+
         //Collapse the required matrices
 
         if (matricesToCollapse.contains(purSeg)) {
@@ -298,8 +301,10 @@ public class HouseholdWorker extends MessageProcessingTask {
      */
     public void createLaborFlowMatrix(Message msg) {
         //getting message information
-        logger.fine("Free memory before creating labor flow matrix: " +
+        if(logger.isDebugEnabled()) {
+            logger.debug("Free memory before creating labor flow matrix: " +
             Runtime.getRuntime().freeMemory());
+        }
 
 
         Integer occupation = (Integer) msg.getValue("occupation");
@@ -323,8 +328,10 @@ public class HouseholdWorker extends MessageProcessingTask {
         laborFlowMessage.setId(MessageID.WORKPLACE_LOCATIONS_CALCULATED);
         laborFlowMessage.setValue("persons", persons);
         sendTo("TaskMasterQueue", laborFlowMessage);
-        logger.fine("Free memory after creating labor flow matrix: " +
+        if(logger.isDebugEnabled()) {
+            logger.debug("Free memory after creating labor flow matrix: " +
             Runtime.getRuntime().freeMemory());
+        }
         m = null;
     }
 
@@ -454,7 +461,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             firstHouseholdBlock = false;
         }
 
-        logger.fine(getName() + " free memory before running model: " +
+        logger.debug(getName() + " free memory before running model: " +
             Runtime.getRuntime().freeMemory());
 
         PTHousehold[] households = (PTHousehold[]) msg.getValue("households");
@@ -494,7 +501,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         int nwSegmentChange=0;
         int[] reads;
         for (int i = 0; i < households.length; i++) {
-            logger.fine("\t"+ getName() + " processing household: " + households[i].ID);
+            logger.debug("\t"+ getName() + " processing household: " + households[i].ID);
             thisNonWorkSegment = households[i].calcNonWorkLogsumSegment();
             thisWorkSegment = households[i].calcWorkLogsumSegment();
             long tempReadTime = System.currentTimeMillis();
@@ -503,7 +510,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             nwSegmentChange += reads[1];
             readTime += ((System.currentTimeMillis() - tempReadTime)/1000.0);
 
-            logger.fine("\t\t"+ getName() + " running WeekdayDurationDestinationModeChoiceModel");
+            logger.debug("\t\t"+ getName() + " running WeekdayDurationDestinationModeChoiceModel");
             returnValues = ptModel.runWeekdayDurationDestinationModeChoiceModels(households[i],
                     expUtilitiesManager);
             households[i] = (PTHousehold) returnValues.get(0);
@@ -548,7 +555,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         msg.setValue("households",households);
         msg.setValue("nHHs", new Integer(households.length));
         sendTo("ResultsWriterQueue", msg);
-//        logger.fine("Free memory after running model: " +
+//        logger.debug("Free memory after running model: " +
 //            Runtime.getRuntime().freeMemory());
     }
 
@@ -571,7 +578,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             return table;
             
         } catch (IOException e) {
-            logger.severe("Can't find input table "+path);
+            logger.fatal("Can't find input table "+path);
             e.printStackTrace();
         }
         return null;

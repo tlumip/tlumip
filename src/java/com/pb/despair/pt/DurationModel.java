@@ -2,7 +2,7 @@ package com.pb.despair.pt;
 
 import com.pb.common.math.MathUtil;
 import com.pb.common.util.SeededRandom;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** 
  * DurationModel takes a day-pattern, durationmodel 
@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 
 public class DurationModel{
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.DurationModel");
-    boolean debug = false;
      //attributes
      Pattern thisPattern;
      PersonDurationAttributes thisPersonAttributes = new PersonDurationAttributes();
@@ -133,11 +132,11 @@ public class DurationModel{
          double randomNumber=0;
 
 
-        if (debug) {
-            logger.finer("Expression:  "+expression);
-            logger.finer("Shape:  "+shape);
-            logger.finer("Min Random number:  "+minRandom);
-            logger.finer("Max Random number:  "+maxRandom);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Expression:  "+expression);
+            logger.debug("Shape:  "+shape);
+            logger.debug("Min Random number:  "+minRandom);
+            logger.debug("Max Random number:  "+maxRandom);
         }
 
         if(constrained){
@@ -147,7 +146,9 @@ public class DurationModel{
                         totalRandom+=SeededRandom.getRandom();
                    }
                    randomNumber=totalRandom/randomDraws;
-                   if(debug) logger.finer("Random number:  "+randomNumber);
+                   if(logger.isDebugEnabled()) {
+                       logger.debug("Random number:  "+randomNumber);
+                   }
               }while(randomNumber<minRandom || randomNumber>=maxRandom);
          }else{
               totalRandom=0;
@@ -155,7 +156,9 @@ public class DurationModel{
                    totalRandom+=SeededRandom.getRandom();
               }
               randomNumber=totalRandom/randomDraws;
-              if(debug) logger.finer("Random number:  "+randomNumber);
+              if(logger.isDebugEnabled()) {
+                  logger.debug("Random number:  "+randomNumber);
+              }
          }
           
           
@@ -163,9 +166,9 @@ public class DurationModel{
          double minutes = MathUtil.exp(expression + (epsilon*shape));
 
 
-        if (debug) {
-            logger.finer("Numerator: "+epsilon);
-            logger.finer("Minutes "+minutes);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Numerator: "+epsilon);
+            logger.debug("Minutes "+minutes);
         }
 
         return (new Double(minutes)).floatValue();
@@ -182,11 +185,11 @@ public class DurationModel{
           double randomNumber=0;
 
 
-         if (debug) {
-             logger.finer("Expression:  "+expression);
-             logger.finer("Shape:  "+shape);
-             logger.finer("Min Random number:  "+minRandom);
-             logger.finer("Max Random number:  "+maxRandom);
+         if(logger.isDebugEnabled()) {
+             logger.debug("Expression:  "+expression);
+             logger.debug("Shape:  "+shape);
+             logger.debug("Min Random number:  "+minRandom);
+             logger.debug("Max Random number:  "+maxRandom);
          }
 
          if(constrained){
@@ -196,7 +199,9 @@ public class DurationModel{
                          totalRandom+=SeededRandom.getRandom();
                     }
                     randomNumber=totalRandom/randomDraws;
-                    if(debug) logger.finer("Random number:  "+randomNumber);
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("Random number:  "+randomNumber);
+                    }
                }while(randomNumber<minRandom || randomNumber>=maxRandom);
           }else{
                totalRandom=0;
@@ -204,7 +209,9 @@ public class DurationModel{
                     totalRandom+=SeededRandom.getRandom();
                }
                randomNumber=totalRandom/randomDraws;
-               if(debug) logger.finer("Random number:  "+randomNumber);
+               if(logger.isDebugEnabled()) {
+                   logger.debug("Random number:  "+randomNumber);
+               }
           }
           
           
@@ -213,10 +220,10 @@ public class DurationModel{
           double minutes = Math.pow((-numerator/MathUtil.exp(denominator)),shape);
 
 
-         if (debug) {
-             logger.finer("Numerator: "+numerator);
-             logger.finer("Denominator: "+denominator);
-             logger.finer("Minutes "+minutes);
+         if(logger.isDebugEnabled()) {
+             logger.debug("Numerator: "+numerator);
+             logger.debug("Denominator: "+denominator);
+             logger.debug("Minutes "+minutes);
          }
 
          return (new Double(minutes)).floatValue();

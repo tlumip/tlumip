@@ -8,7 +8,7 @@ import com.pb.despair.model.Mode;
 import com.pb.despair.model.ModeType;
 
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 //import java.util.Iterator;
 import java.io.PrintWriter;
 import java.lang.RuntimeException;
@@ -397,13 +397,12 @@ public class Taz implements Alternative, Cloneable{
                         }
                         logger.info("\t" + output);
                     }
-                }else logger.severe("Stop Size Terms have not been set - this problem must be corrected before a summary can be " +
-                                    "produced");
-            }else logger.severe("Tour Size Terms have not been set - this problem must be corrected before a summary can be " +
-                                "produced");
-        }else logger.severe("Employment has not been collapsed - this problem must be corrected before a summary can be " +
+                }else logger.warn("Stop Size Terms have not been set - this problem must be corrected before a summary can be " +
                             "produced");
-        logger.info("");
+            }else logger.warn("Tour Size Terms have not been set - this problem must be corrected before a summary can be " +
+                                "produced");
+        }else logger.warn("Employment has not been collapsed - this problem must be corrected before a summary can be " +
+                            "produced");
         return;
     }
 

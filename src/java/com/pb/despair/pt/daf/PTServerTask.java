@@ -5,8 +5,6 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.BooleanLock;
 import com.pb.common.util.ObjectUtil;
 import com.pb.common.matrix.AlphaToBeta;
-import com.pb.despair.pi.*;
-import com.pb.despair.model.OverflowException;
 import com.pb.despair.pt.PTDataReader;
 import com.pb.despair.pt.PTHousehold;
 import com.pb.despair.pt.PTPerson;
@@ -16,7 +14,7 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.*;
 
 /**
@@ -177,7 +175,9 @@ public class PTServerTask extends Task{
         nHHMsg.setId(MessageID.NUM_OF_HHS);
         nHHMsg.setValue("nHHs", new Integer(households.length));
         SignalQueue.send(nHHMsg);
-        logger.fine("Size of households: " + ObjectUtil.sizeOf(households));
+        if(logger.isDebugEnabled()) {
+            logger.debug("Size of households: " + ObjectUtil.sizeOf(households));
+        }
 
         logger.info("Reading the Persons file");
         persons = dataReader.readPersons("persons.file");
@@ -264,7 +264,7 @@ public class PTServerTask extends Task{
         //to put all the households into a message array and send them off to the workers.  Instead we will send off
         //20 messages, with 5000 households each, to each workQueue with a 'sendMore' value set to 1 on the 18th message
         //which will be used to noticy the ServerTask to send another set of household messages.
-        msgs = createHHWorkMessages(mFactory, nWorkQueues);
+        msgs = createHHWorkMessages(nWorkQueues);
         sendWorkToWorkQueues(msgs, HHWorkPorts, nWorkQueues);
 
         logger.info("Total Time in seconds: "+((System.currentTimeMillis()-startTime)/1000));
@@ -342,7 +342,9 @@ public class PTServerTask extends Task{
         // persons back into the persons array and convert the
         //message list into an array of messages so that they can be distributed to
         //the workers.
-        logger.fine("Total unemployed persons: " + unemployedPersonList.size());
+        if(logger.isDebugEnabled()) {
+            logger.debug("Total unemployed persons: " + unemployedPersonList.size());
+        }
         Iterator iter = unemployedPersonList.iterator();
         while (iter.hasNext()){
             persons[nUnemployed-1] = (PTPerson) iter.next();  //the order doesn't matter so just start at
@@ -400,11 +402,10 @@ public class PTServerTask extends Task{
 
     }
 
-    private Message[] createHHWorkMessages(MessageFactory mFactory, int nWorkQueues){
+    private Message[] createHHWorkMessages(int nWorkQueues){
         Arrays.sort(households); //first sort by workLogsumSegment, nonWorkLogsumSegment
         int nMsgsPerQueue = 20;
         int blockSize = Math.min(Ref.MAX_BLOCK_SIZE, households.length); //might have less than 5000 households
-        int hhCount = 0;
         Message[] messages = new Message[nMsgsPerQueue * nWorkQueues];
         for(int m=0; m<(nMsgsPerQueue * nWorkQueues); m++){
             for(int i=0; i<blockSize; i++){

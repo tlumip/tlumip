@@ -134,7 +134,6 @@ public class CreateHomeLocationEstimationFile {
           
           //cycle through household ArrayList, generate random sample of 
           //tazs 
-          int notGeocoded=0;
           Iterator hhIterator = households.iterator();
           while(hhIterator.hasNext()){
                HomeLocationEstimationFileRecord thisHousehold=(HomeLocationEstimationFileRecord)hhIterator.next();
@@ -142,7 +141,6 @@ public class CreateHomeLocationEstimationFile {
                 //check if originTaz is within range; continue if not
                 if(thisHousehold.homeTaz==0||thisHousehold.homeTaz==9999||thisHousehold.homeTaz==99999||thisHousehold.homeTaz==3156||
                      thisHousehold.homeTaz==3185||thisHousehold.homeTaz==3186){
-                       ++notGeocoded;
                        continue;
                 }else if(debug && sampnoDebug==thisHousehold.sampno)
                      System.out.println("Home taz: "+thisHousehold.homeTaz);

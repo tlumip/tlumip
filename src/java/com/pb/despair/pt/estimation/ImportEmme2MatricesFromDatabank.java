@@ -17,8 +17,7 @@ import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixType;
 import com.pb.despair.pt.AlphaToBetaData;
 
-import java.util.logging.Logger;
-import java.io.FileNotFoundException;
+import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.io.File;
 import java.util.ResourceBundle;
@@ -106,13 +105,13 @@ public class ImportEmme2MatricesFromDatabank {
             TableDataSet table = reader.readFile(new File(fileName));
             return table;
         } catch (IOException e) {
-            logger.severe("Can't find taz to district file");
+            logger.fatal("Can't find taz to district file");
             e.printStackTrace();
         }
         return null;
     }
     
-    public static void main (String[] args) throws FileNotFoundException, IOException {
+    public static void main (String[] args) {
         System.out.println("Importing matrices from databank.");
         ResourceBundle rb = ResourceUtil.getResourceBundle( "pt" );
         String readPathName = ResourceUtil.getProperty(rb, "emme2reader.file");

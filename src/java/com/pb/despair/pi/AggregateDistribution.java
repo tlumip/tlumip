@@ -12,12 +12,9 @@ import com.pb.despair.model.*;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.logging.Logger;
 
 import mt.DiagMatrix;
-import mt.Matrix;
+import org.apache.log4j.Logger;
 
 /**
  * Attributes (and methods) that relate to a particular ProductionActivity in a particular zone.  Includes the quantity, net
@@ -96,7 +93,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
             productionUtility = pf.overallUtility(sellingCommodityUtilities);
             consumptionUtility = cf.overallUtility(buyingCommodityUtilities);
         } catch (InvalidZUtilityError e) {
-            logger.warning(this.toString());
+            logger.error(this.toString());
             throw e;
         }
         try {
@@ -108,7 +105,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
             w.write(getLocationSpecificUtilityInclTaxes() + ",");
             w.write(productionUtility + consumptionUtility + getLocationSpecificUtilityInclTaxes() + sizeTerm + "\n");
         } catch (IOException e) {
-            logger.severe("Error in writing commodityZUtilities");
+            logger.fatal("Error in writing commodityZUtilities");
             throw new RuntimeException(e);
         }
     }
@@ -160,7 +157,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
             productionUtility = pf.overallUtility(sellingCommodityUtilities); //this is the value alphaProd*CUProda,z
             consumptionUtility = cf.overallUtility(buyingCommodityUtilities); //this is the value of alphaCons*CUConsa,z
         } catch (InvalidZUtilityError e) {
-            logger.warning(this.toString());
+            logger.fatal(this.toString());
             throw e;
         }
         if (debug) {
@@ -210,11 +207,11 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
 
     public void setAggregateQuantityWithErrorTracking(double amount, double derivative) throws OverflowException {
         if (Double.isNaN(amount) || Double.isInfinite(amount)) {
-            logger.severe("amount in zone is NaN/Infinite " + this + " previous quantity:" + getQuantity() + " -- try less agressive step size...");
-            logger.severe("following (between ***) is the utility calculation for this location");
-            logger.severe("**********************************************");
+            logger.fatal("amount in zone is NaN/Infinite " + this + " previous quantity:" + getQuantity() + " -- try less agressive step size...");
+            logger.fatal("following (between ***) is the utility calculation for this location");
+            logger.fatal("**********************************************");
             calcLocationUtilityDebug(lastConsumptionFunction, lastProductionFunction, true, ((AggregateActivity) myProductionActivity).getLocationDispersionParameter());
-            logger.severe("**********************************************");
+            logger.fatal("**********************************************");
             throw new OverflowException("amount in zone is NaN/Infinite " + this + " previous quantity:" + getQuantity() + " -- try less agressive step size...");
         }
         setQuantity(amount);
@@ -225,15 +222,15 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
 
     public void setAggregateQuantity(double amount, double derivative) throws ChoiceModelOverflowException {
         if (Double.isNaN(amount) || Double.isInfinite(amount)) {
-            logger.severe("amount in zone is NaN/Infinite " + this + " previous quantity:" + getQuantity() + " -- try less agressive step size...");
-            logger.severe("following (between ***) is the utility calculation for this location");
-            logger.severe("**********************************************");
+            logger.fatal("amount in zone is NaN/Infinite " + this + " previous quantity:" + getQuantity() + " -- try less agressive step size...");
+            logger.fatal("following (between ***) is the utility calculation for this location");
+            logger.fatal("**********************************************");
             try {
                 calcLocationUtilityDebug(lastConsumptionFunction, lastProductionFunction, true, ((AggregateActivity) myProductionActivity).getLocationDispersionParameter());
             } catch (OverflowException e) {
                 e.printStackTrace();
             }
-            logger.severe("**********************************************");
+            logger.fatal("**********************************************");
             throw new Error("amount in zone is NaN/Infinite " + this + " previous quantity:" + getQuantity() + " -- try less agressive step size...");
         }
         setQuantity(amount);
@@ -272,7 +269,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
             Commodity commodity = (Commodity) cf.commodityAt(c);
             if (commodity != null) {
                 if (Double.isNaN(buyingQuantities[c]) || Double.isInfinite(buyingQuantities[c])) {
-                    logger.severe("Error in consumption :" + myProductionActivity + " in " + myTaz + " consumes " + buyingQuantities[c] + " of " + commodity);
+                    logger.fatal("Error in consumption :" + myProductionActivity + " in " + myTaz + " consumes " + buyingQuantities[c] + " of " + commodity);
 //                    throw new Error("Error: "+myProductionActivity+" in "+myTaz+" consumes "+buyingQuantities[c]+" of "+commodity);
                 }
 
@@ -291,7 +288,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
                     } else
                         buyingZUtilities[c].changeDerivativeBy(derivative * buyingCompositeUtilityDerivatives[c] * buyingQuantities[c] + getQuantity() * buyingDerivatives[c]);
                 } catch (OverflowException e) {
-                    logger.severe("Error: " + myProductionActivity + " in " + myTaz + " consumes " + buyingQuantities[c] + " of " + commodity + " leading to " + e);
+                    logger.fatal("Error: " + myProductionActivity + " in " + myTaz + " consumes " + buyingQuantities[c] + " of " + commodity + " leading to " + e);
                     e.printStackTrace();
                     throw new Error("Error: " + myProductionActivity + " in " + myTaz + " consumes " + buyingQuantities[c] + " of " + commodity + " leading to " + e);
                 }
@@ -302,7 +299,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
             Commodity commodity = (Commodity) pf.commodityAt(c);
             if (commodity != null) {
                 if (Double.isNaN(sellingQuantities[c]) || Double.isInfinite(sellingQuantities[c])) {
-                    logger.warning("Error in production: " + myProductionActivity + " in " + myTaz + " produces " + sellingQuantities[c] + " of " + commodity);
+                    logger.fatal("Error in production: " + myProductionActivity + " in " + myTaz + " produces " + sellingQuantities[c] + " of " + commodity);
                 }
                 // debug June 5 2002
                 if (debug) {
@@ -319,7 +316,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
                     } else
                         sellingZUtilities[c].changeDerivativeBy(derivative * sellingCompositeUtilityDerivatives[c] * sellingQuantities[c] + getQuantity() * sellingDerivatives[c]);
                 } catch (OverflowException e) {
-                    logger.severe("Overflow Error: " + myProductionActivity + " in " + myTaz + " produces " + buyingQuantities[c] + " of " + commodity + " leading to " + e);
+                    logger.fatal("Overflow Error: " + myProductionActivity + " in " + myTaz + " produces " + buyingQuantities[c] + " of " + commodity + " leading to " + e);
                     throw new Error("Error: " + myProductionActivity + " in " + myTaz + " produces " + buyingQuantities[c] + " of " + commodity + " leading to " + e);
                 }
 
@@ -327,9 +324,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         }
     }
     /**
-     * @param activityAmount
      * @param averagePriceSurplusMatrix
-     * @param thisLocationByPrices
      */
     private void allocateLocationChoiceAveragePriceDerivatives(double totalActivityQuantity, mt.Matrix averagePriceSurplusMatrix, mt.Vector locationChoiceDerivatives) throws OverflowException {
         
@@ -388,7 +383,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
 //            Commodity commodity = (Commodity) cf.commodityAt(c);
 //            if (commodity != null) {
 //                if (Double.isNaN(buyingQuantities[c]) || Double.isInfinite(buyingQuantities[c])) {
-//                    logger.severe("Error in consumption :" + myProductionActivity + " in " + myTaz + " consumes " + buyingQuantities[c] + " of " + commodity);
+//                    logger.fatal("Error in consumption :" + myProductionActivity + " in " + myTaz + " consumes " + buyingQuantities[c] + " of " + commodity);
 ////                    throw new Error("Error: "+myProductionActivity+" in "+myTaz+" consumes "+buyingQuantities[c]+" of "+commodity);
 //                }
 //                DenseMatrix locationCausedDerivatives=null;
@@ -403,7 +398,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
 //                    locationCausedDerivatives = a.multiply(locationCausedDerivatives,locationDerivatives);
 //                            
 //                } catch (AlgebraException e) {
-//                    logger.severe("problem trying to figure out derivatives due to location changes." + e);
+//                    logger.fatal("problem trying to figure out derivatives due to location changes." + e);
 //                    e.printStackTrace();
 //                }
 //                
@@ -442,7 +437,7 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
 //                    locationCausedDerivatives.setColumn(0,new DenseVector(sellingExchangeQuantities));
 //                    locationCausedDerivatives = a.multiply(locationCausedDerivatives,locationDerivatives);
 //               } catch (AlgebraException e) {
-//                   logger.severe("problem trying to figure out derivatives due to location changes." + e);
+//                   logger.fatal("problem trying to figure out derivatives due to location changes." + e);
 //                   e.printStackTrace();
 //               }
 //                   
@@ -489,7 +484,6 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
 
 
     /**
-     * @param d
      * @param averagePriceSurplusMatrix
      * @param thisLocationByPrices
      */

@@ -9,7 +9,7 @@ import com.pb.despair.model.SkimsInMemory;
 import com.pb.despair.model.TravelTimeAndCost;
 
 import java.util.Enumeration;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**  
  * This class implements a logit model to choose a work based tour mode
@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 public class WorkBasedTourModel{
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.WorkBasedTourModel");
     boolean writtenOutTheUtilitiesAlready = false;
-    final static boolean debug=false;
      final static int debugID = -1;
 
      LogitModel destinationModel;
@@ -39,10 +38,7 @@ public class WorkBasedTourModel{
      Double doubleVar = new Double(0);
 
     public void buildModel(TazData tazs){ 
-//        allTazs=tazs;
         destinationModel = new LogitModel("destinationModel",tazs.tazData.size());
-        int destination=0;
-//        TazData localTazs=(TazData)tazs.clone();
         Enumeration destinationEnum=tazs.tazData.elements();
         while(destinationEnum.hasMoreElements()){
             Taz destinationTaz = (Taz) destinationEnum.nextElement();
@@ -63,17 +59,16 @@ public class WorkBasedTourModel{
                                         DCExpUtilitiesManager um,
                                         TourModeChoiceModel tmcm){
           
-          if(debug && thisHousehold.ID==debugID){
-               logger.info("Work-Based Tour found for household "+thisHousehold.ID);
+          if(logger.isDebugEnabled() && thisHousehold.ID==debugID){
+               logger.debug("Work-Based Tour found for household "+thisHousehold.ID);
           }
 
-         if(debug && !writtenOutTheUtilitiesAlready){
-               logger.info("Work-Based Tour found for household "+thisHousehold.ID);
+         if(logger.isDebugEnabled() && !writtenOutTheUtilitiesAlready){
+               logger.debug("Work-Based Tour found for household "+thisHousehold.ID);
           }
 
           //set up destination and mode choice parameters
           TourModeParameters modeParams = (TourModeParameters) tmpd.getTourModeParameters(ActivityPurpose.WORK_BASED);
-          TourDestinationParameters destParams = (TourDestinationParameters) tdpd.getParameters(ActivityPurpose.WORK_BASED,1);
 
           Matrix expUtilities = um.getMatrix(ActivityPurpose.WORK_BASED,0);
           //set mode choice person attributes
@@ -112,26 +107,25 @@ public class WorkBasedTourModel{
           thisTour.end.duration= (short)(totalMinutesAvailable-(thisTour.primaryDestination.duration+thisTour.begin.duration));
           thisTour.end.calculateEndTime();
           
-          if(debug && !writtenOutTheUtilitiesAlready){
-               logger.info("Percent primary destination time "+percentPrimaryDestinationTime);
-               logger.info("Total tour time (based on first activity "+thisTour.begin.duration);
-               logger.info("Primary destination duration "+thisTour.primaryDestination.duration);
-               logger.info("Minutes available for tour begin and end activities"+minutesAvailable);
-               logger.info("Tour begin activity duration "+thisTour.begin.duration);
-               logger.info("Tour end activity duration "+thisTour.end.duration);
-               logger.info("Minutes available for travel "+minutesAvailable);
+          if(logger.isDebugEnabled() && !writtenOutTheUtilitiesAlready){
+               logger.debug("Percent primary destination time "+percentPrimaryDestinationTime);
+               logger.debug("Total tour time (based on first activity "+thisTour.begin.duration);
+               logger.debug("Primary destination duration "+thisTour.primaryDestination.duration);
+               logger.debug("Minutes available for tour begin and end activities"+minutesAvailable);
+               logger.debug("Tour begin activity duration "+thisTour.begin.duration);
+               logger.debug("Tour end activity duration "+thisTour.end.duration);
+               logger.debug("Minutes available for travel "+minutesAvailable);
                writtenOutTheUtilitiesAlready = true;
           }
 
 
           
-          int destination=0;
-         if(!writtenOutTheUtilitiesAlready && debug){
-                  logger.info("Here are the utilities for the tazs passed into the 'WorkBasedTour.calculateWorkBaseTour' method");
-                  logger.info("for HHID " + thisHousehold.ID + ", Person " + thisPerson.ID + ", Tour " + thisTour.tourNumber
+         if(logger.isDebugEnabled() && !writtenOutTheUtilitiesAlready){
+                  logger.debug("Here are the utilities for the tazs passed into the 'WorkBasedTour.calculateWorkBaseTour' method");
+                  logger.debug("for HHID " + thisHousehold.ID + ", Person " + thisPerson.ID + ", Tour " + thisTour.tourNumber
                           + ", ActivityPurpose b"
                           + ", Origin " + thisTour.begin.location.zoneNumber);
-                  logger.info("ZoneNumber,Utility,Logsum");
+                  logger.debug("ZoneNumber,Utility,Logsum");
           }
 
            //cycle through zones and compute total exponentiated utility
@@ -203,8 +197,9 @@ public class WorkBasedTourModel{
           thisTour.primaryMode=chosenMode;
 
           thisTour.hasPrimaryMode=true;
-          if(debug && thisHousehold.ID==debugID) System.out.println("Logsum for household "+thisHousehold.ID
-               +"="+logsum);
+          if(logger.isDebugEnabled() && thisHousehold.ID==debugID) {
+              logger.debug("Logsum for household "+thisHousehold.ID+"="+logsum);
+          }
      }
 
 

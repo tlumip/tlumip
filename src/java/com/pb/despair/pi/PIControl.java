@@ -1,11 +1,10 @@
 package com.pb.despair.pi;
 
-import java.util.logging.Logger;
 import java.util.ResourceBundle;
-import java.io.File;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.OverflowException;
+import org.apache.log4j.Logger;
 
 /**
  * This class runs PI.  It loads the data, instantiates the PIModel
@@ -29,11 +28,11 @@ public class PIControl {
         try {
             piReaderWriter = (PIPProcessor) pProcessorClass.newInstance();
         } catch (InstantiationException e) {
-            logger.severe("Can't create new instance of PiPProcessor of type "+pProcessorClass.getName());
+            logger.fatal("Can't create new instance of PiPProcessor of type "+pProcessorClass.getName());
             e.printStackTrace();
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
-            logger.severe("Can't create new instance of PiPProcessor of type "+pProcessorClass.getName());
+            logger.fatal("Can't create new instance of PiPProcessor of type "+pProcessorClass.getName());
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -47,11 +46,11 @@ public class PIControl {
         try {
             piReaderWriter = (PIPProcessor) pProcessorClass.newInstance();
         } catch (InstantiationException e) {
-            logger.severe("Can't create new instance of PiPProcessor of type "+pProcessorClass.getName());
+            logger.fatal("Can't create new instance of PiPProcessor of type "+pProcessorClass.getName());
             e.printStackTrace();
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
-            logger.severe("Can't create new instance of PiPProcessor of type "+pProcessorClass.getName());
+            logger.fatal("Can't create new instance of PiPProcessor of type "+pProcessorClass.getName());
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -132,7 +131,7 @@ public class PIControl {
         } 
         
         if (nanPresent) {
-            logger.severe("Initial prices cause overflow -- try again changing initial prices");
+            logger.fatal("Initial prices cause overflow -- try again changing initial prices");
             throw new RuntimeException("Initial prices cause overflow -- try again changing initial prices");
         }
 
@@ -189,11 +188,11 @@ public class PIControl {
             } else {
                 if (nIterations == maxIterations-1) {
                     pi.backUpToLastValidPrices();
-                    logger.warning("!!  Not Improving and at second last iteration -- backing up to last valid prices");
+                    logger.warn("!!  Not Improving and at second last iteration -- backing up to last valid prices");
                 } else if (newMeritMeasure == Double.POSITIVE_INFINITY && pi.getStepSize()<= pi.getMinimumStepSize()) {
                     pi.backUpToLastValidPrices();
                     nIterations = maxIterations-1;
-                    logger.severe("!!  Can't get past infinity without going below minimum step size -- terminating at last valid prices");
+                    logger.fatal("!!  Can't get past infinity without going below minimum step size -- terminating at last valid prices");
                     // TODO need to exit with a different error code if this happens -- this is worse than just not reaching our convergence criteria
                 } else {
                     pi.decreaseStepSizeAndAdjustPrices();
@@ -210,13 +209,13 @@ public class PIControl {
                     nanPresent = true;
                 }
                 if (nanPresent) {
-                    logger.warning("Overflow error, setting new merit measure to positive infinity");
+                    logger.warn("Overflow error, setting new merit measure to positive infinity");
                     newMeritMeasure = Double.POSITIVE_INFINITY;
                 }
             }
             if(nIterations == maxIterations) {
                 convergenceCriteriaMet=true;
-                logger.severe("Terminating because maximum iterations reached -- did not converge to tolerance");
+                logger.fatal("Terminating because maximum iterations reached -- did not converge to tolerance");
             }
             nanPresent = false;
             logger.info("*********************************************************************************************");

@@ -7,21 +7,16 @@
 package com.pb.despair.calibrator;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import com.hbaspecto.calibrator.ModelInputsAndOutputs;
 import com.hbaspecto.calibrator.TargetAdapter;
-import com.hbaspecto.calibrator.TargetPanel;
 import com.hbaspecto.util.StringArrayTableModel;
-import com.pb.common.datafile.TableDataSetCollection;
 import com.pb.common.datafile.TableDataSetIndexedValue;
 import com.pb.common.matrix.StringIndexedNDimensionalMatrix;
 
@@ -172,7 +167,7 @@ public class StringIndexedFloatTarget extends TargetAdapter implements Serializa
 	 */
     public double getValue(ModelInputsAndOutputs y) {
         if (!(y instanceof PecasDirectoryInputsAndOutputs)) {
-            logger.severe("StringIndexedFloatTargets can only work with model outputs of of type PecasDirectoryInputsAndOutputs");
+            logger.fatal("StringIndexedFloatTargets can only work with model outputs of of type PecasDirectoryInputsAndOutputs");
             throw new RuntimeException("StringIndexedFloatTargets can only work with model outputs of of type PecasDirectoryInputsAndOutputs");
         }
         PecasDirectoryInputsAndOutputs t = (PecasDirectoryInputsAndOutputs) y;
@@ -203,8 +198,6 @@ public class StringIndexedFloatTarget extends TargetAdapter implements Serializa
     }
 
     /**
-     * @param i
-     * @param column
      */
     private void swapColumns(int column1, int column2) {
         for (int i=0;i<getStringKeyNameValues().length;i++) {

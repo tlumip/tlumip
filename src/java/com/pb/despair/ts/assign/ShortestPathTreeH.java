@@ -1,7 +1,7 @@
 package com.pb.despair.ts.assign;
 
 import java.util.Arrays;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.util.*;
 
@@ -15,7 +15,6 @@ public class ShortestPathTreeH {
 	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
 
     static final double COMPARE_EPSILON = 1.0e-07;
-    boolean DEBUG = false;
 
     Justify myFormat = new Justify();
     Network g;
@@ -107,7 +106,9 @@ public class ShortestPathTreeH {
 
             setRootLabels (g, ib[k]);
 			nodeLabeled[ib[k]] = 1;
-			if (DEBUG) candidateHeap.dataPrint();
+			if(logger.isDebugEnabled()) {
+                candidateHeap.dataPrint();
+            }
         }
 
         buildTime += (System.currentTimeMillis() - start);
@@ -121,8 +122,8 @@ public class ShortestPathTreeH {
         double turnPenalty;
 
         
-		if (DEBUG) {
-            logger.info ("rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)]);
+		if(logger.isDebugEnabled()) {
+            logger.debug ("rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)]);
         }
 		
         for (int i=ip[rootNode]; i < ip[rootNode+1]; i++) {
@@ -134,8 +135,8 @@ public class ShortestPathTreeH {
             if ( predecessorLink[ia[k]] >= 0)
                 turnPenalty = g.getTurnPenalty( indexNode[ia[k]], indexNode[ia[predecessorLink[ia[k]]]], indexNode[ib[k]] );
 
-			if (DEBUG) {
-				logger.info ("i=" + i + ", k=" + k + ", ia[k=" + k + "]=" + ia[k] + ", ib[k=" + k + "]=" + ib[k] + ", an[k=" + k + "]=" + indexNode[ia[k]] + ", bn[k=" + k + "]=" + indexNode[ib[k]] + ", linkCost[k=" + k + "]=" + linkCost[k] +  ", nodeLabeled[ib[k]=" + ib[k] + "]=" +  nodeLabeled[ib[k]] +  ", nodeLabels[ib[k]=" + ib[k] + "]=" + nodeLabels[ib[k]] + ", validLink[k=" + k + "]=" + validLink[k] + ", turnPenalty=" + turnPenalty);
+			if(logger.isDebugEnabled()) {
+				logger.debug ("i=" + i + ", k=" + k + ", ia[k=" + k + "]=" + ia[k] + ", ib[k=" + k + "]=" + ib[k] + ", an[k=" + k + "]=" + indexNode[ia[k]] + ", bn[k=" + k + "]=" + indexNode[ib[k]] + ", linkCost[k=" + k + "]=" + linkCost[k] +  ", nodeLabeled[ib[k]=" + ib[k] + "]=" +  nodeLabeled[ib[k]] +  ", nodeLabels[ib[k]=" + ib[k] + "]=" + nodeLabels[ib[k]] + ", validLink[k=" + k + "]=" + validLink[k] + ", turnPenalty=" + turnPenalty);
 			}
             
 			if ( validLink[k] && turnPenalty >= 0 ) {
@@ -147,15 +148,15 @@ public class ShortestPathTreeH {
                             candidateHeap.add(k);
                         }
                         predecessorLink[ib[k]] = k;
-                        if (DEBUG) {
-                            logger.info ("predecessor[" + indexNode[ib[k]] + "]=" + k + "   (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ")");
+                        if(logger.isDebugEnabled()) {
+                            logger.debug ("predecessor[" + indexNode[ib[k]] + "]=" + k + "   (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ")");
                         }
                     }
                 }
             }
         }
-        if (DEBUG) {
-            logger.info ("");
+        if(logger.isDebugEnabled()) {
+            logger.debug ("");
         }
     }
 
@@ -176,7 +177,7 @@ public class ShortestPathTreeH {
             if ( tripRow[j] > 0 && j != inOrigin ) {
                 k = predecessorLink[j];
                 if (k == -1) {
-                    logger.severe ("inOrigin=" + inOrigin + ", j=" + j + ", k=" + k);
+                    logger.fatal ("inOrigin=" + inOrigin + ", j=" + j + ", k=" + k);
                     System.exit(-1);
                 }
                 aonFlow[k] += tripRow[j];
@@ -292,10 +293,8 @@ public class ShortestPathTreeH {
 
     public class Heap {
 
-//        public static final boolean DEBUG = false;
 
 
-        private int size;
         private int data[];
         private int last;
 
@@ -339,7 +338,9 @@ public class ShortestPathTreeH {
 
         public void add(int x) {
             
-            if (DEBUG) logger.info("adding " + x + ", last=" + last + "   " + indexNode[ia[x]] + "   " + indexNode[ib[x]] + "   " + nodeLabels[ib[x]]);
+            if(logger.isDebugEnabled()) {
+                logger.debug("adding " + x + ", last=" + last + "   " + indexNode[ia[x]] + "   " + indexNode[ib[x]] + "   " + nodeLabels[ib[x]]);
+            }
   
             if (heapContents[ib[x]] == 1) {
 				for (int i = last; i >= 0; i--) {
@@ -366,14 +367,18 @@ public class ShortestPathTreeH {
 
 			if (last == 0) {
 				last = -1;
-				if (DEBUG) logger.info("remove " + min + ", last=" + last);
+				if(logger.isDebugEnabled()) {
+                    logger.debug("remove " + min + ", last=" + last);
+                }
 				return min;
 			}
 
 			last--;                      // reduce heap size
 			percolateDown(0);            // move element at top down
 
-			if (DEBUG) logger.info("remove " + min + ", last=" + last);
+			if(logger.isDebugEnabled()) {
+                logger.debug("remove " + min + ", last=" + last);
+            }
 			return min;
 		}
 
@@ -389,29 +394,35 @@ public class ShortestPathTreeH {
 
 			if (last == 0) {
 				last = -1;
-				if (DEBUG) logger.info("remove " + min + ", last=" + last);
+				if(logger.isDebugEnabled()) {
+                    logger.debug("remove " + min + ", last=" + last);
+                }
 				return min;
 			}
 
 			last--;                      // reduce heap size
 			percolateDown(i);            // move element at top down
 
-			if (DEBUG) logger.info("remove " + min + ", last=" + last);
+			if(logger.isDebugEnabled()) {
+                logger.debug("remove " + min + ", last=" + last);
+            }
 			return min;
 		}
 
 
         //Let element move up and settle
         public void percolateUp(int idx) {
-            if (DEBUG) logger.info("pu " + idx);
+            if(logger.isDebugEnabled()) {
+                logger.debug("pu " + idx);
+            }
             if (idx == 0) return;
             int parentIdx = (idx - 1) / 2;
             int k = data[idx];                                  // added
             int kParent = data[parentIdx];          // added
-			if (DEBUG) {
-				logger.info("k=" + k + ", ib[k]=" + ib[k] + ", an[k]=" + indexNode[ia[k]] + ", bn[k]=" + indexNode[ib[k]] + ", nodeLabels[ib[k]]=" + nodeLabels[ib[k]]);
-				logger.info("kParent=" + kParent + ", ib[kParent]=" + ib[kParent] + ", an[kParent]=" + indexNode[ia[kParent]] + ", bn[kParent]=" + indexNode[ib[kParent]] + ", nodeLabels[ib[kParent]]=" + nodeLabels[ib[kParent]]);
-				logger.info("nodeLabels[ib[k]] - nodeLabels[ib[kParent]]=" + (nodeLabels[ib[k]] - nodeLabels[ib[kParent]]) );
+			if(logger.isDebugEnabled()) {
+				logger.debug("k=" + k + ", ib[k]=" + ib[k] + ", an[k]=" + indexNode[ia[k]] + ", bn[k]=" + indexNode[ib[k]] + ", nodeLabels[ib[k]]=" + nodeLabels[ib[k]]);
+				logger.debug("kParent=" + kParent + ", ib[kParent]=" + ib[kParent] + ", an[kParent]=" + indexNode[ia[kParent]] + ", bn[kParent]=" + indexNode[ib[kParent]] + ", nodeLabels[ib[kParent]]=" + nodeLabels[ib[kParent]]);
+				logger.debug("nodeLabels[ib[k]] - nodeLabels[ib[kParent]]=" + (nodeLabels[ib[k]] - nodeLabels[ib[kParent]]) );
 			}
 
 			if (nodeLabels[ib[k]] - nodeLabels[ib[kParent]] < -COMPARE_EPSILON) {
@@ -426,20 +437,22 @@ public class ShortestPathTreeH {
 
 
         public void percolateDown(int idx) {
-            if (DEBUG) logger.info("pd " + idx);
+            if(logger.isDebugEnabled()) {
+                logger.debug("pd " + idx);
+            }
             int childIdx = idx * 2 + 1;
             if (childIdx > last) return;
             int k = data[idx];
             int kChild = data[childIdx];
             int kChildp1 = data[childIdx+1];
 
-			if (DEBUG) {
-				logger.info("idx=" + idx + ", childIdx=" + childIdx + ", last=" + last);
-				logger.info("k=" + k + ", ib[k]=" + ib[k] + ", an[k]=" + indexNode[ia[k]] + ", bn[k]=" + indexNode[ib[k]] + ", nodeLabels[ib[k]]=" + nodeLabels[ib[k]]);
-				logger.info("kChild=" + kChild + ", ib[kChild]=" + ib[kChild] + ", an[kChild]=" + indexNode[ia[kChild]] + ", bn[kChild]=" + indexNode[ib[kChild]] + ", nodeLabels[ib[kChild]]=" + nodeLabels[ib[kChild]]);
-				logger.info("kChildp1=" + kChildp1 + ", ib[kChildp1]=" + ib[kChildp1] + ", an[kChildp1]=" + indexNode[ia[kChildp1]] + ", bn[kChildp1]=" + indexNode[ib[kChildp1]] + ", nodeLabels[ib[kChildp1]]=" + nodeLabels[ib[kChildp1]]);
-				logger.info("nodeLabels[ib[kChildp1]] - nodeLabels[ib[kChild]]=" + (nodeLabels[ib[kChildp1]] - nodeLabels[ib[kChild]]) );
-				logger.info("nodeLabels[ib[kChild]] - nodeLabels[ib[k]]=" + (nodeLabels[ib[kChild]] - nodeLabels[ib[k]]) );
+			if(logger.isDebugEnabled()) {
+				logger.debug("idx=" + idx + ", childIdx=" + childIdx + ", last=" + last);
+				logger.debug("k=" + k + ", ib[k]=" + ib[k] + ", an[k]=" + indexNode[ia[k]] + ", bn[k]=" + indexNode[ib[k]] + ", nodeLabels[ib[k]]=" + nodeLabels[ib[k]]);
+				logger.debug("kChild=" + kChild + ", ib[kChild]=" + ib[kChild] + ", an[kChild]=" + indexNode[ia[kChild]] + ", bn[kChild]=" + indexNode[ib[kChild]] + ", nodeLabels[ib[kChild]]=" + nodeLabels[ib[kChild]]);
+				logger.debug("kChildp1=" + kChildp1 + ", ib[kChildp1]=" + ib[kChildp1] + ", an[kChildp1]=" + indexNode[ia[kChildp1]] + ", bn[kChildp1]=" + indexNode[ib[kChildp1]] + ", nodeLabels[ib[kChildp1]]=" + nodeLabels[ib[kChildp1]]);
+				logger.debug("nodeLabels[ib[kChildp1]] - nodeLabels[ib[kChild]]=" + (nodeLabels[ib[kChildp1]] - nodeLabels[ib[kChild]]) );
+				logger.debug("nodeLabels[ib[kChild]] - nodeLabels[ib[k]]=" + (nodeLabels[ib[kChild]] - nodeLabels[ib[k]]) );
 			}
 			if ((childIdx + 1) <= last && (nodeLabels[ib[kChildp1]] - nodeLabels[ib[kChild]] < -COMPARE_EPSILON)) {
                 childIdx = childIdx + 1;
@@ -474,9 +487,9 @@ public class ShortestPathTreeH {
 
 			for (int i = 0; i <= last; i++) {
 				k = data[i];
-				logger.info("i=" + i + ", k=" + k + ", ib[k]=" + ib[k] + ", an=" + indexNode[ia[k]] + ", bn=" + indexNode[ib[k]] + ", nodeLabels[ib]=" + nodeLabels[ib[k]] + ", nodeLabeled[ib]=" + nodeLabeled[ib[k]]);
+				logger.debug("i=" + i + ", k=" + k + ", ib[k]=" + ib[k] + ", an=" + indexNode[ia[k]] + ", bn=" + indexNode[ib[k]] + ", nodeLabels[ib]=" + nodeLabels[ib[k]] + ", nodeLabeled[ib]=" + nodeLabeled[ib[k]]);
 			}
-			logger.info("");
+			logger.debug("");
 		}
 
 

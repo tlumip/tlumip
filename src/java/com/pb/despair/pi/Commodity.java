@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.matrix.Matrix;
 import com.pb.despair.model.ChoiceModelOverflowException;
@@ -96,12 +96,7 @@ public class Commodity extends AbstractCommodity {
         boolean selling = false;
         for (int z = 0; z < zones.length; z++) {
             AbstractTAZ t = zones[z];
-            
-            // just a debug check statemtn
-           // if (t.zoneIndex!=z) {
-           //     logger.severe("Zone index in array is not equal to zone index");
-           //     throw new Error("Zone index in array is not equal to the index number assigned to the zone");
-           // }
+
             //get the CUBuy zone utility object out of the CommodityZUtility hashtable
             CommodityZUtility czu = retrieveCommodityZUtility(t,selling);
             try {

@@ -2,7 +2,7 @@ package com.pb.despair.pt.tripmodes;
 import com.pb.despair.model.Mode;
 import com.pb.despair.model.ModeType;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 /** 
  * Driver alone mode
  * 

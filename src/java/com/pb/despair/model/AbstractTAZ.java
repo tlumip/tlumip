@@ -6,7 +6,7 @@ import com.pb.common.datafile.TableDataSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 abstract public class AbstractTAZ implements UnitOfLand, Comparable {
 
@@ -36,7 +36,6 @@ abstract public class AbstractTAZ implements UnitOfLand, Comparable {
 
     public void writeGridCells(TableDataSet gtab) {
        Iterator it = myGridCells.iterator();
-       int userID = getZoneUserNumber();
        while (it.hasNext()) {
            //TODO change this so that it uses the pb.common.datafile.TableDataSet class instead of the
            //TODO Borland tabledataset.
@@ -94,8 +93,8 @@ abstract public class AbstractTAZ implements UnitOfLand, Comparable {
                 priceVacancies[dtID].totalSize += gc.getAmountOfDevelopment();
             }
         }
-        if (Math.abs(priceVacancies[dtID].vacancy - oldVacancy) > .01) logger.warning("Warning -- vacancy of "+dt+" changed in zone "+this);
-        if (Math.abs(priceVacancies[dtID].totalSize - oldSize)> 0.01) logger.warning("Warning -- size of "+dt+" changed in zone "+this);
+        if (Math.abs(priceVacancies[dtID].vacancy - oldVacancy) > .01) logger.warn("Warning -- vacancy of "+dt+" changed in zone "+this);
+        if (Math.abs(priceVacancies[dtID].totalSize - oldSize)> 0.01) logger.warn("Warning -- size of "+dt+" changed in zone "+this);
     }
 
 /*    static private double calcAveragePrice(DevelopmentTypeInterface dt) {
@@ -120,7 +119,6 @@ abstract public class AbstractTAZ implements UnitOfLand, Comparable {
 
     public GridCell.FloorspaceChunk assignAGridCell(EconomicUnit forMe, DevelopmentTypeInterface dt) throws CantFindRoomException {
         GridCell.FloorspaceChunk aLot = null;
-        boolean found = false;
         PriceVacancy pv = getPriceVacancySize(dt);
         double gridCellSelectorVacancy = Math.random()*pv.vacancy;
         double accumulatedVacancy = 0;
@@ -137,9 +135,9 @@ abstract public class AbstractTAZ implements UnitOfLand, Comparable {
             }
         }
         if (aLot == null) {
-            logger.warning("Cant find room in TAZ "+this);
+            logger.warn("Cant find room in TAZ "+this);
    //         PriceVacancy pvbase = new PriceVacancy();
-            logger.warning(forMe+ " needs "+forMe.spaceNeeded(dt)+" of "+dt);
+            logger.warn(forMe+ " needs "+forMe.spaceNeeded(dt)+" of "+dt);
             throw new CantFindRoomException("Can't find a suitable grid cell in TAZ " + this);
         }
         return aLot;
@@ -219,8 +217,6 @@ abstract public class AbstractTAZ implements UnitOfLand, Comparable {
     }
 
     /**
-     * @associates <{GridCell}>
-     * @supplierCardinality 1..*
      * @link aggregationByValue
      */
  //   protected HashSet myGridCells = new HashSet();

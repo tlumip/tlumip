@@ -1,7 +1,7 @@
 package com.pb.despair.pt;
 
 import java.io.File;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
@@ -60,18 +60,17 @@ public class WorkplaceLocationModel{
                 probabilityTotal = probabilityTotal+(laborFlowMatrix.getValueAt(origin,destinationTaz.zoneNumber));
                 if (probabilityTotal > selector){
             		destination = destinationTaz.zoneNumber;
-            		//logger.finer("Workplace location: "+destination);
             		break;
             	}        
             }
 
             if(destination==0){
-            	logger.severe("Error With workplace location model - destination TAZ shouldn't ==0!");
-                logger.severe("Selector value: " + selector + " Probability total: " + probabilityTotal +
+            	logger.error("Error With workplace location model - destination TAZ shouldn't ==0!");
+                logger.error("Selector value: " + selector + " Probability total: " + probabilityTotal +
                         " Counter: " + counter);
-                logger.severe("PersonID "+ thisPerson.ID+" Industry "+thisPerson.industry+
+                logger.error("PersonID "+ thisPerson.ID+" Industry "+thisPerson.industry+
                         " Occupation "+thisPerson.occupation+" WorkSegment "+thisPerson.householdWorkSegment);
-                logger.severe("The labor flow matrix will be written to the debug directory");
+                logger.error("The labor flow matrix will be written to the debug directory");
                 MatrixWriter mWriter = PTResults.createMatrixWriter(laborFlowMatrix.getName());
                 mWriter.writeMatrix(laborFlowMatrix);
                 //in the interest of not stopping the model run we will assign the
@@ -123,18 +122,20 @@ public class WorkplaceLocationModel{
         for(int p=0;p<persons.length;p++){
             if(persons[p].employed){
                 if(persons[p].occupation*10 + persons[p].householdWorkSegment!=wlm.lastWorkLogsumSegment){
-                    logger.fine("labor flow probabilities "+persons[p].occupation+" "+persons[p].householdWorkSegment);
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("labor flow probabilities "+persons[p].occupation+" "+persons[p].householdWorkSegment);
+                    }
                     laborFlowProbabiliites = wlm.getLaborFlowProbabilities(rb,persons[p].occupation,persons[p].householdWorkSegment);
                     wlm.lastWorkLogsumSegment = persons[p].occupation*10 + persons[p].householdWorkSegment;
                 }
-                //logger.fine("worktaz "+persons[p].workTaz);
                 persons[p].workTaz = wlm.chooseWorkplace(laborFlowProbabiliites,persons[p],tazs);
                 if(persons[p].worksTwoJobs)
                     persons[p].workTaz2 = wlm.chooseWorkplace(laborFlowProbabiliites,persons[p],tazs);
-                //logger.fine("worktaz after"+persons[p].workTaz);
             }
         }
-        logger.fine("Time to run workplace location model for all households = "+(System.currentTimeMillis()-startTime)/1000);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Time to run workplace location model for all households = "+(System.currentTimeMillis()-startTime)/1000);
+        }
         households = dataReader.addPersonsToHouseholds(households,persons);
     }
 }

@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.calculator.LinkCalculator;
 import com.pb.common.calculator.LinkFunction;
@@ -399,7 +399,6 @@ public class Network implements Serializable {
 
 			// set speed and capacity fields based on values in ul1; set minimum link distance.
 			float ul1 = linkTable.getValueAt( i+1, "ul1" );
-			float ul2 = linkTable.getValueAt( i+1, "ul2" );
 
 			
 			if ( centroid[i] )
@@ -441,7 +440,6 @@ public class Network implements Serializable {
 			}
 	        
 
-			String mode = linkTable.getStringValueAt( i+1, "mode" );
 
 			
 			
@@ -650,7 +648,6 @@ public class Network implements Serializable {
 	private void setTurnPenalties( 	float[][] turnDefs ) {
 
 		int k=0;
-		int index=0;
 
 		ArrayList[] turnLists = new ArrayList[linkTable.getRowCount()];
 		turnTable = new float[linkTable.getRowCount()][][];
@@ -759,8 +756,8 @@ public class Network implements Serializable {
             
 			k = sortedLinkIndexA[i];
             
-			if (debug) {
-				logger.info ("i=" + i + ", k=" + k + ", an=" + nodeIndex[an] + ", bn=" + nodeIndex[bn] + ", ia[k=" + k + "]=" + ia + ", ib[k=" + k + "]=" + ib );
+			if(logger.isDebugEnabled()) {
+				logger.debug ("i=" + i + ", k=" + k + ", an=" + nodeIndex[an] + ", bn=" + nodeIndex[bn] + ", ia[k=" + k + "]=" + ia + ", ib[k=" + k + "]=" + ib );
 			}
 			
 			if ( ib[k] == nodeIndex[bn] ) {
@@ -783,7 +780,6 @@ public class Network implements Serializable {
 		double[] congestedTime = (double[])linkTable.getColumnAsDouble( "congestedTime" );
 		int[] buckets = new int[8];
 
-		int count = 0;
 		for (int i=0; i < congestedTime.length; i++) {
 			if ( congestedTime[i] > 0 && congestedTime[i] <= 1.0 )
 				buckets[0]++;
@@ -878,7 +874,7 @@ public class Network implements Serializable {
 		
 		}
 		catch (IOException e) {
-			logger.severe ("I/O exception writing network attributes file.");
+			logger.fatal ("I/O exception writing network attributes file.");
 			e.printStackTrace();
 		}
 

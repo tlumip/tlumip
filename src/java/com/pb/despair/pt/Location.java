@@ -1,5 +1,5 @@
 package com.pb.despair.pt;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.Serializable;
 /** 
  * A class that represents an activity location

@@ -5,7 +5,7 @@ import com.pb.despair.model.TravelTimeAndCost;
 import com.pb.despair.pt.PersonTourModeAttributes;
 import com.pb.despair.pt.TourModeParameters;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**  
  * Walk-Transit mode
@@ -35,7 +35,6 @@ public class WalkTransit extends Mode {
      * 
      * @param inbound - In-bound TravelTimeAndCost
      * @param outbound - Outbound TravelTimeAndCost
-     * @param z - ZoneAttributes (Currently only parking cost)
      * @param c - TourModeParameters
      * @param p - PersonTourModeAttributes
      */
@@ -76,7 +75,8 @@ public class WalkTransit extends Mode {
      };
      public double getUtility(){
           if(!hasUtility){
-               logger.severe("Error: Utility not calculated for "+alternativeName+"\n");
+               logger.fatal("Error: Utility not calculated for "+alternativeName+"\n");
+              //TODO - log this error to the node exception file
                System.exit(1);
           };
           return utility;

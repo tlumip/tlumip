@@ -5,7 +5,7 @@ import com.pb.despair.model.TravelTimeAndCost;
 import com.pb.despair.pt.PersonTourModeAttributes;
 import com.pb.despair.pt.TourModeParameters;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 /**  
  * Drive Transit mode
  * 
@@ -82,7 +82,8 @@ public class DriveTransit extends Mode {
     /** Get drive transit utility */
      public double getUtility(){
           if(!hasUtility){
-               logger.severe("Error: Utility not calculated for "+alternativeName+"\n");
+               logger.fatal("Error: Utility not calculated for "+alternativeName+"\n");
+              //TODO - log this error to the node exception file
                System.exit(1);
           };
           return utility;

@@ -5,7 +5,7 @@ import com.pb.common.matrix.ZipMatrixReader;
 import com.pb.common.matrix.Matrix;
 
 import java.util.*;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.*;
 
 public class DiscreteShipments2 {

@@ -6,7 +6,7 @@ import com.pb.despair.pt.PersonTourModeAttributes;
 import com.pb.despair.pt.TourModeParameters;
 import com.pb.despair.pt.ZoneAttributes;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 /** 
  * Passenger mode
  * 
@@ -64,7 +64,8 @@ public class AutoPassenger extends Mode {
     /** get the utility of auto passenger */
      public double getUtility(){
           if(!hasUtility){
-               logger.severe("Error: Utility not calculated for "+alternativeName+"\n");
+               logger.fatal("Error: Utility not calculated for "+alternativeName+"\n");
+              //TODO - log this error to the node exception log file
                System.exit(1);
           };
           return utility;

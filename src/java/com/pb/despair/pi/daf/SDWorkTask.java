@@ -2,14 +2,7 @@ package com.pb.despair.pi.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
-import com.pb.common.util.ResourceUtil;
 import com.pb.despair.pi.PIModel;
-import com.pb.despair.pi.Commodity;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
-import java.util.ResourceBundle;
 
 /**
  * @author Christi Willison
@@ -17,43 +10,18 @@ import java.util.ResourceBundle;
  */
 public class SDWorkTask extends MessageProcessingTask {
     private PIModel pi;
-    boolean debug = false;
-    private ResourceBundle pidafRb;
     String scenarioName = "pleaseWork";
     private boolean firstMessage = true;
 
     public void onStart() {
 
-        logger.info("***************************" + getName() + " begin onStart() *****************************************");
-//        logger.info( "***" + getName() + " is starting...");
-
-//        pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
-//        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
-//        //that was written by the Application Orchestrator
-//        BufferedReader reader = null;
-//        int timeInterval = -1;
-//        String pathToRb = null;
-//        String scenarioName = null;
-//        try {
-//            logger.info("Reading RunParams.txt file");
-//            reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
-//            scenarioName = reader.readLine();
-//            logger.info("\tScenario Name: " + scenarioName);
-//            timeInterval = Integer.parseInt(reader.readLine());
-//            logger.info("\tTime Interval: " + timeInterval);
-//            pathToRb = reader.readLine();
-//            logger.info("\tResourceBundle Path: " + pathToRb);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
-//        logger.info("  *" + getName() + " is creating a PIModel Object");
-//        pi = new PIModel(rb);
-        logger.info("***************************" + getName() + " end onStart()****************************************");
+        logger.info("******************" + getName() + " started ************************");
     }
 
     public void onMessage(Message msg){
-        if(debug) logger.fine( getName() + " received " + msg.getStringValue("Name") + " from" + msg.getSender() );
+        if(logger.isDebugEnabled()) {
+            logger.debug( getName() + " received " + msg.getStringValue("Name") + " from" + msg.getSender() );
+        }
         if(firstMessage){
             pi = new PIModel(SetupWorkTask.piRb, SetupWorkTask.globalRb);
             firstMessage = false;

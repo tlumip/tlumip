@@ -1,6 +1,6 @@
 package com.pb.despair.pt;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Defines activity purposes.

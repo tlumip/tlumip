@@ -15,7 +15,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.CSVFileReader;
 
 import java.util.Random;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.*;
 
 public class ZoneMap {
@@ -43,7 +43,7 @@ public class ZoneMap {
         try {
             table = reader.readFile(f);
         } catch (IOException e) {
-            logger.severe(f.getAbsolutePath() + " could not be found - check path");
+            logger.fatal(f.getAbsolutePath() + " could not be found - check path");
             e.printStackTrace();
         }
 
@@ -55,9 +55,9 @@ public class ZoneMap {
             String LUIntensity = table.getStringValueAt(r, "LUIntensityCode");
 
             //double check that you have valid values for these variables.
-            if(azone <= 0 || bzone <=0 || gridAcres < 0 || LUIntensity == null){
-                logger.severe("Incorrect value in the alpha2beta file - check row " + r);
-                logger.severe("zone numbers and gridAcres should be greater than 0 and" +
+            if(azone <= 0 || bzone <=0 || gridAcres <= 0 || LUIntensity == null){
+                logger.fatal("Incorrect value in the alpha2beta file - check row " + r);
+                logger.fatal("zone numbers and gridAcres should be greater than 0 and" +
                         "LUIntensity string cannot be null");
             }
 

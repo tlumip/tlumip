@@ -3,7 +3,7 @@ package com.pb.despair.ao;
 import com.pb.common.util.ResourceUtil;
 
 import java.io.*;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.ResourceBundle;
 
 /**
@@ -59,7 +59,7 @@ public class StartDafApplication {
             try {
                 cmdFile.createNewFile();
             } catch (IOException e) {
-                logger.severe(cmdFile.getAbsolutePath() + " could not be created");
+                logger.fatal(cmdFile.getAbsolutePath() + " could not be created");
                 e.printStackTrace();
                 System.exit(10);
             }
@@ -122,7 +122,7 @@ public class StartDafApplication {
             writer.close();
 
         } catch (IOException e) {
-            logger.severe("Could not open command file or was not able to write to it - check file properties");
+            logger.fatal("Could not open command file or was not able to write to it - check file properties");
             e.printStackTrace();
         }
 

@@ -1,9 +1,6 @@
 package com.pb.despair.pi;
 
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.AbstractCommodity;
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.model.ChoiceModelOverflowException;
 import com.pb.despair.model.ModelComponent;
 import com.pb.despair.model.OverflowException;
 import com.pb.despair.model.ProductionActivity;
@@ -13,16 +10,15 @@ import com.pb.despair.model.ProductionActivity;
 //import drasys.or.matrix.*;
 
 import mt.*;
-import smt.iter.*;
 
-import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.HashMap;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 
 /**
@@ -128,7 +124,9 @@ public class PIModel extends ModelComponent {
     ** The values are set in the appropriate commodityZUtility object
     */
     public boolean calculateCompositeBuyAndSellUtilities(){
-        logger.fine("Entering 'fixPricesAndConditionsForAllCommodities'");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Entering 'fixPricesAndConditionsForAllCommodities'");
+        }
         long startTime = System.currentTimeMillis();
         Commodity.unfixPricesAndConditionsForAllCommodities();
         boolean nanPresent=false;
@@ -144,7 +142,7 @@ public class PIModel extends ModelComponent {
                 c.fixPricesAndConditionsAtNewValues();
             } catch (OverflowException e) {
                 nanPresent = true;
-                logger.warning("Overflow error in CUBuy, CUSell calcs");
+                logger.error("Overflow error in CUBuy, CUSell calcs");
             }
 
             // just for testing -- remove this code after May 27 2004.
@@ -169,7 +167,7 @@ public class PIModel extends ModelComponent {
         try {
             compUtils = c.fixPricesAndConditionsAtNewValues();
         } catch (OverflowException e) {
-            logger.warning("Overflow error in CUBuy, CUSell calcs for commodity "+name);
+            logger.fatal("Overflow error in CUBuy, CUSell calcs for commodity "+name);
             e.printStackTrace();
         }
 
@@ -187,7 +185,9 @@ public class PIModel extends ModelComponent {
     *  appropriate CommodityZUtilitiy object (quantity and derivative)
     */
     public boolean calculateTotalConsumptionAndProduction(){
-        logger.fine("Beginning Activity Iteration: calling 'migrationAndAllocationWithOverflowTracking' for each activity");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Beginning Activity Iteration: calling 'migrationAndAllocationWithOverflowTracking' for each activity");
+        }
         resetCommodityBoughtAndSoldQuantities();
         long startTime = System.currentTimeMillis();
         boolean nanPresent=false;
@@ -200,9 +200,11 @@ public class PIModel extends ModelComponent {
                 aa.migrationAndAllocation(1.0, 0, 0);
             } catch (OverflowException e) {
                 nanPresent = true;
-                logger.warning("Overflow error in CUBuy, CUSell calcs");
+                logger.warn("Overflow error in CUBuy, CUSell calcs");
             }
-            logger.finer("Finished activity "+ count+ " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            if(logger.isDebugEnabled()) {
+                logger.debug("Finished activity "+ count+ " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            }
             count++;
         }
         logger.info("Finished all Activity allocation: Time in seconds: "+(System.currentTimeMillis()-startTime)/1000.0);
@@ -214,7 +216,9 @@ public class PIModel extends ModelComponent {
     *  appropriate CommodityZUtilitiy object (quantity and derivative)
     */
     public boolean recalculateTotalConsumptionAndProduction(){
-        logger.fine("Beginning Activity Iteration: calling 'reMigrationAndAllocationWithOverflowTracking' for each activity");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Beginning Activity Iteration: calling 'reMigrationAndAllocationWithOverflowTracking' for each activity");
+        }
         resetCommodityBoughtAndSoldQuantities();
         long startTime = System.currentTimeMillis();
         boolean nanPresent=false;
@@ -227,9 +231,11 @@ public class PIModel extends ModelComponent {
                 aa.reMigrationAndReAllocationWithOverflowTracking();
             } catch (OverflowException e) {
                 nanPresent = true;
-                logger.warning("Overflow error in CUBuy, CUSell calcs");
+                logger.warn("Overflow error in CUBuy, CUSell calcs");
             }
-            logger.finer("Finished activity "+ count+ " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            if(logger.isDebugEnabled()) {
+                logger.debug("Finished activity "+ count+ " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            }
             count++;
         }
         logger.info("Finished all Activity allocation: Time in seconds: "+(System.currentTimeMillis()-startTime)/1000.0);
@@ -241,7 +247,9 @@ public class PIModel extends ModelComponent {
      *  Bc,z,k and Sc,z,k.
      */
     public boolean allocateQuantitiesToFlowsAndExchangesWithFullDerivatives(){
-        logger.fine("Beginning 'allocateQuantitiesToFlowsAndExchanges'");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Beginning 'allocateQuantitiesToFlowsAndExchanges'");
+        }
         long startTime = System.currentTimeMillis();
         boolean nanPresent=false;
         Commodity.clearAllCommodityExchangeQuantities();//iterates through the exchange objects inside the commodity
@@ -264,12 +272,14 @@ public class PIModel extends ModelComponent {
                         czu.allocateQuantityToFlowsAndExchanges();
                     } catch (OverflowException e) {
                         nanPresent = true;
-                        logger.warning("Overflow error in Bc,z,k and Sc,z,k calculations");
+                        logger.warn("Overflow error in Bc,z,k and Sc,z,k calculations");
                     }
                 }
             }
             c.setFlowsValid(true);
-            logger.finer("Finished allocating commodity "+ count + " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            if(logger.isDebugEnabled()) {
+                logger.debug("Finished allocating commodity "+ count + " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            }
             count++;
         }
         logger.info("All commodities have been allocated.  Time in seconds: "+(System.currentTimeMillis()-startTime)/1000.0);
@@ -283,7 +293,9 @@ public class PIModel extends ModelComponent {
     *  Bc,z,k and Sc,z,k.
     */
     public boolean allocateQuantitiesToFlowsAndExchanges(){
-        logger.fine("Beginning 'allocateQuantitiesToFlowsAndExchanges'");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Beginning 'allocateQuantitiesToFlowsAndExchanges'");
+        }
         long startTime = System.currentTimeMillis();
         boolean nanPresent=false;
         Commodity.clearAllCommodityExchangeQuantities();//iterates through the exchange objects inside the commodity
@@ -306,12 +318,14 @@ public class PIModel extends ModelComponent {
                         czu.allocateQuantityToFlowsAndExchanges();
                     } catch (OverflowException e) {
                         nanPresent = true;
-                        logger.warning("Overflow error in Bc,z,k and Sc,z,k calculations");
+                        logger.warn("Overflow error in Bc,z,k and Sc,z,k calculations");
                     }
                 }
             }
             c.setFlowsValid(true);
-            logger.finer("Finished allocating commodity "+ count + " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            if(logger.isDebugEnabled()) {
+                logger.debug("Finished allocating commodity "+ count + " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            }
             count++;
         }
         logger.info("All commodities have been allocated.  Time in seconds: "+(System.currentTimeMillis()-startTime)/1000.0);
@@ -342,7 +356,7 @@ public class PIModel extends ModelComponent {
                czu.allocateQuantityToFlowsAndExchanges();
            } catch (OverflowException e) {
                nanPresent = true;
-               logger.warning("Overflow error in total consumption or Bc,z,k calculations");
+               logger.warn("Overflow error in total consumption or Bc,z,k calculations");
            }
 
         }
@@ -357,10 +371,14 @@ public class PIModel extends ModelComponent {
                czu.allocateQuantityToFlowsAndExchanges();
            } catch (OverflowException e) {
                nanPresent = true;
-               logger.warning("Overflow error in total production or Sc,z,k calculations");
+               logger.warn("Overflow error in total production or Sc,z,k calculations");
            }
         }
-        c.setFlowsValid(true);
+        if (nanPresent == false) {
+            c.setFlowsValid(true);
+        } else {
+            c.setFlowsValid(false);
+        }
         return c;
     }
 
@@ -384,7 +402,7 @@ public class PIModel extends ModelComponent {
             double[] surplusAndDerivative = ex.exchangeSurplusAndDerivative();
             if (Double.isNaN(surplusAndDerivative[0]) || Double.isNaN(surplusAndDerivative[1]) ) {
                 nanPresent = true;
-                logger.warning("NaN present at "+ex);
+                logger.warn("NaN present at "+ex);
             }
             sAndD[0][eIndex]=surplusAndDerivative[0];
             sAndD[1][eIndex]=surplusAndDerivative[1];
@@ -452,7 +470,7 @@ public class PIModel extends ModelComponent {
                 }
                 if (Double.isNaN(surplus)) {  /* || newPrice.isNaN()*/
                     nanPresent = true;
-                    logger.warning("\t NaN present at "+ex);
+                    logger.warn("\t NaN present at "+ex);
                     throw new OverflowException("\t NaN present at "+ex);
                 }
                 meritMeasure += c.compositeMeritMeasureWeighting * c.compositeMeritMeasureWeighting * surplus * surplus;

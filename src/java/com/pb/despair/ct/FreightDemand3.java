@@ -10,8 +10,7 @@ package com.pb.despair.ct;
 // @version "0.3, 14/08/04"
 
 import java.util.*;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import org.apache.log4j.Logger;
 import java.io.*;
 import java.text.DecimalFormat;
 
@@ -23,8 +22,7 @@ import com.pb.common.matrix.AlphaToBeta;
 
 public class FreightDemand3 {
     private static Logger logger = Logger.getLogger("com.pb.despair.ct");
-    private boolean debug;
-    static int HIGHEST_BETA_ZONE;  // 
+    static int HIGHEST_BETA_ZONE;  //
     static double SMALLEST_ALLOWABLE_TONNAGE;  // interzonal interchange threshold- read in from properties file
     String[] commodityList;
     ModalDistributions md;
@@ -35,7 +33,7 @@ public class FreightDemand3 {
     ResourceBundle ctRb;
     long outputRecordsWritten = 0L;
 
-    FreightDemand3(ResourceBundle appRb, ResourceBundle globalRb, boolean debug, String ctInputs, String ctOutputs, long seed){
+    FreightDemand3(ResourceBundle appRb, ResourceBundle globalRb, String ctInputs, String ctOutputs, long seed){
         //set the ctRb to the ct.properties resource bundle and get the smallest allowable tonnage from there.
         this.ctRb = appRb;
         SMALLEST_ALLOWABLE_TONNAGE = Double.parseDouble(ResourceUtil.getProperty(ctRb, "SMALLEST_ALLOWABLE_TONNAGE"));
@@ -46,7 +44,6 @@ public class FreightDemand3 {
         AlphaToBeta a2b = new AlphaToBeta(alpha2beta);
         HIGHEST_BETA_ZONE = a2b.getMaxBetaZone();
 
-        this.debug = debug;
         this.inputPath = ctInputs;
         this.outputPath = ctOutputs;
         this.md = new ModalDistributions(inputPath+"ModalDistributionParameters.txt");
@@ -68,8 +65,8 @@ public class FreightDemand3 {
         StringTokenizer st;
         String commodity;
         try {
-            if(debug){
-                logger.fine("Reading in the Transportable Goods");
+            if(logger.isDebugEnabled()) {
+                logger.debug("Reading in the Transportable Goods");
             }
             BufferedReader br = new BufferedReader(new FileReader(goodsFile));
             line = br.readLine(); //read header row
@@ -84,8 +81,8 @@ public class FreightDemand3 {
             commodityList = new String[commodities.size()];
             commodityList = (String[]) commodities.toArray(commodityList);
             Arrays.sort(commodityList);
-            if(debug){
-                logger.fine("Number of transportable commodities " + commodityList.length);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Number of transportable commodities " + commodityList.length);
             }
 
         } catch (IOException e) {
@@ -144,7 +141,7 @@ public class FreightDemand3 {
                         origin = cFlowMatrix.getExternalNumber(r);   //should be the same for both
                         destination = cFlowMatrix.getExternalNumber(c); //production and consumption matrix
                         if(origin != pFlowMatrix.getExternalNumber(r) || destination != pFlowMatrix.getExternalNumber(c))
-                            logger.severe("Bad assumption regarding the production, consumption matrices having" +
+                            logger.fatal("Bad assumption regarding the production, consumption matrices having" +
                                     "the same external numbering scheme");
                         cFlow = cFlows[r][c];
                         pFlow = pFlows[r][c];
@@ -156,9 +153,9 @@ public class FreightDemand3 {
                         pw.println(origin+","+destination+","+cFlow+","+"C"+","+modeOfTransport);
                         pw.println(origin+","+destination+","+pFlow+","+"P"+","+modeOfTransport);
 
-                        if(debug ){
-                            logger.fine("\t"+origin+","+destination+","+cFlow+","+"C"+","+modeOfTransport+" (distance) " + distance);
-                            logger.fine("\t"+origin+","+destination+","+pFlow+","+"P"+","+modeOfTransport);
+                        if(logger.isDebugEnabled()) {
+                            logger.debug("\t"+origin+","+destination+","+cFlow+","+"C"+","+modeOfTransport+" (distance) " + distance);
+                            logger.debug("\t"+origin+","+destination+","+pFlow+","+"P"+","+modeOfTransport);
                         }
                     }
                 }
@@ -297,11 +294,17 @@ public class FreightDemand3 {
     Date start = new Date();
     filterExternalData();
     Date next = new Date();
-    if(debug) logger.info("filterExternalData() run time: "+CTHelper.elapsedTime(start, next));
+    if(logger.isDebugEnabled()) {
+        logger.debug("filterExternalData() run time: "+CTHelper.elapsedTime(start, next));
+    }
     calculateTonnage();
-    if(debug) logger.info(outputRecordsWritten+" OD records saved");
+    if(logger.isDebugEnabled()) {
+        logger.debug(outputRecordsWritten+" OD records saved");
+    }
     Date end = new Date();
-    if(debug) logger.info("calculateTonnage() runtime: "+CTHelper.elapsedTime(next, end));
+    if(logger.isDebugEnabled()) {
+        logger.debug("calculateTonnage() runtime: "+CTHelper.elapsedTime(next, end));
+    }
     logger.info("total runtime for Freight Demand: "+CTHelper.elapsedTime(start, end));
   }
 
@@ -312,9 +315,8 @@ public class FreightDemand3 {
         ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/global.properties"));
         String inputPath = ResourceUtil.getProperty(rb,"ct.base.data");
         String outputPath = ResourceUtil.getProperty(rb,"ct.current.data");
-        boolean debug = (Boolean.valueOf(ResourceUtil.getProperty(rb, "debug"))).booleanValue();
         long randomSeed = Long.parseLong(ResourceUtil.getProperty(rb, "randomSeed"));
-        FreightDemand3 fd = new FreightDemand3(rb,globalRb,debug,inputPath,outputPath,randomSeed);
+        FreightDemand3 fd = new FreightDemand3(rb,globalRb,inputPath,outputPath,randomSeed);
         fd.run();
         logger.info("total time: "+CTHelper.elapsedTime(start, new Date()));
    }

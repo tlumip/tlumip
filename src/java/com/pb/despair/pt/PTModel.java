@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Enumeration;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -39,7 +39,6 @@ public class PTModel extends ModelComponent implements Serializable{
     public PatternModel weekdayPatternModel;
     public PatternModel weekendPatternModel;
     ResourceBundle rb;
-    boolean debug = false;
 
     private PTModel(){
 
@@ -56,12 +55,16 @@ public class PTModel extends ModelComponent implements Serializable{
 
 public void buildLogitModels(){
         //create instance of Patterns for weekdays
-        if(debug) logger.fine("Creating WeekdayPatterns Object");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Creating WeekdayPatterns Object");
+        }
         wkdayPatterns = new Patterns();
         wkdayPatterns.readData(rb,"weekdayPatterns.file");
 
         //create instance of Patterns for weekends
-        if(debug) logger.fine("Creating WeekdayPatterns Object");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Creating WeekdayPatterns Object");
+        }
         wkendPatterns = new Patterns();
         wkendPatterns.readData(rb,"weekendPatterns.file");
 
@@ -108,7 +111,9 @@ public void buildLogitModels(){
             PTHousehold thisHousehold = (PTHousehold)households[hhNumber];
                
             if(hhNumber==0||hhNumber==households.length-1||hhNumber % 10000==0){                                     
-                if(debug) logger.fine("Creating Pattern for hhNumber: "+hhNumber);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Creating Pattern for hhNumber: "+hhNumber);
+                }
             }         
                 
             //set dc Logsums for all persons in hh
@@ -126,7 +131,9 @@ public void buildLogitModels(){
 
             }
         }
-        if(debug) logger.fine("Elapsed time to create patterns: "+(System.currentTimeMillis()-startTime)/1000);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Elapsed time to create patterns: "+(System.currentTimeMillis()-startTime)/1000);
+        }
             
         return households;            
     }
@@ -144,7 +151,9 @@ public void buildLogitModels(){
             PTHousehold thisHousehold = (PTHousehold)households[hhNumber];
                
             if(hhNumber==0||hhNumber==households.length-1||hhNumber % 1000==0){                                     
-                if(debug) logger.info("Creating Pattern for hhNumber: "+hhNumber);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Creating Pattern for hhNumber: "+hhNumber);
+                }
             }         
                 
             //set dc Logsums for all persons in hh
@@ -160,7 +169,9 @@ public void buildLogitModels(){
 
             }
         }
-        if(debug) logger.info("Elapsed time to create patterns: "+(System.currentTimeMillis()-startTime)/1000);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Elapsed time to create patterns: "+(System.currentTimeMillis()-startTime)/1000);
+        }
             
         return households;            
     }
@@ -202,15 +213,7 @@ public void buildLogitModels(){
                               ++job;
                               thisWeekdayTour.primaryDestination.location.zoneNumber
                                    =thisHousehold.persons[personNumber].workTaz;
-                            if(thisWeekdayTour.primaryDestination.location.zoneNumber == 0){
-                                logger.severe("the primary destination of this work tour (" + thisWeekdayTour.tourString + ") tour is 0 - this should not be");
-                                logger.severe("tour pd activity purpose: " + thisWeekdayTour.primaryDestination.activityPurpose);
-                                logger.severe("activity purpose work: " + ActivityPurpose.WORK);
-                                logger.severe("activity purpose work cast as short " + (short)ActivityPurpose.WORK);
-                                logger.severe("test: " + (thisWeekdayTour.primaryDestination.activityPurpose==ActivityPurpose.WORK));
-                                thisPerson.print();
-                                thisWeekdayTour.print(thisWeekdayTour);
-                            }
+
                         }
                         if(((thisWeekdayTour.primaryDestination.activityPurpose==ActivityPurpose.WORK)||
                             (thisWeekdayTour.primaryDestination.activityPurpose==ActivityPurpose.WORK_BASED)) && job>=2){
@@ -298,7 +301,6 @@ public void buildLogitModels(){
                 double[] accumPrimaryTimes = new double[3];
                 for(int personNumber=0;personNumber<thisHousehold.persons.length;++personNumber){
                     PTPerson thisPerson = thisHousehold.persons[personNumber];
-                    //logger.fine("Getting pattern for Household Number: "+thisHousehold.ID+" Person Number:  "+thisPerson.ID);
                     Pattern thisPattern = thisPerson.weekdayPattern;
 
                     int workBasedTours=0;
@@ -385,7 +387,6 @@ public void buildLogitModels(){
         times[0] = ((System.currentTimeMillis() - startTime)/1000.0);
 
         //Intermediate Stop Destination choice Model
-        //logger.fine("Running Tour/Intermediate stop model for Household Number: "+thisHousehold.ID+" Person Number:  "+thisPerson.ID);
         startTime = System.currentTimeMillis();
         stopDestinationChoiceModel.calculateStopZones(thisHousehold,
                                                       thisPerson,
@@ -406,7 +407,6 @@ public void buildLogitModels(){
         
         
         
-        //logger.fine("Running Trip mode choice model for Household Number: "+thisHousehold.ID+" Person Number:  "+thisPerson.ID);
         startTime = System.currentTimeMillis();
         tripModeChoiceModel.calculateTripModes(thisHousehold,
                                                thisPerson,
@@ -445,7 +445,6 @@ public void buildLogitModels(){
                //for each hh member, and each tour, calculate duration, tour destination & mode for weekends
                for(int personNumber=0;personNumber<thisHousehold.persons.length;++personNumber){
                     PTPerson thisPerson = thisHousehold.persons[personNumber];
-                    //logger.fine("Household Number: "+thisHousehold.ID+" Person Number:  "+thisPerson.ID);
                     Pattern thisPattern = thisPerson.weekendPattern;
                     for(int tourNumber=0; tourNumber<thisHousehold.persons[personNumber].weekendTours.length;++tourNumber){
                          Tour thisWeekendTour = thisHousehold.persons[personNumber].weekendTours[tourNumber];
@@ -492,7 +491,7 @@ public void buildLogitModels(){
                 TableDataSet table = reader.readFile(new File(fullPath));
                 return table;
             } catch (IOException e) {
-                logger.severe("Can't find TazData input table laborFlows");
+                logger.fatal("Can't find TazData input table laborFlows");
                 e.printStackTrace();
             }
             return null;

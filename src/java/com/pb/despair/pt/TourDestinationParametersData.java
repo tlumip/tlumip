@@ -6,7 +6,7 @@ import com.pb.common.datafile.TableDataSet;
 import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**  
  * A class to access Tour Destionation Parameters from TableDataSet
@@ -17,7 +17,6 @@ import java.util.logging.Logger;
  */
 public class TourDestinationParametersData {
      protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
-    boolean debug = false;
      String tourDestinationParametersTableName="TourDestinationParameters";
 
      private TourDestinationParameters tourDestinationParameters[][] = new TourDestinationParameters[ActivityPurpose.ACTIVITY_PURPOSES.length][];
@@ -35,7 +34,8 @@ public class TourDestinationParametersData {
             TableDataSet table = reader.readFile(new File(tazFile));
             return table;
         } catch (IOException e) {
-            logger.severe("Can't find TourDestinationParameters file " + fileName);
+            logger.fatal("Can't find TourDestinationParameters file " + fileName);
+            //TODO - log this exception to the node exception log
             e.printStackTrace();
         } 
         return null;
@@ -50,7 +50,9 @@ public class TourDestinationParametersData {
         tourDestinationParameters[ActivityPurpose.OTHER] = new TourDestinationParameters[1];
         tourDestinationParameters[ActivityPurpose.WORK_BASED] = new TourDestinationParameters[1];
         
-         if(debug) logger.fine("Getting table: "+fileName);
+         if(logger.isDebugEnabled()) {
+             logger.debug("Getting table: "+fileName);
+         }
          TableDataSet table = loadTableDataSet(rb, fileName);
         try {
             for(int rowNumber = 1; rowNumber<=table.getRowCount(); rowNumber++) {
@@ -76,9 +78,9 @@ public class TourDestinationParametersData {
                 
                 int purpose = ActivityPurpose.getActivityPurposeValue(thisPurpose.purpose.charAt(0));
                 if(thisPurpose.purpose.length()==2){
-                    if (debug) {
-                        logger.fine("first char "+thisPurpose.purpose.substring(0,1));
-                        logger.fine("second char "+thisPurpose.purpose.substring(1,2));
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("first char "+thisPurpose.purpose.substring(0,1));
+                        logger.debug("second char "+thisPurpose.purpose.substring(1,2));
                     }
                     String second = new String(thisPurpose.purpose.substring(1,2));
                     int segment = (Integer.valueOf(second)).intValue();
@@ -87,8 +89,9 @@ public class TourDestinationParametersData {
                 else tourDestinationParameters[purpose][0] = thisPurpose;
             }                                                            
         } catch (Exception e) {            
-            logger.severe("Error reading TourDestinationParameters");                   
-            e.printStackTrace();                                         
+            logger.fatal("Error reading TourDestinationParameters");
+            //TODO - log this exception to the node exception file
+            e.printStackTrace();
         }                                                                
 
      };                                                                   

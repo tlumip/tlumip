@@ -5,9 +5,8 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.ZipMatrixReader;
 
 import java.io.File;
-import java.util.ResourceBundle;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * A class that reads in peak auto skims and facilitates zone pair disutility calculations
@@ -42,12 +41,12 @@ public class SomeSkims extends TransportKnowledge implements TravelAttributesInt
 
     public void addZipMatrix(String matrixName) {
         if (matrixNameList.contains(matrixName)) {
-            logger.warning("SomeSkims already contains matrix named "+matrixName+", not reading it in again");
+            logger.info("SomeSkims already contains matrix named "+matrixName+", not reading it in again");
         } else {
             File skim = new File(my1stPath+matrixName+".zip");
             if(!skim.exists()){
                 skim = new File(my2ndPath+matrixName+".zip");
-                if(!skim.exists()) logger.severe("Could not find "+ matrixName+".zip in either the pt or the ts directory");
+                if(!skim.exists()) logger.fatal("Could not find "+ matrixName+".zip in either the pt or the ts directory");
             }
             matrixList.add(new ZipMatrixReader(skim).readMatrix());
             matrixNameList.add(matrixName);
@@ -94,11 +93,11 @@ public class SomeSkims extends TransportKnowledge implements TravelAttributesInt
         for (int mNum=0; mNum < fieldsToAdd.length; mNum++) {
             if (matrixNameList.contains(fieldsToAdd[mNum])) {
                 fieldIds[mNum] = -1;
-                logger.warning("SomeSkims already contains matrix named "+fieldsToAdd[mNum]+", not reading it in again");
+                logger.warn("SomeSkims already contains matrix named "+fieldsToAdd[mNum]+", not reading it in again");
             } else {
                 fieldIds[mNum] = s.getColumnPosition(fieldsToAdd[mNum]);
                 if (fieldIds[mNum]<=0) {
-                    logger.severe("No field named "+fieldsToAdd[mNum]+ " in skim TableDataSet "+s);
+                    logger.fatal("No field named "+fieldsToAdd[mNum]+ " in skim TableDataSet "+s);
                 }
             }
         }

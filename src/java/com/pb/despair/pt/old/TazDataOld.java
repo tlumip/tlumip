@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.Enumeration;
 
 /** 
@@ -50,7 +50,7 @@ public class TazDataOld {
             TableDataSet table = reader.readFile(new File(tazFile));
             return table;
         } catch (IOException e) {
-            logger.severe("Can't find TazData input table " + fileName);
+            logger.fatal("Can't find TazData input table " + fileName);
             e.printStackTrace();
         }
         return null;
@@ -151,7 +151,6 @@ public class TazDataOld {
     
     public void setLogitModel(){
         tourDestinationChoiceModel = new LogitModel("destinationModel",tazData.size());
-        int destination=0;
         Enumeration destinationEnum=tazData.elements();
         while(destinationEnum.hasMoreElements()){
             TazOld destinationTaz = (TazOld) destinationEnum.nextElement();
@@ -188,7 +187,7 @@ public class TazDataOld {
          for(int i=0;i<100000000;i++){
             testTaz.calcTourDestinationUtility(1,3,tdp,0.1);
          }
-         logger.fine("Total time = "+(System.currentTimeMillis()-startTime)/1000+" seconds.");
+         logger.info("Total time = "+(System.currentTimeMillis()-startTime)/1000+" seconds.");
          System.exit(1);
     };
 

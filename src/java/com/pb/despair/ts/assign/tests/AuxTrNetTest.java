@@ -29,9 +29,10 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.io.File;
 import java.text.DateFormat;
-import java.util.logging.Logger;
 
 import javax.swing.JFrame;
+
+import org.apache.log4j.Logger;
 
 
 

@@ -3,7 +3,7 @@ package com.pb.despair.pt;
 import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Author: willison

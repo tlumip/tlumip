@@ -3,10 +3,9 @@ package com.pb.despair.pt;
 import com.pb.common.model.LogitModel;
 import com.pb.common.util.ResourceUtil;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.ResourceBundle;
 import java.util.List;
-import java.util.Iterator;
 
 /** 
  * PatternModel builds one nested logit model 
@@ -20,7 +19,6 @@ import java.util.Iterator;
 public class PatternModel{
 
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.PatternModel");
-    final boolean debug=false;
     final long debugID=1;
     LogitModel patternChoiceModel;
     PTTimer timer = new PTTimer();
@@ -49,8 +47,8 @@ public class PatternModel{
           personAttributes.setAttributes(thisHousehold,thisPerson);
                                    
           //compute utility for alternatives
-          if(!writtenOutTheUtilitiesAlready && debug){
-                  logger.info("Here are the utilities for the patterns passed into the 'choosePattern' method:");
+          if(!writtenOutTheUtilitiesAlready && logger.isDebugEnabled()) {
+                  logger.debug("Here are the utilities for the patterns passed into the 'choosePattern' method:");
           }
           for(int p=0;p<patterns.patterns.length;p++){
                Pattern thisPattern = patterns.patterns[p];//(Pattern)patternIterator.next();
@@ -58,8 +56,8 @@ public class PatternModel{
                thisPattern.setAvailability(true);
 
                thisPattern.calcUtility(params,personAttributes);
-              if(!writtenOutTheUtilitiesAlready && debug){
-                  logger.info("\tPattern " + p + ": " + thisPattern.getUtility());
+              if(!writtenOutTheUtilitiesAlready && logger.isDebugEnabled()) {
+                  logger.debug("\tPattern " + p + ": " + thisPattern.getUtility());
 
               }
           }
@@ -72,7 +70,7 @@ public class PatternModel{
           else
               thisPerson.weekendPatternLogsum = patternChoiceModel.getUtility();
 
-         if(!writtenOutTheUtilitiesAlready && debug){
+         if(!writtenOutTheUtilitiesAlready && logger.isDebugEnabled()) {
              logger.info("Here are the utilities for the alternatives that were passed to the 'buildModel' method");
              List alternatives = patternChoiceModel.getAlternatives();
              for(int i=0;i<alternatives.size();i++){
@@ -90,7 +88,8 @@ public class PatternModel{
          try{
               chosenAlternative = (Pattern) patternChoiceModel.chooseElementalAlternative();
          }catch(Exception e){
-              logger.severe("Error in choosing pattern alternative");
+              logger.fatal("Error in choosing pattern alternative");
+             //TODO - log this to the node exception log file
               System.exit(1);
          }
 
@@ -105,7 +104,7 @@ public class PatternModel{
          wkdayParams.readData(rb,"weekdayParameters.file");
          PatternModel pm = new PatternModel();
          pm.buildModel(patterns,wkdayParams);
-         logger.fine("test build model complete");
+         logger.info("test build model complete");
      }
 
 }

@@ -7,7 +7,7 @@ import com.pb.despair.ed.EDSummarizer;
 import java.util.ResourceBundle;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.File;
 
 /**
@@ -60,7 +60,7 @@ public class CalibrationManager {
     private void specifyWhichApplicationsToCalibrate(){
 
         ArrayList apps = ResourceUtil.getList(rb, "applications.in.calibration.mode");
-        if(apps.size() == 0) logger.warning("The ao.properties file indicated" +
+        if(apps.size() == 0) logger.warn("The ao.properties file indicated" +
                 "that calibration is required but no applications have been" +
                 "listed to be calibrated.  Check ao.properties and calibration.properties");
 
@@ -138,7 +138,7 @@ public class CalibrationManager {
         }else if(appName.equalsIgnoreCase("ts")){
             return calibrateTS;
         }else {
-            logger.warning("The application name passed in was not recognized and therefore " +
+            logger.warn("The application name passed in was not recognized and therefore " +
                     "the method returned false.  The application name must be one of the following: " +
                     "ed, ald, spg1, pi, spg2, pt, ct or ts");
             return false;
@@ -205,7 +205,7 @@ public class CalibrationManager {
                         " mode.  Check calibration.properties file");
             }
         }else {
-            logger.warning("The application name passed in was not recognized and therefore " +
+            logger.error("The application name passed in was not recognized and therefore " +
                     "the method returned false.  The application name must be one of the following: " +
                     "ed, ald, spg1, pi, spg2, pt, ct or ts");
         }
@@ -214,9 +214,13 @@ public class CalibrationManager {
     private TableDataSet[] produceEDCalibrationOutputs(ResourceBundle appRb){
 
         ArrayList outputFilesToCreate = ResourceUtil.getList(rb,"ed.calibration.outputs");
-        if(outputFilesToCreate == null || outputFilesToCreate.size() == 0) logger.warning("There are no calibration " +
+        if(outputFilesToCreate == null || outputFilesToCreate.size() == 0) {
+            logger.fatal("There are no calibration " +
+
                 "outputs listed for ED, even though ED is supposedly being run in calibration mode " +
                 "- check calibration.properties for existence of an 'ed.calibration.outputs' property");
+            return null;
+        }
 
         TableDataSet[] dataSets = new TableDataSet[outputFilesToCreate.size()];
         int count = 0;
@@ -227,17 +231,19 @@ public class CalibrationManager {
                 //get the non-distinct column headers from the calibration.properties file
                 specialColHeaders = ResourceUtil.getList(rb, "ed.oregon.activity.columns");
                 if(specialColHeaders == null || specialColHeaders.size() == 0 ){
-                    logger.severe("The activity columns must be listed in the calibration.properties file" +
+                    logger.fatal("The activity columns must be listed in the calibration.properties file" +
                             " in order to generate the oregon activity calibration file - check calibration.properties " +
                             "for a property called 'ed.oregon.activity.columns'");
+                    return null;
                 }
             }else if(output.equalsIgnoreCase("odot.employment")){
                 //get the special column headers from the calibration.properties file
                 specialColHeaders = ResourceUtil.getList(rb, "ed.odot.employment.columns");
                 if(specialColHeaders == null || specialColHeaders.size() == 0 ){
-                    logger.severe("The odot employment columns must be listed in the calibration.properties file" +
+                    logger.fatal("The odot employment columns must be listed in the calibration.properties file" +
                             " in order to generate the odot employment calibration file - check calibration.properties " +
                             "for a property called 'ed.odot.employment.columns'");
+                    return null;
                 }
             }
 

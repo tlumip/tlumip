@@ -2,7 +2,6 @@
 
 package com.pb.despair.pi;
 
-import com.pb.common.sql.tests.MySQLTest;
 import com.pb.despair.model.AggregateAlternative;
 import com.pb.despair.model.ChoiceModelOverflowException;
 import com.pb.despair.model.OverflowException;
@@ -12,7 +11,7 @@ import com.pb.despair.model.TravelUtilityCalculatorInterface;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -64,12 +63,12 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
                 c.getBuyingUtilityPriceCoefficient() * theExchange.getPrice() +
                 c.getBuyingUtilityTransportCoefficient() * rUtility;
         if (Double.isNaN(bob)) {
-            logger.warning("buying utility is NaN for " + theCommodityZUtility + " to " + theExchange);
-            logger.warning("rutility:" + rUtility + "  price:" + theExchange.getPrice());
+            logger.warn("buying utility is NaN for " + theCommodityZUtility + " to " + theExchange);
+            logger.warn("rutility:" + rUtility + "  price:" + theExchange.getPrice());
         }
         if (Double.isInfinite(bob) && theExchange.getBuyingSizeTerm() != 0) {
-            logger.warning("buying utility is infinite for " + theCommodityZUtility + " to " + theExchange);
-            logger.warning("rutility:" + rUtility + "  price:" + theExchange.getPrice());
+            logger.warn("buying utility is infinite for " + theCommodityZUtility + " to " + theExchange);
+            logger.warn("rutility:" + rUtility + "  price:" + theExchange.getPrice());
         }
         return bob;
     }
@@ -96,12 +95,12 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
                 c.getSellingUtilityPriceCoefficient() * theExchange.getPrice() +
                 c.getSellingUtilityTransportCoefficient() * rUtility;
         if (Double.isNaN(bob)) {
-            logger.warning("selling utility is NaN for " + theCommodityZUtility + " to exchange " + theExchange);
-            logger.warning("rutility:" + rUtility + "  price:" + theExchange.getPrice());
+            logger.warn("selling utility is NaN for " + theCommodityZUtility + " to exchange " + theExchange);
+            logger.warn("rutility:" + rUtility + "  price:" + theExchange.getPrice());
         }
         if (Double.isInfinite(bob) && theExchange.getSellingSizeTerm() != 0) {
-            logger.warning("selling utility is infinite for " + theCommodityZUtility + " to exchange " + theExchange);
-            logger.warning("rutility:" + rUtility + "  price:" + theExchange.getPrice());
+            logger.warn("selling utility is infinite for " + theCommodityZUtility + " to exchange " + theExchange);
+            logger.warn("rutility:" + rUtility + "  price:" + theExchange.getPrice());
         }
         return bob;
     }
@@ -269,7 +268,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
 
         //error checking:
         if (Double.isNaN(bob)) { //write out the individual exchange utilities to see what is going on.
-            logger.warning("composite utility is NaN for " + theCommodityZUtility);
+            logger.warn("composite utility is NaN for " + theCommodityZUtility);
             it = com.getAllExchanges().iterator();
             StringBuffer exchangeUtilities = new StringBuffer();
             while (it.hasNext()) {
@@ -277,11 +276,11 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
                 double fred = calcUtilityForExchange(x);
                 exchangeUtilities.append(x.exchangeLocationUserID + ":" + fred + " ");
             }
-            logger.warning("individual exchange utilities: " + exchangeUtilities);
+            logger.warn("individual exchange utilities: " + exchangeUtilities);
 
         }
         if (bob == Double.POSITIVE_INFINITY) {
-            logger.warning("composite utility is positive infinite for " + theCommodityZUtility);
+            logger.warn("composite utility is positive infinite for " + theCommodityZUtility);
             it = com.getAllExchanges().iterator();
             StringBuffer exchangeUtilities = new StringBuffer();
             while (it.hasNext()) {
@@ -293,7 +292,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
             throw new ChoiceModelOverflowException("CommodityZUtilityError for "+theCommodityZUtility);
         }
         if (bob == Double.NEGATIVE_INFINITY) {
-            logger.fine("composite utility is negative infinite for " + theCommodityZUtility);
+            logger.warn("composite utility is negative infinity for " + theCommodityZUtility);
         }
 
         return bob;
@@ -339,7 +338,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
             double utility = calcUtilityForExchange(x);
             weights[i] = Math.exp(dispersionParameter * utility);
             if (Double.isNaN(weights[i])) {
-                logger.severe("hmm, Commodity Flow " + i + " was such that LogitModel weight was NaN");
+                logger.error("hmm, Commodity Flow " + i + " was such that LogitModel weight was NaN");
                 throw new Error("NAN in weight for CommodityFlow " + i);
             }
             sum += weights[i];
@@ -382,7 +381,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
             double utility = calcUtilityForExchange(x);
             weights[i] = Math.exp(dispersionParameter * utility);
             if (Double.isNaN(weights[i])) {
-                logger.severe("hmm, Commodity Flow " + i + " was such that LogitModel weight was NaN");
+                logger.error("hmm, Commodity Flow " + i + " was such that LogitModel weight was NaN");
                 throw new Error("NAN in weight for CommodityFlow " + i);
             }
             sum += weights[i];
@@ -411,8 +410,8 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
             Exchange x = theCommodityZUtility.getCommodity().getExchange(taz);
             try {
                 if (Double.isNaN(amount) || Double.isInfinite(amount)) {
-                    logger.warning("quantity for intrazonal flow "+ taz+ " selling:"+ selling+ " to "+ x);
-                    logger.warning("   amount:" + amount);
+                    logger.warn("quantity for intrazonal flow "+ taz+ " selling:"+ selling+ " to "+ x);
+                    logger.warn("   amount:" + amount);
                     throw new ChoiceModelOverflowException("Infinite or NaN flow");
                 }
                 if (selling == 's') {
@@ -428,8 +427,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
             List theExchanges = com.getAllExchanges();
             double sum = 0;
             double[] weights = new double[theExchanges.size()];
-            double[] derivativeComponents = new double[theExchanges.size()];
-            
+
             // debug March 24 2004 JEA
 //            if (com.name.equals("3_OthTchr")) {
 //                // this next line is just a place to set a breakpoint.
@@ -448,7 +446,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
 //                        derivativeComponents[i] =weights[i]* theCommodityZUtility.myCommodity.getBuyingUtilityPriceCoefficient();
 //                    }
                     if (Double.isNaN(weights[i])) {
-                        logger.severe("hmm, Commodity Flow "
+                        logger.error("hmm, Commodity Flow "
                                 + i
                                 + " was such that LogitModel weight was NaN");
                         throw new Error("NAN in weight for CommodityFlow " + i);
@@ -466,8 +464,8 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
                 float quantity = (float) (amount * weights[i]);
                 Exchange anEx = (Exchange) theExchanges.get(i);
                 if (Double.isNaN(quantity) || Double.isInfinite(quantity)) {
-                    logger.severe("quantity for flow "+ taz+ " selling:"+ selling+ " to "+ anEx);
-                    logger.severe("   amount:"+ amount+ " * weight:"+ weights[i]+ " = "+ quantity);
+                    logger.warn("quantity for flow "+ taz+ " selling:"+ selling+ " to "+ anEx);
+                    logger.warn("   amount:"+ amount+ " * weight:"+ weights[i]+ " = "+ quantity);
                 }
                 try {
                     if (theCommodityZUtility instanceof SellingZUtility) {

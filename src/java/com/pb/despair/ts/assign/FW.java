@@ -9,7 +9,7 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 public class FW {
@@ -44,7 +44,6 @@ public class FW {
     static long totalTime=0;
     String timePeriod;
 
-	boolean DEBUG = false;
  
     int START_ORIG, END_ORIG;
 	int MAX_FW_ITERS;
@@ -126,7 +125,9 @@ public class FW {
         
         // loop over FW iterations
         for (int iter=0; iter < MAX_FW_ITERS; iter++) {
-            logger.fine("Iteration = " + iter);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Iteration = " + iter);
+            }
             lambdas[iter] = 1.0;
             
 
@@ -157,7 +158,7 @@ public class FW {
 					        int[] tempArray = sp.getPredecessorLink();
 					        fwPathsDoa.add( storedPathIndex, tempArray );
 					    } catch (Exception e) {
-					        logger.severe ("could not store index=" + storedPathIndex + ", for iter=" + iter + ", for origin=" + origin + ", and class=" + m);
+					        logger.fatal ("could not store index=" + storedPathIndex + ", for iter=" + iter + ", for origin=" + origin + ", and class=" + m);
 					        e.printStackTrace();
 					        System.exit(1);
 					    }
@@ -172,7 +173,7 @@ public class FW {
             // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
             if (iter > 0) {
                 if ( bisect ( iter ) ) {
-                    logger.severe ("Exact FW optimal solution found.  Unlikely, better check into this!");
+                    logger.error ("Exact FW optimal solution found.  Unlikely, better check into this!");
                     iter = MAX_FW_ITERS;
                 }
             }
@@ -265,7 +266,9 @@ public class FW {
             else
                 xright = x;
             x = (xleft + xright)/2.0;
-			if (DEBUG) logger.info ("iter=" + iter + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
+			if(logger.isDebugEnabled()) {
+                logger.debug ("iter=" + iter + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
+            }
 
             for (int n=0; n < numBisectIterations; n++) {
                 gap = bisectGap(x);
@@ -274,7 +277,9 @@ public class FW {
                 else
                     xright = x;
                 x = (xleft + xright)/2.0;
-				if (DEBUG) logger.info ("iter=" + iter + ", n=" + n + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
+				if(logger.isDebugEnabled()) {
+                    logger.debug ("iter=" + iter + ", n=" + n + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
+                }
             }
             lambdas[iter] = x;
             return(false);
@@ -425,7 +430,7 @@ public class FW {
 		
 			} catch(IOException e) {
 			    
-				logger.severe("could not open disk object array file for storing shortest path trees.");
+				logger.fatal("could not open disk object array file for storing shortest path trees.");
 				e.printStackTrace();
 				System.exit(1);
 				

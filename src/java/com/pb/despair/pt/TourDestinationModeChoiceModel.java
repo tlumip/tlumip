@@ -6,7 +6,7 @@ import com.pb.despair.model.Mode;
 import com.pb.despair.model.SkimsInMemory;
 import com.pb.despair.model.TravelTimeAndCost;
 import com.pb.common.util.SeededRandom;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.Enumeration;
 import java.io.PrintWriter;
 
@@ -30,7 +30,6 @@ public class TourDestinationModeChoiceModel{
     PersonTourModeAttributes personAttributes = new PersonTourModeAttributes();
     boolean writtenOutTheUtilitiesAlready = false;
 
-    final boolean debug=false;
 
     public void buildModel(TazData tazs){ //passsing in PTModel.tazs and adding to logit model as alternatives
          destinationModel = new LogitModel("destinationModel",tazs.tazData.size());
@@ -59,7 +58,7 @@ public class TourDestinationModeChoiceModel{
             Matrix expUtilities = um.getMatrix(activityPurpose,purposeSegment);
 
             //some debug logging statements used when things go wrong.
-            if(!writtenOutTheUtilitiesAlready && debug){
+            if(!writtenOutTheUtilitiesAlready && logger.isDebugEnabled()) {
                 logger.info("Calculating Destination Zone for the following tour...");
                 logger.info("HHID " + thisHousehold.ID + ", Person " + thisPerson.ID + ", Tour " + thisTour.tourNumber
                       + ", ActivityPurpose " + ActivityPurpose.getActivityPurposeChar(activityPurpose)
@@ -101,14 +100,14 @@ public class TourDestinationModeChoiceModel{
             } //end destinations
 
             if(chosenTaz==null){  //no destination zone could be found.  We have a real problem so write out debug info
-                logger.severe("Error in tour destination choice: no zones available for this household, tour");
-                logger.severe("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
-                logger.severe("A Primary Destination Tour file and the TAZ info will be written out to the debug directory." +
+                logger.error("Error in tour destination choice: no zones available for this household, tour");
+                logger.error("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
+                logger.error("A Primary Destination Tour file and the TAZ info will be written out to the debug directory." +
                         "\nYou should also look at "+ expUtilities.getName()+" located in the pt directory " +
                         "for the current year");
 
                 //write the tour information into a debug file.  Path is specified in the pt.properties file
-                logger.severe("Writing Tour Debug info to the debug directory");
+                logger.error("Writing Tour Debug info to the debug directory");
                 PrintWriter file = PTResults.createTourDebugFile("HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"PrimaryDestination.csv");
                 thisTour.printCSV(file);
                 file.close();
@@ -117,7 +116,7 @@ public class TourDestinationModeChoiceModel{
                 PrintWriter file2 = PTResults.createTazDebugFile("TazInfo.csv");
                 if(file2 != null){  //if it is null that means an earlier problem caused this file to be written already and there
                                        //is no reason to write it out twice
-                    logger.severe("Writing out Taz Info because the primary destination on this tour couldn't find a destination zone");
+                    logger.error("Writing out Taz Info because the primary destination on this tour couldn't find a destination zone");
                     tazEnum = tazs.tazData.elements();
                     for(int i=0;i<tazs.tazData.size();++i){
                         Taz taz = (Taz)tazEnum.nextElement();
@@ -136,9 +135,9 @@ public class TourDestinationModeChoiceModel{
         }else {//the primary destination is work (or work-based) and therefore the chosenTaz is the workplace location
             chosenTaz = (Taz)tazs.tazData.get(new Integer(thisTour.primaryDestination.location.zoneNumber));
             if(chosenTaz == null){
-                logger.severe("Work (or Work-based) tour has a primary destination of 0 - not right!!");
-                logger.severe("HHID: " + thisHousehold.ID + " PersonID: " + thisPerson.ID);
-//              logger.severe("TASK IS EXITING - FATAL ERROR");
+                logger.error("Work (or Work-based) tour has a primary destination of 0 - not right!!");
+                logger.error("HHID: " + thisHousehold.ID + " PersonID: " + thisPerson.ID);
+//              logger.error("TASK IS EXITING - FATAL ERROR");
                 chosenTaz = (Taz) tazs.tazData.get(new Integer(thisTour.begin.location.zoneNumber));;  //no sense in going on as we have a fundamental problem.
             }
         }
@@ -175,7 +174,7 @@ public class TourDestinationModeChoiceModel{
         tmcm.chooseMode();
         chosenMode = tmcm.chosenMode;
 
-        if(chosenMode == null) logger.severe("The chosen mode is null");
+        if(chosenMode == null) logger.error("The chosen mode is null");
 
         thisTour.primaryMode=chosenMode;
         thisTour.hasPrimaryMode=true;

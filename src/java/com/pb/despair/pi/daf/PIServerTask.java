@@ -8,7 +8,7 @@ import com.pb.despair.model.OverflowException;
 
 import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.*;
 
 /**
@@ -18,7 +18,6 @@ import java.io.*;
 public class PIServerTask extends Task{
 
     Logger logger = Logger.getLogger("com.pb.common.despair.pi.daf");
-    boolean debug = true;
     private PIModel pi;
     private int maxIterations = 300; //default value in case none is set in properties file
     private int nIterations = 0; //a counter to keep track of how many iterations it takes before the meritMeasure is within tolerance.
@@ -79,7 +78,7 @@ public class PIServerTask extends Task{
             maxIterations = mi;
             logger.info("*   Maximum iteration set to " + mi);
         }
-        if(maxIterations == 0) logger.warning("Max Iterations was set to 0 in properties file");
+        if(maxIterations == 0) logger.warn("Max Iterations was set to 0 in properties file");
         logger.info("*******************************************************************************************");
     }
 
@@ -192,7 +191,7 @@ public class PIServerTask extends Task{
         }
 
         if (nanPresent) {
-            logger.severe("Initial prices cause overflow -- try again changing initial prices");
+            logger.fatal("Initial prices cause overflow -- try again changing initial prices");
             throw new RuntimeException("Initial prices cause overflow -- try again changing initial prices");
         }
 
@@ -267,11 +266,11 @@ public class PIServerTask extends Task{
             } else {
                 if (nIterations == maxIterations-1) {
                     pi.backUpToLastValidPrices();
-                    logger.warning("!!  Not Improving and at second last iteration -- backing up to last valid prices");
+                    logger.warn("!!  Not Improving and at second last iteration -- backing up to last valid prices");
                 } else if (newMeritMeasure == Double.POSITIVE_INFINITY && pi.getStepSize()<= pi.getMinimumStepSize()) {
                     pi.backUpToLastValidPrices();
                     nIterations = maxIterations-1;
-                    logger.severe("!!  Can't get past infinity without going below minimum step size -- terminating at last valid prices");
+                    logger.fatal("!!  Can't get past infinity without going below minimum step size -- terminating at last valid prices");
                 } else {
                     pi.decreaseStepSizeAndAdjustPrices();
                     logger.info("!!  Not Improving -- decreasing step size to "+pi.getStepSize());
@@ -314,13 +313,13 @@ public class PIServerTask extends Task{
                     nanPresent = true;
                 }
                 if (nanPresent) {
-                    logger.warning("Overflow error, setting new merit measure to positive infinity");
+                    logger.warn("Overflow error, setting new merit measure to positive infinity");
                     newMeritMeasure = Double.POSITIVE_INFINITY;
                 }
             }
             if(nIterations == maxIterations) {
                 convergenceCriteriaMet=true;
-                logger.severe("Terminating because maximum iterations reached -- did not converge to tolerance");
+                logger.fatal("Terminating because maximum iterations reached -- did not converge to tolerance");
             }
             nanPresent = false;
             logger.info("*********************************************************************************************");
@@ -474,7 +473,9 @@ public class PIServerTask extends Task{
             int count = m+1;
 
             //Send the message
-            if(debug) logger.info( getName() + " sent " + msg.getId() + " to " + WorkPorts[(count%nWorkQueues)].getName());
+            if(logger.isDebugEnabled()) {
+                logger.debug( getName() + " sent " + msg.getId() + " to " + WorkPorts[(count%nWorkQueues)].getName());
+            }
             WorkPorts[(count%nWorkQueues)].send(msg); //will cycle through the ports
                                                         //till all messages are sent
         }

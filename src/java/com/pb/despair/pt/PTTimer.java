@@ -1,6 +1,6 @@
 package com.pb.despair.pt;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * PTTimer outputs elapsed time information to the log file
@@ -34,13 +34,11 @@ public class PTTimer{
     
     public void startTimer() {
         startTime = System.currentTimeMillis();
-        //logger.fine("startTime = "+startTime);
-    }    
+    }
 
     public void endTimer() {
         endTime = System.currentTimeMillis();
-        //logger.fine("endTime = "+endTime);
-    }    
+    }
 
     public long elapsedTime() {
         elapsedTime = endTime-startTime;
@@ -49,9 +47,9 @@ public class PTTimer{
         
     public void getElapsedTime() {
         elapsedTime = endTime-startTime;
-        logger.fine("startTime = "+startTime);
-        logger.fine("endTime = "+endTime);
-        logger.fine("elapsedTime = "+elapsedTime);
+        logger.info("startTime = "+startTime);
+        logger.info("endTime = "+endTime);
+        logger.info("elapsedTime = "+elapsedTime);
     }
     //Gets the elapsed time and starts a new timer.   
     public void getElapsedTimeFor(String getElapsedTimeString){    

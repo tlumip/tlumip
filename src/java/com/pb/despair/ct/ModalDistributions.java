@@ -1,10 +1,11 @@
 package com.pb.despair.ct;
 
-
+import org.apache.log4j.Logger;
 import java.io.*;
 import java.util.*;
+
 public class ModalDistributions {
-  private static boolean DEBUG = false;
+    final static Logger logger = Logger.getLogger("com.pb.despair.ct.ModelDistributions");
   List modes;
   int modeSize;
   HashMap hm;
@@ -20,9 +21,9 @@ public class ModalDistributions {
   private void readDistributions (File f) {
     try {
       String source = f.getAbsolutePath();
-      if (DEBUG) {
-        System.out.println("[# ModalDistributions.readDistributions()]");
-        System.out.println("Reading data from "+source+" (LM: "+
+      if(logger.isDebugEnabled()) {
+        logger.debug("[# ModalDistributions.readDistributions()]");
+        logger.debug("Reading data from "+source+" (LM: "+
           new Date(f.lastModified())+")");
       }
       BufferedReader br = new BufferedReader(new FileReader(source));
@@ -50,9 +51,9 @@ public class ModalDistributions {
             modeShare));
       }
       br.close();
-      if (DEBUG) {
-        System.out.println("Modes found: "+modes);
-        System.out.println("HashMap hm:\n"+hm);
+      if(logger.isDebugEnabled()) {
+        logger.debug("Modes found: "+modes);
+        logger.debug("HashMap hm:\n"+hm);
       }
     } catch (IOException e) {
       e.printStackTrace();
@@ -65,25 +66,33 @@ public class ModalDistributions {
     return selectMode (commodity, distance, Math.random());
   }
   public String selectMode (String commodity, double distance, double rn) {
-    if (DEBUG) System.out.println("\n[# ModalDistributions.selectMode("+
-      commodity+","+distance+","+rn+")]");
+    if(logger.isDebugEnabled()) {
+        logger.debug("\n[# ModalDistributions.selectMode("+
+                                            commodity+","+distance+","+rn+")]");
+    }
     int m;   // index variable for modes
     double[] d = new double[modeSize];
     // Read the share-weighted densities (height of distribution at the given
     // distance) for each of the modes
     String key;
     double dsum = 0.0;
-    if (DEBUG) System.out.println("Before normalization:");
+    if(logger.isDebugEnabled()) {
+        logger.debug("Before normalization:");
+    }
     for (m=0; m<modeSize; m++) {
       key = commodity+modes.get(m);
-      if (DEBUG) System.out.print("   key="+key);
+      if(logger.isDebugEnabled()) {
+          logger.debug("   key="+key);
+      }
       // Some commodity-mode combinations may be undefined, in which case we'll set them
       // equal to zero
       if (hm.containsKey(key))
         d[m] = ((TriangularDistribution)hm.get(key)).scaledDensity(distance);
       else d[m] = 0.0;
       dsum += d[m];
-      if (DEBUG) System.out.println(", d="+d[m]+" dsum="+dsum);
+      if(logger.isDebugEnabled()) {
+          logger.debug(", d="+d[m]+" dsum="+dsum);
+      }
     }
     // If the sum of the densities is zero then the wheels fell off somewhere...
     if (dsum==0.0) {
@@ -95,12 +104,15 @@ public class ModalDistributions {
     }
     // Normalize the densities so that we can use them with a random draw on
     // (0,1) and put them in a cumulative distribution
-    if (DEBUG) System.out.println("Cumulative normalized distribution:");
+    if(logger.isDebugEnabled()) {
+        logger.debug("Cumulative normalized distribution:");
+    }
     double floor = 0.0;
     for (m=0; m<modeSize; m++) {
       floor = d[m] = floor+(d[m]/dsum);
-      if (DEBUG) System.out.println("   mode="+(String)modes.get(m)+" cf="+
-        d[m]);
+      if(logger.isDebugEnabled()) {
+          logger.debug("   mode="+(String)modes.get(m)+" cf="+d[m]);
+      }
     }
     // Finally, select the mode based on where the random draw falls in the
     // cumulative distribution
@@ -118,7 +130,7 @@ public class ModalDistributions {
   }
 
   public static void main (String[] args) {
-    DEBUG = true;    // Just for testing purposes, shouldn't be visible outside
+    
     ModalDistributions md = new ModalDistributions("ModalDistributionParameters.txt");
     // Should select truck
     System.out.println("At distance=17 mode="+md.selectMode("SCTG35", 17));

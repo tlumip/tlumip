@@ -6,7 +6,7 @@ import com.pb.despair.pt.PersonTourModeAttributes;
 import com.pb.despair.pt.TourModeParameters;
 import com.pb.despair.pt.ZoneAttributes;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 /** Driver mode
  * 
  * @author Joel Freedman
@@ -60,7 +60,8 @@ public class AutoDriver extends Mode {
     /** Get auto driver utility */
      public double getUtility(){
           if(!hasUtility){
-               logger.severe("Error: Utility not calculated for "+alternativeName+"\n");
+               logger.fatal("Error: Utility not calculated for "+alternativeName+"\n");
+              //TODO - log this exception to the node exception file
                System.exit(1);
           };
           return utility;

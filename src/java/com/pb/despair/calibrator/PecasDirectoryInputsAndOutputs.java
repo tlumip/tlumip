@@ -9,10 +9,9 @@ package com.pb.despair.calibrator;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.WeakHashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.hbaspecto.calibrator.DirectoryModelInputsAndOutputs;
-import com.hbaspecto.calibrator.ModelInputsAndOutputs;
 import com.pb.common.datafile.*;
 import com.pb.common.matrix.StringIndexedNDimensionalMatrix;
 
@@ -85,7 +84,7 @@ public class PecasDirectoryInputsAndOutputs implements DirectoryModelInputsAndOu
             in.close();
             fis.close();
         } catch (Exception e) {
-            logger.severe("Cant read in stringIndexedTable "+fileName+" : "+tableName);
+            logger.fatal("Cant read in stringIndexedTable "+fileName+" : "+tableName);
             throw new RuntimeException("Cant read in stringIndexedTable "+fileName+" : "+tableName);
            }
         return theOneWereLookingFor;

@@ -14,7 +14,7 @@ import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixType;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.File;

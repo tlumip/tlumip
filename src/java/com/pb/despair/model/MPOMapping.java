@@ -1,12 +1,10 @@
 package com.pb.despair.model;
 
-import com.pb.common.matrix.AlphaToBeta;
 
 import java.util.HashMap;
 import java.util.TreeSet;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Author: willison
@@ -36,7 +34,7 @@ public class MPOMapping {
         //first check to make sure that your arrays are all the same size.  If they aren't we have to
         //exit and figure out why.
         if(azones.length != bzones.length && azones.length != mpos.length){
-            logger.severe("azone, bzone and mpo arrays must be the same length - mapping can not be defined");
+            logger.fatal("azone, bzone and mpo arrays must be the same length - mapping can not be defined");
             System.exit(10);
         }
         azonesByMPO = new HashMap();

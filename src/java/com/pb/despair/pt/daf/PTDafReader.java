@@ -61,9 +61,13 @@ public class PTDafReader extends MessageProcessingTask{
             skimsMessage.setId(MessageID.SKIMS);
             skimsMessage.setValue("skims",skims);
             String queueName = new String("WorkQueue"+q);
-            logger.fine("Skims sent to "+queueName+" at "+ new Date());
+            if(logger.isDebugEnabled()) {
+                logger.debug("Skims sent to "+queueName+" at "+ new Date());
+            }
             sendTo(queueName,skimsMessage);
-            logger.fine("Free memory after creating MC logsum: "+Runtime.getRuntime().freeMemory());   
+            if(logger.isDebugEnabled()) {
+                logger.debug("Free memory after creating MC logsum: "+Runtime.getRuntime().freeMemory());   
+            }
         }
         skims=null;
     }

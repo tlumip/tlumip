@@ -14,7 +14,7 @@ import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
 import java.io.File;
 import java.util.Hashtable;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 public class EDDataAccess {
 
@@ -113,13 +113,13 @@ double getValue(String name, String location, int year) throws Exception {
 			if (r != null)	{
 				return new Double(r).doubleValue();
 			}else {
-				logger.severe("Data does not exist:  Looking for " + name + " in " + year);
+				logger.warn("Data does not exist:  Looking for " + name + " in " + year);
 				//Debug.println("Data does not exist:  Looking for " + name + " in " + year);
 				throw new Exception("Data does not exist:  Looking for " + name + " in " + year);
 			}
 		}catch (Exception e)
 		{
-			logger.warning("Big problem accessing hash table.  " + name);
+			logger.fatal("Big problem accessing hash table.  " + name);
 			e.printStackTrace();
 			//Debug.println("Danger Will Robinson, Danger!  " + name);
 		}

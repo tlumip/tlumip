@@ -25,7 +25,6 @@ import com.pb.despair.model.TransportKnowledge;
  *
  */
 public class OregonPIPProcessor extends PIPProcessor {
-    private boolean debug = false;
 
     public OregonPIPProcessor() {
         super();
@@ -36,6 +35,20 @@ public class OregonPIPProcessor extends PIPProcessor {
      */
     public OregonPIPProcessor(int timePeriod, ResourceBundle piRb, ResourceBundle globalRb) {
         super(timePeriod, piRb, globalRb);
+    }
+
+    protected static class FloorspaceQuantityStorage {
+        final String floorspaceTypeName;
+        final float [] inventory;
+
+        FloorspaceQuantityStorage(String commodityName, int arraySize) {
+            floorspaceTypeName = commodityName;
+            inventory = new float[arraySize];
+        }
+
+        public Commodity getFloorspaceType() {
+            return Commodity.retrieveCommodity(floorspaceTypeName);
+        }
     }
 
     /* (non-Javadoc)
@@ -141,7 +154,9 @@ public class OregonPIPProcessor extends PIPProcessor {
                 }
                 Industry industry = new Industry();
                 float[] dollarsByIndustry = new float[dollars.getRowCount()]; //header row does not count in row count
-                logger.fine("column count: "+ dollars.getColumnCount());
+                if(logger.isDebugEnabled()) {
+                    logger.debug("column count: "+ dollars.getColumnCount());
+                }
                 for(int r = 0; r < dollars.getRowCount(); r++){
                     int industryIndex = industry.getIndustryIndex(dollars.getStringValueAt(r + 1, 1));//Activity Name
                     dollarsByIndustry[industryIndex] = dollars.getValueAt(r + 1, 2); //Total Dollars
@@ -199,7 +214,8 @@ public class OregonPIPProcessor extends PIPProcessor {
                 forSpaceByZone[(int)piAgForTable.getValueAt(row,azoneCol)] =  piAgForTable.getValueAt(row,mSqftCol);
             }
             else {
-                logger.severe("Bad floor type name in PIAgForestFloorspace file");
+                logger.fatal("Bad floor type name in PIAgForestFloorspace file");
+                //TODO - send to node exception log
                 System.exit(1);
             }
         }
@@ -228,7 +244,9 @@ public class OregonPIPProcessor extends PIPProcessor {
                 }
             }
         }
-        logger.fine("Replaced " + replaceCount + " values in the Floorspace Table");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Replaced " + replaceCount + " values in the Floorspace Table");
+        }
         //Now write out the FloorspaceW.csv file
         String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
         CSVFileWriter writer = new CSVFileWriter();
@@ -320,7 +338,7 @@ public class OregonPIPProcessor extends PIPProcessor {
 
         logger.info("\tChecking for current year ALD Increments.csv file");
         TableDataSet incrementsTable = loadTableDataSet("Increments","ald.input.data");
-        if(incrementsTable == null) logger.warning("\tALD has not been run or did not output an Increments.csv file." +
+        if(incrementsTable == null) logger.warn("\tALD has not been run or did not output an Increments.csv file." +
                 "  The construction size terms will not be updated. ");
         else {
             logger.info("\t\tFound it! We are now updating the construction size terms....");
@@ -343,8 +361,8 @@ public class OregonPIPProcessor extends PIPProcessor {
             int[] aZones = a2bMap.getAlphaExternals();
             for(int i=1; i< aZones.length; i++){
                 if(nAddsByZone[aZones[i]] != nFlrNames){
-                    logger.warning("\t\t\t\tZone " + a2bMap.getAlphaExternals()[i] + " added up " + nAddsByZone[a2bMap.getAlphaExternals()[i]]);
-                    logger.warning("\t\t\t\tCheck the ald/Increments.csv file - there is an error");
+                    logger.error("\t\t\t\tZone " + a2bMap.getAlphaExternals()[i] + " added up " + nAddsByZone[a2bMap.getAlphaExternals()[i]]);
+                    logger.error("\t\t\t\tCheck the ald/Increments.csv file - there is an error");
                 }
             }
             logger.info("\t\t\tIf no warning messages appeared, proceed");
@@ -353,7 +371,9 @@ public class OregonPIPProcessor extends PIPProcessor {
             float[] mSqftByBZone = new float[a2bMap.getMaxBetaZone() + 1];
             for(int i=1; i<aZones.length; i++){
                 int betaZone = a2bMap.getBetaZone(aZones[i]);
-                if(debug) logger.info("alphaZone " + aZones[i] + " = betaZone " + betaZone);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("alphaZone " + aZones[i] + " = betaZone " + betaZone);
+                }
                 mSqftByBZone[betaZone] += mSqftByAZone[aZones[i]];
             }
 
@@ -552,34 +572,52 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
         }
         if (!writeTheseOutputs) {
-            logger.warning("Not writing Oregon-Specific Outputs (labour consumption and production)");
+            logger.info("Not writing Oregon-Specific Outputs (labour consumption and production)");
             return;
         }
         LaborProductionAndConsumption labor = new LaborProductionAndConsumption(piRb);
         TableDataSet householdQuantity = labor.loadTableDataSet("ActivityLocations2.csv","output.data");
-        logger.fine("loaded ActivityLocations2.csv");
+        if(logger.isDebugEnabled()) {
+            logger.debug("loaded ActivityLocations2.csv");
+        }
         TableDataSet alphaToBeta = labor.loadTableDataSet("alpha2beta.csv","reference.data");
-        logger.fine("loaded alpha2beta.csv");
+        if(logger.isDebugEnabled()) {
+            logger.debug("loaded alpha2beta.csv");
+        }
         labor.setZoneMap(alphaToBeta);
-        logger.fine("created zone map");
+        if(logger.isDebugEnabled()) {
+            logger.debug("created zone map");
+        }
 
         labor.createOccupationSet();
-        logger.fine("created occupation set");
+        if(logger.isDebugEnabled()) {
+            logger.debug("created occupation set");
+        }
         labor.createActivitySet();
-        logger.fine("created activity set");
+        if(logger.isDebugEnabled()) {
+            logger.debug("created activity set");
+        }
         labor.createHouseholdSegmentSet();
-        logger.fine("created household segment set");
+        if(logger.isDebugEnabled()) {
+            logger.debug("created household segment set");
+        }
 
         labor.setPopulation(householdQuantity);
-        logger.fine("set population");
+        if(logger.isDebugEnabled()) {
+            logger.debug("set population");
+        }
 
         labor.setProductionAndConsumption();
-        logger.fine("set production and consumption");
+        if(logger.isDebugEnabled()) {
+            logger.debug("set production and consumption");
+        }
         labor.writeToCSV();
     
         labor.sumProductionActivities();
         labor.sumConsumptionActivities();
-        logger.fine("Finished setProductionAndConsumption()");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Finished setProductionAndConsumption()");
+        }
     }
 
     public static void main(String[] args) {

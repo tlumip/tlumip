@@ -14,6 +14,8 @@ import com.pb.despair.pt.Tour;
 
 import java.util.Enumeration;
 
+import org.apache.log4j.Logger;
+
 
 /** 
  * Model for choosing the destination and mode choice of 
@@ -26,9 +28,8 @@ import java.util.Enumeration;
 
  
 public class StopDestinationModeChoiceModel{
-
+     final static Logger logger = Logger.getLogger("com.pb.despair.pt.old.StopDestinationChoiceModel");
      double logsum;
-     final static boolean debug=false;
      final static int debugID = 1;
      
      //constructor
@@ -95,7 +96,7 @@ public class StopDestinationModeChoiceModel{
                     stop1Taz.calcStopDestinationUtility(actPurpose,destParams,thisTour.primaryMode,autoTime, walkTime, bikeTime,transitGeneralizedCost,autoDists,1);
                     if(stop1Taz.isAvailable())
                          iStop1Model.addAlternative(stop1Taz);
-                    if(debug && thisHousehold.ID==debugID){
+                    if(logger.isDebugEnabled() && thisHousehold.ID==debugID){
                          System.out.println("**** Attributes of destination "+stop1Taz.zoneNumber);
                          stop1Taz.print();
                           System.out.println("Utility for destination taz "+stop1Taz.zoneNumber+" = "
@@ -131,7 +132,7 @@ public class StopDestinationModeChoiceModel{
                     
                     if(stop2Taz.isAvailable())
                          iStop2Model.addAlternative(stop2Taz);
-                    if(debug && thisHousehold.ID==debugID){
+                    if(thisHousehold.ID==debugID){
                          System.out.println("**** Attributes of destination "+stop2Taz.zoneNumber);
                          stop2Taz.print();
                           System.out.println("Utility for destination taz "+stop2Taz.zoneNumber+" = "
@@ -148,7 +149,6 @@ public class StopDestinationModeChoiceModel{
           if(thisTour.hasIntermediateStop1(thisTour.tourString)==1){
                try{
                     Taz chosenTaz = (Taz) iStop1Model.chooseElementalAlternative();
-                    //if(debug) System.out.println("Chose taz: "+chosenTaz.zoneNumber);
                     thisTour.intermediateStop1.location.zoneNumber=chosenTaz.zoneNumber;
                }catch(Exception e){
                     System.out.println("Error in destination choice: no zones available for this household, tour, stop 1");
@@ -164,7 +164,6 @@ public class StopDestinationModeChoiceModel{
           if(thisTour.hasIntermediateStop2(thisTour.tourString)==1){
                try{
                     Taz chosenTaz = (Taz) iStop2Model.chooseElementalAlternative();
-                    //if(debug) System.out.println("Chose taz: "+chosenTaz.zoneNumber);
                     thisTour.intermediateStop2.location.zoneNumber=chosenTaz.zoneNumber;
                }catch(Exception e){
                     System.out.println("Error in destination choice: no zones available for this household, tour, stop 2");

@@ -5,12 +5,9 @@ import com.pb.despair.model.SkimsInMemory;
 import com.pb.despair.model.ModeType;
 
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Iterator;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.PrintWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 
 /** 
  * Model for choosing the intermediate stop destination on tours
@@ -24,7 +21,6 @@ import java.io.IOException;
 public class StopDestinationChoiceModel{
      protected static Logger logger = Logger.getLogger("com.pb.despair.pt.StopDestinationChoiceModel");
      double utility;
-     final static boolean debug=false;
      final static int debugID = 68313;
      LogitModel iStop1Model;
      LogitModel iStop2Model;
@@ -60,11 +56,11 @@ public class StopDestinationChoiceModel{
 
           //no begin taz, end Taz, or primaryDestination taz
           if(thisTour.begin.location.zoneNumber==0 || thisTour.end.location.zoneNumber==0 || thisTour.primaryDestination.location.zoneNumber==0 ){
-              logger.severe("Not running StopZones model for the following tour due to problems in the begin,end and primary dest TAZ numbers");
-              logger.severe("Error: begin taz : "+thisTour.begin.location.zoneNumber+ " end taz "+thisTour.end.location.zoneNumber+ " pd taz "+thisTour.primaryDestination.location.zoneNumber);
+              logger.error("Not running StopZones model for the following tour due to problems in the begin,end and primary dest TAZ numbers");
+              logger.error("Error: begin taz : "+thisTour.begin.location.zoneNumber+ " end taz "+thisTour.end.location.zoneNumber+ " pd taz "+thisTour.primaryDestination.location.zoneNumber);
 
               //write the tour information into a debug file.  Path is specified in the pt.properties file
-              logger.severe("Writing Tour Debug info to the debug directory");
+              logger.error("Writing Tour Debug info to the debug directory");
               PrintWriter file = PTResults.createTourDebugFile("HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+".csv");
               thisTour.printCSV(file);
               file.close();
@@ -133,10 +129,10 @@ public class StopDestinationChoiceModel{
                                                         autoDists,
                                                         1
                                                         );
-                if(debug){
-                     logger.info("**** Attributes of destination "+stop1Taz.zoneNumber);
+                if(logger.isDebugEnabled()) {
+                     logger.debug("**** Attributes of destination "+stop1Taz.zoneNumber);
                      stop1Taz.print();
-                      logger.info("Utility for destination taz "+stop1Taz.zoneNumber+" = "
+                      logger.debug("Utility for destination taz "+stop1Taz.zoneNumber+" = "
                            +stop1Taz.utility);
                  }
              } //calculated utilities for each destination TAZ
@@ -151,12 +147,12 @@ public class StopDestinationChoiceModel{
                  thisTour.intermediateStop1.location.zoneNumber=chosenTaz.zoneNumber;
 
             }catch(Exception e){
-                logger.severe("Error in stop destination choice: no zones available for this household, tour, stop 1");
-                logger.severe("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
-                logger.severe("A Stop1 Tour file and the TAZ info will be written out to the debug directory.");
+                logger.error("Error in stop destination choice: no zones available for this household, tour, stop 1");
+                logger.error("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
+                logger.error("A Stop1 Tour file and the TAZ info will be written out to the debug directory.");
 
                 //write the tour information into a debug file.  Path is specified in the pt.properties file
-                logger.severe("Writing Tour Debug info to the debug directory");
+                logger.error("Writing Tour Debug info to the debug directory");
                 PrintWriter file = PTResults.createTourDebugFile("HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop1.csv");
                 thisTour.printCSV(file);
                 file.close();
@@ -165,7 +161,7 @@ public class StopDestinationChoiceModel{
                 PrintWriter file2 = PTResults.createTazDebugFile("HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop1AvailableAlternatives.csv");
                 if(file2 != null){  //if it is null that means an earlier problem caused this file to be written already and there
                                        //is no reason to write it out twice
-                    logger.severe("Writing out Taz Info because the first intermediate stop on the tour couldn't find a destination");
+                    logger.error("Writing out Taz Info because the first intermediate stop on the tour couldn't find a destination");
                     Iterator alts = iStop1Model.getAlternatives().iterator();
                     while(alts.hasNext()){
                         Taz stop1Taz = (Taz)alts.next();
@@ -247,10 +243,10 @@ public class StopDestinationChoiceModel{
                                                         autoDists,
                                                         2
                                                         );
-                 if(debug ){
-                      logger.info("**** Attributes of destination "+stop2Taz.zoneNumber);
+                 if(logger.isDebugEnabled()) {
+                      logger.debug("**** Attributes of destination "+stop2Taz.zoneNumber);
                       stop2Taz.print();
-                       logger.info("Utility for destination taz "+stop2Taz.zoneNumber+" = "
+                       logger.debug("Utility for destination taz "+stop2Taz.zoneNumber+" = "
                             +stop2Taz.utility);
                  }
 
@@ -265,12 +261,12 @@ public class StopDestinationChoiceModel{
                  thisTour.intermediateStop2.location.zoneNumber=chosenTaz.zoneNumber;
 
              }catch(Exception e){
-                 logger.severe("Error in stop destination choice: no zones available for this household, tour, stop 2");
-                 logger.severe("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
-                 logger.severe("A Stop2 Tour file and the TAZ info will be written out to the debug directory.");
+                 logger.error("Error in stop destination choice: no zones available for this household, tour, stop 2");
+                 logger.error("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
+                 logger.error("A Stop2 Tour file and the TAZ info will be written out to the debug directory.");
 
                  //write the tour information into a debug file.  Path is specified in the pt.properties file
-                 logger.severe("Writing Tour Debug info to the debug directory");
+                 logger.error("Writing Tour Debug info to the debug directory");
                  PrintWriter file = PTResults.createTourDebugFile("HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop2.csv");
                  thisTour.printCSV(file);
                  file.close();
@@ -279,7 +275,7 @@ public class StopDestinationChoiceModel{
                  PrintWriter file2 = PTResults.createTazDebugFile("HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop2AvailableAlternatives.csv");
                  if(file2 != null){  //if it is null that means an earlier problem caused this file to be written already and there
                                        //is no reason to write it out twice
-                     logger.severe("Writing out Taz Info because the second stop on this tour couldn't find a destination");
+                     logger.error("Writing out Taz Info because the second stop on this tour couldn't find a destination");
                      Iterator alts = iStop2Model.getAlternatives().iterator();
                      while(alts.hasNext()){
                          Taz stop2Taz = (Taz)alts.next();

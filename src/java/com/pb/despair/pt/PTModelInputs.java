@@ -15,7 +15,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.despair.model.ModelComponent;
 import com.pb.despair.model.SkimsInMemory;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -24,7 +24,6 @@ import java.util.*;
 
 public class PTModelInputs extends ModelComponent implements Serializable{
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
-    boolean debug = false;
     public static final boolean RUN_WEEKEND_MODEL = false;
     Random thisRandom;
 
@@ -69,12 +68,16 @@ public class PTModelInputs extends ModelComponent implements Serializable{
 
     public void getPatterns(){
     //create instance of Patterns for weekdays
-        logger.fine("Creating WeekdayPatterns Object");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Creating WeekdayPatterns Object");
+        }
         wkdayPatterns = new Patterns();
         wkdayPatterns.readData(ptRb,"weekdayPatterns.file");
 
         //create instance of Patterns for weekends
-        logger.fine("Creating WeekdayPatterns Object");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Creating WeekdayPatterns Object");
+        }
         wkendPatterns = new Patterns();
         wkendPatterns.readData(ptRb,"weekendPatterns.file");
     }
@@ -85,43 +88,57 @@ public class PTModelInputs extends ModelComponent implements Serializable{
         //read the taz data from csv to TableDataSet
         
         try{
-            logger.fine("Adding AlphaToBetaTaz");
+            if(logger.isDebugEnabled()) {
+                logger.debug("Adding AlphaToBetaTaz");
+            }
             String file = ResourceUtil.getProperty(globalRb, "alpha2beta.file");
         	alphaToBeta = reader.readFile(new File(file));
         }catch(IOException e) {
-           	   logger.severe("Error reading alphazone to betazone file.");
+           	   logger.fatal("Error reading alphazone to betazone file.");
            	   e.printStackTrace();
         }
                 
         //create instance of PatternModelParameters for weekdays
-        logger.fine("Creating Weekday PatternChoiceParameters Object");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Creating Weekday PatternChoiceParameters Object");
+        }
         wkdayParams = new PatternChoiceParameters();
         wkdayParams.readData(ptRb,"weekdayParameters.file");
 
 
         //create instance of PatternModelParameters for weekends            
-        logger.fine("Creating Weekend PatternChoiceParameters Object");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Creating Weekend PatternChoiceParameters Object");
+        }
         wkendParams = new PatternChoiceParameters();
         wkendParams.readData(ptRb,"weekendParameters.file");
           
 
 
         //read the tourModeParameters from csv to TableDataSet
-        logger.fine("Reading tour mode parameters");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Reading tour mode parameters");
+        }
         tmpd = new TourModeParametersData();
         tmpd.readData(ptRb,"tourModeParameters.file");
           
         //read the tourDestinationParameters from csv to TableDataSet
-        logger.fine("Reading tour destination parameters");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Reading tour destination parameters");
+        }
         tdpd = new TourDestinationParametersData();
         tdpd.readData(ptRb,"tourDestinationParameters.file");
         //read the stopDestinationParameters from csv to TableDataSet
-        logger.fine("Reading stop destination parameters");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Reading stop destination parameters");
+        }
         sdpd = new StopDestinationParametersData();
         sdpd.readData(ptRb,"stopDestinationParameters.file");
 
         //read the TripModeParameters from csv to TableDataSet
-        logger.fine("Reading trip mode parameters");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Reading trip mode parameters");
+        }
         smpd = new TripModeParametersData();
         smpd.readData(ptRb,"tripModeParameters.file");
     }
@@ -142,7 +159,7 @@ public class PTModelInputs extends ModelComponent implements Serializable{
                                                 //as walk speed and peak times.
             skims.readSkims(ptRb);   //the pt.properties says where the skim files are located.
         }
-        //logger.fine("Size of skims: "+ObjectUtil.sizeOf(skims));
+        //logger.debug("Size of skims: "+ObjectUtil.sizeOf(skims));
     }
     public void setSkims(SkimsInMemory skimsInMemory){
            skims = skimsInMemory;
@@ -171,7 +188,7 @@ public class PTModelInputs extends ModelComponent implements Serializable{
             TableDataSet table = reader.readFile(new File(fullPath));
             return table;
         } catch (IOException e) {
-            logger.severe("Can't find TazData input table " + "laborFlows");
+            logger.fatal("Can't find TazData input table " + "laborFlows");
             e.printStackTrace();
         }
         return null;

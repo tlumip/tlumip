@@ -14,8 +14,8 @@ import java.util.Iterator;
  */
 public class SellingZUtility extends CommodityZUtility {
 
-    public SellingZUtility(Commodity c, TAZ t, int numZones, TravelUtilityCalculatorInterface tp) {
-        super(c, t, numZones, tp);
+    public SellingZUtility(Commodity c, TAZ t, TravelUtilityCalculatorInterface tp) {
+        super(c, t, tp);
         c.addSellingZUtility(this);
      //   t.addSellingZUtility(this, c);
     }

@@ -3,7 +3,7 @@ package com.pb.despair.pt;
 import com.pb.common.model.Alternative;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 /** 
  * Pattern.java stores the out-of-home activity pattern for each person-day,
  * as well as summary information about the pattern that can
@@ -15,7 +15,6 @@ import java.util.logging.Logger;
  */
 public class Pattern implements Alternative, Serializable, Cloneable {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
-    boolean debug = true;
      //To hold the pattern
      public StringBuffer dayPattern = new StringBuffer();
 
@@ -212,12 +211,12 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
      public String getTourString(int tourNumber){
           
           if(homeActivities<2){
-               logger.warning("Error: less than 2 home activities on pattern "+dayPattern);
-               logger.warning("Cannot return tour number "+tourNumber);
+               logger.error("Error: less than 2 home activities on pattern "+dayPattern);
+               logger.error("Cannot return tour number "+tourNumber+ ". Returning null");
                return null;
           }
-//          System.out.println("Getting tour number "+tourNumber);
-          String dayString = new String(dayPattern.toString());          
+
+          String dayString = new String(dayPattern.toString());
           StringBuffer tourString = new StringBuffer();
           //the following indices are used to locate the at-home activities on either end of a tour
           int lastHomeActivityIndex=0;
@@ -791,7 +790,8 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
      }
      public double getUtility(){
           if(!hasUtility){
-               logger.severe("Error: Utility not calculated for "+dayPattern+"\n");
+               logger.fatal("Error: Utility not calculated for "+dayPattern+"\n");
+              //TODO - throw a runtime exception instead and log to the node exception files
                System.exit(1);
           };
           return utility;

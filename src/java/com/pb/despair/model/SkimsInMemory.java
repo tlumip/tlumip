@@ -9,7 +9,7 @@ import com.pb.common.matrix.CollapsedMatrixCollection;
 
 import java.io.File;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.Serializable;
  
 
@@ -149,34 +149,46 @@ public class SkimsInMemory implements Serializable {
       //highway matrices stored as Matrix
             
     
-      logger.fine("Reading Highway Matrices into memory");
+      if(logger.isDebugEnabled()) {
+          logger.debug("Reading Highway Matrices into memory");
+      }
 
       long startTime = System.currentTimeMillis();
       MatrixReader pkTimeReader= MatrixReader.createReader(MatrixType.ZIP,new File(mName[0])); 
       pkTime= pkTimeReader.readMatrix(mName[0]);
-      logger.fine("\tTime to read pkTime : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-  
+      if(logger.isDebugEnabled()) {
+          logger.debug("\tTime to read pkTime : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+      }
+
       startTime = System.currentTimeMillis();
       MatrixReader pkDistReader= MatrixReader.createReader(MatrixType.ZIP,new File(mName[1]));    
       pkDist= pkDistReader.readMatrix(mName[1]);
-      logger.fine("\tTime to read pkDist : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-
+      if(logger.isDebugEnabled()) {
+          logger.debug("\tTime to read pkDist : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+      }
               
       MatrixReader opTimeReader= MatrixReader.createReader(MatrixType.ZIP,new File(mName[2])); 
       startTime = System.currentTimeMillis();
       opTime= opTimeReader.readMatrix(mName[2]);
-      logger.fine("\tTime to read opTime : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-
+      if(logger.isDebugEnabled()) {
+          logger.debug("\tTime to read opTime : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+      }
               
       MatrixReader opDistReader= MatrixReader.createReader(MatrixType.ZIP,new File(mName[3]));     
       startTime = System.currentTimeMillis();
       opDist= opDistReader.readMatrix(mName[3]);
-      logger.fine("\tTime to read opDist : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+      if(logger.isDebugEnabled()) {
+          logger.debug("\tTime to read opDist : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+      }
 
-      
-        logger.fine("Reading skims into memory");
+
+        if(logger.isDebugEnabled()) {
+            logger.debug("Reading skims into memory");
+        }
         startTime = System.currentTimeMillis();
-        logger.fine("\tReading Peak Walk-Transit into memory");
+        if(logger.isDebugEnabled()) {
+            logger.debug("\tReading Peak Walk-Transit into memory");
+        }
         pkwlk = createSkimsMatrices(new File(mName[4]),
                                                        new File(mName[5]),
                                                        new File(mName[6]),
@@ -184,20 +196,26 @@ public class SkimsInMemory implements Serializable {
                                                        new File(mName[8]),
                                                        new File(mName[9]));
 
-        logger.fine("\t\tTime to read pkwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-
+        if(logger.isDebugEnabled()) {
+            logger.debug("\t\tTime to read pkwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+        }
         startTime = System.currentTimeMillis();
-        logger.fine("\tReading off Peak Walk-Transit into memory");
+        if(logger.isDebugEnabled()) {
+            logger.debug("\tReading off Peak Walk-Transit into memory");
+        }
         opwlk = createSkimsMatrices(new File(mName[10]),
                                                        new File(mName[11]),
                                                        new File(mName[12]),
                                                        new File(mName[13]),
                                                        new File(mName[14]),
                                                        new File(mName[15]));
-        logger.fine("\t\tTime to read opwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-
+        if(logger.isDebugEnabled()) {
+            logger.debug("\t\tTime to read opwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+        }
         startTime = System.currentTimeMillis();
-        logger.fine("\tReading Peak Drive-Transit into memory");
+        if(logger.isDebugEnabled()) {
+            logger.debug("\tReading Peak Drive-Transit into memory");
+        }
         pkdrv = createSkimsMatrices(new File(mName[16]),
                                                        new File(mName[17]),
                                                        new File(mName[18]),
@@ -205,10 +223,13 @@ public class SkimsInMemory implements Serializable {
                                                        new File(mName[20]),
                                                        new File(mName[21]),
                                                        new File(mName[22]));
-        logger.fine("\t\tTime to read pkdrv : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-
+        if(logger.isDebugEnabled()) {
+            logger.debug("\t\tTime to read pkdrv : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+        }
         startTime = System.currentTimeMillis();
-        logger.fine("\tReading off Peak Drive-Transit into memory");
+        if(logger.isDebugEnabled()) {
+            logger.debug("\tReading off Peak Drive-Transit into memory");
+        }
         opdrv = createSkimsMatrices(new File(mName[23]),
                                                        new File(mName[24]),
                                                        new File(mName[25]),
@@ -216,14 +237,17 @@ public class SkimsInMemory implements Serializable {
                                                        new File(mName[27]),
                                                        new File(mName[28]),
                                                        new File(mName[29]));
-        logger.fine("\t\tTime to read opdrv : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-
+        if(logger.isDebugEnabled()) {
+            logger.debug("\t\tTime to read opdrv : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+        }
        }catch(Exception ioerr){
 	    	logger.info("Error:SkimsInMemory class:IO Exception reading matrices");   
 	    	ioerr.printStackTrace();
 	   };
     	
-    	logger.fine("Finished reading skims into memory");
+    	if(logger.isDebugEnabled()) {
+            logger.debug("Finished reading skims into memory");
+        }
     } //end constructor
 	
     

@@ -5,7 +5,7 @@ import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
 import java.io.File;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.Serializable;
 import java.util.ResourceBundle;
 import com.pb.common.util.ResourceUtil;
@@ -18,7 +18,6 @@ import com.pb.common.util.ResourceUtil;
 public class DCExpUtilitiesManager implements Serializable{
 
      protected static Logger logger = Logger.getLogger("com.pb.despair.pt"); 
-     boolean debug = false;
      Matrix[] expUtilities; 
      ResourceBundle rb;
      int currentWorkSegment=-1;
@@ -50,7 +49,9 @@ public class DCExpUtilitiesManager implements Serializable{
       */
      public int[] updateExpUtilities(int workSegment, int nonWorkSegment){
          int[] readNew = new int[2];
-         if(debug) logger.fine("Free memory before updating expUtilities: "+Runtime.getRuntime().freeMemory());
+         if(logger.isDebugEnabled()) {
+             logger.debug("Free memory before updating expUtilities: "+Runtime.getRuntime().freeMemory());
+         }
          
          //if the workSegment is different from the current worksegment, update work expUtilities
          if(workSegment!=currentWorkSegment){
@@ -81,7 +82,9 @@ public class DCExpUtilitiesManager implements Serializable{
 
              currentNonWorkSegment=nonWorkSegment;
          }
-         if(debug) logger.fine("Free memory after updating expUtilities: "+Runtime.getRuntime().freeMemory());
+         if(logger.isDebugEnabled()) {
+             logger.debug("Free memory after updating expUtilities: "+Runtime.getRuntime().freeMemory());
+         }
          return readNew;
 
      }
@@ -141,7 +144,7 @@ public class DCExpUtilitiesManager implements Serializable{
         Matrix expMatrix;
         
         if(activityPurpose==ActivityPurpose.WORK){
-            logger.severe("Error: attempting to access work dc utilities, not supported");
+            logger.fatal("Error: attempting to access work dc utilities, not supported");
             throw new RuntimeException();
         }else if(activityPurpose==ActivityPurpose.WORK_BASED){
             expMatrix=expUtilities[WORK_BASED];
@@ -151,7 +154,7 @@ public class DCExpUtilitiesManager implements Serializable{
             else if(purposeSegment==3)
                 expMatrix=expUtilities[SCHOOL3];
             else{
-                logger.severe("Error: attempting to access school  dc utilities 2, not supported");
+                logger.fatal("Error: attempting to access school  dc utilities 2, not supported");
                 throw new RuntimeException();
             }
         }else if(activityPurpose==ActivityPurpose.SHOP){
@@ -161,7 +164,7 @@ public class DCExpUtilitiesManager implements Serializable{
         }else if(activityPurpose==ActivityPurpose.OTHER){
             expMatrix=expUtilities[OTHER];
         }else{
-            logger.severe("Error: attempting to access purpose "+activityPurpose+", not supported");
+            logger.fatal("Error: attempting to access purpose "+activityPurpose+", not supported");
             throw new RuntimeException();
         }
         return expMatrix;

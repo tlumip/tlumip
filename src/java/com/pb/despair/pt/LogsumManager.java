@@ -3,7 +3,7 @@ package com.pb.despair.pt;
 import com.pb.common.matrix.Matrix;
 import com.pb.despair.model.ModeChoiceLogsums;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.Serializable;
 import java.util.ResourceBundle;
 
@@ -15,7 +15,6 @@ import java.util.ResourceBundle;
 public class LogsumManager implements Serializable{
 
      protected static Logger logger = Logger.getLogger("com.pb.despair.pt"); 
-     boolean debug = false;
      ModeChoiceLogsums[] logsums; 
      ResourceBundle rb;
      int currentWorkSegment=-1;
@@ -37,7 +36,9 @@ public class LogsumManager implements Serializable{
       */
      public void updateLogsums(int workSegment, int nonWorkSegment){
          
-         if(debug) logger.fine("Free memory before updating logsums: "+Runtime.getRuntime().freeMemory());
+         if(logger.isDebugEnabled()) {
+             logger.debug("Free memory before updating logsums: "+Runtime.getRuntime().freeMemory());
+         }
          
          //if the workSegment is different from the current worksegment, update work Logsums
          if(workSegment!=currentWorkSegment){
@@ -60,13 +61,17 @@ public class LogsumManager implements Serializable{
                     currentNonWorkSegment=nonWorkSegment;
                 }         
             }
-         if(debug) logger.fine("Free memory after updating logsums: "+Runtime.getRuntime().freeMemory());
-     
+         if(logger.isDebugEnabled()) {
+             logger.debug("Free memory after updating logsums: "+Runtime.getRuntime().freeMemory());
+         }
+
      }
 
     public void updateNonWorkLogsums(int nonWorkSegment){
 
-        if(debug) logger.fine("Free memory before updating non-work logsums: "+Runtime.getRuntime().freeMemory());
+        if(logger.isDebugEnabled()) {
+            logger.debug("Free memory before updating non-work logsums: "+Runtime.getRuntime().freeMemory());
+        }
 
         logger.info("Updating non-work logsums: segment "+nonWorkSegment);
         //loop through activity purposes, updating non-work activity logsums
@@ -74,13 +79,17 @@ public class LogsumManager implements Serializable{
             if(i!=ActivityPurpose.WORK && i!=ActivityPurpose.WORK_BASED && i!=ActivityPurpose.HOME)
                 logsums[i].readLogsums(ActivityPurpose.ACTIVITY_PURPOSES[i],nonWorkSegment);
         }
-         if(debug) logger.fine("Free memory after updating logsums: "+Runtime.getRuntime().freeMemory());
+         if(logger.isDebugEnabled()) {
+             logger.debug("Free memory after updating logsums: "+Runtime.getRuntime().freeMemory());
+         }
 
      }
 
     public void updateWorkLogsums(int workSegment){
 
-        if(debug) logger.fine("Free memory before updating work and work-based logsums: "+Runtime.getRuntime().freeMemory());
+        if(logger.isDebugEnabled()) {
+            logger.debug("Free memory before updating work and work-based logsums: "+Runtime.getRuntime().freeMemory());
+        }
 
         logger.info("Updating work and work-based logsums: segment "+workSegment);
         //loop through activity purposes, updating work activity logsums

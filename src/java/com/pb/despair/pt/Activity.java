@@ -2,14 +2,13 @@ package com.pb.despair.pt;
 
 import com.pb.despair.model.Mode;
 import com.pb.despair.model.UnitOfLand;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.Vector;
 
 /** A class that represents an activity, part of a tour
  * 
- * @see OtherClasses
  * @author Joel Freedman
  * @version 1.0 12/01/2003
  */
@@ -39,7 +38,6 @@ public class Activity implements Serializable{
     // Associations
 
     /**
-     * @stereotype constructor 
      */
     public Activity() {
     }
@@ -48,14 +46,11 @@ public class Activity implements Serializable{
     }
 
     /**
-    * @associates <{com.pb.despair.pt.PersonTimeSlot}>
-    * @supplierCardinality 1..*
-    *  
+    *
     * 
     */
     protected Vector myPersonTimeSlot;
     /**
-    * @label nominal location
     
     * 
     */
@@ -239,7 +234,7 @@ public class Activity implements Serializable{
         else if(startTime>=1530 && startTime<1830)timePeriod="PM";
         else if(startTime>=1830) timePeriod="EV";
         else {
-            logger.fine("??? startTime < 300!!!");
+            logger.warn("??? startTime < 300!!!");
             timePeriod="< 300";
         } 
         return timePeriod;

@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Date;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Reads the LU grid file and counts the number of grid cells of each land use.
@@ -157,13 +157,10 @@ public class Initializer {
         GridParameters intParameters = new GridParameters(Ref.TLUMIP_GRID_NROWS, Ref.TLUMIP_GRID_NCOLS,
                     Ref.TLUMIP_GRID_XLL, Ref.TLUMIP_GRID_YLL, Ref.TLUMIP_GRID_CELLSIZE, 4, -1, "");
 
-        GridFile devTypeGrid=null;
-        GridFile sqftGrid=null;
-        GridFile yrBuiltGrid=null;
         try {
-            devTypeGrid = GridFile.create(new File("c:/Project_Files/tlumip/grids/DEVTYPE.grid"),shortParameters);
-            sqftGrid = GridFile.create(new File("c:/Project_Files/tlumip/grids/SQFT.grid"),intParameters);
-            yrBuiltGrid = GridFile.create(new File("c:/Project_Files/tlumip/grids/YRBUILT.grid"),shortParameters);
+            GridFile.create(new File("c:/Project_Files/tlumip/grids/DEVTYPE.grid"),shortParameters);
+            GridFile.create(new File("c:/Project_Files/tlumip/grids/SQFT.grid"),intParameters);
+            GridFile.create(new File("c:/Project_Files/tlumip/grids/YRBUILT.grid"),shortParameters);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -173,12 +170,12 @@ public class Initializer {
 
 
   public static void main(String[] args) {
-      logger.severe("start time: "+ new Date().toString());
+      logger.info("start time: "+ new Date().toString());
       Initializer init = new Initializer();
       init.createGridFiles();
 //      init.countTotalCellsByGLC();
 //      init.printTotalCellsByGLC();
-      logger.severe("end time: "+ new Date().toString());
+      logger.info("end time: "+ new Date().toString());
   }
 
 }

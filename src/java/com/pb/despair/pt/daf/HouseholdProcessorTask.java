@@ -22,7 +22,7 @@ import java.lang.Runtime;
 
 import java.util.Date;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 public class HouseholdProcessorTask extends MessageProcessingTask {
 
@@ -99,8 +99,10 @@ public class HouseholdProcessorTask extends MessageProcessingTask {
      */
     public void householdBlockWorker(Message msg) {
         
-        logger.fine(getName() + " free memory before running model: " +
-            Runtime.getRuntime().freeMemory());
+        if(logger.isDebugEnabled()) {
+            logger.debug(getName() + " free memory before running model: " + Runtime.getRuntime().freeMemory());
+        }
+
 
         PTHousehold[] households = (PTHousehold[]) msg.getValue("households");
 
@@ -110,27 +112,35 @@ public class HouseholdProcessorTask extends MessageProcessingTask {
         long startTime = System.currentTimeMillis();
         logger.info("\t"+ getName() + " running Weekday Pattern Model");
         households = ptModel.runWeekdayPatternModel(households);
-        logger.fine("\t"+ getName() + " Time to run Weekday Pattern Model for " + households.length +
-            " households = " +
-            ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+        if(logger.isDebugEnabled()) {
+            logger.debug("\t"+ getName() + " Time to run Weekday Pattern Model for " + households.length +
+                " households = " +
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+        }
 
         startTime = System.currentTimeMillis();
         logger.info("\t"+ getName() + " generating Tours based on Weekday,Weekend Patterns");
         households = ptModel.generateWeekdayTours(households);
-        logger.fine("\t"+ getName() + " time to generate Weekday Tours for " + households.length +
-            " households = " +
-            ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+        if(logger.isDebugEnabled()) {
+            logger.debug("\t"+ getName() + " time to generate Weekday Tours for " + households.length +
+                " households = " +
+                ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+        }
 
         startTime = System.currentTimeMillis();
         logger.info("\t"+ getName() + " getting Logsums and Running WeekdayDurationDestinationModeChoiceModel for HH block");
         for (int i = 0; i < households.length; i++) {
-            logger.fine("\t"+ getName() + " processing household: " + households[i].ID);
+            if(logger.isDebugEnabled()) {
+                logger.debug("\t"+ getName() + " processing household: " + households[i].ID);
+            }
             int thisNonWorkSegment = households[i].calcNonWorkLogsumSegment();
             int thisWorkBasedSegment = households[i].calcWorkLogsumSegment();
 
             expUtilitiesManager.updateExpUtilities(thisWorkBasedSegment,thisNonWorkSegment);
 
-            logger.fine("\t\t"+ getName() + " running WeekdayDurationDestinationModeChoiceModel");
+            if(logger.isDebugEnabled()) {
+                logger.debug("\t\t"+ getName() + " running WeekdayDurationDestinationModeChoiceModel");
+            }
             households[i] = (PTHousehold) ptModel.runWeekdayDurationDestinationModeChoiceModels(households[i],
                 expUtilitiesManager).get(0);
         }
@@ -152,12 +162,15 @@ public class HouseholdProcessorTask extends MessageProcessingTask {
         }
 
         //done, send results to queue
-        logger.fine("Sending message to results queue.");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Sending message to results queue.");
+        }
         msg.setId(MessageID.HOUSEHOLDS_PROCESSED);
         msg.setValue("households", households);
         sendTo("TaskMasterQueue", msg);
-        logger.fine("Free memory after running model: " +
-            Runtime.getRuntime().freeMemory());
+        if(logger.isDebugEnabled()) {
+            logger.debug("Free memory after running model: " + Runtime.getRuntime().freeMemory());
+        }
     }
 
 }

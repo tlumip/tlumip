@@ -2,15 +2,13 @@ package com.pb.despair.ed;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.CSVFileReader;
-import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.util.ResourceUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.Iterator;
 
 /**
  * Author: willison
@@ -40,9 +38,9 @@ public class EDSummarizer {
         else if(output.equalsIgnoreCase("odot.employment"))
             dataSet = summarizeODOTEmployment(timeInterval, baseYear, model_data, colHeaders);
         else
-            logger.warning("No method has been developed to summarize " + output + ".  ED can" +
+            logger.fatal("No method has been developed to summarize " + output + ".  ED can" +
                     "currently produce the oregon activity, oregon employment and odot employement summaries -" +
-                    "check calibration.properties");
+                    "check calibration.properties.  Returning null");
         return dataSet;
     }
 
@@ -154,11 +152,13 @@ public class EDSummarizer {
                 rowIndex = r;
         }
         if(rowIndex == -1) {
-            logger.severe("The table did not have any entries for year " + rowYear);
-            logger.severe("No calibration output file can be created - system will exit");
+            logger.fatal("The table did not have any entries for year " + rowYear);
+            logger.fatal("No calibration output file can be created - system will exit");
             System.exit(10);
         } else {
-            logger.fine("Summarizing data from row " + rowIndex + " corresponding to year " + (int)table.getValueAt(rowIndex,"year"));
+            if(logger.isDebugEnabled()) {
+                logger.debug("Summarizing data from row " + rowIndex + " corresponding to year " + (int)table.getValueAt(rowIndex,"year"));
+            }
         }
         return rowIndex;
     }

@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 public class TazData implements Cloneable{
 
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
-    boolean debug = false;
     String tazDataTableName = "TazData";
 
     //a hashtable of taz objects
@@ -33,7 +32,9 @@ public class TazData implements Cloneable{
 
 
     public void readData(ResourceBundle appRb, ResourceBundle globalRb, String fileName) {
-        if(debug) logger.fine("Getting table: " + tazDataTableName);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Getting table: " + tazDataTableName);
+        }
 
         TableDataSet table = loadTableDataSet(appRb, fileName);
         Taz thisTaz;
@@ -111,7 +112,9 @@ public class TazData implements Cloneable{
         while (tazEnum.hasMoreElements()) {
             Taz thisTaz = (Taz) tazEnum.nextElement();
             thisTaz.households = population[thisTaz.zoneNumber];
-            if(debug) logger.fine("population of zone "+thisTaz.zoneNumber+" = "+population[thisTaz.zoneNumber]);
+            if(logger.isDebugEnabled()) {
+                logger.debug("population of zone "+thisTaz.zoneNumber+" = "+population[thisTaz.zoneNumber]);
+            }
         }
     }
 
@@ -167,7 +170,7 @@ public class TazData implements Cloneable{
 
             return table;
         } catch (IOException e) {
-            logger.severe("Can't find TazData input table " + fileName);
+            logger.fatal("Can't find TazData input table " + fileName);
             e.printStackTrace();
         }
 
@@ -209,10 +212,7 @@ public class TazData implements Cloneable{
         ResourceBundle appRb = ResourceUtil.getResourceBundle("pt");
         ResourceBundle globalRb = ResourceUtil.getResourceBundle("pt");
         TazData taz = new TazData();
-        PTDataReader reader = new PTDataReader(appRb, globalRb);
-        
-        PTHousehold[] households = reader.readHouseholds("households.file");
-        PTPerson[] persons = reader.readPersons("persons.file");
+
         taz.readData(appRb, globalRb, "tazData.file");
         logger.info("Finished reading TazData Table");
         
@@ -244,7 +244,7 @@ public class TazData implements Cloneable{
             testTaz.calcTourDestinationUtility(1, 3, tdp, 0.1,5.0);
         }
 
-        logger.fine("Total time = " +
+        logger.info("Total time = " +
             ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
         System.exit(1);
     }

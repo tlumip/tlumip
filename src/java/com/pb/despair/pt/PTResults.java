@@ -2,7 +2,7 @@ package com.pb.despair.pt;
 
 import java.io.*;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.matrix.MatrixWriter;
@@ -48,7 +48,8 @@ public class PTResults {
                             new FileWriter(textFileName)));
             return pwFile;
         } catch (IOException e) {
-            logger.severe("Could not open file " + textFileName + " for writing\n");           
+            logger.fatal("Could not open file " + textFileName + " for writing\n");
+            //TODO - log this exception to the node exception log file
             System.exit(1);
         }
         return null;

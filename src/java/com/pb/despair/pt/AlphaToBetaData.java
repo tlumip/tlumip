@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import java.util.ResourceBundle;
 import java.util.TreeSet;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.Iterator;
 
 /** 
@@ -260,7 +260,7 @@ public class AlphaToBetaData {
             TableDataSet table = reader.readFile(new File(fileName));
             return table;
         } catch (IOException e) {
-            logger.severe("Can't find taz to district file");
+            logger.fatal("Can't find taz to district file");
             e.printStackTrace();
         }
         return null;

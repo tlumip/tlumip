@@ -3,8 +3,7 @@ package com.pb.despair.ct;
 import java.io.File;
 import java.util.Date;
 import java.util.ResourceBundle;
-import java.util.Random;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.ModelComponent;
@@ -20,12 +19,9 @@ public class CTModel extends ModelComponent {
     long randomSeed;           //will be read from properties files and passed to
     String inputPath;    //other methods that
     String outputPath;   //run the CTModel.
-    boolean debug;      //in properties file
 
 	public CTModel(ResourceBundle appRb, ResourceBundle globalRb){
 		setResourceBundles(appRb, globalRb);    //creates a resource bundle as a class attribute called appRb.
-        this.debug = (Boolean.valueOf(ResourceUtil.getProperty(appRb, "debug"))).booleanValue();
-        logger.info("debug: " + debug);
         this.inputPath = ResourceUtil.getProperty(appRb, "ct.base.data");
         logger.info("inputPath: " + inputPath);
         this.outputPath = ResourceUtil.getProperty(appRb, "ct.current.data");
@@ -40,7 +36,7 @@ public class CTModel extends ModelComponent {
         // This translates PI output (annual dollar flows at beta zone level) to
         // weekly tons by commodity class (SCTG01-SCTG43), and writes output in
         // binary format.
-        FreightDemand3 fd = new FreightDemand3(appRb,globalRb,debug,inputPath,outputPath,randomSeed);
+        FreightDemand3 fd = new FreightDemand3(appRb,globalRb,inputPath,outputPath,randomSeed);
 	    fd.run();  //writes WeeklyDemand.binary
 
         // Translates weekly demand from beta zones into discrete daily shipments in

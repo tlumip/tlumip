@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import javax.swing.JFrame;
 
@@ -93,7 +93,7 @@ public class Skims {
 	        alphaNumberArray = table.getColumnAsInt( 1 );
 	        betaNumberArray = table.getColumnAsInt( 2 );
         } catch (IOException e) {
-            logger.severe("Can't get zone numbers from zonal correspondence file");
+            logger.fatal("Can't get zone numbers from zonal correspondence file");
             e.printStackTrace();
         }
 
@@ -196,8 +196,7 @@ public class Skims {
 
 		String fileName;
 		MatrixWriter mw;
-		Matrix mSqueezed;
-		
+
 		// set the highway network attribute on which to skim the network - free flow time in this case
 		double[] linkCost = g.getFreeFlowTime();
 		
@@ -255,40 +254,12 @@ public class Skims {
 	}
 
 
-    private float[][] getOnesBasedFloatArray ( double[][] zeroBasedDoubleArray ) {
-
-    	int z;
-    	int[] inToEx = g.getIndexNode();
-
-	    // copy the array to a ones-based float[][] for conversion to Matrix object
-	    // only the zones within the study area are saved to skim matrix (2950 total skim zones)
-		float[][] onesBasedFloatArray = new float[alphaNumberArray.length+1][alphaNumberArray.length+1];
-		int r = 1;
-	    for (int i=0; i < zeroBasedDoubleArray.length; i++) {
-			int c = 1;
-			z = inToEx[i];
-	    	if ( zonesToSkim[z] == 1 ) {
-	    		for (int j=0; j < zeroBasedDoubleArray[i].length; j++) {
-	    			z = inToEx[j];
-	    	    	if ( zonesToSkim[z] == 1 ) {
-	    	    		onesBasedFloatArray[r][c] = (float)zeroBasedDoubleArray[i][j];
-	    	    		c++;
-	    	    	}
-	    		}
-	    		r++;
-	    	}
-	    }
-	    zeroBasedDoubleArray = null;
-
-	    return onesBasedFloatArray;
-
-    }
+    
 
     private float[][] getZeroBasedFloatArray ( double[][] zeroBasedDoubleArray ) {
 
     	int[] skimsInternalToExternal = g.getIndexNode();
-    	int maxZone = g.getMaxCentroid();
-    	
+
 		// convert the zero-based double[2983][2983] produced by the skimming procedure
     	// to a zero-based float[2950][2950] for alpha zones to be written to skims file.
 		float[][] zeroBasedFloatArray = new float[alphaNumberArray.length][alphaNumberArray.length];
@@ -350,8 +321,8 @@ public class Skims {
 
 			// set intrazonal value
             if(minValue <= 0) {
-                logger.severe("Hwy skim min value is " + minValue + "@ rowIndex " + minI + ", colIndex " + minJ);
-                logger.severe("System will exit, no hwy skims have been written");
+                logger.fatal("Hwy skim min value is " + minValue + "@ rowIndex " + minI + ", colIndex " + minJ);
+                logger.fatal("System will exit, no hwy skims have been written");
                 System.exit(10);
             }
 

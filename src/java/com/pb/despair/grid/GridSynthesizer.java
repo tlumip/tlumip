@@ -1,11 +1,10 @@
 package com.pb.despair.grid;
 
 import java.util.*;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.logging.Level;
 import java.io.*;
 import com.pb.common.grid.*;
-import com.pb.common.util.Format;
 import com.pb.common.util.OutTextFile;
 
 /**
@@ -126,7 +125,7 @@ public class GridSynthesizer {
                 }
                 AlphaZone a = new AlphaZone(az, cn, luc, SQFTdemand);
                 // Okay, now add this alpha zone to the county-level hashmap
-                if (!countyMap.containsKey(cn)) log.severe("County "+cn+" for zone "+az+" does not exist, stupid");
+                if (!countyMap.containsKey(cn)) log.warn("County "+cn+" for zone "+az+" does not exist, stupid");
                 else ((County) countyMap.get(cn)).azones.add(a);
             }
             br.close();

@@ -17,7 +17,7 @@ import com.pb.common.util.ResourceUtil;
 import java.util.HashMap;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 

@@ -7,13 +7,13 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.matrix.AlphaToBeta;
-
+import org.apache.log4j.Logger;
 import com.pb.despair.pt.*;
 
 import java.io.*;
-
 import java.util.*;
-import java.util.logging.Logger;
+
+
 
 
 /**
@@ -26,7 +26,6 @@ import java.util.logging.Logger;
  *
  */
 public class PTDafMaster extends MessageProcessingTask {
-    boolean debug = false;
 
     static int NUMBER_OF_WORK_QUEUES;  //specified in the ptdaf_$SCENARIO_NAME.properties file
     static int MAXBLOCKSIZE;  //will be initialized through pt resource bundle as it may change depending
@@ -107,28 +106,35 @@ public class PTDafMaster extends MessageProcessingTask {
         // daf related properties
         NUMBER_OF_WORK_QUEUES = Integer.parseInt(ResourceUtil.getProperty(ptdafRb, "workQueues"));
         lastWorkQueue = NUMBER_OF_WORK_QUEUES;
-        if(debug) logger.info("Number of Work Queues: " + NUMBER_OF_WORK_QUEUES);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Number of Work Queues: " + NUMBER_OF_WORK_QUEUES);
+        }
 
         // pt related properties
         MAXBLOCKSIZE = Integer.parseInt(ResourceUtil.getProperty(ptRb,"max.block.size"));
         TOTAL_COLLAPSED_MCLOGSUMS = ResourceUtil.getList(ptRb,"matrices.for.pi").size();
-        if(debug) logger.info("Total Collapsed Mode Choice Logsums: " + TOTAL_COLLAPSED_MCLOGSUMS);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Total Collapsed Mode Choice Logsums: " + TOTAL_COLLAPSED_MCLOGSUMS);
+        }
 
         // global properties
         TableDataSet alphaToBetaTable = loadTableDataSet(globalRb,"alpha2beta.file");
         AlphaToBeta a2b = new AlphaToBeta(alphaToBetaTable);
         MAXALPHAZONENUMBER = a2b.getMaxAlphaZone();
-        if(debug) logger.info("Max Alpha Zone Number: " + MAXALPHAZONENUMBER);
-
+        if(logger.isDebugEnabled()) {
+            logger.debug("Max Alpha Zone Number: " + MAXALPHAZONENUMBER);
+        }
         //Now define all the other static class attributes
         TOTALSEGMENTS = PTHousehold.NUM_WORK_SEGMENTS;
         TOTAL_MCLOGSUMS = (ActivityPurpose.ACTIVITY_PURPOSES.length -1) * TOTALSEGMENTS;
         TOTAL_DCLOGSUMS = ActivityPurpose.DC_LOGSUM_PURPOSES.length * TOTALSEGMENTS;
         TOTAL_DCEXPUTILS = TOTAL_DCLOGSUMS;
-        if(debug) logger.info("Total Segments: " + TOTALSEGMENTS);
-        if(debug) logger.info("Total Mode Choice Logsums: " + TOTAL_MCLOGSUMS);
-        if(debug) logger.info("Total Destination Choice Logsums: " + TOTAL_DCLOGSUMS);
-        if(debug) logger.info("Total Exponentiated Destination Choice Logsums: " + TOTAL_DCEXPUTILS);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Total Segments: " + TOTALSEGMENTS);
+            logger.debug("Total Mode Choice Logsums: " + TOTAL_MCLOGSUMS);
+            logger.debug("Total Destination Choice Logsums: " + TOTAL_DCLOGSUMS);
+            logger.debug("Total Exponentiated Destination Choice Logsums: " + TOTAL_DCEXPUTILS);
+        }
 
         //Start mode choice logsums.  The workers will decide if the MC Logsums
         //actually need to be recalculated based on a class boolean.  If they
@@ -143,13 +149,17 @@ public class PTDafMaster extends MessageProcessingTask {
         logger.info("Adding synthetic population from database");
         households = dataReader.readHouseholds("households.file");
         logger.info("Total Number of HHs: " + households.length);
-        if(debug) logger.fine("Size of households: " + ObjectUtil.sizeOf(households));
+        if(logger.isDebugEnabled()) {
+            logger.debug("Size of households: " + ObjectUtil.sizeOf(households));
+        }
 
 
         logger.info("Reading the Persons file");
         persons = dataReader.readPersons("persons.file");
         logger.info("Total Number of Persons: " + persons.length);
-        if(debug) logger.fine("Size of persons: " + ObjectUtil.sizeOf(persons));
+        if(logger.isDebugEnabled()) {
+            logger.debug("Size of persons: " + ObjectUtil.sizeOf(persons));
+        }
 
         //add worker info to Households and add homeTAZ and hh work segment to persons
         //This method sorts households and persons by ID.  Leaves arrays in sorted positions.
@@ -224,7 +234,9 @@ public class PTDafMaster extends MessageProcessingTask {
         } else if (msg.getId().equals(MessageID.TAZDATA_UPDATED)) {
 
             tazUpdateCount++;
-            logger.fine("tazUpdateCount: " + tazUpdateCount);
+            if(logger.isDebugEnabled()) {
+                logger.debug("tazUpdateCount: " + tazUpdateCount);
+            }
 
             if (tazUpdateCount == NUMBER_OF_WORK_QUEUES) {
                 logger.info("Taz data has been updated on all workers.");
@@ -236,10 +248,14 @@ public class PTDafMaster extends MessageProcessingTask {
 
             if (msg.getId().equals(MessageID.DC_LOGSUMS_CREATED) ){
                 dcLogsumCount++;
-                if(debug) logger.info("dcLogsumCount: " + dcLogsumCount);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("dcLogsumCount: " + dcLogsumCount);
+                }
             } else {
                 dcExpUtilCount++;
-                if(debug) logger.info("expUtilCount: " + dcExpUtilCount);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("expUtilCount: " + dcExpUtilCount);
+                }
             }
 
             if (dcLogsumCount == TOTAL_DCLOGSUMS  && dcExpUtilCount ==TOTAL_DCEXPUTILS) {
@@ -333,7 +349,7 @@ public class PTDafMaster extends MessageProcessingTask {
             int nPersons = 0;  //number of people in subgroup for the seg/occ pair.
             while(persons[index].householdWorkSegment == segment && persons[index].occupation == occupation){
                 if(persons[index].employed){
-                    if(persons[index].occupation == 0) logger.warning("Employed person has an occupation code of 'UNEMPLOYED'");
+                    if(persons[index].occupation == 0) logger.warn("Employed person has an occupation code of 'UNEMPLOYED'");
                     totalWorkers++;
                     nPersons++;
                     personList.add(persons[index]);
@@ -470,7 +486,9 @@ public class PTDafMaster extends MessageProcessingTask {
      *
      */
     private void startProcessHouseholds() {
-        logger.fine("Processing households.");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Processing households.");
+        }
          //Sort hhs by work segment, non-work segment
          Arrays.sort(households);
 
@@ -503,15 +521,19 @@ public class PTDafMaster extends MessageProcessingTask {
                     processHouseholds.setValue("sendMore", new Integer(0));
                 }
 
-                logger.fine("sendMore: " +
-                    (Integer) processHouseholds.getValue("sendMore"));
+                if(logger.isDebugEnabled()) {
+                    logger.debug("sendMore: " +
+                                    (Integer) processHouseholds.getValue("sendMore"));
+                }
 
                 String queueName = new String("WorkQueue" + q);
                 processHouseholds.setValue("WorkQueue", queueName);
                 logger.info("Sending Message to process households to " +
                     queueName);
                 sendTo(queueName, processHouseholds);
-                logger.fine("householdCounter = " + householdCounter);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("householdCounter = " + householdCounter);
+                }
                 householdBlock = null;
             }
         }
@@ -529,12 +551,16 @@ public class PTDafMaster extends MessageProcessingTask {
         int thisBlockSize = Math.min(secondaryBlockSize,
                 (int) Math.ceil(
                     (households.length - householdCounter) / MAXBLOCKSIZE));
-        logger.fine("blockSize:" + thisBlockSize);
+        if(logger.isDebugEnabled()) {
+            logger.debug("blockSize:" + thisBlockSize);
+        }
 
         for (int j = 0; j <= thisBlockSize; ++j) {
             int nextBlockSize = Math.min(MAXBLOCKSIZE,
                     households.length - householdCounter);
-            logger.fine("blockSize:" + nextBlockSize);
+            if(logger.isDebugEnabled()) {
+                logger.debug("blockSize:" + nextBlockSize);
+            }
 
             PTHousehold[] householdBlock = new PTHousehold[nextBlockSize];
 
@@ -593,7 +619,7 @@ public class PTDafMaster extends MessageProcessingTask {
             return table;
 
         } catch (IOException e) {
-            logger.severe("Can't find input table "+path);
+            logger.fatal("Can't find input table "+path);
             e.printStackTrace();
         }
         return null;

@@ -6,7 +6,7 @@ import com.pb.common.model.Alternative;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /** A class that represents mode of travel

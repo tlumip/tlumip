@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
@@ -137,7 +137,7 @@ public class LaborProductionAndConsumption {
             TableDataSet table = reader.readFile(new File(fullPath));
             return table;
         } catch (IOException e) {
-            logger.severe("Error loading TableDataSet "+fileName);
+            logger.fatal("Error loading TableDataSet "+fileName);
             e.printStackTrace();
         }
         return null;
@@ -157,8 +157,6 @@ public class LaborProductionAndConsumption {
     
      
     public void setZoneMap(TableDataSet table){
-        int[] alphaZones = new int[table.getRowCount()];
-        int[] betaZones = new int[table.getRowCount()];
 
         a2b = new AlphaToBeta(table.getColumnAsInt(table.getColumnPosition("AZone")),
                               table.getColumnAsInt(table.getColumnPosition("BZone")));
@@ -252,7 +250,7 @@ public class LaborProductionAndConsumption {
                     }
                 } // end of zone loop
             } catch (OverflowException e) {
-                logger.severe("Can't write labour and production, "+e);
+                logger.fatal("Can't write labour and production, "+e);
                 throw new RuntimeException("Can't write labour production", e);
             }
         } // end of production activity loop
@@ -327,7 +325,6 @@ public class LaborProductionAndConsumption {
         fileName = pathName+laborConsumption;
         PrintWriter cFile = open(fileName);
 
-        int row = 1;
         //Print header info
         for(int i=0;i<columnHeaders.length;i++){
             if(i<columnHeaders.length-1){
@@ -363,7 +360,6 @@ public class LaborProductionAndConsumption {
         pFile.close();
         
         
-        row = 1;
         //Print header info
         cFile.print("zoneNumber"+",");
         cFile.print("occupation"+",");
@@ -492,7 +488,7 @@ public class LaborProductionAndConsumption {
 
     public static void main(String[] args){
         LaborProductionAndConsumption labor = new LaborProductionAndConsumption(ResourceUtil.getResourceBundle("despair"));
-        logger.fine("test");
+        logger.info("test");
         TableDataSet householdQuantity = labor.loadTableDataSet("ActivityLocations2.csv","tlumip.input.data");
         TableDataSet makeUse = labor.loadTableDataSet("ZonalMakeUse.csv","tlumip.input.data");
         TableDataSet alphaToBeta = labor.loadTableDataSet("alpha2beta.csv","tlumip.input.data");

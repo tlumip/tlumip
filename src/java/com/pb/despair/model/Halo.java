@@ -3,7 +3,7 @@ package com.pb.despair.model;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import java.util.Arrays;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 

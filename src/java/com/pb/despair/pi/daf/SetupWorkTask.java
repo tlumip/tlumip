@@ -3,10 +3,7 @@ package com.pb.despair.pi.daf;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Message;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.pi.OregonPIPProcessor;
 import com.pb.despair.pi.PIPProcessor;
-import com.pb.despair.pi.PIModel;
-import com.pb.despair.pi.Commodity;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -77,11 +74,11 @@ public class SetupWorkTask extends MessageProcessingTask {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
-            logger.severe("Can't create new instance of PiPProcessor of type "+ppClass.getName());
+            logger.fatal("Can't create new instance of PiPProcessor of type "+ppClass.getName());
             e.printStackTrace();
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
-            logger.severe("Can't create new instance of PiPProcessor of type "+ppClass.getName());
+            logger.fatal("Can't create new instance of PiPProcessor of type "+ppClass.getName());
             e.printStackTrace();
             throw new RuntimeException(e);
         }

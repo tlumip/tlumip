@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** 
  * A class for a random sample by distance
@@ -19,7 +19,6 @@ public class RandomSampleByDistance {
     //each district can contain a number of tazs from 1 to n where n is numberDistricts
     int numberDistricts = 1;
     ArrayList districts;
-    static final boolean debug = false;
     static Logger logger = Logger.getLogger("com.pb.despair.pt.RandomSampleByDistance");
 
 
@@ -58,18 +57,24 @@ public class RandomSampleByDistance {
     public void addTazsToDistricts(DistrictTaz[] tazs) {
 
         int numberInEachDistrict = tazs.length / numberDistricts;
-        logger.finer("There will be " + numberInEachDistrict + " tazs in each district");
+        if(logger.isDebugEnabled()) {
+            logger.debug("There will be " + numberInEachDistrict + " tazs in each district");
+        }
         int numberAllocated = 0;
         Iterator districtIterator = districts.iterator();
         ArrayList thisDistrict = new ArrayList();
         while (districtIterator.hasNext()) {
 
             thisDistrict = (ArrayList) districtIterator.next();
-            logger.finer("adding tazs to district");
+            if(logger.isDebugEnabled()) {
+                logger.debug("adding tazs to district");
+            }
             for (int j = 0; j < numberInEachDistrict; ++j) {
                 if (numberAllocated < tazs.length) {
                     DistrictTaz thisTaz = (DistrictTaz) tazs[numberAllocated];
-                    logger.finer("   taz " + thisTaz.zoneNumber);
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("   taz " + thisTaz.zoneNumber);
+                    }
                     thisDistrict.add(thisTaz);
                     ++numberAllocated;
                 }
@@ -77,8 +82,9 @@ public class RandomSampleByDistance {
         }
         //add any remaining unallocated tazs to last district
         while (numberAllocated < tazs.length) {
-            if (debug)
-                logger.finer("adding unallocated tazs to last district\n");
+            if(logger.isDebugEnabled()) {
+                logger.debug("adding unallocated tazs to last district\n");
+            }
             DistrictTaz thisTaz = (DistrictTaz) tazs[numberAllocated];
             thisDistrict.add(thisTaz);
             ++numberAllocated;
@@ -99,8 +105,9 @@ public class RandomSampleByDistance {
 
         Iterator districtIterator = districts.iterator();
 
-        if (debug)
-            logger.finer("tazArray size = " + districts.size());
+        if(logger.isDebugEnabled()) {
+            logger.debug("tazArray size = " + districts.size());
+        }
 
         DistrictTaz[] tazArray = new DistrictTaz[districts.size()];
         int i = 0;
@@ -115,14 +122,16 @@ public class RandomSampleByDistance {
             //taz = chosen taz and continue
             boolean foundTazInThisDistrict = false;
             Iterator tazIterator = thisDistrict.iterator();
-            if (debug)
-                logger.finer("Searching districtArray " + (i + 1));
+            if(logger.isDebugEnabled()) {
+                logger.debug("Searching districtArray " + (i + 1));
+            }
             while (tazIterator.hasNext() && foundTaz == false) {
 
                 DistrictTaz thisTaz = (DistrictTaz) tazIterator.next();
                 if (thisTaz.zoneNumber == chosenZoneNumber) {
-                    if (debug)
-                        logger.finer("Found taz " + thisTaz.zoneNumber);
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("Found taz " + thisTaz.zoneNumber);
+                    }
                     foundTaz = true;
                     foundTazInThisDistrict = true;
                     tazArray[i] = thisTaz;
@@ -132,13 +141,15 @@ public class RandomSampleByDistance {
 
             if (foundTazInThisDistrict)
                 continue;
-            if (debug)
-                logger.finer("Drawing random taz in districtArray " + (i + 1) + " size " + thisDistrict.size());
+            if(logger.isDebugEnabled()) {
+                logger.debug("Drawing random taz in districtArray " + (i + 1) + " size " + thisDistrict.size());
+            }
 
             //else draw a random number, select a taz based on the number, and continue
             int randomNumber = r.nextInt(thisDistrict.size());
-            if (debug)
-                logger.finer("Drawing taz " + randomNumber);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Drawing taz " + randomNumber);
+            }
             tazArray[i] = (DistrictTaz) thisDistrict.get(randomNumber);
             ++i;
         }
@@ -176,20 +187,20 @@ public class RandomSampleByDistance {
         ArrayList tazArrayList = new ArrayList(Arrays.asList(tazs));
 
         //district 0 has chosen zone
-        int numberAllocated = 0;
         ArrayList district0 = new ArrayList();
         for (int i = 0; i < tazs.length; ++i) {
             if (tazs[i].zoneNumber == chosenZoneNumber) {
                 distanceFromReferenceToChosen = tazs[i].distance;
                 tazs[i].probability = 1;
                 district0.add(tazs[i]);
-                if (debug)
-                    logger.info("Distance from reference to chosen = " + distanceFromReferenceToChosen);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("Distance from reference to chosen = " + distanceFromReferenceToChosen);
+                }
             }
         }
         //check to make sure chosen zone was found                    
         if (district0.size() == 0) {
-            logger.severe("Cannot find chosen taz in tazs array");
+            logger.fatal("Cannot find chosen taz in tazs array");
             System.exit(1);
         }
 
@@ -213,11 +224,12 @@ public class RandomSampleByDistance {
                 if (tazs[i].distance <= distanceFromReferenceToChosen)
                     district1.add(tazs[i]);
             }
-            if (debug)
-                logger.info(
+            if(logger.isDebugEnabled()) {
+                logger.debug(
                     "There are " + district1.size() + " zones as close or closer to reference zone than chosen zone");
+            }
 
-            //if no zone closer to chosen than reference, 
+            //if no zone closer to chosen than reference,
             //pick next closest zone to reference
             if (district1.size() == 0) {
                 district1.add(tazs[closestTaz]);
@@ -299,7 +311,7 @@ public class RandomSampleByDistance {
 
         //if less than 7 tazs within 10 miles of chosen taz, exit
         if (district3.size() < 7) {
-            logger.severe("Error: Less than 7 TAZs within 10 miles of chosen");
+            logger.fatal("Error: Less than 7 TAZs within 10 miles of chosen");
             System.exit(1);
         }
 
@@ -317,8 +329,9 @@ public class RandomSampleByDistance {
             thisTaz.probability = (float) district4Chosen.size() / (float) district4.size();
             sample.add(thisTaz);
         }
-        if (debug)
-            logger.info("There are " + sample.size() + " elements in sample");
+        if(logger.isDebugEnabled()) {
+            logger.debug("There are " + sample.size() + " elements in sample");
+        }
         return sample;
     }
 
@@ -332,10 +345,9 @@ public class RandomSampleByDistance {
 
     public ArrayList randomlySelectFromDistrict(ArrayList district, int numberOfTAZs) {
 
-        Iterator districtIterator = district.iterator();
 
-        if (debug) {
-            logger.info(
+        if(logger.isDebugEnabled())  {
+            logger.debug(
                 "randomly selecting "
                     + numberOfTAZs
                     + " from a district of tazs "
@@ -360,8 +372,9 @@ public class RandomSampleByDistance {
                 if (chosen[randomNumber] == true)
                     continue;
                 else {
-                    if (debug)
-                        logger.finer("Drawing taz " + randomNumber);
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("Drawing taz " + randomNumber);
+                    }
                     chosenArray.add(district.get(randomNumber));
                     break;
                 }

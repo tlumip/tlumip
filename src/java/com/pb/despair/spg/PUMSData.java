@@ -5,7 +5,7 @@ import com.pb.despair.model.Halo;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * The PUMSData class is used to manage input of PUMS data.
@@ -37,7 +37,6 @@ public class PUMSData {
     
 	public ArrayList readSpg1Attributes (String fileName, String zoneIndexFile ) {
 
-		int hhCount=0;
 		int recCount=0;
 		
 		int hhid = 0;
@@ -95,9 +94,9 @@ public class PUMSData {
 							s = in.readLine();
 					
 							if (! getPUMSRecType(s).equals("P")) {
-								logger.severe("Expected P record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
-								logger.severe("exiting readData(" + fileName + ") in PUMSData.");
-								logger.severe("exit (21)");
+								logger.fatal("Expected P record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
+								logger.fatal("exiting readData(" + fileName + ") in PUMSData.");
+								logger.fatal("exit (21)");
 								System.exit (21);
 							}
 							
@@ -133,9 +132,9 @@ public class PUMSData {
 						
 					}
 					else {
-						logger.severe("Expected H record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
-						logger.severe("exiting readData(" + fileName + ") in PUMSData.");
-						logger.severe("exit (20)");
+						logger.fatal("Expected H record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
+						logger.fatal("exiting readData(" + fileName + ") in PUMSData.");
+						logger.fatal("exit (20)");
 						System.exit (20);
 					}
 				
@@ -149,7 +148,7 @@ public class PUMSData {
 
 		} catch (Exception e) {
 
-			logger.severe ("IO Exception caught reading pums data file: " + fileName);
+			logger.fatal ("IO Exception caught reading pums data file: " + fileName);
 			e.printStackTrace();
 			
 		}
@@ -216,9 +215,9 @@ public class PUMSData {
 							s = in.readLine();
 
 							if (! getPUMSRecType(s).equals("P")) {
-								logger.severe("Expected P record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
-								logger.severe("exiting readData(" + fileName + ") in PUMSData.");
-								logger.severe("exit (21)");
+								logger.fatal("Expected P record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
+								logger.fatal("exiting readData(" + fileName + ") in PUMSData.");
+								logger.fatal("exit (21)");
 								System.exit (21);
 							}
 
@@ -228,9 +227,9 @@ public class PUMSData {
 						
 					}
 					else {
-						logger.severe("Expected H record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
-						logger.severe("exiting readData(" + fileName + ") in PUMSData.");
-						logger.severe("exit (20)");
+						logger.fatal("Expected H record type on record: " + recCount + " but got: " + getPUMSRecType(s) + ".");
+						logger.fatal("exiting readData(" + fileName + ") in PUMSData.");
+						logger.fatal("exit (20)");
 						System.exit (20);
 					}
 				
@@ -244,7 +243,7 @@ public class PUMSData {
 
 		} catch (Exception e) {
 
-			logger.severe ("IO Exception caught reading pums data file: " + fileName);
+			logger.fatal ("IO Exception caught reading pums data file: " + fileName);
 			e.printStackTrace();
 			
 		}

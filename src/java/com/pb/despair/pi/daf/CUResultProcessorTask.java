@@ -2,7 +2,6 @@ package com.pb.despair.pi.daf;
 
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Message;
-import com.pb.despair.model.AbstractTAZ;
 import com.pb.despair.pi.Commodity;
 import com.pb.despair.pi.BuyingZUtility;
 import com.pb.despair.pi.SellingZUtility;
@@ -22,7 +21,6 @@ public class CUResultProcessorTask extends MessageProcessingTask {
 
     static int commodityCounter = 0;
     static long processTime;
-    boolean debug = false;
 
     public void onStart(){
         logger.info( "***" + getName() + " started");
@@ -61,7 +59,9 @@ public class CUResultProcessorTask extends MessageProcessingTask {
                 szu.setLastCalculatedUtility(compUtils[1][index]);
                 szu.setLastUtilityValid(true);
                }
-        if(debug) logger.info("Composite Utility of "+name+" has been put into memory");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Composite Utility of "+name+" has been put into memory");
+        }
         //check to see if we have received all commmodity values.  If so, send the signal
         //queue a message that we are complete.
         if(commodityCounter >= Commodity.getAllCommodities().size()){

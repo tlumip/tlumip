@@ -1,5 +1,5 @@
 package com.pb.despair.ha;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.borland.dx.dataset.TableDataSet;
 import com.pb.common.datastore.DataManager;
@@ -54,7 +54,7 @@ public class AllDestinationChoiceLogsums {
                  	purposeInt1 = Math.abs((int) purpose.charAt(0));
                  	purposeInt2 = Math.abs((int) purpose.charAt(1));
                  } else {
-                 	logger.severe("problem -- DC logsum \"purpose\" is not 1 or 2 char long: "+purpose);
+                 	logger.fatal("problem -- DC logsum \"purpose\" is not 1 or 2 char long: "+purpose);
                  	throw new RuntimeException("problem -- DC logsum \"purpose\" is not 1 or 2 char long: "+purpose);
                  }
                  if (purposeMap1[purposeInt1]==0) {

@@ -8,11 +8,10 @@ import com.pb.common.util.IndexSort;
 import com.pb.common.util.Justify;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.logging.Logger;
 
+import org.apache.log4j.Logger;
 
 
 

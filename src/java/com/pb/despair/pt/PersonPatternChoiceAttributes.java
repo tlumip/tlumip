@@ -1,5 +1,5 @@
 package com.pb.despair.pt;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**  
  * Attributes of a person that are inputs to the pattern choice model

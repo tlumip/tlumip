@@ -13,7 +13,7 @@ import com.pb.common.util.ResourceUtil;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 

@@ -6,7 +6,7 @@ import com.pb.despair.grid.AlphaZone;
 import com.pb.despair.grid.Ref;
 import com.pb.common.util.OutTextFile;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.logging.Level;
 import java.util.ArrayList;
 import java.util.Iterator;

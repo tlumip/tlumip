@@ -5,7 +5,7 @@ import com.pb.common.util.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** .
  *
@@ -39,7 +39,7 @@ public class TripDataGenerator {
     private void buildODTable ( double[][] hwyDistSkims ) {
 
         //Apply gravity mode to generate trip table for assignment
-        int tripCount = gravityModelTrips ( hwyDistSkims );
+        gravityModelTrips ( hwyDistSkims );
 
     }
 
@@ -80,7 +80,7 @@ public class TripDataGenerator {
 	        logger.info (totalTrips + " total productions read from file: " + Constants.PROD_ATTR_FILE);
         }
 		catch (Exception e) {
-            logger.severe ("IO Exception caught reading trip generation data from : " + Constants.PROD_ATTR_FILE);
+            logger.fatal ("IO Exception caught reading trip generation data from : " + Constants.PROD_ATTR_FILE);
             e.printStackTrace();
         }
 

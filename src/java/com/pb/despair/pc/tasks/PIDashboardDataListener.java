@@ -6,7 +6,7 @@ import com.pb.despair.pc.beans.DashboardDataBean;
 import com.pb.despair.pc.*;
 import com.pb.common.daf.Task;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.logging.Level;
 
 /**

@@ -12,7 +12,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.*;
 
 public class EDControl extends ModelComponent {

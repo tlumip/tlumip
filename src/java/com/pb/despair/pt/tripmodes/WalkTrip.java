@@ -7,7 +7,7 @@ import com.pb.despair.pt.PersonTripModeAttributes;
 import com.pb.despair.pt.TripModeParameters;
 import com.pb.despair.pt.ZoneAttributes;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 /** 
  * Driver alone mode
  * 

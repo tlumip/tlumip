@@ -3,7 +3,7 @@ import com.borland.dx.dataset.TableDataSet;
 import com.pb.common.datastore.DataManager;
 
 import java.util.Hashtable;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** 
  * A class that contains a set of destination choice logsums
@@ -15,12 +15,10 @@ import java.util.logging.Logger;
  */
 public class DestinationChoiceLogsums {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
-    boolean debug = false;
     public Hashtable logsums = new Hashtable();
 
     public DestinationChoiceLogsums(){
-         logger.fine("New DC Logsums created");
-    };
+    }
     /** Reads DestinationChoiceLogsums from jDataStore
      * 
      * @param tableName Name of table to be read from JDataStore
@@ -28,7 +26,9 @@ public class DestinationChoiceLogsums {
      * @param segment Market segment
      */
     public void readFromJDataStore(String tableName, String purpose, int segment){
-       if(debug) logger.fine("Getting table: "+tableName+" "+purpose+" "+segment);
+       if(logger.isDebugEnabled()) {
+           logger.debug("Getting table: "+tableName+" "+purpose+" "+segment);
+       }
        try {
                 DataManager dm = new DataManager();  //Create a data manager, connect to default data-store
              TableDataSet table = dm.getTableDataSet(tableName);

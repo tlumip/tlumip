@@ -11,7 +11,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * The DataDictionary class in the synpop.pums package reads and defines
@@ -24,9 +24,6 @@ public class DataDictionary {
 
 	private static final int HH_SHEET = 0;
 	private static final int PERSON_SHEET = 1;
-	private static final int VARIABLE_FIELD = 1;
-	private static final int START_COL_FIELD = 1;
-	private static final int LENGTH_FIELD = 1;
 
     private static final int NUMFIELDS = 4;
     private static final int NUMHHATTRIBS = 120;
@@ -35,7 +32,6 @@ public class DataDictionary {
     public ArrayList HHAttribs;
     public ArrayList PersAttribs;
     
-    public static final boolean DEBUG = false;
     
     
     
@@ -55,10 +51,10 @@ public class DataDictionary {
     public int getStartCol (ArrayList attribs, String PUMSVariable) {
     
         int i = getPUMSVariableIndex (attribs, PUMSVariable);
-        if (DEBUG) {
-            logger.info ("getStartCol PUMSVariable = " + PUMSVariable);
-            logger.info ("getStartCol PUMSVariable Index = " + i);
-            logger.info ("getStartCol PUMSVariable startCol = " + (((DataDictionaryRecord)attribs.get(i)).startCol));
+        if(logger.isDebugEnabled()) {
+            logger.debug ("getStartCol PUMSVariable = " + PUMSVariable);
+            logger.debug ("getStartCol PUMSVariable Index = " + i);
+            logger.debug ("getStartCol PUMSVariable startCol = " + (((DataDictionaryRecord)attribs.get(i)).startCol));
         }
         return ((DataDictionaryRecord)attribs.get(i)).startCol;
     }
@@ -67,10 +63,10 @@ public class DataDictionary {
     public int getNumberCols (ArrayList attribs, String PUMSVariable) {
     
         int i = getPUMSVariableIndex (attribs, PUMSVariable);
-        if (DEBUG) {
-            logger.info ("getNumberCols PUMSVariable = " + PUMSVariable);
-            logger.info ("getNumberCols PUMSVariable Index = " + i);
-            logger.info ("getNumberCols PUMSVariable numberCols = " + ((DataDictionaryRecord)attribs.get(i)).numberCols);
+        if(logger.isDebugEnabled()) {
+            logger.debug ("getNumberCols PUMSVariable = " + PUMSVariable);
+            logger.debug ("getNumberCols PUMSVariable Index = " + i);
+            logger.debug ("getNumberCols PUMSVariable numberCols = " + ((DataDictionaryRecord)attribs.get(i)).numberCols);
         }
         return ((DataDictionaryRecord)attribs.get(i)).numberCols;
     }
@@ -79,10 +75,10 @@ public class DataDictionary {
     public int getLastCol (ArrayList attribs, String PUMSVariable) {
     
         int i = getPUMSVariableIndex (attribs, PUMSVariable);
-        if (DEBUG) {
-            logger.info ("getLastCol PUMSVariable = " + PUMSVariable);
-            logger.info ("getLastCol PUMSVariable Index = " + i);
-            logger.info ("getLastCol PUMSVariable lastCol = " + (((DataDictionaryRecord)attribs.get(i)).startCol + ((DataDictionaryRecord)attribs.get(i)).numberCols));
+        if(logger.isDebugEnabled()) {
+            logger.debug ("getLastCol PUMSVariable = " + PUMSVariable);
+            logger.debug ("getLastCol PUMSVariable Index = " + i);
+            logger.debug ("getLastCol PUMSVariable lastCol = " + (((DataDictionaryRecord)attribs.get(i)).startCol + ((DataDictionaryRecord)attribs.get(i)).numberCols));
         }
         return ((DataDictionaryRecord)attribs.get(i)).startCol + ((DataDictionaryRecord)attribs.get(i)).numberCols;
     }
@@ -130,9 +126,9 @@ public class DataDictionary {
         }
         
         if (index < 0) {
-            logger.severe("PUMS variable: " + PUMSVariable + " not found in data dictionary.");
-            logger.severe("exiting getPUMSVariableIndex(" + PUMSVariable + ") in DataDictionary.");
-            logger.severe("exit (10)");
+            logger.fatal("PUMS variable: " + PUMSVariable + " not found in data dictionary.");
+            logger.fatal("exiting getPUMSVariableIndex(" + PUMSVariable + ") in DataDictionary.");
+            logger.fatal("exit (10)");
             System.exit (10);
         }
         
@@ -171,9 +167,9 @@ public class DataDictionary {
                                     attrib = HHAttribs.size();
                                 else
                                     attrib = PersAttribs.size();
-                                logger.severe("data definition for attrib " + attrib + " in data dictionary file " + fileName + " has " + st.countTokens() + " fields, but should have " + NUMFIELDS + ".");
-                                logger.severe("exiting readPUMSDataDictionary(" + fileName + ").");
-                                logger.severe("exit (11)");
+                                logger.fatal("data definition for attrib " + attrib + " in data dictionary file " + fileName + " has " + st.countTokens() + " fields, but should have " + NUMFIELDS + ".");
+                                logger.fatal("exiting readPUMSDataDictionary(" + fileName + ").");
+                                logger.fatal("exit (11)");
                                 System.exit (11);
                             }
                             else {
@@ -197,7 +193,7 @@ public class DataDictionary {
                 
             }
         } catch (Exception e) {
-            logger.severe ("IO Exception caught reading data dictionary file: " + fileName);
+            logger.fatal ("IO Exception caught reading data dictionary file: " + fileName);
             e.printStackTrace();
         }
         

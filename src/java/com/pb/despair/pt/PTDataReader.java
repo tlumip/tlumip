@@ -7,7 +7,7 @@ import com.pb.despair.spg.EdIndustry;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.util.*;
 
 /** 
@@ -31,20 +31,23 @@ public class PTDataReader{
     }
 
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
-    boolean debug = true;
 
     public BufferedReader openFile(String name){
         try {
-        	if(debug) logger.fine("Adding table "+name);
+        	if(logger.isDebugEnabled()) {
+                logger.debug("Adding table "+name);
+            }
 
         	String pathName = ResourceUtil.getProperty(ptRb, name);
-        	if(debug) logger.info("pathName: "+pathName);
+        	if(logger.isDebugEnabled()) {
+                logger.debug("pathName: "+pathName);
+            }
         	BufferedReader inStream = null;
             inStream = new BufferedReader( new FileReader(pathName) );
             return inStream;
             
         } catch (IOException e) {
-            logger.severe("Can't find input table " + name);
+            logger.fatal("Can't find input table " + name);
             e.printStackTrace();
         }
         return null;
@@ -81,7 +84,9 @@ public class PTDataReader{
         logger.info("Opening household file");
         BufferedReader hhReader = openFile(file);
         int numberOfHouseholds = findNumberOfRecordsInFile(file);
-        if(debug) logger.fine("Number of households = "+numberOfHouseholds);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Number of households = "+numberOfHouseholds);
+        }
         PTHousehold[] householdArray = new PTHousehold[numberOfHouseholds];
         PTHousehold thisHousehold = null;                                   
         
@@ -118,7 +123,7 @@ public class PTDataReader{
                 thisHousehold=null;
             } 
         } catch (IOException e) {
-            logger.severe("Error reading households file");
+            logger.fatal("Error reading households file");
             e.printStackTrace();
           }
 
@@ -248,7 +253,7 @@ public class PTDataReader{
             }
 
         }catch(Exception e){
-             logger.severe("Household file and person file don't match up.  Unable to add worker data to households.");
+             logger.fatal("Household file and person file don't match up.  Unable to add worker data to households.");
              e.printStackTrace();
              System.exit(1);
         }
@@ -313,8 +318,9 @@ public class PTDataReader{
         	}
             
         }catch(Exception e){
-             logger.severe("Household file and person file don't match up.  Unable to add persons to households.");
+             logger.fatal("Household file and person file don't match up.  Unable to add persons to households.");
              e.printStackTrace();
+            //TODO - log this exception to the node exception logger
              System.exit(1);
         }
         return households;

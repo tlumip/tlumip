@@ -7,7 +7,7 @@ import com.pb.despair.pt.tripmodes.*;
 import com.pb.despair.model.SkimsInMemory;
 import com.pb.despair.model.TravelTimeAndCost;
 import com.pb.despair.model.ModeType;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** 
  * This class implements a logit model to choose a mode for a trip
@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 public class TripModeChoiceModel{
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
 
-     final static boolean debug=false;
      final static int debugID = -1;
     boolean wroteOutNullTripMode = false;
 
@@ -112,7 +111,9 @@ public class TripModeChoiceModel{
                                                                   );
                ZoneAttributes zone1 = new ZoneAttributes();
                
-               if(debug) logger.info("thisTour.intermediateStop1.location.zoneNumber: "+thisTour.intermediateStop1.location.zoneNumber);
+               if(logger.isDebugEnabled()) {
+                   logger.debug("thisTour.intermediateStop1.location.zoneNumber: "+thisTour.intermediateStop1.location.zoneNumber);
+               }
                zone1.parkingCost=((Taz)tazs.tazData.get(new Integer(thisTour.intermediateStop1.location.zoneNumber))).nonWorkParkingCost;
                calculateUtility(params,
                                 tc1,
@@ -141,9 +142,9 @@ public class TripModeChoiceModel{
                                                                  thisTour.primaryDestination.location.zoneNumber,
                                                                  thisTour.begin.endTime);
                ZoneAttributes zone = new ZoneAttributes();
-              if (debug) {
-                  logger.finer("thisTour.primaryDestination.location.zoneNumber"+thisTour.primaryDestination.location.zoneNumber);
-                  logger.finer("thisTour.primaryDestination.location.zoneNumber"+thisTour.primaryDestination.location.zoneNumber);
+              if(logger.isDebugEnabled()) {
+                  logger.debug("thisTour.primaryDestination.location.zoneNumber"+thisTour.primaryDestination.location.zoneNumber);
+                  logger.debug("thisTour.primaryDestination.location.zoneNumber"+thisTour.primaryDestination.location.zoneNumber);
               }
               zone.parkingCost=((Taz)tazs.tazData.get(new Integer(thisTour.primaryDestination.location.zoneNumber))).nonWorkParkingCost;
                calculateUtility(params,
@@ -205,7 +206,7 @@ public class TripModeChoiceModel{
                                 thisTour.end
                                 );        
           }
-         if(debug && (thisTour.intermediateStop2!=null || thisTour.intermediateStop1!=null) && !wroteOutNullTripMode){
+         if(logger.isDebugEnabled() && (thisTour.intermediateStop2!=null || thisTour.intermediateStop1!=null) && !wroteOutNullTripMode){
             logger.info("Processing hh "+thisHousehold.ID+" person "+thisPerson.ID+" pattern " + thisPerson.weekdayPattern.dayPattern.toString()+ " tour "+thisTour.tourString);
             thisTour.print(thisTour);
              wroteOutNullTripMode=true;
@@ -228,14 +229,16 @@ public class TripModeChoiceModel{
             double logsum = autoNest.getUtility();
             autoNest.calculateProbabilities();
                                
-            if(debug) logger.finer("Logsum "+logsum);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Logsum "+logsum);
+            }
 
             try{
                  destActivity.tripMode = (Mode)autoNest.chooseAlternative();
 
             }catch(Exception e){
                  System.out.println(e);
-                 logger.severe("Error in trip mode choice: no modes available ");
+                 logger.fatal("Error in trip mode choice: no modes available ");
                  System.exit(1);
             }
 

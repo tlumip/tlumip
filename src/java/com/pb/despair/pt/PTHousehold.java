@@ -3,7 +3,7 @@ package com.pb.despair.pt;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.Random;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** 
  * A class for a Household in PT

@@ -1,6 +1,6 @@
 package com.pb.despair.pt;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.despair.model.Mode;
 import com.pb.despair.model.SkimsInMemory;
@@ -44,7 +44,6 @@ public class TourModeChoiceModel{
 
      
      
-     final static boolean debug=false;
      final static int debugID = 1;
      
      public TourModeChoiceModel(){
@@ -151,11 +150,9 @@ public class TourModeChoiceModel{
      public void chooseMode(){
           try{ 
                chosenMode =  (Mode) this.root.chooseElementalAlternative();
-//               chosenMode.print();
-//               logger.finest("Chose mode: "+chosenMode.alternativeName);
           }catch(Exception e){
                System.out.println(e);
-               logger.severe("Error in mode choice: no modes available ");
+               logger.error("Error in mode choice: no modes available ");
                System.exit(1);
           }
      }

@@ -9,10 +9,9 @@ import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** This class applies an auto ownership model
  *  to households in PT
@@ -20,9 +19,8 @@ import java.util.logging.Logger;
  */
 public class AutoOwnershipModel {
      
-     public static final boolean debug = false;
      public static final long debugID = 1001;
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.AutoOwnershipModel");
      ResourceBundle rb;
      /* Constructor takes an array
      * of households and applies the model
@@ -42,13 +40,13 @@ public class AutoOwnershipModel {
           for(int i=0;i<hh.length;++i){
                
      
-               if(debug && hh[i].ID==debugID){
-                    System.out.println("Household "+hh[i].ID);
-                    System.out.println("  Income  = "+hh[i].income);
-                    System.out.println("  Size    = "+hh[i].size);
-                    System.out.println("  Workers = "+hh[i].workers);
-                    System.out.println("  SingleF = "+hh[i].singleFamily);
-                    System.out.println("  HomeTaz = "+hh[i].homeTaz);
+               if(logger.isDebugEnabled() && hh[i].ID==debugID){
+                    logger.debug("Household "+hh[i].ID);
+                    logger.debug("  Income  = "+hh[i].income);
+                    logger.debug("  Size    = "+hh[i].size);
+                    logger.debug("  Workers = "+hh[i].workers);
+                    logger.debug("  SingleF = "+hh[i].singleFamily);
+                    logger.debug("  HomeTaz = "+hh[i].homeTaz);
                }
                
                
@@ -68,7 +66,6 @@ public class AutoOwnershipModel {
                float hhsize1=0;
                 float hhsize2=0;  
                 float hhsize3=0;
-                float hhsize4=0;
                 switch(hh[i].size){
                     case 1:
                     hhsize1=1;
@@ -80,7 +77,7 @@ public class AutoOwnershipModel {
                     hhsize3=1;
                     break;
                     default:
-                    hhsize4=1;
+                    hhsize3=1;
                     break;
                 }
             //set number of workers dummy variable
@@ -110,7 +107,7 @@ public class AutoOwnershipModel {
                //natural log of retail employment within 30 minutes transit
                double lnTransit=0;
                if(!tazdata.hasTaz(hh[i].homeTaz)){
-                    logger.severe("Error: Taz "+hh[i].homeTaz+" not found in taz array");
+                    logger.fatal("Error: Taz "+hh[i].homeTaz+" not found in taz array");
                     System.exit(1);
                }
                Taz homeTaz = (Taz) tazdata.tazData.get(new Integer(hh[i].homeTaz));
@@ -151,8 +148,7 @@ public class AutoOwnershipModel {
                             p.income42*income4 +
                             p.sfdwell2*sf;
                
-               double util3=0;
-          
+
                //exponentiated
                double expUtil0 = MathUtil.exp(util0);
                double expUtil1 = MathUtil.exp(util1);
@@ -164,8 +160,7 @@ public class AutoOwnershipModel {
                double prob0 = expUtil0/sum;
                double prob1 = expUtil1/sum;
                double prob2 = expUtil2/sum;
-               double prob3 = 1 - (prob0 + prob1 + prob2);
-               
+
                //choose one
                int autos=0;
                double randomNumber = SeededRandom.getRandom();
@@ -180,9 +175,7 @@ public class AutoOwnershipModel {
                
                hh[i].autos=(byte)autos;
           }
-//         Arrays.sort(hh); //ask joel if we truly need this line, I don't think we do (Christi: 8/19/04)
          logger.info("Completed auto ownership model.");
-         //Test TODO remove when done.
         return hh;
      }
 
@@ -226,7 +219,7 @@ public class AutoOwnershipModel {
                      }     //end attractions
                } //end productions
           }catch(Exception e){
-               logger.severe("Error:Unable to read in transit matrices in Auto Ownership Model Class");
+               logger.fatal("Error:Unable to read in transit matrices in Auto Ownership Model Class");
               e.printStackTrace();
                 System.exit(1);
           }

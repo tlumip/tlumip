@@ -7,7 +7,7 @@ import com.pb.common.matrix.MatrixType;
 import com.pb.common.util.ResourceUtil;
 import java.util.ResourceBundle;
 import java.io.File;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** 
  * A class that contains all destination choice logsums
@@ -25,13 +25,14 @@ public class AllDestinationChoiceLogsums {
 
     static final String dcTableName="DC LOGSUMS";
     MatrixCollection mc;
-    boolean debug = false;
 
     public AllDestinationChoiceLogsums(){}
      
      public void readDCLogsums(ResourceBundle rb){
          String dcLogsumFile = ResourceUtil.getProperty(rb, "dcLogsum.path");
-         if(debug) logger.info("dcLogsumFile: "+dcLogsumFile);
+         if(logger.isDebugEnabled()) {
+             logger.debug("dcLogsumFile: "+dcLogsumFile);
+         }
 
          mc = new MatrixCollection();
          for(int purpose=0;purpose<ActivityPurpose.DC_LOGSUM_PURPOSES.length;purpose++){
@@ -40,14 +41,18 @@ public class AllDestinationChoiceLogsums {
                                                                 +ActivityPurpose.DC_LOGSUM_PURPOSES[purpose]+segment+"dcls.zip"));
                  Matrix m = reader.readMatrix();
                  mc.addMatrix(m);
-                 if(debug) logger.info("matrix name: "+m.getName()+".zip");
+                 if(logger.isDebugEnabled()) {
+                     logger.debug("matrix name: "+m.getName()+".zip");
+                 }
              }
          }
      }
 
     public void readBinaryDCLogsums(ResourceBundle rb){
          String dcLogsumFile = ResourceUtil.getProperty(rb, "dcLogsum.path");
-         if(debug) logger.info("dcLogsumFile: "+dcLogsumFile);
+         if(logger.isDebugEnabled()) {
+             logger.debug("dcLogsumFile: "+dcLogsumFile);
+         }
 
          mc = new MatrixCollection();
          for(int purpose=0;purpose<ActivityPurpose.DC_LOGSUM_PURPOSES.length;purpose++){
@@ -56,7 +61,9 @@ public class AllDestinationChoiceLogsums {
                                                                 +ActivityPurpose.DC_LOGSUM_PURPOSES[purpose]+segment+"dcls.binary"));
                  Matrix m = reader.readMatrix();
                  mc.addMatrix(m);
-                 if(debug) logger.info("matrix name: "+m.getName()+".binary");
+                 if(logger.isDebugEnabled()) {
+                     logger.debug("matrix name: "+m.getName()+".binary");
+                 }
              }
          }
      }
@@ -72,13 +79,11 @@ public class AllDestinationChoiceLogsums {
           //calculate household market segments
           int workHouseholdSegment = thisHousehold.calcWorkLogsumSegment();               
              int nonWorkHouseholdSegment = thisHousehold.calcNonWorkLogsumSegment();
-             int workPersonSegment=0;
              int studentPersonSegment=0;
         
              for(int i=0;i<thisHousehold.persons.length;++i){
 
                   //calculate person market segments for workers, students (logsums will be set to 0 for non-workers, non-students)
-                  workPersonSegment=thisHousehold.persons[i].calcWorkerLogsumSegment();
                   studentPersonSegment=thisHousehold.persons[i].calcStudentLogsumSegment();
         
                   //now grab the logsums

@@ -7,7 +7,7 @@ import com.pb.despair.pt.PersonTripModeAttributes;
 import com.pb.despair.pt.TripModeParameters;
 import com.pb.despair.pt.ZoneAttributes;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 /** 
  * Driver alone mode
  * 
@@ -33,8 +33,6 @@ public class DriveAlone extends Mode {
      
     /** Calculates utility of driving alone
      * 
-     * @param inbound - In-bound TravelTimeAndCost
-     * @param outbound - Outbound TravelTimeAndCost
      * @param z - ZoneAttributes (Currently only parking cost)
      * @param c - TourModeParameters
      * @param p - PersonTourModeAttributes
@@ -67,9 +65,9 @@ public class DriveAlone extends Mode {
     /** Get drive alone utility */
      public double getUtility(){
           if(!hasUtility){
-               logger.severe("Error: Utility not calculated for "+alternativeName+"\n");
-               
-                System.exit(1);
+               logger.fatal("Error: Utility not calculated for "+alternativeName+"\n");
+              //TODO - log this error to the node exception file
+               System.exit(1);
           };
           return utility;
      };

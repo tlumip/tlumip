@@ -1,6 +1,6 @@
 package com.pb.despair.pi;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.despair.model.OverflowException;
 
@@ -24,7 +24,6 @@ public class Exchange {
     final int exchangeLocationUserID;
     private double buyingFromExchangeDerivative = 0;
     private double sellingToExchangeDerivative = 0;
-    //TAZ exchangeLocation;
 
     /**
      * This is the flow of all of this commodity into and out of this exchange zone
@@ -72,7 +71,7 @@ public class Exchange {
 
     void setFlowQuantityAndDerivative(int tazIndex, char selling, double quantity, double derivative) throws OverflowException {
         if (monitor) {
-            logger.finer("Setting flow quantity from " + this + " to taz with index " + tazIndex + " for " + selling + " to " + quantity + " with derivative " + derivative);
+            logger.info("Setting flow quantity from " + this + " to taz with index " + tazIndex + " for " + selling + " to " + quantity + " with derivative " + derivative);
         }
         setFlowQuantity(tazIndex, selling, quantity);
         if (selling == 's') {
@@ -106,66 +105,7 @@ public class Exchange {
     public double exchangeSurplus() {
         return exchangeSurplusAndDerivative()[0];
     } 
-      /*  if (monitor) {
-            if(surplusValid == true){
-                StringBuffer buyingString = new StringBuffer();
-                StringBuffer sellingString = new StringBuffer();
-                for (int i = 0; i < buyingFromExchangeFlows.length; i++) {
-                    if (buyingFromExchangeFlows[i] != null) {
-                        buyingString.append(buyingFromExchangeFlows[i].getTaz().getZoneUserNumber() + ":" + buyingQuantities[i] + " ");
-                    }
-                    if (sellingToExchangeFlows[i] != null) {
-                        sellingString.append(sellingToExchangeFlows[i].getTaz().getZoneUserNumber() + ":" + sellingQuantities[i] + " ");
-                    }
-                }
-                logger.info("\t "+ this + " buying quantities " + buyingString);
-                logger.info("\t "+ this + " selling quantities " + sellingString);
-                double[] importAndExport = importsAndExports(price);
-                logger.info("\t "+ this +" imports:" + importAndExport[0] + " exports:" + importAndExport[1]);
-                return lastCalculatedSurplus;
-            }
-            else {
-                double surplus = 0;
-                StringBuffer buyingString = new StringBuffer();
-                StringBuffer sellingString = new StringBuffer();
-                for (int i = 0; i < buyingFromExchangeFlows.length; i++) {
-                    if (buyingFromExchangeFlows[i] != null) {
-                        surplus += buyingQuantities[i];
-                        buyingString.append(buyingFromExchangeFlows[i].getTaz().getZoneUserNumber() + ":" + buyingQuantities[i] + " ");
-                    }
-                    if (sellingToExchangeFlows[i] != null) {
-                        surplus += sellingQuantities[i];
-                        sellingString.append(sellingToExchangeFlows[i].getTaz().getZoneUserNumber() + ":" + sellingQuantities[i] + " ");
-                    }
-                }
-                logger.info("\t "+ this + " buying quantities " + buyingString);
-                logger.info("\t " + this + " selling quantities " + sellingString);
-                logger.info("\t " + this + " price "+price);
-                double[] importAndExport = importsAndExports(price);
-                logger.info("\t "+ this +" imports:" + importAndExport[0] + " exports:" + importAndExport[1]);
-                surplusValid = true;
-                lastCalculatedSurplus = surplus + importAndExport[0] - importAndExport[1];
-                logger.info("\t Total surplus = " + lastCalculatedSurplus);
-                return lastCalculatedSurplus;
-            }
-        }
-        if(surplusValid == true) return lastCalculatedSurplus;
-        if(!myCommodity.isFlowsValid()) {
-            logger.severe("Calculating surplus for "+this+" when the flows are invalid");
-            throw new Error("Calculating surplus for "+this+" when the flows are invalid");
-        }
-        else {
-            double surplus = 0;
-            for (int i = 0; i < buyingFromExchangeFlows.length; i++) {
-                if (buyingFromExchangeFlows[i] != null) surplus += buyingQuantities[i];
-                if (sellingToExchangeFlows[i] != null) surplus += sellingQuantities[i];
-            }
-            double[] importAndExport = importsAndExports(price);
-            surplusValid = true;
-            lastCalculatedSurplus = surplus + importAndExport[0] - importAndExport[1];
-            return lastCalculatedSurplus;
-        }
-    }*/
+
 
     /**
      * determine the net surplus in the zone, by summing all the selling quantities and subtracting the sum of the buying
@@ -181,7 +121,6 @@ public class Exchange {
             return sAndD;
         }
         // some debug code //
-        boolean debug = false;
 
         /*    if (myCommodity.name.equals("HEALTH SERVICES") && exchangeLocation.getZoneIndex() == 0) {
                debug = true;
@@ -194,7 +133,7 @@ public class Exchange {
         StringBuffer buyingString = null;
         StringBuffer sellingString = null;
         if(!myCommodity.isFlowsValid()) {
-            logger.severe("Calculating surplus for "+this+" when the flows are invalid");
+            logger.error("Calculating surplus for "+this+" when the flows are invalid");
             throw new Error("Calculating surplus for "+this+" when the flows are invalid");
         }
         if (monitor) {
@@ -214,7 +153,9 @@ public class Exchange {
                     if (monitor && cf != null) sellingString.append(cf.getTaz().getZoneUserNumber() + ":" + quantity + " ");
                 }
                 if (cf != null) {
-                    if (debug) logger.info("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                    }
                     surplus += quantity;
 // old way          derivative += Math.abs(cf.getDispersionParameter() * 0.5 * quantity);
                 }
@@ -229,16 +170,16 @@ public class Exchange {
         double[] importAndExport = importsAndExports(price);
         surplus += importAndExport[0] - importAndExport[1];
         derivative += importAndExport[2] - importAndExport[3];
-        if (debug || monitor) {
+        if(logger.isDebugEnabled() || monitor) {
             logger.info("\t " + "import:" + importAndExport[0] + " export:" + importAndExport[1]);
             logger.info("\t Total surplus = " + surplus);
         }
 
         // debug June 2 2002
         if (Double.isNaN(surplus) || Double.isInfinite(surplus) || Double.isNaN(derivative) || Double.isInfinite(derivative)) {
-            logger.warning("\t Problem with Exchange surplus and/or derivative in " + this);
-            logger.warning("\t surplus:" + surplus + " derivative:" + derivative + " buildup follows:");
-            logger.info(" price "+price);
+            logger.warn("\t Problem with Exchange surplus and/or derivative in " + this);
+            logger.warn("\t surplus:" + surplus + " derivative:" + derivative + " buildup follows:");
+            logger.warn(" price "+price);
             surplus = 0;
             derivative = 0;
             cf = null;
@@ -253,16 +194,16 @@ public class Exchange {
                         quantity = sellingQuantities[i];
                     }
                     if (cf != null) {
-                        logger.severe("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                        logger.warn("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
                         surplus += quantity;
                         derivative += Math.abs(cf.getDispersionParameter() * 0.5 * quantity);
                     }
                 }
             }
             importAndExport = importsAndExports(price);
-            logger.warning("\t imports:" + importAndExport[0] + " export:" + importAndExport[1]);
+            logger.warn("\t imports:" + importAndExport[0] + " export:" + importAndExport[1]);
             surplus += importAndExport[0] - importAndExport[1];
-            logger.warning("\t importDerivative:" + importAndExport[2] + " exportDerivative:" + importAndExport[3]);
+            logger.warn("\t importDerivative:" + importAndExport[2] + " exportDerivative:" + importAndExport[3]);
             derivative += importAndExport[2] - importAndExport[3];
         }
         // end of June 2 2002 Debug
@@ -288,13 +229,12 @@ public class Exchange {
     public double calculateDerviative(){
         if(derivativeValid == true) return lastCalculatedDerivative;
 
-        boolean debug = false;
         double derivative = 0;
         CommodityZUtility cf = null;
         StringBuffer buyingString = null;
         StringBuffer sellingString = null;
         if(!myCommodity.isFlowsValid()) {
-            logger.severe("Calculating derivative for "+this+" when the flows are invalid");
+            logger.error("Calculating derivative for "+this+" when the flows are invalid");
             throw new Error("Calculating derivative for "+this+" when the flows are invalid");
         }
         if (monitor) {
@@ -314,7 +254,9 @@ public class Exchange {
                     if (monitor && cf != null) sellingString.append(cf.getTaz().getZoneUserNumber() + ":" + quantity + " ");
                 }
                 if (cf != null) {
-                    if (debug) logger.info("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                    }
                  }
             }
         }
@@ -326,16 +268,16 @@ public class Exchange {
         derivative = getBuyingFromExchangeDerivative() + getSellingToExchangeDerivative();
         double[] importAndExport = importsAndExports(price);
         derivative += importAndExport[2] - importAndExport[3];
-        if (debug || monitor) {
+        if(logger.isDebugEnabled() || monitor) {
             logger.info("\t " + "importDerivative:" + importAndExport[2] + " exportDerivative:" + importAndExport[3]);
             logger.info("\t Total derivative = " + derivative);
         }
 
         // debug June 2 2002
         if (Double.isNaN(derivative) || Double.isInfinite(derivative)) {
-            logger.warning("\t Problem with Exchange derivative in " + this);
-            logger.warning("\t derivative:" + derivative + " buildup follows:");
-            logger.info(" price "+price);
+            logger.warn("\t Problem with Exchange derivative in " + this);
+            logger.warn("\t derivative:" + derivative + " buildup follows:");
+            logger.warn(" price "+price);
             derivative = 0;
             cf = null;
             for (int i = 0; i < buyingFromExchangeFlows.length; i++) {
@@ -349,13 +291,13 @@ public class Exchange {
                         quantity = sellingQuantities[i];
                     }
                     if (cf != null) {
-                        logger.severe("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                        logger.warn("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
                         derivative += Math.abs(cf.getDispersionParameter() * 0.5 * quantity);
                     }
                 }
             }
             importAndExport = importsAndExports(price);
-            logger.warning("\t importDerivative:" + importAndExport[2] + " exportDerivative:" + importAndExport[3]);
+            logger.warn("\t importDerivative:" + importAndExport[2] + " exportDerivative:" + importAndExport[3]);
             derivative += importAndExport[2] - importAndExport[3];
         }
         // end of June 2 2002 Debug
@@ -369,13 +311,12 @@ public class Exchange {
     public double calculateSurplus(){
         if(surplusValid == true) return lastCalculatedSurplus;
 
-        boolean debug = false;
         double surplus = 0.0;
         CommodityZUtility cf = null;
         StringBuffer buyingString = null;
         StringBuffer sellingString = null;
         if(!myCommodity.isFlowsValid()) {
-            logger.severe("Calculating surplus for "+this+" when the flows are invalid");
+            logger.error("Calculating surplus for "+this+" when the flows are invalid");
             throw new Error("Calculating surplus for "+this+" when the flows are invalid");
         }
         if (monitor) {
@@ -395,7 +336,9 @@ public class Exchange {
                     if (monitor && cf != null) sellingString.append(cf.getTaz().getZoneUserNumber() + ":" + quantity + " ");
                 }
                 if (cf != null) {
-                    if (debug) logger.info("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                    }
                     surplus += quantity;
                 }
             }
@@ -407,16 +350,16 @@ public class Exchange {
         }
         double[] importAndExport = importsAndExports(price);
         surplus += importAndExport[0] - importAndExport[1];
-        if (debug || monitor) {
+        if(logger.isDebugEnabled() || monitor) {
             logger.info("\t " + "import:" + importAndExport[0] + " export:" + importAndExport[1]);
             logger.info("\t Total surplus = " + surplus);
         }
 
         // debug June 2 2002
         if (Double.isNaN(surplus) || Double.isInfinite(surplus)) {
-            logger.warning("\t Problem with Exchange surplus in " + this);
-            logger.warning("\t surplus:" + surplus + " buildup follows:");
-            logger.info(" price "+price);
+            logger.warn("\t Problem with Exchange surplus in " + this);
+            logger.warn("\t surplus:" + surplus + " buildup follows:");
+            logger.warn(" price "+price);
             surplus = 0;
             cf = null;
             for (int i = 0; i < buyingFromExchangeFlows.length; i++) {
@@ -430,13 +373,13 @@ public class Exchange {
                         quantity = sellingQuantities[i];
                     }
                     if (cf != null) {
-                        logger.severe("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
+                        logger.warn("\t Commodity flow " + cf + " to exchange " + this + " quantity " + quantity);
                         surplus += quantity;
                     }
                 }
             }
             importAndExport = importsAndExports(price);
-            logger.warning("\t imports:" + importAndExport[0] + " export:" + importAndExport[1]);
+            logger.warn("\t imports:" + importAndExport[0] + " export:" + importAndExport[1]);
             surplus += importAndExport[0] - importAndExport[1];
          }
         // end of June 2 2002 Debug

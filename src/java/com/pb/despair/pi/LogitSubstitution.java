@@ -7,7 +7,7 @@ import com.pb.despair.model.ProductionFunction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * This class calculates the overall utility of producing or
@@ -28,7 +28,6 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
 
     /**
      * @link aggregation
-     *      @associates <{%Dst%}>
      */
     private ArrayList myCommodities = new ArrayList();
     private ArrayList sortedQuantitiesToUse = null;
@@ -92,17 +91,17 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
             //CUProda,z = sum(MMinc,a)over c + 1/lambda*ln(sum(e^(lambda*UIProdc,a,z) over c)
             if (foundOne) utility += 1 / lambda * Math.log(denominator);
             if (Double.isNaN(utility) || overallUtilityCalcPrint > 0) {
-                logger.warning("building up a commodity utility to " + utility + ", details follow:");
+                logger.warn("building up a commodity utility to " + utility + ", details follow:");
                 double[] amount = calcAmounts(individualCommodityUtilities);
                 utility = 0;
                 for (int c = 0; c < sortedQuantitiesToUse.size(); c++) {
                     Quantity q = (Quantity) sortedQuantitiesToUse.get(c);
                     if (q != null) {
                         utility += scaling * q.minimum * (individualCommodityUtilities[c] * q.utilityScale + q.utilityOffset);
-                        logger.warning(q + " has quantity " + amount[c] + " and indiv utility " +
+                        logger.warn(q + " has quantity " + amount[c] + " and indiv utility " +
                                 individualCommodityUtilities[c] + "; utility now is " + utility);
                     } else {
-                        logger.warning("entry " + c + " is null -- no effect");
+                        logger.warn("entry " + c + " is null -- no effect");
                     }
                 }
             }

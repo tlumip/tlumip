@@ -2,16 +2,9 @@ package com.pb.despair.pi.daf;
 
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Message;
-import com.pb.common.util.ResourceUtil;
-import com.pb.despair.pi.OregonPIPProcessor;
-import com.pb.despair.pi.PIPProcessor;
 import com.pb.despair.pi.PIModel;
 import com.pb.despair.pi.Commodity;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
-import java.util.ResourceBundle;
 
 /**
  * This class will calculate the composite buy and sell utilities
@@ -23,18 +16,18 @@ import java.util.ResourceBundle;
  */
 public class CUWorkTask extends MessageProcessingTask {
     private PIModel pi;
-    boolean debug = false;
-    private ResourceBundle pidafRb;
     String scenarioName = "pleaseWork";
     private boolean firstMessage = true;
 
     public void onStart() {
 
-        logger.info("*************************" + getName() + " has started ************************");
+        logger.info("*************************" + getName() + " has started ************");
     }
 
     public void onMessage(Message msg) {
-        if(debug) logger.info( getName() + " received " + msg.getStringValue("Name") + " from" + msg.getSender() );
+        if(logger.isDebugEnabled()) {
+            logger.debug( getName() + " received " + msg.getStringValue("Name") + " from" + msg.getSender() );
+        }
         if(firstMessage){
             pi = new PIModel(SetupWorkTask.piRb, SetupWorkTask.globalRb);
             firstMessage = false;

@@ -10,7 +10,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.despair.model.Halo;
 import com.pb.despair.model.IncomeSize;
 import com.pb.despair.model.Occupation;
-import com.pb.despair.spg.EdIndustry;
 
 import java.util.*;
 import java.io.File;
@@ -24,7 +23,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * The SPG class is used to produce a set of synthetic households
@@ -139,7 +138,6 @@ public class SPG {
 		int personsInEmployedHHs = 0;
 		int employedHHs = 0;
 	    int edCategoriesNotFilled = 0;
-	    int totalEmployedHouseholds;
 		int pumsIndustryCode;
 		int pumsOccupationCode;
 		int edIndustryCode;
@@ -147,7 +145,6 @@ public class SPG {
         int incomeSizeCode;
         int workersCode;
         int numWorkers;
-		int temp;
 		int[] hhAttribs = null;
 		
 
@@ -167,7 +164,6 @@ public class SPG {
 		
 		// count the total number of unique PUMS household records
 		int numHouseholds = getTotalPumsHouseholds();
-		int numWeightedHouseholds = getTotalWeightedPumsHouseholds();
 
 		
 		// calculate proportions of 1 worker, 2 worker, etc. households relative to total employed households
@@ -187,10 +183,7 @@ public class SPG {
 		        logger.info ("randomDrawCount = " + randomDrawCount);
 		    }  
 
-		    int dummy = 0;
-		    if (randomDrawCount % 100000000 == 0) {
-		        dummy = 1;
-		    }  
+
 
 			// if household is not unemployed, decrement industry categories for persons in household
 			boolean hhCategoriesNotFilled = false;
@@ -212,7 +205,6 @@ public class SPG {
 				
 				if ( numSelectedHHs > START_CHECKING_HH_CONSTRAINT_THRESHOLD || employmentFilled ( edEmployment ) ) {
 				
-					totalEmployedHouseholds = 0;
 					for (int i=1; i < fixedWorkersProportions.length; i++)
 						tempWorkerProportions[i] = ((float)tempWorkers[i])/numSelectedHHs;
 					
@@ -330,12 +322,9 @@ public class SPG {
 		double numSelectedUnemployed = unemployedHHs - numDiscardedUnemployed;
 
 		
-		// create an index array of unemployed households
-		int numUnemployedHouseholds = getUnemployedHouseholdsIndexArray();
-		
+
 		
 		// discard the number of unemployed households determined above
-		int hhnum = 0;
 		for (int i=0; i < numDiscardedUnemployed; i++) {
 		    
 		    // select one of the PUMS households randomly, then increase hh index if necessary until we get an unemployed one
@@ -499,7 +488,6 @@ public class SPG {
 		logger.info ("Start of SPG2\n");
         
 		PrintWriter hhOutStream = null;
-		PrintWriter personOutStream = null;
 
 		int[] indexZone = halo.getIndexZone();
 		int[] zoneIndex = halo.getZoneIndex();
@@ -529,7 +517,6 @@ public class SPG {
 		
 		int[] hhAttribs = null;
 		int occup = 0;
-		int hhIndex;
 		int hhSize = 0;
 		int hhIncome = 0;
 		int incomeSize = 0;
@@ -537,8 +524,7 @@ public class SPG {
 		int personOccupation = 0;
 		int selectedIndex = 0;
 		int selectedZone = 0;
-		int count;
-		
+
 		int unallocatedHHs = 0; 
 		int unallocatedRegionalHHs = 0; 
 		double reduction = 0.0;
@@ -558,7 +544,6 @@ public class SPG {
 
 		
 		// count the total number of household records
-		int householdsAllocated = 0;
 		int numHouseholds = getSelectedHouseholdsIndexArray();
 
 
@@ -593,11 +578,8 @@ public class SPG {
 		
 		
 		// get the regional number of employed persons by occupation from SPG1
-		int cumHHs = 0;
-		count = 1;
 		for (int i=0; i < hhArray.length; i++) {
 			for (int k=0; k < hhArray[i].length; k++) {
-				hhIndex = hhArray[i][k][HHID_INDEX];
 				hhSize = hhArray[i][k][NUM_PERSONS_ATTRIB_INDEX];
 				hhIncome = hhArray[i][k][HH_INCOME_ATTRIB_INDEX];
 				incomeSize = incSize.getIncomeSize(hhIncome, hhSize);
@@ -639,7 +621,8 @@ public class SPG {
 
 		}
 		catch (IOException e) {
-			logger.severe("IO Exception when opening synthetic household file: " + fileName );
+			logger.fatal("IO Exception when opening synthetic household file: " + fileName );
+            e.printStackTrace();
 		}
 
 
@@ -657,7 +640,6 @@ public class SPG {
 
 			// get the hh attributes
 			hhAttribs = hhArray[stateAndHouseholdIndices[0]][stateAndHouseholdIndices[1]];
-			hhIndex = hhAttribs[HHID_INDEX];
 			hhSize = hhAttribs[NUM_PERSONS_ATTRIB_INDEX];
 			hhIncome = hhAttribs[HH_INCOME_ATTRIB_INDEX];
 				
@@ -962,7 +944,8 @@ public class SPG {
 
         }
 		catch (Exception e) {
-            logger.severe("Exception when closing synthetic population files.");
+            logger.fatal("Exception when closing synthetic population files.");
+            e.printStackTrace();
         }
 
 
@@ -990,7 +973,8 @@ public class SPG {
 			s.flush();
 		}
 		catch (IOException e) {
-			logger.severe("IO Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
+			logger.fatal("IO Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
+            e.printStackTrace();
 		}
 
 	}
@@ -1005,9 +989,11 @@ public class SPG {
 			ObjectInputStream s = new ObjectInputStream(in);
 			hhArray = (int[][][])s.readObject();
 		}catch(IOException e){
-			logger.severe("IO Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
+			logger.fatal("IO Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
+            e.printStackTrace();
 		}catch(ClassNotFoundException e){
-			logger.severe("Class Not Found Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
+			logger.fatal("Class Not Found Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
+            e.printStackTrace();
 		}
 
 	}
@@ -1339,7 +1325,8 @@ public class SPG {
 			writePumsData( hhOutStream, fieldNames);
 		}
 		catch (Exception e) {
-			logger.severe("Exception when opening synthetic household attributes file.");
+			logger.fatal("Exception when opening synthetic household attributes file.");
+            e.printStackTrace();
 		}
 
 		try {
@@ -1355,7 +1342,8 @@ public class SPG {
 			writePumsData( personOutStream, fieldNames);
 		}
 		catch (Exception e) {
-			logger.severe("Exception when opening synthetic person attributes file.");
+			logger.fatal("Exception when opening synthetic person attributes file.");
+            e.printStackTrace();
 		}
 
 
@@ -1399,7 +1387,8 @@ public class SPG {
 						writePumsData( hhOutStream, hhFieldValues );
 					}
 					catch (Exception e) {
-						logger.severe("Exception when writing synthetic household attributes file.");
+						logger.fatal("Exception when writing synthetic household attributes file.");
+                        e.printStackTrace();
 					}
 					
 					try {
@@ -1407,7 +1396,8 @@ public class SPG {
 							writePumsData( personOutStream, personFieldValues[p] );
 					}
 					catch (Exception e) {
-						logger.severe("Exception when writing synthetic person attributes file.");
+						logger.fatal("Exception when writing synthetic person attributes file.");
+                        e.printStackTrace();
 					}
 					
 			    }
@@ -1421,14 +1411,16 @@ public class SPG {
 			hhOutStream.close();
 		}
 		catch (Exception e) {
-			logger.severe("Exception when closing synthetic household attributes file.");
+			logger.fatal("Exception when closing synthetic household attributes file.");
+            e.printStackTrace();
 		}
 		
 		try {
 			personOutStream.close();
 		}
 		catch (Exception e) {
-			logger.severe("Exception when closing synthetic person attributes file.");
+			logger.fatal("Exception when closing synthetic person attributes file.");
+            e.printStackTrace();
 		}
 		
 	}
@@ -1447,7 +1439,6 @@ public class SPG {
 		int edIndustryCode;
 		int occupationCode;
 		int incomeSizeCode;
-		int workersCode;
 		int pumsHHWeight;
 		
 		
@@ -1507,7 +1498,6 @@ public class SPG {
 				pumsIncSizeFreq[incomeSizeCode]++;
 				pumsWtIncSizeFreq[incomeSizeCode] += pumsHHWeight;
 
-				workersCode = workers.getWorkers(numWorkers); 
 				workersFreq[numWorkers] += hhArray[i][k][HH_SELECTED_INDEX];
 				pumsWorkersFreq[numWorkers]++;
 				pumsWtWorkersFreq[numWorkers] += pumsHHWeight;
@@ -1576,7 +1566,6 @@ public class SPG {
 				pumsIncSizeFreq[incomeSizeCode]++;
 				pumsWtIncSizeFreq[incomeSizeCode] += pumsHHWeight;
 
-				workersCode = workers.getWorkers(numWorkers); 
 				workersFreq[numWorkers] += hhArray[i][k][HH_SELECTED_INDEX];
 				pumsWorkersFreq[numWorkers]++;
 				pumsWtWorkersFreq[numWorkers] += pumsHHWeight;
@@ -1836,7 +1825,6 @@ public class SPG {
 
 		int[][] dataTable = new int[halo.getNumberOfZones()][inc.getNumberIncomeSizes()];
 
-		int totalHhs = 0;
 		for (int r=0; r < table.getRowCount(); r++) {
 			incomeSize = inc.getIncomeSizeIndex( table.getStringValueAt(r+1, 1) );
 			
@@ -1856,7 +1844,6 @@ public class SPG {
 				oldPiHhs = piHhs;
 				oldRemainder = remainder;
 				
-				totalHhs += hhs;
 			}
 		}
 		

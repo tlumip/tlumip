@@ -4,7 +4,7 @@ import com.pb.despair.model.ModelComponent;
 import com.pb.common.util.ResourceUtil;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * The ALD model component is actually a R program

@@ -4,7 +4,7 @@ import com.pb.despair.model.Mode;
 import com.pb.despair.model.ModeType;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /** 
  * A class containing tour attributes 
@@ -74,7 +74,8 @@ public class Tour implements Serializable{
           tourString=thisTourString;
           
           if(thisTourString.length()<3){
-               logger.severe("Error: Less than 3 activities on tour");
+               logger.fatal("Error: Less than 3 activities on tour");
+              //TODO - log this error to the node error/exception log
                System.exit(1);
           }
           //initialize the origin and primary destination activities

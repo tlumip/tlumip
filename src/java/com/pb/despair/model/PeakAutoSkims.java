@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
@@ -104,8 +104,7 @@ public class PeakAutoSkims extends TransportKnowledge {
 
 
     public double[] getUtilityComponents(int fromZoneUserNumber, int toZoneUserNumber, TravelUtilityCalculatorInterface tp, boolean useRouteChoice) {
-        int printSkims = 0;
-
+        
         DistanceAndTime dt = new DistanceAndTime();
         dt.time = pkTime.getValueAt(fromZoneUserNumber,toZoneUserNumber);
         dt.distance = pkDist.getValueAt(fromZoneUserNumber,toZoneUserNumber);
@@ -169,8 +168,8 @@ public class PeakAutoSkims extends TransportKnowledge {
 	        	originArray.add(badDestination);
 	        	badSkims.put(badOrigin,originArray);
         	}
-        	logger.warning(distance +" distance in skims, from zone "+fromZoneUserNumber+" to "+toZoneUserNumber);
-        	logger.warning("using 1000 instead");
+        	logger.warn(distance +" distance in skims, from zone "+fromZoneUserNumber+" to "+toZoneUserNumber);
+        	logger.warn("using 1000 instead");
         	return 1000;
         }
         return distance;

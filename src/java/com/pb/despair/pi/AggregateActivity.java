@@ -2,7 +2,7 @@ package com.pb.despair.pi;
 
 import com.pb.despair.model.*;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * This is the class that represents a certain type of activity using aggregate quantities and prices.  There is no
@@ -46,7 +46,9 @@ public class AggregateActivity extends ProductionActivity {
      */
     public void migrationAndAllocation(double timeStep) throws ChoiceModelOverflowException {
         logitModelOfZonePossibilities.setDispersionParameter(getLocationDispersionParameter());
-        logger.finer("total amount for " + this + " is " + getTotalAmount());
+        if(logger.isDebugEnabled()) {
+            logger.debug("total amount for " + this + " is " + getTotalAmount());
+        }
         // message #1.2.3 to spatialAllocationLogitModel:com.pb.despair.utils.LogitModel
         // java.util.Vector unnamed = spatialAllocationLogitModel.getChoiceProbabilities();
         logitModelOfZonePossibilities.allocateQuantity(getTotalAmount());

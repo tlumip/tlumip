@@ -1,7 +1,7 @@
 package com.pb.despair.pt;
 
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
@@ -19,7 +19,6 @@ import java.io.IOException;
  */
 public class PatternChoiceParameters {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
-    boolean debug = false;
      String patternChoiceParametersFileName;
      String patternChoiceParametersTableName;
 
@@ -104,13 +103,17 @@ public class PatternChoiceParameters {
     public void readData(ResourceBundle rb, String fileName){
         CSVFileReader reader = new CSVFileReader();
         try{
-            if(debug) logger.info("Getting table: "+fileName);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Getting table: "+fileName);
+            }
             String file = ResourceUtil.getProperty(rb, fileName);           
             TableDataSet table = reader.readFile(new File(file));
 
         
             int rowNumber = 1;
-            if(debug) logger.fine("Getting table: "+patternChoiceParametersTableName);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Getting table: "+patternChoiceParametersTableName);
+            }
          
             version=                               table.getStringValueAt(rowNumber, table.getColumnPosition("version")); 
             workWorker=                            table.getValueAt(rowNumber, table.getColumnPosition("workWorker"));                                       
@@ -184,7 +187,8 @@ public class PatternChoiceParameters {
               workDummyIndustryPersonalServices                         = table.getValueAt(rowNumber, table.getColumnPosition("workDummyIndustryPersonalServices"));
        
         }catch(IOException e) {
-            logger.severe("Error reading PatternChoiceParameters file.");
+            logger.fatal("Error reading PatternChoiceParameters file.");
+            //TODO - log exception to the node exception file
             e.printStackTrace();
      }
 

@@ -4,19 +4,16 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.SkimsInMemory;
 import com.pb.despair.model.TravelTimeAndCost;
 
-import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixType;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 /** 
@@ -30,7 +27,6 @@ import java.util.logging.Logger;
 public class CreateModeChoiceLogsums {
     
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");     
-    boolean debug = false;
 
     //  arrays with segments
     static final int[] auwk0segs={1,0,0,1,0,0,1,0,0};
@@ -68,7 +64,9 @@ public class CreateModeChoiceLogsums {
     public Matrix setModeChoiceLogsumMatrix(TazData taz, TourModeParameters theseParameters, char thisPurpose,
                                             int segment, SkimsInMemory skims, TourModeChoiceModel tmcm) {
 
-        if(debug) logger.fine("Creating ModeChoiceLogsum Matrix for - Purpose: "+thisPurpose+"  Segment: "+segment);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Creating ModeChoiceLogsum Matrix for - Purpose: "+thisPurpose+"  Segment: "+segment);
+        }
         String mName = new String(new Character(thisPurpose).toString()
                                 + new Integer(segment).toString()
                                 + new String("ls"));  //the extension will be added when the file is
@@ -298,21 +296,7 @@ public class CreateModeChoiceLogsums {
     }//end setReturnCost 
     
 
-    /**
-     * writeModeChoiceLogsumsMatrix
-     * This method is called either from writeBetaZoneModeChoiceLogsumsMatrix or writeAlphaZoneModeChoiceLogsumsMatrix
-     * @param thisMatrix
-     */
 
-    private static void writeModeChoiceLogsumsMatrix(ResourceBundle rb, Matrix thisMatrix){
-
-        logger.info("Writing Matrix "+thisMatrix.getName());
-        //get path
-        String path = ResourceUtil.getProperty(rb, "modeChoiceLogsums.path");
-        String mName = thisMatrix.getName()+".zip";
-        MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(path+mName));  //Open for writing
-        mw.writeMatrix(thisMatrix);
-    }
 
     public void compareOldAndNew(Matrix newMatrix, Matrix oldMatrix, TazData taz){
         Enumeration originEnum=taz.tazData.elements();
@@ -384,18 +368,8 @@ public class CreateModeChoiceLogsums {
 
                 logger.info("Output ModeChoiceLogsumMatrix .zip file for purpose:"+thisPurpose+" segmentL "+segment);
 
-                /*
-                 * Quality control check - compared output with current Matrices
-                 ResourceBundle rb = ResourceUtil.getResourceBundle( "pt" );
-                String path = ResourceUtil.getProperty(rb, "Model.skimPath");
-                String name = path+String.valueOf(thisPurpose)+segment+"ls.zip";
-                MatrixReader oldReader= MatrixReader.createReader(MatrixType.ZIP,new File(name)); 
-                Matrix oldMatrix= oldReader.readMatrix(name);
-                logger.info("Compare Matrices");
-                createMCLogsums.compareOldAndNew(m,oldMatrix);
-                */
+
                 if(CREATE_BETA_ZONES){
-                    AlphaToBetaData aToB = new AlphaToBetaData();
                     Matrix betaZoneMatrix = createMCLogsums.getBetaMCMatrix(m,"MEAN");
                     logger.info("Writing Matrix "+betaZoneMatrix.getName());
                     //get path
@@ -410,50 +384,7 @@ public class CreateModeChoiceLogsums {
         System.exit(1);
     }//end main
 
-    /**
-     * loadTableDataSet
-     * @param getProperty
-     * @return
-     */
-    //method is not used 9/10/2004
-//    public static TableDataSet loadTableDataSet(ResourceBundle rb, String getProperty) {
-//
-//        String tazToDistrictFile = "d:/tlumip_data/azonebzone";/*ResourceUtil.getProperty(rb, getProperty);*/
-//
-//        try {
-//            String fileName = tazToDistrictFile + ".csv";
-//            CSVFileReader reader = new CSVFileReader();
-//            TableDataSet table = reader.readFile(new File(fileName));
-//            return table;
-//        } catch (IOException e) {
-//            logger.severe("Can't find taz to district file");
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
 
-    /**
-     * get the necessary parameters
-     *
-     */
-   // public void buildTourModeChoiceModel(){
-        //read the skims into memory
-        //skims = new SkimsInMemory();
-        //skims.readSkims();
-
-        //read the taz data from jDataStore; if it doesn't exist, write it to jDataStore from csv file first
-        //taz = new TazData();
-        //taz.readData("pt","tazData.file");
-
-        //read the tourModeParameters from jDataStore; if they don't exist, write them to jDataStore first from csv
-        //tmp = new TourModeParametersData();
-        //tmp.readData("pt","tourDestinationParameters.file");
-
-        //tmcm = new TourModeChoiceModel();
-        //tmcm.buildModel();
-
-        //alphaToBeta = loadTableDataSet("pt", "alphatobeta");
-   // }
 
 }
 

@@ -4,7 +4,7 @@ import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.Serializable;
 import java.io.File;
 import java.util.ResourceBundle;

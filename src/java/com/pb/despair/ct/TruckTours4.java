@@ -6,7 +6,7 @@ import com.pb.common.util.ResourceUtil;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 class TruckTours4 {
     protected static Logger logger = Logger.getLogger("com.pb.despair.ct");

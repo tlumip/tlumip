@@ -3,7 +3,7 @@ package com.pb.despair.ao;
 import org.apache.commons.digester.Digester;
 
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileWriter;
@@ -112,7 +112,7 @@ public class ApplicationOrchestrator {
         }
         // if you get to here it means a properties file couldn't be found in any of the tn directories
         // so pathToRb = null
-        logger.severe("Couldn't find Resource Bundle Path for " + appName + ".  Returning null");
+        logger.fatal("Couldn't find Resource Bundle Path for " + appName + ".  Returning null");
         return pathToRb;
     }
 
@@ -120,7 +120,7 @@ public class ApplicationOrchestrator {
         ResourceBundle rb = null;
         File propFile = new File(pathToRb);
         rb = ResourceUtil.getPropertyBundle(propFile);
-        if(rb == null ) logger.severe("Problem loading resource bundle: " + pathToRb);
+        if(rb == null ) logger.fatal("Problem loading resource bundle: " + pathToRb);
         return rb;
     }
 
@@ -345,7 +345,7 @@ public class ApplicationOrchestrator {
             logger.info("AO will now start TS for simulation year " + (baseYear+t));
             ao.runTSModel(t, appRb, globalRb);
         }else {
-            logger.severe("AppName not recognized");
+            logger.fatal("AppName not recognized");
         }
 
 

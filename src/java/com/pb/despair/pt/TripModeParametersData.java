@@ -4,9 +4,8 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import java.io.File;
 import java.io.IOException;
-import java.util.Hashtable;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**  
  * A class to add trip mode parameters to a TableDataSet from a csv file
@@ -18,7 +17,6 @@ import java.util.logging.Logger;
 
 public class TripModeParametersData {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
-    boolean debug = false;
      String tripModeParametersTableName="TripModeParameters";
      
      //a hashtable of taz objects
@@ -36,14 +34,16 @@ public class TripModeParametersData {
             TableDataSet table = reader.readFile(new File(tazFile));
             return table;
         } catch (IOException e) {
-            logger.severe("Can't find TourDestinationParameters file " + fileName);
+            logger.fatal("Can't find TourDestinationParameters file " + fileName);
             e.printStackTrace();
         } 
         return null;
     }
     
      public void readData(ResourceBundle rb, String fileName){
-         if(debug) logger.fine("Getting table: "+fileName);
+         if(logger.isDebugEnabled()) {
+             logger.debug("Getting table: "+fileName);
+         }
          TableDataSet table = loadTableDataSet(rb, fileName);
         try {
             for(int rowNumber = 1; rowNumber<=table.getRowCount(); rowNumber++) {

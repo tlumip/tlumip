@@ -5,7 +5,7 @@ import com.pb.despair.model.ChoiceModelOverflowException;
 import com.pb.despair.model.OverflowException;
 import com.pb.despair.model.TravelUtilityCalculatorInterface;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
      * The Zutility of a commodity in a zone, whether it is the selling Zutility or the buying Zutility, is based on the
@@ -51,7 +51,7 @@ abstract public class CommodityZUtility implements Alternative {
      * sets up one-way associations.  Should only be called by a subclass, which can inform the TAZ and the Commodity
      * to set up the other-way associations.
      */
-    protected CommodityZUtility(Commodity c, TAZ z, int numZones, TravelUtilityCalculatorInterface tp) {
+    protected CommodityZUtility(Commodity c, TAZ z, TravelUtilityCalculatorInterface tp) {
         myFlows = new CommodityFlowArray(this, tp);
         myCommodity = c;
         myTaz = z;
@@ -102,11 +102,13 @@ abstract public class CommodityZUtility implements Alternative {
     public void setDerivative(double d) throws OverflowException {
 //debug Feb232004
         if (derivative != 0) {
-            logger.fine("resetting derivative in " + this);
+            if(logger.isDebugEnabled()) {
+                logger.debug("resetting derivative in " + this);
+            }
         }
         derivative = d;
         if (Double.isNaN(d)) {
-            logger.warning("Setting derivative to NaN for " + this);
+            logger.warn("Setting derivative to NaN for " + this);
             throw new OverflowException("Setting derivative to NaN for " + this);
         }
     }

@@ -3,7 +3,7 @@ package com.pb.despair.pt;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.math.MathUtil;
@@ -42,7 +42,6 @@ public class LaborFlows implements Serializable{
     static double dispersionParameter = 0.54; //this is the default value but it is also set in the properties file
     
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
-    static boolean debug = false;
     ResourceBundle rb;
 
     public LaborFlows(ResourceBundle appRb){
@@ -64,12 +63,16 @@ public class LaborFlows implements Serializable{
             if(!table.getStringValueAt(i,"County").equals("outsideHalo")){
                 aZone[counter] = (int)table.getValueAt(i,"Azone");
                 bZone[counter] = (int)table.getValueAt(i,"Bzone");
-                if(debug) logger.fine("alpha zone: "+aZone[counter]);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("alpha zone: "+aZone[counter]);
+                }
                 counter++;
                 
             }           
          }
-        if(debug) logger.fine("counter"+counter);
+        if(logger.isDebugEnabled()) {
+            logger.debug("counter"+counter);
+        }
         
     	a2b = new AlphaToBeta(table.getColumnAsInt(table.getColumnPosition("AZone")),
 				   			  table.getColumnAsInt(table.getColumnPosition("BZone")));
@@ -81,7 +84,9 @@ public class LaborFlows implements Serializable{
       
     public static Matrix calculatePropensityMatrix(Matrix m){
 
-        logger.fine("Set travel propensity Matrix.");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Set travel propensity Matrix.");
+        }
         Matrix alphaPropensityMatrix = new Matrix(m.getRowCount(),m.getColumnCount());
         String name = m.getName();
         int lsIndex = name.indexOf("ls");
@@ -187,8 +192,7 @@ public class LaborFlows implements Serializable{
     
     public void readAlphaValues(TableDataSet production, TableDataSet consumption){
     	int taz;
-    	float value;
-    	
+
         String[] occupationString = {"1_ManPro",
                                      "1a_Health",
 									 "2_PstSec",
@@ -242,18 +246,22 @@ public class LaborFlows implements Serializable{
     	me.setPropensityMatrix(calculatePropensityMatrix(mcLogsum));
 
         String occupationCode = Integer.toString(occupation);
-        if (debug) {
-            logger.fine("occupation "+occupation);
-            logger.fine("segment "+segment);
-            logger.fine("betaLaborFlows: "+betaLaborFlows.getHashMap());
+        if(logger.isDebugEnabled()) {
+            logger.debug("occupation "+occupation);
+            logger.debug("segment "+segment);
+            logger.debug("betaLaborFlows: "+betaLaborFlows.getHashMap());
         }
         Matrix blf = betaLaborFlows.getMatrix(occupationCode);
         me.setBetaFlowMatrix(blf);
         me.setConsumptionMatrix(alphaConsumption.getMatrix(occupationCode));
         me.setProductionMatrix(alphaProduction.getMatrix(occupationCode));
-        if(debug) logger.info("Calculating alphaZone flows for occupation "+occupationCode);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Calculating alphaZone flows for occupation "+occupationCode);
+        }
         me.setAlphaFlowMatrix(a2b);
-        if(debug) logger.info("Calculating alphaZone flow probabilities for occupation "+occupationCode);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Calculating alphaZone flow probabilities for occupation "+occupationCode);
+        }
         me.setProbabilityMatrix(me.getAlphaFlowMatrix());
         Matrix m = me.getAlphaFlowProbabilityMatrix();
         m.setName("lf"+occupation+segment+".zip");
@@ -276,21 +284,26 @@ public class LaborFlows implements Serializable{
     public void writeLaborFlowProbabilities(Matrix lfProbability){       
         logger.info("Calculate labor flow probabilities.");
         long startTime = System.currentTimeMillis();
-        if(debug) logger.fine("Time to calculate labor flow matrix: "+(System.currentTimeMillis()-startTime)/1000+" seconds.");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Time to calculate labor flow matrix: "+(System.currentTimeMillis()-startTime)/1000+" seconds.");
+        }
         String mName = lfProbability.getName();
-		if(debug) logger.info("Writing probability Matrix : "+mName);
+		if(logger.isDebugEnabled()) {
+            logger.debug("Writing probability Matrix : "+mName);
+        }
 		//get path
 		String outputPath = ResourceUtil.getProperty(rb, "betaFlows.path");
         MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(outputPath+mName+".zip"));  //Open for writing
         startTime = System.currentTimeMillis();
         mw.writeMatrix(lfProbability);
-        if(debug) logger.fine("Time to write labor flow matrix: "+(System.currentTimeMillis()-startTime)/1000+" seconds.");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Time to write labor flow matrix: "+(System.currentTimeMillis()-startTime)/1000+" seconds.");
+        }
     }
     
     public static void main(String args[]){
         ResourceBundle rb =ResourceUtil.getResourceBundle("pt");
         ResourceBundle globalRb =ResourceUtil.getResourceBundle("global");
-        MatrixCollection laborFlowProbabilities;
 
         LaborFlows lf = new LaborFlows(rb);
         logger.info("Reading alphaZone to betaZone mapping.");

@@ -19,7 +19,6 @@ public class SDResultProcessorTask extends MessageProcessingTask {
     
     static int commodityCounter = 0;
     static long processTime;
-    boolean debug = false;
 
     public void onStart(){
         logger.info( "***" + getName() + " started");
@@ -40,7 +39,9 @@ public class SDResultProcessorTask extends MessageProcessingTask {
             ex.setLastCalculatedDerivative(surplusAndDeriv[1][exIndex]);
             ex.setSurplusAndDerivativeValid(true);
         }
-        if(debug) logger.info("Surplus and Derivative of "+name+" have been put into memory");
+        if(logger.isDebugEnabled()) {
+            logger.debug("Surplus and Derivative of "+name+" have been put into memory");
+        }
         //check to see if we have received all commmodity values.  If so, send the signal
         //queue a message that we are complete.
         if(commodityCounter >= Commodity.getAllCommodities().size()) {

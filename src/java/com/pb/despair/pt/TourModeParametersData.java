@@ -6,9 +6,8 @@ import com.pb.common.datafile.TableDataSet;
 import java.io.File;
 import java.io.IOException;
 
-import java.util.Hashtable;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 /**  
  * A class to access tour mode parameters from JDataStore
  * 
@@ -19,7 +18,6 @@ import java.util.logging.Logger;
 public class TourModeParametersData {
     
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
-    boolean debug = false;
     String tourModeParametersTableName="TourModeParameters";
     //DataManager dm = new DataManager();  //Create a data manager, connect to default data-store
      
@@ -32,14 +30,16 @@ public class TourModeParametersData {
      
      public TableDataSet loadTableDataSet(ResourceBundle rb, String fileName){
 
-          logger.fine("Adding table TourModeParameters");
+          if(logger.isDebugEnabled()) {
+              logger.debug("Adding table TourModeParameters");
+          }
           try {
           	  String file = ResourceUtil.getProperty(rb, fileName);
               CSVFileReader reader = new CSVFileReader();
               TableDataSet table = reader.readFile(new File(file));
              return table;
          } catch (IOException e) {
-             logger.severe("Can't find TourModeParameters input table " + fileName);
+             logger.fatal("Can't find TourModeParameters input table " + fileName);
              e.printStackTrace();
          }
          return null;
@@ -48,7 +48,9 @@ public class TourModeParametersData {
      
      public void readData(ResourceBundle rb, String fileName){
           
-          if(debug) logger.fine("\nGetting table: "+tourModeParametersTableName);
+          if(logger.isDebugEnabled()) {
+              logger.debug("\nGetting table: "+tourModeParametersTableName);
+          }
           TableDataSet table = loadTableDataSet(rb, fileName);
     try{          
     
