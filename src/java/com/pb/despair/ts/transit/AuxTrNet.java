@@ -22,6 +22,12 @@ public class AuxTrNet implements Serializable {
 	protected static transient Logger logger = Logger.getLogger("com.pb.despair.ts.transit");
 
 	public static final double INFINITY = 1.0e+30;
+	
+	public static final int BOARDING_TYPE = 0;
+	public static final int IN_VEHICLE_TYPE = 1;
+	public static final int ALIGHTING_TYPE = 2;
+	public static final int LAYOVER_TYPE = 3;
+	public static final int AUXILIARY_TYPE = 4;
 
 	static final int MAX_ROUTES = 500;
 
@@ -49,15 +55,15 @@ public class AuxTrNet implements Serializable {
 
 	static final double VALUE_OF_TIME		= 12.0;							//  $/hour
 	static final double IVT_COEFF			= 1.0;	 						// 	1/min
-	static final double OVT_COEFF			= 3.0;							//  1/min (assumes IVT_COEFF is negative)
+	static final double OVT_COEFF			= 2.0;							//  1/min (assumes IVT_COEFF is negative)
 	static final double COST_COEFF			= 0.0;							//	1/$
-	static final double FIRST_WAIT_COEFF	= 3.0;							//  1/min
-	static final double XFR_WAIT_COEFF		= 3.0;							//	1/min
-	static final double DRIVE_ACCESS_COEFF  = 3.0;							//	1/min
-	static final double WALK_ACCESS_COEFF	= 3.0;							//	1/min
-	static final double WALK_EGRESS_COEFF	= 3.0;							//	1/min
-	static final double WALK_XFR_COEFF    	= 3.0;							//  1/min
-	static final double TRANSFER_COEFF		= 3.0;							//  1/xfrs
+	static final double FIRST_WAIT_COEFF	= 2.0;							//  1/min
+	static final double WAIT_COEFF			= 2.0;							//	1/min
+	static final double DRIVE_ACCESS_COEFF  = 2.0;							//	1/min
+	static final double WALK_ACCESS_COEFF	= 2.0;							//	1/min
+	static final double WALK_EGRESS_COEFF	= 2.0;							//	1/min
+	static final double WALK_XFR_COEFF    	= 2.0;							//  1/min
+	static final double TRANSFER_COEFF		= 2.0;							//  1/xfrs
 
 	Network g;
 	TrRoute tr;
@@ -75,7 +81,9 @@ public class AuxTrNet implements Serializable {
 	double[] freq;
 	double[] cost;
 	double[] invTime;
+	double[] dwellTime;
 	double[] walkTime;
+	double[] waitTime;
 	double[] layoverTime;
 	double[] flow;
 	double[] driveAccTime;
@@ -111,7 +119,9 @@ public class AuxTrNet implements Serializable {
 		freq = new double[maxAuxLinks];
 		cost = new double[maxAuxLinks];
 		invTime = new double[maxAuxLinks];
+		dwellTime = new double[maxAuxLinks];
 		walkTime = new double[maxAuxLinks];
+		waitTime = new double[maxAuxLinks];
 		layoverTime = new double[maxAuxLinks];
 		flow = new double[maxAuxLinks];
 		driveAccTime = new double[maxAuxLinks];
@@ -137,14 +147,17 @@ public class AuxTrNet implements Serializable {
 
 	    this.accessMode = accessMode;
 	    
+		double headway;
 		TrSegment ts;
+		TrSegment tsNext;
+		boolean debug = false;
 
 		int aux;
 		int nextNode;
 		int startNode;
 		int startAuxNode;
-		int anode;
-		int bnode;
+		int anode=0;
+		int bnode=0;
 
 
 		// add walk links first
@@ -158,76 +171,65 @@ public class AuxTrNet implements Serializable {
 			ts = (TrSegment)tr.transitPath[rte].get(0);
 			startNode = gia[ts.link];
 			startAuxNode = nextNode;
-			if(logger.isDebugEnabled()) {
-                logger.debug ("rte=" + rte + ", startNode=" + indexNode[startNode] + ", startAuxNode=" + startAuxNode);
-            }
+			if (debug) logger.info ("rte=" + rte + ", startNode=" + indexNode[startNode] + ", startAuxNode=" + startAuxNode);
 			for (int seg=0; seg < tr.transitPath[rte].size(); seg++) {
-			    ts = (TrSegment)tr.transitPath[rte].get(seg);
-
-			    anode = gia[ts.link];
-			    bnode = gib[ts.link];
-			    
-			    // Keep a list of transit lines using each network link.  Save using xxxyyy where xxx is rte and yyy is seg.
-			    // A link will therefore be able to look up all transit routes serving the link using tr.transitPaths[rte].get(seg)
-			    // for all the rteseg values stored for the link.
-			    gSegs[ts.link].add( new Integer(rte*1000 + seg) );
-			    
-				if(logger.isDebugEnabled()) {
-                    logger.debug ("anode=" + indexNode[anode] + ", bnode=" + indexNode[bnode] + ", ttf=" + ts.getTtf() );
-                }
-
-				    // add auxilliary links for route segment
-			    if (ts.layover) {
-			        if (anode == startNode) {
-			            if(logger.isDebugEnabled()) {
-                            logger.debug ("layover at startnode:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-                        }
-			           	addAuxLayoverLink (aux++, nextNode, startAuxNode, ts, rte);
-			            nextNode++;
-			        }
-			        else {
-			        	if(logger.isDebugEnabled()) {
-                            logger.debug ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-                        }
-			       	   	addAuxLayoverLink (aux++, nextNode, nextNode + 1, ts, rte);
+				
+				try {
+					
+					// get the current transit segment and the following segment in this route.
+					// dwell time is determined for the following link, and added as in-vehicle time for the current in-vehicle link.
+				    ts = (TrSegment)tr.transitPath[rte].get(seg);
+				    if (seg < tr.transitPath[rte].size() - 2)
+				    	tsNext = (TrSegment)tr.transitPath[rte].get(seg+1);
+				    else
+				    	tsNext = null;
+				    
+				    anode = gia[ts.link];
+				    bnode = gib[ts.link];
+				    
+				    
+				    // Keep a list of transit lines using each network link.  Save using xxxyyy where xxx is rte and yyy is seg.
+				    // A link will therefore be able to look up all transit routes serving the link using tr.transitPaths[rte].get(seg)
+				    // for all the rteseg values stored for the link.
+				    gSegs[ts.link].add( Integer.valueOf(rte*1000 + seg) );
+				    
+					if (debug) logger.info ("anode=" + indexNode[anode] + ", bnode=" + indexNode[bnode] + ", ttf=" + ts.getTtf() );
+	
+					    // add auxilliary links for route segment
+				    if (ts.layover) {
+				        if (bnode == startNode) {
+				            nextNode++;
+				        }
+				        else {
+				        	if (debug) logger.info ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				       	   	addAuxLayoverLink (aux++, nextNode, nextNode + 1, ts, tr.headway[rte], rte);
+							nextNode++;
+				        }
+				    }
+				    else {
+				        if (ts.board) {
+				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				           	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte);
+				        }
+				        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				       	addAuxInVehicleLink (aux++, nextNode, ts, tsNext, tr.headway[rte], tr.speed[rte], rte);
+				   	   	if (ts.alight) {
+							if (debug) logger.info ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+							addAuxAlightingLink (aux++, nextNode, bnode, ts, tr.headway[rte], rte);
+						}
 						nextNode++;
-			        	if (ts.board) {
-							if(logger.isDebugEnabled()) {
-                                logger.debug ("board after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-                            }
-			       	       	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte);
-			       	   	}
-						if(logger.isDebugEnabled()) {
-                            logger.debug ("in-veh after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-                        }
-			       	  	addAuxInVehicleLink (aux++, nextNode, ts, rte);
-			        	if (ts.alight) {
-			        	    if(logger.isDebugEnabled()) {
-                                logger.debug ("alight after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-                            }
-			       	    	addAuxAlightingLink (aux++, nextNode, bnode, ts, rte);
-			        	}
-			        	nextNode++;
-			        }
-			    }
-			    else {
-			        if (ts.board) {
-			            if(logger.isDebugEnabled()) {
-                            logger.debug ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-                        }
-			           	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte);
-			        }
-			        if(logger.isDebugEnabled()) {
-                        logger.debug ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-                    }
-			       	addAuxInVehicleLink (aux++, nextNode, ts, rte);
-			   	   	if (ts.alight) {
-						if(logger.isDebugEnabled()) {
-                            logger.debug ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-                        }
-						addAuxAlightingLink (aux++, nextNode, bnode, ts, rte);
 					}
-					nextNode++;
+			    
+				}
+				catch (Exception e) {
+
+					logger.fatal( "exception thrown while processing:");
+					logger.fatal( "      rte = " + rte);
+					logger.fatal( "      line = " + tr.getLine(rte));
+					logger.fatal( "      description = " + tr.getDescription(rte));
+					logger.fatal( "      anode = " + indexNode[anode]);
+					logger.fatal( "      bnode = " + indexNode[bnode]);
+					System.exit(1);
 				}
 			}
 		}
@@ -311,7 +313,11 @@ public class AuxTrNet implements Serializable {
 				old = ia[k];
 			}
 		}
-		ipa[old+1] = ia.length;
+
+		if ( old < auxNodes)
+			ipa[old+1] = ia.length;
+		else
+			ipa[old] = ia.length;
 		
 	}
 
@@ -337,8 +343,13 @@ public class AuxTrNet implements Serializable {
 				ipb[ib[k]] = i;
 				old = ib[k];
 			}
+			
 		}
-		ipb[old+1] = ib.length;
+		
+		if ( old < auxNodes)
+			ipb[old+1] = ib.length;
+		else
+			ipb[old] = ib.length;
 		
 	}
 
@@ -367,7 +378,7 @@ public class AuxTrNet implements Serializable {
 					walkTime[aux] = g.getWalkTime( (float)gDist[i] );
 					driveAccTime[aux] = 0.0;
 					layoverTime[aux] = 0.0;
-					linkType[aux] = 4;
+					linkType[aux] = AUXILIARY_TYPE;
 					aux++;
 				}
 			
@@ -383,7 +394,10 @@ public class AuxTrNet implements Serializable {
 				        continue;
 				    }
 				    
-				    
+				    int dummy=0;
+				    if (aux == 4130) {
+				        dummy = 1;
+				    }
 				    
 					hwyLink[aux] = i;
 					trRoute[aux] = -1;
@@ -401,7 +415,7 @@ public class AuxTrNet implements Serializable {
 					    driveAccTime[aux] = gCongestedTime[i];
 					}
 					layoverTime[aux] = 0.0;
-					linkType[aux] = 4;
+					linkType[aux] = AUXILIARY_TYPE;
 					aux++;
 				}
 			
@@ -496,7 +510,7 @@ public class AuxTrNet implements Serializable {
 
 	public void printAuxTranNetwork (String fileName) {
 
-		int i, k;
+		int i, j, k, start, end, inB, outB, outI;
 
 		try {
 			PrintWriter out = new PrintWriter (
@@ -515,6 +529,9 @@ public class AuxTrNet implements Serializable {
 				myFormat.right("link", 8) +
 		  		myFormat.right("an", 8) +
 				myFormat.right("bn", 8) +
+				myFormat.right("inB", 8) +
+				myFormat.right("outB", 8) +
+				myFormat.right("outI", 8) +
 				myFormat.right("rte", 8) +
 				myFormat.right("freq", 10) +
 		  		myFormat.right("cost", 10) +
@@ -524,6 +541,32 @@ public class AuxTrNet implements Serializable {
 			  	myFormat.right("hwyT", 10));
 		  	for (i=0; i < auxLinks; i++) {
 				k = hwyLink[i];
+				
+				start = ipb[ib[i]];
+				j = ib[i] + 1;
+				if (j < ipb.length-1) {
+					while (ipb[j] == -1 && j < ipb.length-1)
+						j++;
+				}
+				end = ipb[j];
+				inB = end - start;
+				
+				
+				start = ipa[ib[i]];
+				j = ib[i] + 1;
+				if (j < ipa.length-1) {
+					while (ipa[j] == -1 && j < ipa.length-1)
+						j++;
+				}
+				end = ipa[j];
+				outB = end - start;
+
+				if (inB == 1 && outB == 1)
+					outI = indexa[start];
+				else
+					outI = -1;
+				
+				
 				out.println (
 					myFormat.right(i, 8) +
 					myFormat.right(ia[i], 8) +
@@ -532,6 +575,9 @@ public class AuxTrNet implements Serializable {
 					myFormat.right(k, 8) +
 			  		myFormat.right(indexNode[gia[k]], 8) +
 					myFormat.right(indexNode[gib[k]], 8) +
+			  		myFormat.right(inB, 8) +
+			  		myFormat.right(outB, 8) +
+			  		myFormat.right(outI, 8) +
 					myFormat.right(trRoute[i], 8) +
 					(freq[i] == INFINITY ? myFormat.right ("Inf", 10) : myFormat.right(freq[i], 10, 2)) +
 					myFormat.right(cost[i], 10, 2) +
@@ -584,18 +630,21 @@ public class AuxTrNet implements Serializable {
 		trRoute[aux] = rte;
 		ia[aux] = anode;
 		ib[aux] = nextNode;
-		// OVT_COEFF is assumed positive, so it is used here just to scale the link frequency
-		freq[aux] = 1.0/(headway*ALPHA*OVT_COEFF);
+		// WAIT_COEFF is assumed positive, so it is used here just to scale the link frequency
+		freq[aux] = 1.0/(WAIT_COEFF*headway);
 		cost[aux] = getLinkFare();
 		invTime[aux] = 0.0;
 		walkTime[aux] = 0.0;
+		waitTime[aux] = 0.0;
 		layoverTime[aux] = 0.0;
-		linkType[aux] = 0;
+		linkType[aux] = BOARDING_TYPE;
 	}
 
 
-	void addAuxInVehicleLink (int aux, int nextNode, TrSegment ts, int rte) {
+	void addAuxInVehicleLink (int aux, int nextNode, TrSegment ts, TrSegment tsNext, double headway, double speed, int rte) {
 		// add in-vehicle link to auxilliary link table
+		int k;
+		
 		hwyLink[aux] = ts.link;
 		trRoute[aux] = rte;
 		ia[aux] = nextNode;
@@ -603,13 +652,27 @@ public class AuxTrNet implements Serializable {
 		freq[aux] = INFINITY;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
-		invTime[aux] = g.applyLinkTransitVdf( ts.link, ts.ttf );
+		waitTime[aux] = 0.0;
+		
+		if (ts.ttf > 0)
+			invTime[aux] = g.applyLinkTransitVdf( ts.link, ts.ttf );
+		else
+			invTime[aux] = (60.0*gDist[ts.link]/speed);
+		
 		layoverTime[aux] = 0.0;
-		linkType[aux] = 1;
+		linkType[aux] = IN_VEHICLE_TYPE;
+		
+		if (tsNext != null ) {
+			dwellTime[aux] = tsNext.getDwt();
+		}
+		else {
+			dwellTime[aux] = -ts.getDwt()/gDist[ts.link];
+		}
+		
 	}
 
 
-	void addAuxAlightingLink (int aux, int nextNode, int bnode, TrSegment ts, int rte) {
+	void addAuxAlightingLink (int aux, int nextNode, int bnode, TrSegment ts, double headway, int rte) {
 		// add alighting link to auxilliary link table
 		hwyLink[aux] = ts.link;
 		trRoute[aux] = rte;
@@ -618,13 +681,14 @@ public class AuxTrNet implements Serializable {
 		freq[aux] = INFINITY;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
+		waitTime[aux] = 0.0;
 		invTime[aux] = 0.0;
 		layoverTime[aux] = 0.0;
-		linkType[aux] = 2;
+		linkType[aux] = ALIGHTING_TYPE;
 	}
 
 
-	void addAuxLayoverLink (int aux, int nextNode, int layoverNode, TrSegment ts, int rte) {
+	void addAuxLayoverLink (int aux, int nextNode, int layoverNode, TrSegment ts, double headway, int rte) {
 		// add layover link to auxilliary link table
 		hwyLink[aux] = ts.link;
 		trRoute[aux] = rte;
@@ -633,9 +697,10 @@ public class AuxTrNet implements Serializable {
 		freq[aux] = INFINITY;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
+		waitTime[aux] = 0.0;
 		invTime[aux] = 0.0;
 		layoverTime[aux] = ts.lay;
-		linkType[aux] = 3;
+		linkType[aux] = LAYOVER_TYPE;
 	}
 
 
@@ -690,25 +755,30 @@ public class AuxTrNet implements Serializable {
 	}
 
 
-	double getUtility (int k) {
-		return (IVT_COEFF*(invTime[k]) + COST_COEFF*cost[k] + OVT_COEFF*(walkTime[k] + layoverTime[k]));
+	// linkImped in optimal strategy is generalized cost, not including wait time.
+	double getLinkImped (int k) {
+		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*walkTime[k] + COST_COEFF*cost[k]);
+			
 	}
 
 
 	// for debugging purposes only
-	double getUtility (int k, int temp) {
-		logger.info ("IVT_COEFF*(invTime[k])=" + myFormat.df4.format(IVT_COEFF) + "*(" + myFormat.df4.format(invTime[k]) + ")");
+	// linkImped in optimal strategy is generalized cost, not including wait time.
+	double getLinkImped (int k, int temp) {
+		logger.info ("IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k])=" + myFormat.df4.format(IVT_COEFF) + "*(" + myFormat.df4.format(invTime[k]) + " + " + myFormat.df4.format(dwellTime[k]) + " + " + myFormat.df4.format(layoverTime[k]) + ")");
+		logger.info ("OVT_COEFF*(walkTime[k])=" + myFormat.df4.format(OVT_COEFF) + "*(" + myFormat.df4.format(walkTime[k]) + ")");
 		logger.info ("COST_COEFF*(cost[k])=" + myFormat.df4.format(COST_COEFF) + "*(" + myFormat.df4.format(cost[k]) + ")");
-		logger.info ("OVT_COEFF*(walkTime[k] + layoverTime[k])=" + myFormat.df4.format(OVT_COEFF) + "*(" + myFormat.df4.format(walkTime[k]) + " + " + myFormat.df4.format(layoverTime[k]) + ")");
 
-		return (IVT_COEFF*(invTime[k]) + COST_COEFF*cost[k] + OVT_COEFF*(walkTime[k] + layoverTime[k]));
+		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*walkTime[k] + COST_COEFF*cost[k]);
 	}
 
-  double getMaxWalkAccessTime() {
+	
+	double getMaxWalkAccessTime() {
 	// return time in minutes to walk the maximum walk access distance
-	return (60.0*(MAX_WALK_ACCESS_DIST/g.getWalkSpeed()));
-  }
+		return (60.0*(MAX_WALK_ACCESS_DIST/g.getWalkSpeed()));
+	}
 
+	
 	double getLinkFare () {
 		return FARE;
 	}
