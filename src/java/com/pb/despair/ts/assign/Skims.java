@@ -132,14 +132,16 @@ public class Skims {
 		double[] linkCost = g.getDist();
 		
         // get the skims as a double[][] array 
-        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
         // copy the array to a ones-based float[][] for conversion to Matrix object
-        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedFloatArray );
-        
+//        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedDoubleArray );  //ONE-ZER0
+        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
+
 	    // create a Matrix from the peak alpha distance skims array and write to disk
 	    fileName = (String)propertyMap.get( "pkHwyDistSkim.fileName" );
-	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray );
+//	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray ); //ONE-ZER0
+        newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
@@ -152,7 +154,8 @@ public class Skims {
         
 	    // create a Matrix from the off-peak alpha distance skims array and write to disk
 	    fileName = (String)propertyMap.get( "opHwyDistSkim.fileName" );
-	    newSkimMatrix = new Matrix( "opdist", "Off-peak SOV Distance Skims", onesBasedFloatArray );
+//	    newSkimMatrix = new Matrix( "opdist", "Off-peak SOV Distance Skims", onesBasedFloatArray ); //ONE-ZER0
+        newSkimMatrix = new Matrix( "opdist", "Off-peak SOV Distance Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
@@ -173,13 +176,15 @@ public class Skims {
 		double[] linkCost = g.getCongestedTime();
 		
         // get the skims as a double[][] array dimensioned to number of centroids (2984)
-        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
-        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedFloatArray );
-        
+//        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedDoubleArray ); //ONE-ZER0
+        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
+
 	    // create a Matrix from the peak alpha congested time skims array and write to disk
 	    fileName = (String)propertyMap.get( "pkHwyTimeSkim.fileName" );
-	    newSkimMatrix = new Matrix( "pktime", "Peak SOV Time Skims", onesBasedFloatArray );
+//	    newSkimMatrix = new Matrix( "pktime", "Peak SOV Time Skims", onesBasedFloatArray );  //ONE-ZER0
+        newSkimMatrix = new Matrix( "pktime", "Peak SOV Time Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
@@ -206,13 +211,15 @@ public class Skims {
 		double[] linkCost = g.getFreeFlowTime();
 		
         // get the skims as a double[][] array 
-        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
-        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedFloatArray );
-        
+//        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedDoubleArray ); //ONE-ZER0
+        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
+
 	    // create a Matrix from the off-peak alpha congested time skims array and write to disk
 	    fileName = (String)propertyMap.get( "opHwyTimeSkim.fileName" );
-	    newSkimMatrix = new Matrix( "optime", "Off-peak SOV Time Skims", onesBasedFloatArray );
+//	    newSkimMatrix = new Matrix( "optime", "Off-peak SOV Time Skims", onesBasedFloatArray ); //ONE-ZER0
+        newSkimMatrix = new Matrix( "optime", "Off-peak SOV Time Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
@@ -230,12 +237,14 @@ public class Skims {
 		
         // get the skims as a double[][] array
 		// skims are generated between all centroids in entire network (2985 total centroids)
-        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
-        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedFloatArray );
-        
+//        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedDoubleArray );  //ONE-ZER0
+        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
+
 	    // create a Matrix from the peak alpha distance skims array and return
-	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray );
+//	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray );  //ONE-ZER0
+        newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
 
 	    return newSkimMatrix;
@@ -252,43 +261,71 @@ public class Skims {
 		double[] linkCost = g.getDist();
 		
         // get the skims as a double[][] array 
-        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
-	    return zeroBasedFloatArray;
+	    return zeroBasedDoubleArray;
 	    
 	}
 
 
-    private float[][] getOnesBasedFloatArray ( double[][] zeroBasedFloatArray ) {
-    	
+    private float[][] getOnesBasedFloatArray ( double[][] zeroBasedDoubleArray ) {
+
     	int z;
     	int[] inToEx = g.getIndexNode();
-    	
+
 	    // copy the array to a ones-based float[][] for conversion to Matrix object
 	    // only the zones within the study area are saved to skim matrix (2950 total skim zones)
 		float[][] onesBasedFloatArray = new float[alphaNumberArray.length+1][alphaNumberArray.length+1];
 		int r = 1;
-	    for (int i=0; i < zeroBasedFloatArray.length; i++) {
+	    for (int i=0; i < zeroBasedDoubleArray.length; i++) {
 			int c = 1;
 			z = inToEx[i];
 	    	if ( zonesToSkim[z] == 1 ) {
-	    		for (int j=0; j < zeroBasedFloatArray[i].length; j++) {
+	    		for (int j=0; j < zeroBasedDoubleArray[i].length; j++) {
 	    			z = inToEx[j];
 	    	    	if ( zonesToSkim[z] == 1 ) {
-	    	    		onesBasedFloatArray[r][c] = (float)zeroBasedFloatArray[i][j];
+	    	    		onesBasedFloatArray[r][c] = (float)zeroBasedDoubleArray[i][j];
 	    	    		c++;
 	    	    	}
 	    		}
 	    		r++;
 	    	}
 	    }
-	    zeroBasedFloatArray = null;
-	    
+	    zeroBasedDoubleArray = null;
+
 	    return onesBasedFloatArray;
 
     }
 
-    
+    private float[][] getZeroBasedFloatArray ( double[][] zeroBasedDoubleArray ) {
+
+    	int z;
+    	int[] inToEx = g.getIndexNode();
+        // copy the array to a zero-based float[][] for conversion to Matrix object
+	    // only the zones within the study area are saved to skim matrix (2950 total skim zones)
+		float[][] zeroBasedFloatArray = new float[alphaNumberArray.length][alphaNumberArray.length];
+        int r = 0;
+		for (int i=0; i < zeroBasedDoubleArray.length; i++) {
+            int c = 0;
+			z = inToEx[i];
+	    	if ( zonesToSkim[z] == 1 ) {
+                for (int j=0; j < zeroBasedDoubleArray[i].length; j++) {
+	    			z = inToEx[j];
+	    	    	if ( zonesToSkim[z] == 1 ) {
+                        zeroBasedFloatArray[r][c] = (float)zeroBasedDoubleArray[i][j];
+                        c++;
+	    	    	}
+	    		}
+                r++;
+	    	}
+	    }
+	    zeroBasedDoubleArray = null;
+
+	    return zeroBasedFloatArray;
+
+    }
+
+
     /**
 	 * build network skim array, return as double[][].
 	 * the highway network attribute on which to skim the network is passed in.
