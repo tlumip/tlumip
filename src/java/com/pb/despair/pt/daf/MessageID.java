@@ -23,6 +23,8 @@ public final class MessageID{
     
     public static final String SKIMS = "Skims";
     public static final String MC_LOGSUMS_CREATED = "MCLogsumsCreated";
+    public static final String MC_LOGSUMS_COLLAPSED = "MCLogsumsCollapsed";
+    
     public static final String DC_LOGSUMS_CREATED = "DCLogsumsCreated";
     public static final String DC_EXPUTILITIES_CREATED = "DCExpUtilitiesCreated";
     
