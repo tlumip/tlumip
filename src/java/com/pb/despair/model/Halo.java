@@ -136,7 +136,6 @@ public class Halo {
 		String puma5pctString;
 		
 		
-		// read the PI output file into a TableDataSet
 		CSVFileReader reader = new CSVFileReader();
         
 		TableDataSet table = null;
