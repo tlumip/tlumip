@@ -13,6 +13,7 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.ModelComponent;
+import com.pb.despair.model.SkimsInMemory;
 
 import java.util.ResourceBundle;
 import java.util.ArrayList;
@@ -55,16 +56,48 @@ public class PTModel extends ModelComponent implements Serializable{
 
     }
 
-    //This method is not called and in fact it is duplicated in PTDataReader
-//    public PTHousehold[] getHouseholds(){
-//
-//        //Read household and person data
-//        PTDataReader dataReader = new PTDataReader(rb);
-//        logger.info("Adding synthetic population from JDataStore");
-//        return dataReader.readHouseholds("households.file");
-//
-//    }
+public void buildLogitModels(){
+        //create instance of Patterns for weekdays
+        if(debug) logger.fine("Creating WeekdayPatterns Object");
+        wkdayPatterns = new Patterns();
+        wkdayPatterns.readData(rb,"weekdayPatterns.file");
 
+        //create instance of Patterns for weekends
+        if(debug) logger.fine("Creating WeekdayPatterns Object");
+        wkendPatterns = new Patterns();
+        wkendPatterns.readData(rb,"weekendPatterns.file");
+
+        weekdayPatternModel = new PatternModel();
+        weekdayPatternModel.buildModel(wkdayPatterns, PTModelInputs.wkdayParams);
+
+        weekendPatternModel = new PatternModel();
+        weekendPatternModel.buildModel(wkendPatterns,PTModelInputs.wkendParams);
+
+        tmcm = new TourModeChoiceModel();
+
+        //update local tazData object with the static PTModelInputs.tazs data
+        Enumeration tazEnum = tazs.tazData.elements();
+        while (tazEnum.hasMoreElements()) {
+            Taz thisTaz = (Taz) tazEnum.nextElement();
+            thisTaz.households = ((Taz)PTModelInputs.tazs.tazData.get(new Integer(thisTaz.zoneNumber))).households;
+            thisTaz.otherSchoolOccupation = ((Taz)PTModelInputs.tazs.tazData.get(new Integer(thisTaz.zoneNumber))).otherSchoolOccupation;
+            thisTaz.postSecondaryOccupation = ((Taz)PTModelInputs.tazs.tazData.get(new Integer(thisTaz.zoneNumber))).postSecondaryOccupation;
+        }
+        tazs.collapseEmployment(PTModelInputs.tdpd,PTModelInputs.sdpd);
+
+        destinationModeChoiceModel = new TourDestinationModeChoiceModel();
+        destinationModeChoiceModel.buildModel(tazs); //does not clone in this version
+
+        stopDestinationChoiceModel = new StopDestinationChoiceModel();
+        stopDestinationChoiceModel.buildModel(tazs);
+
+        tripModeChoiceModel = new TripModeChoiceModel();
+
+        workBasedTourModel = new WorkBasedTourModel();
+        workBasedTourModel.buildModel(tazs);
+
+        durationModel = new DurationModel();
+    }
     /**
      * Choose a weekday pattern for each household
      * @param households An array of PTHousehold objects
@@ -134,15 +167,6 @@ public class PTModel extends ModelComponent implements Serializable{
         return households;            
     }
 
-    //This method is not actually called.  The 'runAutoOwnershipModel' in
-    //the PTDataReader class is called instead.  This avoids having
-    //to create a PTModelInputs object and a PTModel object.
-//    public PTHousehold[] getAutoOwnership(PTHousehold[] households){
-//        logger.info("Generating auto ownership.");
-//        AutoOwnershipModel aom = new AutoOwnershipModel(rb);
-//        households = aom.runAutoOwnershipModel(households, PTModelInputs.tazs);
-//        return households;
-//    }
     /**
      * Generate tours from the patterns chosen for each household
      * @param households  An array of PTHouseholds
@@ -257,48 +281,83 @@ public class PTModel extends ModelComponent implements Serializable{
             return households;          
     }//end generate tours
     
-    public void buildLogitModels(){
-        //create instance of Patterns for weekdays
-        if(debug) logger.fine("Creating WeekdayPatterns Object");
-        wkdayPatterns = new Patterns();
-        wkdayPatterns.readData(rb,"weekdayPatterns.file");
 
-        //create instance of Patterns for weekends
-        if(debug) logger.fine("Creating WeekdayPatterns Object");
-        wkendPatterns = new Patterns();
-        wkendPatterns.readData(rb,"weekendPatterns.file");
 
-        weekdayPatternModel = new PatternModel();
-        weekdayPatternModel.buildModel(wkdayPatterns, PTModelInputs.wkdayParams);
+    /**
+     * Generate durations for activities, choose tour primary destination and mode,
+     * intermediate stop locations, and trip mode for auto trips for all weekday tours.
+     *
+     * @param thisHousehold
+     */
+    public List runWeekdayDurationDestinationModeChoiceModels(PTHousehold thisHousehold,
+                                            DCExpUtilitiesManager um){
+                //We want to be able to return the duration, primary and secondary times as well as
+                //the households so we will put the household and a double array into a list
+                //which will be returned by this method.
+                List returnValues = new ArrayList();
+                double[] times = new double[3];  //duration model, primary tour model and secondary tour model times
+                double[] primaryTimes = null;
+                double[] accumPrimaryTimes = new double[3];
+                for(int personNumber=0;personNumber<thisHousehold.persons.length;++personNumber){
+                    PTPerson thisPerson = thisHousehold.persons[personNumber];
+                    //logger.fine("Getting pattern for Household Number: "+thisHousehold.ID+" Person Number:  "+thisPerson.ID);
+                    Pattern thisPattern = thisPerson.weekdayPattern;
 
-        weekendPatternModel = new PatternModel();
-        weekendPatternModel.buildModel(wkendPatterns,PTModelInputs.wkendParams);
-       
-        tmcm = new TourModeChoiceModel();
+                    int workBasedTours=0;
+                    //home-based tours
 
-        //update local tazData object with the static PTModelInputs.tazs data
-        Enumeration tazEnum = tazs.tazData.elements();
-        while (tazEnum.hasMoreElements()) {
-            Taz thisTaz = (Taz) tazEnum.nextElement();
-            thisTaz.households = ((Taz)PTModelInputs.tazs.tazData.get(new Integer(thisTaz.zoneNumber))).households;
-            thisTaz.otherSchoolOccupation = ((Taz)PTModelInputs.tazs.tazData.get(new Integer(thisTaz.zoneNumber))).otherSchoolOccupation;
-            thisTaz.postSecondaryOccupation = ((Taz)PTModelInputs.tazs.tazData.get(new Integer(thisTaz.zoneNumber))).postSecondaryOccupation;
-        }
-        tazs.collapseEmployment(PTModelInputs.tdpd,PTModelInputs.sdpd);
+                    for(int tourNumber=0; tourNumber<thisHousehold.persons[personNumber].weekdayTours.length;++tourNumber){
+                        Tour thisWeekdayTour = thisPerson.weekdayTours[tourNumber];
+                        //duration model
+                        long durationTime = System.currentTimeMillis();
+                        durationModel.setAttributes(thisHousehold,thisPerson,thisPattern);
+                        thisWeekdayTour = durationModel.calculateTourDuration(thisPerson.weekdayTours, tourNumber);
+                        times[0] += (System.currentTimeMillis()-durationTime)/1000.0;
 
-        destinationModeChoiceModel = new TourDestinationModeChoiceModel();
-        destinationModeChoiceModel.buildModel(tazs); //does not clone in this version
+                        long primaryTime = System.currentTimeMillis();
+                        primaryTimes = runModelsForOneTour(thisHousehold,
+                                            thisPerson,
+                                            thisWeekdayTour,
+                                            personNumber,
+                                            um
+                                            );
+                        times[1] += (System.currentTimeMillis()-primaryTime)/1000.0;
 
-        stopDestinationChoiceModel = new StopDestinationChoiceModel();
-        stopDestinationChoiceModel.buildModel(tazs);
+                        for(int i=0; i<primaryTimes.length; i++){
+                            accumPrimaryTimes[i] += primaryTimes[i];
+                        }
 
-        tripModeChoiceModel = new TripModeChoiceModel();
+                        adjustStartEndTimesOfTour(tourNumber, thisWeekdayTour, thisPerson.weekdayTours, PTModelInputs.skims);
 
-        workBasedTourModel = new WorkBasedTourModel();
-        workBasedTourModel.buildModel(tazs);
+                        // ask joel; is this block for secondary tours based at work locations?
+                        long secondaryTime = System.currentTimeMillis();
+                        if(thisWeekdayTour.primaryDestination.activityPurpose==ActivityPurpose.WORK_BASED){
+                            ++workBasedTours;
+                            thisHousehold.persons[personNumber].weekdayWorkBasedTours[workBasedTours-1]  = new Tour();
+                            Tour thisWeekdayWorkBasedTour = thisHousehold.persons[personNumber].weekdayWorkBasedTours[workBasedTours-1];
+                            thisWeekdayWorkBasedTour.tourNumber=workBasedTours;
+                            thisWeekdayWorkBasedTour.setWorkBasedTourAttributes(thisWeekdayTour);
+                            workBasedTourModel.calculateWorkBasedTour(thisHousehold,
+                                                              thisPerson,
+                                                              thisWeekdayWorkBasedTour,
+                                                              PTModelInputs.skims,
+                                                              PTModelInputs.tmpd,
+                                                              PTModelInputs.tdpd,
+                                                              tazs,
+                                                              um,
+                                                              tmcm
+                                                              );
+                            adjustStartEndTimeOfWorkBasedTour(thisWeekdayWorkBasedTour, PTModelInputs.skims);
+                        }
+                        times[2] += (System.currentTimeMillis()-secondaryTime)/1000.0;
 
-        durationModel = new DurationModel();
-    }
+                    } //end searching tours
+               } //end persons
+            returnValues.add(0,thisHousehold);
+            returnValues.add(1, times);
+            returnValues.add(2, accumPrimaryTimes);
+            return returnValues;
+    }//end weekday model
 
     public double[] runModelsForOneTour(PTHousehold thisHousehold, PTPerson thisPerson, Tour thisTour,
                                     int personNumber, DCExpUtilitiesManager um){
@@ -341,7 +400,6 @@ public class PTModel extends ModelComponent implements Serializable{
         
         
         
-        //Trip Mode choice model for AUTODRIVER or AUTOPASSENGER Tours only
         //logger.fine("Running Trip mode choice model for Household Number: "+thisHousehold.ID+" Person Number:  "+thisPerson.ID);
         startTime = System.currentTimeMillis();
         tripModeChoiceModel.calculateTripModes(thisHousehold,
@@ -360,82 +418,14 @@ public class PTModel extends ModelComponent implements Serializable{
         households[hhNumber].persons[personNumber].weekdayTours[tourNumber].print();
         */          
          //end home-based tours
+
+
+
         return times;
     }
     
    
-    /**
-     * Generate durations for activities, choose tour primary destination and mode,
-     * intermediate stop locations, and trip mode for auto trips for all weekday tours.
-     * 
-     * @param thisHousehold
-     */
-    public List runWeekdayDurationDestinationModeChoiceModels(PTHousehold thisHousehold,
-                                            DCExpUtilitiesManager um){        
-                //We want to be able to return the duration, primary and secondary times as well as
-                //the households so we will put the household and a double array into a list
-                //which will be returned by this method.
-                List returnValues = new ArrayList();
-                double[] times = new double[3];  //duration model, primary tour model and secondary tour model times
-                double[] primaryTimes = null;
-                double[] accumPrimaryTimes = new double[3];
-                for(int personNumber=0;personNumber<thisHousehold.persons.length;++personNumber){
-                    PTPerson thisPerson = thisHousehold.persons[personNumber];
-                    //logger.fine("Getting pattern for Household Number: "+thisHousehold.ID+" Person Number:  "+thisPerson.ID);
-                    Pattern thisPattern = thisPerson.weekdayPattern;
 
-                    int workBasedTours=0;
-                    //home-based tours
-                    
-                    for(int tourNumber=0; tourNumber<thisHousehold.persons[personNumber].weekdayTours.length;++tourNumber){
-                        Tour thisWeekdayTour = thisPerson.weekdayTours[tourNumber];
-                        //duration model
-                        long durationTime = System.currentTimeMillis();
-                        durationModel.setAttributes(thisHousehold,thisPerson,thisPattern);
-                        thisWeekdayTour = durationModel.calculateTourDuration(thisPerson.weekdayTours, tourNumber);
-                        times[0] += (System.currentTimeMillis()-durationTime)/1000.0;
-                        
-                        long primaryTime = System.currentTimeMillis();
-                        primaryTimes = runModelsForOneTour(thisHousehold,
-                                            thisPerson,
-                                            thisWeekdayTour,
-                                            personNumber,
-                                            um
-                                            );
-                        times[1] += (System.currentTimeMillis()-primaryTime)/1000.0;
-
-                        for(int i=0; i<primaryTimes.length; i++){
-                            accumPrimaryTimes[i] += primaryTimes[i];
-                        }
-
-                        // ask joel; is this block for secondary tours based at work locations?
-                        long secondaryTime = System.currentTimeMillis();
-                        if(thisWeekdayTour.primaryDestination.activityPurpose==ActivityPurpose.WORK_BASED){
-                            ++workBasedTours;
-                            thisHousehold.persons[personNumber].weekdayWorkBasedTours[workBasedTours-1]  = new Tour();
-                            Tour thisWeekdayWorkBasedTour = thisHousehold.persons[personNumber].weekdayWorkBasedTours[workBasedTours-1];
-                            thisWeekdayWorkBasedTour.tourNumber=workBasedTours;
-                            thisWeekdayWorkBasedTour.setWorkBasedTourAttributes(thisWeekdayTour);                         
-                            workBasedTourModel.calculateWorkBasedTour(thisHousehold, 
-                                                              thisPerson, 
-                                                              thisWeekdayWorkBasedTour, 
-                                                              PTModelInputs.skims, 
-                                                              PTModelInputs.tmpd, 
-                                                              PTModelInputs.tdpd, 
-                                                              tazs,
-                                                              um, 
-                                                              tmcm
-                                                              );
-                        }
-                        times[2] += (System.currentTimeMillis()-secondaryTime)/1000.0;
-
-                    } //end searching tours
-               } //end persons
-            returnValues.add(0,thisHousehold);
-            returnValues.add(1, times);
-            returnValues.add(2, accumPrimaryTimes);
-            return returnValues;
-    }//end weekday model
 
     /**
      * Generate durations for activities, choose tour primary destination and mode,
@@ -467,7 +457,6 @@ public class PTModel extends ModelComponent implements Serializable{
                          
                     } //end searching tours
                          
-               
                } //end persons
         //} //end households
         return thisHousehold;
@@ -502,7 +491,106 @@ public class PTModel extends ModelComponent implements Serializable{
             }
             return null;
        }
-    
+    /*
+    *  When the start and end times of the various activities on the tour
+    *  were originally calculated the "timeToActivity" attribute was 0
+    *  because the activity destination was not known.  So now that
+    *  the destination has been chosen we will go back and adjust the
+    *  times to account for travel time.
+    */
+    private void adjustStartEndTimesOfTour(int tourNumber, Tour thisTour, Tour[] tours, SkimsInMemory skims){
+
+        if(tourNumber == 0){ //the first tour in the pattern
+            //begin.startTime does not change
+            //being.endTime does not change
+        }else{
+            thisTour.begin.startTime = tours[tourNumber-1].end.startTime;
+            durationModel.calculateEndTime(thisTour.begin);
+        }
+
+        //adjust the intermediateStop1 and primary destination times
+        if(thisTour.intermediateStop1 != null){ //this tour has an intermediateStop1
+            //set intStop1 timeToActivity
+            thisTour.intermediateStop1.timeToActivity = (short)skims.opTime.getValueAt(thisTour.begin.location.zoneNumber,
+                                                                                thisTour.intermediateStop1.location.zoneNumber);
+            //adjust intStop1 start time
+            durationModel.calculateStartTime(thisTour.begin, thisTour.intermediateStop1);
+            //adjust intStop1 end time
+            durationModel.calculateEndTime(thisTour.intermediateStop1);
+            //set primary destination timeToActivity
+            if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK){
+                thisTour.primaryDestination.timeToActivity = (short) skims.pkTime.getValueAt(thisTour.intermediateStop1.location.zoneNumber,
+                                                                                             thisTour.primaryDestination.location.zoneNumber);
+            } else thisTour.primaryDestination.timeToActivity = (short) skims.opTime.getValueAt(thisTour.intermediateStop1.location.zoneNumber,
+                                                                                                thisTour.primaryDestination.location.zoneNumber);
+            //adjust primaryDestination start time
+            durationModel.calculateStartTime(thisTour.intermediateStop1,thisTour.primaryDestination);
+        } else { //this tour has no intermediateStop1 and goes from begin to primary destination
+            //set primary destination timeToActivity
+            if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK){
+                thisTour.primaryDestination.timeToActivity = (short) skims.pkTime.getValueAt(thisTour.begin.location.zoneNumber,
+                                                                                             thisTour.primaryDestination.location.zoneNumber);
+            } else thisTour.primaryDestination.timeToActivity = (short) skims.opTime.getValueAt(thisTour.begin.location.zoneNumber,
+                                                                                                thisTour.primaryDestination.location.zoneNumber);
+            //adjust primaryDestination start time
+            durationModel.calculateStartTime(thisTour.begin, thisTour.primaryDestination);
+        } // we have now calculated start and end time for intStop1 and startTime for primaryDestination
+
+        //adjust primaryDestination end time
+        durationModel.calculateEndTime(thisTour.primaryDestination);
+
+        //Now do the end of the chain, the intermediateStop2 and the end
+        if(thisTour.intermediateStop2 != null){ //this tour has an intermediateStop2
+            //set intStop2 timeToActivity
+            thisTour.intermediateStop2.timeToActivity = (short)skims.opTime.getValueAt(thisTour.primaryDestination.location.zoneNumber,
+                                                                                thisTour.intermediateStop2.location.zoneNumber);
+            //adjust intStop2 start time
+            durationModel.calculateStartTime(thisTour.primaryDestination, thisTour.intermediateStop2);
+            //adjust intStop2 end time
+            durationModel.calculateEndTime(thisTour.intermediateStop2);
+
+            //set end timeToActivity
+            thisTour.end.timeToActivity = (short) skims.opTime.getValueAt(thisTour.intermediateStop2.location.zoneNumber,
+                                                                           thisTour.end.location.zoneNumber);
+            //adjust end start time
+            durationModel.calculateStartTime(thisTour.intermediateStop2,thisTour.end);
+        } else { //this tour has no intermediateStop2 and goes from primary destination to end
+            //set end timeToActivity
+            thisTour.end.timeToActivity = (short) skims.opTime.getValueAt(thisTour.primaryDestination.location.zoneNumber,
+                                                                          thisTour.end.location.zoneNumber);
+            //adjust end start time
+            durationModel.calculateStartTime(thisTour.primaryDestination, thisTour.end);
+        } // we have now calculated start and end time for intStop1 and startTime for primaryDestination
+
+    }
+
+    /*
+    *  When the start and end times of work based tour ('w-o-w')
+    *  were originally calculated the "timeToActivity" attribute was 0
+    *  because the primary destination was not known.  So now that
+    *  the destination has been chosen we will go back and adjust the
+    *  primary destination start and end time and the end activity start time to account for travel time.
+    *  The begin start and end time were set based on the adjusted tour times in the
+    *  previous call to 'adjustStartEndTimeOfTour' so these won't change.
+    */
+    private void adjustStartEndTimeOfWorkBasedTour(Tour thisWorkBasedTour,  SkimsInMemory skims){
+
+        //adjust the primary destination times
+        thisWorkBasedTour.primaryDestination.timeToActivity = (short) skims.opTime.getValueAt(thisWorkBasedTour.begin.location.zoneNumber,
+                                                                                                thisWorkBasedTour.primaryDestination.location.zoneNumber);
+        //adjust primaryDestination start time
+        durationModel.calculateStartTime(thisWorkBasedTour.begin,thisWorkBasedTour.primaryDestination);
+        //adjust primaryDestination end time
+        durationModel.calculateEndTime(thisWorkBasedTour.primaryDestination);
+
+        //Now do the end of the chain, the primaryDestination to the end
+        thisWorkBasedTour.end.timeToActivity = (short) skims.opTime.getValueAt(thisWorkBasedTour.primaryDestination.location.zoneNumber,
+                                                                          thisWorkBasedTour.end.location.zoneNumber);
+        //adjust end start time
+        durationModel.calculateStartTime(thisWorkBasedTour.primaryDestination, thisWorkBasedTour.end);
+
+    }
+
      /**
       * Run PT Model
       * @param args

@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 public class WorkBasedTourModel{
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.WorkBasedTourModel");
     boolean writtenOutTheUtilitiesAlready = false;
-    final static boolean debug=false;
+    final static boolean debug=true;
      final static int debugID = -1;
 
      LogitModel destinationModel;
@@ -120,7 +120,7 @@ public class WorkBasedTourModel{
                logger.info("Tour begin activity duration "+thisTour.begin.duration);
                logger.info("Tour end activity duration "+thisTour.end.duration);
                logger.info("Minutes available for travel "+minutesAvailable);
-                         
+               writtenOutTheUtilitiesAlready = true;
           }
 
 

@@ -65,13 +65,14 @@ public class DurationModel{
                thisTour.begin.startTime = 300;
                thisTour.begin.duration = calculateFirstHomeDuration(thisTour.begin);
           }else{
-               //if second activity, set time to get to first activity as total travel time of last tour 
-               tours[tourNumber-1].end.duration=calculateDuration(tours[tourNumber-1].end);
-               calculateEndTime(tours[tourNumber-1].end);
+               //if second tour, set time to get to first activity as total travel time of last tour
+//               tours[tourNumber-1].end.duration=calculateDuration(tours[tourNumber-1].end);
+//               calculateEndTime(tours[tourNumber-1].end);
                //thisTour.begin.timeToActivity=new Double(tours[tourNumber-1].primaryMode.time).shortValue();
-               thisTour.begin.timeToActivity=(short)tours[tourNumber-1].primaryMode.time;
-               calculateStartTime(tours[tourNumber-1].end,thisTour.begin);
-               thisTour.begin.duration = calculateIntermediateHomeDuration(thisTour.begin);          
+//               thisTour.begin.timeToActivity=(short)tours[tourNumber-1].primaryMode.time;
+//               calculateStartTime(tours[tourNumber-1].end,thisTour.begin);
+               thisTour.begin.startTime = tours[tourNumber-1].end.startTime;
+               thisTour.begin.duration = calculateIntermediateHomeDuration(thisTour.begin);
           }
           calculateEndTime(thisTour.begin);
           
@@ -390,13 +391,13 @@ public class DurationModel{
 
      void calculateEndTime(Activity thisActivity){
           
-          int hours=thisActivity.duration/60;
+          int hours=thisActivity.duration / 60;
           int minutes = thisActivity.duration  - (hours*60);
           
           int startHours = thisActivity.startTime/100;
           int startMinutes = thisActivity.startTime - (startHours*100);
           
-          if((startMinutes+minutes)>60){
+          if((startMinutes+minutes)>=60){
                ++hours;
                minutes=(startMinutes+minutes)-60;
                startMinutes=0;
@@ -405,20 +406,25 @@ public class DurationModel{
      }          
 
           
-     //TODO need to fill in this method
      void calculateStartTime(Activity firstActivity, Activity nextActivity){
+         //time to activity is broken down into hours and minutes
+         int hours = nextActivity.timeToActivity / 60;
+         int minutes = nextActivity.timeToActivity - (hours*60);
+
+         //prior to adding on the timeToActivity to the end time of the first activity, break
+         //down the end time into hours and minutes
+         int endHours = firstActivity.endTime/100;
+         int endMinutes = firstActivity.endTime - (endHours*100);
+
+         if(endMinutes + minutes >= 60){ //we need to increment the hours
+             hours++;
+             minutes = (endMinutes + minutes)-60;  //and fix the minutes
+             endMinutes=0;
+         }
+         //return the correct time in military format.
+         nextActivity.startTime=(short)((endHours*100) + (hours*100)+ endMinutes + minutes);
           
-          nextActivity.startTime=(short)((firstActivity.endTime + nextActivity.timeToActivity));     
-          
-    //      if(nextActivity.startTime>=300 && nextActivity.startTime<1000)
-    //           nextActivity.startAM=1;
-    //      else if(nextActivity.startTime>=1000 && nextActivity.startTime<1530)
-    //           nextActivity.startMD=1;
-    //      else if(nextActivity.startTime>=1530 && nextActivity.startTime<1830)
-    //           nextActivity.startPM=1;
-    //      else
-    //           nextActivity.startEV=1;
-     };
+    }
 
      
     

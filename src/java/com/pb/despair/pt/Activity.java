@@ -138,7 +138,7 @@ public class Activity implements Serializable{
         short startHours = (short)(startTime / 100);
         short startMinutes = (short)(startTime - (startHours * 100));
 
-        if ((startMinutes + minutes) > 60) {
+        if ((startMinutes + minutes) >= 60) {
             ++hours;
             minutes = (short)((startMinutes + minutes) - 60);
             startMinutes = 0;
@@ -148,9 +148,23 @@ public class Activity implements Serializable{
 
     //calculates startTime of current activity based on time of last activity and time to get to this activity
     void calculateStartTime(Activity lastActivity) {
+        //time to activity is broken down into hours and minutes
+         int hours = timeToActivity / 60;
+         int minutes = timeToActivity - (hours * 60);
 
-        startTime = (short)((lastActivity.endTime + timeToActivity));
-    };
+         //prior to adding on the timeToActivity to the end time of the first activity, break
+         //down the end time into hours and minutes
+         int endHours = lastActivity.endTime/100;
+         int endMinutes = lastActivity.endTime - (endHours*100);
+
+         if(endMinutes + minutes >= 60){ //we need to increment the hours
+             hours++;
+             minutes = (endMinutes + minutes)-60;  //and fix the minutes
+             endMinutes=0;
+         }
+         //return the correct time in military format.
+         startTime=(short)((endHours*100) + (hours*100)+ endMinutes + minutes);
+    }
 
     //to write to a text file, csv format
     void printCSV(PrintWriter file) {

@@ -51,9 +51,7 @@ public class TripModeChoiceModel{
                                     TazData tazs
                                     ){
                
-//          if(thisTour.primaryMode.type!=ModeType.AUTODRIVER &&
-//               thisTour.primaryMode.type!=ModeType.AUTOPASSENGER)
-//               return;
+
          //All trips on WALK tours should be assigned WALKTRIP
          if(thisTour.primaryMode.type == ModeType.WALK){
              if(thisTour.intermediateStop1 != null) thisTour.intermediateStop1.tripMode = walkTrip;
