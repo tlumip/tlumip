@@ -355,6 +355,8 @@ public class OpStrategy {
 			return -1;
 		}
 
+
+		
 		if (debug)
 			  logger.info ("start=" + start + ", indexb[start]=" + ag.indexb[start] + ", ia=" + ag.ia[ag.indexb[start]] + ", ib=" + ag.ib[ag.indexb[start]] + ", an=" + (ag.ia[ag.indexb[start]] < indexNode.length ? indexNode[ag.ia[ag.indexb[start]]] : 0) + ", bn=" + (ag.ib[ag.indexb[start]] < indexNode.length ? indexNode[ag.ib[ag.indexb[start]]] : 0));
 		j = currentNode + 1;
@@ -394,7 +396,7 @@ public class OpStrategy {
  		boolean debug = classDebug;
 //		boolean debug = true;
 
-		// find link index where anode is origin
+
 		for (i=0; i < inStrategyCount; i++) {
 			
 			// get the transit network link index associated with the ith entry in the optimal strategy
@@ -407,7 +409,7 @@ public class OpStrategy {
 			ib = ag.ib[k];
 
 			int dummy = 0;
-			if (ia == 0) {
+			if ( indexNode[gia[m]] == 2 ) {
 				dummy = 1;
 			}
 			
@@ -815,7 +817,8 @@ public class OpStrategy {
 		int i, k = 0, origIndex = 0, stopLink;
 		double flow;
 
-		boolean debug = classDebug;
+		boolean debug = true;
+//		boolean debug = classDebug;
 
 		logger.info ("");
 		logger.info ("loading Walk-Transit, inStrategyCount=" + inStrategyCount);
@@ -836,11 +839,13 @@ public class OpStrategy {
 		if (nodeFreq[orig] >= AuxTrNet.INFINITY) {
 		    // no boarding at origin,  station (stop) choice required
 			stopLink = walkStopChoice(orig);
-			ag.flow[stopLink] += 1.0;
-			nodeFlow[ag.ib[stopLink]] = 1.0;
-			nodeFlow[orig] = 0.0;
+			ag.flow[stopLink] = 1.0;
+//			nodeFlow[ag.ib[stopLink]] = 1.0;
+//			nodeFlow[orig] = 0.0;
+			nodeFlow[orig] = 1.0;
 			if (debug) {
-			    logger.info ("stopLink=" + stopLink + ", ag.ia[stopLink]=" + ag.ia[stopLink] + ", ag.ib[stopLink]=" + ag.ib[stopLink] + ", nodeFlow[ag.ib[stopLink]]=" + nodeFlow[ag.ib[stopLink]]);
+				int m = ag.hwyLink[stopLink];
+			    logger.info ("stopLink=" + stopLink + ", ag.ia=" + ag.ia[stopLink] + ", ag.ib=" + ag.ib[stopLink] + ", g.an[k]=" + indexNode[gia[m]] + ", g.bn[k]=" + indexNode[gib[m]] + ", nodeFlow[ag.ib[stopLink]]=" + nodeFlow[ag.ib[stopLink]]);
 			}
 		}
 
@@ -848,19 +853,18 @@ public class OpStrategy {
 		    
 			k = orderInStrategy[i];
 			
-			if (debug)
-			    logger.info ("loading " + "i=" + i + ", k=" + k + " (" + ag.ia[k] + "," + ag.ib[k] + ")  nodeFlow[ag.ia[k]]=" + nodeFlow[ag.ia[k]] + ", ag.freq[k]=" + ag.freq[k] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]]);
-			
-			if (nodeFlow[ag.ia[k]] > 0.0) {
+			if (nodeFlow[ag.ia[k]] > 0.0 || ag.ia[k] == orig) {
+				int m = ag.hwyLink[k];
+				if (debug) {
+					logger.info ("loading " + "i=" + i + ", k=" + k + ", ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", g.an[k]=" + indexNode[gia[m]] + ", g.bn[k]=" + indexNode[gib[m]] + ", nodeFlow[ag.ia[k]]=" + nodeFlow[ag.ia[k]] + ", ag.freq[k]=" + ag.freq[k] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]]);
+				}
 			    flow = (ag.freq[k]/nodeFreq[ag.ia[k]])*nodeFlow[ag.ia[k]];
 			    ag.flow[k] += flow;
 				nodeFlow[ag.ib[k]] += flow;
-				if (debug)
-				    logger.info (", flow=" + flow + ", ag.flow[k]=" + ag.flow[k] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ag.ib[k]]);
-			}
-			else {
-			    if (debug)
-			        logger.info ("");
+				if (debug) {
+				    logger.info ("flow=" + flow + ", ag.flow[k]=" + ag.flow[k] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ag.ib[k]]);
+				}
+				k = 0;
 			}
 		}
 		
