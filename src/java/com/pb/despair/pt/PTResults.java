@@ -138,11 +138,12 @@ public class PTResults {
      
     public static void main(String[] args){
         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
         PTResults results = new PTResults(rb);
         PTHousehold[] households; 
         
         // Read household and person data  
-        PTDataReader dataReader = new PTDataReader(rb);
+        PTDataReader dataReader = new PTDataReader(rb, globalRb);
         logger.info("Adding synthetic population from database"); 
         households = dataReader.readHouseholds("households.file");
         results.writeResults(households);

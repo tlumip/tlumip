@@ -35,14 +35,10 @@ class TruckSelector {
     int nTypes = tf$label.length;
     int nClasses = HIGHEST_COMMODITY_NUMBER;  // shorter handle
     int n, p;    // loop counters
-    isDefined = new boolean[nClasses];
-    pTruckType = new float[nClasses][nTypes];
-    pPrivateCarriage = new float[nClasses];
-    for (n=0; n<nClasses; n++) {
-      isDefined[n] = false;
-      pPrivateCarriage[n] = 0.0f;
-      for (p=0; p<nTypes; p++)  pTruckType[n][p] = 0.0f;
-    }
+    isDefined = new boolean[nClasses];  //initialized to all false
+    pTruckType = new float[nClasses][nTypes]; //initialized to 0
+    pPrivateCarriage = new float[nClasses];   //initialized to 0
+    
 
     // Read the data from external file, Note that we assume that the columns
     // in this file are in the same order as the rows in the vehicle type

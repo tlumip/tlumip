@@ -64,8 +64,9 @@ public class SPGnew {
 
 	
 	
-	HashMap propertyMap;
-	
+	HashMap spgPropertyMap;
+    HashMap globalPropertyMap;
+
 	Halo halo = null;
 	EdIndustry edInd = null;
 	Workers workers = null;
@@ -98,17 +99,23 @@ public class SPGnew {
 	
 	
     public SPGnew () {
-		propertyMap = ResourceUtil.getResourceBundleAsHashMap("spg");
+		spgPropertyMap = ResourceUtil.getResourceBundleAsHashMap("spg");
+        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap("spg");
+
         spgInit ();
     }
 
-    public SPGnew ( String propertyFileName ) {
-		propertyMap = ResourceUtil.getResourceBundleAsHashMap( propertyFileName );
+    public SPGnew ( String spgPropertyFileName, String globalPropertyFileName ) {
+		spgPropertyMap = ResourceUtil.getResourceBundleAsHashMap( spgPropertyFileName );
+        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap(globalPropertyFileName);
+
         spgInit ();
     }
 
-    public SPGnew (ResourceBundle rb) {
-        propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+    public SPGnew (ResourceBundle appRb, ResourceBundle globalRb) {
+        spgPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
+
         spgInit ();
     }
 
@@ -116,7 +123,7 @@ public class SPGnew {
     	
 		SeededRandom.setSeed( 0 );
 
-		halo = new Halo( (String)propertyMap.get("zoneIndex.fileName") );
+		halo = new Halo( (String)globalPropertyMap.get("alpha2beta.file") );
 		
 		edInd = new EdIndustry();
 		workers = new Workers();
@@ -167,7 +174,7 @@ public class SPGnew {
 		
 		// get the array of regional employment targets which must be matched by workers in 
 		// selected households.
-		tempEmploymentTargets = edInd.getRegionalIndustryEmployment( (String)propertyMap.get("ed.employment.fileName") );
+		tempEmploymentTargets = edInd.getRegionalIndustryEmployment( (String)spgPropertyMap.get("ed.employment.fileName") );
 		employmentTargets = new int[tempEmploymentTargets.length];
 		double remainder = 0.0;
 		for (int i=0; i < tempEmploymentTargets.length; i++) {
@@ -187,8 +194,8 @@ public class SPGnew {
 		
 		
 		// read the number of households in each workers per household category.
-        logger.info("Worker Marginal File Path" + (String)propertyMap.get("workers.marginal.fileName"));
-		hhWorkerTargets = workers.getWorkersPerHousehold( (String)propertyMap.get("workers.marginal.fileName") );
+        logger.info("Worker Marginal File Path" + (String)spgPropertyMap.get("workers.marginal.fileName"));
+		hhWorkerTargets = workers.getWorkersPerHousehold( (String)spgPropertyMap.get("workers.marginal.fileName") );
 		
 		// adjust the hh worker targets to be consistent with total employment
 		// calculate the proportions of workers in each hh worker category and the factor to determine number of households
@@ -518,8 +525,8 @@ public class SPGnew {
 
 
 		// read the input files produced by PI which runs after SPG1
-		hhsIncomeSizePI = readPiIncomeSizeHHs ( (String)propertyMap.get("pi.hhCategory.fileName") );		
-		laborDollarsPI = readPiLaborDollars ( (String)propertyMap.get("pi.laborDollarProduction.fileName") );
+		hhsIncomeSizePI = readPiIncomeSizeHHs ( (String)spgPropertyMap.get("pi.hhCategory.fileName") );
+		laborDollarsPI = readPiLaborDollars ( (String)spgPropertyMap.get("pi.laborDollarProduction.fileName") );
 		
 		
 
@@ -568,7 +575,7 @@ public class SPGnew {
 
 
 
-		String fileName = (String)propertyMap.get("spg.hhRecordList.fileName");
+		String fileName = (String)spgPropertyMap.get("spg.hhRecordList.fileName");
 		try {
 			hhOutStream = new PrintWriter(new BufferedWriter(
 				new FileWriter( fileName )));
@@ -926,13 +933,13 @@ public class SPGnew {
 	private void writeHhArray () {
 	    
 		try {
-			FileOutputStream out = new FileOutputStream( (String)propertyMap.get("spg.hhDiskObject.fileName") );
+			FileOutputStream out = new FileOutputStream( (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
 			ObjectOutputStream s = new ObjectOutputStream(out);
 			s.writeObject(hhArray);
 			s.flush();
 		}
 		catch (IOException e) {
-			logger.severe("IO Exception when writing hhArray file: " + (String)propertyMap.get("spg.hhDiskObject.fileName") );
+			logger.severe("IO Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
 		}
 
 	}
@@ -943,13 +950,13 @@ public class SPGnew {
 	private void readHhArray () {
 
 		try{
-			FileInputStream in = new FileInputStream( (String)propertyMap.get("spg.hhDiskObject.fileName") );
+			FileInputStream in = new FileInputStream( (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
 			ObjectInputStream s = new ObjectInputStream(in);
 			hhArray = (int[][][])s.readObject();
 		}catch(IOException e){
-			logger.severe("IO Exception when writing hhArray file: " + (String)propertyMap.get("spg.hhDiskObject.fileName") );
+			logger.severe("IO Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
 		}catch(ClassNotFoundException e){
-			logger.severe("Class Not Found Exception when writing hhArray file: " + (String)propertyMap.get("spg.hhDiskObject.fileName") );
+			logger.severe("Class Not Found Exception when writing hhArray file: " + (String)spgPropertyMap.get("spg.hhDiskObject.fileName") );
 		}
 
 	}
@@ -1375,19 +1382,19 @@ public class SPGnew {
 
 		hhArray = new int[halo.getNumberOfStates()][][];
 
-		PUMSData pums = new PUMSData ( (String)propertyMap.get("pumsDictionary.fileName") );
+		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName") );
   		
 		String propertyName;
 		String[] PUMSFILE = new String[halo.getNumberOfStates()];
 		for (int i=0; i < PUMSFILE.length; i++) {
 			propertyName = "pums" + halo.getStateLabel(i) + ".fileName";
-			PUMSFILE[i] = (String)propertyMap.get( propertyName );
+			PUMSFILE[i] = (String)spgPropertyMap.get( propertyName );
 		}
 
 		
 		for (int i=0; i < halo.getNumberOfStates(); i++) {
             
-			hhList = pums.readSpg1Attributes ( PUMSFILE[i], (String)propertyMap.get("zoneIndex.fileName") );
+			hhList = pums.readSpg1Attributes ( PUMSFILE[i], (String)globalPropertyMap.get("alpha2beta.file") );
 
 			logger.info ( hhList.size() + " household records found in " + halo.getStateLabel(i) + " PUMS data file." ); 
 
@@ -1418,7 +1425,7 @@ public class SPGnew {
 
 		
 		//Parse list of hh variables from properties file.
-		String variableString = (String)propertyMap.get("pumsHH.variables");
+		String variableString = (String)spgPropertyMap.get("pumsHH.variables");
 		ArrayList variableList = new ArrayList();
 		StringTokenizer st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -1429,7 +1436,7 @@ public class SPGnew {
 			hhVariables[i] = (String)variableList.get(i);
 
 		//Parse list of person variables from properties file.
-		variableString = (String)propertyMap.get("pumsPerson.variables");
+		variableString = (String)spgPropertyMap.get("pumsPerson.variables");
 		variableList.clear();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -1451,10 +1458,10 @@ public class SPGnew {
 		String[] PUMSFILE = new String[halo.getNumberOfStates()];
 		for (int i=0; i < PUMSFILE.length; i++) {
 			propertyName = "pums" + halo.getStateLabel(i) + ".fileName";
-			PUMSFILE[i] = (String)propertyMap.get( propertyName );
+			PUMSFILE[i] = (String)spgPropertyMap.get( propertyName );
 		}
 		
-		PUMSData pums = new PUMSData ( (String)propertyMap.get("pumsDictionary.fileName") );
+		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName") );
 
 
 		
@@ -1465,7 +1472,7 @@ public class SPGnew {
         
 		TableDataSet table = null;
 		try {
-			table = reader.readFile(new File( (String)propertyMap.get("spg.hhRecordList.fileName") ));
+			table = reader.readFile(new File( (String)spgPropertyMap.get("spg.hhRecordList.fileName") ));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -1476,7 +1483,7 @@ public class SPGnew {
 		
 		try {
 			hhOutStream = new PrintWriter(new BufferedWriter(
-				new FileWriter( (String)propertyMap.get("spg.synpopH.fileName") )));
+				new FileWriter( (String)spgPropertyMap.get("spg.synpopH.fileName") )));
 
 			//write household attributes file header record
 			String[] fieldNames = new String[hhVariables.length + 2];
@@ -1492,7 +1499,7 @@ public class SPGnew {
 
 		try {
 			personOutStream = new PrintWriter(new BufferedWriter(
-				new FileWriter( (String)propertyMap.get("spg.synpopP.fileName") )));
+				new FileWriter( (String)spgPropertyMap.get("spg.synpopP.fileName") )));
 
 			//write household attributes file header record
 			String[] fieldNames = new String[personVariables.length + 2];
@@ -1512,7 +1519,7 @@ public class SPGnew {
 		for (int i=0; i < halo.getNumberOfStates(); i++) {
 		    
 		    logger.info ("reading PUMS data file for " + halo.getStateLabel(i));
-			ArrayList pumsList = pums.readSpg2OutputAttributes ( PUMSFILE[i], hhVariables, personVariables, (String)propertyMap.get("zoneIndex.fileName") );
+			ArrayList pumsList = pums.readSpg2OutputAttributes ( PUMSFILE[i], hhVariables, personVariables, (String)globalPropertyMap.get("alpha2beta.file") );
 			
 		    logger.info ("looking up PUMS records corresponding to household/state indices in TableDataSet.");
 			for (int k=0; k < table.getRowCount(); k++) {
@@ -1941,8 +1948,8 @@ public class SPGnew {
 
 
     	
-		String incomeSizeFileName = (String)propertyMap.get("incomeSizeCalibration.fileName");    	
-		String industryOccupationFileName = (String)propertyMap.get("industryOccupationCalibration.fileName");    	
+		String incomeSizeFileName = (String)spgPropertyMap.get("incomeSizeCalibration.fileName");
+		String industryOccupationFileName = (String)spgPropertyMap.get("industryOccupationCalibration.fileName");
     	
     	
 		PrintWriter outStream = null;
@@ -2185,7 +2192,7 @@ public class SPGnew {
 	public void writePiInputFile ( TableDataSet table ) {
 	    
 	    
-		String fileName = (String)propertyMap.get("spg.hhsByHhCategory.fileName");
+		String fileName = (String)spgPropertyMap.get("spg.hhsByHhCategory.fileName");
 		
 		// write the PI input file from a TableDataSet
 		CSVFileWriter writer = new CSVFileWriter();
@@ -2205,7 +2212,7 @@ public class SPGnew {
         
 		long startTime = System.currentTimeMillis();
 		String which = args[0];
-        SPGnew testSPG = new SPGnew( "spg_full" );
+        SPGnew testSPG = new SPGnew( "spg_full", "global" );
 
         if(which.equals("spg1"))
 		{

@@ -68,14 +68,14 @@ public class WorkplaceLocationTask  extends MessageProcessingTask{
                 ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
                 globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 
-                PTModelInputs ptInputs = new PTModelInputs(ptRb);
+                PTModelInputs ptInputs = new PTModelInputs(ptRb, globalRb);
                 logger.info("Setting up the workplace model");
                 ptInputs.setSeed(2002);
                 ptInputs.getParameters();
-                ptInputs.readSkims(globalRb);
+                ptInputs.readSkims();
                 ptInputs.readTazData();
                 LaborFlows lf = new LaborFlows(ptRb);
-                lf.setZoneMap(TableDataSetLoader.loadTableDataSet(ptRb,"alphatobeta.file"));
+                lf.setZoneMap(TableDataSetLoader.loadTableDataSet(globalRb,"alpha2beta.file"));
                 lf.readAlphaValues(TableDataSetLoader.loadTableDataSet(ptRb,"productionValues.file"),
                     TableDataSetLoader.loadTableDataSet(ptRb,"consumptionValues.file"));
                 lf.readBetaLaborFlows();

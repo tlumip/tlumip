@@ -46,11 +46,11 @@ public class CreateHomeLocationEstimationFile {
      TravelTimeAndCost departCost;
      TravelTimeAndCost returnCost;
 
-    ResourceBundle rb;
+    ResourceBundle ptRb;
 
-     public CreateHomeLocationEstimationFile(ResourceBundle rb) throws FileNotFoundException{
+     public CreateHomeLocationEstimationFile(ResourceBundle appRb, ResourceBundle globalRb) throws FileNotFoundException{
                 
-          this.rb = rb;
+          this.ptRb = appRb;
 
           //read the taz data from jDataStore; if it doesn't exist, write it to jDataStore from csv file first
           TazData taz = new TazData();
@@ -58,7 +58,7 @@ public class CreateHomeLocationEstimationFile {
           //     taz.addTazDataToJDataStore(dm);
                
           //might want to send the method the year
-          taz.readData(rb,"tazData.file");
+          taz.readData(appRb, globalRb, "tazData.file");
           
           //read the time and distance skims into memory
           if(debug) System.out.println("Reading time skims into CollapsedMatrices");
@@ -277,10 +277,11 @@ public class CreateHomeLocationEstimationFile {
      } //end constructor     
      public static void main (String[] args){
           ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+         ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
           System.out.println("creating home location choice estimation file");
           
           try{
-               CreateHomeLocationEstimationFile homeEstimation = new CreateHomeLocationEstimationFile(rb);
+               CreateHomeLocationEstimationFile homeEstimation = new CreateHomeLocationEstimationFile(rb, globalRb);
           }catch(Exception e){
                System.out.println("Error creating estimation file");
                System.exit(1);

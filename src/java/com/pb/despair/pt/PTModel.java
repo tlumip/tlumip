@@ -41,16 +41,16 @@ public class PTModel extends ModelComponent implements Serializable{
     ResourceBundle rb;
     boolean debug = false;
 
-    public PTModel(){
+    private PTModel(){
 
     }
 
-    public PTModel(ResourceBundle rb){
-      this.rb = rb;
+    public PTModel(ResourceBundle appRb, ResourceBundle globalRb){
+      this.rb = appRb;
       RUN_WEEKEND_MODEL = ResourceUtil.getProperty(this.rb, "RUN_WEEKEND_MODEL").equalsIgnoreCase("true");
       logger.info("Reading TazData into PTModel");
       tazs = new TazData();
-      tazs.readData(rb,"tazData.file");
+      tazs.readData(appRb, globalRb, "tazData.file");
 
     }
 

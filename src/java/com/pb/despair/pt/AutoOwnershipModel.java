@@ -234,10 +234,11 @@ public class AutoOwnershipModel {
      } //end calculating retail employment within 30 minutes transit service
      public static void main(String[] args){
          ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+         ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
 
          AutoOwnershipModel aom = new AutoOwnershipModel(rb);
 
-        PTDataReader dataReader = new PTDataReader(rb);
+        PTDataReader dataReader = new PTDataReader(rb, globalRb);
         logger.info("Adding synthetic population from database"); 
         PTHousehold []households = dataReader.readHouseholds("households.file");
         
@@ -254,7 +255,7 @@ public class AutoOwnershipModel {
         //read the taz data from csv to TableDataSet
         logger.info("Adding TazData");
         TazData tazs = new TazData();
-        tazs.readData(rb,"tazData.file");
+        tazs.readData(rb, globalRb,"tazData.file");
         tazs.collapseEmployment(tdpd, sdpd);
         
         households = aom.runAutoOwnershipModel(households, tazs);

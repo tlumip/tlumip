@@ -29,6 +29,7 @@ public class PTServerTask extends Task{
     protected static BooleanLock signal = new BooleanLock(false);
     boolean CREATE_MODE_CHOICE_LOGSUMS=true;
     ResourceBundle ptRb;
+    ResourceBundle globalRb;
     AlphaToBeta a2b;
 
     public PTPerson[] persons; // will be initialized in the doWork method
@@ -42,22 +43,26 @@ public class PTServerTask extends Task{
         BufferedReader reader = null;
         String scenarioName = null;
         int timeInterval = -1;
-        String pathToRb = null;
+        String pathToPtRb = null;
+        String pathToGlobalRb = null;
         try {
-            logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
-            scenarioName = reader.readLine();
-            logger.info("\tScenario Name: " + scenarioName);
-            timeInterval = Integer.parseInt(reader.readLine());
-            logger.info("\tTime Interval: " + timeInterval);
-            pathToRb = reader.readLine();
-            logger.info("\tResourceBundle Path: " + pathToRb);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        this.ptRb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+                    logger.info("Reading RunParams.txt file");
+                    reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
+                    scenarioName = reader.readLine();
+                    logger.info("\tScenario Name: " + scenarioName);
+                    timeInterval = Integer.parseInt(reader.readLine());
+                    logger.info("\tTime Interval: " + timeInterval);
+                    pathToPtRb = reader.readLine();
+                    logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
+                    pathToGlobalRb = reader.readLine();
+                    logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
+        globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 
-        String file = ResourceUtil.getProperty(ptRb,"alphaToBeta.file");
+        String file = ResourceUtil.getProperty(globalRb,"alpha2beta.file");
         this.a2b = new AlphaToBeta(new File(file));
 
 
@@ -162,7 +167,7 @@ public class PTServerTask extends Task{
         //Read in the households and the persons and run the AutoOwnership.  This needs
         //to happen regardless of the ModeChoiceLogsum calculations and no workers can work
         //until we initialize the households.
-        PTDataReader dataReader = new PTDataReader(rb);
+        PTDataReader dataReader = new PTDataReader(ptRb, globalRb);
 
         logger.info("Adding synthetic population from database");
         households = dataReader.readHouseholds("households.file");

@@ -22,10 +22,12 @@ import java.util.*;
 
 public class PTDataReader{
 
-    ResourceBundle rb;
+    ResourceBundle ptRb;
+    ResourceBundle globalRb;
 
-    public PTDataReader(ResourceBundle rb){
-        this.rb = rb;
+    public PTDataReader(ResourceBundle appRb, ResourceBundle globalRb){
+        this.ptRb = appRb;
+        this.globalRb = globalRb;
     }
 
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
@@ -35,7 +37,7 @@ public class PTDataReader{
         try {
         	if(debug) logger.fine("Adding table "+name);
 
-        	String pathName = ResourceUtil.getProperty(rb, name);
+        	String pathName = ResourceUtil.getProperty(ptRb, name);
         	if(debug) logger.info("pathName: "+pathName);
         	BufferedReader inStream = null;
             inStream = new BufferedReader( new FileReader(pathName) );
@@ -58,7 +60,7 @@ public class PTDataReader{
         int numberOfRows = 0;
         
         try {
-            String pathName = ResourceUtil.getProperty(rb, name);
+            String pathName = ResourceUtil.getProperty(ptRb, name);
             BufferedReader stream = new BufferedReader( new FileReader(pathName) );
             while (stream.readLine() != null) {
                 numberOfRows++;
@@ -183,20 +185,20 @@ public class PTDataReader{
         //read the tourDestinationParameters from csv to TableDataSet
         logger.info("Reading tour destination parameters");
         TourDestinationParametersData tdpd = new TourDestinationParametersData();
-        tdpd.readData(rb,"tourDestinationParameters.file");
+        tdpd.readData(ptRb,"tourDestinationParameters.file");
           
         //read the stopDestinationParameters from csv to TableDataSet
         logger.info("Reading stop destination parameters");
         StopDestinationParametersData sdpd = new StopDestinationParametersData();
-        sdpd.readData(rb,"stopDestinationParameters.file");
+        sdpd.readData(ptRb,"stopDestinationParameters.file");
         
         //read the taz data from csv to TableDataSet
         logger.info("Adding TazData");
         TazData tazs = new TazData();
-        tazs.readData(rb,"tazData.file");
+        tazs.readData(ptRb, globalRb,"tazData.file");
         tazs.collapseEmployment(tdpd, sdpd);
         
-        AutoOwnershipModel aom = new AutoOwnershipModel(rb);
+        AutoOwnershipModel aom = new AutoOwnershipModel(ptRb);
         return aom.runAutoOwnershipModel(households, tazs);
            
     }
@@ -346,8 +348,9 @@ public class PTDataReader{
 
     public static void main(String[] args){
         long startTime = System.currentTimeMillis();
-        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
-        PTDataReader dataReader = new PTDataReader(rb);
+        ResourceBundle ptRb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
+        PTDataReader dataReader = new PTDataReader(ptRb, globalRb);
         
         logger.info("Starting dataReader");
         

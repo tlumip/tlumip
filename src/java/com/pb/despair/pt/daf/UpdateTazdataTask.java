@@ -63,11 +63,11 @@ public class UpdateTazdataTask extends MessageProcessingTask{
                 ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
                 globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 
-                PTModelInputs ptInputs = new PTModelInputs(ptRb);
+                PTModelInputs ptInputs = new PTModelInputs(ptRb,globalRb);
                 logger.info("Setting up the aggregate mode choice model");
                 ptInputs.setSeed(2002);
                 ptInputs.getParameters();
-                ptInputs.readSkims(globalRb);
+                ptInputs.readSkims();
                 ptInputs.readTazData();
 
                 initialized = true;

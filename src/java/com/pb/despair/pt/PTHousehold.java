@@ -198,7 +198,7 @@ public class PTHousehold implements Comparable, Serializable{
      //to write to a text file, csv format
      public void printCSV(PrintWriter file){
 
-          file.print(
+          file.println(
                ID+","+
                +size+","
                +autos+","
@@ -206,7 +206,7 @@ public class PTHousehold implements Comparable, Serializable{
                +income+","
                +booleanToInt(singleFamily)+","
                +booleanToInt(multiFamily)+","
-               +homeTaz+","
+               +homeTaz
           );
      }
      

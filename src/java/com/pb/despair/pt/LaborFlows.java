@@ -45,8 +45,8 @@ public class LaborFlows implements Serializable{
     static boolean debug = false;
     ResourceBundle rb;
 
-    public LaborFlows(ResourceBundle rb){
-        this.rb = rb;
+    public LaborFlows(ResourceBundle appRb){
+        this.rb = appRb;
         dispersionParameter = Double.parseDouble(ResourceUtil.getProperty(rb,"labor.flow.dispersion.parameter"));
     }
 
@@ -289,11 +289,12 @@ public class LaborFlows implements Serializable{
     
     public static void main(String args[]){
         ResourceBundle rb =ResourceUtil.getResourceBundle("pt");
+        ResourceBundle globalRb =ResourceUtil.getResourceBundle("global");
         MatrixCollection laborFlowProbabilities;
 
         LaborFlows lf = new LaborFlows(rb);
         logger.info("Reading alphaZone to betaZone mapping.");
-        TableDataSet alphaToBeta = TableDataSetLoader.loadTableDataSet(rb,"alphatobeta.file");
+        TableDataSet alphaToBeta = TableDataSetLoader.loadTableDataSet(globalRb,"alpha2beta.file");
         logger.info("Creating alphaZone to betaZone mapping based on the TableDataSet alphaToBeta");
         lf.setZoneMap(alphaToBeta);
         

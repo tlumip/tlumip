@@ -120,7 +120,7 @@ public class PTDafMaster extends MessageProcessingTask {
         startMCLogsums();
         
         //Read the SynPop data
-        dataReader = new PTDataReader(ptRb);
+        dataReader = new PTDataReader(ptRb, globalRb);
         logger.info("Adding synthetic population from database");
         households = dataReader.readHouseholds("households.file");
         totalHouseholds = households.length;
@@ -150,7 +150,7 @@ public class PTDafMaster extends MessageProcessingTask {
         PTSummarizer.summarizeHouseholds(households,ResourceUtil.getProperty(ptRb,"hhSummary.file"));
         PTSummarizer.summarizePersons(persons,ResourceUtil.getProperty(ptRb,"personSummary.file"));
 
-        TableDataSet alphaToBetaTable = loadTableDataSet(ptRb,"alphatobeta.file");
+        TableDataSet alphaToBetaTable = loadTableDataSet(globalRb,"alpha2beta.file");
         AlphaToBeta a2b = new AlphaToBeta(alphaToBetaTable);
         MAXALPHAZONENUMBER = a2b.getMaxAlphaZone();
 
@@ -618,8 +618,9 @@ public class PTDafMaster extends MessageProcessingTask {
 
         Logger logger = Logger.getLogger("com.pb.despair.pt");
         ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/global.properties"));
         //Read the SynPop data
-        PTDataReader dataReader = new PTDataReader(rb);
+        PTDataReader dataReader = new PTDataReader(rb, globalRb);
         logger.info("Adding synthetic population from database");
         PTHousehold[] households = dataReader.readHouseholds("households.file");
         int totalHouseholds = households.length;

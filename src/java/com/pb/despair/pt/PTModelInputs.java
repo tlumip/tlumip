@@ -48,10 +48,17 @@ public class PTModelInputs extends ModelComponent implements Serializable{
     public static TazData tazs;    
     static SkimsInMemory skims;
     CSVFileReader reader = new CSVFileReader();
-    ResourceBundle rb;
+    ResourceBundle ptRb;
+    ResourceBundle globalRb;
 
-    public PTModelInputs(ResourceBundle rb){
-        this.rb = rb;
+    private PTModelInputs(){
+        //we don't want anyone to create a PTModelInputs without passing the parameters
+        //listed in the other constructor
+    }
+
+    public PTModelInputs(ResourceBundle appRb, ResourceBundle globalRb){
+        this.ptRb = appRb;
+        this.globalRb = globalRb;
     }
 
     public void setSeed(int seed){
@@ -64,12 +71,12 @@ public class PTModelInputs extends ModelComponent implements Serializable{
     //create instance of Patterns for weekdays
         logger.fine("Creating WeekdayPatterns Object");
         wkdayPatterns = new Patterns();
-        wkdayPatterns.readData(rb,"weekdayPatterns.file");
+        wkdayPatterns.readData(ptRb,"weekdayPatterns.file");
 
         //create instance of Patterns for weekends
         logger.fine("Creating WeekdayPatterns Object");
         wkendPatterns = new Patterns();
-        wkendPatterns.readData(rb,"weekendPatterns.file");    
+        wkendPatterns.readData(ptRb,"weekendPatterns.file");
     }
 
     public void getParameters(){
@@ -79,7 +86,7 @@ public class PTModelInputs extends ModelComponent implements Serializable{
         
         try{
             logger.fine("Adding AlphaToBetaTaz");
-            String file = ResourceUtil.getProperty(rb, "alphatobeta.file");
+            String file = ResourceUtil.getProperty(globalRb, "alpha2beta.file");
         	alphaToBeta = reader.readFile(new File(file));
         }catch(IOException e) {
            	   logger.severe("Error reading alphazone to betazone file.");
@@ -89,34 +96,34 @@ public class PTModelInputs extends ModelComponent implements Serializable{
         //create instance of PatternModelParameters for weekdays
         logger.fine("Creating Weekday PatternChoiceParameters Object");
         wkdayParams = new PatternChoiceParameters();
-        wkdayParams.readData(rb,"weekdayParameters.file");
+        wkdayParams.readData(ptRb,"weekdayParameters.file");
 
 
         //create instance of PatternModelParameters for weekends            
         logger.fine("Creating Weekend PatternChoiceParameters Object");
         wkendParams = new PatternChoiceParameters();
-        wkendParams.readData(rb,"weekendParameters.file");
+        wkendParams.readData(ptRb,"weekendParameters.file");
           
 
 
         //read the tourModeParameters from csv to TableDataSet
         logger.fine("Reading tour mode parameters");
         tmpd = new TourModeParametersData();
-        tmpd.readData(rb,"tourModeParameters.file");
+        tmpd.readData(ptRb,"tourModeParameters.file");
           
         //read the tourDestinationParameters from csv to TableDataSet
         logger.fine("Reading tour destination parameters");
         tdpd = new TourDestinationParametersData();
-        tdpd.readData(rb,"tourDestinationParameters.file");
+        tdpd.readData(ptRb,"tourDestinationParameters.file");
         //read the stopDestinationParameters from csv to TableDataSet
         logger.fine("Reading stop destination parameters");
         sdpd = new StopDestinationParametersData();
-        sdpd.readData(rb,"stopDestinationParameters.file");
+        sdpd.readData(ptRb,"stopDestinationParameters.file");
 
         //read the TripModeParameters from csv to TableDataSet
         logger.fine("Reading trip mode parameters");
         smpd = new TripModeParametersData();
-        smpd.readData(rb,"tripModeParameters.file");
+        smpd.readData(ptRb,"tripModeParameters.file");
     }
 
     public static void readDCLogsums(ResourceBundle rb){
@@ -125,7 +132,7 @@ public class PTModelInputs extends ModelComponent implements Serializable{
         dcLogsums.readBinaryDCLogsums(rb);
     }
     
-    public void readSkims(ResourceBundle globalRb){
+    public void readSkims(){
         
         //only read in if they haven't been read in already
         if(skims==null){
@@ -133,7 +140,7 @@ public class PTModelInputs extends ModelComponent implements Serializable{
             //read skims into memory
             skims = new SkimsInMemory(globalRb); //global Rb sets some skim definitions such
                                                 //as walk speed and peak times.
-            skims.readSkims(rb);
+            skims.readSkims(ptRb);   //the pt.properties says where the skim files are located.
         }
         //logger.fine("Size of skims: "+ObjectUtil.sizeOf(skims));
     }
@@ -147,7 +154,7 @@ public class PTModelInputs extends ModelComponent implements Serializable{
             
             //read tazs into memory
             tazs = new TazData();
-            tazs.readData(rb,"tazData.file"); 
+            tazs.readData(ptRb, globalRb, "tazData.file"); 
         }
     }
     public static SkimsInMemory getSkims(){
@@ -174,7 +181,7 @@ public class PTModelInputs extends ModelComponent implements Serializable{
     public PTHousehold[] getHouseholds(){
     
         //Read household and person data  
-        PTDataReader dataReader = new PTDataReader(rb);
+        PTDataReader dataReader = new PTDataReader(ptRb, globalRb);
         logger.info("Adding synthetic population from JDataStore"); 
         return dataReader.readHouseholds("households.file");
 

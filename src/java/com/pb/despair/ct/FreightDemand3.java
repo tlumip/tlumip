@@ -42,7 +42,7 @@ public class FreightDemand3 {
 
         //from global.properties file we need the path to the alpha2beta file so that we can initialize the
         //highest beta zone number.
-        File alpha2beta = new File(ResourceUtil.getProperty(globalRb,"alphatobeta.file"));
+        File alpha2beta = new File(ResourceUtil.getProperty(globalRb,"alpha2beta.file"));
         AlphaToBeta a2b = new AlphaToBeta(alpha2beta);
         HIGHEST_BETA_ZONE = a2b.getMaxBetaZone();
 

@@ -15,14 +15,14 @@ public class DiscreteShipments2 {
     private static Vector workspace = new Vector();
     private static ArrayList shipments= new ArrayList(INITIAL_ARRAYLIST_SIZE);
 
-    ResourceBundle rb;
+    ResourceBundle ctRb;
     Commodities cp;
     Random randomNumber;
     ZoneMap zoneMap;
 
-   DiscreteShipments2(ResourceBundle rb, String ctInputs, long seed) {
-       this.rb = rb;
-        File alpha2betaFile = new File(ResourceUtil.getProperty(rb,"alpha2beta.file"));
+   DiscreteShipments2(ResourceBundle appRb, ResourceBundle globalRb, String ctInputs, long seed) {
+       this.ctRb = appRb;
+        File alpha2betaFile = new File(ResourceUtil.getProperty(globalRb,"alpha2beta.file"));
         zoneMap = new ZoneMap(alpha2betaFile, seed);
         File commodityPropertiesFile = new File(ctInputs + "CommodityProperties.txt");
         this.cp = new Commodities(commodityPropertiesFile);
@@ -81,7 +81,7 @@ public class DiscreteShipments2 {
        Date start = new Date();
       int weeklyShipments = 0;
      //Get the beta distance matrix so that we can get distances
-       String distanceFile = ResourceUtil.getProperty(rb, "betapkdist.skim.file");
+       String distanceFile = ResourceUtil.getProperty(ctRb, "betapkdist.skim.file");
         ZipMatrixReader zr = new ZipMatrixReader(new File(distanceFile));
         Matrix distMatrix = zr.readMatrix();
      // Read each record from the weekly demand and process it
@@ -170,10 +170,11 @@ public class DiscreteShipments2 {
    public static void main (String[] args) {
        Date start = new Date();
        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/ct/ct.properties"));
+       ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/global.properties"));
        String inputPath = ResourceUtil.getProperty(rb,"ct.base.data");
        String outputPath = ResourceUtil.getProperty(rb,"ct.current.data");
        long randomSeed = Long.parseLong(ResourceUtil.getProperty(rb, "randomSeed"));
-       DiscreteShipments2 ds = new DiscreteShipments2(rb,inputPath,randomSeed);
+       DiscreteShipments2 ds = new DiscreteShipments2(rb,globalRb,inputPath,randomSeed);
        ds.run(new File(outputPath + "WeeklyDemand.binary"));
        ds.writeShipments(new File(outputPath + "DailyShipments.txt"));
        logger.info("total time: "+CTHelper.elapsedTime(start, new Date()));

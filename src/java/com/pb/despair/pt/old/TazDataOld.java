@@ -165,8 +165,9 @@ public class TazDataOld {
      
     public static void main (String[] args) throws Exception {
         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
          TazData taz = new TazData();
-         taz.readData(rb,"tazData.file");
+         taz.readData(rb,globalRb,"tazData.file");
          logger.info("Finished reading TazData Table");
          //read the tourDestinationParameters from csv to TableDataSet
          logger.info("Reading tour destination parameters");

@@ -45,7 +45,7 @@ public class CTModel extends ModelComponent {
 
         // Translates weekly demand from beta zones into discrete daily shipments in
         // alpha zone, and writes text file of shipments
-        DiscreteShipments2 ds = new DiscreteShipments2(appRb,inputPath,randomSeed);
+        DiscreteShipments2 ds = new DiscreteShipments2(appRb,globalRb,inputPath,randomSeed);
         ds.run(new File(outputPath + "WeeklyDemand.binary"));   // input from FreightDemand
         ds.writeShipments(new File(outputPath + "DailyShipments.csv"));   // output file
 

@@ -154,9 +154,9 @@ public class ApplicationOrchestrator {
         comp.startModel(timeInterval);
     }
 
-    public void runSPG1Model(int timeInterval, ResourceBundle appRb){
+    public void runSPG1Model(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
-		SPGnew testSPG = new SPGnew(appRb);
+		SPGnew testSPG = new SPGnew(appRb, globalRb);
 
 		testSPG.getHHAttributesFromPUMS();
 		testSPG.spg1();
@@ -181,9 +181,9 @@ public class ApplicationOrchestrator {
         appRunner.run();
     }
 
-    public void runSPG2Model(int timeInterval, ResourceBundle appRb){
+    public void runSPG2Model(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
-		SPGnew testSPG = new SPGnew(appRb);
+		SPGnew testSPG = new SPGnew(appRb, globalRb);
         testSPG.spg2();
         testSPG.writeHHOutputAttributesFromPUMS();
 
@@ -324,7 +324,7 @@ public class ApplicationOrchestrator {
             ao.runALDModel(t, appRb);
         }else if(appName.equalsIgnoreCase("SPG1")){
             logger.info("AO will now start SPG1 for simulation year " + (baseYear+t));
-			ao.runSPG1Model(t,appRb);
+			ao.runSPG1Model(t,appRb, globalRb);
         }else if (appName.equalsIgnoreCase("PI")){
             logger.info("AO will now start PI for simulation year " + (baseYear+t));
             ao.runPIModel(t,appRb,globalRb);
@@ -333,7 +333,7 @@ public class ApplicationOrchestrator {
             ao.runPIDAFModel(t,pathToAppRb,pathToGlobalRb,nodeName);
         }else if (appName.equalsIgnoreCase("SPG2")){ //not a daf application
             logger.info("AO will now start SPG2 for simulation year " + (baseYear+t));
-            ao.runSPG2Model(t,appRb);
+            ao.runSPG2Model(t,appRb, globalRb);
         }else if(appName.equalsIgnoreCase("PTDAF")){
             logger.info("AO will now start PTDAF for simulation year " + (baseYear+t));
             ao.runPTDAFModel(t, pathToAppRb,pathToGlobalRb,nodeName);

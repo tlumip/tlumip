@@ -129,7 +129,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                 //get the list of Matrices to collapse from properties file
                 matricesToCollapse = ResourceUtil.getList(ptRb,"matrices.for.pi");
 
-                PTModelInputs ptInputs = new PTModelInputs(ptRb);
+                PTModelInputs ptInputs = new PTModelInputs(ptRb,globalRb);
                 logger.info("Setting up the model");
                 logger.info("\tsetting seed");
                 ptInputs.setSeed(2002);
@@ -138,12 +138,12 @@ public class HouseholdWorker extends MessageProcessingTask {
                 logger.info("\treading parameter files");
                 ptInputs.getParameters();
                 logger.info("\treading skims into memory");
-                ptInputs.readSkims(globalRb);
+                ptInputs.readSkims();
                 logger.info("\treading taz data into memory");
                 ptInputs.readTazData();
 
                 LaborFlows lf = new LaborFlows(ptRb);
-                TableDataSet alphaToBetaTable = loadTableDataSet(ptRb,"alphatobeta.file");
+                TableDataSet alphaToBetaTable = loadTableDataSet(globalRb,"alpha2beta.file");
                 a2b = new AlphaToBeta(alphaToBetaTable);
                 lf.setZoneMap(alphaToBetaTable);
 
@@ -157,7 +157,7 @@ public class HouseholdWorker extends MessageProcessingTask {
 
             expUtilitiesManager = new DCExpUtilitiesManager(ptRb);
 
-            ptModel = new PTModel(ptRb);
+            ptModel = new PTModel(ptRb, globalRb);
 
             logger.info( "***" + getName() + " finished onStart()");
         }

@@ -232,7 +232,7 @@ public class CreateDestinationChoiceLogsums {
         CreateDestinationChoiceLogsums createDCLogsums = new CreateDestinationChoiceLogsums();
 //      Read in TazData
         TazData tazs = new TazData();
-        tazs.readData(rb,"tazData.file");
+        tazs.readData(rb, globalRb, "tazData.file");
 
         //Read in SkimData
         SkimsInMemory skims = new SkimsInMemory(globalRb);

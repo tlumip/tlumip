@@ -356,7 +356,7 @@ public class CreateModeChoiceLogsums {
         //createMCLogsums.buildTourModeChoiceModel();
         //read the skims into memory
         TazData taz = new TazData();
-        taz.readData(rb,"tazData.file");
+        taz.readData(rb, globalRb, "tazData.file");
         
         TourModeChoiceModel tmcm = new TourModeChoiceModel();
         //read the tourModeParameters from jDataStore; if they don't exist, write them to jDataStore first from csv

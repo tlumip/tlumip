@@ -703,6 +703,7 @@ public class TazOld implements Alternative{
      
      public static void main(String[] args){
         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+         ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
         //read the tourDestinationParameters from csv to TableDataSet
         logger.info("Reading tour destination parameters");
         TourDestinationParametersData tdpd = new TourDestinationParametersData();
@@ -714,7 +715,7 @@ public class TazOld implements Alternative{
         
         logger.info("Adding TazData");
         TazData tazs = new TazData();
-        tazs.readData(rb,"tazData.file");
+        tazs.readData(rb,globalRb,"tazData.file");
         tazs.collapseEmployment(PTModelInputs.tdpd, PTModelInputs.sdpd);
      }
 }   

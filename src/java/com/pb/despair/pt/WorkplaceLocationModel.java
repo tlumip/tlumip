@@ -89,8 +89,9 @@ public class WorkplaceLocationModel{
     
     public static void main(String[] args) {
         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
         WorkplaceLocationModel wlm = new WorkplaceLocationModel();
-        PTDataReader dataReader = new PTDataReader(rb);
+        PTDataReader dataReader = new PTDataReader(rb, globalRb);
         logger.info("Adding synthetic population from database"); 
         PTHousehold[] households = dataReader.readHouseholds("households.file");
         PTPerson[] persons = dataReader.readPersons("persons.file");
@@ -115,7 +116,7 @@ public class WorkplaceLocationModel{
         //read the taz data from csv to TableDataSet
         logger.info("Adding TazData");
         TazData tazs = new TazData();
-        tazs.readData(rb,"tazData.file");
+        tazs.readData(rb, globalRb, "tazData.file");
         tazs.collapseEmployment(tdpd, sdpd);
         long startTime = System.currentTimeMillis();
         int initp = 0;

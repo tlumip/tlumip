@@ -43,19 +43,19 @@ public class CreatePatternEstimationFile {
      TravelTimeAndCost departCost;
      TravelTimeAndCost returnCost;
 
-    ResourceBundle rb;
+    ResourceBundle ptRb;
 
 
-     public CreatePatternEstimationFile(ResourceBundle rb) throws FileNotFoundException{
+     public CreatePatternEstimationFile(ResourceBundle appRb, ResourceBundle globalRb) throws FileNotFoundException{
                 
-          this.rb = rb;
+          this.ptRb = appRb;
           //read the taz data from jDataStore; if it doesn't exist, write it to jDataStore from csv file first
           TazData taz = new TazData();
 //          if(!dm.tableExists("TazData"))
             //   taz.addTazDataToJDataStore(dm);
                
           //might want to send the method the year
-          taz.readData(rb,"tazData.file");    
+          taz.readData(appRb, globalRb, "tazData.file");
           
           //read the time and distance skims into memory
           if(debug) System.out.println("Reading time skims into CollapsedMatrices");
@@ -336,10 +336,11 @@ public class CreatePatternEstimationFile {
      }; //end constructor     
      public static void main (String[] args){
           ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+         ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
           System.out.println("creating pattern choice estimation file");
           
           try{
-               CreatePatternEstimationFile patternEstimation = new CreatePatternEstimationFile(rb);
+               CreatePatternEstimationFile patternEstimation = new CreatePatternEstimationFile(rb, globalRb);
           }catch(Exception e){
                System.out.println("Error creating estimation file");
                System.exit(1);

@@ -32,12 +32,10 @@ public class TazData implements Cloneable{
 
 
 
-    public void readData(ResourceBundle rb, String fileName) {
+    public void readData(ResourceBundle appRb, ResourceBundle globalRb, String fileName) {
         if(debug) logger.fine("Getting table: " + tazDataTableName);
 
-        TableDataSet table = loadTableDataSet(rb, fileName);
-        int floorNameColumn = table.getColumnPosition("FLRName");
-        int squareFeetColumn = table.getColumnPosition("BldgMSQFT");
+        TableDataSet table = loadTableDataSet(appRb, fileName);
         Taz thisTaz;
 
         for (int rowNumber = 1; rowNumber <= table.getRowCount();rowNumber++) {
@@ -68,8 +66,8 @@ public class TazData implements Cloneable{
             }
             tazData.put(new Integer(thisTaz.zoneNumber), thisTaz);
         }
-        setParkingCost(rb,"parkingCost.file");
-        setAcres(rb,"alphatobeta.file");
+        setParkingCost(appRb,"parkingCost.file");
+        setAcres(globalRb,"alpha2beta.file");
     }
     
     public void setSchoolOccupation(int[] otherSchoolOccupation,int[] postSecSchoolOccupation){
@@ -207,18 +205,17 @@ public class TazData implements Cloneable{
     }
 
     public static void main(String[] args) throws Exception {
-        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle appRb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle globalRb = ResourceUtil.getResourceBundle("pt");
         TazData taz = new TazData();
-        PTDataReader reader = new PTDataReader(rb);
+        PTDataReader reader = new PTDataReader(appRb, globalRb);
         
         PTHousehold[] households = reader.readHouseholds("households.file");
         PTPerson[] persons = reader.readPersons("persons.file");
-        taz.readData(rb, "tazData.file");
+        taz.readData(appRb, globalRb, "tazData.file");
         logger.info("Finished reading TazData Table");
         
-        for(int i=0;i<persons.length;i++){
-               
-        }
+
         //taz.setSchoolOccupation(persons);
         //taz.setPopulation(households);
         
@@ -226,13 +223,13 @@ public class TazData implements Cloneable{
         logger.info("Reading tour destination parameters");
 
         TourDestinationParametersData tdpd = new TourDestinationParametersData();
-        tdpd.readData(rb, "tourDestinationParameters.file");
+        tdpd.readData(appRb, "tourDestinationParameters.file");
 
         //read the stopDestinationParameters from csv to TableDataSet
         logger.info("Reading stop destination parameters");
 
         StopDestinationParametersData sdpd = new StopDestinationParametersData();
-        sdpd.readData(rb, "stopDestinationParameters.file");
+        sdpd.readData(appRb, "stopDestinationParameters.file");
         taz.collapseEmployment(tdpd, sdpd);
 
         TourDestinationParameters tdp = tdpd.getParameters(1, 3);

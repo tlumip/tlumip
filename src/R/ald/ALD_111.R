@@ -803,7 +803,7 @@ rm(IQOut.af)
  #@param resQNew$propCap.af
  #@param nresQNew$propCap.af
  #@return "ResNonResCapacityUtilization.output"
-RCUOut.af <- cbind(cbind(AZone=as.numeric(rownames(totQ.af)), resQNew$IQ.af, nresQNew$IQ.af)
+##RCUOut.af <- cbind(cbind(AZone=as.numeric(rownames(totQ.af)), resQNew$IQ.af, nresQNew$IQ.af)
 
 #/
 # Detach cf, funs and vars
