@@ -17,6 +17,7 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.util.ObjectUtil;
 
 import java.util.HashMap;
 import java.io.File;
@@ -75,7 +76,8 @@ public class TS {
 
     public static void main (String[] args) {
         
-		TS tsTest = new TS();
+        TS tsTest = new TS( ResourceBundle.getBundle("ts"), ResourceBundle.getBundle ("global") );
+//		TS tsTest = new TS();
 
 		tsTest.assignPeakAuto();
 		tsTest.assignOffPeakAuto();
@@ -115,6 +117,8 @@ public class TS {
 		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
 		g = new Network( tsPropertyMap, globalPropertyMap, "peak" );
 
+	    long size = ObjectUtil.sizeOf( g );
+	    logger.info("Approximate size of " + g + " object :" + ((float)size/(1024.0*1024.0)) + " MB.");
 		
 	
 		// create Frank-Wolfe Algortihm Object
@@ -122,6 +126,7 @@ public class TS {
 		logger.info ("creating FW object at: " + myDateString);
 		FW fw = new FW( tsPropertyMap, g );
 
+	
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("reading PT trip list at: " + myDateString);
@@ -302,42 +307,46 @@ public class TS {
         
 		// read the PT output person trip list file into a TableDataSet
 		CSVFileReader reader = new CSVFileReader();
-        
+
+		String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
 		TableDataSet table = null;
 		try {
-			table = reader.readFile(new File( fileName ));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	    
+			if ( fileName != null) {
 
-		
-		nodeIndex = g.getNodeIndex();
-		
-		
-		// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
-		for (int i=0; i < table.getRowCount(); i++) {
-		    
-			orig = (int)table.getValueAt( i+1, "origin" );
-			dest = (int)table.getValueAt( i+1, "destination" );
-			startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-			mode = (int)table.getValueAt( i+1, "tripMode" );
-			
-			o = nodeIndex[orig];
-			d = nodeIndex[dest];
-			
-			// accumulate all peak period highway mode trips
-			if ( (mode == ModeType.AUTODRIVER || mode == ModeType.AUTOPASSENGER) && (startTime >= startPeriod && startTime <= endPeriod) ) {
+				table = reader.readFile(new File( fileName ), columnsToRead);
 
-			    tripTable[o][d] ++;
-				tripCount++;
+				nodeIndex = g.getNodeIndex();
+				
+				// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
+				for (int i=0; i < table.getRowCount(); i++) {
+				    
+					orig = (int)table.getValueAt( i+1, "origin" );
+					dest = (int)table.getValueAt( i+1, "destination" );
+					startTime = (int)table.getValueAt( i+1, "tripStartTime" );
+					mode = (int)table.getValueAt( i+1, "tripMode" );
+					
+					o = nodeIndex[orig];
+					d = nodeIndex[dest];
+					
+					// accumulate all peak period highway mode trips
+					if ( (mode == ModeType.AUTODRIVER || mode == ModeType.AUTOPASSENGER) && (startTime >= startPeriod && startTime <= endPeriod) ) {
+	
+					    tripTable[o][d] ++;
+						tripCount++;
+	
+					}
+					
+				}
+				
+				// done with trip list TabelDataSet
+				table = null;
 
 			}
 			
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
-		// done with trip list TabelDataSet
-		table = null;
+
 
 		logger.info (tripCount + " total auto network trips read from PT file for period " + startPeriod +
                 " to " + endPeriod);
@@ -369,40 +378,42 @@ public class TS {
 
 		TableDataSet table = null;
 		try {
-			table = reader.readFile(new File( fileName ));
+			if ( fileName != null ) {
+
+				table = reader.readFile(new File( fileName ));
+
+				nodeIndex = g.getNodeIndex();
+
+				// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
+				for (int i=0; i < table.getRowCount(); i++) {
+	
+					orig = (int)table.getValueAt( i+1, "origin" );
+					dest = (int)table.getValueAt( i+1, "destination" );
+					startTime = (int)table.getValueAt( i+1, "tripStartTime" );
+					mode = (int)table.getValueAt( i+1, "tripMode" );
+					tripFactor = (int)table.getValueAt( i+1, "tripFactor" );
+	
+					o = nodeIndex[orig];
+					d = nodeIndex[dest];
+	
+					// accumulate all peak period highway mode trips
+					if ( startTime >= startPeriod && startTime <= endPeriod ) {
+	
+					    tripTable[o][d] += tripFactor;
+						tripCount += tripFactor;
+	
+					}
+	
+				}
+	
+				// done with trip list TabelDataSet
+				table = null;
+
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-
-
-		nodeIndex = g.getNodeIndex();
-
-
-		// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
-		for (int i=0; i < table.getRowCount(); i++) {
-
-			orig = (int)table.getValueAt( i+1, "origin" );
-			dest = (int)table.getValueAt( i+1, "destination" );
-			startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-			mode = (int)table.getValueAt( i+1, "tripMode" );
-			tripFactor = (int)table.getValueAt( i+1, "tripFactor" );
-
-			o = nodeIndex[orig];
-			d = nodeIndex[dest];
-
-			// accumulate all peak period highway mode trips
-			if ( startTime >= startPeriod && startTime <= endPeriod ) {
-
-			    tripTable[o][d] += tripFactor;
-				tripCount += tripFactor;
-
-			}
-
-		}
-
-		// done with trip list TabelDataSet
-		table = null;
 
 		logger.info (tripCount + " truck network trips read from CT file from " +
                 startPeriod + " to " + endPeriod);
