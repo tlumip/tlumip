@@ -66,8 +66,8 @@ public class CommodityOutputTask extends MessageProcessingTask {
     public void onMessage(Message msg){
         logger.info( getName() + " received " + msg.getStringValue("Name") + " from" + msg.getSender() );
         if(firstMessage){
-            pi = new PIModel(SetupWorkTask.rb);
-            pwriter = new OregonPIPProcessor(SetupWorkTask.timeInterval,SetupWorkTask.rb);
+            pi = new PIModel(SetupWorkTask.piRb, SetupWorkTask.globalRb);
+            pwriter = new OregonPIPProcessor(SetupWorkTask.timeInterval,SetupWorkTask.piRb,SetupWorkTask.globalRb);
             firstMessage = false;
         }
         String name = msg.getStringValue("Name");

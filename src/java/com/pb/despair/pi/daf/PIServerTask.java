@@ -26,6 +26,7 @@ public class PIServerTask extends Task{
     OregonPIPProcessor piReaderWriter;
     String scenarioName = "pleaseWork";
     ResourceBundle piRb = null;
+    ResourceBundle globalRb = null;
     ResourceBundle pidafRb = null;
     
     public void onStart(){
@@ -39,7 +40,8 @@ public class PIServerTask extends Task{
         //that was written by the Application Orchestrator
         BufferedReader reader = null;
         int timeInterval = -1;
-        String pathToRb = null;
+        String pathToPiRb = null;
+        String pathToGlobalRb = null;
         try {
             logger.info("Reading RunParams.txt file");
             reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
@@ -47,15 +49,19 @@ public class PIServerTask extends Task{
             logger.info("\tScenario Name: " + scenarioName);
             timeInterval = Integer.parseInt(reader.readLine());
             logger.info("\tTime Interval: " + timeInterval);
-            pathToRb = reader.readLine();
-            logger.info("\tResourceBundle Path: " + pathToRb);
+            pathToPiRb = reader.readLine();
+            logger.info("\tResourceBundle Path: " + pathToPiRb);
+            pathToGlobalRb = reader.readLine();
+            logger.info("\tResourceBundle Path: " + pathToGlobalRb);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        piRb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+        piRb = ResourceUtil.getPropertyBundle(new File(pathToPiRb));
+        globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
+
 
         //TODO get the PProcessor class name from the properties file and instantiate using Class.newInstance()
-        piReaderWriter = new OregonPIPProcessor(timeInterval, piRb);
+        piReaderWriter = new OregonPIPProcessor(timeInterval, piRb, globalRb);
         piReaderWriter.doProjectSpecificInputProcessing();
 
         piReaderWriter.setUpPi();
@@ -63,7 +69,7 @@ public class PIServerTask extends Task{
 
         logger.info("*******************************************************************************************");
         logger.info("*   Beginning PI");
-        pi = new PIModel(piRb);
+        pi = new PIModel(piRb, globalRb);
 
         String maxIterationsString = ResourceUtil.getProperty(piRb, "pi.maxIterations");
         if (maxIterationsString == null) {

@@ -55,7 +55,7 @@ public class SDWorkTask extends MessageProcessingTask {
     public void onMessage(Message msg){
         if(debug) logger.fine( getName() + " received " + msg.getStringValue("Name") + " from" + msg.getSender() );
         if(firstMessage){
-            pi = new PIModel(SetupWorkTask.rb);
+            pi = new PIModel(SetupWorkTask.piRb, SetupWorkTask.globalRb);
             firstMessage = false;
         }
 
