@@ -28,15 +28,15 @@ public class ALDModel extends ModelComponent {
                 3.  the time interval (t) of the current simulation year
             Then we need the full path to the R code itself
         */
-        String pathToRCode = ResourceUtil.getProperty(resourceBundle, "codePath");
+        String pathToRCode = ResourceUtil.getProperty(appRb, "codePath");
         String pathToRCodeArg = "-" + pathToRCode;
 
-        String pathToIOFiles = ResourceUtil.getProperty(resourceBundle, "filePath");
+        String pathToIOFiles = ResourceUtil.getProperty(appRb, "filePath");
         String pathToIOFilesArg = "-" + pathToIOFiles;
 
         String yearArg = "-" + t;
 
-        String rFileName = ResourceUtil.getProperty(resourceBundle, "nameOfRCode");
+        String rFileName = ResourceUtil.getProperty(appRb, "nameOfRCode");
         String rCode = pathToRCode + rFileName;
 
         String rOut = pathToIOFiles + "t" + t +"/ald/ald.Rout";
@@ -56,7 +56,7 @@ public class ALDModel extends ModelComponent {
 
     public static void main(String[] args) {
         ALDModel ald = new ALDModel();
-        ald.setProperties(ResourceUtil.getResourceBundle("ald"));
+        ald.setApplicationResourceBundle(ResourceUtil.getResourceBundle("ald"));
         ald.startModel(1);
     }
 
