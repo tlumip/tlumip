@@ -275,7 +275,16 @@ public class SkimsInMemory implements Serializable {
         }
         else return opDist.getValueAt(originTaz,destinationTaz);
     }
-    
+
+    //used by the CreateDestinationChoiceLogsums method in calculating the utilities of each OD pair.
+    public double getDistance(char purpose, int originTaz, int destinationTaz){
+        if(purpose == 'w'){
+            return (double) pkDist.getValueAt(originTaz,destinationTaz);
+        }else{
+            return (double) opDist.getValueAt(originTaz,destinationTaz);
+        }
+    }
+
 	//to set the travel time and cost, based on the origin taz, the destination taz, and the time of day.
 	//time of day is in military time from 0 -> 2359
 	public TravelTimeAndCost setTravelTimeAndCost(int originTaz, int destinationTaz, int time){
