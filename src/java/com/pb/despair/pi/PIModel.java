@@ -54,6 +54,8 @@ public class PIModel extends ModelComponent {
 
     public double convergenceTolerance;
 
+    double localPriceStepSizeAdjustment = 1.0;
+
     /* This constructor is only called by AO when running PI monolithically (which will not be called very often
     * if ever).  The properties are set by a call to the setApplicationResourceBundle method which is defined in the Model
     * Component class and then PIModel is started by a call to the 'startModel(timeInterval)' method which
@@ -110,6 +112,15 @@ public class PIModel extends ModelComponent {
             double converged = Double.valueOf(convergedString).doubleValue();
             this.convergenceTolerance = converged;
             logger.info("*   Convergence tolerance set to " + converged);
+        }
+
+        String localPriceStepSizeAdjustmentString = ResourceUtil.getProperty(piRb, "pi.localPriceStepSizeAdjustment");
+        if (localPriceStepSizeAdjustmentString == null) {
+            logger.info("*   No pi.localPriceStepSizeAdjustment set in properties file -- using default of 1.0");
+        } else {
+            double lpssa = Double.valueOf(localPriceStepSizeAdjustmentString).doubleValue();
+            this.localPriceStepSizeAdjustment=lpssa;
+            logger.info("*   Local price step size adjustment set to " + lpssa);
         }
 
         // reactivate this code for different step sizes for stubborn commodities
@@ -600,22 +611,25 @@ public class PIModel extends ModelComponent {
                 int numExchanges = 0;
                 for (int xNum=0;xNum<exchanges.size();xNum++) {
                     Exchange x = (Exchange) exchanges.get(xNum);
-                    double[] sAndD = x.calculateSurplusAndDerviative();
-                    double increase = (-sAndD[0]-totalSurplusVector.elementAt(commodityNumber)/deltaPricesDouble.length)/sAndD[1];
+                    double[] sAndD = x.calculateSurplusAndDerivative();
+                    double increase = -sAndD[0]/sAndD[1];
+
+//                    double increase = (-sAndD[0]-totalSurplusVector.elementAt(commodityNumber)/deltaPricesDouble.length)/sAndD[1];
                     deltaPricesDouble[xNum] = increase;
                     totalIncrease += increase;
                     numExchanges ++;
                 }
                 // but average price change for this commodity should be zero.
-                for (int xNum=0;xNum<exchanges.size();xNum++) {
-                    deltaPricesDouble[xNum] -= totalIncrease/numExchanges;
-                }
+                //TODO try reactivating this code!
+//                for (int xNum=0;xNum<exchanges.size();xNum++) {
+//                    deltaPricesDouble[xNum] -= totalIncrease/numExchanges;
+//                }
             }
             Iterator exIt = c.getAllExchanges().iterator();
             int xNum =0;
             while (exIt.hasNext()) {
                 Exchange x = (Exchange) exIt.next();
-                double price = x.getPrice()+stepSize*(averagePriceChange.elementAt(commodityNumber)+deltaPricesDouble[xNum]);
+                double price = x.getPrice()+stepSize*(averagePriceChange.elementAt(commodityNumber)+localPriceStepSizeAdjustment*deltaPricesDouble[xNum]);
                 newPricesC.put(x,new Double(price));
                 xNum++;
             }
@@ -795,9 +809,9 @@ public class PIModel extends ModelComponent {
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry) it.next();
             Exchange x = (Exchange) e.getKey();
-            if (x.myCommodity.name.equals("FLR Agriculture")) {
-                System.out.println(x.getPrice()+" to "+e.getValue()+" in "+x);
-            }
+//            if (x.myCommodity.name.equals("FLR Agriculture")) {
+//                System.out.println(x.getPrice()+" to "+e.getValue()+" in "+x);
+//            }
             Double price = (Double) e.getValue();
             x.setPrice(price.doubleValue());
         }

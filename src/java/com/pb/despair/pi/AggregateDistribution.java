@@ -498,13 +498,13 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
     public void addTwoComponentsOfDerivativesToAveragePriceMatrix(double activityAmount, MatrixI averagePriceSurplusMatrix, VectorI thisLocationByPrices) {
         if (lastConsumptionFunction == null) lastConsumptionFunction = myProductionActivity.getConsumptionFunction();
         if (lastProductionFunction == null) lastProductionFunction = myProductionActivity.getProductionFunction();
-        // ignore this part for now -- can't do too much just moving activity around to places where production functinos are different
-//        try {
-//           allocateLocationChoiceAveragePriceDerivatives(activityAmount, averagePriceSurplusMatrix, thisLocationByPrices);
-//        } catch (OverflowException e) {
-//            e.printStackTrace();
-//            throw new RuntimeException(e);
-//        }
+         //moving activity around to places where production functinos are different
+        try {
+           allocateLocationChoiceAveragePriceDerivatives(activityAmount, averagePriceSurplusMatrix, thisLocationByPrices);
+        } catch (OverflowException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
         allocateProductionChoiceAveragePriceDerivatives(averagePriceSurplusMatrix);
     }
     

@@ -219,7 +219,7 @@ public class Exchange {
         return sAndD;
     }
 
-    public double[] calculateSurplusAndDerviative(){
+    public double[] calculateSurplusAndDerivative(){
         double[] sAndD = new double[2];
         sAndD[0] = calculateSurplus();
         sAndD[1] = calculateDerviative();

@@ -223,6 +223,7 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
             if (q != null) {
                 for (int p=0;p<commodityUtilitiesDerivativeWRTPrices[0].length;p++) {
                     for (int i=0;i<utilityDerivatives.length;i++) {
+                        // TODO add in utility scaling effect
                         utilityDerivatives[i][p] += q.minimum*commodityUtilitiesDerivativeWRTPrices[i][p];
                     }
                     utilityDerivatives[c][p]+= q.discretionary*commodityUtilitiesDerivativeWRTPrices[c][p];
@@ -248,7 +249,7 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
                             
                             // short way after algebraic simplification
                             utilityDerivatives[utilityIndex][commodityIndex] =
-                                -lambda*q.discretionary*q2.discretionary*probabilities[commodityIndex]*probabilities[utilityIndex]*q2.utilityScale;
+                                -lambda*q.discretionary*q2.discretionary*probabilities[commodityIndex]*probabilities[utilityIndex]*q.utilityScale;
                             // long way before algebraic simplification -- beware rounding errors
                             // the effect of losing the extra (minimum+discretionary) associated with this production option
 
@@ -463,7 +464,7 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
     /**
      * @param utilityOfNonModelledAlternativeParameter
      */
-    public void addNonModelledAlternative(float utilityOfNonModelledAlternativeParameter) {
+    public void addNonModelledAlternative(double utilityOfNonModelledAlternativeParameter) {
         utilityOfNonModelledAlternative = utilityOfNonModelledAlternativeParameter;
         nonModelledDenominatorTerm = true;
     }
