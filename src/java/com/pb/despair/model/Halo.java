@@ -3,13 +3,14 @@ package com.pb.despair.model;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import java.io.File;
 import java.io.IOException;
 
 
 
 public class Halo {
-
+    private static Logger logger = Logger.getLogger("com.pb.despair.model.Halo");
 	String[] stateLabels = { "California", "Idaho", "Nevada", "Oregon", "Washington" };
 
 	int maxAlphaZone = 0;
@@ -126,8 +127,9 @@ public class Halo {
 		int zone;
 		int index;
 	    String county;
+        String state;
 
-	    
+
 		// read the PI output file into a TableDataSet
 		CSVFileReader reader = new CSVFileReader();
         
@@ -139,12 +141,14 @@ public class Halo {
 		}
 
 		numAlphaZones = table.getRowCount();
-		int[] indexZone = new int[numAlphaZones];
+		indexZone = new int[numAlphaZones];
 		for (int i=0; i < numAlphaZones; i++)
 			if ( (int)table.getValueAt(i+1, "Azone") > maxAlphaZone ) 
-				maxAlphaZone = (int)table.getValueAt(i+1, 1);
-			
-		int[] zoneIndex = new int[maxAlphaZone+1];
+				maxAlphaZone = (int)table.getValueAt(i+1, "Azone");
+
+        logger.info("Num alpha zones: " +  numAlphaZones);
+        logger.info("Max alpha zone: " + maxAlphaZone);
+		zoneIndex = new int[maxAlphaZone+1];
 		
 		Arrays.fill (indexZone, -1);
 		Arrays.fill (zoneIndex, -1);
@@ -153,15 +157,12 @@ public class Halo {
 		for (int r=0; r < numAlphaZones; r++) {
 		    
 			zone = (int)table.getValueAt(r+1, "Azone");
-			county = (String)table.getStringValueAt(r+1, "County");
-			
-			// if county value is not "outsideHalo", set correspondence array values
-			if ( ! county.equalsIgnoreCase("outsideHalo") ) {
-			    indexZone[index] = zone;
-			    zoneIndex[zone] = index;
-			    index++;
-			}
-			
+            county = (String)table.getStringValueAt(r+1, "County");
+            state = (String)table.getStringValueAt(r+1, "State");
+
+			indexZone[index] = zone;
+            zoneIndex[zone] = index;
+            index++;
 		}
 		
 	}
