@@ -20,6 +20,8 @@
  # @return currYearIndex - the index corresponding to the current simulation year
  # @return prevYearIndex - the index corresponding to the previous simulation year
 ##/
+
+
 codeVersion <- "110"
 baseYearIndex <- 0
 os <- tolower(Sys.info()["sysname"])
