@@ -36,7 +36,6 @@ public class Network implements Serializable {
 	
 	String assignmentPeriod;
 
-	float volumeFactor;
 	
 	double WALK_SPEED;
 
@@ -159,6 +158,15 @@ public class Network implements Serializable {
 
     
     
+    public void setVolumeFactor (float factor) {
+		double[] capacity = getOriginalCapacity();
+
+		for (int i=0; i < capacity.length; i++)
+			capacity[i] /= factor;
+		
+		setCapacity(capacity);
+    }
+    
 	public String getTimePeriod () {
 		return assignmentPeriod;
 	}
@@ -218,6 +226,10 @@ public class Network implements Serializable {
 
 	public double[] getCapacity () {
 		return linkTable.getColumnAsDouble( "capacity" );
+	}
+
+	public double[] getOriginalCapacity () {
+		return linkTable.getColumnAsDouble( "originalCapacity" );
 	}
 
 	public double[] getCongestedTime () {
@@ -286,6 +298,10 @@ public class Network implements Serializable {
         linkTable.setColumnAsDouble( linkTable.getColumnPosition("volau"), volau );
     }
 
+    public void setCapacity ( double[] capacity ) {
+        linkTable.setColumnAsDouble( linkTable.getColumnPosition("capacity"), capacity );
+    }
+
     public void setFlows (double[][] flow) {
         for (int m=0; m < flow.length; m++)
             linkTable.setColumnAsDouble( linkTable.getColumnPosition("flow_" + m), flow[m] );
@@ -332,15 +348,6 @@ public class Network implements Serializable {
 		    this.WALK_SPEED = Double.parseDouble ( (String)globalPropertyMap.get( "WALK_MPH" ) );
 
 		
-		if ( period == "peak" ) {
-			if ( (String)globalPropertyMap.get( "AM_PEAK_VOL_FACTOR" ) != null )
-				this.volumeFactor = Float.parseFloat ( (String)globalPropertyMap.get( "AM_PEAK_VOL_FACTOR" ) );
-		}
-		else {
-			if ( (String)tsPropertyMap.get( "OFF_PEAK_VOL_FACTOR" ) != null )
-				this.volumeFactor = Float.parseFloat ( (String)globalPropertyMap.get( "OFF_PEAK_VOL_FACTOR" ) );
-		}
-		
     }
     
 	/**
@@ -378,6 +385,7 @@ public class Network implements Serializable {
 		int[] ttf = new int[linkTable.getRowCount()];
 		float[] length = new float[linkTable.getRowCount()];
 		double[] capacity = new double[linkTable.getRowCount()];
+		double[] originalCapacity = new double[linkTable.getRowCount()];
 		double[] freeFlowSpeed = new double[linkTable.getRowCount()];
 		double[] congestedTime = new double[linkTable.getRowCount()];
 		double[] transitTime = new double[linkTable.getRowCount()];
@@ -434,7 +442,8 @@ public class Network implements Serializable {
 				capacity[i] = 600;
 
 			capacity[i] *= linkTable.getValueAt( i+1, "lanes" );
-			capacity[i] /= volumeFactor;
+			originalCapacity[i] = capacity[i];
+			
 
 			float dist = linkTable.getValueAt( i+1, "dist" );
 			if (dist == 0.0)
@@ -526,6 +535,7 @@ public class Network implements Serializable {
 		derivedTable.appendColumn(turnPenaltyIndex, "turnPenaltyIndex");
 		derivedTable.appendColumn(ttf, "ttf");
 		derivedTable.appendColumn(capacity, "capacity");
+		derivedTable.appendColumn(originalCapacity, "originalCapacity");
 		derivedTable.appendColumn(freeFlowSpeed, "freeFlowSpeed");
 		derivedTable.appendColumn(congestedTime, "congestedTime");
 		derivedTable.appendColumn(congestedTime, "transitTime");

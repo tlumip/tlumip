@@ -108,11 +108,6 @@ public class TS {
 		int linkCount;
 		String myDateString;
 
-		// get peak period definitions from global property file
-		peakStart = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-		peakEnd = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
-		peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
-
         myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
 		g = new Network( tsPropertyMap, globalPropertyMap, "peak" );
@@ -120,6 +115,12 @@ public class TS {
 	    long size = ObjectUtil.sizeOf( g );
 	    logger.info("Approximate size of " + g + " object :" + ((float)size/(1024.0*1024.0)) + " MB.");
 		
+		// get peak period definitions from global property file
+		peakStart = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
+		peakEnd = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+		peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
+		g.setVolumeFactor(peakFactor);
+
 	
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -175,6 +176,7 @@ public class TS {
 		offPeakStart = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
 		offPeakEnd = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
 		offPeakFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
+		g.setVolumeFactor(offPeakFactor);
 
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
