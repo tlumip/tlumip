@@ -18,7 +18,7 @@ import java.io.*;
 public class PIServerTask extends Task{
 
     Logger logger = Logger.getLogger("com.pb.common.despair.pi.daf");
-    boolean debug = false;
+    boolean debug = true;
     private PIModel pi;
     private int maxIterations = 300; //default value in case none is set in properties file
     private int nIterations = 0; //a counter to keep track of how many iterations it takes before the meritMeasure is within tolerance.
