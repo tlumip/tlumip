@@ -48,7 +48,7 @@ public class StopDestinationModeChoiceModel{
 
            //set up destination choice parameters
           StopDestinationParameters destParams = new StopDestinationParameters();
-          char actPurpose = ActivityPurpose.ACTIVITY_PURPOSE[thisTour.primaryDestination.activityPurpose];          
+          char actPurpose = ActivityPurpose.ACTIVITY_PURPOSES[thisTour.primaryDestination.activityPurpose];
           destParams = (StopDestinationParameters) sdpd.stopDestinationParameters[thisTour.primaryDestination.activityPurpose];
 
           //for destination choice model

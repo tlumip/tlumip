@@ -85,10 +85,10 @@ public class TazOld implements Alternative{
    public float totalEmployment;
    public double utility;
    public float retailEmploymentWithin30MinutesTransit;
-   public double[][] tourLnSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSE.length][];
-   public double[] stopLnSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSE.length];
-   public double[][] tourSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSE.length][];
-   public double[] stopSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSE.length];
+   public double[][] tourLnSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSES.length][];
+   public double[] stopLnSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSES.length];
+   public double[][] tourSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSES.length][];
+   public double[] stopSizeTerm = new double[ActivityPurpose.ACTIVITY_PURPOSES.length];
    public double constant;
    public double expConstant;
    public String name;
@@ -317,8 +317,8 @@ public class TazOld implements Alternative{
         float sizeTerm;
         //start at 1 because don't need for home
         //TODO fix this segment thing
-        for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSE.length;i++){
-            int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSE[i]);
+        for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSES.length;i++){
+            int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSES[i]);
             for(int segmentMinusOne=0;segmentMinusOne<ActivityPurpose.getDCSegments(purpose);segmentMinusOne++){
                 destParams = (TourDestinationParameters) tdpd.getParameters(purpose,segmentMinusOne+1);
                 sizeTerm = (destParams.retail         *  retail_Retail 
@@ -342,8 +342,8 @@ public class TazOld implements Alternative{
     public void setStopSizeTerms(StopDestinationParametersData sdpd){
         StopDestinationParameters stopdestinationparameters = new StopDestinationParameters();
         float sizeTerm;
-        for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSE.length;i++){
-            int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSE[i]);
+        for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSES.length;i++){
+            int purpose = ActivityPurpose.getActivityPurposeValue(ActivityPurpose.ACTIVITY_PURPOSES[i]);
         	stopdestinationparameters = 
                 (StopDestinationParameters) sdpd.stopDestinationParameters[purpose];
             
