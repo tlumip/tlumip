@@ -258,10 +258,10 @@ public class TransitSkimManager {
 		    
 			// compute skims for this O/D pair for use in stop/station choice
 			os.initSkims();
-			os.skimsFromDest();
+			os.wtSkimsFromDest();
 
-			for (int i=0; i < ag.getHighwayNodeCount(); i++)
-				os.getOptimalStrategySkimsFromOrig(i);
+//			for (int i=0; i < ag.getHighwayNodeCount(); i++)
+//				os.getOptimalStrategySkimsFromOrig(i);
 
 
 			os.printTransitSkimsTo ( dest );

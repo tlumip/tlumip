@@ -1,3 +1,4 @@
+
 package com.pb.despair.ts.assign.tests;
 
 /**
@@ -250,22 +251,24 @@ public class AuxTrNetTest {
 		// create an optimal strategy object for this highway and transit network
 		OpStrategy os = new OpStrategy( ag );
 
-		// generate the walk transit skims to zone 1 and print values in tabular report
-		int dest = 1;
-		if ( os.buildStrategy( dest ) >= 0 ) {
-		    
-			// compute skims for this O/D pair for use in stop/station choice
-			os.initSkims();
-			os.skimsFromDest();
-
-			for (int i=0; i < ag.getHighwayNodeCount(); i++)
-				os.getOptimalStrategySkimsFromOrig(i);
-
-
-			os.printTransitSkimsTo ( dest );
-			
-		}
-
+//		// generate the walk transit skims to zone 1 and print values in tabular report
+//		int dest = 0;
+//		if ( os.buildStrategy( dest ) >= 0 ) {
+//		    
+//			// compute skims for this O/D pair for use in stop/station choice
+//			os.initSkims();
+//			os.wtSkimsFromDest();
+//
+//			for (int i=0; i < ag.getHighwayNodeCount(); i++)
+//				os.getOptimalStrategySkimsFromOrig(i);
+//
+//
+//			os.printTransitSkimsTo ( dest );
+//			
+//		}
+//
+//		System.exit(1);
+		
 	
 		Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
 		
@@ -273,7 +276,7 @@ public class AuxTrNetTest {
 		
 /*
 		// load a walk transit trip on the O/D strategy
-		os.loadWalkTransit(orig);
+		os.loadWalkTransit(orig,dest);
 
 		// print the node skims values for all links in this strategy assigned flow.
 		System.out.println ("Loading a walk transit trip on the current transit strategy and dumping skims");
@@ -288,7 +291,7 @@ public class AuxTrNetTest {
 
 /*
 		// compute skims for this O/D pair for use in stop/station choice
-		os.initSkims();
+		os.initSkims(dest);
 		os.skimsFromDest();
 		System.out.println ("done with skims toward the destination.");
 

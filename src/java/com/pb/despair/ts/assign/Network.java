@@ -219,6 +219,10 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsDouble( "congestedTime" );
 	}
 
+	public double[] getTransitTime () {
+		return linkTable.getColumnAsDouble( "transitTime" );
+	}
+
 	public float getSumOfVdfIntegrals () {
 		return linkTable.getColumnTotal( linkTable.getColumnPosition("vdfIntegral") );
 	}
@@ -271,6 +275,10 @@ public class Network implements Serializable {
             linkTable.setColumnAsDouble( linkTable.getColumnPosition("flow_" + m), flow[m] );
     }
     
+    public void setTtf ( int[] ttf ) {
+        linkTable.setColumnAsInt( linkTable.getColumnPosition("ttf"), ttf );
+    }
+      
 
     private void readPropertyFile ( String period ) {
         
@@ -351,10 +359,12 @@ public class Network implements Serializable {
 	private TableDataSet deriveLinkAttributes () {
 
 		int[] turnPenaltyIndex = new int[linkTable.getRowCount()];
+		int[] ttf = new int[linkTable.getRowCount()];
 		float[] length = new float[linkTable.getRowCount()];
 		double[] capacity = new double[linkTable.getRowCount()];
 		double[] freeFlowSpeed = new double[linkTable.getRowCount()];
 		double[] congestedTime = new double[linkTable.getRowCount()];
+		double[] transitTime = new double[linkTable.getRowCount()];
 		double[] vdfIntegral = new double[linkTable.getRowCount()];
 		double[] freeFlowTime = new double[linkTable.getRowCount()];
 		double[] oldTime = new double[linkTable.getRowCount()];
@@ -435,22 +445,22 @@ public class Network implements Serializable {
 
 			
 			// define times and speeds as was done for PT calibration (see times.mac)
-			if ( ul1 >= 0 && ul1 <= 6 )
-			    ul1 = 30;
-			
-			if ( !centroid[i] && (ul2 >= 0.9 && ul2 <= 6) && mode.indexOf('a') >= 0 && (ul1 >= 5 && ul1 <= 99) )
-			    ul1 -= 5;
-			
-			float ul3 = (float)((dist/ul1)*60.0);
+//			if ( ul1 >= 0 && ul1 <= 6 )
+//			    ul1 = 30;
+//			
+//			if ( !centroid[i] && (ul2 >= 0.9 && ul2 <= 6) && mode.indexOf('a') >= 0 && (ul1 >= 5 && ul1 <= 99) )
+//			    ul1 -= 5;
+//			
+//			float ul3 = (float)((dist/ul1)*60.0);
 
 			
 			freeFlowSpeed[i] = ul1;
-			congestedTime[i] = ul3;
+			congestedTime[i] = ul1;
 			freeFlowTime[i] = congestedTime[i];
 			oldTime[i] = congestedTime[i];
 
 			linkTable.setValueAt( i+1, linkTable.getColumnPosition("ul1"), ul1);
-			linkTable.setValueAt( i+1, linkTable.getColumnPosition("ul3"), ul3);
+			linkTable.setValueAt( i+1, linkTable.getColumnPosition("ul3"), ul1);
 
 		}
 	    
@@ -488,9 +498,11 @@ public class Network implements Serializable {
 	    
 		derivedTable.appendColumn(centroidString, "centroid");
 		derivedTable.appendColumn(turnPenaltyIndex, "turnPenaltyIndex");
+		derivedTable.appendColumn(ttf, "ttf");
 		derivedTable.appendColumn(capacity, "capacity");
 		derivedTable.appendColumn(freeFlowSpeed, "freeFlowSpeed");
 		derivedTable.appendColumn(congestedTime, "congestedTime");
+		derivedTable.appendColumn(congestedTime, "transitTime");
 		derivedTable.appendColumn(volau, "volau");
 		derivedTable.appendColumn(vdfIntegral, "vdfIntegral");
 		derivedTable.appendColumn(freeFlowTime, "freeFlowTime");
@@ -524,6 +536,17 @@ public class Network implements Serializable {
 	}
 	
 	
+	public void appylTransitVdfs () {
+		
+
+		// calculate the link in-vehicle travel times based on the transit vdf functions defined
+		LinkCalculator ftLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "ft" ), "ttf" );
+
+		double[] results = ftLc.solve();
+		linkTable.setColumnAsDouble( linkTable.getColumnPosition("transitTime"), results );
+
+	}
+
 	
 	private void setInternalNodeNumbering () {
 

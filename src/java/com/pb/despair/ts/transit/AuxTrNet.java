@@ -2,6 +2,7 @@ package com.pb.despair.ts.transit;
 
 import com.pb.despair.ts.assign.Network;
 
+import com.pb.common.calculator.LinkCalculator;
 import com.pb.common.util.IndexSort;
 import com.pb.common.util.Justify;
 
@@ -27,7 +28,8 @@ public class AuxTrNet implements Serializable {
 	static final float ALPHA = 0.5f;
 	static final float FARE = 0.75f;
 
-	static final double MAX_WALK_ACCESS_DIST = 2.0;   // miles
+//	static final double MAX_WALK_ACCESS_DIST = 2.0;   // miles
+	static final double MAX_WALK_ACCESS_DIST = 100.0;   // miles
 	static final double WALK_ACCESS_SPEED = 3.5;      // miles per hour
 
 	// OVT_COEFF is used as both a scale variable and as a utility coefficient.
@@ -58,6 +60,7 @@ public class AuxTrNet implements Serializable {
 	int[] ia;
 	int[] ib;
 	int[] linkType;
+	int[] ttf;
 	double[] freq;
 	double[] cost;
 	double[] invTime;
@@ -93,6 +96,7 @@ public class AuxTrNet implements Serializable {
 		ia = new int[maxAuxLinks];
 		ib = new int[maxAuxLinks];
 		linkType = new int[maxAuxLinks];
+		ttf = new int[maxAuxLinks];
 		freq = new double[maxAuxLinks];
 		cost = new double[maxAuxLinks];
 		invTime = new double[maxAuxLinks];
@@ -107,7 +111,7 @@ public class AuxTrNet implements Serializable {
 		gMode = g.getMode();
 		indexNode = g.getIndexNode();
 		gDist = g.getDist();
-		gCongestedTime = g.getCongestedTime();
+		gCongestedTime = g.getTransitTime();
 
 		this.g = g;
 		this.tr = tr;
@@ -147,6 +151,13 @@ public class AuxTrNet implements Serializable {
 
 			    anode = gia[ts.link];
 			    bnode = gib[ts.link];
+			    
+			    ttf[ts.link] = ts.getTtf();
+			    
+			    int dummy=0;
+			    if (indexNode[anode] == 24923 && indexNode[bnode] == 24915) {
+			    	dummy = 1;
+			    }
 
 				    // add auxilliary links for route segment
 			    if (ts.layover) {
@@ -194,9 +205,15 @@ public class AuxTrNet implements Serializable {
 		logger.info (auxNodes + " is max auxilliary transit node.");
 
 		resizeAuxNetLinkAttributes ();
+		
+		// apply transit vdfs to calculate in-vehicle times for links
+		g.setTtf( ttf );
+		g.appylTransitVdfs();
+		
 	}
 
 
+	
 	
 	public void resizeAuxNetLinkAttributes () {
 
@@ -513,7 +530,7 @@ public class AuxTrNet implements Serializable {
 		// OVT_COEFF is assumed positive, so it is used here just to scale the link frequency
 		freq[aux] = 1.0/(headway*ALPHA*OVT_COEFF);
 		cost[aux] = getLinkFare();
-		invTime[aux] = 0.1;
+		invTime[aux] = 0.0;
 		walkTime[aux] = 0.0;
 		layoverTime[aux] = 0.0;
 		linkType[aux] = 0;
@@ -544,7 +561,7 @@ public class AuxTrNet implements Serializable {
 		freq[aux] = INFINITY;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
-		invTime[aux] = 0.1;
+		invTime[aux] = 0.0;
 		layoverTime[aux] = 0.0;
 		linkType[aux] = 2;
 	}
@@ -617,17 +634,17 @@ public class AuxTrNet implements Serializable {
 
 
 	double getUtility (int k) {
-		return (IVT_COEFF*(invTime[k] + layoverTime[k]) + COST_COEFF*cost[k] + OVT_COEFF*(walkTime[k]));
+		return (IVT_COEFF*(invTime[k]) + COST_COEFF*cost[k] + OVT_COEFF*(walkTime[k] + layoverTime[k]));
 	}
 
 
 	// for debugging purposes only
 	double getUtility (int k, int temp) {
-		logger.info ("IVT_COEFF*(invTime[k] + layoverTime[k])=" + myFormat.df4.format(IVT_COEFF) + "*(" + myFormat.df4.format(invTime[k]) + " + " + myFormat.df4.format(layoverTime[k]) + ")");
+		logger.info ("IVT_COEFF*(invTime[k])=" + myFormat.df4.format(IVT_COEFF) + "*(" + myFormat.df4.format(invTime[k]) + ")");
 		logger.info ("COST_COEFF*(cost[k])=" + myFormat.df4.format(COST_COEFF) + "*(" + myFormat.df4.format(cost[k]) + ")");
-		logger.info ("OVT_COEFF*(walkTime[k])=" + myFormat.df4.format(OVT_COEFF) + "*(" + myFormat.df4.format(walkTime[k]) + ")");
+		logger.info ("OVT_COEFF*(walkTime[k] + layoverTime[k])=" + myFormat.df4.format(OVT_COEFF) + "*(" + myFormat.df4.format(walkTime[k]) + " + " + myFormat.df4.format(layoverTime[k]) + ")");
 
-		return (IVT_COEFF*(invTime[k] + layoverTime[k]) + COST_COEFF*cost[k] + OVT_COEFF*(walkTime[k]));
+		return (IVT_COEFF*(invTime[k]) + COST_COEFF*cost[k] + OVT_COEFF*(walkTime[k] + layoverTime[k]));
 	}
 
   double getMaxWalkAccessTime() {

@@ -78,6 +78,10 @@ public class TrSegment implements Serializable {
 		this.tdwt = tdwt; 
 	}
 	
+	public int getTtf() {
+		return this.ttf; 
+	}
+	
 	public double getDwf() {
 		return this.dwf; 
 	}

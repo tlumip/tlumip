@@ -8,6 +8,7 @@ import com.pb.common.util.IndexSort;
 import com.pb.common.util.Justify;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -45,14 +46,17 @@ public class OpStrategy {
 	AuxTrNet ag;
 	Network g;
 
+	int dest;
+	
 	Heap candidateHeap;
 	int[] heapContents;
 
-	int orig, dest;
+//	int orig, dest;
 	double[] nodeLabel, nodeFreq, linkLabel;
 	boolean[] tested, inStrategy;
 	int[] orderInStrategy;
-
+	int[] strategyOrderForLink;
+	
 	double[] nodeAccWalkTime;
 	double[] nodeEgrWalkTime;
 	double[] nodeTotWalkTime;
@@ -69,11 +73,16 @@ public class OpStrategy {
 	int[] gia;
 	int[] gib;
 	int[] indexNode;
+	int[] nodeIndex;
 	double[] gNodeX;
 	double[] gNodeY;
 
-	
 	int inStrategyCount;
+	
+	boolean classDebug = false;
+	
+	
+	
 	public OpStrategy ( AuxTrNet ag ) {
 
 		this.ag = ag;
@@ -86,7 +95,8 @@ public class OpStrategy {
 		tested = new boolean[ag.getAuxLinkCount()+1];
 		inStrategy = new boolean[ag.getAuxLinkCount()+1];
 		orderInStrategy = new int[ag.getAuxLinkCount()+1];
-
+		strategyOrderForLink = new int[ag.getAuxLinkCount()+1];
+		
 		//node skims
 		nodeAccWalkTime = new double[ag.getAuxNodeCount()+1];
 		nodeEgrWalkTime = new double[ag.getAuxNodeCount()+1];
@@ -106,6 +116,7 @@ public class OpStrategy {
 		gia = g.getIa();
 		gib = g.getIb();
 		indexNode = g.getIndexNode();
+		nodeIndex = g.getNodeIndex();
 		gNodeX = g.getNodeX();
 		gNodeY = g.getNodeY();
 		
@@ -120,6 +131,7 @@ public class OpStrategy {
 		Arrays.fill(tested, false);
 		Arrays.fill(inStrategy, false);
 		Arrays.fill(orderInStrategy, 0);
+		Arrays.fill(strategyOrderForLink, -1);
 
 		inStrategyCount = 0;
 		candidateHeap.clear();
@@ -129,7 +141,7 @@ public class OpStrategy {
 
 	public void initSkims () {
 
-	    boolean debug = false;
+	    boolean debug = classDebug;
 	    
 	    if (debug) {
 	        logger.info("");
@@ -159,17 +171,24 @@ public class OpStrategy {
 	}
 
 
-
+	/**
+	 * 
+	 * This method builds the optimal strategy sub-network for the destination taz passed in.
+	 * The sub-network is represented by the boolean link field inStrategy[] where true indicates
+	 * the link is part of the strategy and false indicates it is not.
+	 */
 	public int buildStrategy (int dest) {
 		// dest is an internal node number from highway network (g).
 
-		int k;
+		int k, m;
 		int count = 0;
-		boolean debug = false;
+		boolean debug = classDebug;
+//		boolean debug = true;
 
 		this.dest = dest;
 		initData();
 
+		
 		nodeLabel[dest] = 0;
 		nodeFreq[dest] = 0;
 		updateEnteringLabels (dest);
@@ -198,58 +217,76 @@ public class OpStrategy {
 			if (! tested[k]) {
 				tested[k] = true;
 				if (ag.ia[k] != dest) {
+
+					// get the highway network link index for the given transit network link index
+					m = ag.hwyLink[k];
+					
+					// if the anode's label is at least as big as bnode's label + lik's utility, the link is a candidate to be added to strategy; otherwise get next link. 
 					if (nodeLabel[ag.ia[k]] >= (nodeLabel[ag.ib[k]] + ag.getUtility(k))) {
+
+						// log some information about the starting condition of the candidate link being examined
 						if (debug) {
 							logger.info ("");
-							logger.info ("k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + "), ag.ib[k]=" + ag.ib[k] + "(" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) + "), linkType=" + ag.linkType[k]);
-							logger.info ("nodeLabel[" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
-							logger.info ("nodeLabel[" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
-							logger.info ("nodeFreq[" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
-							logger.info ("nodeFreq[" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
-							logger.info ("ag.freq[" + k + "]=" + ag.freq[k]);
-							logger.info ("ag.getUtility(" + k + ")=" + ag.getUtility(k, 0));
+							logger.info ("k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k]);
+							logger.info ("nodeLabel[ag.ia=" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
+							logger.info ("nodeLabel[ag.ib=" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
+							logger.info ("nodeFreq[ag.ia=" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
+							logger.info ("nodeFreq[ag.ib=" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
+							logger.info ("ag.freq[k=" + k + "]=" + ag.freq[k]);
+							logger.info ("ag.getUtility(k=" + k + ")=" + ag.getUtility(k, 0));
 						}
+
+						
 						if ((nodeLabel[ag.ia[k]] == AuxTrNet.INFINITY) && (nodeFreq[ag.ia[k]] == 0.0)) { // first time anode is encountered
-							if (debug) logger.info ("first if true");
-							if (ag.freq[k] == AuxTrNet.INFINITY)  // non-boarding link
+							if (debug) logger.info ("first time anode encountered");
+							if (ag.freq[k] == AuxTrNet.INFINITY) { // non-boarding link
+								if (debug) logger.info ("link freq is Infinity, boarding not allowed for this link");
 								nodeLabel[ag.ia[k]] = nodeLabel[ag.ib[k]] + ag.getUtility(k);
-							else  // first transit boarding link considered from the current node
+							}
+							else {  // first transit boarding link considered from the current node
+								if (debug) logger.info ("link freq is not Infinity, boarding is allowed for link, examined for first route using link");
 								nodeLabel[ag.ia[k]] = (1.0 + ag.freq[k]*(nodeLabel[ag.ib[k]] + ag.getUtility(k)))/(nodeFreq[ag.ia[k]] + ag.freq[k]);
+							}
 							nodeFreq[ag.ia[k]] = ag.freq[k];
 							inStrategy[k] = true;
-							if ((updateEnteringLabels (ag.ia[k])) < 0)
+							strategyOrderForLink[k] = inStrategyCount;
+							orderInStrategy[inStrategyCount++] = k;
+							if ( updateEnteringLabels(ag.ia[k]) < 0 )
 							  ;
 							  //return -1;
 						}
 						else if (nodeFreq[ag.ia[k]] != AuxTrNet.INFINITY) { // second or subsequent time anode is encountered (must be boarding)
-							if (debug) logger.info ("else if true");
+							if (debug) logger.info ("second+ time anode encountered (must be boarding link)");
 							nodeLabel[ag.ia[k]] = (nodeFreq[ag.ia[k]]*nodeLabel[ag.ia[k]] + ag.freq[k]*(nodeLabel[ag.ib[k]] + ag.getUtility(k)))/(nodeFreq[ag.ia[k]] + ag.freq[k]);
 							nodeFreq[ag.ia[k]] += ag.freq[k];
 							inStrategy[k] = true;
+							strategyOrderForLink[k] = inStrategyCount;
+							orderInStrategy[inStrategyCount++] = k;
 							if ((updateEnteringLabels (ag.ia[k])) < 0)
 							  ;
 							  //return -2;
 						}
 						else {
-							if (debug) logger.info ("final else true");
+							if (debug) logger.info ("link not included in strategy");
 							inStrategy[k] = false;
 						}
 
-						if (inStrategy[k])
-							orderInStrategy[inStrategyCount++] = k;
 
-
+						// log some information about the ending condition of the candidate link being examined
 						if (debug) {
 							logger.info ("");
-							logger.info ("nodeLabel[" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
-							logger.info ("nodeLabel[" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
-							logger.info ("nodeFreq[" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
-							logger.info ("nodeFreq[" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
-							logger.info ("inStrategy[" + k + "]=" + inStrategy[k]);
+							logger.info ("nodeLabel[ag.ia=" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
+							logger.info ("nodeLabel[ag.ib=" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
+							logger.info ("nodeFreq[ag.ia=" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
+							logger.info ("nodeFreq[ag.ib=" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
+							logger.info ("ag.freq[k=" + k + "]=" + ag.freq[k]);
+							logger.info ("inStrategy[k=" + k + "]=" + inStrategy[k]);
 						}
 
 					}
+
 				}
+				
 			}
 			
 			if (debug) candidateHeap.dataPrint();
@@ -306,7 +343,7 @@ public class OpStrategy {
 
 		int i, j, k;
 		int start, end;
-		boolean debug = false;
+		boolean debug = classDebug;
 
 		if (debug) {
 			logger.info ("");
@@ -345,6 +382,716 @@ public class OpStrategy {
 
 
 
+	public void wtSkimsFromDest () {
+
+		int i, k, m;
+		int ia, ib;
+		double wait;
+
+		boolean[] first = new boolean[ag.getAuxNodeCount()+1];
+		Arrays.fill (first, true);
+
+ 		boolean debug = classDebug;
+//		boolean debug = true;
+
+		// find link index where anode is origin
+		for (i=0; i < inStrategyCount; i++) {
+			
+			// get the transit network link index associated with the ith entry in the optimal strategy
+			k = orderInStrategy[i];
+
+			// get the highway network link index for the given transit network link index
+			m = ag.hwyLink[k];
+			
+			ia = ag.ia[k];
+			ib = ag.ib[k];
+
+			int dummy = 0;
+			if (ia == 0) {
+				dummy = 1;
+			}
+			
+			if (first[ia]) {
+			    if (nodeFreq[ia] == AuxTrNet.INFINITY) {
+			        if (ag.freq[k] == AuxTrNet.INFINITY) {
+			            nodeEgrWalkTime[ia]   = nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0);
+			            nodeTotWalkTime[ia]   = nodeTotWalkTime[ib]   + ag.walkTime[k];
+			            nodeTotalWaitTime[ia] = nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0) + ag.layoverTime[k];
+			            nodeCost[ia]          = nodeCost[ib]          + ag.cost[k];
+			            nodeInVehTime[ia]     = nodeInVehTime[ib]     + ag.invTime[k];
+			            nodeAccWalkTime[ia]   = nodeAccWalkTime[ib]   + ag.walkTime[k];
+			            nodeBoardings[ia]     = nodeBoardings[ib]     + (ag.linkType[k] == 0 ? 1 : 0);
+			            first[ia] = false;
+			        }
+			        else {
+			            nodeEgrWalkTime[ia]   = 0.0;
+			            nodeTotWalkTime[ia]   = 0.0;
+			            nodeTotalWaitTime[ia] = 0.0;
+			            nodeCost[ia]          = 0.0;
+			            nodeInVehTime[ia]     = 0.0;
+			            nodeDriveAccTime[ia]  = 0.0;
+			            nodeBoardings[ia]     = 0.0;
+			            first[ia] = false;
+			        }
+			    }
+			    else {
+			        nodeEgrWalkTime[ia]   = ag.freq[k]*(nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0)) / nodeFreq[ia];
+			        nodeTotWalkTime[ia]   = ag.freq[k]*(nodeTotWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
+			        nodeTotalWaitTime[ia] = ag.freq[k]*(nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0) + ag.layoverTime[k])    / nodeFreq[ia];
+			        nodeCost[ia]          = ag.freq[k]*(nodeCost[ib]          + ag.cost[k])                                    / nodeFreq[ia];
+			        nodeInVehTime[ia]     = ag.freq[k]*(nodeInVehTime[ib]     + ag.invTime[k])                                 / nodeFreq[ia];
+			        nodeAccWalkTime[ia]   = ag.freq[k]*(nodeAccWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
+			        nodeBoardings[ia]     = ag.freq[k]*(nodeBoardings[ib]     + (ag.linkType[k] == 0 ? 1 : 0))                 / nodeFreq[ia];
+			        first[ia] = false;
+			    }
+			}
+			else {
+			    if (nodeFreq[ia] == AuxTrNet.INFINITY) {
+			        if (ag.freq[k] == AuxTrNet.INFINITY) {
+			            nodeEgrWalkTime[ia]   += nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0);
+			            nodeTotWalkTime[ia]   += nodeTotWalkTime[ib]   + ag.walkTime[k];
+			            nodeTotalWaitTime[ia] += nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0) + ag.layoverTime[k];
+			            nodeCost[ia]          += nodeCost[ib]          + ag.cost[k];
+			            nodeInVehTime[ia]     += nodeInVehTime[ib]     + ag.invTime[k];
+			            nodeAccWalkTime[ia]   += nodeAccWalkTime[ib]   + ag.walkTime[k];
+			            nodeBoardings[ia]     += nodeBoardings[ib]     + (ag.linkType[k] == 0 ? 1 : 0);
+			        }
+			    }
+			    else {
+			        nodeEgrWalkTime[ia]   += ag.freq[k]*(nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0)) / nodeFreq[ia];
+			        nodeTotWalkTime[ia]   += ag.freq[k]*(nodeTotWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
+			        nodeTotalWaitTime[ia] += ag.freq[k]*(nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0) + ag.layoverTime[k])    / nodeFreq[ia];
+			        nodeCost[ia]          += ag.freq[k]*(nodeCost[ib]          + ag.cost[k])                                    / nodeFreq[ia];
+		          	nodeInVehTime[ia]     += ag.freq[k]*(nodeInVehTime[ib]     + ag.invTime[k])                                 / nodeFreq[ia];
+		          	nodeAccWalkTime[ia]   += ag.freq[k]*(nodeAccWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
+		          	nodeBoardings[ia]     += ag.freq[k]*(nodeBoardings[ib]     + (ag.linkType[k] == 0 ? 1 : 0))                 / nodeFreq[ia];
+		      	}
+		  	}
+
+
+			if (debug) {
+				logger.info ("");
+				logger.info ("=====================================================================================================");
+				logger.info ("k=" + k + ", i=" + i + ", m=" + m + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", ag.an[k]=" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + ", ag.bn[k]=" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) + ", g.an[k]=" + indexNode[gia[m]] + ", g.bn[k]=" + indexNode[gib[m]] );
+				logger.info ("=====================================================================================================");
+				logger.info ("");
+				logger.info (myFormat.left(("first[ia]="),25)                     + myFormat.right (first[ia],15));
+				logger.info (myFormat.left(("ag.linkType[" + k + "]="),25)        + myFormat.right (ag.linkType[k],15));
+				logger.info (myFormat.left(("ag.walkTime[" + k + "]="),25)        + (ag.walkTime[k]        == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.walkTime[k]        == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.walkTime[k],15, 4))));
+				logger.info (myFormat.left(("ag.invTime[" + k + "]="),25)         + (ag.invTime[k]         == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.invTime[k]         == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.invTime[k],15, 4))));
+				logger.info (myFormat.left(("ag.driveAccTime[" + k + "]="),25)    + (ag.driveAccTime[k]    == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.driveAccTime[k]    == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.driveAccTime[k],15, 4))));
+				logger.info (myFormat.left(("ag.cost[" + k + "]="),25)            + (ag.cost[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.cost[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.cost[k],15, 4))));
+				logger.info (myFormat.left(("ag.freq[" + k + "]="),25)            + (ag.freq[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.freq[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.freq[k],15, 4))));
+				logger.info (myFormat.left(("nodeFreq[" + ia + "]="),25)          + (nodeFreq[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ia],15, 4))));
+				logger.info (myFormat.left(("nodeFreq[" + ib + "]="),25)          + (nodeFreq[ib]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ib]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ib],15, 4))));
+				logger.info (myFormat.left(("nodeAccWalkTime[" + ia + "]="),25)   + (nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeAccWalkTime[ia],15, 4))));
+				logger.info (myFormat.left(("nodeAccWalkTime[" + ib + "]="),25)   + (nodeAccWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeAccWalkTime[ib],15, 4))));
+				logger.info (myFormat.left(("nodeEgrWalkTime[" + ia + "]="),25)   + (nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeEgrWalkTime[ia],15, 4))));
+				logger.info (myFormat.left(("nodeEgrWalkTime[" + ib + "]="),25)   + (nodeEgrWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeEgrWalkTime[ib],15, 4))));
+				logger.info (myFormat.left(("nodeTotWalkTime[" + ia + "]="),25)   + (nodeTotWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotWalkTime[ia],15, 4))));
+				logger.info (myFormat.left(("nodeTotWalkTime[" + ib + "]="),25)   + (nodeTotWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotWalkTime[ib],15, 4))));
+				logger.info (myFormat.left(("nodeFirstWaitTime[" + ia + "]="),25) + (nodeFirstWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFirstWaitTime[ia],15, 4))));
+				logger.info (myFormat.left(("nodeFirstWaitTime[" + ib + "]="),25) + (nodeFirstWaitTime[ib] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ib] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFirstWaitTime[ib],15, 4))));
+				logger.info (myFormat.left(("nodeTotalWaitTime[" + ia + "]="),25) + (nodeTotalWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotalWaitTime[ia],15, 4))));
+				logger.info (myFormat.left(("nodeTotalWaitTime[" + ib + "]="),25) + (nodeTotalWaitTime[ib] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ib] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotalWaitTime[ib],15, 4))));
+				logger.info (myFormat.left(("nodeDriveAccTime[" + ia + "]="),25)  + (nodeDriveAccTime[ia]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ia]  == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeDriveAccTime[ia],15, 4))));
+				logger.info (myFormat.left(("nodeDriveAccTime[" + ib + "]="),25)  + (nodeDriveAccTime[ib]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ib]  == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeDriveAccTime[ib],15, 4))));
+				logger.info (myFormat.left(("nodeInVehTime[" + ia + "]="),25)     + (nodeInVehTime[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeInVehTime[ia],15, 4))));
+				logger.info (myFormat.left(("nodeInVehTime[" + ib + "]="),25)     + (nodeInVehTime[ib]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ib]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeInVehTime[ib],15, 4))));
+				logger.info (myFormat.left(("nodeCost[" + ia + "]="),25)          + (nodeCost[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeCost[ia],15, 4))));
+				logger.info (myFormat.left(("nodeCost[" + ib + "]="),25)          + (nodeCost[ib]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ib]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeCost[ib],15, 4))));
+				logger.info (myFormat.left(("nodeBoardings[" + ia + "]="),25)     + (nodeBoardings[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeBoardings[ia],15, 4))));
+				logger.info (myFormat.left(("nodeBoardings[" + ib + "]="),25)     + (nodeBoardings[ib]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ib]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeBoardings[ib],15, 4))));
+				logger.info ((nodeBoardings[ia] == 0) + ", " + nodeBoardings[ia]);
+				logger.info ((nodeBoardings[ib] == 0) + ", " + nodeBoardings[ib]);
+			}
+
+		}
+	}
+
+
+
+//	public void getOptimalStrategySkimsFromOrig (int fromNode) {
+//
+//		int i, j, k, m;
+//		int start, end, check;
+//		double waitTime;
+//		
+//		boolean debug = classDebug;
+//		
+//		boolean firstBoard = false;
+//
+//
+//		if (fromNode == dest) return;
+//
+//
+//
+//		// find link indices exiting fromNode
+//		start = ag.ipa[fromNode];
+//		if (start == -1) {
+//			if (debug)
+//				logger.info ("no links exiting fromNode= " + fromNode + "(" + indexNode[fromNode] + ").  fromNode=" + fromNode + " is unconnected.");
+//			nodeEgrWalkTime[fromNode]   = 0.0;
+//			nodeTotWalkTime[fromNode]   = 0.0;
+//			nodeTotalWaitTime[fromNode] = 0.0;
+//			nodeCost[fromNode]          = 0.0;
+//			nodeInVehTime[fromNode]     = 0.0;
+//			nodeDriveAccTime[fromNode]  = 0.0;
+//			nodeBoardings[fromNode]     = 0.0;
+//			return;
+//		}
+//		
+//		j = fromNode + 1;
+//		while (ag.ipa[j] == -1)
+//			j++;
+//		end = ag.ipa[j];
+//
+//
+//		// 	accumulate access time on links in strategy until either a boarding link or dest is encountered
+//		while (!firstBoard) {
+//			check = 0;
+//			for (i=start; i < end; i++) {
+//
+//				k = ag.indexa[i];
+//				m = ag.hwyLink[k];
+//				
+//				if (debug)
+//					logger.info ("fromNode=" + fromNode + ", dest=" + dest + ", i=" + i + ", k=" + k + ", m=" + m + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", ag.an[k]=" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + ", ag.bn[k]=" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) + ", g.an[k]=" + indexNode[gia[m]] + ", g.an[k]=" + indexNode[gib[m]] + ", ag.linkType[k]=" + ag.linkType[k] + ", inStrategy[k]=" + inStrategy[k]);
+//				
+//				if (ag.linkType[k] == 0 || ag.ib[k] == dest) {
+//					firstBoard = true;
+//					break;
+//				}
+//				
+//				if (inStrategy[k] && ((nodeAccWalkTime[fromNode] + accessTime[k]) < ag.getMaxWalkAccessTime())) {
+//					check++;
+//					nodeAccWalkTime[fromNode] += ag.walkTime[k];
+//					nodeDriveAccTime[fromNode] += ag.driveAccTime[k];
+//					if (debug)
+//						logger.info ("ag.walkTime[k]=" + ag.walkTime[k] + ", ag.driveAccTime[k]=" + ag.driveAccTime[k] + ", ag.accessTime[k]=" + accessTime[k] + ", nodeAccWalkTime[fromNode]=" + nodeAccWalkTime[fromNode] + ", nodeDriveAccTime[fromNode]=" + nodeDriveAccTime[fromNode] + ", check=" + check);
+//					break;
+//				}
+//			}
+//			if (check == 0) {
+////				logger.info ("fromNode=" + fromNode + " is not connected to " + dest + "(" + indexNode[dest] + ").");
+//				nodeEgrWalkTime[fromNode]   = 0.0;
+//				nodeTotWalkTime[fromNode]   = 0.0;
+//				nodeTotalWaitTime[fromNode] = 0.0;
+//				nodeCost[fromNode]          = 0.0;
+//				nodeInVehTime[fromNode]     = 0.0;
+//				nodeDriveAccTime[fromNode]  = 0.0;
+//				nodeBoardings[fromNode]     = 0.0;
+//				return;
+////				logger.info ("rerun with debug = false in skimsFromOrig");
+////				System.exit(-1);
+//			}
+//
+//			// 	find link indices exiting bnode
+//			start = ag.ipa[ag.ib[k]];
+//			if (start == -1) {
+//				if (debug) {
+//					logger.info ("start == -1 for fromNode = " + fromNode + " in skimsFromOrig(fromNode=" + fromNode + "):  links exiting bnodes");
+//					logger.info ("no links exiting bnode= " + ag.ib[k] + "(" + indexNode[ag.ib[k]] + ").  fromNode is unconnected because bnode is unconnected.");
+//				}
+//				nodeEgrWalkTime[fromNode]   = 0.0;
+//				nodeTotWalkTime[fromNode]   = 0.0;
+//				nodeTotalWaitTime[fromNode] = 0.0;
+//				nodeCost[fromNode]          = 0.0;
+//				nodeInVehTime[fromNode]     = 0.0;
+//				nodeDriveAccTime[fromNode]  = 0.0;
+//				nodeBoardings[fromNode]     = 0.0;
+//				return;
+//			}
+//			j = ag.ib[k] + 1;
+//			while (ag.ipa[j] == -1)
+//				j++;
+//			end = ag.ipa[j];
+//		}
+//
+//		if (!firstBoard)
+//			nodeAccWalkTime[fromNode] = 0.0;
+//
+//		if (nodeAccWalkTime[fromNode] == nodeTotWalkTime[fromNode] && nodeEgrWalkTime[fromNode] > 0.0)
+//			nodeAccWalkTime[fromNode] = 0.0;
+//
+//
+//
+//		// find link indices exiting first boarding node from fromNode
+//		start = ag.ipa[ag.ia[k]];
+//		if (start == -1) {
+//			logger.info ("start == -1 for fromNode = " + fromNode + " in skimsFromOrig(fromNode=" + fromNode + "):  links exiting first boarding node");
+//			System.exit(-1);
+//		}
+//		j = ag.ia[k] + 1;
+//		while (ag.ipa[j] == -1)
+//			j++;
+//		end = ag.ipa[j];
+//
+//
+//		waitTime = 0.0;
+//		for (i=start; i < end; i++) {
+//			k = ag.indexa[i];
+//			if (inStrategy[k] && ag.linkType[k] == 0)
+//				waitTime += 1.0/nodeFreq[ag.ia[k]];
+//			if (debug)
+//				logger.info ("nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] + ", waitTime=" + waitTime);
+//		}
+//		nodeFirstWaitTime[fromNode] = waitTime;
+//		if (debug) {
+//			logger.info ("nodeFirstWaitTime[fromNode]=" + nodeFirstWaitTime[fromNode]);
+//			logger.info ("");
+//		}
+//
+//
+//	}
+
+
+
+	public Matrix[] getOptimalStrategySkimMatrices () {
+
+		int j, k, m;
+		int accessLinkIndex=-1;
+		int start, end, check;
+		double waitTime;
+		
+//		boolean debug = true;
+		boolean debug = classDebug;
+		
+		boolean firstBoard = false;
+
+
+		Matrix[] skims = new Matrix[NUM_SKIMS];
+		for (int i=0; i < skims.length; i++)
+		    skims[i] = new Matrix( g.getNumCentroids(), g.getNumCentroids() );
+		
+		for (int dest=0; dest < g.getNumCentroids(); dest++) {
+		    
+		    if ( dest % 100 == 0 ) {
+		        logger.info ( "generating skims to zone " + dest + " at " + DateFormat.getDateTimeInstance().format(new Date()) );
+		    }
+		    
+		    
+			// build an optimal strategy for the specified destination node.
+			if ( buildStrategy(dest) >= 0 ) {
+			    
+				// compute skims for this destination
+				initSkims();
+				wtSkimsFromDest();
+
+				for (int orig=0; orig < g.getNumCentroids(); orig++) {
+
+				    // if orig is destination, it's intrazonal interchange, so go to next origin zone.
+					if ( orig == dest )
+					    continue;
+
+
+
+					// find start of link indices exiting orig
+					start = ag.ipa[orig];
+					if (start == -1) {
+						if (debug)
+							logger.info ("no links exiting orig= " + orig + "(" + indexNode[orig] + ").  orig=" + orig + " is unconnected.");
+						nodeEgrWalkTime[orig]   = 0.0;
+						nodeTotWalkTime[orig]   = 0.0;
+						nodeTotalWaitTime[orig] = 0.0;
+						nodeCost[orig]          = 0.0;
+						nodeInVehTime[orig]     = 0.0;
+						nodeDriveAccTime[orig]  = 0.0;
+						nodeBoardings[orig]     = 0.0;
+						continue;
+					}
+
+					// find end of link indices exiting orig
+					j = orig + 1;
+					while (ag.ipa[j] == -1)
+						j++;
+					end = ag.ipa[j];
+
+					
+					// 	find the access link from the origin to a boarding link in the strategy
+					check = 0;
+					for (int i=start; i < end; i++) {
+						k = ag.indexa[i];
+						m = ag.hwyLink[k];
+
+						if (inStrategy[k] && ((nodeAccWalkTime[orig] + accessTime[k]) < ag.getMaxWalkAccessTime())) {
+							check++;
+							nodeAccWalkTime[orig] += ag.walkTime[k];
+							nodeDriveAccTime[orig] += ag.driveAccTime[k];
+							if (debug) {
+								logger.info ("orig=" + orig + ", dest=" + dest + ", i=" + i + ", k=" + k + ", ag.ia=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + ") , ag.ib=" + ag.ib[k] + "(" + indexNode[gib[m]] + ") , ag.linkType[k]=" + ag.linkType[k] + ", inStrategy[k]=" + inStrategy[k]);
+								logger.info ("ag.walkTime[k]=" + ag.walkTime[k] + ", ag.driveAccTime[k]=" + ag.driveAccTime[k] + ", ag.accessTime[k]=" + accessTime[k] + ", nodeAccWalkTime[orig]=" + nodeAccWalkTime[orig] + ", nodeDriveAccTime[orig]=" + nodeDriveAccTime[orig] + ", check=" + check);
+							}
+							accessLinkIndex = k;
+							break;
+						}
+					}
+					if (check == 0) {
+//							logger.info ("orig=" + orig + " is not connected to " + dest + "(" + indexNode[dest] + ").");
+						nodeEgrWalkTime[orig]   = 0.0;
+						nodeTotWalkTime[orig]   = 0.0;
+						nodeTotalWaitTime[orig] = 0.0;
+						nodeCost[orig]          = 0.0;
+						nodeInVehTime[orig]     = 0.0;
+						nodeDriveAccTime[orig]  = 0.0;
+						nodeBoardings[orig]     = 0.0;
+						continue;
+//							logger.info ("rerun with debug = false in skimsFromOrig");
+//							System.exit(-1);
+					}
+
+						
+					// 	find start of link indices exiting the bnode of this transit access link
+					start = ag.ipa[ag.ib[accessLinkIndex]];
+					if (start == -1) {
+						if (debug) {
+							m = ag.hwyLink[accessLinkIndex];
+							logger.info ("start == -1 for orig = " + orig + " in getOptimalStrategySkimMatrices(orig=" + orig + "):  links exiting bnodes");
+							logger.info ("accessLinkIndex=" + accessLinkIndex + ", no links exiting bnode= " + ag.ib[accessLinkIndex] + "(g.bn=" + indexNode[gib[m]] + ").  orig is unconnected because bnode is unconnected.");
+						}
+						nodeEgrWalkTime[orig]   = 0.0;
+						nodeTotWalkTime[orig]   = 0.0;
+						nodeTotalWaitTime[orig] = 0.0;
+						nodeCost[orig]          = 0.0;
+						nodeInVehTime[orig]     = 0.0;
+						nodeDriveAccTime[orig]  = 0.0;
+						nodeBoardings[orig]     = 0.0;
+						continue;
+					}
+
+					// 	find end of link indices exiting this bnode
+					j = ag.ib[accessLinkIndex] + 1;
+					while (ag.ipa[j] == -1)
+						j++;
+					end = ag.ipa[j];
+
+					
+
+
+					waitTime = 0.0;
+					for (int i=start; i < end; i++) {
+						k = ag.indexa[i];
+						m = ag.hwyLink[k];
+						if (inStrategy[k] && ag.linkType[k] == 0) {
+							waitTime += 1.0/nodeFreq[ag.ia[k]];
+							if (debug) {
+								logger.info ("orig=" + orig + ", dest=" + dest + ", i=" + i + ", k=" + k + ", ag.ia=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + ") , ag.ib=" + ag.ib[k] + "(" + indexNode[gib[m]] + ") , ag.linkType[k]=" + ag.linkType[k]);
+								logger.info ("nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] + ", waitTime=" + waitTime);
+							}
+						}
+					}
+					nodeFirstWaitTime[orig] = waitTime;
+					if (debug) {
+						logger.info ("nodeFirstWaitTime[orig]=" + nodeFirstWaitTime[orig]);
+						logger.info ("");
+					}
+					
+					
+					skims[IVT].setValueAt( orig, dest, (float)nodeInVehTime[orig] );
+					skims[FWT].setValueAt( orig, dest, (float)nodeFirstWaitTime[orig] );
+					skims[TWT].setValueAt( orig, dest, (float)nodeTotalWaitTime[orig] );
+					skims[AUX].setValueAt( orig, dest, ag.getAccessMode().equalsIgnoreCase("walk") ? (float)nodeTotWalkTime[orig] : (float)nodeDriveAccTime[orig] );
+					skims[BRD].setValueAt( orig, dest, (float)nodeBoardings[orig] );
+					skims[FAR].setValueAt( orig, dest, (float)nodeCost[orig] );
+				
+				}
+				
+			}
+			
+		}
+
+		return skims;
+		
+	}
+
+
+
+	public void loadWalkTransitProportions (int orig) {
+
+		// two possible cases for walk transit transit:
+		//		1) orig has no exiting boarding links, only walk links in strategy -- do station choice
+		//		2) orig has exiting boarding links that are part of strategy and thus no walk links
+
+		int i, k = 0, origIndex = 0, stopLink;
+		double flow;
+
+		boolean debug = classDebug;
+
+		logger.info ("");
+		logger.info ("loading Walk-Transit, inStrategyCount=" + inStrategyCount);
+
+		for (i=inStrategyCount - 1; i >= 0; i--) {
+			k = orderInStrategy[i];
+			if (ag.ia[k] == orig) {
+				origIndex = i;
+				nodeFlow[orig] = 1.0;
+				break;
+			}
+		}
+		if (debug) {
+		    logger.info ("");
+		    logger.info ("orig=" + orig + ", origIndex=" + origIndex + ", nodeFreq[orig]=" + nodeFreq[orig]);
+		}
+
+		if (nodeFreq[orig] >= AuxTrNet.INFINITY) {
+		    // no boarding at origin,  station (stop) choice required
+			stopLink = walkStopChoice(orig);
+			ag.flow[stopLink] += 1.0;
+			nodeFlow[ag.ib[stopLink]] = 1.0;
+			nodeFlow[orig] = 0.0;
+			if (debug) {
+			    logger.info ("stopLink=" + stopLink + ", ag.ia[stopLink]=" + ag.ia[stopLink] + ", ag.ib[stopLink]=" + ag.ib[stopLink] + ", nodeFlow[ag.ib[stopLink]]=" + nodeFlow[ag.ib[stopLink]]);
+			}
+		}
+
+		for (i=origIndex; i >= 0; i--) {
+		    
+			k = orderInStrategy[i];
+			
+			if (debug)
+			    logger.info ("loading " + "i=" + i + ", k=" + k + " (" + ag.ia[k] + "," + ag.ib[k] + ")  nodeFlow[ag.ia[k]]=" + nodeFlow[ag.ia[k]] + ", ag.freq[k]=" + ag.freq[k] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]]);
+			
+			if (nodeFlow[ag.ia[k]] > 0.0) {
+			    flow = (ag.freq[k]/nodeFreq[ag.ia[k]])*nodeFlow[ag.ia[k]];
+			    ag.flow[k] += flow;
+				nodeFlow[ag.ib[k]] += flow;
+				if (debug)
+				    logger.info (", flow=" + flow + ", ag.flow[k]=" + ag.flow[k] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ag.ib[k]]);
+			}
+			else {
+			    if (debug)
+			        logger.info ("");
+			}
+		}
+		
+	}
+
+
+	public void loadWalkTransit (int orig) {
+
+		// two possible cases for walk transit transit:
+		//		1) orig has no exiting boarding links, only walk links in strategy -- do station choice
+		//		2) orig has exiting boarding links that are part of strategy and thus no walk links
+
+		int i, j, k = 0, stopIndex=0;
+		int start, end, currentNode, count=0;
+		double rnum, compositeFreq;
+		int[] links = new int[MAX_BOARDING_LINKS];
+		double[] props = new double[MAX_BOARDING_LINKS];
+		double[] cdf = new double[MAX_BOARDING_LINKS];
+		boolean[] notVisited = new boolean[ag.getAuxNodeCount()+1];
+
+		boolean debug = classDebug;
+
+		Arrays.fill(notVisited, true);
+
+		logger.info ("");
+		logger.info ("loading Walk-Transit, inStrategyCount=" + inStrategyCount);
+
+
+		if (nodeFreq[orig] >= AuxTrNet.INFINITY) {
+		// no boarding at origin,  station (stop) choice required
+			stopIndex = walkStopChoice(orig);
+		  if (debug) {
+			logger.info ("");
+			logger.info ("orig=" + orig + ", stopIndex=" + stopIndex + ", ag.ia[stopIndex]=" + ag.ia[stopIndex] + ", ag.ib[stopIndex]=" + ag.ib[stopIndex]);
+	  }
+		}
+		else {
+		for (i=inStrategyCount - 1; i >= 0; i--) {
+			k = orderInStrategy[i];
+			if (ag.ia[k] == orig) {
+				  stopIndex = k;
+				break;
+			}
+		  }
+		if (debug) {
+			logger.info ("");
+			logger.info ("orig=" + orig + ", stopIndex=" + stopIndex + ", ag.ia[stopIndex]=" + ag.ia[stopIndex] + ", ag.ib[stopIndex]=" + ag.ib[stopIndex]);
+		}
+		}
+
+
+// load trip onto transit routes by monte carlo selection of possible routes through strategy with proportions according to boarding frequencies.
+	currentNode = ag.ia[stopIndex];
+	while (currentNode != dest) {
+
+	  notVisited[currentNode] = false;
+		start = ag.ipa[currentNode];
+		j = currentNode + 1;
+		  while (ag.ipa[j] == -1)
+			  j++;
+		  end = ag.ipa[j];
+
+	  //composite node frequency
+	  compositeFreq = 0.0;
+		  for (i=start; i < end; i++) {
+			k = ag.indexa[i];
+			if (debug) {
+			  logger.info ("i=" + i + ", k=" + k + ", ia=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + "), ib=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + "), hwy_an=" + indexNode[gia[ag.hwyLink[k]]] + ", hwy_bn=" + indexNode[gib[ag.hwyLink[k]]] + ", inStrategy=" + inStrategy[k] + ", linkType=" + ag.linkType[k] + ", notVisited=" + notVisited[ag.ib[k]] + ", freq=" + ag.freq[k] + ", compositeFreq=" + compositeFreq);
+		}
+		  if (ag.linkType[k] == 0 && inStrategy[k] && notVisited[ag.ib[k]])
+			compositeFreq += ag.freq[k];
+		}
+
+		if (debug) {
+		  logger.info ("currentNode=" + currentNode + "(" + indexNode[currentNode] + "), start=" + start + ", end=" + end + ", compositeFreq=" + compositeFreq);
+		}
+
+	  if (compositeFreq > 0.0) {
+		  j = 0;
+		  cdf[0] = 0.0;
+			for (i=start; i < end; i++) {
+			k = ag.indexa[i];
+			  if (ag.ib[k] == dest) {
+				cdf[0] = 0.0;
+			  break;
+			}
+
+		  if (ag.linkType[k] == 0 && inStrategy[k] && notVisited[ag.ib[k]]) {
+			  props[j] = ag.freq[k]/compositeFreq;
+			  links[j] = k;
+			  if (j == 0)
+				cdf[j] = props[j];
+			else
+			  cdf[j] = cdf[j-1] + props[j];
+				if (debug) {
+				  logger.info ("i=" + i + ", j=" + j + ", ia=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + "), ib=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + "), hwy_an=" + indexNode[gia[ag.hwyLink[k]]] + ", hwy_bn=" + indexNode[gib[ag.hwyLink[k]]] + ", inStrategy=" + inStrategy[k] + ", linkType=" + ag.linkType[k] + ", freq=" + ag.freq[k] + ", nodeFreq=" + nodeFreq[ag.ia[k]] + ", props=" + props[j] + ", cdf=" + cdf[j] + ", links=" + links[j] + ", ivt=" + nodeInVehTime[ag.ib[k]]);
+			}
+			  j++;
+		  }
+		  else {
+			  if (debug) {
+				  logger.info ("i=" + i + ", j=" + j + ", ia=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + "), ib=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + "), hwy_an=" + indexNode[gia[ag.hwyLink[k]]] + ", hwy_bn=" + indexNode[gib[ag.hwyLink[k]]] + ", inStrategy=" + inStrategy[k] + ", linkType=" + ag.linkType[k] + ", freq=" + ag.freq[k] + ", nodeFreq=" + nodeFreq[ag.ia[k]] + ", props=" + props[j] + ", cdf=" + cdf[j] + ", links=" + links[j] + ", ivt=" + nodeInVehTime[ag.ib[k]]);
+				}
+			}
+		}
+
+		if (cdf[0] > 0.0) {
+			// Monte Carlo selection of boarding link to load
+		  rnum = Math.random();			//  0 <= rnum < 1.0
+		  for (i=0; i < j; i++) {
+				if (debug) {
+				  logger.info ("i=" + i + ", j=" + j + ", rnum=" + rnum + ", cdf[i]=" + cdf[i] + ", links[i]=" + links[i]);
+				}
+				if (rnum <= cdf[i]) {
+					k =  links[i];
+					  break;
+				  }
+				}
+		}
+
+			  ag.flow[k] += 1;
+
+			  currentNode = ag.ib[k];
+			}
+			else {
+			for (i=start; i < end; i++) {
+			k = ag.indexa[i];
+
+			if (debug) {
+			  logger.info ("i=" + i + ", inStrategy[k]=" + inStrategy[k] + ", ia=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + "), ib=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + "), hwy_an=" + indexNode[gia[ag.hwyLink[k]]] + ", hwy_bn=" + indexNode[gib[ag.hwyLink[k]]] + ", inStrategy=" + inStrategy[k] + ", linkType=" + ag.linkType[k] + ", freq=" + ag.freq[k] + ", nodeFreq=" + nodeFreq[ag.ia[k]] + ", ivt=" + nodeInVehTime[ag.ib[k]]);
+			}
+
+			  if (ag.ib[k] == dest) {
+			  break;
+			}
+
+		  if (inStrategy[k] && notVisited[ag.ib[k]]) {
+			break;
+			}
+		}
+
+		  ag.flow[k] += 1;
+		currentNode = ag.ib[k];
+
+	  }
+
+	  if (debug) {
+		if (count++ > 500)
+		  System.exit(-1);
+	  }
+	}
+	}
+
+
+	int walkStopChoice (int orig) {
+
+		int j, jj, k, kk, count;
+		int start, end;
+		int start2, end2;
+		boolean stopAvail;
+
+		boolean debug = classDebug;
+
+
+		start = ag.ipa[orig];
+		if (start == -1) {
+			logger.info ("start == -1 for orig = " + orig + " in walkStopChoice(orig=" + orig + ")");
+			System.exit(-1);
+		}
+		j = orig + 1;
+		while (ag.ipa[j] == -1)
+			j++;
+		end = ag.ipa[j];
+
+		boolean[] avail = new boolean[end - start];
+		double[] stopUtil = new double[end - start];
+
+		count = 0;
+		for (j=start; j < end; j++) {
+		  k = ag.indexa[j];
+			avail[count] = false;
+			stopUtil[count] = 0.0;
+		  if (debug)
+			logger.info ("orig=" + orig + ", j=" + j + ", k=" + k + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", accessTime[k]=" + accessTime[k] +", nodeInStrategy(ag.ib[k])=" + nodeInStrategy(ag.ib[k]));
+			if (accessTime[k] > 0.0) {
+				if (nodeInStrategy(ag.ib[k])) {
+					// check for special case that opposite direction link returns to orig
+					start2 = ag.ipa[ag.ib[k]];
+			if (start2 == -1) {
+			  logger.info ("start2 == -1 for ag.ib[k] = " + ag.ib[k] + " in walkStopChoice(orig=" + orig + ")");
+				System.exit(-1);
+		  }
+					jj = ag.ib[k] + 1;
+					while (ag.ipa[jj] == -1)
+						jj++;
+					end2 = ag.ipa[jj];
+					if (debug)
+			logger.info ("start2=" + start2 + ", end2=" + end2);
+		  stopAvail = true;
+					for (jj=start2; jj < end2; jj++) {
+			  kk = ag.indexa[jj];
+					  if (debug)
+						logger.info ("jj=" + jj + ", kk=" + kk + ", count=" + count + ", inStrategy[kk]=" + inStrategy[kk] + ", ag.ia[kk]=" + ag.ia[kk] + ", ag.ib[kk]=" + ag.ib[kk]);
+						if (inStrategy[kk] && ag.ib[kk] == orig) {
+							stopAvail = false;
+							break;
+						}
+					}
+					if (stopAvail) {
+					  // get first wait and walk access skims for this ag.ib[k], then add accessTime[k] to have walk access time for stop choice
+					  // skimsFromOrig(ag.ib[k]);
+						avail[count] = true;
+						stopUtil[count] = getStopUtility(k);
+					}
+				  if (debug)
+					logger.info ("count=" + count + ", avail[count]=" + avail[count] + ", stopUtil[count]=" + stopUtil[count]);
+				}
+			}
+	  count++;
+		}
+
+	if (count == 0) {
+	  logger.info ("count == 0 in walkStopChoice(orig=" + orig + ")");
+	  logger.info ("start=" + start + ", end=" + end);
+	  System.exit(-1);
+	}
+		return (ag.indexa[start + mnlMonteCarlo(stopUtil, avail, count)]);
+	}
+
+
+
 	public void loadDriveTransit (int orig) {
 
 		int i, j, k = 0, stopIndex = 0, stopNode;
@@ -355,7 +1102,7 @@ public class OpStrategy {
 		double[] cdf = new double[MAX_BOARDING_LINKS];
 		boolean[] notVisited = new boolean[ag.getAuxNodeCount()+1];
 
-		boolean debug = false;
+		boolean debug = classDebug;
 
 		Arrays.fill(notVisited, true);
 
@@ -512,10 +1259,8 @@ public class OpStrategy {
 		double[] fullCumPcts = new double[ag.getAuxNodeCount()+1];
 		double[] mnlTimes = new double[ag.getAuxNodeCount()+1];
 
-		boolean debug = false;
+		boolean debug = classDebug;
 
-	if (driveStopPcts > 0.0)
-	  debug = false;
 
 
 		// count the number of stop nodes at boarding links in strategy and save.
@@ -612,7 +1357,7 @@ public class OpStrategy {
 		int i, j, k = 0, stop;
 		int start, end, check;
 		double waitTime;
-		boolean debug = false;
+		boolean debug = classDebug;
 		boolean firstBoard = false;
 
 
@@ -661,712 +1406,6 @@ public class OpStrategy {
 		if (debug)
 		    logger.info ("done with driveTransitSkimsFromOrig()");
 		
-	}
-
-
-
-	public void skimsFromDest () {
-
-		int i, k;
-		int ia, ib;
-		double wait;
-
-		boolean[] first = new boolean[ag.getAuxNodeCount()+1];
-		Arrays.fill (first, true);
-
-		boolean debug = false;
-
-		// find link index where anode is origin
-		for (i=0; i < inStrategyCount; i++) {
-			k = orderInStrategy[i];
-
-			ia = ag.ia[k];
-			ib = ag.ib[k];
-
-			
-			
-			if (first[ia]) {
-			    if (nodeFreq[ia] == AuxTrNet.INFINITY) {
-			        if (ag.freq[k] == AuxTrNet.INFINITY) {
-			            nodeEgrWalkTime[ia]   = nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0);
-			            nodeTotWalkTime[ia]   = nodeTotWalkTime[ib]   + ag.walkTime[k];
-			            nodeTotalWaitTime[ia] = nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0);
-			            nodeCost[ia]          = nodeCost[ib]          + ag.cost[k];
-			            nodeInVehTime[ia]     = nodeInVehTime[ib]     + ag.invTime[k] + ag.layoverTime[k];
-			            nodeDriveAccTime[ia]  = nodeDriveAccTime[ib]  + ag.driveAccTime[k];
-			            nodeBoardings[ia]     = nodeBoardings[ib]     + (ag.linkType[k] == 0 ? 1 : 0);
-			            first[ia] = false;
-			        }
-			        else {
-			            nodeEgrWalkTime[ia]   = 0.0;
-			            nodeTotWalkTime[ia]   = 0.0;
-			            nodeTotalWaitTime[ia] = 0.0;
-			            nodeCost[ia]          = 0.0;
-			            nodeInVehTime[ia]     = 0.0;
-			            nodeDriveAccTime[ia]  = 0.0;
-			            nodeBoardings[ia]     = 0.0;
-			            first[ia] = false;
-			        }
-			    }
-			    else {
-			        nodeEgrWalkTime[ia]   = ag.freq[k]*(nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0)) / nodeFreq[ia];
-			        nodeTotWalkTime[ia]   = ag.freq[k]*(nodeTotWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
-			        nodeTotalWaitTime[ia] = ag.freq[k]*(nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0))    / nodeFreq[ia];
-			        nodeCost[ia]          = ag.freq[k]*(nodeCost[ib]          + ag.cost[k])                                    / nodeFreq[ia];
-			        nodeInVehTime[ia]     = ag.freq[k]*(nodeInVehTime[ib]     + ag.invTime[k] + ag.layoverTime[k])             / nodeFreq[ia];
-			        nodeDriveAccTime[ia]  = ag.freq[k]*(nodeDriveAccTime[ib]  + ag.driveAccTime[k])                            / nodeFreq[ia];
-			        nodeBoardings[ia]     = ag.freq[k]*(nodeBoardings[ib]     + (ag.linkType[k] == 0 ? 1 : 0))                 / nodeFreq[ia];
-			        first[ia] = false;
-			    }
-			}
-			else {
-			    if (nodeFreq[ia] == AuxTrNet.INFINITY) {
-			        if (ag.freq[k] == AuxTrNet.INFINITY) {
-			            nodeEgrWalkTime[ia]   += nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0);
-			            nodeTotWalkTime[ia]   += nodeTotWalkTime[ib]   + ag.walkTime[k];
-			            nodeTotalWaitTime[ia] += nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0);
-			            nodeCost[ia]          += nodeCost[ib]          + ag.cost[k];
-			            nodeInVehTime[ia]     += nodeInVehTime[ib]     + ag.invTime[k] + ag.layoverTime[k];
-			            nodeDriveAccTime[ia]  += nodeDriveAccTime[ib]  + ag.driveAccTime[k];
-			            nodeBoardings[ia]     += nodeBoardings[ib]     + (ag.linkType[k] == 0 ? 1 : 0);
-			        }
-			    }
-			    else {
-			        nodeEgrWalkTime[ia]   += ag.freq[k]*(nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0)) / nodeFreq[ia];
-			        nodeTotWalkTime[ia]   += ag.freq[k]*(nodeTotWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
-			        nodeTotalWaitTime[ia] += ag.freq[k]*(nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0))    / nodeFreq[ia];
-			        nodeCost[ia]          += ag.freq[k]*(nodeCost[ib]          + ag.cost[k])                                    / nodeFreq[ia];
-		          	nodeInVehTime[ia]     += ag.freq[k]*(nodeInVehTime[ib]     + ag.invTime[k] + ag.layoverTime[k])             / nodeFreq[ia];
-		          	nodeDriveAccTime[ia]  += ag.freq[k]*(nodeDriveAccTime[ib]  + ag.driveAccTime[k])                            / nodeFreq[ia];
-		          	nodeBoardings[ia]     += ag.freq[k]*(nodeBoardings[ib]     + (ag.linkType[k] == 0 ? 1 : 0))                 / nodeFreq[ia];
-		      	}
-		  	}
-
-
-			if (debug) {
-				logger.info ("");
-				logger.info ("===========================================================================");
-				logger.info ("k=" + k + ", i=" + i + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", an[k]=" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + ", bn[k]=" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) );
-				logger.info ("===========================================================================");
-				logger.info ("");
-				logger.info (myFormat.left(("first[ia]="),25)                     + myFormat.right (first[ia],15));
-				logger.info (myFormat.left(("ag.linkType[" + k + "]="),25)        + myFormat.right (ag.linkType[k],15));
-				logger.info (myFormat.left(("ag.walkTime[" + k + "]="),25)        + (ag.walkTime[k]        == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.walkTime[k]        == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.walkTime[k],15, 2))));
-				logger.info (myFormat.left(("ag.invTime[" + k + "]="),25)         + (ag.invTime[k]         == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.invTime[k]         == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.invTime[k],15, 2))));
-				logger.info (myFormat.left(("ag.driveAccTime[" + k + "]="),25)    + (ag.driveAccTime[k]    == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.driveAccTime[k]    == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.driveAccTime[k],15, 2))));
-				logger.info (myFormat.left(("ag.cost[" + k + "]="),25)            + (ag.cost[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.cost[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.cost[k],15, 2))));
-				logger.info (myFormat.left(("ag.freq[" + k + "]="),25)            + (ag.freq[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.freq[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.freq[k],15, 2))));
-				logger.info (myFormat.left(("nodeFreq[" + ia + "]="),25)          + (nodeFreq[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ia],15, 2))));
-				logger.info (myFormat.left(("nodeFreq[" + ib + "]="),25)          + (nodeFreq[ib]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ib]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ib],15, 2))));
-				logger.info (myFormat.left(("nodeAccWalkTime[" + ia + "]="),25)   + (nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeAccWalkTime[ia],15, 2))));
-				logger.info (myFormat.left(("nodeAccWalkTime[" + ib + "]="),25)   + (nodeAccWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeAccWalkTime[ib],15, 2))));
-				logger.info (myFormat.left(("nodeEgrWalkTime[" + ia + "]="),25)   + (nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeEgrWalkTime[ia],15, 2))));
-				logger.info (myFormat.left(("nodeEgrWalkTime[" + ib + "]="),25)   + (nodeEgrWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeEgrWalkTime[ib],15, 2))));
-				logger.info (myFormat.left(("nodeTotWalkTime[" + ia + "]="),25)   + (nodeTotWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotWalkTime[ia],15, 2))));
-				logger.info (myFormat.left(("nodeTotWalkTime[" + ib + "]="),25)   + (nodeTotWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotWalkTime[ib],15, 2))));
-				logger.info (myFormat.left(("nodeFirstWaitTime[" + ia + "]="),25) + (nodeFirstWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFirstWaitTime[ia],15, 2))));
-				logger.info (myFormat.left(("nodeFirstWaitTime[" + ib + "]="),25) + (nodeFirstWaitTime[ib] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ib] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFirstWaitTime[ib],15, 2))));
-				logger.info (myFormat.left(("nodeTotalWaitTime[" + ia + "]="),25) + (nodeTotalWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotalWaitTime[ia],15, 2))));
-				logger.info (myFormat.left(("nodeTotalWaitTime[" + ib + "]="),25) + (nodeTotalWaitTime[ib] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ib] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotalWaitTime[ib],15, 2))));
-				logger.info (myFormat.left(("nodeDriveAccTime[" + ia + "]="),25)  + (nodeDriveAccTime[ia]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ia]  == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeDriveAccTime[ia],15, 2))));
-				logger.info (myFormat.left(("nodeDriveAccTime[" + ib + "]="),25)  + (nodeDriveAccTime[ib]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ib]  == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeDriveAccTime[ib],15, 2))));
-				logger.info (myFormat.left(("nodeInVehTime[" + ia + "]="),25)     + (nodeInVehTime[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeInVehTime[ia],15, 2))));
-				logger.info (myFormat.left(("nodeInVehTime[" + ib + "]="),25)     + (nodeInVehTime[ib]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ib]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeInVehTime[ib],15, 2))));
-				logger.info (myFormat.left(("nodeCost[" + ia + "]="),25)          + (nodeCost[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeCost[ia],15, 2))));
-				logger.info (myFormat.left(("nodeCost[" + ib + "]="),25)          + (nodeCost[ib]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ib]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeCost[ib],15, 2))));
-				logger.info (myFormat.left(("nodeBoardings[" + ia + "]="),25)     + (nodeBoardings[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeBoardings[ia],15, 2))));
-				logger.info (myFormat.left(("nodeBoardings[" + ib + "]="),25)     + (nodeBoardings[ib]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ib]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeBoardings[ib],15, 2))));
-				logger.info ((nodeBoardings[ia] == 0) + ", " + nodeBoardings[ia]);
-				logger.info ((nodeBoardings[ib] == 0) + ", " + nodeBoardings[ib]);
-			}
-
-		}
-	}
-
-
-
-	public void getOptimalStrategySkimsFromOrig (int fromNode) {
-
-		int i, j, k = 0;
-		int start, end, check;
-		double waitTime;
-		boolean debug = false;
-		boolean firstBoard = false;
-
-
-		if (fromNode == dest) return;
-
-
-
-		// find link indices exiting fromNode
-		start = ag.ipa[fromNode];
-		if (start == -1) {
-			if (debug)
-				logger.info ("no links exiting fromNode= " + fromNode + "(" + indexNode[fromNode] + ").  fromNode=" + fromNode + " is unconnected.");
-			nodeEgrWalkTime[fromNode]   = 0.0;
-			nodeTotWalkTime[fromNode]   = 0.0;
-			nodeTotalWaitTime[fromNode] = 0.0;
-			nodeCost[fromNode]          = 0.0;
-			nodeInVehTime[fromNode]     = 0.0;
-			nodeDriveAccTime[fromNode]  = 0.0;
-			nodeBoardings[fromNode]     = 0.0;
-			return;
-		}
-		
-		j = fromNode + 1;
-		while (ag.ipa[j] == -1)
-			j++;
-		end = ag.ipa[j];
-
-
-		// 	accumulate access time on links in strategy until either a boarding link or dest is encountered
-		while (!firstBoard) {
-			check = 0;
-			for (i=start; i < end; i++) {
-				k = ag.indexa[i];
-				if (debug)
-					logger.info ("fromNode=" + fromNode + ", dest=" + dest + ", i=" + i + ", k=" + k + ", ia[k]=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + ") , ib[k]=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + ") , ag.linkType[k]=" + ag.linkType[k] + ", inStrategy[k]=" + inStrategy[k]);
-				if (inStrategy[k] && ((nodeAccWalkTime[fromNode] + accessTime[k]) < ag.getMaxWalkAccessTime())) {
-					check++;
-					nodeAccWalkTime[fromNode] += ag.walkTime[k];
-					nodeDriveAccTime[fromNode] += ag.driveAccTime[k];
-					if (debug)
-						logger.info ("ag.walkTime[k]=" + ag.walkTime[k] + ", ag.driveAccTime[k]=" + ag.driveAccTime[k] + ", ag.accessTime[k]=" + accessTime[k] + ", nodeAccWalkTime[fromNode]=" + nodeAccWalkTime[fromNode] + ", nodeDriveAccTime[fromNode]=" + nodeDriveAccTime[fromNode] + ", check=" + check);
-					break;
-				}
-			}
-			if (check == 0) {
-//				logger.info ("fromNode=" + fromNode + " is not connected to " + dest + "(" + indexNode[dest] + ").");
-				nodeEgrWalkTime[fromNode]   = 0.0;
-				nodeTotWalkTime[fromNode]   = 0.0;
-				nodeTotalWaitTime[fromNode] = 0.0;
-				nodeCost[fromNode]          = 0.0;
-				nodeInVehTime[fromNode]     = 0.0;
-				nodeDriveAccTime[fromNode]  = 0.0;
-				nodeBoardings[fromNode]     = 0.0;
-				return;
-//				logger.info ("rerun with debug = false in skimsFromOrig");
-//				System.exit(-1);
-			}
-			if (ag.linkType[k] == 0 || ag.ib[k] == dest) {
-				firstBoard = true;
-				break;
-			}
-
-			// 	find link indices exiting bnode
-			start = ag.ipa[ag.ib[k]];
-			if (start == -1) {
-				if (debug) {
-					logger.info ("start == -1 for fromNode = " + fromNode + " in skimsFromOrig(fromNode=" + fromNode + "):  links exiting bnodes");
-					logger.info ("no links exiting bnode= " + ag.ib[k] + "(" + indexNode[ag.ib[k]] + ").  fromNode is unconnected because bnode is unconnected.");
-				}
-				nodeEgrWalkTime[fromNode]   = 0.0;
-				nodeTotWalkTime[fromNode]   = 0.0;
-				nodeTotalWaitTime[fromNode] = 0.0;
-				nodeCost[fromNode]          = 0.0;
-				nodeInVehTime[fromNode]     = 0.0;
-				nodeDriveAccTime[fromNode]  = 0.0;
-				nodeBoardings[fromNode]     = 0.0;
-				return;
-			}
-			j = ag.ib[k] + 1;
-			while (ag.ipa[j] == -1)
-				j++;
-			end = ag.ipa[j];
-		}
-
-		if (!firstBoard)
-			nodeAccWalkTime[fromNode] = 0.0;
-
-		if (nodeAccWalkTime[fromNode] == nodeTotWalkTime[fromNode] && nodeEgrWalkTime[fromNode] > 0.0)
-			nodeAccWalkTime[fromNode] = 0.0;
-
-
-
-		// find link indices exiting first boarding node from fromNode
-		start = ag.ipa[ag.ia[k]];
-		if (start == -1) {
-			logger.info ("start == -1 for fromNode = " + fromNode + " in skimsFromOrig(fromNode=" + fromNode + "):  links exiting first boarding node");
-			System.exit(-1);
-		}
-		j = ag.ia[k] + 1;
-		while (ag.ipa[j] == -1)
-			j++;
-		end = ag.ipa[j];
-
-
-		waitTime = 0.0;
-		for (i=start; i < end; i++) {
-			k = ag.indexa[i];
-			if (inStrategy[k] && ag.linkType[k] == 0)
-				waitTime += 1.0/nodeFreq[ag.ia[k]];
-			if (debug)
-				logger.info ("nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] + ", waitTime=" + waitTime);
-		}
-		nodeFirstWaitTime[fromNode] = waitTime;
-		if (debug) {
-			logger.info ("nodeFirstWaitTime[fromNode]=" + nodeFirstWaitTime[fromNode]);
-			logger.info ("");
-		}
-
-
-	}
-
-
-
-	public Matrix[] getOptimalStrategySkimMatrices () {
-
-		int j, k = 0;
-		int start, end, check;
-		double waitTime;
-		boolean debug = false;
-		boolean firstBoard = false;
-
-
-		Matrix[] skims = new Matrix[NUM_SKIMS];
-		for (int i=0; i < skims.length; i++)
-		    skims[i] = new Matrix( g.getNumCentroids(), g.getNumCentroids() );
-		
-		for (int dest=0; dest < g.getNumCentroids(); dest++) {
-		    
-		    if ( dest % 100 == 0 ) {
-		        logger.info ( "generating skims to zone " + dest + " at " + DateFormat.getDateTimeInstance().format(new Date()) );
-		    }
-		    
-		    
-			// build an optimal strategy for the specified destination node.
-			if ( buildStrategy(dest) >= 0 ) {
-			    
-				// compute skims for this destination
-				initSkims();
-				skimsFromDest();
-
-				for (int orig=0; orig < g.getNumCentroids(); orig++) {
-
-				    // if orig is destination, it's intrazonal interchange, so go to next origin zone.
-					if ( orig == dest )
-					    continue;
-
-
-
-					// find start of link indices exiting orig
-					start = ag.ipa[orig];
-					if (start == -1) {
-						if (debug)
-							logger.info ("no links exiting orig= " + orig + "(" + indexNode[orig] + ").  orig=" + orig + " is unconnected.");
-						nodeEgrWalkTime[orig]   = 0.0;
-						nodeTotWalkTime[orig]   = 0.0;
-						nodeTotalWaitTime[orig] = 0.0;
-						nodeCost[orig]          = 0.0;
-						nodeInVehTime[orig]     = 0.0;
-						nodeDriveAccTime[orig]  = 0.0;
-						nodeBoardings[orig]     = 0.0;
-						continue;
-					}
-
-					// find end of link indices exiting orig
-					j = orig + 1;
-					while (ag.ipa[j] == -1)
-						j++;
-					end = ag.ipa[j];
-
-					
-					// 	accumulate walk time on links in strategy until either a boarding link or dest is encountered
-					while (!firstBoard) {
-						check = 0;
-						for (int i=start; i < end; i++) {
-							k = ag.indexa[i];
-							if (debug)
-								logger.info ("orig=" + orig + ", dest=" + dest + ", i=" + i + ", k=" + k + ", ia[k]=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + ") , ib[k]=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + ") , ag.linkType[k]=" + ag.linkType[k] + ", inStrategy[k]=" + inStrategy[k]);
-							if (inStrategy[k] && ((nodeAccWalkTime[orig] + accessTime[k]) < ag.getMaxWalkAccessTime())) {
-								check++;
-								nodeAccWalkTime[orig] += ag.walkTime[k];
-								nodeDriveAccTime[orig] += ag.driveAccTime[k];
-								if (debug)
-									logger.info ("ag.walkTime[k]=" + ag.walkTime[k] + ", ag.driveAccTime[k]=" + ag.driveAccTime[k] + ", ag.accessTime[k]=" + accessTime[k] + ", nodeAccWalkTime[orig]=" + nodeAccWalkTime[orig] + ", nodeDriveAccTime[orig]=" + nodeDriveAccTime[orig] + ", check=" + check);
-								break;
-							}
-						}
-						if (check == 0) {
-//							logger.info ("orig=" + orig + " is not connected to " + dest + "(" + indexNode[dest] + ").");
-							nodeEgrWalkTime[orig]   = 0.0;
-							nodeTotWalkTime[orig]   = 0.0;
-							nodeTotalWaitTime[orig] = 0.0;
-							nodeCost[orig]          = 0.0;
-							nodeInVehTime[orig]     = 0.0;
-							nodeDriveAccTime[orig]  = 0.0;
-							nodeBoardings[orig]     = 0.0;
-							continue;
-//							logger.info ("rerun with debug = false in skimsFromOrig");
-//							System.exit(-1);
-						}
-						if (ag.linkType[k] == 0 || ag.ib[k] == dest) {
-							firstBoard = true;
-							break;
-						}
-
-						// 	find start of link indices exiting this bnode
-						start = ag.ipa[ag.ib[k]];
-						if (start == -1) {
-							if (debug) {
-								logger.info ("start == -1 for orig = " + orig + " in skimsFromOrig(orig=" + orig + "):  links exiting bnodes");
-								logger.info ("no links exiting bnode= " + ag.ib[k] + "(" + indexNode[ag.ib[k]] + ").  orig is unconnected because bnode is unconnected.");
-							}
-							nodeEgrWalkTime[orig]   = 0.0;
-							nodeTotWalkTime[orig]   = 0.0;
-							nodeTotalWaitTime[orig] = 0.0;
-							nodeCost[orig]          = 0.0;
-							nodeInVehTime[orig]     = 0.0;
-							nodeDriveAccTime[orig]  = 0.0;
-							nodeBoardings[orig]     = 0.0;
-							continue;
-						}
-
-						// 	find end of link indices exiting this bnode
-						j = ag.ib[k] + 1;
-						while (ag.ipa[j] == -1)
-							j++;
-						end = ag.ipa[j];
-					}
-
-					if (!firstBoard)
-						nodeAccWalkTime[orig] = 0.0;
-
-					if (nodeAccWalkTime[orig] == nodeTotWalkTime[orig] && nodeEgrWalkTime[orig] > 0.0)
-						nodeAccWalkTime[orig] = 0.0;
-
-
-
-					// find start of link indices exiting first boarding node from orig
-					start = ag.ipa[ag.ia[k]];
-					if (start == -1) {
-						logger.info ("start == -1 for orig = " + orig + " in skimsFromOrig(orig=" + orig + "):  links exiting first boarding node");
-						System.exit(-1);
-					}
-
-					// find end of link indices exiting first boarding node from orig
-					j = ag.ia[k] + 1;
-					while (ag.ipa[j] == -1)
-						j++;
-					end = ag.ipa[j];
-
-
-					waitTime = 0.0;
-					for (int i=start; i < end; i++) {
-						k = ag.indexa[i];
-						if (inStrategy[k] && ag.linkType[k] == 0)
-							waitTime += 1.0/nodeFreq[ag.ia[k]];
-						if (debug)
-							logger.info ("nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] + ", waitTime=" + waitTime);
-					}
-					nodeFirstWaitTime[orig] = waitTime;
-					if (debug) {
-						logger.info ("nodeFirstWaitTime[orig]=" + nodeFirstWaitTime[orig]);
-						logger.info ("");
-					}
-					
-					
-					skims[IVT].setValueAt( orig, dest, (float)nodeInVehTime[orig] );
-					skims[FWT].setValueAt( orig, dest, (float)nodeFirstWaitTime[orig] );
-					skims[TWT].setValueAt( orig, dest, (float)nodeTotalWaitTime[orig] );
-					skims[AUX].setValueAt( orig, dest, ag.getAccessMode().equalsIgnoreCase("walk") ? (float)nodeTotWalkTime[orig] : (float)nodeDriveAccTime[orig] );
-					skims[BRD].setValueAt( orig, dest, (float)nodeBoardings[orig] );
-					skims[FAR].setValueAt( orig, dest, (float)nodeCost[orig] );
-				
-				}
-				
-			}
-			
-		}
-
-		return skims;
-		
-	}
-
-
-
-	public void loadWalkTransitProportions (int orig) {
-
-		// two possible cases for walk transit transit:
-		//		1) orig has no exiting boarding links, only walk links in strategy -- do station choice
-		//		2) orig has exiting boarding links that are part of strategy and thus no walk links
-
-		int i, k = 0, origIndex = 0, stopLink;
-		double flow;
-
-		boolean debug = false;
-
-		logger.info ("");
-		logger.info ("loading Walk-Transit, inStrategyCount=" + inStrategyCount);
-
-		for (i=inStrategyCount - 1; i >= 0; i--) {
-			k = orderInStrategy[i];
-			if (ag.ia[k] == orig) {
-				origIndex = i;
-				nodeFlow[orig] = 1.0;
-				break;
-			}
-		}
-		if (debug) {
-		    logger.info ("");
-		    logger.info ("orig=" + orig + ", origIndex=" + origIndex + ", nodeFreq[orig]=" + nodeFreq[orig]);
-		}
-
-		if (nodeFreq[orig] >= AuxTrNet.INFINITY) {
-		    // no boarding at origin,  station (stop) choice required
-			stopLink = walkStopChoice(orig);
-			ag.flow[stopLink] += 1.0;
-			nodeFlow[ag.ib[stopLink]] = 1.0;
-			nodeFlow[orig] = 0.0;
-			if (debug) {
-			    logger.info ("stopLink=" + stopLink + ", ag.ia[stopLink]=" + ag.ia[stopLink] + ", ag.ib[stopLink]=" + ag.ib[stopLink] + ", nodeFlow[ag.ib[stopLink]]=" + nodeFlow[ag.ib[stopLink]]);
-			}
-		}
-
-		for (i=origIndex; i >= 0; i--) {
-		    
-			k = orderInStrategy[i];
-			
-			if (debug)
-			    logger.info ("loading " + "i=" + i + ", k=" + k + " (" + ag.ia[k] + "," + ag.ib[k] + ")  nodeFlow[ag.ia[k]]=" + nodeFlow[ag.ia[k]] + ", ag.freq[k]=" + ag.freq[k] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]]);
-			
-			if (nodeFlow[ag.ia[k]] > 0.0) {
-			    flow = (ag.freq[k]/nodeFreq[ag.ia[k]])*nodeFlow[ag.ia[k]];
-			    ag.flow[k] += flow;
-				nodeFlow[ag.ib[k]] += flow;
-				if (debug)
-				    logger.info (", flow=" + flow + ", ag.flow[k]=" + ag.flow[k] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ag.ib[k]]);
-			}
-			else {
-			    if (debug)
-			        logger.info ("");
-			}
-		}
-		
-	}
-
-
-	public void loadWalkTransit (int orig) {
-
-		// two possible cases for walk transit transit:
-		//		1) orig has no exiting boarding links, only walk links in strategy -- do station choice
-		//		2) orig has exiting boarding links that are part of strategy and thus no walk links
-
-		int i, j, k = 0, stopIndex=0;
-		int start, end, currentNode, count=0;
-		double rnum, compositeFreq;
-		int[] links = new int[MAX_BOARDING_LINKS];
-		double[] props = new double[MAX_BOARDING_LINKS];
-		double[] cdf = new double[MAX_BOARDING_LINKS];
-		boolean[] notVisited = new boolean[ag.getAuxNodeCount()+1];
-
-		boolean debug = false;
-
-		Arrays.fill(notVisited, true);
-
-		logger.info ("");
-		logger.info ("loading Walk-Transit, inStrategyCount=" + inStrategyCount);
-
-
-		if (nodeFreq[orig] >= AuxTrNet.INFINITY) {
-		// no boarding at origin,  station (stop) choice required
-			stopIndex = walkStopChoice(orig);
-		  if (debug) {
-			logger.info ("");
-			logger.info ("orig=" + orig + ", stopIndex=" + stopIndex + ", ag.ia[stopIndex]=" + ag.ia[stopIndex] + ", ag.ib[stopIndex]=" + ag.ib[stopIndex]);
-	  }
-		}
-		else {
-		for (i=inStrategyCount - 1; i >= 0; i--) {
-			k = orderInStrategy[i];
-			if (ag.ia[k] == orig) {
-				  stopIndex = k;
-				break;
-			}
-		  }
-		if (debug) {
-			logger.info ("");
-			logger.info ("orig=" + orig + ", stopIndex=" + stopIndex + ", ag.ia[stopIndex]=" + ag.ia[stopIndex] + ", ag.ib[stopIndex]=" + ag.ib[stopIndex]);
-		}
-		}
-
-
-// load trip onto transit routes by monte carlo selection of possible routes through strategy with proportions according to boarding frequencies.
-	currentNode = ag.ia[stopIndex];
-	while (currentNode != dest) {
-
-	  notVisited[currentNode] = false;
-		start = ag.ipa[currentNode];
-		j = currentNode + 1;
-		  while (ag.ipa[j] == -1)
-			  j++;
-		  end = ag.ipa[j];
-
-	  //composite node frequency
-	  compositeFreq = 0.0;
-		  for (i=start; i < end; i++) {
-			k = ag.indexa[i];
-			if (debug) {
-			  logger.info ("i=" + i + ", k=" + k + ", ia=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + "), ib=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + "), hwy_an=" + indexNode[gia[ag.hwyLink[k]]] + ", hwy_bn=" + indexNode[gib[ag.hwyLink[k]]] + ", inStrategy=" + inStrategy[k] + ", linkType=" + ag.linkType[k] + ", notVisited=" + notVisited[ag.ib[k]] + ", freq=" + ag.freq[k] + ", compositeFreq=" + compositeFreq);
-		}
-		  if (ag.linkType[k] == 0 && inStrategy[k] && notVisited[ag.ib[k]])
-			compositeFreq += ag.freq[k];
-		}
-
-		if (debug) {
-		  logger.info ("currentNode=" + currentNode + "(" + indexNode[currentNode] + "), start=" + start + ", end=" + end + ", compositeFreq=" + compositeFreq);
-		}
-
-	  if (compositeFreq > 0.0) {
-		  j = 0;
-		  cdf[0] = 0.0;
-			for (i=start; i < end; i++) {
-			k = ag.indexa[i];
-			  if (ag.ib[k] == dest) {
-				cdf[0] = 0.0;
-			  break;
-			}
-
-		  if (ag.linkType[k] == 0 && inStrategy[k] && notVisited[ag.ib[k]]) {
-			  props[j] = ag.freq[k]/compositeFreq;
-			  links[j] = k;
-			  if (j == 0)
-				cdf[j] = props[j];
-			else
-			  cdf[j] = cdf[j-1] + props[j];
-				if (debug) {
-				  logger.info ("i=" + i + ", j=" + j + ", ia=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + "), ib=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + "), hwy_an=" + indexNode[gia[ag.hwyLink[k]]] + ", hwy_bn=" + indexNode[gib[ag.hwyLink[k]]] + ", inStrategy=" + inStrategy[k] + ", linkType=" + ag.linkType[k] + ", freq=" + ag.freq[k] + ", nodeFreq=" + nodeFreq[ag.ia[k]] + ", props=" + props[j] + ", cdf=" + cdf[j] + ", links=" + links[j] + ", ivt=" + nodeInVehTime[ag.ib[k]]);
-			}
-			  j++;
-		  }
-		  else {
-			  if (debug) {
-				  logger.info ("i=" + i + ", j=" + j + ", ia=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + "), ib=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + "), hwy_an=" + indexNode[gia[ag.hwyLink[k]]] + ", hwy_bn=" + indexNode[gib[ag.hwyLink[k]]] + ", inStrategy=" + inStrategy[k] + ", linkType=" + ag.linkType[k] + ", freq=" + ag.freq[k] + ", nodeFreq=" + nodeFreq[ag.ia[k]] + ", props=" + props[j] + ", cdf=" + cdf[j] + ", links=" + links[j] + ", ivt=" + nodeInVehTime[ag.ib[k]]);
-				}
-			}
-		}
-
-		if (cdf[0] > 0.0) {
-			// Monte Carlo selection of boarding link to load
-		  rnum = Math.random();			//  0 <= rnum < 1.0
-		  for (i=0; i < j; i++) {
-				if (debug) {
-				  logger.info ("i=" + i + ", j=" + j + ", rnum=" + rnum + ", cdf[i]=" + cdf[i] + ", links[i]=" + links[i]);
-				}
-				if (rnum <= cdf[i]) {
-					k =  links[i];
-					  break;
-				  }
-				}
-		}
-
-			  ag.flow[k] += 1;
-
-			  currentNode = ag.ib[k];
-			}
-			else {
-			for (i=start; i < end; i++) {
-			k = ag.indexa[i];
-
-			if (debug) {
-			  logger.info ("i=" + i + ", inStrategy[k]=" + inStrategy[k] + ", ia=" + ag.ia[k] + "(" + indexNode[ag.ia[k]] + "), ib=" + ag.ib[k] + "(" + indexNode[ag.ib[k]] + "), hwy_an=" + indexNode[gia[ag.hwyLink[k]]] + ", hwy_bn=" + indexNode[gib[ag.hwyLink[k]]] + ", inStrategy=" + inStrategy[k] + ", linkType=" + ag.linkType[k] + ", freq=" + ag.freq[k] + ", nodeFreq=" + nodeFreq[ag.ia[k]] + ", ivt=" + nodeInVehTime[ag.ib[k]]);
-			}
-
-			  if (ag.ib[k] == dest) {
-			  break;
-			}
-
-		  if (inStrategy[k] && notVisited[ag.ib[k]]) {
-			break;
-			}
-		}
-
-		  ag.flow[k] += 1;
-		currentNode = ag.ib[k];
-
-	  }
-
-	  if (debug) {
-		if (count++ > 500)
-		  System.exit(-1);
-	  }
-	}
-	}
-
-
-	int walkStopChoice (int orig) {
-
-		int j, jj, k, kk, count;
-		int start, end;
-		int start2, end2;
-	boolean stopAvail;
-
-		boolean debug = false;
-
-
-		start = ag.ipa[orig];
-		if (start == -1) {
-		logger.info ("start == -1 for orig = " + orig + " in walkStopChoice(orig=" + orig + ")");
-		System.exit(-1);
-	}
-		j = orig + 1;
-		while (ag.ipa[j] == -1)
-			j++;
-		end = ag.ipa[j];
-
-		boolean[] avail = new boolean[end - start];
-		double[] stopUtil = new double[end - start];
-
-		count = 0;
-		for (j=start; j < end; j++) {
-		  k = ag.indexa[j];
-			avail[count] = false;
-			stopUtil[count] = 0.0;
-		  if (debug)
-			logger.info ("orig=" + orig + ", j=" + j + ", k=" + k + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", accessTime[k]=" + accessTime[k] +", nodeInStrategy(ag.ib[k])=" + nodeInStrategy(ag.ib[k]));
-			if (accessTime[k] > 0.0) {
-				if (nodeInStrategy(ag.ib[k])) {
-					// check for special case that opposite direction link returns to orig
-					start2 = ag.ipa[ag.ib[k]];
-			if (start2 == -1) {
-			  logger.info ("start2 == -1 for ag.ib[k] = " + ag.ib[k] + " in walkStopChoice(orig=" + orig + ")");
-				System.exit(-1);
-		  }
-					jj = ag.ib[k] + 1;
-					while (ag.ipa[jj] == -1)
-						jj++;
-					end2 = ag.ipa[jj];
-					if (debug)
-			logger.info ("start2=" + start2 + ", end2=" + end2);
-		  stopAvail = true;
-					for (jj=start2; jj < end2; jj++) {
-			  kk = ag.indexa[jj];
-					  if (debug)
-						logger.info ("jj=" + jj + ", kk=" + kk + ", count=" + count + ", inStrategy[kk]=" + inStrategy[kk] + ", ag.ia[kk]=" + ag.ia[kk] + ", ag.ib[kk]=" + ag.ib[kk]);
-						if (inStrategy[kk] && ag.ib[kk] == orig) {
-							stopAvail = false;
-							break;
-						}
-					}
-					if (stopAvail) {
-					  // get first wait and walk access skims for this ag.ib[k], then add accessTime[k] to have walk access time for stop choice
-					  // skimsFromOrig(ag.ib[k]);
-						avail[count] = true;
-						stopUtil[count] = getStopUtility(k);
-					}
-				  if (debug)
-					logger.info ("count=" + count + ", avail[count]=" + avail[count] + ", stopUtil[count]=" + stopUtil[count]);
-				}
-			}
-	  count++;
-		}
-
-	if (count == 0) {
-	  logger.info ("count == 0 in walkStopChoice(orig=" + orig + ")");
-	  logger.info ("start=" + start + ", end=" + end);
-	  System.exit(-1);
-	}
-		return (ag.indexa[start + mnlMonteCarlo(stopUtil, avail, count)]);
 	}
 
 
@@ -1441,114 +1480,12 @@ public class OpStrategy {
 	}
 
 
-	public void printTransitSkims () {
-
-		int i, k = 0, m, rte;
-		int ia, ib;
-
-		boolean debug = false;
-
-		logger.info ("");
-		logger.info ("Transit Skims by Links in order in strategy");
-
-		logger.info ( myFormat.right("ia", 6) +
-			myFormat.right("ib", 6) +
-			myFormat.right("type",  6) +
-			myFormat.right("anode", 8) +
-			myFormat.right("bnode", 8) +
-			myFormat.right("hwyLink",  8) +
-			myFormat.right("hwy an",  8) +
-			myFormat.right("hwy bn",  8) +
-			myFormat.right("route",  8) +
-			myFormat.right("description",  20) +
-			myFormat.right("flow", 15) +
-			myFormat.right("walk access", 15) +
-			myFormat.right("walk egress", 15) +
-			myFormat.right("walk total", 15) +
-			myFormat.right("first wait", 15) +
-			myFormat.right("total wait", 15) +
-			myFormat.right("drive access", 15) +
-			myFormat.right("in vehicle", 15) +
-			myFormat.right("cost", 15) +
-			myFormat.right("boardings", 15) );
-
-		for (i=inStrategyCount - 1; i >= 0; i--) {
-			k = orderInStrategy[i];
-			m = ag.hwyLink[k];
-			rte = ag.trRoute[k];
-			ia = ag.ia[k];
-			ib = ag.ib[k];
-			if (ag.flow[k] > 0.0 || debug) {
-				logger.info ( myFormat.right(ia, 6) +
-					myFormat.right(ib, 6) +
-					myFormat.right(ag.linkType[k], 6) +
-					(ia <= g.getNodeCount() ? myFormat.right (indexNode[ia], 8) : myFormat.right(" ", 8)) +
-					(ib <= g.getNodeCount() ? myFormat.right (indexNode[ib], 8) : myFormat.right(" ", 8)) +
-					myFormat.right(m, 8) +
-					myFormat.right(indexNode[gia[ag.hwyLink[m]]], 8) +
-					myFormat.right(indexNode[gib[ag.hwyLink[m]]], 8) +
-					myFormat.right(rte, 8) +
-					(rte >= 0 ? myFormat.right(ag.tr.getDescription(rte), 20) : myFormat.right("walk", 20)) +
-					myFormat.right(ag.flow[k], 15, 6) +
-					(nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeAccWalkTime[ia],15, 6))) +
-					(nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeEgrWalkTime[ia],15, 6))) +
-					(nodeTotWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeTotWalkTime[ia],15, 6))) +
-					(nodeFirstWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeFirstWaitTime[ia]/AuxTrNet.OVT_COEFF,15, 6))) +
-					(nodeTotalWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeTotalWaitTime[ia]/AuxTrNet.OVT_COEFF,15, 6))) +
-					(nodeDriveAccTime[ia]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ia]  == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeDriveAccTime[ia],15, 6))) +
-					(nodeInVehTime[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeInVehTime[ia],15, 6))) +
-					(nodeCost[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeCost[ia],15, 6))) +
-					(nodeBoardings[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeBoardings[ia],15, 6))) );
-			}
-		}
-
-
-
-
-		logger.info ("");
-		logger.info ("");
-		logger.info ("");
-		logger.info ("Transit Skims by Nodes");
-
-		logger.info ( myFormat.right("ia", 6) +
-			myFormat.right("anode", 8) +
-			myFormat.right("flow", 15) +
-			myFormat.right("walk access", 15) +
-			myFormat.right("walk egress", 15) +
-			myFormat.right("walk total", 15) +
-			myFormat.right("first wait", 15) +
-			myFormat.right("total wait", 15) +
-			myFormat.right("drive access", 15) +
-			myFormat.right("in vehicle", 15) +
-			myFormat.right("cost", 15) +
-			myFormat.right("boardings", 15) );
-
-		for (i=0; i < ag.getAuxNodeCount(); i++) {
-		    ia = i;
-		    if (ia > 0) {
-				logger.info (myFormat.right(ia, 6) +
-					(ia <= g.getNodeCount() ? myFormat.right (indexNode[ia], 8) : myFormat.right(" ", 8)) +
-					myFormat.right(nodeFlow[ia], 15, 6) +
-					(nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeAccWalkTime[ia],15, 6))) +
-					(nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeEgrWalkTime[ia],15, 6))) +
-					(nodeTotWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeTotWalkTime[ia],15, 6))) +
-					(nodeFirstWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeFirstWaitTime[ia]/AuxTrNet.OVT_COEFF,15, 6))) +
-					(nodeTotalWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeTotalWaitTime[ia]/AuxTrNet.OVT_COEFF,15, 6))) +
-					(nodeDriveAccTime[ia]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ia]  == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeDriveAccTime[ia],15, 6))) +
-					(nodeInVehTime[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeInVehTime[ia],15, 6))) +
-					(nodeCost[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeCost[ia],15, 6))) +
-					(nodeBoardings[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeBoardings[ia],15, 6))) );
-		    }
-		}
-	}
-
-
 	public void printTransitSkimsTo (int dest) {
 
 		int i, k = 0, m, rte;
 		int ia, ib;
 
-		boolean debug = false;
+		boolean debug = classDebug;
 
 
 		logger.info ("");
@@ -1589,7 +1526,7 @@ public class OpStrategy {
 	double airlineDistance(int fromNode, int toNode) {
 
 	  double horizMiles, vertMiles, distMiles;
-	  boolean debug = false;
+	  boolean debug = classDebug;
 
 
 	  horizMiles = ((gNodeX[toNode] - gNodeX[fromNode])/LONGITUDE_PER_FEET)/5280.0;
@@ -1824,16 +1761,15 @@ public class OpStrategy {
 			}
 
 
-			//Print heap contents to console (note in sorted order)
+			//Print heap contents to console (not in sorted order)
 			public void dataPrint() {
-				int k;
+				int k, m;
 
 				for (int i = 0; i <= last; i++) {
 					k = data[i];
-					System.out.println("i=" + i + ", k=" + k + ", an=" + ag.ia[k] + ", bn=" + ag.ib[k] + ", linkLabel[k]=" + myFormat.right(linkLabel[k], 15, 6));
+					m = ag.hwyLink[k];
+					logger.info ("i=" + i + ",k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k] + ", linkLabel[k]=" + myFormat.right(linkLabel[k], 10, 6));
 				}
-				System.out.println();
-				System.out.flush();
 			}
 		}
 
