@@ -155,7 +155,7 @@ public class PUMSData {
 	}
     
     
-	public ArrayList readSpg2OutputAttributes (  String fileName, String[] hhFieldNames, String[] personFieldNames, String zoneIndexFile ) {
+	public ArrayList readSpg2OutputAttributes (  String fileName, String[] hhFieldNames, String[] personFieldNames, Halo halo ) {
 
 		int recCount=0;
 		
@@ -166,8 +166,7 @@ public class PUMSData {
 
 		ArrayList hhList = new ArrayList();
 		
-		Halo halo = new Halo( zoneIndexFile );
-		
+	
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(fileName));
 			String s = new String();
