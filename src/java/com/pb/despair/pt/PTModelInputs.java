@@ -108,12 +108,14 @@ public class PTModelInputs extends ModelComponent implements Serializable{
         wkdayParams.readData(ptRb,"weekdayParameters.file");
 
 
-        //create instance of PatternModelParameters for weekends            
-        if(logger.isDebugEnabled()) {
-            logger.debug("Creating Weekend PatternChoiceParameters Object");
+        //create instance of PatternModelParameters for weekends
+        if (PTModel.RUN_WEEKEND_MODEL) {
+            if(logger.isDebugEnabled()) {
+                logger.debug("Creating Weekend PatternChoiceParameters Object");
+            }
+            wkendParams = new PatternChoiceParameters();
+            wkendParams.readData(ptRb,"weekendParameters.file");
         }
-        wkendParams = new PatternChoiceParameters();
-        wkendParams.readData(ptRb,"weekendParameters.file");
           
         //read the tourModeParameters from csv to TableDataSet
         if(logger.isDebugEnabled()) {
