@@ -126,10 +126,10 @@ public class CreateDestinationChoiceLogsums {
      */
     public void writeDestinationChoiceLogsumsMatrix(ResourceBundle rb, Matrix thisMatrix){
 
-        logger.info("Writing DC Logsum Matrix; "+thisMatrix.getName());
+        logger.info("Writing DC Logsum Matrix; "+thisMatrix.getName()+".zip");
         //Get path and name
         String path = ResourceUtil.getProperty(rb, "dcLogsumWrite.path");
-        String mName = thisMatrix.getName();
+        String mName = thisMatrix.getName()+".zip";
         MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(path+mName));  //Open for writing
         mw.writeMatrix(thisMatrix);           
     }
@@ -140,10 +140,10 @@ public class CreateDestinationChoiceLogsums {
      */
     public void writeDestinationChoiceLogsumsMatrixAsBinary(ResourceBundle rb, Matrix thisMatrix){
 
-        logger.info("Writing DC Logsum Matrix; "+thisMatrix.getName());
+        logger.info("Writing DC Logsum Matrix; "+thisMatrix.getName()+".binary");
         //Get path and name
         String path = ResourceUtil.getProperty(rb, "dcLogsumWrite.path");
-        String mName = thisMatrix.getName();
+        String mName = thisMatrix.getName()+".binary";
         MatrixWriter mw = MatrixWriter.createWriter(MatrixType.BINARY,new File(path+mName));  //Open for writing
         mw.writeMatrix(thisMatrix);
     }
@@ -153,14 +153,27 @@ public class CreateDestinationChoiceLogsums {
      */
     public void writeDestinationChoiceExpUtilitiesMatrix(ResourceBundle rb){
 
-        logger.info("Writing DC Exponentiated Utilities Matrix; "+expUtilities.getName());
+        logger.info("Writing DC Exponentiated Utilities Matrix; "+expUtilities.getName()+".zip");
         //Get path and name
         String path = ResourceUtil.getProperty(rb, "dcExpUtilitesWrite.path");
         String mName = expUtilities.getName() + ".zip";
         MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(path+mName));  //Open for writing
         mw.writeMatrix(expUtilities);           
     }
-    
+
+    /**
+     * Writes the exponentiated utilities matrix to a zip file
+     */
+    public void writeDestinationChoiceExpUtilitiesBinaryMatrix(ResourceBundle rb){
+
+        logger.info("Writing DC Exponentiated Utilities Matrix; "+expUtilities.getName()+".binary");
+        //Get path and name
+        String path = ResourceUtil.getProperty(rb, "dcExpUtilitesWrite.path");
+        String mName = expUtilities.getName() + ".binary";
+        MatrixWriter mw = MatrixWriter.createWriter(MatrixType.BINARY,new File(path+mName));  //Open for writing
+        mw.writeMatrix(expUtilities);
+    }
+
     /**
      * Calculates the DC logsum for the purpose and segment.  Also stores exponentiated
      * utilities in the Matrix expUtilities.  Unavailable destinations will be set to 0.
