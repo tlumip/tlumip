@@ -196,8 +196,7 @@ public class PTDafMaster extends MessageProcessingTask {
                 startDCLogsums();
             }
 
-        } else if (msg.getId().equals(MessageID.DC_LOGSUMS_CREATED) ||
-                msg.getId().equals(MessageID.DC_EXPUTILITIES_CREATED)) {
+        } else if (msg.getId().equals(MessageID.DC_LOGSUMS_CREATED) ) {
 
             dcLogsumCount++;
             if(debug) logger.info("dcLogsumCount: " + dcLogsumCount);
@@ -381,7 +380,7 @@ public class PTDafMaster extends MessageProcessingTask {
 
 
 
-        for (int q = 1; q <= NUMBER_OF_WORK_QUEUES; q++) {
+        for (int q = 2; q <= NUMBER_OF_WORK_QUEUES+1; q++) {
             Message tazInfo = createMessage();
             tazInfo.setId(MessageID.UPDATE_TAZDATA);
             tazInfo.setValue("householdsByTaz",householdsByTaz);
@@ -441,7 +440,7 @@ public class PTDafMaster extends MessageProcessingTask {
         int initalBlockSize = 20;
 
         //iterate through number of workers, 20 household blocks
-        for (int q = 1; q <= NUMBER_OF_WORK_QUEUES; q++) {
+        for (int q = 2; q <= NUMBER_OF_WORK_QUEUES+1; q++) {
             for (int j = 0;j <= initalBlockSize; j++){ //consider: *Math.ceil(households.length / NUMBER_OF_WORK_QUEUES / MAXBLOCKSIZE)
 
                 //create an array of households
@@ -552,8 +551,8 @@ public class PTDafMaster extends MessageProcessingTask {
      * getQueueName() is used when spraying an equal number of messages accross all WorkQueues.
      */
     private String getQueueName2() {
-        if (lastWorkQueue == NUMBER_OF_WORK_QUEUES) {
-            int thisWorkQueue = 1;
+        if (lastWorkQueue == NUMBER_OF_WORK_QUEUES+1) {
+            int thisWorkQueue = 2;
             String queue = new String("WorkQueue" + thisWorkQueue);
             lastWorkQueue = thisWorkQueue;
 

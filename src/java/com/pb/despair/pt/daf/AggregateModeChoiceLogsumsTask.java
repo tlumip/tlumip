@@ -1,16 +1,13 @@
 package com.pb.despair.pt.daf;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.Date;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.matrix.Matrix;
-import com.pb.common.util.ResourceUtil;
+import com.pb.common.matrix.AlphaToBeta;
+import com.pb.common.matrix.MatrixCompression;
 import com.pb.despair.pt.ActivityPurpose;
 import com.pb.despair.pt.CreateModeChoiceLogsums;
 import com.pb.despair.pt.LogsumManager;
@@ -30,51 +27,18 @@ import com.pb.despair.pt.TourModeParameters;
  */
 public class AggregateModeChoiceLogsumsTask  extends MessageProcessingTask {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
-    protected static Object lock = new Object();
-    protected static ResourceBundle rb;
-    protected static boolean initialized = false;
+
     CreateModeChoiceLogsums mcLogsumCalculator = new CreateModeChoiceLogsums();
     TourModeChoiceModel tmcm = new TourModeChoiceModel();
     LogsumManager logsumManager;
-    String fileWriterQueue = "FileWriterQueue";
+    String matrixWriterQueue = "MatrixWriterQueue";
 
     /**
-     * Onstart method sets up model
+     * OnStart method sets up model
      */
     public void onStart() {
-        synchronized (lock) {
-            logger.info( "***" + getName() + " started");
-            //in cases where there are multiple tasks in a single vm, need to make sure only initilizing once!
-            if (!initialized) {
-                //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
-                //that was written by the Application Orchestrator
-                BufferedReader reader = null;
-                int timeInterval = -1;
-                String pathToRb = null;
-                try {
-                    logger.info("Reading RunParams.txt file");
-                    reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
-                    timeInterval = Integer.parseInt(reader.readLine());
-                    logger.info("\tTime Interval: " + timeInterval);
-                    pathToRb = reader.readLine();
-                    logger.info("\tResourceBundle Path: " + pathToRb);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+        logger.info( "***" + getName() + " started");
 
-                PTModelInputs ptInputs = new PTModelInputs(rb);
-                logger.info("Setting up the aggregate mode choice model");
-                ptInputs.setSeed(2002);
-                ptInputs.getParameters();
-                ptInputs.readSkims();
-                ptInputs.readTazData();
-                initialized = true;
-            }
-
-            logsumManager = new LogsumManager(rb);
-            logger.info( "***" + getName() + " finished onStart()");
-        }
     }
     /**
      * A worker bee that will process a block of households.
@@ -101,6 +65,9 @@ public class AggregateModeChoiceLogsumsTask  extends MessageProcessingTask {
         String purpose = String.valueOf(msg.getValue("purpose"));
         Integer segment = (Integer) msg.getValue("segment");
 
+        boolean collapse = ((Boolean) msg.getValue("collapse")).booleanValue();
+        AlphaToBeta a2b = (AlphaToBeta) msg.getValue("alphaBetaMap");
+
         //Creating the ModeChoiceLogsum Matrix
         logger.info("Creating ModeChoiceLogsumMatrix for purpose: " + purpose +
             " segment: " + segment);
@@ -110,15 +77,49 @@ public class AggregateModeChoiceLogsumsTask  extends MessageProcessingTask {
         long startTime = System.currentTimeMillis();
         Matrix m = mcLogsumCalculator.setModeChoiceLogsumMatrix(PTModelInputs.tazs,
                 theseParameters, purpose.charAt(0), segment.intValue(),
-                PTModelInputs.getSkims(), tmcm);
+                PTModelInputs.getSkims(), new TourModeChoiceModel());
         logger.fine("Created ModeChoiceLogsumMatrix in " +
             ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
+
+        //Collapse the required matrices
+
+        if (collapse) {
+            logger.info("Collapsing ModeChoiceLogsumMatrix for purpose: " + purpose +
+                " segment: " + segment);
+            collapseMCLogsums(m,a2b);
+        }
 
         //Sending message to TaskMasterQueue
         msg.setId(MessageID.MC_LOGSUMS_CREATED);
         msg.setValue("matrix", m);
-        sendTo(fileWriterQueue, msg);
-        m=null;
+        sendTo(matrixWriterQueue, msg);
     }
+
+    /**
+     * Collapse the logsums in the alpha zone matrix to beta zones.  The
+     * collapsed matrix will be send to the fileWriterQueue.
+     *
+     * @param m  Logsum matrix
+     * @param a2b AlphaToBeta mapping
+     */
+    public void collapseMCLogsums(Matrix m, AlphaToBeta a2b){
+            MatrixCompression mc = new MatrixCompression(a2b);
+
+            Matrix compressedMatrix = mc.getCompressedMatrix(m,"MEAN");
+
+        //Need to do a little work to get only the purpose/segment part out of the name
+            String newName = m.getName();
+            newName = newName.replaceAll("ls","betals");
+        logger.info("Old name: " + m.getName() + " New name: " + newName);
+            compressedMatrix.setName(newName);
+
+            //Sending message to TaskMasterQueue
+            Message msg = createMessage();
+            msg.setId(MessageID.MC_LOGSUMS_COLLAPSED);
+            msg.setValue("matrix", compressedMatrix);
+            sendTo(matrixWriterQueue, msg);
+
+    }
+
 
 }

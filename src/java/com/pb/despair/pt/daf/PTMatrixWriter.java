@@ -64,7 +64,7 @@ public class PTMatrixWriter extends MessageProcessingTask{
             modeChoiceLogsumsWritePath = ResourceUtil.getProperty(rb, "modeChoiceLogsumsWrite.path");
             dcLogsumsWritePath = ResourceUtil.getProperty(rb, "dcLogsumsWrite.path");
             dcExpUtilitesWritePath = ResourceUtil.getProperty(rb, "dcExpUtilitesWrite.path");
-        
+
         }
         
     }
@@ -74,19 +74,19 @@ public class PTMatrixWriter extends MessageProcessingTask{
                 " @time="+ new Date());
         logger.info("Free memory before writing logsum to disk: "+Runtime.getRuntime().freeMemory());
         if(msg.getId().equals(MessageID.MC_LOGSUMS_CREATED))
-            writeMatrix(msg, modeChoiceLogsumsWritePath);         //BINARY-ZIP
-//            writeBinaryMatrix(msg,modeChoiceLogsumsWritePath);
+//            writeMatrix(msg, modeChoiceLogsumsWritePath);         //BINARY-ZIP
+            writeBinaryMatrix(msg,modeChoiceLogsumsWritePath);
 
         if(msg.getId().equals(MessageID.MC_LOGSUMS_COLLAPSED))
             writeMatrix(msg, modeChoiceLogsumsWritePath);         //BINARY-ZIP
 //            writeBinaryMatrix(msg,modeChoiceLogsumsWritePath);
 
         else if(msg.getId().equals(MessageID.DC_LOGSUMS_CREATED))
-            writeMatrix(msg, dcLogsumsWritePath);                //BINARY-ZIP
-//            writeBinaryMatrix(msg,dcLogsumsWritePath);
+//            writeMatrix(msg, dcLogsumsWritePath);                //BINARY-ZIP
+            writeBinaryMatrix(msg,dcLogsumsWritePath);
         else if(msg.getId().equals(MessageID.DC_EXPUTILITIES_CREATED))
-            writeMatrix(msg, dcExpUtilitesWritePath);          //BINARY-ZIP
-//            writeBinaryMatrix(msg,dcExpUtilitesWritePath);
+//            writeMatrix(msg, dcExpUtilitesWritePath);          //BINARY-ZIP
+            writeBinaryMatrix(msg,dcExpUtilitesWritePath);
 
     }
     
@@ -98,7 +98,7 @@ public class PTMatrixWriter extends MessageProcessingTask{
             MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP, new File(path + m.getName() + ".zip"));  //Open for writing
             mw.writeMatrix(m);
 
-            logger.info("Wrote Matrix "+m.getName()+" to disk in "+(System.currentTimeMillis()-startTime)/1000.0 +" seconds");
+            logger.info("Wrote Matrix "+m.getName()+".zip to "+ path + " in "+(System.currentTimeMillis()-startTime)/1000.0 +" seconds");
             logger.info("Free memory after writing Matrix : "+m.getName()+" memory: "+Runtime.getRuntime().freeMemory());
             msg.setValue("matrix",null);
         }
@@ -114,7 +114,7 @@ public class PTMatrixWriter extends MessageProcessingTask{
             MatrixWriter mw = MatrixWriter.createWriter(MatrixType.BINARY,new File(path + m.getName() + ".binary"));
             mw.writeMatrix(m);
 
-            logger.info("Wrote Matrix "+m.getName()+".binary to disk in "+(System.currentTimeMillis()-startTime)/1000.0+" seconds");
+            logger.info("Wrote Matrix "+m.getName()+".binary to "+ path + " in "+(System.currentTimeMillis()-startTime)/1000.0 +" seconds");
             logger.info("Free memory after writing Matrix : "+m.getName()+" memory: "+Runtime.getRuntime().freeMemory());
             msg.setValue("matrix",null);
         }
