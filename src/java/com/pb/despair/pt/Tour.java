@@ -354,10 +354,12 @@ public class Tour implements Serializable{
           else
                file.print("0,0,0,0,0,0,0,");
           end.printCSV(file);
-          
-          file.print(primaryMode.type);
 
-          file.flush();
+        if (primaryMode != null) {
+            file.print(primaryMode.type);
+        }
+
+        file.flush();
 
      }
      
