@@ -243,7 +243,7 @@ public class TazData implements Cloneable{
         long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 100000000; i++) {
-            testTaz.calcTourDestinationUtility(1, 3, tdp, 0.1);
+            testTaz.calcTourDestinationUtility(1, 3, tdp, 0.1,5.0);
         }
 
         logger.fine("Total time = " +

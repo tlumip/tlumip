@@ -47,8 +47,16 @@ public class StopDestinationParametersData {
             for(int rowNumber = 1; rowNumber<=table.getRowCount(); rowNumber++) {
                  
                 StopDestinationParameters thisPurpose = new StopDestinationParameters();
-                thisPurpose.purpose       =  table.getStringValueAt(rowNumber,table.getColumnPosition("purpose")); 
-                thisPurpose.timeAuto      =  table.getValueAt(rowNumber,table.getColumnPosition("timeAuto"));                      
+                thisPurpose.purpose       =  table.getStringValueAt(rowNumber,table.getColumnPosition("purpose"));
+                thisPurpose.distanceAuto  =  table.getValueAt(rowNumber,table.getColumnPosition("distanceAuto"));
+                thisPurpose.distanceWalk  =  table.getValueAt(rowNumber,table.getColumnPosition("distanceWalk"));
+                thisPurpose.distanceBike  =  table.getValueAt(rowNumber,table.getColumnPosition("distanceBike"));
+                thisPurpose.distanceTransit  =  table.getValueAt(rowNumber,table.getColumnPosition("distanceTransit"));
+                thisPurpose.distancePowerAuto  =  table.getValueAt(rowNumber,table.getColumnPosition("distancePowerAuto"));
+                thisPurpose.distancePowerWalk  =  table.getValueAt(rowNumber,table.getColumnPosition("distancePowerWalk"));
+                thisPurpose.distancePowerBike  =  table.getValueAt(rowNumber,table.getColumnPosition("distancePowerBike"));
+                thisPurpose.distancePowerTransit  =  table.getValueAt(rowNumber,table.getColumnPosition("distancePowerTransit"));
+                thisPurpose.timeAuto      =  table.getValueAt(rowNumber,table.getColumnPosition("timeAuto"));
                 thisPurpose.timeWalk      =  table.getValueAt(rowNumber,table.getColumnPosition("timeWalk"));                  
                 thisPurpose.timeBike      =  table.getValueAt(rowNumber,table.getColumnPosition("timeBike"));                 
                 thisPurpose.timeTransit   =  table.getValueAt(rowNumber,table.getColumnPosition("timeTransit"));                
@@ -70,10 +78,11 @@ public class StopDestinationParametersData {
                                                          
      };                                                                   
                                                                           
-    public static void main (String[] args) throws Exception {           
-         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+    public static void main (String[] args) throws Exception {
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
+//         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
          StopDestinationParametersData tmp = new StopDestinationParametersData();                                     
-         tmp.readData(rb, "stopDestinationparameters");
+         tmp.readData(rb, "stopDestinationParameters.file");
          System.exit(1);                                                  
     };                                                                   
                                                                          

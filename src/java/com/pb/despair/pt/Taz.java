@@ -293,11 +293,12 @@ public class Taz implements Alternative, Cloneable{
     
     
     public void calcTourDestinationUtility(int activityPurpose, int subPurpose,
-            TourDestinationParameters tdp, double logsum){
+            TourDestinationParameters tdp, double logsum, double distance){
          
          utility=-999;
          if(tourSizeTerm[activityPurpose][subPurpose-1]>0 && acres>0){
-                utility= tdp.logsum*(logsum-10.0) + lnAcres + tourLnSizeTerm[activityPurpose][subPurpose-1];
+                utility= tdp.logsum*(logsum-10.0) + tdp.distance*distance + tdp.distancePower*Math.pow(distance,2)
+                         + lnAcres + tourLnSizeTerm[activityPurpose][subPurpose-1];
                 isAvailable=true;
          }
          else {
@@ -340,23 +341,31 @@ public class Taz implements Alternative, Cloneable{
         
         if(stopSizeTerm[purpose] > 0.0 && acres > 0.0) {
             if(mode.type == ModeType.WALK)
-            utility = stopdestinationparameters.timeWalk * walkTime 
-                + stopdestinationparameters.intraNonMotor * lnAcres
-                + stopLnSizeTerm[purpose];
+            utility = stopdestinationparameters.timeWalk * walkTime
+                      + stopdestinationparameters.distanceWalk*autoDists[1]
+                      + stopdestinationparameters.distancePowerWalk*Math.pow(autoDists[1],2)
+                      + stopdestinationparameters.intraNonMotor * lnAcres
+                      + stopLnSizeTerm[purpose];
             else
             if(mode.type == ModeType.BIKE)
-            utility = stopdestinationparameters.timeBike * bikeTime 
-                + stopdestinationparameters.intraNonMotor * lnAcres
-                + stopLnSizeTerm[purpose];
+            utility = stopdestinationparameters.timeBike * bikeTime
+                      + stopdestinationparameters.distanceBike*autoDists[1]
+                      + stopdestinationparameters.distancePowerBike*Math.pow(autoDists[1],2)
+                      + stopdestinationparameters.intraNonMotor * lnAcres
+                      + stopLnSizeTerm[purpose];
             else
             if(flag)
-            utility = stopdestinationparameters.timeTransit * transitGeneralizedCost 
-                + stopdestinationparameters.intraTransit * lnAcres
-                + stopLnSizeTerm[purpose];
+            utility = stopdestinationparameters.timeTransit * transitGeneralizedCost
+                      + stopdestinationparameters.distanceTransit*autoDists[1]
+                      + stopdestinationparameters.distancePowerTransit*Math.pow(autoDists[1],2)
+                      + stopdestinationparameters.intraTransit * lnAcres
+                      + stopLnSizeTerm[purpose];
             else
-            utility = stopdestinationparameters.timeAuto * autoTime 
-                + stopdestinationparameters.intraAuto * lnAcres
-                + stopLnSizeTerm[purpose];
+            utility = stopdestinationparameters.timeAuto * autoTime
+                      + stopdestinationparameters.distanceAuto*autoDists[1]
+                      + stopdestinationparameters.distancePowerAuto*Math.pow(autoDists[1],2)
+                      + stopdestinationparameters.intraAuto * lnAcres
+                      + stopLnSizeTerm[purpose];
             isAvailable = true;
         }
     }

@@ -7,6 +7,8 @@ import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.model.LogitModel;
 import com.pb.common.util.ResourceUtil;
+import com.pb.despair.model.SkimsInMemory;
+
 import java.util.logging.Logger;
 import java.util.ArrayList;
 
@@ -35,7 +37,7 @@ public class CreateDestinationChoiceLogsums {
     boolean debug = false;
     
     LogitModel tourDCModel;
-    
+    SkimsInMemory skims;
     protected Matrix expUtilities;
 
     /**
@@ -49,8 +51,8 @@ public class CreateDestinationChoiceLogsums {
      * Build a logit destination choice model: note that the tazs will be cloned for inclusion in the model
      * @param tazs
      */
-    public void buildModel(TazData tazs){
-        
+    public void buildModel(TazData tazs, SkimsInMemory skims){
+        this.skims = skims;
         tourDCModel = new LogitModel("tourDCModel",tazs.tazData.size());
         TazData modelTazs = (TazData) tazs.clone();
         Enumeration tourDestinationEnum=modelTazs.tazData.elements();
@@ -89,18 +91,21 @@ public class CreateDestinationChoiceLogsums {
                            Matrix logsumMatrix,
                            int originTazNumber,
                            TourDestinationParameters theseParameters) throws FileNotFoundException{
-        
-        
+
+        //need to use the char in the skims.getDistance method as we already have a getDistance method that takes an int.
+        char purposeChar = ActivityPurpose.getActivityPurposeChar((short) purpose);
+
         //Loop through all destinations
         ArrayList tazs = tourDCModel.getAlternatives();
         for(int i=0;i<tazs.size();++i){
             Taz destinationTaz = (Taz) tazs.get(i);
-            
+
             //calculate the utility
             destinationTaz.calcTourDestinationUtility(purpose, segment, theseParameters,
-                                                      logsumMatrix.getValueAt(originTazNumber, destinationTaz.zoneNumber));
-            
-                              
+                                                      logsumMatrix.getValueAt(originTazNumber, destinationTaz.zoneNumber),
+                                                       skims.getDistance(purposeChar,originTazNumber,destinationTaz.zoneNumber));
+
+
         } //end destination loop
         tourDCModel.computeAvailabilities();
         
@@ -229,6 +234,10 @@ public class CreateDestinationChoiceLogsums {
 //      Read in TazData
         TazData tazs = new TazData();
         tazs.readData(rb,"tazData.file");
+
+        //Read in SkimData
+        SkimsInMemory skims = new SkimsInMemory();
+        skims.readSkims(rb);
         //collapse employment categories for tazs
         logger.info("Collapsing employment");
         
@@ -236,7 +245,7 @@ public class CreateDestinationChoiceLogsums {
         while(tazEnum.hasMoreElements()){
               ((Taz) tazEnum.nextElement()).collapseEmployment();
         }
-        createDCLogsums.buildModel(tazs);
+        createDCLogsums.buildModel(tazs, skims);
         
         //read the tourDestinationParameters from csv to a TableDataSet
         logger.info("Reading tour destination parameters");

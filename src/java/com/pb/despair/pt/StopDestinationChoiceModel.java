@@ -90,6 +90,11 @@ public class StopDestinationChoiceModel{
                                                   //autoDists[1] = distance from begin to stop + stop to primary destination
                                                   //if autoDist[1] > 2 * autoDists[0] then that stop zone is not available.
 
+                 autoDists = skims.getAdditionalAutoDistance(thisTour.begin.location.zoneNumber,
+                                                                          thisTour.primaryDestination.location.zoneNumber,
+                                                                          stop1Taz.zoneNumber,
+                                                                          thisTour.begin.endTime);
+
                  if(thisTour.primaryMode.type==ModeType.WALK)
                          walkTime=skims.getAdditionalWalkTime(thisTour.begin.location.zoneNumber,
                                                               thisTour.primaryDestination.location.zoneNumber,
@@ -114,21 +119,14 @@ public class StopDestinationChoiceModel{
                                                                   thisTour.begin.endTime
                                                                   );
 
-                else if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
-                            thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
-
-                        autoDists = skims.getAdditionalAutoDistance(thisTour.begin.location.zoneNumber,
-                                                                          thisTour.primaryDestination.location.zoneNumber,
-                                                                          stop1Taz.zoneNumber,
-                                                                          thisTour.begin.endTime);
                 else
-                     autoTime=skims.getAdditionalAutoTime(thisTour.begin.location.zoneNumber,
+                    autoTime=skims.getAdditionalAutoTime(thisTour.begin.location.zoneNumber,
                                                           thisTour.primaryDestination.location.zoneNumber,
                                                           stop1Taz.zoneNumber,
                                                           thisTour.begin.endTime
                                                           );
 
-                 stop1Taz.calcStopDestinationUtility(thisTour.primaryDestination.activityPurpose, destParams,
+                stop1Taz.calcStopDestinationUtility(thisTour.primaryDestination.activityPurpose, destParams,
                                                         thisTour.primaryMode,
                                                         autoTime,
                                                         walkTime,
@@ -199,6 +197,11 @@ public class StopDestinationChoiceModel{
                  float[] autoDists= new float[2];  //autoDist[0] = dist. from prim. dest to end
                                                    //autoDist[1] = dist from prim dest to stop + stop to end
 
+                 autoDists = skims.getAdditionalAutoDistance(thisTour.primaryDestination.location.zoneNumber,
+                                                                          thisTour.end.location.zoneNumber,
+                                                                          stop2Taz.zoneNumber,
+                                                                          thisTour.primaryDestination.endTime);
+
                  if(thisTour.primaryMode.type==ModeType.WALK)
                          walkTime=skims.getAdditionalWalkTime(thisTour.primaryDestination.location.zoneNumber,
                                                               thisTour.end.location.zoneNumber,
@@ -221,15 +224,8 @@ public class StopDestinationChoiceModel{
                                                                       stop2Taz.zoneNumber,
                                                                       thisTour.primaryDestination.endTime
                                                                       );
-                 else if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
-                            thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
-
-                        autoDists = skims.getAdditionalAutoDistance(thisTour.primaryDestination.location.zoneNumber,
-                                                                          thisTour.end.location.zoneNumber,
-                                                                          stop2Taz.zoneNumber,
-                                                                          thisTour.primaryDestination.endTime);
                  else
-                         autoTime=skims.getAdditionalAutoTime(thisTour.primaryDestination.location.zoneNumber,
+                    autoTime=skims.getAdditionalAutoTime(thisTour.primaryDestination.location.zoneNumber,
                                                               thisTour.end.location.zoneNumber,
                                                               stop2Taz.zoneNumber,
                                                               thisTour.primaryDestination.endTime

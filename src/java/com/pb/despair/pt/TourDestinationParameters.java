@@ -13,6 +13,8 @@ public class TourDestinationParameters {
 
      public String purpose = new String();  //w=work, c=school,s=shop,r=recreate,o=other,b=workbased
      public float logsum;                  //logsum
+     public float distance;                 //distance
+     public float distancePower;            //distance squared parameter
      public float intraZonal;              //intrazonal - ln(acres)
      public float retail;            //retail employment-retail land-use
      public float nonRetail;               //Total non- retail land-use
@@ -30,8 +32,10 @@ public class TourDestinationParameters {
 
      public TourDestinationParameters(){
         
-             logsum=0;           
-          intraZonal=0;       
+             logsum=0;
+         distance=0;
+         distancePower=0;
+          intraZonal=0;
           retail=0;     
           nonRetail=0;
           gradeSchool=0;      
@@ -49,7 +53,9 @@ public class TourDestinationParameters {
 
             System.out.print(
                   "\n"+ logsum
-                 +"\n"+ intraZonal   
+                  +"\n"+ distance
+                  +"\n"+ distancePower
+                 +"\n"+ intraZonal
                   +"\n"+ retail
                  +"\n"+ nonRetail
                  +"\n"+ gradeSchool

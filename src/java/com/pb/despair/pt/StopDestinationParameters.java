@@ -12,6 +12,14 @@ public class StopDestinationParameters {
 
 
      public String purpose = new String();       //w=work, c=school,s=shop,r=recreate,o=other,b=workbased
+     public float distanceAuto;
+     public float distanceWalk;
+     public float distanceBike;
+     public float distanceTransit;
+     public float distancePowerAuto;
+     public float distancePowerWalk;
+     public float distancePowerBike;
+     public float distancePowerTransit;
      public float timeAuto;                  //add'l time if mode = auto driver, passenger
      public float timeWalk;                   //add'l time if mode = walk
      public float timeBike;                       //add'l time if mode = bike
@@ -26,8 +34,16 @@ public class StopDestinationParameters {
 
      public StopDestinationParameters(){
         
-             timeAuto=0;           
-          timeWalk=0;           
+             timeAuto=0;
+         distanceAuto=0;
+         distanceWalk=0;
+         distanceBike=0;
+         distanceTransit=0;
+         distancePowerAuto=0;
+          distancePowerWalk=0;
+         distancePowerBike=0;
+          distancePowerTransit=0;
+          timeWalk=0;
           timeBike=0;             
           timeTransit=0;        
           intraNonMotor=0;      

@@ -58,8 +58,10 @@ public class TourDestinationParametersData {
                  
                 TourDestinationParameters thisPurpose = new TourDestinationParameters();
                 thisPurpose.purpose             = table.getStringValueAt(rowNumber,table.getColumnPosition("Purpose")); 
-                thisPurpose.logsum              = table.getValueAt(rowNumber,table.getColumnPosition("logsum"));                      
-                thisPurpose.intraZonal          = table.getValueAt(rowNumber,table.getColumnPosition("intraZonal"));                  
+                thisPurpose.logsum              = table.getValueAt(rowNumber,table.getColumnPosition("logsum"));
+                thisPurpose.distance              = table.getValueAt(rowNumber,table.getColumnPosition("distance"));
+                thisPurpose.distancePower              = table.getValueAt(rowNumber,table.getColumnPosition("distancePower"));
+                thisPurpose.intraZonal          = table.getValueAt(rowNumber,table.getColumnPosition("intraZonal"));
                 thisPurpose.retail              = table.getValueAt(rowNumber,table.getColumnPosition("retail"));                
                 thisPurpose.nonRetail           = table.getValueAt(rowNumber,table.getColumnPosition("nonRetail"));                   
                 thisPurpose.gradeSchool         = table.getValueAt(rowNumber,table.getColumnPosition("gradeSchool"));                 
@@ -93,13 +95,18 @@ public class TourDestinationParametersData {
                                                                           
 
     public static void main (String[] args) throws Exception {
-        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
+//        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
          TourDestinationParametersData tdpd = new TourDestinationParametersData();
          tdpd.readData(rb, "tourDestinationParameters.file");
          for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSE.length;i++){
             int length = tdpd.tourDestinationParameters[i].length;
-            for(int j=0;j<length;j++){
-                logger.info("logsum for purpose "+i+" segment "+j+" = "+tdpd.getParameters(i,j).logsum);
+            System.out.println("purpose " + ActivityPurpose.getActivityPurposeChar((short)i));
+            for(int j=1;j<=length;j++){
+                System.out.println("\tsegment " + j);
+                System.out.println("\t\tlogsum  = "+tdpd.getParameters(i,j).logsum);
+                System.out.println("\t\tdistance  = "+tdpd.getParameters(i,j).distance);
+                System.out.println("\t\tdistancePower  = "+tdpd.getParameters(i,j).distancePower);
             }
          }                                                                          
          System.exit(1);                                                  
