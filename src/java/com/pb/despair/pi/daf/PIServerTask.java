@@ -93,22 +93,22 @@ public class PIServerTask extends Task{
         Message[] msgs;
 
         //Get ports to the worker queues to communicate with a queue
-        Port[] SetupWorkPorts = new Port[nNodes-1];
+        Port[] SetupWorkPorts = new Port[nWorkQueues];
         for(int i=0;i<nWorkQueues;i++){
             SetupWorkPorts[i] = pManager.createPort("SetupWorkQueue_"+ (i+1));
         }
 
         Port[] CUWorkPorts = new Port[nWorkQueues]; //the Server task will always be on node 0
-        for(int i=0;i<nWorkQueues;i++){             //work queues will always start on node 1 (and numbered 1...n)
+        for(int i=0;i<nWorkQueues;i++){             //work queues will always start on node 1 (and be numbered 1...n)
             CUWorkPorts[i] = pManager.createPort("CUWorkQueue_"+ (i+1)); //
         }
 
-        Port[] SDWorkPorts = new Port[nNodes-1];
+        Port[] SDWorkPorts = new Port[nWorkQueues];
         for(int i=0;i<nWorkQueues;i++){
             SDWorkPorts[i] = pManager.createPort("SDWorkQueue_"+ (i+1));
         }
 
-        Port[] OutputWorkPorts = new Port[nNodes-1];
+        Port[] OutputWorkPorts = new Port[nWorkQueues];
         for(int i=0;i<nWorkQueues;i++){
             OutputWorkPorts[i] = pManager.createPort("OPWorkQueue_"+ (i+1));
         }
