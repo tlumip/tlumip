@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 public class StartDafApplication {
     private static Logger logger = Logger.getLogger("com.pb.despair.ao");
     private ResourceBundle rb; //this is ao.properties
-    private long commandSleepTime = 52000;
+    private long commandSleepTime = 10000;
     private long fileCheckSleepTime = 2000;
     private int t;
     String pathPrefix;
