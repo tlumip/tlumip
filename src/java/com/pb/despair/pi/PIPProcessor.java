@@ -44,6 +44,28 @@ public class PIPProcessor {
     Hashtable floorspaceInventory;
     Hashtable floorspaceZoneCrossref;
     int maxAlphaZone=0;
+    
+    ArrayList histogramSpecifications = new ArrayList();
+    static class HistogramSpec {
+        String commodityName;
+        String categorizationSkim;
+        private Commodity com = null;
+        /**
+         * <code>boundaries</code> contains Float objects describing the histogram band boundaries
+         */
+        ArrayList boundaries = new ArrayList();
+        
+        Commodity getCommodity() {
+            if (com == null) {
+                com = Commodity.retrieveCommodity("commodityName");
+            }
+            return com;
+        }
+    }
+    private final int maxHistogramBands = 100;
+    private boolean logitProduction;
+    // 4 dimensional matrix, activity, zoneNumber, commodity, MorU
+    private StringIndexedNDimensionalMatrix zonalMakeUseCoefficients;
 
     public PIPProcessor(){
     }
@@ -295,27 +317,7 @@ public class PIPProcessor {
         return (String[]) skimNames.toArray(new String[0]);
     }
     
-    ArrayList histogramSpecifications = new ArrayList();
-    static class HistogramSpec {
-        String commodityName;
-        String categorizationSkim;
-        private Commodity com = null;
-        /**
-         * <code>boundaries</code> contains Float objects describing the histogram band boundaries
-         */
-        ArrayList boundaries = new ArrayList();
-        
-        Commodity getCommodity() {
-            if (com == null) {
-                com = Commodity.retrieveCommodity("commodityName");
-            }
-            return com;
-        }
-    }
-    private final int maxHistogramBands = 100;
-    private boolean logitProduction;
-    // 4 dimensional matrix, activity, zoneNumber, commodity, MorU
-    private StringIndexedNDimensionalMatrix zonalMakeUseCoefficients;
+    
     
     protected String[] readInHistogramSpecifications() {
          ArrayList newSkimNames = new ArrayList();
@@ -1389,9 +1391,10 @@ public class PIPProcessor {
                     }
                 } // end of zone loop
             } // end of production activity loop
-            logger.info("ZonalMakeUse.csv has been written");
+            
             if (ascii) {
                 zMakeUseFile.close();
+                logger.info("ZonalMakeUse.csv has been written");
             }
         } catch (Exception e) {
             logger.fatal("Can't create ZonalMakeUse output file");
