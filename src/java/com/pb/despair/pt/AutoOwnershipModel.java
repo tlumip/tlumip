@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 public class AutoOwnershipModel {
      
      public static final long debugID = 1001;
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.AutoOwnershipModel");
+     final static Logger logger = Logger.getLogger("com.pb.despair.pt.AutoOwnershipModel");
      ResourceBundle rb;
      /* Constructor takes an array
      * of households and applies the model

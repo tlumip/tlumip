@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
  
 public class TripModeChoiceModel{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
 
      final static int debugID = -1;
     boolean wroteOutNullTripMode = false;

@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class Bike extends Mode {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");     
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      
 
 //     public boolean isAvailable=true;

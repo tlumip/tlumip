@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * @author Joel Freedman
  */
 public class AutoOwnershipModelParameters {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.AutoOwnershipModelParameters");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.AutoOwnershipModelParameters");
      String autoOwnershipParametersTableName="AutoOwnershipParameters";
 
     public double auto0Con;

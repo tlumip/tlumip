@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  */
 
 public class DurationModel{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.DurationModel");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.DurationModel");
      //attributes
      Pattern thisPattern;
      PersonDurationAttributes thisPersonAttributes = new PersonDurationAttributes();

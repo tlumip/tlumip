@@ -30,7 +30,7 @@ public class PTDataReader{
         this.globalRb = globalRb;
     }
 
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
 
     public BufferedReader openFile(String name){
         try {

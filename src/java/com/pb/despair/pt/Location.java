@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 
  */
 public class Location implements Serializable{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      //attributes
      public int zoneNumber;
      int gridCell;

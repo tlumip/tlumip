@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class TourDestinationParametersData {
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+     final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      String tourDestinationParametersTableName="TourDestinationParameters";
 
      private TourDestinationParameters tourDestinationParameters[][] = new TourDestinationParameters[ActivityPurpose.ACTIVITY_PURPOSES.length][];

@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class DestinationChoiceLogsums {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     public Hashtable logsums = new Hashtable();
 
     public DestinationChoiceLogsums(){

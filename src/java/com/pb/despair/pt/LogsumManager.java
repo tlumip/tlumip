@@ -14,7 +14,7 @@ import java.util.ResourceBundle;
  */
 public class LogsumManager implements Serializable{
 
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt"); 
+     final static Logger logger = Logger.getLogger("com.pb.despair.pt");
      ModeChoiceLogsums[] logsums; 
      ResourceBundle rb;
      int currentWorkSegment=-1;

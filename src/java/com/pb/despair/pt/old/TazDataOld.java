@@ -34,7 +34,7 @@ public class TazDataOld {
     public Hashtable tazData = new Hashtable();
     
     protected LogitModel tourDestinationChoiceModel;
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      
      public boolean hasTaz(int zoneNumber){
           

@@ -14,7 +14,7 @@ import java.util.Vector;
  */
 
 public class Activity implements Serializable{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     // Attributes  (they are ints because they are multiplied by params in the Duration Model!)
     public Location location = new Location();
 
@@ -198,7 +198,7 @@ public class Activity implements Serializable{
             
             
         file.print(
-            activityPurpose
+            ActivityPurpose.getActivityPurposeChar(activityPurpose)
                 + ","
                 + startTime
                 + ","

@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  */
 
 public class TripModeParametersData {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      String tripModeParametersTableName="TripModeParameters";
      
      //a hashtable of taz objects

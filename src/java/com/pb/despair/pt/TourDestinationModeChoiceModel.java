@@ -21,7 +21,7 @@ import java.io.PrintWriter;
  
 public class TourDestinationModeChoiceModel{
     
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.TourDestinationModeChoiceModel");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.TourDestinationModeChoiceModel");
 
     LogitModel destinationModel;
     Taz chosenTaz;

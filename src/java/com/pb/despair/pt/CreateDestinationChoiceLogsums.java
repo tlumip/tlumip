@@ -31,7 +31,7 @@ public class CreateDestinationChoiceLogsums {
 
 
 
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
     
     LogitModel tourDCModel;
     SkimsInMemory skims;

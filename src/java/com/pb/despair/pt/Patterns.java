@@ -21,7 +21,7 @@ public class Patterns implements Cloneable{
 
      String patternsFileName;
      String patternsTableName;
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+     final static Logger logger = Logger.getLogger("com.pb.despair.pt");
 
      //an ArrayList of weekdayPatterns
      //public ArrayList patterns = new ArrayList();

@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class DriveTransitTrip extends Mode {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     public DriveTransitTrip(){
           alternativeName=new String("DriveTransitTrip");
           type=ModeType.DRIVETRANSITTRIP;

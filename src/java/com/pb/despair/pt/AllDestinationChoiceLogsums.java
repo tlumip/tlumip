@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  */
 
 public class AllDestinationChoiceLogsums {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");    
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     
     static final int TOTALSEGMENTS = PTHousehold.NUM_WORK_SEGMENTS;
 

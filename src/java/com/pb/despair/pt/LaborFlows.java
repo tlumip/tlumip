@@ -41,7 +41,7 @@ public class LaborFlows implements Serializable{
     
     static double dispersionParameter = 0.54; //this is the default value but it is also set in the properties file
     
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
     ResourceBundle rb;
 
     public LaborFlows(ResourceBundle appRb){

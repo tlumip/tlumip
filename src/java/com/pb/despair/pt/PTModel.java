@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public class PTModel extends ModelComponent implements Serializable{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
     public static boolean RUN_WEEKEND_MODEL = false; //default is false but can be set in properties file to true
     public TazData tazs;
     Patterns wkdayPatterns;

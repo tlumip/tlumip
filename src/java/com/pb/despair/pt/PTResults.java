@@ -17,7 +17,7 @@ import com.pb.common.matrix.MatrixType;
  */
 public class PTResults {
     
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.PTModel");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.PTModel");
     PTTimer timer = new PTTimer();
     PTDataWriter ptWriter = new PTDataWriter();
     static PrintWriter debug;

@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class BikeTrip extends Mode {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     public BikeTrip(){
           alternativeName=new String("BikeTrip");
           type=ModeType.BIKETRIP;

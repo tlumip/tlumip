@@ -23,7 +23,7 @@ import java.util.*;
 
 
 public class PTModelInputs extends ModelComponent implements Serializable{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
     public static final boolean RUN_WEEKEND_MODEL = false;
     Random thisRandom;
 

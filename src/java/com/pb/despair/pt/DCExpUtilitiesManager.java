@@ -17,7 +17,7 @@ import com.pb.common.util.ResourceUtil;
  */
 public class DCExpUtilitiesManager implements Serializable{
 
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt"); 
+     final static Logger logger = Logger.getLogger("com.pb.despair.pt");
      Matrix[] expUtilities; 
      ResourceBundle rb;
      int currentWorkSegment=-1;

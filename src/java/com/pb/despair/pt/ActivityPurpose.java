@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public final class ActivityPurpose{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     public static final int WORK_SEGMENTS = 4;
     public static final int SCHOOL_SEGMENTS = 3;
     

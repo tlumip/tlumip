@@ -27,7 +27,7 @@ import com.pb.common.matrix.MatrixWriter;
 public class WorkplaceLocationModel{
 
     private int lastWorkLogsumSegment = -1;    
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
 
     public WorkplaceLocationModel(){}
 

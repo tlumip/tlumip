@@ -19,7 +19,7 @@ import java.io.PrintWriter;
 
  
 public class StopDestinationChoiceModel{
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.StopDestinationChoiceModel");
+     final static Logger logger = Logger.getLogger("com.pb.despair.pt.StopDestinationChoiceModel");
      double utility;
      final static int debugID = 68313;
      LogitModel iStop1Model;

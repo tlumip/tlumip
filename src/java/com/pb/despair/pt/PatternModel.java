@@ -18,7 +18,7 @@ import java.util.List;
 
 public class PatternModel{
 
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.PatternModel");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.PatternModel");
     final long debugID=1;
     LogitModel patternChoiceModel;
     PTTimer timer = new PTTimer();

@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
  
 public class WorkBasedTourModel{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.WorkBasedTourModel");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.WorkBasedTourModel");
     boolean writtenOutTheUtilitiesAlready = false;
      final static int debugID = -1;
 

@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  */
 public class PTSummarizer {
 
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.PTSummarizer");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.PTSummarizer");
 
     static int[][] purposeMode = new int[6][8]; //table of freq. of tours by purpose/mode
     static int purposeSum = 0;

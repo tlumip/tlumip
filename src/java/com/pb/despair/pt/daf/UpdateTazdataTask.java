@@ -22,7 +22,7 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.despair.pt.PTModelInputs;
 
 public class UpdateTazdataTask extends MessageProcessingTask{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
     protected static Object lock = new Object();
     protected static ResourceBundle ptRb;
     protected static ResourceBundle globalRb;

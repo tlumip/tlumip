@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
  */
 public class TourModeParametersData {
     
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     String tourModeParametersTableName="TourModeParameters";
     //DataManager dm = new DataManager();  //Create a data manager, connect to default data-store
      

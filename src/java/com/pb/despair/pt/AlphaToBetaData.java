@@ -26,7 +26,7 @@ import java.util.Iterator;
  */
 public class AlphaToBetaData {
      
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     protected int numberOfDistricts;
     int tazI;
     int tazJ;

@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
  */
 public class CreateModeChoiceLogsums {
     
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt");     
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
 
     //  arrays with segments
     static final int[] auwk0segs={1,0,0,1,0,0,1,0,0};

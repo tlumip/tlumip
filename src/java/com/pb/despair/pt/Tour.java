@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 public class Tour implements Serializable{
   
   // Attributes
-      protected static Logger logger = Logger.getLogger("com.pb.despair.Tour");
+      final static Logger logger = Logger.getLogger("com.pb.despair.Tour");
       public Activity begin;
       public Activity primaryDestination;
       public Activity intermediateStop1;
@@ -238,7 +238,7 @@ public class Tour implements Serializable{
           end.activityNumber=3;
           end.location=workTour.primaryDestination.location;
           end.endTime = workTour.primaryDestination.endTime;
-          tourString="b";
+          tourString="wow";
           
           if(workTour.primaryMode.type==ModeType.AUTODRIVER)
                driveToWork=true;
@@ -268,7 +268,7 @@ public class Tour implements Serializable{
           end.printCSV(file);
 
         if (primaryMode != null) {
-            file.println(primaryMode.type);
+            file.print(primaryMode.type);
         }else{
             file.print("no mode");
         }

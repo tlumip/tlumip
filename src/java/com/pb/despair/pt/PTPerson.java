@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class PTPerson implements Serializable, Comparable{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      public boolean employed; //will be true if 'RLABOR' code = 1,2,4 or 5.
      public boolean student;
      public boolean worksTwoJobs;

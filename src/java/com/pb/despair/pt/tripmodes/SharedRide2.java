@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class SharedRide2 extends Mode {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");    
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      
 //     public boolean isAvailable=true;
 //     public boolean hasUtility=false;

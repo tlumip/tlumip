@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
  */
 public class StopDestinationParametersData {
     
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      String stopDestinationParametersTableName="StopDestinationParameters";
      
      //a hashtable of taz objects

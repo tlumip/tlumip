@@ -18,7 +18,7 @@ import java.io.IOException;
  * 
  */
 public class PatternChoiceParameters {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      String patternChoiceParametersFileName;
      String patternChoiceParametersTableName;
 

@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
  */
 
 public class PersonPatternChoiceAttributes{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      //following are boolean (0,1) integers
      
      //for weekday model

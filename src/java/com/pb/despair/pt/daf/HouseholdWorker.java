@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class HouseholdWorker extends MessageProcessingTask {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
     protected static Object lock = new Object();
     protected static boolean initialized = false;
     protected static boolean dcLoaded = false;

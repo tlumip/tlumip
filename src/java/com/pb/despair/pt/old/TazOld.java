@@ -28,7 +28,7 @@ import java.io.PrintWriter;
  * 
  */
 public class TazOld implements Alternative{
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     private boolean NEW_UTILITY_METHOD = true;
 
     //attributes

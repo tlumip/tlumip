@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 
 public class HouseholdProcessorTask extends MessageProcessingTask {
 
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
+    final static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
     protected static Object lock = new Object();
     protected static ResourceBundle ptRb;
     protected static ResourceBundle globalRb;

@@ -18,7 +18,7 @@ import com.pb.despair.pt.tourmodes.*;
  
 public class TourModeChoiceModel{
     
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.TourModeChoiceModel");
+     final static Logger logger = Logger.getLogger("com.pb.despair.pt.TourModeChoiceModel");
     
      Mode chosenMode;
      double logsum;
