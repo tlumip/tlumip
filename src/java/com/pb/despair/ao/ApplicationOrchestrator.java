@@ -2,7 +2,6 @@ package com.pb.despair.ao;
 
 import org.apache.commons.digester.Digester;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,6 +14,9 @@ import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -83,6 +85,12 @@ public class ApplicationOrchestrator {
 	            runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, true));
 	            runLogWriter.write("# Filter values for properties files");
 	            runLogWriter.newLine();
+	            runLogWriter.write("BASEDIR=" + rootDir);
+	            runLogWriter.newLine();
+	            runLogWriter.write("SCENARIO_NAME=" + scenarioName);
+	            runLogWriter.newLine();
+	            runLogWriter.write("BASE_YEAR=0");
+	            runLogWriter.newLine();
 	            runLogWriter.write("CURRENT_YEAR=" + t);
 	            runLogWriter.newLine();
 	            runLogWriter.flush();
@@ -148,10 +156,17 @@ public class ApplicationOrchestrator {
         //First read in the template properties file.  This will have default values and
         //tokens (surrounded by @ symbols).  The tokens will be replace with the values
         //in the runLogHashMap
-        ResourceBundle rbTemplate = findResourceBundle(findPathToResourceBundle(appName));
-        HashMap rbMap = ResourceUtil.changeResourceBundleIntoHashMap(rbTemplate);
+        if (appName.endsWith("daf")) appName = appName.substring(0,(appName.length()-3));
+        File appPropertyTemplate = new File(rootDir + "/scenario_" + scenarioName + "/t0/" + appName + "Template.properties");
+        Properties appDefaultProps = new Properties();
+        try {
+            appDefaultProps.load(new FileInputStream(appPropertyTemplate));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         
-        ArrayList rbKeys = (ArrayList) rbMap.keySet();
         Iterator keys = runLogHashmap.keySet().iterator();
 	    while (keys.hasNext()) {
 	        String keyName = (String) keys.next();
@@ -162,13 +177,24 @@ public class ApplicationOrchestrator {
 	        Pattern pattern = Pattern.compile(patternStr);
 	
 	        // Replace all occurrences of pattern in input string
-	        while(rbKeys.iterator().hasNext()){
-	            String tempStr = new String((rbMap.get(rbKeys.iterator().next());
+	        Enumeration propNames = appDefaultProps.propertyNames();
+	        while(propNames.hasMoreElements()){
+	            String propName = (String)propNames.nextElement();
+	            String tempStr = new String(appDefaultProps.getProperty(propName));
 	            Matcher matcher = pattern.matcher(tempStr);
 	            tempStr = matcher.replaceAll(hashmapValue);
-	            rbMap.put
+	            appDefaultProps.setProperty(propName, tempStr);
 	        }
-        }	
+        }
+	    appDefaultProps.list(System.out);
+	    File appPropertyFile = new File(rootDir + "/scenario_" + scenarioName + "/t" + t + "/"+ appName + ".properties");
+	    try {
+            appDefaultProps.store(new FileOutputStream(appPropertyFile), appName.toUpperCase() + " Properties File for Interval " + t);
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
     }
 
     /* PTDAF and PIDAF just need the path to the resource bundle
