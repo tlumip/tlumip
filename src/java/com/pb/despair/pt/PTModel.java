@@ -335,7 +335,7 @@ public void buildLogitModels(){
                             ++workBasedTours;
                             thisHousehold.persons[personNumber].weekdayWorkBasedTours[workBasedTours-1]  = new Tour();
                             Tour thisWeekdayWorkBasedTour = thisHousehold.persons[personNumber].weekdayWorkBasedTours[workBasedTours-1];
-                            thisWeekdayWorkBasedTour.tourNumber=workBasedTours;
+                            thisWeekdayWorkBasedTour.tourNumber=thisPerson.weekdayTours.length + workBasedTours;
                             thisWeekdayWorkBasedTour.setWorkBasedTourAttributes(thisWeekdayTour);
                             workBasedTourModel.calculateWorkBasedTour(thisHousehold,
                                                               thisPerson,
@@ -347,6 +347,15 @@ public void buildLogitModels(){
                                                               um,
                                                               tmcm
                                                               );
+
+                            tripModeChoiceModel.calculateTripModes(thisHousehold,
+                                               thisPerson,
+                                               thisWeekdayWorkBasedTour,
+                                               PTModelInputs.skims,
+                                               PTModelInputs.smpd,
+                                               tazs
+                                               );
+                            
                             adjustStartEndTimeOfWorkBasedTour(thisWeekdayWorkBasedTour, PTModelInputs.skims);
                         }
                         times[2] += (System.currentTimeMillis()-secondaryTime)/1000.0;
@@ -518,7 +527,8 @@ public void buildLogitModels(){
             //adjust intStop1 end time
             durationModel.calculateEndTime(thisTour.intermediateStop1);
             //set primary destination timeToActivity
-            if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK){
+            if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK ||
+                    thisTour.primaryDestination.activityPurpose == ActivityPurpose.WORK_BASED){
                 thisTour.primaryDestination.timeToActivity = (short) skims.pkTime.getValueAt(thisTour.intermediateStop1.location.zoneNumber,
                                                                                              thisTour.primaryDestination.location.zoneNumber);
             } else thisTour.primaryDestination.timeToActivity = (short) skims.opTime.getValueAt(thisTour.intermediateStop1.location.zoneNumber,
@@ -527,7 +537,8 @@ public void buildLogitModels(){
             durationModel.calculateStartTime(thisTour.intermediateStop1,thisTour.primaryDestination);
         } else { //this tour has no intermediateStop1 and goes from begin to primary destination
             //set primary destination timeToActivity
-            if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK){
+            if(thisTour.primaryDestination.activityPurpose==ActivityPurpose.WORK ||
+                    thisTour.primaryDestination.activityPurpose == ActivityPurpose.WORK_BASED){
                 thisTour.primaryDestination.timeToActivity = (short) skims.pkTime.getValueAt(thisTour.begin.location.zoneNumber,
                                                                                              thisTour.primaryDestination.location.zoneNumber);
             } else thisTour.primaryDestination.timeToActivity = (short) skims.opTime.getValueAt(thisTour.begin.location.zoneNumber,

@@ -72,74 +72,49 @@ public class PTResults {
         
     }
     
-    //TODO: create files to write to
-    //This method used to be called by PTDafMaster but we are now trying to have the workers write out these
-    //files instead.
     public void createFiles(){
         weekdayTour = open(ResourceUtil.getProperty(rb, "weekdayTour.file"));
-        weekdayTour.println(",,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
-        weekdayTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#," +
+        weekdayTour.println(",,,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
+        weekdayTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#,departDist," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "primaryMode");
+
         weekdayPattern = open(ResourceUtil.getProperty(rb, "weekdayPattern.file"));
-        weekdayPattern.println("hhID,personID,patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
+        weekdayPattern.println("hhID,personID,weekdayTour(yes/no),patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
                 "nShopActivities,nRecreateActivities,nOtherActivities");
+
         weekdayTrip = open(ResourceUtil.getProperty(rb, "weekdayTrip.file"));
-        weekdayTrip.println("origin,tripStartTime,distance,destination,tourMode,tripMode");
+        weekdayTrip.println("hhID,personID,weekdayTour(yes/no),tour#,tourPurpose,tourMode,origin,destination,distance,time,tripStartTime,tripPurpose,tripMode");
+
         householdData = open(ResourceUtil.getProperty(rb, "householdData.file"));
         householdData.println("ID,size,autos,workers,income,singleFamily,multiFamily,homeTaz");        
         
         if(PTModel.RUN_WEEKEND_MODEL){
             weekendTour = open(ResourceUtil.getProperty(rb, "weekendTour.file"));
-            weekendTour.println(",,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
-            weekendTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#," +
+            weekendTour.println(",,,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
+            weekendTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#,departDist" +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "primaryMode");
+
             weekendPattern = open(ResourceUtil.getProperty(rb, "weekendPattern.file"));
             weekendPattern.println("hhID,personID,patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
                 "nShopActivities,nRecreateActivities,nOtherActivities");
+
             weekendTrip = open(ResourceUtil.getProperty(rb, "weekendTrip.file"));
-            weekendTrip.println("origin,tripStartTime,distance,destination,tourMode,tripMode");
+            weekendTrip.println("hhID,personID,tour#,tourPurpose,tripPurpose,origin,tripStartTime,distance,destination,tourMode,tripMode");
         }
     }
 
-    public void createWorkerFiles(String WorkerName){
-        weekdayTour = open((ResourceUtil.getProperty(rb, "weekdayTour.file") + "." + WorkerName + ".csv"));
-        weekdayTour.println(",,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
-        weekdayTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#," +
-                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
-                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
-                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
-                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
-                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
-                "primaryMode");
-        weekdayPattern = open((ResourceUtil.getProperty(rb, "weekdayPattern.file") + "." + WorkerName + ".csv"));
-        weekdayPattern.println("hhID,personID,patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
-                "nShopActivities,nRecreateActivities,nOtherActivities");
-        weekdayTrip = open((ResourceUtil.getProperty(rb, "weekdayTrip.file") + "." + WorkerName + ".csv"));
-        weekdayTrip.println("origin,tripStartTime,distance,destination,tourMode,tripMode");
-        householdData = open((ResourceUtil.getProperty(rb, "householdData.file") + "." + WorkerName + ".csv"));
-        householdData.println("ID,size,autos,workers,income,singleFamily,multiFamily,homeTaz");
 
-        if(PTModel.RUN_WEEKEND_MODEL){
-            weekendTour = open((ResourceUtil.getProperty(rb, "weekendTour.file") + "." + WorkerName + ".csv"));
-            weekendTour.println("header");
-            weekendPattern = open((ResourceUtil.getProperty(rb, "weekendPattern.file") + "." + WorkerName + ".csv"));
-            weekendPattern.println("header");
-            weekendTrip = open((ResourceUtil.getProperty(rb, "weekendTrip.file") + "." + WorkerName + ".csv"));
-            weekendTrip.println("header");
-        }
-    }
 
-    //TODO: refactor to write results for household array to results
     public void writeResults(PTHousehold[] households){
           
           logger.info("Writing patterns and tours to csv file");

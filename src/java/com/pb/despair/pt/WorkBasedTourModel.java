@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 public class WorkBasedTourModel{
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.WorkBasedTourModel");
     boolean writtenOutTheUtilitiesAlready = false;
-    final static boolean debug=true;
+    final static boolean debug=false;
      final static int debugID = -1;
 
      LogitModel destinationModel;
@@ -171,7 +171,13 @@ public class WorkBasedTourModel{
                chosenTaz.zoneNumber, thisTour.begin.endTime);
           TravelTimeAndCost returnCost = skims.setTravelTimeAndCost(chosenTaz.zoneNumber, 
                thisTour.end.location.zoneNumber, thisTour.primaryDestination.endTime);
-                   
+
+         //Sets tour lengths
+          thisTour.departDist = departCost.driveAloneDistance;
+          thisTour.returnDist = returnCost.driveAloneDistance;
+          thisTour.primaryDestination.distanceToActivity = departCost.driveAloneDistance;
+          thisTour.end.distanceToActivity = returnCost.driveAloneDistance;
+
           //set mode choice taz attributes (only parking cost at this point)
           ZoneAttributes zone = new ZoneAttributes();
           zone.parkingCost=chosenTaz.nonWorkParkingCost;

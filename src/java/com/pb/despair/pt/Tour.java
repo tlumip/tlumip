@@ -343,6 +343,7 @@ public class Tour implements Serializable{
 //          file.print(new Date()+",");
           file.print(tourString+",");
           file.print(tourNumber+",");
+          file.print(departDist+",");
           begin.printCSV(file);
           if(intermediateStop1!=null)
                intermediateStop1.printCSV(file);
