@@ -7,13 +7,11 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 
-import javax.swing.JFrame;
 
 import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.matrix.MatrixType;
-import com.pb.common.matrix.MatrixViewer;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
 
@@ -394,17 +392,5 @@ public class Skims {
         Matrix mSqueezed = s.getSqueezedMatrix(m);
 
         
-    	// use a MatrixViewer to examione the skims matrices created here
-	    JFrame frame = new JFrame("MatrixViewer - " + m.getDescription());
-	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	
-        MatrixViewer matrixContentPane = new MatrixViewer( mSqueezed );
-
-	    matrixContentPane.setOpaque(true); //content panes must be opaque
-	    frame.setContentPane(matrixContentPane);
-	
-	    frame.pack();
-	    frame.setVisible(true);
-
     }
 }

@@ -16,7 +16,6 @@ import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixType;
-import com.pb.common.matrix.MatrixViewer;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
 
@@ -30,8 +29,6 @@ import java.util.StringTokenizer;
 import java.io.File;
 import java.text.DateFormat;
 
-import javax.swing.JFrame;
-
 import org.apache.log4j.Logger;
 
 
@@ -41,7 +38,9 @@ public class AuxTrNetTest {
 	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.tests");
 
 	
-	static final boolean CREATE_NEW_NETWORK = false;
+	static final boolean CREATE_NEW_NETWORK = true;
+	static final int START_NODE = 24944;
+	static final int END_NODE = 10;
 	
 	
 	public static final String AUX_TRANSIT_NETWORK_LISTING = "c:\\jim\\tlumip\\aux_transit_net.listing";
@@ -172,8 +171,6 @@ public class AuxTrNetTest {
 		 *  
 		 */
 		
-    	test.runViewSkimMatrixTest( "peak", "walk", 0 );
-    	
     }
 
     
@@ -193,29 +190,6 @@ public class AuxTrNetTest {
 		
 	}
 
-	
-	
-	private void runViewSkimMatrixTest ( String period, String accessMode, int skimIndex ) {
-		
-		logger.info ("generating skim matrices");
-		Matrix[] skims = getTransitSkims ( period, accessMode );
-        Matrix m = skims[skimIndex];
-
-        
-    	// use a MatrixViewer to examione the skims matrices created here
-        logger.info ("running MatrixViewer");
-	    JFrame frame = new JFrame("MatrixViewer - " + m.getDescription());
-	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	
-        MatrixViewer matrixContentPane = new MatrixViewer( m );
-
-	    matrixContentPane.setOpaque(true); //content panes must be opaque
-	    frame.setContentPane(matrixContentPane);
-	
-	    frame.pack();
-	    frame.setVisible(true);
-
-	}
 	
 	
 	public void writeZipTransitSkims ( String period, String accessMode, String[] transitSkimFileNames ) {
@@ -258,8 +232,8 @@ public class AuxTrNetTest {
 		OpStrategy os = new OpStrategy( ag );
 
 		int[] nodeIndex = ag.getHighwayNetwork().getNodeIndex();
-		os.buildStrategy( 0 );
-		os.getOptimalStrategyWtSkimsFromOrig( nodeIndex[24944] );
+		os.buildStrategy( nodeIndex[END_NODE] );
+		os.getOptimalStrategyWtSkimsFromOrig( START_NODE, END_NODE );
 		System.exit(1);
 		
 		
@@ -369,7 +343,7 @@ public class AuxTrNetTest {
 		ag.setBackwardStarArrays ();
 
 //		ag.printAuxTrLinks (24, tr);
-//		ag.printAuxTranNetwork( AUX_TRANSIT_NETWORK_LISTING );
+		ag.printAuxTranNetwork( AUX_TRANSIT_NETWORK_LISTING );
 //		ag.printTransitNodePointers();
 
 		String myDateString = DateFormat.getDateTimeInstance().format(new Date());

@@ -8,6 +8,7 @@ import com.pb.common.util.IndexSort;
 import com.pb.common.util.Justify;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -77,6 +78,7 @@ public class OpStrategy {
 	int[] nodeIndex;
 	double[] gNodeX;
 	double[] gNodeY;
+	double[] gDist;
 
 	int inStrategyCount;
 	
@@ -120,6 +122,7 @@ public class OpStrategy {
 		nodeIndex = g.getNodeIndex();
 		gNodeX = g.getNodeX();
 		gNodeY = g.getNodeY();
+		gDist = g.getDist();
 		
 	}
 
@@ -181,10 +184,13 @@ public class OpStrategy {
 	public int buildStrategy (int dest) {
 		// dest is an internal node number from highway network (g).
 
-		int k, m;
+		int j, k, m, start, end;
 		int count = 0;
+		boolean inVehInStrategy = false;
 		boolean debug = classDebug;
 //		boolean debug = true;
+		
+		double linkImped = 0.0;
 
 		this.dest = dest;
 		initData();
@@ -213,13 +219,26 @@ public class OpStrategy {
 		
 		while ((k = candidateHeap.remove()) != -1) {
 
+			// don not include links into centroids in strategy unless its going into dest.
+			if ( ag.ib[k] < g.getNumCentroids() && ag.ib[k] != dest ) {
+				inStrategy[k] = false;
+				continue;
+			}
+			
+			
 			count ++;
 
 			// get the highway network link index for the given transit network link index
 			m = ag.hwyLink[k];
 			
+			
+			
 			int dummy = 0;
-			if ( indexNode[gia[m]] == 24923 ) {
+//			if ( ag.linkType[k] == 3 ) {
+//			if ( indexNode[gia[m]] == 24955 ) {
+			if ( k == 9482 ) {
+//			if ( indexNode[gia[m]] == 24958 && indexNode[gib[m]] == 24952 && ag.trRoute[k] == 28 ) {
+//			if ( ag.ia[k] == 15476 && ag.linkType[k] == AuxTrNet.AUXILIARY_TYPE ) {
 				dummy = 1;
 //				debug = true;
 			}
@@ -228,80 +247,156 @@ public class OpStrategy {
 				tested[k] = true;
 				if (ag.ia[k] != dest) {
 
+					linkImped = ag.getLinkImped(k);
+					
 					// log some information about the starting condition of the candidate link being examined
-					if (debug) {
+					if ( debug ) {
 						logger.info ("");
 						
-						logger.info ("k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k]);
+						logger.info ("k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k] + ", trRoute=" + ag.trRoute[k] + "(" + (ag.trRoute[k] >= 0 ? ag.tr.getLine(ag.trRoute[k]) : "aux") + ")" );
 						logger.info ("nodeLabel[ag.ia=" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
 						logger.info ("nodeLabel[ag.ib=" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
 						logger.info ("nodeFreq[ag.ia=" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
 						logger.info ("nodeFreq[ag.ib=" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
 						logger.info ("ag.freq[k=" + k + "]=" + ag.freq[k]);
-						logger.info ("ag.getUtility(k=" + k + ")=" + ag.getUtility(k, 0));
+						logger.info ("linkImped(k=" + k + ")=" + linkImped);
+						
 					}
 
 					
-					// if the anode's label is at least as big as bnode's label + lik's utility, the link is a candidate to be added to strategy; otherwise get next link. 
-					if (nodeLabel[ag.ia[k]] >= (nodeLabel[ag.ib[k]] + ag.getUtility(k))) {
+					// if the anode's label is at least as big as bnode's label + link's utility, the link is a candidate to be added to strategy; otherwise get next link. 
+					if (nodeLabel[ag.ia[k]] >= (nodeLabel[ag.ib[k]] + linkImped)) {
+						
+						// alighting link
+						if (ag.linkType[k] == AuxTrNet.ALIGHTING_TYPE) {
 
-						if ((nodeLabel[ag.ia[k]] == AuxTrNet.INFINITY) && (nodeFreq[ag.ia[k]] == 0.0)) { // first time anode is encountered
-							if (debug) logger.info ("first time anode encountered");
-							if (ag.freq[k] == AuxTrNet.INFINITY) { // non-boarding link
-								if (debug) logger.info ("link freq is Infinity, boarding not allowed for this link");
-								nodeLabel[ag.ia[k]] = nodeLabel[ag.ib[k]] + ag.getUtility(k);
+							nodeLabel[ag.ia[k]] = nodeLabel[ag.ib[k]] + linkImped;
+
+							// the in-vehicle transit segment preceding this alighting link has index = k - 1.
+							// the in-vehicle transit segment preceding this alighting link which has a dwell time factor has index = k - 4.
+							// if the dwellTime for the in-vehicle segment is negative, this segment is the last one for the route,
+							// so the dwell time for the in-vehicle segment will be determined by the following auxiliary link.
+							if ( ag.dwellTime[k-1] < 0 ) {
+								
+								// find the auxilliary transit link following this alighting link in the strategy.
+								// assign the dwell time for the in-vehicle link to the dwell time calculated for the auxiliary link
+								start = ag.ipa[ag.ib[k]];
+								j = ag.ib[k] + 1;
+								while (ag.ipa[j] == -1)
+									j++;
+								end = ag.ipa[j];
+								for (int i=start; i < end; i++) {
+									j = ag.indexa[i];
+									if (ag.linkType[j] == AuxTrNet.AUXILIARY_TYPE && inStrategy[j]) {
+										// use dwell time factor from in-vehicle link preceding last in-vehicle link in route.
+										ag.dwellTime[k-1] = gDist[ag.hwyLink[j]]*(-ag.dwellTime[k-1]);
+										break;
+									}
+								}
+								if ( ag.dwellTime[k-1] < 0 )
+									ag.dwellTime[k-1] = 0;
+								
 							}
-							else {  // first transit boarding link considered from the current node
-								if (debug) logger.info ("link freq is not Infinity, boarding is allowed for link, examined for first route using link");
-								nodeLabel[ag.ia[k]] = (1.0 + ag.freq[k]*(nodeLabel[ag.ib[k]] + ag.getUtility(k)))/(nodeFreq[ag.ia[k]] + ag.freq[k]);
-							}
-							nodeFreq[ag.ia[k]] = ag.freq[k];
+							
 							inStrategy[k] = true;
 							strategyOrderForLink[k] = inStrategyCount;
 							orderInStrategy[inStrategyCount++] = k;
-							if ( updateEnteringLabels(ag.ia[k]) < 0 )
-							  ;
-							  //return -1;
+							updateEnteringLabels(ag.ia[k]);
+
 						}
-						else if (nodeFreq[ag.ia[k]] != AuxTrNet.INFINITY) { // second or subsequent time anode is encountered (must be boarding)
-							if (debug) logger.info ("second+ time anode encountered (must be boarding link)");
-							nodeLabel[ag.ia[k]] = (nodeFreq[ag.ia[k]]*nodeLabel[ag.ia[k]] + ag.freq[k]*(nodeLabel[ag.ib[k]] + ag.getUtility(k)))/(nodeFreq[ag.ia[k]] + ag.freq[k]);
-							nodeFreq[ag.ia[k]] += ag.freq[k];
-							inStrategy[k] = true;
-							strategyOrderForLink[k] = inStrategyCount;
-							orderInStrategy[inStrategyCount++] = k;
-							if ((updateEnteringLabels (ag.ia[k])) < 0)
-							  ;
-							  //return -2;
+						// boarding link
+						else if (ag.linkType[k] == AuxTrNet.BOARDING_TYPE) {
+
+//							// check whether the in-vehicle link following this boarding link is in strategy or not.
+//							inVehInStrategy = false;
+//							start = ag.ipa[ag.ib[k]];
+//							j = ag.ib[k] + 1;
+//							while (ag.ipa[j] == -1)
+//								j++;
+//							end = ag.ipa[j];
+//							for (int i=start; i < end; i++) {
+//								j = ag.indexa[i];
+//								if (ag.linkType[j] == AuxTrNet.IN_VEHICLE_TYPE && inStrategy[j]) {
+//									inVehInStrategy = true;
+//									break;
+//								}
+//							}
+//
+//
+//							// if the in-vehicle link for this boarding link is in the strategy already, admit the boarding link;
+//							// otherwise the boarding link does not belong in the strategy
+//							if ( inVehInStrategy ) {
+
+								if ( nodeFreq[ag.ia[k]] == 0.0 ) {
+									
+									// first transit boarding link considered from the current node
+									nodeLabel[ag.ia[k]] = (AuxTrNet.ALPHA + ag.freq[k]*(nodeLabel[ag.ib[k]] + linkImped))/(nodeFreq[ag.ia[k]] + ag.freq[k]);
+									nodeFreq[ag.ia[k]] = ag.freq[k];
+	
+								}
+								else {
+									
+									// at least one transit boarding link from the current node exists in optimal strategy
+									nodeLabel[ag.ia[k]] = (nodeFreq[ag.ia[k]]*nodeLabel[ag.ia[k]] + ag.freq[k]*(nodeLabel[ag.ib[k]] + linkImped))/(nodeFreq[ag.ia[k]] + ag.freq[k]);
+									nodeFreq[ag.ia[k]] += ag.freq[k];
+									
+								}
+								
+								inStrategy[k] = true;
+								strategyOrderForLink[k] = inStrategyCount;
+								orderInStrategy[inStrategyCount++] = k;
+								updateEnteringLabels (ag.ia[k]);
+								
+//							}
+//							else {
+//								inStrategy[k] = false;
+//							}
+								
 						}
+						// non-boarding link - either in-vehicle or auxilliary
 						else {
-							if (debug) logger.info ("link not included in strategy");
-							inStrategy[k] = false;
+							
+							nodeLabel[ag.ia[k]] = nodeLabel[ag.ib[k]] + linkImped;
+
+							inStrategy[k] = true;
+							strategyOrderForLink[k] = inStrategyCount;
+							orderInStrategy[inStrategyCount++] = k;
+							updateEnteringLabels(ag.ia[k]);
 						}
+					}
+					else {
+						
+						if (debug) logger.info ("link not included in strategy");
+						inStrategy[k] = false;
+						
+					}
 
 
-						// log some information about the ending condition of the candidate link being examined
-						if (debug) {
-							logger.info ("");
-							logger.info ("nodeLabel[ag.ia=" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
-							logger.info ("nodeLabel[ag.ib=" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
-							logger.info ("nodeFreq[ag.ia=" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
-							logger.info ("nodeFreq[ag.ib=" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
-							logger.info ("ag.freq[k=" + k + "]=" + ag.freq[k]);
-							logger.info ("inStrategy[k=" + k + "]=" + inStrategy[k]);
-						}
-
+					// log some information about the ending condition of the candidate link being examined
+					if ( debug && inStrategy[k] ) {
+						
+						logger.info ("");
+						logger.info ("k=" + k + ", linkType=" + ag.linkType[k] + ", trRoute=" + ag.trRoute[k]);
+						logger.info ("ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + ")");
+						logger.info ("nodeLabel[ag.ia=" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
+						logger.info ("nodeLabel[ag.ib=" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
+						logger.info ("nodeFreq[ag.ia=" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
+						logger.info ("nodeFreq[ag.ib=" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
+						logger.info ("ag.freq[k=" + k + "]=" + ag.freq[k]);
+						logger.info ("inStrategy[k=" + k + "]=" + inStrategy[k]);
+						
+						dummy = 1;
+					
 					}
 
 				}
 				
 			}
 			
-			if (debug) candidateHeap.dataPrint();
-			
 		} // end of while heap not empty
 
 		return 0;
+
 	}
 
 
@@ -353,6 +448,7 @@ public class OpStrategy {
 		int start, end;
 		boolean debug = classDebug;
 //		boolean debug = true;
+		double linkImped = 0.0;
 
 		if (debug) {
 			logger.info ("");
@@ -374,16 +470,29 @@ public class OpStrategy {
 		end = ag.ipb[j];
 		if (debug) {
 			logger.info ("end=" + end + ", j=" + j);
-			logger.info ("end=" + end + ", indexb[end]=" + ag.indexb[end] + ", ia=" + ag.ia[ag.indexb[end]] + ", ib=" + ag.ib[ag.indexb[end]]);
+			logger.info ("end=" + end + ", indexb[end]=" + (end < ag.indexb.length ? Integer.toString(ag.indexb[end]) : "null") + ", ia=" + (end < ag.indexb.length ? Integer.toString(ag.ia[ag.indexb[end]]) : "null") + ", ib=" + (end < ag.indexb.length ? Integer.toString(ag.ib[ag.indexb[end]]) : "null"));
 		  	logger.info ("");
 		}
 		for (i=start; i < end; i++) {
 			k = ag.indexb[i];
 			m = ag.hwyLink[k];
+
+			// if link k is a boarding link, but the in-vehicle link that follows it (link k+1) is not in the strategy,
+			// don't add link k to the heap.
+			if ( ag.linkType[k] == AuxTrNet.BOARDING_TYPE && !inStrategy[k+1] )
+				continue;
+				
+			linkImped = ag.getLinkImped(k);
+			linkLabel[k] = nodeLabel[ag.ib[k]] + linkImped;
+
+			// if the anode's label is already smaller than the bnode's label plus the link impedance,
+			// no need to add the link to the heap. 
+//			if ( nodeLabel[ag.ia[k]] < (nodeLabel[ag.ib[k]] + linkImped) )
+//				continue;
+
 			
-			linkLabel[k] = nodeLabel[ag.ib[k]] + ag.getUtility(k);
 			if (debug)
-				logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + ag.linkType[k] + ", ia=" + ag.ia[k] + "(" + indexNode[gia[m]] + "), ib=" + ag.ib[k] + "(" + indexNode[gib[m]] + "), linkLabel[k]=" + myFormat.right(linkLabel[k], 15, 6));
+				logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + ag.linkType[k] + ", ia=" + ag.ia[k] + "(" + indexNode[gia[m]] + "), ib=" + ag.ib[k] + "(" + indexNode[gib[m]] + "), linkLabel[k]=" + myFormat.right(linkLabel[k], 15, 6) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] + ", linkImped=" + linkImped);
 			candidateHeap.add(k);
 
 		}
@@ -532,74 +641,175 @@ public class OpStrategy {
 
 
 
-	public void getOptimalStrategyWtSkimsFromOrig (int fromNode) {
+	public void getOptimalStrategyWtSkimsFromOrig (int startFromNode, int startToNode) {
 
-		int i, j, k, m;
+		int k, m;
 		int start, end, check;
 		int fromNodeIndex=0;
 		int count;
 		
 		double waitTime, flow;
 		
-//		boolean debug = classDebug;
-		boolean debug = true;
+		boolean debug = classDebug;
+//		boolean debug = true;
 		
-		boolean firstBoard = false;
 
 
-		if (fromNode == dest) return;
+		if (startFromNode == dest) return;
 
 
-		// find the link index of the optimal strategy link exiting fromNode
+		// find the link index of the first optimal strategy link exiting fromNode
 		// allocate 1 trip to routes between fromNode and dest to track proportions allocated to multiple paths in strategy
-		for (i=inStrategyCount - 1; i >= 0; i--) {
-			k = orderInStrategy[i];
-			m = ag.hwyLink[k];
-			if ( ag.ia[k] == fromNode ) {
-				fromNodeIndex = i;
-				nodeFlow[ag.ia[k]] = 1.0;
-				if (debug) {
-				    logger.info ("");
-				    logger.info ("fromNode=" + fromNode + "(" + indexNode[fromNode] + "), fromNodeIndex=" + fromNodeIndex + ", i=" + i + ", k=" + k + ", m=" + m + ", ag.ia=" + ag.ia[k] + ", ag.ib=" + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]]);
-				}
-				break;
-			}
-		}
+//		for (i=inStrategyCount - 1; i >= 0; i--) {
+//			k = orderInStrategy[i];
+//			m = ag.hwyLink[k];
+//			if ( ag.ia[k] == startFromNode ) {
+//				fromNodeIndex = i;
+//				nodeFlow[ag.ia[k]] = 1.0;
+//				if (debug) {
+//				    logger.info ("");
+//				    logger.info ( "startFromNode=" + startFromNode + "(" + indexNode[startFromNode] + "), startToNode=" + startToNode + "(" + indexNode[startToNode] + "), fromNodeIndex=" + fromNodeIndex + ", i=" + i + ", k=" + k + ", m=" + m + ", ag.ia=" + ag.ia[k] + ", ag.ib=" + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] );
+//				}
+//				break;
+//			}
+//		}
 		
 
+		startFromNode = 24944;
+		nodeFlow[15450] = 1.0;
+		
 		
 		// loop through links in optimal strategy starting at fromNode, stopping at dest
 		count = 0;
-		for (i=fromNodeIndex; i >= 0; i--) {
+//		for (i=fromNodeIndex; i >= 0; i--) {
+		for (int i=inStrategyCount; i >= 0; i--) {
 		    
 			k = orderInStrategy[i];
 			m = ag.hwyLink[k];
-
-			if (nodeFlow[ag.ia[k]] > 0.0 || ag.ia[k] == fromNode) {
-				if (debug) {
-					logger.info ("count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", nodeFlow[ag.ia[k]]=" + nodeFlow[ag.ia[k]] + ", ag.freq[k]=" + ag.freq[k] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]]);
-				}
-
-			    flow = (ag.freq[k]/nodeFreq[ag.ia[k]])*nodeFlow[ag.ia[k]];
-			    
-			    if (ag.ia[orderInStrategy[i]] == ag.ia[orderInStrategy[fromNodeIndex]]) {
-			    	ag.flow[k] = 1.0;
-			    	nodeFlow[ag.ib[k]] = 1.0;
-			    	nodeFlow[ag.ia[k]] = 0.0;
-			    }
-			    else if (flow > MIN_ALLOCATED_FLOW) {
-			    	ag.flow[k] = flow;
-			    	nodeFlow[ag.ib[k]] = flow;
-			    	nodeFlow[ag.ia[k]] = 0.0;
-			    }
-				if (debug) {
-				    logger.info ("flow=" + flow + ", ag.flow[k]=" + ag.flow[k] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ag.ib[k]]);
-				}
-				
-				count++;
+			
+			int dummy = 0;
+			if (indexNode[gia[m]]==24917) {
+				dummy = 1;
+//				debug = true;
 			}
+			
+			if (ag.ib[k] == nodeIndex[startFromNode])
+				continue;
+			
+			
+				
+			if ( ag.linkType[k] == AuxTrNet.BOARDING_TYPE ) {
+				flow = (ag.freq[k]/nodeFreq[ag.ia[k]])*nodeFlow[ag.ia[k]];
+		    	ag.flow[k] = flow;
+		    	nodeFlow[ag.ib[k]] += flow;
+			}
+			else {
+				flow = nodeFlow[ag.ia[k]];
+		    	ag.flow[k] = flow;
+		    	nodeFlow[ag.ib[k]] += flow;
+		    	nodeFlow[ag.ia[k]] -= flow;
+			}
+		    
+		    
+			if (debug) {
+				logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + ag.trRoute[k] + ", ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", ag.waitTime=" + ag.waitTime[k] + ", ag.flow[k]=" + ag.flow[k] );
+			}
+			
+			count++;
+		
 		}
 		
+
+		// loop through links in optimal strategy that received flow and log some information 
+		Integer tempNode = new Integer(0);
+		ArrayList boardingNodes = new ArrayList();
+		float inVehTime = 0.0f;
+		float dwellTime = 0.0f;
+		float walkTime = 0.0f;
+		float wtAccTime = 0.0f;
+		float wtEgrTime = 0.0f;
+		float firstWait = 0.0f;
+		float totalWait = 0.0f;
+		float boardings = 0.0f;
+		
+		count = 0;
+		debug = true;
+		if (debug)
+			logger.info ( "\n\n\nlinks in strategy with flow:" );
+		for (int i=inStrategyCount; i >= 0; i--) {
+		    
+			k = orderInStrategy[i];
+			m = ag.hwyLink[k];
+			
+			if (ag.ib[k] == nodeIndex[startFromNode])
+				continue;
+			
+			if ( ag.flow[k] > 0.0 ) {
+				
+				if (debug)
+					logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + ag.trRoute[k] + "(" + (ag.trRoute[k] >= 0 ? ag.tr.getLine(ag.trRoute[k]) : "aux") + "), ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", ag.dwellTime=" + ag.dwellTime[k] + ", ag.waitTime=" + ag.waitTime[k] + ", ag.flow[k]=" + ag.flow[k] + ", nodeLabel[ag.ia[k]]=" + nodeLabel[ag.ia[k]] + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] );
+				
+				
+//				logger.info ( count + "," + (ag.trRoute[k] >= 0 ? ag.tr.getLine(ag.trRoute[k]) : "aux walk") + "," + ag.ia[k] + ","  + ag.ib[k] + "," + indexNode[gia[m]] + "," + indexNode[gib[m]] + "," + ag.linkType[k] + "," + ag.walkTime[k] + "," + ag.invTime[k] + "," + ag.dwellTime[k] + "," + ag.waitTime[k] + "," + ag.flow[k] );
+
+				
+				if ( ag.linkType[k] == AuxTrNet.BOARDING_TYPE ) {
+					
+					tempNode = Integer.valueOf(ag.ia[k]);
+					
+					if ( firstWait == 0.0f ) {
+						boardings = (float)ag.flow[k];
+						boardingNodes.add(tempNode);
+						firstWait = (float)(AuxTrNet.ALPHA/nodeFreq[ag.ia[k]]);
+						totalWait = firstWait;
+					}
+					else {
+						boardings += (float)ag.flow[k];
+						if ( !boardingNodes.contains(tempNode) ) {
+							totalWait += (float)(AuxTrNet.ALPHA/nodeFreq[ag.ia[k]]);
+							boardingNodes.add(tempNode);
+						}
+					}
+					
+				}
+				else if ( ag.linkType[k] == AuxTrNet.IN_VEHICLE_TYPE ) {
+					
+					inVehTime += (float)(ag.invTime[k]*ag.flow[k]);
+					dwellTime += (float)(ag.dwellTime[k]*ag.flow[k]);
+					
+				}
+				else if ( ag.linkType[k] == AuxTrNet.AUXILIARY_TYPE ) {
+					
+					if ( ag.ia[k] == nodeIndex[startFromNode] )
+						wtAccTime = (float)(ag.walkTime[k]*ag.flow[k]);
+					else if ( ag.ib[k] == nodeIndex[startToNode] )
+						wtEgrTime = (float)(ag.walkTime[k]*ag.flow[k]);
+					else
+						walkTime += (float)(ag.walkTime[k]*ag.flow[k]);
+					
+				}
+				
+			}
+				
+			count++;
+
+		}
+
+		// linkFreqs were weighted by WAIT_COEFF, so unweight them to get actual first and total wait values
+		firstWait /= AuxTrNet.WAIT_COEFF;
+		totalWait /= AuxTrNet.WAIT_COEFF;
+
+		
+		logger.info ( "\n\n\ntransit skims from " + startFromNode + " to " + startToNode + ":" );
+		logger.info ( "in-vehicle time  = " + inVehTime );
+		logger.info ( "dwell time       = " + dwellTime );
+		logger.info ( "firstWait time   = " + firstWait );
+		logger.info ( "totalWait time   = " + totalWait );
+		logger.info ( "wt access time   = " + wtAccTime );
+		logger.info ( "wt egress time   = " + wtEgrTime );
+		logger.info ( "other walk time  = " + walkTime );
+		logger.info ( "total boardings  = " + boardings );
+			
 
 /*		
 		
@@ -1495,7 +1705,7 @@ public class OpStrategy {
 				 + (-AuxTrNet.WALK_EGRESS_COEFF/AuxTrNet.OVT_COEFF)*nodeEgrWalkTime[node]
 				 + (-AuxTrNet.WALK_XFR_COEFF/AuxTrNet.OVT_COEFF)*(nodeTotWalkTime[node] - nodeAccWalkTime[node] - nodeEgrWalkTime[node])
 				 + (-AuxTrNet.FIRST_WAIT_COEFF/AuxTrNet.OVT_COEFF)*nodeFirstWaitTime[node]
-				 + (-AuxTrNet.XFR_WAIT_COEFF/AuxTrNet.OVT_COEFF)*(nodeTotalWaitTime[node] - nodeFirstWaitTime[node])
+				 + (-AuxTrNet.WAIT_COEFF/AuxTrNet.OVT_COEFF)*(nodeTotalWaitTime[node] - nodeFirstWaitTime[node])
 				 + -AuxTrNet.COST_COEFF*nodeCost[node]
 				 + -AuxTrNet.TRANSFER_COEFF*(nodeBoardings[node] - 1));
 	}
@@ -1685,30 +1895,30 @@ public class OpStrategy {
 				int m = ag.hwyLink[x];
                 if (DEBUG) logger.info("adding " + x + ", last=" + last + ", ag.ia[x]= " + ag.ia[x] +", g.an= " + indexNode[gia[m]] + ", ag.ib[x]= " + ag.ib[x] + ", g.bn= " + indexNode[gib[m]] + ", linkLabel[x]=" + linkLabel[x]);
       
-                if (heapContents[ag.ia[x]] == 1) {
-                	addIndex = -1;
-    				for (int i = last; i >= 0; i--) {
-    				    if ( ag.ia[data[i]] == ag.ia[x] ) {
-    				    	addIndex = i;
-    				    	break;
-    				    }
-    				}
-
-    				if (addIndex < 0) {
-        				// not in the heap any longer, so add it at end
-	                	last++;
-	                	addIndex = last;
-	    				data[last] = x;
-    				}
-                }
-                else {
+//                if (heapContents[ag.ia[x]] == 1) {
+//                	addIndex = -1;
+//    				for (int i = last; i >= 0; i--) {
+//    				    if ( ag.ia[data[i]] == ag.ia[x] ) {
+//    				    	addIndex = i;
+//    				    	break;
+//    				    }
+//    				}
+//
+//    				if (addIndex < 0) {
+//        				// not in the heap any longer, so add it at end
+//	                	last++;
+//	                	addIndex = last;
+//	    				data[last] = x;
+//    				}
+//                }
+//                else {
                 	last++;
                 	addIndex = last;
     				data[last] = x;
-                }
+//                }
 
 				percolateUp(addIndex);
-				heapContents[ag.ia[x]] = 1;
+//				heapContents[ag.ia[x]] = 1;
 				
 			}
 

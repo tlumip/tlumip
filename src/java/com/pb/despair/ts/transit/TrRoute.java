@@ -98,14 +98,14 @@ public class TrRoute implements Serializable {
     	  	}
       		// process transit line header records
       		else if (s.charAt(0) == 'a') {
-						if (linkCount > 0 && ((Double)tdefaults.get(0)).doubleValue() >= 0.0) {  // lay > 0 at end of route description
-							ts = (TrSegment)transitPath[lineCount].get(0);
-							if (ts.an == bn) {
-								TrSegment seg = new TrSegment(ts.an, ts.bn, defaults, tdefaults);
-								seg.layover = true;
-								transitPath[lineCount].add(linkCount++, seg);
-							}
-						}
+//						if (linkCount > 0 && ((Double)tdefaults.get(0)).doubleValue() >= 0.0) {  // lay > 0 at end of route description
+//							ts = (TrSegment)transitPath[lineCount].get(0);
+//							if (ts.an == bn) {
+//								TrSegment seg = new TrSegment(ts.an, ts.bn, defaults, tdefaults);
+//								seg.layover = true;
+//								transitPath[lineCount].add(linkCount++, seg);
+//							}
+//						}
 
 						initDefaults();
 						initTempDefaults();
@@ -133,15 +133,15 @@ public class TrRoute implements Serializable {
       	}
       }
       // done reading route records.  Add layover link at end of last route.
-			if (linkCount > 0 && ((Double)tdefaults.get(0)).doubleValue() >= 0.0) {  // lay > 0 at end of route description
-				ts = (TrSegment)transitPath[lineCount].get(0);
-				if (ts.an == bn) {
-					TrSegment seg = new TrSegment(ts.an, ts.bn, defaults, tdefaults);
-					seg.layover = true;
-					transitPath[lineCount].add(linkCount++, seg);
-					totalLinkCount += linkCount;
-				}
-			}
+//			if (linkCount > 0 && ((Double)tdefaults.get(0)).doubleValue() >= 0.0) {  // lay > 0 at end of route description
+//				ts = (TrSegment)transitPath[lineCount].get(0);
+//				if (ts.an == bn) {
+//					TrSegment seg = new TrSegment(ts.an, ts.bn, defaults, tdefaults);
+//					seg.layover = true;
+//					transitPath[lineCount].add(linkCount++, seg);
+//					totalLinkCount += linkCount;
+//				}
+//			}
     } catch (Exception e) {
         System.out.println ("IO Exception caught reading transit route file: " + fileName + ", record number=" + recNumber);
         e.printStackTrace();
@@ -270,7 +270,14 @@ public class TrRoute implements Serializable {
 						value = keyWordScan (field, tkeyWords[i]);
 						if (value != null) {
 							keyWord = tkeyWords[i];
-							if ( i == 1) {
+							if ( i == 0 ) {
+								TrSegment seg = new TrSegment(an, bn, defaults, tdefaults);
+								seg.layover = true;
+								seg.lay = Double.parseDouble(value);
+								transitPath[lineCount].add(linkCount++, seg);
+								totalLinkCount += linkCount;
+							}
+							else if ( i == 1 ) {
 								if (value.indexOf('<') != -1) {
 									defaults.set(9, Boolean.valueOf("true"));
 									defaults.set(10, Boolean.valueOf("false"));
@@ -707,7 +714,7 @@ public class TrRoute implements Serializable {
 						if ( dwt < 0 )
 							ts.setDwt ( -dwt*dist[k] );
 						if ( dwf < 0 )
-							ts.setDwf ( -dwf*dist[k] );
+							ts.setDwt ( -dwf*dist[k] );
 						if ( tdwt < 0 )
 							ts.setTdwt ( -tdwt*dist[k] );
 						linkFound = true;
