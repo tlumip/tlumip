@@ -243,7 +243,7 @@ public class Skims {
     /**
 	 * get peak alpha zone SOV distance skim matrix
 	 */
-	private Matrix getSovDistSkimAsMatrix () {
+	public Matrix getSovDistSkimAsMatrix () {
 
 		// set the highway network attribute on which to skim the network - distance in this case
 		double[] linkCost = g.getDist();
