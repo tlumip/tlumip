@@ -65,7 +65,6 @@ public class ApplicationOrchestrator {
         this.rootDir = rootDir;
         this.scenarioName = scenarioName;
         this.t = timeInterval;
-        this.rb = findResourceBundle(findPathToResourceBundle("ao"));
 
     }
 
@@ -79,6 +78,7 @@ public class ApplicationOrchestrator {
     
     private void createRunLogPropFile(){
         runLogPropFile = new File(rootDir + "/scenario_" + scenarioName + "/t" + t + "/runLog.properties");
+        logger.info("Looking for the run log in " + rootDir + "/scenario_" + scenarioName + "/t" + t + "/");
         if(!runLogPropFile.exists()){ 
 	        try { //create the file and write the current year into it.
 	            logger.info("Writing the current year into the run log");
@@ -126,7 +126,7 @@ public class ApplicationOrchestrator {
             propFile = new File(propPath);
             if(propFile.exists()){
                 logger.info(" Reading in Run Log and updating the RunLog HashMap: ");
-                runLogRb = ResourceUtil.getPropertyBundle(new File(initialRunLogPath));
+                runLogRb = ResourceUtil.getPropertyBundle(new File(propPath));
                 Enumeration rbEnum = runLogRb.getKeys();
                 while (rbEnum.hasMoreElements()) {
                     //get the name and value pair from the current run log and
@@ -156,8 +156,27 @@ public class ApplicationOrchestrator {
         //First read in the template properties file.  This will have default values and
         //tokens (surrounded by @ symbols).  The tokens will be replace with the values
         //in the runLogHashMap
-        if (appName.endsWith("daf")) appName = appName.substring(0,(appName.length()-3));
-        File appPropertyTemplate = new File(rootDir + "/scenario_" + scenarioName + "/t0/" + appName + "Template.properties");
+        File appPropertyTemplate = null;
+        File appPropertyFile = null;
+        String templatePath = rootDir + "/scenario_" + scenarioName + "/t0/";
+        String outputPath = rootDir + "/scenario_" + scenarioName + "/t" + t + "/";
+        //Deal with SPG exception (appName=spg1 or spg2 but properties file is spg.properties for both)
+        if(appName.startsWith("spg")){
+            appPropertyTemplate = new File(templatePath + "spg/spgTemplate.properties");
+            appPropertyFile =  new File(outputPath + "spg/spg.properties");
+        //Deal with the PTDAF and PIDAF exceptions
+        }else if (appName.endsWith("daf")) {
+            appPropertyTemplate = new File(templatePath + appName.substring(0,(appName.length()-3)) +
+                    "/" + appName.substring(0,(appName.length()-3)) + ".properties"); //subtract off the 'daf' part
+            appPropertyFile = new File(outputPath + appName.substring(0,(appName.length()-3)) +
+                    "/" + appName.substring(0,(appName.length()-3)) + ".properties");
+        } else if (appName.equalsIgnoreCase("global")) {
+            appPropertyTemplate = new File(templatePath + "globalTemplate.properties");
+            appPropertyFile = new File(outputPath + "global.properties");
+        } else{
+            appPropertyTemplate = new File(templatePath + appName + "/" + appName + "Template.properties");
+            appPropertyFile = new File(outputPath + appName + "/" + appName + ".properties");
+        }
         Properties appDefaultProps = new Properties();
         try {
             appDefaultProps.load(new FileInputStream(appPropertyTemplate));
@@ -171,7 +190,7 @@ public class ApplicationOrchestrator {
 	    while (keys.hasNext()) {
 	        String keyName = (String) keys.next();
 	        String hashmapValue = (String) runLogHashmap.get(keyName);
-	
+	        
 	        //Build a pattern and compile it
 	        String patternStr = "@" + keyName + "@";
 	        Pattern pattern = Pattern.compile(patternStr);
@@ -186,8 +205,7 @@ public class ApplicationOrchestrator {
 	            appDefaultProps.setProperty(propName, tempStr);
 	        }
         }
-	    appDefaultProps.list(System.out);
-	    File appPropertyFile = new File(rootDir + "/scenario_" + scenarioName + "/t" + t + "/"+ appName + ".properties");
+	    
 	    try {
             appDefaultProps.store(new FileOutputStream(appPropertyFile), appName.toUpperCase() + " Properties File for Interval " + t);
         } catch (FileNotFoundException e1) {
@@ -455,23 +473,27 @@ public class ApplicationOrchestrator {
         //resource bundle for the appropriate app, retrieve that resource bundle and
         //start the application, passing along the property bundle
         ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,scenarioName,t);
-        int baseYear = Integer.parseInt(ResourceUtil.getProperty(ao.getRb(), "base.year"));
         
         //AO needs to create the runLogProperty file and write in the current year.  This file will 
         //then be updated by any application that runs.
         ao.createRunLogPropFile();
         
-        
-        //At this point, AO knows what app is being run and what year it is.  We need to 
-        //read in the $appNameTemplate.properties file and the runLog.properties files starting 
-        //in year interval=0 and moving up to interval=t.  We will fill up a hashmap with the appropriate
-        //values and then replace all property file tokens. 
+        //We need to read in the runLog.properties files starting 
+        //in year interval=0 and moving up to interval=t.  We will fill 
+        //up a hashmap with the appropriate values. 
         ao.updateRunLogPropertiesHashmap(t);
+        
+        //Get the ao.properties file updated with values
+        ao.createAppRb("ao");
+        ao.createAppRb("global");
         
         //Read in the appNameTemplate.properties from the t0 directory and replace
         //all patterns with values from the RunLogHashMap and write properties file
         //to the appropriate directory.
         ao.createAppRb(appName);
+        ResourceBundle aoRb = ao.findResourceBundle(ao.findPathToResourceBundle("ao"));
+        ao.setRb(aoRb);
+        int baseYear = Integer.parseInt(ResourceUtil.getProperty(ao.getRb(), "base.year"));
 
         String pathToAppRb = ao.findPathToResourceBundle(appName);
         ResourceBundle appRb = null;
