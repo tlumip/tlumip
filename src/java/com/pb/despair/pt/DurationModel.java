@@ -64,12 +64,6 @@ public class DurationModel{
                thisTour.begin.startTime = 300;
                thisTour.begin.duration = calculateFirstHomeDuration(thisTour.begin);
           }else{
-               //if second tour, set time to get to first activity as total travel time of last tour
-//               tours[tourNumber-1].end.duration=calculateDuration(tours[tourNumber-1].end);
-//               calculateEndTime(tours[tourNumber-1].end);
-               //thisTour.begin.timeToActivity=new Double(tours[tourNumber-1].primaryMode.time).shortValue();
-//               thisTour.begin.timeToActivity=(short)tours[tourNumber-1].primaryMode.time;
-//               calculateStartTime(tours[tourNumber-1].end,thisTour.begin);
                thisTour.begin.startTime = tours[tourNumber-1].end.startTime;
                thisTour.begin.duration = calculateIntermediateHomeDuration(thisTour.begin);
           }
@@ -259,9 +253,8 @@ public class DurationModel{
                + -0.6910*thisPattern.toursEquals5Plus     //Five or More Tours
                + -0.4126*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))     //Start MD
                + -0.6741*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))    //Start PM
-//               + -0.2943*thisActivity.startEV               //Start EV
                + -0.8*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))       //Start EV
-                    +  5.2806;                                         //Constant
+               +  5.2806;                                         //Constant
           
           double shape=1.0342;
           return (short)(Math.round(solveForT(shape,expression,thisActivity)));
