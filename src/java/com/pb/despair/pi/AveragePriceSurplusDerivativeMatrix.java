@@ -40,6 +40,7 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
         if (matrixSize ==0) {
             throw new RuntimeException("Call BlockPriceSurplusMatrix.calculateMatrixSize() before instantiating BlockPriceSurplusMAtrix");
         }
+        double[][] myValues = new double[matrixSize][matrixSize]; // it sucks to have to use a double[][] for temporary storage, but setElementAt and elementAt seem very slow
         
         Iterator actIt = AggregateActivity.getAllProductionActivities().iterator();
         while (actIt.hasNext()) {
@@ -77,7 +78,7 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
                 Algebra a = new Algebra();
                 try {
                     //fpl.mult(dulbydprice,dLocationByDPrice);
-                    dLocationByDPrice = a.multiply(fpl,dulbydprice);
+                    dLocationByDPrice = a.multiply(fpl,dulbydprice); // TODO speed this up (don't use a.multiply() or DAF it)
                 } catch (AlgebraException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
@@ -89,7 +90,7 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
                         dThisLocationByPrices.setElementAt(i,dLocationByDPrice.elementAt(location,i));
                     }
                     AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
-                    l.addTwoComponentsOfDerivativesToAveragePriceMatrix(activity.getTotalAmount(),this,dThisLocationByPrices);
+                    l.addTwoComponentsOfDerivativesToAveragePriceMatrix(activity.getTotalAmount(),myValues,dThisLocationByPrices); // TODO this is slow, maybe speed this up or use DAF.
 //                    System.out.println();
                 }
             }
@@ -108,10 +109,10 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
                 double[] importsAndExports = x.importsAndExports(x.getPrice());
                 derivative += importsAndExports[2] - importsAndExports[3];
             }
-            setElementAt(comNum,comNum,
-                    elementAt(comNum,comNum)+derivative);
+            myValues[comNum][comNum] += derivative;
             comNum++;
         }
+        this.setElements(new DenseMatrix(myValues));
     }
 //    /* (non-Javadoc)
 //     * @see drasys.or.matrix.MatrixI#setElementAt(int, int, double)

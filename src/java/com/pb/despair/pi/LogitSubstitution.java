@@ -60,6 +60,8 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
     int overallUtilityCalcPrint = -1;
     int amountsCalcPrint = -1;
 
+    private double[][] utilityDerivatives;
+
     public LogitSubstitution(double scaling, double lambda) {
         this.lambda = lambda;
         this.scaling = scaling;
@@ -255,10 +257,23 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
 //        return utilityDerivatives;
 //    }
     
+    /**
+     * caution: the square array returned is a field of the class, so it can't be relied on 
+     * to not change.  If you need a constant use System.arraycopy.
+     * 
+     * @param commodityUtilities
+     * @return a square array of how the quantities produced or consumed change wrt a change in the commodityUtilities.
+     */
     public double[][] derivativesOfQuantitiesWRTUtilities(double[] commodityUtilities) {
         // TODO check this calculation numerically.
         double[] amounts = new double[sortedQuantitiesToUse.size()];
-        double[][] utilityDerivatives = new double[amounts.length][amounts.length];
+        if (utilityDerivatives==null) {
+            utilityDerivatives = new double[amounts.length][amounts.length];
+        } else {
+            if (utilityDerivatives.length!=amounts.length) {
+                utilityDerivatives = new double[amounts.length][amounts.length];
+            }
+        }
         double[] probabilities = getExtraProductionProbabilities(commodityUtilities);
         Quantity q = null;
         for (int commodityIndex = 0; commodityIndex < amounts.length; commodityIndex++) {

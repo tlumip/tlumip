@@ -33,6 +33,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
     final double valueOfTime;
     final double costOfDistance;
     final TravelUtilityCalculatorInterface travelUtilityCalculatorInterface;
+    private double[] aggregateQuantityWeights = new double[0];
     /**
      * The market where the flow is going to or coming from.  Sellers (sellingZUtility) ship a commodity to a market and
      * sell it there; buyers go to the market, buy commodities, and ship them back.  theExchange represents a
@@ -438,8 +439,9 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
         } else {
             List theExchanges = com.getAllExchanges();
             double sum = 0;
-            double[] weights = new double[theExchanges.size()];
-
+            if (aggregateQuantityWeights.length != theExchanges.size()) {
+                aggregateQuantityWeights = new double[theExchanges.size()];
+            }
             // debug March 24 2004 JEA
 //            if (com.name.equals("3_OthTchr")) {
 //                // this next line is just a place to set a breakpoint.
@@ -451,45 +453,45 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
                 while (it.hasNext()) {
                     Exchange x = (Exchange) it.next();
                     double utility = calcUtilityForExchange(x);
-                    weights[i] = Math.exp(dispersionParameter * utility);
+                    aggregateQuantityWeights[i] = Math.exp(dispersionParameter * utility);
 //                    if (theCommodityZUtility instanceof SellingZUtility) {
 //                        derivativeComponents[i] =weights[i]* theCommodityZUtility.myCommodity.getSellingUtilityPriceCoefficient();
 //                    } else {
 //                        derivativeComponents[i] =weights[i]* theCommodityZUtility.myCommodity.getBuyingUtilityPriceCoefficient();
 //                    }
-                    if (Double.isNaN(weights[i])) {
+                    if (Double.isNaN(aggregateQuantityWeights[i])) {
                         logger.error("hmm, Commodity Flow "
                                 + i
                                 + " was such that LogitModel weight was NaN");
                         throw new Error("NAN in weight for CommodityFlow " + i);
                     }
-                    sum += weights[i];
+                    sum += aggregateQuantityWeights[i];
                     i++;
                 }
             }
             if (sum != 0) {
-                for (int i = 0; i < weights.length; i++) {
-                    weights[i] /= sum;
+                for (int i = 0; i < aggregateQuantityWeights.length; i++) {
+                    aggregateQuantityWeights[i] /= sum;
                 }
             }
-            for (int i = 0; i < weights.length; i++) {
-                float quantity = (float) (amount * weights[i]);
+            for (int i = 0; i < aggregateQuantityWeights.length; i++) {
+                float quantity = (float) (amount * aggregateQuantityWeights[i]);
                 Exchange anEx = (Exchange) theExchanges.get(i);
                 if (Double.isNaN(quantity) || Double.isInfinite(quantity)) {
                     logger.warn("quantity for flow "+ taz+ " selling:"+ selling+ " to "+ anEx);
-                    logger.warn("   amount:"+ amount+ " * weight:"+ weights[i]+ " = "+ quantity);
+                    logger.warn("   amount:"+ amount+ " * weight:"+ aggregateQuantityWeights[i]+ " = "+ quantity);
                 }
                 try {
                     if (theCommodityZUtility instanceof SellingZUtility) {
                         anEx.setFlowQuantityAndDerivative(taz,selling,quantity,
-                                (derivative * weights[i] * weights[i]
-                                + amount* dispersionParameter* weights[i]
-                                * (1 - weights[i]))* theCommodityZUtility.myCommodity.getSellingUtilityPriceCoefficient());
+                                (derivative * aggregateQuantityWeights[i] * aggregateQuantityWeights[i]
+                                + amount* dispersionParameter* aggregateQuantityWeights[i]
+                                * (1 - aggregateQuantityWeights[i]))* theCommodityZUtility.myCommodity.getSellingUtilityPriceCoefficient());
                     } else {
                         anEx.setFlowQuantityAndDerivative(taz,selling,quantity,
-                                (derivative * weights[i] * weights[i] 
-                                + amount* dispersionParameter* weights[i]* 
-                                (1 - weights[i]))* theCommodityZUtility.myCommodity.getBuyingUtilityPriceCoefficient());
+                                (derivative * aggregateQuantityWeights[i] * aggregateQuantityWeights[i] 
+                                + amount* dispersionParameter* aggregateQuantityWeights[i]* 
+                                (1 - aggregateQuantityWeights[i]))* theCommodityZUtility.myCommodity.getBuyingUtilityPriceCoefficient());
                     }
                 } catch (OverflowException e) {
                     throw new ChoiceModelOverflowException(e.toString());
