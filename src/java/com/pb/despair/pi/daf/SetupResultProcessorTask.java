@@ -34,18 +34,18 @@ public class SetupResultProcessorTask extends MessageProcessingTask {
         logger.info( "***" + getName() + " started");
 
         pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
-        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
-        //that was written by the Application Orchestrator
-        BufferedReader reader = null;
-        String scenarioName = null;
-        try {
-            logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
-            scenarioName = reader.readLine();
-            logger.info("\tScenario Name: " + scenarioName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
+//        //that was written by the Application Orchestrator
+//        BufferedReader reader = null;
+//        String scenarioName = null;
+//        try {
+//            logger.info("Reading RunParams.txt file");
+//            reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
+//            scenarioName = reader.readLine();
+//            logger.info("\tScenario Name: " + scenarioName);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         nWorkQueues = (Integer.parseInt(ResourceUtil.getProperty(pidafRb,"nNodes"))-1);
     }
 
