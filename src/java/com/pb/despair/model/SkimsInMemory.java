@@ -141,42 +141,42 @@ public class SkimsInMemory implements Serializable {
     }
     public void readSkims(ResourceBundle rb){
 		
-          String path = ResourceUtil.getProperty(rb, "skimPath.path");
-
-          logger.fine("Skim path = "+path);
-
+          String hwyPath = ResourceUtil.getProperty(rb, "hwySkims.path");
+          String transitPath = ResourceUtil.getProperty(rb, "transitSkims.path");
+          logger.info("Hwy Skim Path = "+hwyPath);
+          logger.info("Transit Skim Path = " + transitPath);
           
 		//read skims (this part should eventually be changed to read the data from jds)
-        String[] mName = {path+"pktime.zip", //0
-           path+ "pkdist.zip",     //1
-           path+ "optime.zip",     //2 
-           path+ "opdist.zip",     //3
-           path+ "pwtivt.zip",     //4
-           path+ "pwtfwt.zip",     //5
-           path+ "pwttwt.zip",     //6
-           path+ "pwtaux.zip",     //7
-           path+ "pwtbrd.zip",     //8
-           path+ "pwtfar.zip",     //9
-           path+ "owtivt.zip",     //10
-           path+ "owtfwt.zip",     //11
-           path+ "owttwt.zip",     //12
-           path+ "owtaux.zip",     //13
-           path+ "owtbrd.zip",     //14
-           path+ "owtfar.zip",     //15
-           path+ "pdtivt.zip",     //16
-           path+ "pdtfwt.zip",     //17
-           path+ "pdttwt.zip",     //18
-           path+ "pdtwlk.zip",     //19
-           path+ "pdtbrd.zip",     //20
-           path+ "pdtdrv.zip",     //21
-           path+ "pdtfar.zip",     //22
-           path+ "odtivt.zip",     //23
-           path+ "odtfwt.zip",     //24
-           path+ "odttwt.zip",     //25
-           path+ "odtwlk.zip",     //26
-           path+ "odtbrd.zip",     //27
-           path+ "odtdrv.zip",     //28
-           path+ "odtfar.zip"};    //29
+        String[] mName = {hwyPath+"pktime.zip", //0
+           hwyPath+ "pkdist.zip",     //1
+           hwyPath+ "optime.zip",     //2
+           hwyPath+ "opdist.zip",     //3
+           transitPath+ "pwtivt.zip",     //4
+           transitPath+ "pwtfwt.zip",     //5
+           transitPath+ "pwttwt.zip",     //6
+           transitPath+ "pwtaux.zip",     //7
+           transitPath+ "pwtbrd.zip",     //8
+           transitPath+ "pwtfar.zip",     //9
+           transitPath+ "owtivt.zip",     //10
+           transitPath+ "owtfwt.zip",     //11
+           transitPath+ "owttwt.zip",     //12
+           transitPath+ "owtaux.zip",     //13
+           transitPath+ "owtbrd.zip",     //14
+           transitPath+ "owtfar.zip",     //15
+           transitPath+ "pdtivt.zip",     //16
+           transitPath+ "pdtfwt.zip",     //17
+           transitPath+ "pdttwt.zip",     //18
+           transitPath+ "pdtwlk.zip",     //19
+           transitPath+ "pdtbrd.zip",     //20
+           transitPath+ "pdtdrv.zip",     //21
+           transitPath+ "pdtfar.zip",     //22
+           transitPath+ "odtivt.zip",     //23
+           transitPath+ "odtfwt.zip",     //24
+           transitPath+ "odttwt.zip",     //25
+           transitPath+ "odtwlk.zip",     //26
+           transitPath+ "odtbrd.zip",     //27
+           transitPath+ "odtdrv.zip",     //28
+           transitPath+ "odtfar.zip"};    //29
            
            mNameGlobal=mName;
                                            
@@ -212,63 +212,63 @@ public class SkimsInMemory implements Serializable {
       logger.fine("\tTime to read opDist : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
 
       
-            logger.fine("Reading skims into memory");
-            startTime = System.currentTimeMillis();
-            logger.fine("\tReading Peak Walk-Transit into memory");
-            pkwlk = createSkimsMatrices(new File(mName[4]),
-                                                           new File(mName[5]),
-                                                           new File(mName[6]),
-                                                           new File(mName[7]),
-                                                           new File(mName[8]),
-                                                           new File(mName[9]));                                             
-                                                         
-            logger.fine("\t\tTime to read pkwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-            
-            startTime = System.currentTimeMillis();
-            logger.fine("\tReading off Peak Walk-Transit into memory");
-            opwlk = createSkimsMatrices(new File(mName[10]),
-                                                           new File(mName[11]),
-                                                           new File(mName[12]),
-                                                           new File(mName[13]),
-                                                           new File(mName[14]),            
-                                                           new File(mName[15]));
-            logger.fine("\t\tTime to read opwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-            
-            startTime = System.currentTimeMillis();
-            logger.fine("\tReading Peak Drive-Transit into memory");
-            pkdrv = createSkimsMatrices(new File(mName[16]),
-                                                           new File(mName[17]),
-                                                           new File(mName[18]),
-                                                           new File(mName[19]),
-                                                           new File(mName[20]),
-                                                           new File(mName[21]),
-                                                           new File(mName[22]));
-            logger.fine("\t\tTime to read pkdrv : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
-             
-            startTime = System.currentTimeMillis();
-            logger.fine("\tReading off Peak Drive-Transit into memory");
-            opdrv = createSkimsMatrices(new File(mName[23]),
-                                                           new File(mName[24]),
-                                                           new File(mName[25]),
-                                                           new File(mName[26]),
-                                                           new File(mName[27]),
-                                                           new File(mName[28]),
-                                                           new File(mName[29]));
-            logger.fine("\t\tTime to read opdrv : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+        logger.fine("Reading skims into memory");
+        startTime = System.currentTimeMillis();
+        logger.fine("\tReading Peak Walk-Transit into memory");
+        pkwlk = createSkimsMatrices(new File(mName[4]),
+                                                       new File(mName[5]),
+                                                       new File(mName[6]),
+                                                       new File(mName[7]),
+                                                       new File(mName[8]),
+                                                       new File(mName[9]));
 
-         }catch(Exception ioerr){
+        logger.fine("\t\tTime to read pkwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+
+        startTime = System.currentTimeMillis();
+        logger.fine("\tReading off Peak Walk-Transit into memory");
+        opwlk = createSkimsMatrices(new File(mName[10]),
+                                                       new File(mName[11]),
+                                                       new File(mName[12]),
+                                                       new File(mName[13]),
+                                                       new File(mName[14]),
+                                                       new File(mName[15]));
+        logger.fine("\t\tTime to read opwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+
+        startTime = System.currentTimeMillis();
+        logger.fine("\tReading Peak Drive-Transit into memory");
+        pkdrv = createSkimsMatrices(new File(mName[16]),
+                                                       new File(mName[17]),
+                                                       new File(mName[18]),
+                                                       new File(mName[19]),
+                                                       new File(mName[20]),
+                                                       new File(mName[21]),
+                                                       new File(mName[22]));
+        logger.fine("\t\tTime to read pkdrv : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+
+        startTime = System.currentTimeMillis();
+        logger.fine("\tReading off Peak Drive-Transit into memory");
+        opdrv = createSkimsMatrices(new File(mName[23]),
+                                                       new File(mName[24]),
+                                                       new File(mName[25]),
+                                                       new File(mName[26]),
+                                                       new File(mName[27]),
+                                                       new File(mName[28]),
+                                                       new File(mName[29]));
+        logger.fine("\t\tTime to read opdrv : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+
+       }catch(Exception ioerr){
 	    	logger.info("Error:SkimsInMemory class:IO Exception reading matrices");   
 	    	ioerr.printStackTrace();
-	    };
+	   };
     	
     	logger.fine("Finished reading skims into memory");
     } //end constructor
 	
     
     public float getDistance(int endTime, int originTaz, int destinationTaz){
-        if((endTime>=700 && endTime<=830)||(endTime>=1700 && endTime<=1900)){  //peak
+        if((endTime>=700 && endTime<=830)||(endTime>=1600 && endTime<=1800)){  //peak
             //if PM Peak, then reverse origin and destination to get peak skims 
-            if (endTime>=1700 && endTime<=1900)
+            if (endTime>=1600 && endTime<=1800)
                 return pkDist.getValueAt(destinationTaz,originTaz); 
             else
                 return pkDist.getValueAt(originTaz,destinationTaz);
@@ -282,9 +282,9 @@ public class SkimsInMemory implements Serializable {
 		
 		//TravelTimeAndCost tc = new TravelTimeAndCost();
 	
-   		if((time>=700 && time<=830)||(time>=1700 && time<=1900)){  //peak
+   		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
             //if PM Peak, then reverse origin and destination to get peak skims 
-			if (time>=1700 && time<=1900){
+			if (time>=1600 && time<=1800){
 			
                 tc.driveAloneTime  = pkTime.getValueAt(destinationTaz, originTaz);
                 tc.sharedRide2Time = pkTime.getValueAt(destinationTaz, originTaz);
@@ -313,7 +313,7 @@ public class SkimsInMemory implements Serializable {
 			tc.bikeDistance        = pkDist.getValueAt(originTaz,destinationTaz);               
 			
             // if PM Peak, then reverse origin and destination to get peak skims
-            if (time>=1700 && time<=1900){
+            if (time>=1600 && time<=1800){
 			    tc.walkTransitInVehicleTime      = pkwlk.getValue(destinationTaz,originTaz,"pwtivt");  
 			    if(tc.walkTransitInVehicleTime>0){          
 				    tc.walkTransitFirstWaitTime      = pkwlk.getValue(destinationTaz,originTaz,"pwtfwt");             
@@ -434,7 +434,7 @@ public class SkimsInMemory implements Serializable {
 		float directTime=0;
 		float totalTime=0;
 		
-		if((time>=700 && time<=830)||(time>=1700 && time<=1900)){  //peak
+		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
 			directTime = pkTime.getValueAt(fromTaz,toTaz);
 			totalTime = pkTime.getValueAt(fromTaz,stopTaz)
 				+ 	pkTime.getValueAt(stopTaz,toTaz);
@@ -459,7 +459,7 @@ public class SkimsInMemory implements Serializable {
 		float directTime=0;
 		float totalTime=0;
 		
-		if((time>=700 && time<=830)||(time>=1700 && time<=1900)){  //peak
+		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
 			directTime = (pkTime.getValueAt(fromTaz,toTaz)/WALKMPH)*60;
 			totalTime = (pkTime.getValueAt(fromTaz,stopTaz)/WALKMPH)*60
 				+ (pkTime.getValueAt(stopTaz,toTaz)/WALKMPH)*60;
@@ -485,7 +485,7 @@ public class SkimsInMemory implements Serializable {
 		float directTime=0;
 		float totalTime=0;
 		
-		if((time>=700 && time<=830)||(time>=1700 && time<=1900)){  //peak
+		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
 			directTime = (pkTime.getValueAt(fromTaz,toTaz)/BIKEMPH)*60;
 			totalTime = (pkTime.getValueAt(fromTaz,stopTaz)/BIKEMPH)*60
 				+ (pkTime.getValueAt(stopTaz,toTaz)/BIKEMPH)*60;
@@ -520,7 +520,7 @@ public class SkimsInMemory implements Serializable {
 		//  the following formula was used to compute generalized cost for model estimation:
 		//  	costToStop= ivtToStop + 1.5*fwtToStop + 2.5*(transfer wait) + 3.0*auxToStop
 		
-		if((time>=700 && time<=830)||(time>=1700 && time<=1900)){  //peak
+		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
 
 			//fromTaz->toTaz
 			inVehicleTime      = pkwlk.getValue(fromTaz,toTaz,"pwtivt");            
@@ -605,7 +605,7 @@ public class SkimsInMemory implements Serializable {
 
 		float[] autoDists = new float[2];
 
-		if((time>=700 && time<=830)||(time>=1700 && time<=1900)){  //peak
+		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
 			autoDists[0] = pkDist.getValueAt(fromTaz,toTaz);
 			autoDists[1] = pkDist.getValueAt(fromTaz,stopTaz)+ pkDist.getValueAt(stopTaz,toTaz);
 		}else{
