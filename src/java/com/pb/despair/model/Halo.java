@@ -12,11 +12,11 @@ public class Halo {
 
 	String[] stateLabels = { "California", "Idaho", "Nevada", "Oregon", "Washington" };
 
-	int MAX_ALPHA_ZONE = 4141;
-	int NUM_ALPHA_ZONES = 2950;
+	int maxAlphaZone = 0;
+	int numAlphaZones = 0;
 
-	int[] indexZone = new int[NUM_ALPHA_ZONES];
-	int[] zoneIndex = new int[MAX_ALPHA_ZONE+1];
+	int[] indexZone = null;
+	int[] zoneIndex = null;
 		
 	final int MAX_STATE_FIPS = 200;
 	final int NUM_STATES = stateLabels.length;
@@ -70,12 +70,12 @@ public class Halo {
     
     
 	public int getMaxZoneNumber() {
-		return MAX_ALPHA_ZONE;
+		return maxAlphaZone;
 	}
     
     
 	public int getNumberOfZones() {
-		return NUM_ALPHA_ZONES;
+		return numAlphaZones;
 	}
     
     
@@ -137,12 +137,20 @@ public class Halo {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	    
+
+		numAlphaZones = table.getRowCount();
+		int[] indexZone = new int[numAlphaZones];
+		for (int i=0; i < numAlphaZones; i++)
+			if ( (int)table.getValueAt(i+1, "Azone") > maxAlphaZone ) 
+				maxAlphaZone = (int)table.getValueAt(i+1, 1);
+			
+		int[] zoneIndex = new int[maxAlphaZone+1];
+		
 		Arrays.fill (indexZone, -1);
 		Arrays.fill (zoneIndex, -1);
 
 		index = 0;
-		for (int r=0; r < table.getRowCount(); r++) {
+		for (int r=0; r < numAlphaZones; r++) {
 		    
 			zone = (int)table.getValueAt(r+1, "Azone");
 			county = (String)table.getStringValueAt(r+1, "County");
