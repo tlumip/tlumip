@@ -1,32 +1,32 @@
 package com.pb.despair.model;
 
 
-public class IncomeSize {
+public class IncomeSizeOld {
 
     String[] incomeSizeLabels = {
-		"HH0to5k1to2",
-		"HH0to5k3plus",
-		"HH5to10k1to2",
-		"HH5to10k3plus",
-		"HH10to15k1to2",
-		"HH10to15k3plus",
-		"HH15to20k1to2",
-		"HH15to20k3plus",
-		"HH20to30k1to2",
-		"HH20to30k3plus",
-		"HH30to40k1to2",
-		"HH30to40k3plus",
-		"HH40to50k1to2",
-		"HH40to50k3plus",
-		"HH50to70k1to2",
-		"HH50to70k3plus",
-		"HH70kUp1to2",
-		"HH70kUp3plus"
+		"HH0to5k0to2",
+		"HH0to5k2plus",
+		"HH5to10k0to2",
+		"HH5to10k2plus",
+		"HH10to15k0to2",
+		"HH10to15k2plus",
+		"HH15to20k0to2",
+		"HH15to20k2plus",
+		"HH20to30k0to2",
+		"HH20to30k2plus",
+		"HH30to40k0to2",
+		"HH30to40k2plus",
+		"HH40to50k0to2",
+		"HH40to50k2plus",
+		"HH50to70k0to2",
+		"HH50to70k2plus",
+		"HH70kUp0to2",
+		"HH70kUp2plus"
     };
     
     
     
-    public IncomeSize () {
+    public IncomeSizeOld () {
     }
 
     
@@ -64,55 +64,55 @@ public class IncomeSize {
 		
 	    // define incomeSize indices for income and hh size ranges.
 		if ( income < 5000 ) {
-		    if ( hhSize < 3 )
+		    if ( hhSize < 2 )
 		        returnValue = 0;
 		    else
 		        returnValue = 1;
 		}
 		else if ( income < 10000 ) {
-			if ( hhSize < 3 )
+			if ( hhSize < 2 )
 				returnValue = 2;
 			else
 				returnValue = 3;
 		}
 		else if ( income < 15000 ) {
-			if ( hhSize < 3 )
+			if ( hhSize < 2 )
 				returnValue = 4;
 			else
 				returnValue = 5;
 		}
 		else if ( income < 20000 ) {
-			if ( hhSize < 3 )
+			if ( hhSize < 2 )
 				returnValue = 6;
 			else
 				returnValue = 7;
 		}
 		else if ( income < 30000 ) {
-			if ( hhSize < 3 )
+			if ( hhSize < 2 )
 				returnValue = 8;
 			else
 				returnValue = 9;
 		}
 		else if ( income < 40000 ) {
-			if ( hhSize < 3 )
+			if ( hhSize < 2 )
 				returnValue = 10;
 			else
 				returnValue = 11;
 		}
 		else if ( income < 50000 ) {
-			if ( hhSize < 3 )
+			if ( hhSize < 2 )
 				returnValue = 12;
 			else
 				returnValue = 13;
 		}
 		else if ( income < 70000 ) {
-			if ( hhSize < 3 )
+			if ( hhSize < 2 )
 				returnValue = 14;
 			else
 				returnValue = 15;
 		}
 		else {
-			if ( hhSize < 3 )
+			if ( hhSize < 2 )
 				returnValue = 16;
 			else
 				returnValue = 17;
