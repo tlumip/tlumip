@@ -26,39 +26,45 @@ public class CUWorkTask extends MessageProcessingTask {
     boolean debug = false;
     private ResourceBundle pidafRb;
     String scenarioName = "pleaseWork";
+    private boolean firstMessage = true;
 
     public void onStart() {
 
-        logger.info("*******************************************************************************************");
-        logger.info( "***" + getName() + " is starting...");
-
-        pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
-        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
-        //that was written by the Application Orchestrator
-        BufferedReader reader = null;
-        int timeInterval = -1;
-        String pathToRb = null;
-        String scenarioName = null;
-        try {
-            logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
-            scenarioName = reader.readLine();
-            logger.info("\tScenario Name: " + scenarioName);
-            timeInterval = Integer.parseInt(reader.readLine());
-            logger.info("\tTime Interval: " + timeInterval);
-            pathToRb = reader.readLine();
-            logger.info("\tResourceBundle Path: " + pathToRb);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
-        logger.info("  *" + getName() + " is creating a PIModel Object");
-        pi = new PIModel(rb);
-        logger.info("*******************************************************************************************");
+        logger.info("***************************" + getName() + " begin onStart() *****************************************");
+//        logger.info( "***" + getName() + " is starting...");
+//        //Getting the properties file
+//        logger.info(" *** + " + getName() + " is getting the pidaf resource bundle");
+//        pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
+//        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
+//        //that was written by the Application Orchestrator
+//        BufferedReader reader = null;
+//        int timeInterval = -1;
+//        String pathToRb = null;
+//        String scenarioName = null;
+//        try {
+//            logger.info("Reading RunParams.txt file");
+//            reader = new BufferedReader(new FileReader(new File(ResourceUtil.getProperty(pidafRb,"run.param.file"))));
+//            scenarioName = reader.readLine();
+//            logger.info("\tScenario Name: " + scenarioName);
+//            timeInterval = Integer.parseInt(reader.readLine());
+//            logger.info("\tTime Interval: " + timeInterval);
+//            pathToRb = reader.readLine();
+//            logger.info("\tResourceBundle Path: " + pathToRb);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+//        logger.info("  *" + getName() + " is creating a PIModel Object");
+//        pi = new PIModel(rb);
+        logger.info("***************************" + getName() + " end onStart()****************************************");
     }
 
     public void onMessage(Message msg) {
         if(debug) logger.info( getName() + " received " + msg.getStringValue("Name") + " from" + msg.getSender() );
+        if(firstMessage){
+            pi = new PIModel(SetupWorkTask.rb);
+            firstMessage = false;
+        }
         String name = msg.getStringValue("Name");
         double[] prices = (double[])msg.getValue("Price");
 
