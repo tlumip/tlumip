@@ -86,7 +86,7 @@ public class Skims {
 
 		// take a column of alpha zone numbers from a TableDataSet and puts them into an array for
 	    // purposes of setting external numbers.	     */
-		String zoneCorrespondenceFile = (String)globalPropertyMap.get("alphatobeta.file");
+		String zoneCorrespondenceFile = (String)globalPropertyMap.get("alpha2beta.file");
 		try {
             CSVFileReader reader = new CSVFileReader();
             TableDataSet table = reader.readFile(new File(zoneCorrespondenceFile));
