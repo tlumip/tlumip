@@ -33,8 +33,9 @@ public class TS {
 	protected static Logger logger = Logger.getLogger("com.pb.despair.ts");
 
 
-	HashMap propertyMap;
-	
+	HashMap tsPropertyMap;
+    HashMap globalPropertyMap;
+
 	String ptFileName = null;
 	String ctFileName = null;
 	String peakOutputFileName = null;
@@ -56,16 +57,16 @@ public class TS {
 	
 	public TS() {
 
-        propertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
+        tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
 
 		initTS();
 		
 	}
 
-    public TS(ResourceBundle rb) {
+    public TS(ResourceBundle appRb, ResourceBundle globalRb) {
 
-        propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-
+        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 		initTS();
 
 	}
@@ -88,11 +89,11 @@ public class TS {
 	private void initTS() {
 
 	    // get trip list filenames from property file
-		ptFileName = (String)propertyMap.get("pt.fileName");
-		ctFileName = (String)propertyMap.get("ct.fileName");
+		ptFileName = (String)tsPropertyMap.get("pt.fileName");
+		ctFileName = (String)tsPropertyMap.get("ct.fileName");
 
-		peakOutputFileName = (String)propertyMap.get("peakOutput.fileName");
-		offpeakOutputFileName = (String)propertyMap.get("offpeakOutput.fileName");
+		peakOutputFileName = (String)tsPropertyMap.get("peakOutput.fileName");
+		offpeakOutputFileName = (String)tsPropertyMap.get("offpeakOutput.fileName");
 	}
 
 	
@@ -106,20 +107,20 @@ public class TS {
 		String myDateString;
 
 		// get peak period definitions from property file
-		peakStart = Integer.parseInt( (String)propertyMap.get("amPeak.start") );
-		peakEnd = Integer.parseInt( (String)propertyMap.get("amPeak.end") );
-		peakFactor = Float.parseFloat( (String)propertyMap.get("amPeak.volumeFactor") );
+		peakStart = Integer.parseInt( (String)tsPropertyMap.get("amPeak.start") );
+		peakEnd = Integer.parseInt( (String)tsPropertyMap.get("amPeak.end") );
+		peakFactor = Float.parseFloat( (String)tsPropertyMap.get("amPeak.volumeFactor") );
 
         myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
-		g = new Network( propertyMap, "peak" );
+		g = new Network( tsPropertyMap, "peak" );
 
 		
 	
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW( propertyMap, g );
+		FW fw = new FW( tsPropertyMap, g );
 
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -148,7 +149,7 @@ public class TS {
 		
 		logger.info("Writing Peak Time and Distance skims to disk");
         startTime = System.currentTimeMillis();
-        writePeakSkims(g, propertyMap);
+        writePeakSkims(g, tsPropertyMap);
         logger.info("wrote the peak skims in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
@@ -166,14 +167,14 @@ public class TS {
 		
 		
         // get off-peak period definitions from property file
-		offPeakStart = Integer.parseInt( (String)propertyMap.get("offPeak.start") );
-		offPeakEnd = Integer.parseInt( (String)propertyMap.get("offPeak.end") );
-		offPeakFactor = Float.parseFloat( (String)propertyMap.get("offPeak.volumeFactor") );
+		offPeakStart = Integer.parseInt( (String)tsPropertyMap.get("offPeak.start") );
+		offPeakEnd = Integer.parseInt( (String)tsPropertyMap.get("offPeak.end") );
+		offPeakFactor = Float.parseFloat( (String)tsPropertyMap.get("offPeak.volumeFactor") );
 
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW( propertyMap, g );
+		FW fw = new FW( tsPropertyMap, g );
 
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -202,7 +203,7 @@ public class TS {
 		
         logger.info("Writing Off-Peak Time and Distance skims to disk");
         startTime = System.currentTimeMillis();
-        writeOffPeakSkims(g, propertyMap);
+        writeOffPeakSkims(g, tsPropertyMap);
         logger.info("wrote the Off-Peak skims in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
