@@ -47,5 +47,7 @@ public class AOProperties extends ModelProperties {
         return intervalUpdateList;
     }
 
+    public static void main (String[] args){}
+
 
 }
