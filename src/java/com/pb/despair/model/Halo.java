@@ -85,6 +85,11 @@ public class Halo {
 	}
     
     
+	public int[][] getPumas() {
+		return pumas;
+	}
+    
+    
     
     public boolean isPumaInHalo (int stFips, int puma) {
         
@@ -99,6 +104,26 @@ public class Halo {
         
         return false;
             
+    }
+
+
+    public int getPumaIndex (int stateIndex, int puma) {
+        
+        for (int i=0; i < pumas[stateIndex].length; i++) {
+            
+            if (puma == pumas[stateIndex][i])
+                return i;
+            
+        }
+        
+        return -1;
+            
+    }
+    
+    
+    
+    public int getPumaLabel (int stateIndex, int pumaIndex) {
+    	return pumas[stateIndex][pumaIndex];
     }
 
 
