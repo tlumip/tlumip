@@ -1354,7 +1354,7 @@ public class SPG {
 		for (int i=0; i < halo.getNumberOfStates(); i++) {
 		    
 		    logger.info ("reading PUMS data file for " + halo.getStateLabel(i));
-			ArrayList pumsList = pums.readSpg2OutputAttributes ( PUMSFILE[i], hhVariables, personVariables, (String)globalPropertyMap.get("alpha2beta.file") );
+			ArrayList pumsList = pums.readSpg2OutputAttributes ( PUMSFILE[i], hhVariables, personVariables, halo );
 			
 		    logger.info ("looking up PUMS records corresponding to household/state indices in TableDataSet.");
 			for (int k=0; k < table.getRowCount(); k++) {
