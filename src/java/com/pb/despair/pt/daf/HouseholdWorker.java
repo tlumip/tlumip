@@ -68,7 +68,7 @@ public class HouseholdWorker extends MessageProcessingTask {
     boolean firstHouseholdBlock = true;
     boolean firstDCLogsum = true;
     
-    String[] matrixWriterQueues = {"MatrixWriterQueue1","MatrixWriterQueue2"};
+    String[] matrixWriterQueues = {"MatrixWriterQueue1","MatrixWriterQueue2","MatrixWriterQueue3"};
     int toggle = 0;
     double durationTime;
     double primaryTime;
@@ -384,7 +384,7 @@ public class HouseholdWorker extends MessageProcessingTask {
 
         try {
             if (purpose.equals("c")) {
-                for (int i = 1; i <= 3; i++) {
+                for (int i = 3; i >= 1; i--) {
                     logger.info(getName() + " is calculating the DC Logsums for purpose c, market segment " + segment + " subpurpose " + i);
 
                     //create a message to store the dc logsum vector
@@ -402,11 +402,17 @@ public class HouseholdWorker extends MessageProcessingTask {
                     dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
                     dcExpUtilitiesMessage.setValue("segment", segment);
                     dcExpUtilitiesMessage.setValue("purpose", dcPurpose);
+                    dcExpUtilitiesMessage.setValue("time", Long.toString(System.currentTimeMillis()) );
                     Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
                     dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-                    logger.warning(getName() + " Sending " + expUtilities.getName() + " to queue " + queue);
-                    logger.warning(getName() + " Sending " + ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getName() + " to queue " + queue);
-                    sendTo(queue, dcExpUtilitiesMessage);
+                    logger.warning(getName() + " Sending " + ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getName() +
+                            " with segment: " + (Integer)dcExpUtilitiesMessage.getValue("segment") +
+                            " and purpose: " + (String) dcExpUtilitiesMessage.getValue("purpose") +
+                            " and time: " + (String)dcExpUtilitiesMessage.getValue("time") +
+                            " and value in [1][1]: " +  ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getValueAt(1,1) +
+                            " to " + matrixWriterQueues[i-1]);
+
+                    sendTo(matrixWriterQueues[i-1], dcExpUtilitiesMessage);
 //                dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb); //BINARY-ZIP
 //                dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb);
                 }
@@ -423,7 +429,15 @@ public class HouseholdWorker extends MessageProcessingTask {
                 Message dcExpUtilitiesMessage = createMessage();
                 dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
                 Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
+                dcExpUtilitiesMessage.setValue("segment", segment);
+                dcExpUtilitiesMessage.setValue("purpose", purpose);
                 dcExpUtilitiesMessage.setValue("matrix", expUtilities);
+                dcExpUtilitiesMessage.setValue("time", Long.toString(System.currentTimeMillis()) );
+                logger.warning(getName() + " Sending " + ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getName() +
+                            " with segment: " + (Integer)dcExpUtilitiesMessage.getValue("segment") +
+                            " and purpose: " + (String) dcExpUtilitiesMessage.getValue("purpose") +
+                            " and time: " + (String)dcExpUtilitiesMessage.getValue("time") +
+                            " to " + queue);
                 sendTo(queue, dcExpUtilitiesMessage);
 //             dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);     //BINARY-ZIP
 //            dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb);

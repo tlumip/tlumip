@@ -104,7 +104,7 @@ public class PTDafMaster extends MessageProcessingTask {
         ptRb = ResourceUtil.getPropertyBundle(new File(pathToRb));
         MAXBLOCKSIZE = Integer.parseInt(ResourceUtil.getProperty(ptRb,"max.block.size"));
         totalCollapsedModeChoiceLogsums = ResourceUtil.getList(ptRb,"matrices.for.pi").size();
-
+        logger.info("totalCollapsedModeChoiceLogsums: " + totalCollapsedModeChoiceLogsums);
         //Start mode choice logsums.  The workers will decide if the MC Logsums
         //actually need to be recalculated based on a class boolean.  If they
         //don't need to be calculated the workers will send back an empty message.
@@ -174,10 +174,10 @@ public class PTDafMaster extends MessageProcessingTask {
 
             if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED)) {
                 mcLogsumCount++;
-                logger.fine("mcLogsumCount: " + mcLogsumCount);
+                logger.info("mcLogsumCount: " + mcLogsumCount);
             }else{
                 mcCollapsedLogsumCount++;
-                logger.fine("mcCollapsedLogsumCount: " + mcCollapsedLogsumCount);
+                logger.info("mcCollapsedLogsumCount: " + mcCollapsedLogsumCount);
             }
 
             if (mcLogsumCount == totalModeChoiceLogsums && mcCollapsedLogsumCount == totalCollapsedModeChoiceLogsums) {
@@ -283,6 +283,7 @@ public class PTDafMaster extends MessageProcessingTask {
                 totalModeChoiceLogsums++;
             }
         }
+        logger.info("totalModeChoiceLogsums: "+ totalModeChoiceLogsums);
     }
 
     /**
