@@ -13,7 +13,7 @@ public class Halo {
 	String[] stateLabels = { "California", "Idaho", "Nevada", "Oregon", "Washington" };
 
 	int MAX_ALPHA_ZONE = 4141;
-	int NUM_ALPHA_ZONES = 2951;
+	int NUM_ALPHA_ZONES = 2950;
 
 	int[] indexZone = new int[NUM_ALPHA_ZONES];
 	int[] zoneIndex = new int[MAX_ALPHA_ZONE+1];
