@@ -50,7 +50,7 @@ public class EDControl extends ModelComponent {
     public EDControl(int y, int mYear, ResourceBundle rb, boolean debug) {
 		String absoluteLocation = new String();
 		String marginalLocation = new String();
-        //setProperties(rb);
+        //setApplicationResourceBundle(rb);
 
 		splitFiles = new Vector();
         Debug.setShowDebug(debug);

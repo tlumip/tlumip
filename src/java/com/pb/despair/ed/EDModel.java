@@ -113,11 +113,11 @@ public class EDModel extends ModelComponent {
 
         public void startModel(int timeInterval){
             try {
-                int currentYear = (Integer.parseInt(ResourceUtil.getProperty(resourceBundle,"baseYear"))
+                int currentYear = (Integer.parseInt(ResourceUtil.getProperty(appRb,"baseYear"))
                         + timeInterval);
-                String dataLocation = ResourceUtil.getProperty(resourceBundle,"dataLocation");
-                String xmlLocation = ResourceUtil.getProperty(resourceBundle,"home")+
-                        ResourceUtil.getProperty(resourceBundle,"xmlLocation");
+                String dataLocation = ResourceUtil.getProperty(appRb,"dataLocation");
+                String xmlLocation = ResourceUtil.getProperty(appRb,"home")+
+                        ResourceUtil.getProperty(appRb,"xmlLocation");
 
                 EDControl e = new EDControl(currentYear,dataLocation,xmlLocation, true);
                 e.startModel();
