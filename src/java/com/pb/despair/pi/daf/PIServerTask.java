@@ -71,6 +71,7 @@ public class PIServerTask extends Task{
             maxIterations = mi;
             logger.info("*   Maximum iteration set to " + mi);
         }
+        if(maxIterations == 0) logger.warning("Max Iterations was set to 0 in properties file");
         logger.info("*******************************************************************************************");
     }
 
@@ -174,11 +175,14 @@ public class PIServerTask extends Task{
 
         //All calculations are complete and the merit measure can be calculated locally.
         newMeritMeasure = Double.POSITIVE_INFINITY;
-        try {
-            newMeritMeasure = pi.calculateMeritMeasureWithoutLogging();
-        } catch (OverflowException e) {
-            nanPresent = true;
+        if (!nanPresent) {
+            try {
+                newMeritMeasure = pi.calculateMeritMeasureWithoutLogging();
+            } catch (OverflowException e) {
+                nanPresent = true;
+            }
         }
+
         if (nanPresent) {
             logger.severe("Initial prices cause overflow -- try again changing initial prices");
             throw new RuntimeException("Initial prices cause overflow -- try again changing initial prices");
@@ -192,10 +196,11 @@ public class PIServerTask extends Task{
             logger.info("*******************************************************************************************");
             logger.info("*   Starting iteration "+ (nIterations+1)+".  Merit measure is "+newMeritMeasure);
             logger.info("*******************************************************************************************");
+
             nanPresent = false;
             if(newMeritMeasure < pi.convergenceTolerance){
                 convergenceCriteriaMet=true;
-            }else if (newMeritMeasure/oldMeritMeasure < 1.0000000001 || pi.getStepSize() <= pi.getMinimumStepSize()) {
+            }else if (newMeritMeasure/oldMeritMeasure < 1.0000000001 || (pi.getStepSize() <= pi.getMinimumStepSize() && newMeritMeasure != Double.POSITIVE_INFINITY)) {
                 if (newMeritMeasure/oldMeritMeasure < 1.0000000001 ) {
                     // that worked -- we're getting somewhere
                     pi.increaseStepSize();
@@ -239,10 +244,12 @@ public class PIServerTask extends Task{
 
                 nIterations++;
                 double tempMeritMeasure = newMeritMeasure;
-                try {
-                    newMeritMeasure = pi.calculateMeritMeasureWithLogging(); //calculate surplus for each commodity as well as total surplus
-                } catch (OverflowException e) {
-                    nanPresent = true;
+                if (!nanPresent) {
+                    try {
+                        newMeritMeasure = pi.calculateMeritMeasureWithoutLogging(); //calculate surplus for each commodity as well as total surplus
+                    } catch (OverflowException e) {
+                        nanPresent = true;
+                    }
                 }
                 if (!nanPresent) {
                     oldMeritMeasure = tempMeritMeasure;
@@ -250,10 +257,17 @@ public class PIServerTask extends Task{
                     newMeritMeasure = Double.POSITIVE_INFINITY;
                 }
             } else {
-                //we are going in the wrong direction.  Change directions and tread a little softer.
-                logger.info("!!  Not Improving -- decreasing step size to "+pi.getStepSize());
-                pi.decreaseStepSizeAndAdjustPrices();
-
+                if (nIterations == maxIterations-1) {
+                    pi.backUpToLastValidPrices();
+                    logger.warning("!!  Not Improving and at second last iteration -- backing up to last valid prices");
+                } else if (newMeritMeasure == Double.POSITIVE_INFINITY && pi.getStepSize()<= pi.getMinimumStepSize()) {
+                    pi.backUpToLastValidPrices();
+                    nIterations = maxIterations-1;
+                    logger.severe("!!  Can't get past infinity without going below minimum step size -- terminating at last valid prices");
+                } else {
+                    pi.decreaseStepSizeAndAdjustPrices();
+                    logger.info("!!  Not Improving -- decreasing step size to "+pi.getStepSize());
+                }
                 //Now send work to the CUWorkQueue (Composite Utilitiy calculations)
                 msgs = createCUWorkMessages(mFactory);
                 sendWorkToWorkQueues(msgs,CUWorkPorts,nWorkQueues);
@@ -287,15 +301,19 @@ public class PIServerTask extends Task{
 
                 nIterations++;
                 try {
-                    newMeritMeasure = pi.calculateMeritMeasureWithLogging(); //calculate surplus for each commodity as well as total surplus
+                    newMeritMeasure = pi.calculateMeritMeasureWithoutLogging(); //calculate surplus for each commodity as well as total surplus
                 } catch (OverflowException e) {
                     nanPresent = true;
                 }
                 if (nanPresent) {
+                    logger.warning("Overflow error, setting new merit measure to positive infinity");
                     newMeritMeasure = Double.POSITIVE_INFINITY;
                 }
             }
-            if(nIterations == maxIterations) convergenceCriteriaMet=true;
+            if(nIterations == maxIterations) {
+                convergenceCriteriaMet=true;
+                logger.severe("Terminating because maximum iterations reached -- did not converge to tolerance");
+            }
             nanPresent = false;
             logger.info("*********************************************************************************************");
             logger.info("*   End of iteration "+ (nIterations)+".  Time in seconds: "+(System.currentTimeMillis()-iterationTime)/1000.0);
