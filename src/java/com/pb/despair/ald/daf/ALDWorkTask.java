@@ -73,9 +73,10 @@ public class ALDWorkTask extends MessageProcessingTask {
         }
 
         
-        logger.info("ALD is done - writing to the ald_done file");
-        File doneFile = new File(ResourceUtil.getProperty(rb,"done.file"));
-
+        logger.info("ALD is done - writing to the alddaf_done file");
+        String doneFileName = ResourceUtil.getProperty(rb,"done.file.name");
+        File doneFile = new File(pathToIOFiles + "t" + timeInterval + "/ald/" + doneFileName);
+        logger.info("Writing to " + doneFile.getAbsolutePath());
         try {
             PrintWriter writer = new PrintWriter(new FileWriter(
                         doneFile));
