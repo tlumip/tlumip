@@ -56,26 +56,26 @@ public class WorkplaceLocationModel{
             while(destinationEnum.hasMoreElements()){
                 counter++;
             	Taz destinationTaz = (Taz) destinationEnum.nextElement();
+                float flow = laborFlowMatrix.getValueAt(origin,destinationTaz.zoneNumber);
+                if(Float.isNaN(flow)) {
+                    logger.severe("FLOW IS NaN. matrix is " + laborFlowMatrix.getName() + " origin: " + origin
+                                    + " destination " + destinationTaz.zoneNumber);
+                    System.exit(10);
+                }
             	probabilityTotal = probabilityTotal+(laborFlowMatrix.getValueAt(origin,destinationTaz.zoneNumber));
+                if(Double.isNaN(probabilityTotal)) {
+                    logger.severe("Probability IS NaN. matrix is " + laborFlowMatrix.getName() + " origin: " + origin
+                                    + " destination " + destinationTaz.zoneNumber +
+                                    "laborFlowValue is: " + laborFlowMatrix.getValueAt(origin,destinationTaz.zoneNumber));
+                    System.exit(10);
+                }
             	if (probabilityTotal > selector){
             		destination = destinationTaz.zoneNumber;
             		//logger.finer("Workplace location: "+destination);
             		break;
             	}        
             }
-            //if(probabilityTotal<selector){
-            	//TODO this is a temporary fix because there are no $ flows for the halo population or tazs 970 - 1244
-                //waiting for updated file from John
-            	//destination = thisPerson.homeTaz;
-            	//if(thisHousehold.homeTaz>=4001)
-            	//    destination = 4001;
-            	//else if(thisHousehold.homeTaz>=906&&thisHousehold.homeTaz<=1292)
-            	//	destination = 970;
-            	//else{
-            	//	logger.severe("Error choosing workplace location for taz: "+thisHousehold.homeTaz);
-            	//    System.exit(1);                        
-            	//}   
-            //}    
+
             if(destination==0){
             	logger.severe("Error With workplace location model - destination TAZ shouldn't ==0!");
                 logger.severe("Selector value: " + selector + " Probability total: " + probabilityTotal +
