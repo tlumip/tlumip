@@ -38,6 +38,9 @@ public class Skims {
     int[] alphaNumberArray = null;
 	int[] betaNumberArray = null;
 	int[] zonesToSkim = null;
+
+    int[] externalToAlphaInternal = null;
+    int[] alphaExternalNumbers = null;
 	
 	Matrix newSkimMatrix;
 
@@ -60,31 +63,7 @@ public class Skims {
 		}
 		
 
-	    // take a column of alpha zone numbers from a TableDataSet and puts them into an array for
-	    // purposes of setting external numbers.	     */
-		String zoneCorrespondenceFile = (String)propertyMap.get("zoneIndex.fileName");
-		try {
-            CSVFileReader reader = new CSVFileReader();
-            TableDataSet table = reader.readFile(new File(zoneCorrespondenceFile));
-	        alphaNumberArray = table.getColumnAsInt( 1 );
-	        betaNumberArray = table.getColumnAsInt( 2 );
-        } catch (IOException e) {
-            logger.severe("Can't get zone numbers from zonal correspondence file");
-            e.printStackTrace();
-        }
-	    
-
-        // define which of the total set of centroids are within the Halo area and should have skim trees built
-	    zonesToSkim = new int[g.getMaxCentroid()+1];
-		Arrays.fill ( zonesToSkim, 0 );
-	    for (int i=0; i < alphaNumberArray.length; i++) {
-	    	zonesToSkim[alphaNumberArray[i]] = 1;
-	    }
-
-        
-		if ( useMessageWindow ) {
-			this.mw = new MessageWindow ( "Shortest Path Tree Skimming Progress" );
-		}
+        initSkims ();
 
     }
 
@@ -93,6 +72,14 @@ public class Skims {
 
         this.g = g;
         this.propertyMap = map;
+
+        initSkims ();
+
+    }
+
+
+
+    private void initSkims () {
 
 		// take a column of alpha zone numbers from a TableDataSet and puts them into an array for
 	    // purposes of setting external numbers.	     */
@@ -110,9 +97,14 @@ public class Skims {
     
         // define which of the total set of centroids are within the Halo area and should have skim trees built
 	    zonesToSkim = new int[g.getMaxCentroid()+1];
+	    externalToAlphaInternal = new int[g.getMaxCentroid()+1];
+	    alphaExternalNumbers = new int[alphaNumberArray.length+1];
 		Arrays.fill ( zonesToSkim, 0 );
+		Arrays.fill ( externalToAlphaInternal, -1 );
 	    for (int i=0; i < alphaNumberArray.length; i++) {
 	    	zonesToSkim[alphaNumberArray[i]] = 1;
+	    	externalToAlphaInternal[alphaNumberArray[i]] = i;
+	    	alphaExternalNumbers[i+1] = alphaNumberArray[i];
 	    }
 
     }
@@ -135,12 +127,10 @@ public class Skims {
         double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
         // copy the array to a ones-based float[][] for conversion to Matrix object
-//        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedDoubleArray );  //ONE-ZER0
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
 	    // create a Matrix from the peak alpha distance skims array and write to disk
 	    fileName = (String)propertyMap.get( "pkHwyDistSkim.fileName" );
-//	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray ); //ONE-ZER0
         newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
@@ -154,9 +144,8 @@ public class Skims {
         
 	    // create a Matrix from the off-peak alpha distance skims array and write to disk
 	    fileName = (String)propertyMap.get( "opHwyDistSkim.fileName" );
-//	    newSkimMatrix = new Matrix( "opdist", "Off-peak SOV Distance Skims", onesBasedFloatArray ); //ONE-ZER0
         newSkimMatrix = new Matrix( "opdist", "Off-peak SOV Distance Skims", zeroBasedFloatArray );
-	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
+	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
 
@@ -178,14 +167,13 @@ public class Skims {
         // get the skims as a double[][] array dimensioned to number of centroids (2984)
         double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
-//        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedDoubleArray ); //ONE-ZER0
+        // convert to a float[][] dimensioned to number of alpha zones (2950)
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
 	    // create a Matrix from the peak alpha congested time skims array and write to disk
 	    fileName = (String)propertyMap.get( "pkHwyTimeSkim.fileName" );
-//	    newSkimMatrix = new Matrix( "pktime", "Peak SOV Time Skims", onesBasedFloatArray );  //ONE-ZER0
         newSkimMatrix = new Matrix( "pktime", "Peak SOV Time Skims", zeroBasedFloatArray );
-	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
+	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
 
@@ -213,14 +201,12 @@ public class Skims {
         // get the skims as a double[][] array 
         double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
-//        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedDoubleArray ); //ONE-ZER0
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
 	    // create a Matrix from the off-peak alpha congested time skims array and write to disk
 	    fileName = (String)propertyMap.get( "opHwyTimeSkim.fileName" );
-//	    newSkimMatrix = new Matrix( "optime", "Off-peak SOV Time Skims", onesBasedFloatArray ); //ONE-ZER0
         newSkimMatrix = new Matrix( "optime", "Off-peak SOV Time Skims", zeroBasedFloatArray );
-	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
+	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
 
@@ -239,13 +225,11 @@ public class Skims {
 		// skims are generated between all centroids in entire network (2985 total centroids)
         double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
 
-//        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedDoubleArray );  //ONE-ZER0
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
 	    // create a Matrix from the peak alpha distance skims array and return
-//	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray );  //ONE-ZER0
         newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", zeroBasedFloatArray );
-	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
+	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
 
 	    return newSkimMatrix;
 	    
@@ -299,24 +283,28 @@ public class Skims {
 
     private float[][] getZeroBasedFloatArray ( double[][] zeroBasedDoubleArray ) {
 
-    	int z;
-    	int[] inToEx = g.getIndexNode();
-        // copy the array to a zero-based float[][] for conversion to Matrix object
-	    // only the zones within the study area are saved to skim matrix (2950 total skim zones)
+    	int[] skimsInternalToExternal = g.getIndexNode();
+    	int maxZone = g.getMaxCentroid();
+    	
+		// convert the zero-based double[2983][2983] produced by the skimming procedure
+    	// to a zero-based float[2950][2950] for alpha zones to be written to skims file.
 		float[][] zeroBasedFloatArray = new float[alphaNumberArray.length][alphaNumberArray.length];
-        int r = 0;
+		
+        int exRow;
+        int exCol;
+        int inRow;
+        int inCol;
 		for (int i=0; i < zeroBasedDoubleArray.length; i++) {
-            int c = 0;
-			z = inToEx[i];
-	    	if ( zonesToSkim[z] == 1 ) {
+			exRow = skimsInternalToExternal[i];
+	    	if ( zonesToSkim[exRow] == 1 ) {
+				inRow = externalToAlphaInternal[exRow];
                 for (int j=0; j < zeroBasedDoubleArray[i].length; j++) {
-	    			z = inToEx[j];
-	    	    	if ( zonesToSkim[z] == 1 ) {
-                        zeroBasedFloatArray[r][c] = (float)zeroBasedDoubleArray[i][j];
-                        c++;
+                	exCol = skimsInternalToExternal[j];
+	    	    	if ( zonesToSkim[exCol] == 1 ) {
+	    				inCol = externalToAlphaInternal[exCol];
+	    				zeroBasedFloatArray[inRow][inCol] = (float)zeroBasedDoubleArray[i][j];
 	    	    	}
 	    		}
-                r++;
 	    	}
 	    }
 	    zeroBasedDoubleArray = null;
@@ -342,7 +330,23 @@ public class Skims {
 				validLinks[i] = true;
 		}
 		
-		return hwySkim ( linkCost, validLinks, alphaNumberArray );
+		double[][] skimMatrix =  hwySkim ( linkCost, validLinks, alphaNumberArray );
+		
+		// set intrazonal values to 0.5*nearest neighbor
+		for (int i=0; i < skimMatrix.length; i++) {
+			
+			// find minimum valued row element
+			double minValue = Double.MAX_VALUE;
+			for (int j=0; j < skimMatrix.length; j++)
+				if ( skimMatrix[i][j] < minValue )
+					minValue = skimMatrix[i][j]; 
+			
+			// set intrazonal value
+			skimMatrix[i][i] = 0.5*minValue;
+			
+		}
+		
+		return skimMatrix;
        
 	}
 

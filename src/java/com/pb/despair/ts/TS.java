@@ -37,6 +37,8 @@ public class TS {
 	
 	String ptFileName = null;
 	String ctFileName = null;
+	String peakOutputFileName = null;
+	String offpeakOutputFileName = null;
 	
 	int peakStart;
 	int peakEnd;
@@ -56,9 +58,7 @@ public class TS {
 
         propertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
 
-	    // get trip list filenames from property file
-		ptFileName = (String)propertyMap.get("pt.fileName");
-		ctFileName = (String)propertyMap.get("ct.fileName");
+		initTS();
 		
 	}
 
@@ -66,9 +66,7 @@ public class TS {
 
         propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
 
-	    // get trip list filenames from property file
-		ptFileName = (String)propertyMap.get("pt.fileName");
-		ctFileName = (String)propertyMap.get("ct.fileName");
+		initTS();
 
 	}
 
@@ -87,6 +85,17 @@ public class TS {
     
 
 
+	private void initTS() {
+
+	    // get trip list filenames from property file
+		ptFileName = (String)propertyMap.get("pt.fileName");
+		ctFileName = (String)propertyMap.get("ct.fileName");
+
+		peakOutputFileName = (String)propertyMap.get("peakOutput.fileName");
+		offpeakOutputFileName = (String)propertyMap.get("offpeakOutput.fileName");
+	}
+
+	
     public void assignPeakAuto () {
         
 		long startTime = System.currentTimeMillis();
@@ -96,7 +105,6 @@ public class TS {
 		int linkCount;
 		String myDateString;
 
-		
 		// get peak period definitions from property file
 		peakStart = Integer.parseInt( (String)propertyMap.get("amPeak.start") );
 		peakEnd = Integer.parseInt( (String)propertyMap.get("amPeak.end") );
@@ -106,6 +114,8 @@ public class TS {
 		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
 		g = new Network( propertyMap, "peak" );
 
+		
+	
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
@@ -132,6 +142,10 @@ public class TS {
 			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
 
         
+		logger.info("Writing network file with peak assignment results");
+        writeAssignmentResults(peakOutputFileName);
+		
+		
 		logger.info("Writing Peak Time and Distance skims to disk");
         startTime = System.currentTimeMillis();
         writePeakSkims(g, propertyMap);
@@ -181,6 +195,11 @@ public class TS {
         logger.info("assignOffPeakAuto() finished in " +
 			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
 
+
+		logger.info("Writing network file with off-peak assignment results");
+        writeAssignmentResults(offpeakOutputFileName);
+		
+		
         logger.info("Writing Off-Peak Time and Distance skims to disk");
         startTime = System.currentTimeMillis();
         writeOffPeakSkims(g, propertyMap);
@@ -391,5 +410,11 @@ public class TS {
 
     }
 
-    
+
+
+    private void writeAssignmentResults( String fileName ) {
+    	
+    	g.writeNetworkAttributes(fileName);
+    	
+    }
 }

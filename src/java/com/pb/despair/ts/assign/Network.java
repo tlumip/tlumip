@@ -1,6 +1,10 @@
 package com.pb.despair.ts.assign;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -12,6 +16,7 @@ import com.pb.common.calculator.LinkFunction;
 import com.pb.common.datafile.D211FileReader;
 import com.pb.common.datafile.D231FileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.Format;
 import com.pb.common.util.IndexSort;
 import com.pb.despair.model.Halo;
 
@@ -787,4 +792,68 @@ public class Network implements Serializable {
 		logger.info ("");
 		
 	}
+	
+	
+
+	public void writeNetworkAttributes ( String fileName ) {
+
+		int[] ia = getIa();
+		int[] ib = getIb();
+		double[] congestedTime = (double[])linkTable.getColumnAsDouble( "congestedTime" );
+		double[] distance = (double[])linkTable.getColumnAsDouble( "length" );
+		double[] capacity = (double[])linkTable.getColumnAsDouble( "capacity" );
+
+		double[][] flow = new double[NUM_AUTO_CLASSES][];
+		for (int j=0; j < NUM_AUTO_CLASSES; j++) {
+			flow[j] = (double[])linkTable.getColumnAsDouble( "flow_" + j );
+		}
+		
+		
+		PrintWriter outStream = null;
+
+        // open output stream for network attributes file
+		try {
+			
+			outStream = new PrintWriter (new BufferedWriter( new FileWriter(fileName) ) );
+
+			
+			outStream.print ("anode,bnode,distance,capacity,assignmentTime,");
+			for (int j=0; j < NUM_AUTO_CLASSES-1; j++)
+				outStream.print( "assignmentFlow_" + j + "," );
+			
+			outStream.println( "assignmentFlow_" + (NUM_AUTO_CLASSES-1) );
+			
+
+			
+			int k;
+			for (int i=0; i < indexNode.length; i++) {
+
+				k = sortedLinkIndexA[i];
+			
+				outStream.print( indexNode[ia[k]] + ","
+								+ indexNode[ib[k]] + ","
+								+ Format.print("%.4f", distance[k]) + ","
+								+ Format.print("%.4f", capacity[k]) + ","
+								+ Format.print("%.4f", congestedTime[k]) + ","
+								);
+								
+				for (int j=0; j < NUM_AUTO_CLASSES-1; j++)
+					outStream.print( Format.print("%.4f", flow[j][k]) + "," );
+	
+				outStream.println( Format.print("%.4f", flow[NUM_AUTO_CLASSES-1][k]) );
+
+			}
+		
+			outStream.close();
+
+		
+		}
+		catch (IOException e) {
+			logger.severe ("I/O exception writing network attributes file.");
+			e.printStackTrace();
+		}
+
+
+	}
+	
 }
