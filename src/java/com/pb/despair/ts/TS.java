@@ -79,7 +79,8 @@ public class TS {
 		TS tsTest = new TS();
 
 		tsTest.assignPeakAuto();
-		
+		tsTest.assignOffPeakAuto();
+
     }
 
 
@@ -130,14 +131,16 @@ public class TS {
         logger.info("assignPeakAuto() finished in " +
 			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
 
-        logger.info("Writing Peak Time and Distance skims to disk");
+        
+		logger.info("Writing Peak Time and Distance skims to disk");
         startTime = System.currentTimeMillis();
         writePeakSkims(g, propertyMap);
         logger.info("wrote the peak skims in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
     }
-
+	
+	
     public void assignOffPeakAuto () {
 
 		long startTime = System.currentTimeMillis();
