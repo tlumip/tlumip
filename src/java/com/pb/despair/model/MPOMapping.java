@@ -145,7 +145,7 @@ public class MPOMapping {
 
         logger.info("Alpha Zone 13 is in Zone " + map.azoneToMPOLookUp[13]);
         if(map.azoneToMPOLookUp[13] == "mpo6") logger.info("Which is correct");
-        else logger.info("But is should be in mpo6");
+        else logger.info("But it should be in mpo6");
     }
 
 }
