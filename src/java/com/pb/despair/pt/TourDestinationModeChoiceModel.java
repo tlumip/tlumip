@@ -109,10 +109,10 @@ public class TourDestinationModeChoiceModel{
               
               //cycle through zones and compute total exponentiated utility
               float totalExpUtility=0;
-              Enumeration enum = tazs.tazData.elements();
+              Enumeration tazEnum = tazs.tazData.elements();
               for(int i=0; i<tazs.tazData.size();i++){
 
-              	  Taz destinationTaz = (Taz) enum.nextElement();
+              	  Taz destinationTaz = (Taz) tazEnum.nextElement();
                   
                   float expUtility=expUtilities.getValueAt(thisTour.begin.location.zoneNumber,destinationTaz.zoneNumber);
                   
@@ -123,10 +123,10 @@ public class TourDestinationModeChoiceModel{
                //pick random number and choose a taz
                double rNumber=SeededRandom.getRandom();
                double culmProbability=0;
-               enum = tazs.tazData.elements();
+               tazEnum = tazs.tazData.elements();
                for(int i=0; i<tazs.tazData.size();i++){
 
-                   Taz destinationTaz = (Taz) enum.nextElement();
+                   Taz destinationTaz = (Taz) tazEnum.nextElement();
                   
                    float expUtility=expUtilities.getValueAt(thisTour.begin.location.zoneNumber,destinationTaz.zoneNumber);
                    culmProbability += (double)(expUtility)/totalExpUtility;
@@ -145,10 +145,10 @@ public class TourDestinationModeChoiceModel{
                    } catch (IOException e1) {
                        e1.printStackTrace();  
                    }
-                   enum = tazs.tazData.elements();
+                   tazEnum = tazs.tazData.elements();
                    expUtilities = um.getMatrix(activityPurpose,purposeSegment);
                    for(int i=0;i<tazs.tazData.size();++i){
-                       Taz taz = (Taz)enum.nextElement();
+                       Taz taz = (Taz)tazEnum.nextElement();
                        logger.severe("**** Attributes of destination "+taz.zoneNumber);
                        taz.print();
                        logger.severe("exputility "+expUtilities.getValueAt(thisTour.begin.location.zoneNumber,taz.zoneNumber));
