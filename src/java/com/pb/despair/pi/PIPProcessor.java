@@ -731,6 +731,8 @@ public class PIPProcessor {
     public void doProjectSpecificInputProcessing() {
     
     }
+    
+    public void writeLaborConsumptionAndProductionFiles(){}
 
 
     protected TableDataSet loadTableDataSet(String tableName, String source) {
