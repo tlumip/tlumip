@@ -41,7 +41,11 @@ public class DriveAlone extends Mode {
      */
      public void calcUtility(TravelTimeAndCost tc, ZoneAttributes z,TripModeParameters c, PersonTripModeAttributes p,Mode tourMode,
           Activity thisActivity){
-               
+
+              hasUtility = false;
+              utility=-999;
+              isAvailable = true;
+
                if(p.age<16) isAvailable=false;
                if(p.autos==0) isAvailable=false;
                if(tourMode.type!=ModeType.AUTODRIVER) isAvailable=false;
