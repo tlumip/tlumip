@@ -10,7 +10,7 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.TravelTimeAndCost;
 import com.pb.despair.pt.DestinationChoiceLogsums;
 import com.pb.despair.pt.TazData;
-import com.pb.despair.pt.old.TazOld;
+import com.pb.despair.pt.estimation.TazOld;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;

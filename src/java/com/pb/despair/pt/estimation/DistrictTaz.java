@@ -1,6 +1,5 @@
 package com.pb.despair.pt.estimation;
 import java.io.PrintWriter;
-import com.pb.despair.pt.old.TazOld;
 /**
  * DistrictTaz allows the user to set distance and logsum
  * values for Tazs to be stored in districts, for use
