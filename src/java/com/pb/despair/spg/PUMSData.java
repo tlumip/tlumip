@@ -52,6 +52,7 @@ public class PUMSData {
 		int[] hhAttribs = null;
 		
 		Halo halo = new Halo( zoneIndexFile );
+		Workers hhWorkers = new Workers();
 		
 		
 		try {
@@ -80,7 +81,7 @@ public class PUMSData {
 
 
 						// don't save info if hh is not in halo.  read person records then skip to nex hh record.
-						if ( !halo.isPumaInHalo (hhAttribs[STATE_INDEX], hhAttribs[PUMA_INDEX]) ) {
+						if ( !halo.isFipsPumaInHalo (hhAttribs[STATE_INDEX], hhAttribs[PUMA_INDEX]) ) {
 
 							for (int i=0; i < numPersons; i++)
 								s = in.readLine();
@@ -125,7 +126,10 @@ public class PUMSData {
 							hhAttribs[PERSON_ARRAY_INDEX + i*3 + 2] = employed;
 						}
 						
-						hhAttribs[HHWRKRS_INDEX] = workers;
+						if ( workers > hhWorkers.getNumberWorkerCategories()-1 )
+							hhAttribs[HHWRKRS_INDEX] = hhWorkers.getNumberWorkerCategories()-1;
+						else
+							hhAttribs[HHWRKRS_INDEX] = workers;
 						
 					}
 					else {
@@ -193,7 +197,7 @@ public class PUMSData {
 						puma = getPUMSHHDataValue (s, "PUMA");
 
 						// don't save info if hh is not in halo.  read person records then skip to next hh record.
-						if ( !halo.isPumaInHalo ( state, puma ) ) {
+						if ( !halo.isFipsPumaInHalo ( state, puma ) ) {
 
 							for (int i=0; i < numPersons; i++)
 								s = in.readLine();

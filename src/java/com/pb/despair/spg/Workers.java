@@ -42,7 +42,7 @@ public class Workers {
     
 
 	// return the number of HH workers categories.    
-	public int getNumberWorkers() {
+	public int getNumberWorkerCategories() {
 		return workersLabels.length;
 	}
 
@@ -54,10 +54,10 @@ public class Workers {
 
 		int returnValue=0;
 
-		if ( workers < 10 )
-			returnValue = workers;
+		if ( workers > getNumberWorkerCategories()-1 )
+			returnValue = getNumberWorkerCategories()-1;
 		else
-		    returnValue = 10;
+		    returnValue = workers;
 
 		
 		return returnValue;

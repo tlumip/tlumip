@@ -397,7 +397,7 @@ public class SPG {
 		int[][] indJobs = new int[4][edInd.getNumberEdIndustries()];
 		int[][] occJobs = new int[4][occ.getNumberOccupations()];
 		int[][] hhIncSizes = new int[2][incSize.getNumberIncomeSizes()];
-		int[][] hhWorkers = new int[2][workers.getNumberWorkers()];
+		int[][] hhWorkers = new int[2][workers.getNumberWorkerCategories()];
 		for (int i=0; i < hhArray.length; i++) {
 			for (int k=0; k < hhArray[i].length; k++) {
 
@@ -1464,9 +1464,9 @@ public class SPG {
 		int[] pumsWtIncSizeFreq = new int[incSize.getNumberIncomeSizes()];
 
 		Workers workers = new Workers();
-		int[] workersFreq = new int[workers.getNumberWorkers()];
-		int[] pumsWorkersFreq = new int[workers.getNumberWorkers()];
-		int[] pumsWtWorkersFreq = new int[workers.getNumberWorkers()];
+		int[] workersFreq = new int[workers.getNumberWorkerCategories()];
+		int[] pumsWorkersFreq = new int[workers.getNumberWorkerCategories()];
+		int[] pumsWtWorkersFreq = new int[workers.getNumberWorkerCategories()];
 
 
 		numOccupations = occ.getNumberOccupations();

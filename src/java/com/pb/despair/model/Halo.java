@@ -7,66 +7,45 @@ import java.util.logging.Logger;
 import java.io.File;
 import java.io.IOException;
 
-
+/*
+ * 
+ * The Halo object contains geographical correspondence information about the Study Area Halo.
+ * Most of the info is read in from the zoneIndexFile passed to the constructor.
+ */
 
 public class Halo {
     private static Logger logger = Logger.getLogger("com.pb.despair.model.Halo");
-	String[] stateLabels = { "California", "Idaho", "Nevada", "Oregon", "Washington" };
+
 
 	int maxAlphaZone = 0;
 	int numAlphaZones = 0;
+	int numberOfStates = 0;
 
+	final int MAX_STATE_FIPS = 200;
+	final int NUM_STATES = 50;
+	final int MAX_PUMA = 99999 + 1;
+
+	int[] indexFips = null;
+	int[] fipsIndex = null;
 	int[] indexZone = null;
 	int[] zoneIndex = null;
 		
-	final int MAX_STATE_FIPS = 200;
-	final int NUM_STATES = stateLabels.length;
+	int[][] pumas = null;
+    String[] stateLabels = null;;
 
-	int[][] pumas = {
-		{ 100, 200, 300, 500 },
-		{ 100, 200, 301, 302 },
-		{ 100, 300, 400 },
-		{ 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 },
-		{ 700, 800, 900, 1100, 1400, 1901, 1902 }
-	};
-	
-	static final int CA = 0;
-	static final int ID = 1;
-	static final int NV = 2;
-	static final int OR = 3;
-	static final int WA = 4;
-	static final int CAfips = 6;
-	static final int IDfips = 16;
-	static final int NVfips = 32;
-	static final int ORfips = 41;
-	static final int WAfips = 53;
-
-	int[] stateIndex = null;
-	int[] stateFips = null;
-
+    
     
     public Halo ( String zoneIndexFile ) {
 
-        stateFips = new int[NUM_STATES];
-		stateFips[CA] = CAfips;
-		stateFips[ID] = IDfips;
-		stateFips[NV] = NVfips;
-		stateFips[OR] = ORfips;
-		stateFips[WA] = WAfips;
-
-		stateIndex = new int[MAX_STATE_FIPS];
-		stateIndex[CAfips] = CA;
-		stateIndex[IDfips] = ID;
-		stateIndex[NVfips] = NV;
-		stateIndex[ORfips] = OR;
-		stateIndex[WAfips] = WA;
-
 		readZoneIndices ( zoneIndexFile );		
+
     }
 
     
+    
+    
 	public int getNumberOfStates() {
-		return NUM_STATES;
+		return numberOfStates;
 	}
     
     
@@ -91,9 +70,9 @@ public class Halo {
     
     
     
-    public boolean isPumaInHalo (int stFips, int puma) {
+    public boolean isFipsPumaInHalo (int stFips, int puma) {
         
-        int stIndex = stateIndex[stFips];
+        int stIndex = fipsIndex[stFips];
         
         for (int i=0; i < pumas[stIndex].length; i++) {
             
@@ -150,45 +129,127 @@ public class Halo {
 	private void readZoneIndices ( String fileName ) {
 	    
 		int zone;
-		int index;
-	    String county;
-        String state;
-
-
+		int puma5pct;
+		int puma;
+		int stateFips;
+		int statePuma;
+		String puma5pctString;
+		
+		
 		// read the PI output file into a TableDataSet
 		CSVFileReader reader = new CSVFileReader();
         
 		TableDataSet table = null;
+		String[] columnFormats = { "NUMBER", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "NUMBER", "STRING" };
 		try {
-			table = reader.readFile(new File( fileName ));
+			table = reader.readFileWithFormats( new File(fileName), columnFormats );
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
+		
+		// get the number of zones in the table and declare int[] indexZone with that size
 		numAlphaZones = table.getRowCount();
-		indexZone = new int[numAlphaZones];
+
+		
+		// get the maximum alpha zone number and declare large enough int[] zoneIndex for than value
 		for (int i=0; i < numAlphaZones; i++)
 			if ( (int)table.getValueAt(i+1, "Azone") > maxAlphaZone ) 
 				maxAlphaZone = (int)table.getValueAt(i+1, "Azone");
 
+
+			
         logger.info("Num alpha zones: " +  numAlphaZones);
         logger.info("Max alpha zone: " + maxAlphaZone);
-		zoneIndex = new int[maxAlphaZone+1];
 		
-		Arrays.fill (indexZone, -1);
-		Arrays.fill (zoneIndex, -1);
+		
 
-		index = 0;
+		// process the alpha zone records in the table and create state correspondence indices;
+		// also, each record has a unique alpha zone, so create zone correspondence indices.
+		fipsIndex = new int[MAX_STATE_FIPS];
+		int[] tempIndexFips = new int[NUM_STATES];
+		Arrays.fill (tempIndexFips, -1);
+		Arrays.fill (fipsIndex, -1);
+
+		zoneIndex = new int[maxAlphaZone+1];
+		indexZone = new int[numAlphaZones];
+		Arrays.fill (zoneIndex, -1);
+		Arrays.fill (indexZone, -1);
+
+
+		int stateIndex = -1;
+		int tazIndex = -1;
+		for (int r=0; r < numAlphaZones; r++) {
+		    
+            puma5pctString = (String)table.getStringValueAt(r+1, "PUMA5pct");
+            puma5pct = Integer.parseInt(puma5pctString);
+            
+            statePuma = puma5pct - ((int)(puma5pct/10000000))*10000000;
+            stateFips = (int)(statePuma/100000);
+            
+            if ( fipsIndex[stateFips] < 0 ) {
+            	stateIndex++;
+            	fipsIndex[stateFips] = stateIndex;
+            	tempIndexFips[stateIndex] = stateFips;
+            }
+            
+			zone = (int)table.getValueAt(r+1, "Azone");
+            
+           	tazIndex++;
+           	zoneIndex[zone] = tazIndex;
+           	indexZone[tazIndex] = zone;
+            
+		}
+
+		indexFips = new int[stateIndex+1];
+		Arrays.fill (indexFips, -1);
+		for (int i=0; i <= stateIndex; i++)
+			indexFips[i] = tempIndexFips[i];
+        
+		numberOfStates = indexFips.length;
+		
+		
+		// process the alpha zone records in the table again and create puma correspondence indices by state
+		int[][] pumaIndex = new int[indexFips.length][MAX_PUMA];
+		int[][] indexPuma = new int[indexFips.length][numAlphaZones];  // won't be more pumas than tazs so use numAlphaZones to declare array.
+		int[] pumaIndices = new int[indexFips.length];	// increment index by state as correspondence arrays are built
+		stateLabels = new String[indexFips.length];
+		for (int i=0; i < indexFips.length; i++) {
+			Arrays.fill (pumaIndex[i], -1);
+			Arrays.fill (indexPuma[i], -1);
+		}
+		Arrays.fill (pumaIndices, -1);
+
 		for (int r=0; r < numAlphaZones; r++) {
 		    
 			zone = (int)table.getValueAt(r+1, "Azone");
-            county = (String)table.getStringValueAt(r+1, "County");
-            state = (String)table.getStringValueAt(r+1, "State");
+            puma5pctString = (String)table.getStringValueAt(r+1, "PUMA5pct");
+            puma5pct = Integer.parseInt(puma5pctString);
+            
+            statePuma = puma5pct - ((int)(puma5pct/10000000))*10000000;
+            stateFips = (int)(statePuma/100000);
+            puma = statePuma - stateFips*100000;
 
-			indexZone[index] = zone;
-            zoneIndex[zone] = index;
-            index++;
+			stateLabels[fipsIndex[stateFips]] = table.getStringValueAt(r+1, "State");
+			
+            
+            if ( pumaIndex[fipsIndex[stateFips]][puma] < 0 ) {
+            	pumaIndices[fipsIndex[stateFips]]++;
+            	pumaIndex[fipsIndex[stateFips]][puma] = pumaIndices[fipsIndex[stateFips]];
+            	indexPuma[fipsIndex[stateFips]][pumaIndices[fipsIndex[stateFips]]] = puma;
+            }
+            
 		}
+
+        // declare the pumas[][] array based on number of states involved in halo and number of pumas in each state
+		// and set the values of the pumas from the above correespondence arrays.
+        pumas = new int[indexFips.length][];
+        for (int i=0; i < indexFips.length; i++) {
+        	pumas[i] = new int[pumaIndices[i]+1];
+        	for (int j=0; j < pumas[i].length; j++)
+        		pumas[i][j] = indexPuma[i][j];
+        }
+        		
 		
 	}
 	

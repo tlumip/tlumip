@@ -55,7 +55,7 @@ public class SPGnew {
 	static final int NUM_WORKERS_ATTRIB_INDEX = PUMSData.HHWRKRS_INDEX;
 	static final int PERSON_ARRAY_ATTRIB_INDEX = PUMSData.PERSON_ARRAY_INDEX;
 
-	static final double MINIMUM_REQUIRED_BALANCING_FACTOR = 1.0e-5;
+	static final double MAXIMUM_ALLOWED_CONTROL_DIFFERENCE = 1.0;
 	
 	// person attributes for person j:
 	// industry: PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0
@@ -180,7 +180,7 @@ public class SPGnew {
 			totalEmployees += employmentTargets[i];
 		}
 		if (remainder >= 0.5) {
-			employmentTargets[tempEmploymentTargets.length-1] ++;
+			employmentTargets[tempEmploymentTargets.length-2] ++; // if remainder > 0.5, add extra employee to last actual employment category (length-2).
 			totalEmployees ++;
 		}
 
@@ -359,7 +359,7 @@ public class SPGnew {
 		int[][] indJobs = new int[4][edInd.getNumberEdIndustries()];
 		int[][] occJobs = new int[4][occ.getNumberOccupations()];
 		int[][] hhIncSizes = new int[2][incSize.getNumberIncomeSizes()];
-		int[][] hhWorkers = new int[2][workers.getNumberWorkers()];
+		int[][] hhWorkers = new int[2][workers.getNumberWorkerCategories()];
 		for (int i=0; i < hhArray.length; i++) {
 			for (int k=0; k < hhArray[i].length; k++) {
 
@@ -1023,7 +1023,7 @@ public class SPGnew {
 		int edIndustryCode = 0;
 		int employmentStatusCode = 0;
 		
-		int numWorkerCategories = workers.getNumberWorkers();
+		int numWorkerCategories = workers.getNumberWorkerCategories();
 		int numEmploymentCategories = edInd.getNumberEdIndustries();
 
 		hhWeights = new double[numPUMSHouseholds];
@@ -1105,7 +1105,7 @@ public class SPGnew {
 		for (int i=0; i < employmentControlTotals.length; i++) {
 			
 			// if marginal total for this control is not positive, skip update
-			if ( employmentTargets[i] <= 0.0 )
+			if ( employmentTargets[i] <= 0.0 || employmentControlTotals[i] <= 0.0 )
 				continue;
 			
 			// calculate new hhWeight for this control
@@ -1133,7 +1133,7 @@ public class SPGnew {
 		for (int i=0; i < hhWorkerControlTotals.length; i++) {
 			
 			// if marginal total for this control is not positive, skip update
-			if ( hhWorkerTargets[i] <= 0.0 )
+			if ( hhWorkerTargets[i] <= 0.0 || hhWorkerControlTotals[i] <= 0.0 )
 				continue;
 			
 			// calculate new hhWeight for this control
@@ -1156,20 +1156,30 @@ public class SPGnew {
 		
 		
 		
-		logger.info( "Balancing Factor for iteration " + balancingCount + " =  " + Format.print("%18.8f", balancingFactor ) );
+		logger.info( "Balancing Factor Difference for iteration " + balancingCount + " =  " + Format.print("%18.8f", Math.abs( 1.0 - balancingFactor ) ) );
 		
-		
-		int dummy = 0;
-		if ( balancingCount == 25 ) {
-			dummy = 1;
-		}
-
 		
 		
 		balancingCount++;
 		
 		// check for convergence and return
-		return ( Math.abs( 1.0 - balancingFactor ) > MINIMUM_REQUIRED_BALANCING_FACTOR );
+		double maxDiff = 0.0;
+		for (int i=0; i < employmentTargets.length; i++) {
+			if ( Math.abs(employmentControlTotals[i] - employmentTargets[i]) > maxDiff )
+				maxDiff = Math.abs(employmentControlTotals[i] - employmentTargets[i]);
+		}
+		for (int i=0; i < hhWorkerTargets.length; i++) {
+			if ( Math.abs(hhWorkerControlTotals[i] - hhWorkerTargets[i]) > maxDiff )
+				maxDiff = Math.abs(hhWorkerControlTotals[i] - hhWorkerTargets[i]);
+		}
+
+		int dummy = 0;
+		if ( balancingCount > 10 && maxDiff > MAXIMUM_ALLOWED_CONTROL_DIFFERENCE ) {
+			dummy = 1;
+		}
+		
+		
+		return ( maxDiff > MAXIMUM_ALLOWED_CONTROL_DIFFERENCE );
 		
 	}
 	
@@ -1180,10 +1190,10 @@ public class SPGnew {
 
 		// initialize control total arrays
 		for (int i=0; i < employmentControlTotals.length; i++)
-			employmentControlTotals[i] = 0.0f; 
+			employmentControlTotals[i] = 0.0; 
 
 		for (int i=0; i < hhWorkerControlTotals.length; i++)
-			hhWorkerControlTotals[i] = 0.0f; 
+			hhWorkerControlTotals[i] = 0.0; 
 
 		
 		
@@ -1213,11 +1223,18 @@ public class SPGnew {
     // count the total number of workers in the PUMS sample 
 	public int getTotalWorkers () {
 
+		int w;
+		int[] workerBins = new int[workers.getNumberWorkerCategories()];
+		
 		int numWorkers = 0;
 		
 		for (int i=0; i < hhArray.length; i++) {
 			for (int k=0; k < hhArray[i].length; k++) {
 				numWorkers += hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
+				w = hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
+				if ( w > workers.getNumberWorkerCategories()-1 )
+					w = workers.getNumberWorkerCategories()-1;
+				workerBins[w]++;
 			}
 		}
 		
@@ -1363,12 +1380,13 @@ public class SPGnew {
 
 		PUMSData pums = new PUMSData ( (String)propertyMap.get("pumsDictionary.fileName") );
   		
+		String propertyName;
 		String[] PUMSFILE = new String[halo.getNumberOfStates()];
-		PUMSFILE[0] = (String)propertyMap.get("pumsCA.fileName");
-		PUMSFILE[1] = (String)propertyMap.get("pumsID.fileName");
-		PUMSFILE[2] = (String)propertyMap.get("pumsNV.fileName");
-		PUMSFILE[3] = (String)propertyMap.get("pumsOR.fileName");
-		PUMSFILE[4] = (String)propertyMap.get("pumsWA.fileName");
+		for (int i=0; i < PUMSFILE.length; i++) {
+			propertyName = "pums" + halo.getStateLabel(i) + ".fileName";
+			PUMSFILE[i] = (String)propertyMap.get( propertyName );
+		}
+
 		
 		for (int i=0; i < halo.getNumberOfStates(); i++) {
             
@@ -1432,12 +1450,12 @@ public class SPGnew {
 		PrintWriter hhOutStream = null;
 		PrintWriter personOutStream = null;
 		
+		String propertyName;
 		String[] PUMSFILE = new String[halo.getNumberOfStates()];
-		PUMSFILE[0] = (String)propertyMap.get("pumsCA.fileName");
-		PUMSFILE[1] = (String)propertyMap.get("pumsID.fileName");
-		PUMSFILE[2] = (String)propertyMap.get("pumsNV.fileName");
-		PUMSFILE[3] = (String)propertyMap.get("pumsOR.fileName");
-		PUMSFILE[4] = (String)propertyMap.get("pumsWA.fileName");
+		for (int i=0; i < PUMSFILE.length; i++) {
+			propertyName = "pums" + halo.getStateLabel(i) + ".fileName";
+			PUMSFILE[i] = (String)propertyMap.get( propertyName );
+		}
 		
 		PUMSData pums = new PUMSData ( (String)propertyMap.get("pumsDictionary.fileName") );
 
@@ -1597,9 +1615,9 @@ public class SPGnew {
 		int[] pumsIncSizeFreq = new int[incSize.getNumberIncomeSizes()];
 		int[] pumsWtIncSizeFreq = new int[incSize.getNumberIncomeSizes()];
 
-		int[] workersFreq = new int[workers.getNumberWorkers()];
-		int[] pumsWorkersFreq = new int[workers.getNumberWorkers()];
-		int[] pumsWtWorkersFreq = new int[workers.getNumberWorkers()];
+		int[] workersFreq = new int[workers.getNumberWorkerCategories()];
+		int[] pumsWorkersFreq = new int[workers.getNumberWorkerCategories()];
+		int[] pumsWtWorkersFreq = new int[workers.getNumberWorkerCategories()];
 
 
 		int numOccupations = occ.getNumberOccupations();
@@ -1848,7 +1866,6 @@ public class SPGnew {
 		int numIncomeSizes = incSize.getNumberIncomeSizes();
 		int numOccupations = occ.getNumberOccupations();
 		int numIndustries = edInd.getNumberEdIndustries();
-		int numWorkerCategories = 6;
 		
 		// define array of states by pumas for summarizing data
 		int[][][][] hhsByStatePumaCategory = new int[pumas.length][][][];
@@ -1866,7 +1883,7 @@ public class SPGnew {
 		// i index loops over states, j index loops over pumas in states
 		for (int i=0; i < pumas.length; i++) {
 			for (int j=0; j < pumas[i].length; j++) {
-				hhsByStatePumaCategory[i][j] = new int[numIncomeSizes][numWorkerCategories];
+				hhsByStatePumaCategory[i][j] = new int[numIncomeSizes][workers.getNumberWorkerCategories()];
 				personsByStatePumaIndOcc[i][j] = new int[numIndustries][numOccupations];
 			}
 		}
@@ -1880,13 +1897,14 @@ public class SPGnew {
 			for (int k=0; k < hhArray[i].length; k++) {
 		
 				puma = hhArray[i][k][PUMA_ATTRIB_INDEX];
+				
 				pumaIndex = halo.getPumaIndex(i,puma);
 				
 				numPersons = hhArray[i][k][NUM_PERSONS_ATTRIB_INDEX];
 				pumsIncomeCode = hhArray[i][k][HH_INCOME_ATTRIB_INDEX];
 				numWorkers = hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
-				if (numWorkers > 5)
-					numWorkers = 5;
+				if (numWorkers > workers.getNumberWorkerCategories()-1)
+					numWorkers = workers.getNumberWorkerCategories()-1;
 
 				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons);
 
@@ -1932,7 +1950,7 @@ public class SPGnew {
 							value = hhsByStatePumaCategory[i][j][k][m];
 						
 							if (value > 0)
-								outStream.println( state + "," + puma + "," + incomeSizeLabel + "," + (m < 5 ? Integer.toString(m) : "5+") + "," + value );
+								outStream.println( state + "," + puma + "," + incomeSizeLabel + "," + (m < workers.getNumberWorkerCategories()-1 ? Integer.toString(m) : (workers.getNumberWorkerCategories()-1 + "+")) + "," + value );
 						}
 					}
 				}
@@ -1957,7 +1975,8 @@ public class SPGnew {
 							occupationLabel = occ.getOccupationLabel(m);
 							value = personsByStatePumaIndOcc[i][j][k][m];
 							
-							outStream.println( state + "," + puma + "," + industryLabel + "," + occupationLabel + "," + value );
+							if (value > 0)
+								outStream.println( state + "," + puma + "," + industryLabel + "," + occupationLabel + "," + value );
 						}
 					}
 				}
