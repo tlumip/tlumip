@@ -10,70 +10,68 @@ package com.pb.despair.ct;
 // @author "Rick Donnelly <rdonnelly@pbtfsc.com>"
 // @version "0.9, 15/08/04"
 
+import com.pb.common.matrix.AlphaToBeta;
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.datafile.CSVFileReader;
+
 import java.util.Random;
-import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import java.io.*;
 
 public class ZoneMap {
-  private static final int HIGHEST_ALPHA_ZONENUMBER = 4141,
-    HIGHEST_BETA_ZONENUMBER = 4141;
-  float[][] intensityMap;   // rows=beta zones, columns = alpha zones
-  Random rn;
+    protected static Logger logger = Logger.getLogger("com.pb.despair.ct");
+    private static int HIGHEST_ALPHA_ZONENUMBER,
+                       HIGHEST_BETA_ZONENUMBER ; //initialized after reading alphaToBeta.csv
+    float[][] intensityMap;   // rows=beta zones, columns = alpha zones
+    Random rn;
 
-  ZoneMap (File f, long randomSeed) {
-    rn = new Random(randomSeed);
-    intensityMap =
-      new float[HIGHEST_BETA_ZONENUMBER+1][HIGHEST_ALPHA_ZONENUMBER+1];
-    for (int p=0; p<HIGHEST_BETA_ZONENUMBER+1; p++)
-      for (int q=0; q<HIGHEST_ALPHA_ZONENUMBER+1; q++)
-        intensityMap[p][q] = 0.0F;
-    readAlpha2Beta(f);
-    normaliseRows();
-  }
+    ZoneMap (File f, long randomSeed) {
+        rn = new Random(randomSeed);
+        AlphaToBeta a2b= new AlphaToBeta(f);
+        HIGHEST_ALPHA_ZONENUMBER = a2b.getMaxAlphaZone();
+        HIGHEST_BETA_ZONENUMBER = a2b.getMaxBetaZone();
+        intensityMap = new float[HIGHEST_BETA_ZONENUMBER+1][HIGHEST_ALPHA_ZONENUMBER+1];
 
-  // Read the file with alpha zone attributes, which includes its parent beta
-  // zone. This method of course depends on the assumed structure of the alpha
-  // zone attribute file. Regularly check that this method and that file are
-  // still in sync! (Better yet, replace this eventually with method that reads
-  // the header and dynamically figures out which columns to read from.)
-  private void readAlpha2Beta (File f) {
-    try {
-      BufferedReader br = new BufferedReader(new FileReader(f.getAbsolutePath()));
-      StringTokenizer st;
-      String s, LUIntensityCode;
-      int alpha, beta;
-      float gridAcres, LUIntensityValue;
-      br.readLine();   // skip the header record
-      while ((s = br.readLine()) != null) {
-        if (s.startsWith("#")) continue;  // comment record
-        // read the record contents, skipping data we don't care about
-        st = new StringTokenizer(s, ",");
-        alpha = Integer.parseInt(st.nextToken());
-        beta = Integer.parseInt(st.nextToken());
-        // (Eventually) add assertion here to check that alpha and beta values
-        // are less than highest zone number assumed
-        st.nextToken();   // state code
-        st.nextToken();   // county name
-        st.nextToken();   // FIPS code
-        st.nextToken();   // PUMA1pct
-        st.nextToken();   // PUMA5pct
-        gridAcres = Float.parseFloat(st.nextToken());
-        LUIntensityCode = st.nextToken();
-        // Translate the land use intensity code into a numeric value
-        LUIntensityValue = 1;  // default
-        if (LUIntensityCode.equals("Low")) LUIntensityValue = 7;
-        if (LUIntensityCode.equals("Medium")) LUIntensityValue = 14;
-        if (LUIntensityCode.equals("High")) LUIntensityValue = 21;
-        // And finally, weight the intensity by the size of the area, placing
-        // the result in the mapping table
-        intensityMap[beta][alpha] = Math.max(1.0F, LUIntensityValue*gridAcres);
-        // DEBUG:
-        //System.out.println("a="+alpha+" b="+beta+" ga="+gridAcres+" luic="+
-        //  LUIntensityCode+" luiv="+LUIntensityValue+" ="+intensityMap[beta][alpha]);
-      }
-      br.close();
-    } catch (IOException e) { e.printStackTrace(); }
-  }
+        fillIntensityMap(f);
+        normaliseRows();
+    }
+
+
+    private void fillIntensityMap(File f){
+        TableDataSet table = null;
+        CSVFileReader reader = new CSVFileReader();
+        try {
+            table = reader.readFile(f);
+        } catch (IOException e) {
+            logger.severe(f.getAbsolutePath() + " could not be found - check path");
+            e.printStackTrace();
+        }
+
+        for(int r=1; r <= table.getRowCount(); r++){
+            //read in the values of interest from the alpha2beta.csv file
+            int azone = (int)table.getValueAt(r, "AZone");
+            int bzone = (int)table.getValueAt(r, "BZone");
+            float gridAcres = table.getValueAt(r, "GridAcres");
+            String LUIntensity = table.getStringValueAt(r, "LUIntensityCode");
+
+            //double check that you have valid values for these variables.
+            if(azone <= 0 || bzone <=0 || gridAcres < 0 || LUIntensity == null){
+                logger.severe("Incorrect value in the alpha2beta file - check row " + r);
+                logger.severe("zone numbers and gridAcres should be greater than 0 and" +
+                        "LUIntensity string cannot be null");
+            }
+
+            //translate the LUIntensity string into a numeric value.
+            int LUIntensityValue = 1;
+
+            if (LUIntensity.equalsIgnoreCase("Low")) LUIntensityValue = 7;
+            else if (LUIntensity.equalsIgnoreCase("Medium")) LUIntensityValue = 14;
+            else if (LUIntensity.equalsIgnoreCase("High")) LUIntensityValue = 21;
+
+            //fill in the intensity map with the appropriate values
+            intensityMap[bzone][azone] = Math.max(1.0F, LUIntensityValue*gridAcres);
+        }
+    }
 
   // We'll eventually use a random number to choose from among candidate alpha
   // zones, so for each beta zone (row) we'll have to first normalise the
@@ -99,6 +97,11 @@ public class ZoneMap {
     }
   }
 
+    public float[][] getIntensityMap() {
+        return intensityMap;
+    }
+
+
   // This is the only public method in this class. The calling program supplies
   // the commodity code (ignored for now, eventually will use employment assoc-
   // iated with sector producing the commodity to weight the intensity) and
@@ -123,6 +126,24 @@ public class ZoneMap {
     for (int k=0; k<20; k++) {
       i = zm.getAlphaZone(3157, "UNDEFINED");
     }
+
+      //Test for Christi's system
+//      File f = new File("/models/tlumip/scenario_pleaseWork/reference/alpha2beta.csv");
+//      ZoneMap zm = new ZoneMap(f ,5910772L);
+//      zm.fillIntensityMap(f);
+//
+//      float[][] intensityMap = zm.getIntensityMap();
+//      float[][] intMap2 = zm.getIntensityMapTest();
+//
+//      for(int r=0; r<intensityMap.length; r++){
+//          for(int c=0; c< intMap2[0].length; c++){
+//              if(intensityMap[r][c] != intMap2[r][c]){
+//                  logger.info("maps do not agree in cell (" + r + ", " + c + ")");
+//              }
+//          }
+//      }
+
+
   }
 
 }
