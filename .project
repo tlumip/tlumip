@@ -3,6 +3,7 @@
 	<name>tlumip</name>
 	<comment></comment>
 	<projects>
+		<project>calibrator</project>
 		<project>common-assign</project>
 		<project>common-base</project>
 		<project>common-base-old</project>

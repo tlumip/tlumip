@@ -19,7 +19,7 @@ import com.pb.common.datafile.*;
  */
 public class TableDataSetInputsAndOutputs implements ModelInputsAndOutputs {
 
-    final TableDataSetCollection myTableDataSetCollection;
+    public final TableDataSetCollection myTableDataSetCollection;
     
     /**
      * 

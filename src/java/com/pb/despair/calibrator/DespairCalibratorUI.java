@@ -35,7 +35,6 @@ public class DespairCalibratorUI extends CalibrationStrategyUI {
 	 */
     public DespairCalibratorUI() {
         super();
-        // TODO Auto-generated constructor stub
     }
     
     static String[] myArgs;
@@ -60,7 +59,8 @@ public class DespairCalibratorUI extends CalibrationStrategyUI {
             DespairCalibratorUI calibratorUI = new DespairCalibratorUI("Calibrator");
             calibratorUI.addParameterType(TableDataSetParameter.class);
             calibratorUI.addTargetType(TableDataSetTarget.class);
-            calibratorUI.addTargetType(TableDataSetMultipleRatioRelationship.class);
+            calibratorUI.addTargetType(TableDataSetSingleKeyFieldRelationship.class);
+            calibratorUI.addTargetType(TableDataSetMultipleKeyFieldRelationship.class);
             calibratorUI.setDefaultCloseOperation(EXIT_ON_CLOSE);
             calibratorUI.setVisible(true);
         } catch (Throwable exception) {
