@@ -56,6 +56,12 @@ public class PIServerTask extends Task{
 
         //TODO get the PProcessor class name from the properties file and instantiate using Class.newInstance()
         piReaderWriter = new OregonPIPProcessor(timeInterval, piRb);
+        String oregonInputsString = ResourceUtil.getProperty(piRb, "pi.oregonInputs");
+        if (oregonInputsString != null ) {
+            if (oregonInputsString.equalsIgnoreCase("true")) {
+                piReaderWriter.doProjectSpecificInputProcessing();
+             }
+        }
         piReaderWriter.setUpPi();
         logger.info("Setup is complete. Time in seconds: "+((System.currentTimeMillis()-startTime)/1000));
 
