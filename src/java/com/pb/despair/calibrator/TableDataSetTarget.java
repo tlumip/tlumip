@@ -41,6 +41,7 @@ public class TableDataSetTarget extends TargetAdapter {
 	 */
     public Object clone() throws CloneNotSupportedException {
         TableDataSetTarget newOne = (TableDataSetTarget) super.clone();
+        newOne.indexedValue = (TableDataSetIndexedValue) this.indexedValue.clone();
         newOne.stringKeysTableModel = null;
         newOne.intKeysTableModel = null;
         return newOne;
@@ -119,7 +120,7 @@ public class TableDataSetTarget extends TargetAdapter {
     }
 
     public String toString() {
-        return ("T " + indexedValue.toString());
+        return ("T "+this.getTarget()+" val:"+this.getValue()+" "+ indexedValue.toString());
     }
 
     /*

@@ -1054,8 +1054,9 @@ public class PIPProcessor {
                 mhSelling.generateHistogram(skim,sellingMatrix);
                 try {
                     if (histogramFile == null) histogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "histograms_"+commodityName+".csv"));
-                    mhBuying.writeHistogram("buying", histogramFile);
-                    mhSelling.writeHistogram("selling", histogramFile);
+                    histogramFile.write("Commodity,BuyingSelling,LowerBound,Quantity,AverageLength\n");
+                    mhBuying.writeHistogram(commodityName,"buying", histogramFile);
+                    mhSelling.writeHistogram(commodityName,"selling", histogramFile);
                 } catch (IOException e) {
                     logger.warning("IO exception "+e+" in writing out histogram file for "+this);
                     e.printStackTrace();
