@@ -67,7 +67,8 @@ public class StopDestinationModeChoiceModel{
                float walkTime=0;
                float bikeTime=0;
                float transitGeneralizedCost=0;
-               
+              float[] autoDists = new float[2];
+
                if(thisTour.hasIntermediateStop1(thisTour.tourString)==1){
                     if(thisTour.primaryMode.type==ModeType.WALK)
                          walkTime=skims.getAdditionalWalkTime(thisTour.begin.location.zoneNumber, thisTour.primaryDestination.location.zoneNumber,
@@ -78,13 +79,20 @@ public class StopDestinationModeChoiceModel{
                     else if(thisTour.primaryMode.type==ModeType.WALKTRANSIT||thisTour.primaryMode.type==ModeType.DRIVETRANSIT||thisTour.primaryMode.type==ModeType.TRANSITPASSENGER)          
                          transitGeneralizedCost=skims.getAdditionalGeneralizedTransitCost(thisTour.begin.location.zoneNumber, 
                               thisTour.primaryDestination.location.zoneNumber, stop1Taz.zoneNumber, thisTour.begin.endTime);
+                    else if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
+                            thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
+
+                        autoDists = skims.getAdditionalAutoDistance(thisTour.begin.location.zoneNumber,
+                                                                          thisTour.primaryDestination.location.zoneNumber,
+                                                                          stop1Taz.zoneNumber,
+                                                                          thisTour.begin.endTime);
                     else
                          autoTime=skims.getAdditionalAutoTime(thisTour.begin.location.zoneNumber, thisTour.primaryDestination.location.zoneNumber,
                               stop1Taz.zoneNumber, thisTour.begin.endTime);
                               
                     //destination choice model for this taz                         
                     //stop1Taz.oldCalcStopDestinationUtility(destParams,thisTour.primaryMode,autoTime, walkTime, bikeTime,transitGeneralizedCost,1);
-                    stop1Taz.calcStopDestinationUtility(actPurpose,destParams,thisTour.primaryMode,autoTime, walkTime, bikeTime,transitGeneralizedCost,1);
+                    stop1Taz.calcStopDestinationUtility(actPurpose,destParams,thisTour.primaryMode,autoTime, walkTime, bikeTime,transitGeneralizedCost,autoDists,1);
                     if(stop1Taz.isAvailable())
                          iStop1Model.addAlternative(stop1Taz);
                     if(debug && thisHousehold.ID==debugID){
@@ -106,13 +114,20 @@ public class StopDestinationModeChoiceModel{
                     else if(thisTour.primaryMode.type==ModeType.WALKTRANSIT||thisTour.primaryMode.type==ModeType.DRIVETRANSIT||thisTour.primaryMode.type==ModeType.PASSENGERTRANSIT)          
                          transitGeneralizedCost=skims.getAdditionalGeneralizedTransitCost(thisTour.primaryDestination.location.zoneNumber, 
                               thisTour.end.location.zoneNumber, stop2Taz.zoneNumber, thisTour.primaryDestination.endTime);
+                    else if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
+                            thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
+
+                        autoDists = skims.getAdditionalAutoDistance(thisTour.primaryDestination.location.zoneNumber,
+                                                                          thisTour.end.location.zoneNumber,
+                                                                          stop2Taz.zoneNumber,
+                                                                          thisTour.primaryDestination.endTime);
                     else
                          autoTime=skims.getAdditionalAutoTime(thisTour.primaryDestination.location.zoneNumber, thisTour.end.location.zoneNumber,
                               stop2Taz.zoneNumber, thisTour.primaryDestination.endTime);
                               
                     //destination choice model for this taz                         
                     //stop2Taz.oldCalcStopDestinationUtility(destParams,thisTour.primaryMode,autoTime, walkTime, bikeTime,transitGeneralizedCost,2);
-                    stop2Taz.calcStopDestinationUtility(actPurpose, destParams,thisTour.primaryMode,autoTime, walkTime, bikeTime,transitGeneralizedCost,2);
+                    stop2Taz.calcStopDestinationUtility(actPurpose, destParams,thisTour.primaryMode,autoTime, walkTime, bikeTime,transitGeneralizedCost,autoDists,2);
                     
                     if(stop2Taz.isAvailable())
                          iStop2Model.addAlternative(stop2Taz);
