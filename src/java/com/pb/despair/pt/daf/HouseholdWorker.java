@@ -68,7 +68,7 @@ public class HouseholdWorker extends MessageProcessingTask {
     boolean firstHouseholdBlock = true;
     boolean firstDCLogsum = true;
     
-    String fileWriterQueue = "FileWriterQueue";
+    String matrixWriterQueue = "MatrixWriterQueue";
     double durationTime;
     double primaryTime;
     double secondaryTime;
@@ -99,7 +99,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                 String pathToRb = null;
                 try {
                     logger.info("Reading RunParams.txt file");
-                    reader = new BufferedReader(new FileReader(new File("/test/models/tlumip/daf/RunParams.txt")));
+                    reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
                     scenarioName = reader.readLine();
                     logger.info("\tScenario Name: " + scenarioName);
                     timeInterval = Integer.parseInt(reader.readLine());
@@ -143,10 +143,6 @@ public class HouseholdWorker extends MessageProcessingTask {
             expUtilitiesManager = new DCExpUtilitiesManager(rb);
 
             ptModel = new PTModel(rb);
-//
-//            results = new PTResults(rb);
-//            logger.info("Creating output files");
-//            results.createWorkerFiles(getName());
 
             logger.info( "***" + getName() + " finished onStart()");
         }
@@ -165,7 +161,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             else {
                 msg.setId(MessageID.MC_LOGSUMS_CREATED);
                 msg.setValue("matrix",null);
-                sendTo(fileWriterQueue, msg);
+                sendTo(matrixWriterQueue, msg);
             }
         } else if (msg.getId().equals(MessageID.CALCULATE_WORKPLACE_LOCATIONS)) {
             createLaborFlowMatrix(msg);
@@ -179,13 +175,13 @@ public class HouseholdWorker extends MessageProcessingTask {
                         Message dcMessage = createMessage();
                         dcMessage.setId(MessageID.DC_LOGSUMS_CREATED);
                         dcMessage.setValue("matrix", null);
-                        sendTo(fileWriterQueue, dcMessage);
+                        sendTo(matrixWriterQueue, dcMessage);
                     }
                 }
                 else {
                     msg.setId(MessageID.DC_LOGSUMS_CREATED);
                     msg.setValue("matrix", null);
-                    sendTo(fileWriterQueue, msg);
+                    sendTo(matrixWriterQueue, msg);
                 }
             }
 
@@ -215,7 +211,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                 theseParameters, purpose.charAt(0), segment.intValue(),
                 PTModelInputs.getSkims(), new TourModeChoiceModel());
         logger.fine("Created ModeChoiceLogsumMatrix in " +
-            ((System.currentTimeMillis() - startTime) / 1000) + " seconds.");
+            ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
         
         //Collapse the required matrices
 
@@ -228,12 +224,12 @@ public class HouseholdWorker extends MessageProcessingTask {
         //Sending message to TaskMasterQueue
         msg.setId(MessageID.MC_LOGSUMS_CREATED);
         msg.setValue("matrix", m);
-        sendTo(fileWriterQueue, msg);
+        sendTo(matrixWriterQueue, msg);
     }
     
     /**
      * Collapse the logsums in the alpha zone matrix to beta zones.  The
-     * collapsed matrix will be send to the fileWriterQueue.
+     * collapsed matrix will be send to the matrixWriterQueue.
      * 
      * @param m  Logsum matrix
      * @param a2b AlphaToBeta mapping
@@ -253,7 +249,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             Message msg = createMessage();
             msg.setId(MessageID.MC_LOGSUMS_COLLAPSED);
             msg.setValue("matrix", compressedMatrix);
-            sendTo(fileWriterQueue, msg);
+            sendTo(matrixWriterQueue, msg);
             
     }
 
@@ -364,14 +360,14 @@ public class HouseholdWorker extends MessageProcessingTask {
                 Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
                 PTModelInputs.tdpd, dcPurpose, segment.intValue(), modeChoiceLogsum);
                 dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
-                sendTo(fileWriterQueue, dcLogsumMessage);
+                sendTo(matrixWriterQueue, dcLogsumMessage);
 
 //                get the exponentiated utilities matrix and put it in another message
 //                Message dcExpUtilitiesMessage = createMessage();
 //                dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
 //                Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
 //                dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-//                sendTo(fileWriterQueue, dcExpUtilitiesMessage);
+//                sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
                 dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb); //BINARY-ZIP
 //                dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb); //BINARY-ZIP
             }
@@ -382,14 +378,14 @@ public class HouseholdWorker extends MessageProcessingTask {
             Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
             PTModelInputs.tdpd, purpose, segment.intValue(), modeChoiceLogsum);
             dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
-            sendTo(fileWriterQueue, dcLogsumMessage);
+            sendTo(matrixWriterQueue, dcLogsumMessage);
 
             //get the exponentiated utilities matrix and put it in another message
 //            Message dcExpUtilitiesMessage = createMessage();
 //            dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
 //            Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
 //            dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-//            sendTo(fileWriterQueue, dcExpUtilitiesMessage);
+//            sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
              dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);     //BINARY-ZIP
 //            dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb);
         }
@@ -503,7 +499,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         msg.setId(MessageID.HOUSEHOLDS_PROCESSED);
         msg.setValue("households",households);
         msg.setValue("nHHs", new Integer(households.length));
-        sendTo(fileWriterQueue, msg);
+        sendTo("ResultsWriterQueue", msg);
 //        logger.fine("Free memory after running model: " +
 //            Runtime.getRuntime().freeMemory());
     }

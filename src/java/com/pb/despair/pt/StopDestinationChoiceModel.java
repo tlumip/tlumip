@@ -168,6 +168,7 @@ public class StopDestinationChoiceModel{
                                                       +stop1Taz.utility);
                  }
                 try {
+                	//TODO get debug filename from pt.properties
                     logger.severe("Writing Tour Debug info to the /models/tlumip/debug directory");
                     thisTour.printCSV(new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop1.csv")));
                 } catch (IOException e1) {
@@ -274,6 +275,7 @@ public class StopDestinationChoiceModel{
                                                       +stop2Taz.utility);
                  }
                  try {
+                	//TODO get debug filename from pt.properties
                      logger.severe("Writing tour debug info to /models/tlumip/debug ");
                       thisTour.printCSV(new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop2.csv")));
                  } catch (IOException e1) {

@@ -43,7 +43,7 @@ public class PTServerTask extends Task{
         String pathToRb = null;
         try {
             logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File("/test/models/tlumip/daf/RunParams.txt")));
+            reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
             scenarioName = reader.readLine();
             logger.info("\tScenario Name: " + scenarioName);
             timeInterval = Integer.parseInt(reader.readLine());

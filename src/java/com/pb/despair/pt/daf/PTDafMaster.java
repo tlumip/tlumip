@@ -79,7 +79,7 @@ public class PTDafMaster extends MessageProcessingTask {
         String pathToRb = null;
         try {
             logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File("/test/models/tlumip/daf/RunParams.txt")));
+            reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
             scenarioName = reader.readLine();
             logger.info("\tScenario Name: " + scenarioName);
             timeInterval = Integer.parseInt(reader.readLine());
@@ -219,7 +219,7 @@ public class PTDafMaster extends MessageProcessingTask {
             if (householdsProcessedCount == totalHouseholds) {
                 Message allDone = createMessage();
                 allDone.setId(MessageID.ALL_HOUSEHOLDS_PROCESSED);
-                sendTo("FileWriterQueue",allDone);
+                sendTo("ResultsWriterQueue",allDone);
             }
 
         } else if(msg.getId().equals(MessageID.ALL_FILES_WRITTEN)){
@@ -570,7 +570,7 @@ public class PTDafMaster extends MessageProcessingTask {
     public static void main(String[] args) {
 
         Logger logger = Logger.getLogger("com.pb.despair.pt");
-        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/test/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
         //Read the SynPop data
         PTDataReader dataReader = new PTDataReader(rb);
         logger.info("Adding synthetic population from database");

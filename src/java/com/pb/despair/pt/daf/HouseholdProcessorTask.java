@@ -49,7 +49,7 @@ public class HouseholdProcessorTask extends MessageProcessingTask {
                 String pathToRb = null;
                 try {
                     logger.info("Reading RunParams.txt file");
-                    reader = new BufferedReader(new FileReader(new File("/models/tlumip/daf/RunParams.txt")));
+                    reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
                     timeInterval = Integer.parseInt(reader.readLine());
                     logger.info("\tTime Interval: " + timeInterval);
                     pathToRb = reader.readLine();

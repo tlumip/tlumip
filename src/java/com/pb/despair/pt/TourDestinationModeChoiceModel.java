@@ -140,6 +140,7 @@ public class TourDestinationModeChoiceModel{
                    logger.severe("Error in tour destination choice: no zones available for this household, tour");
                    logger.severe("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
                    try {
+                	//TODO get debug filename from pt.properties
                        logger.severe("Writing Tour Debug info to the /models/tlumip/debug directory");
                        thisTour.printCSV(new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+".csv")));
                    } catch (IOException e1) {

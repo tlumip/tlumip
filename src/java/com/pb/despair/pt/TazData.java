@@ -246,7 +246,7 @@ public class TazData implements Cloneable{
         }
 
         logger.fine("Total time = " +
-            ((System.currentTimeMillis() - startTime) / 1000) + " seconds.");
+            ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
         System.exit(1);
     }
 }

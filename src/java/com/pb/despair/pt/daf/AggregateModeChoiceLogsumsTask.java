@@ -53,7 +53,7 @@ public class AggregateModeChoiceLogsumsTask  extends MessageProcessingTask {
                 String pathToRb = null;
                 try {
                     logger.info("Reading RunParams.txt file");
-                    reader = new BufferedReader(new FileReader(new File("/models/tlumip/daf/RunParams.txt")));
+                    reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
                     timeInterval = Integer.parseInt(reader.readLine());
                     logger.info("\tTime Interval: " + timeInterval);
                     pathToRb = reader.readLine();
@@ -112,7 +112,7 @@ public class AggregateModeChoiceLogsumsTask  extends MessageProcessingTask {
                 theseParameters, purpose.charAt(0), segment.intValue(),
                 PTModelInputs.getSkims(), tmcm);
         logger.fine("Created ModeChoiceLogsumMatrix in " +
-            ((System.currentTimeMillis() - startTime) / 1000) + " seconds.");
+            ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 
         //Sending message to TaskMasterQueue
         msg.setId(MessageID.MC_LOGSUMS_CREATED);
