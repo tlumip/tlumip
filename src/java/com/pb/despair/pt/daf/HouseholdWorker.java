@@ -40,8 +40,9 @@ public class HouseholdWorker extends MessageProcessingTask {
     protected static Object lock = new Object();
     protected static boolean initialized = false;
     protected static boolean dcLoaded = false;
-    protected static boolean CALCULATE_MCLOGSUMS = false;
-    protected static boolean CALCULATE_DCLOGSUMS = false;
+    protected static boolean CALCULATE_MCLOGSUMS = true;
+    protected static ArrayList matricesToCollapse;
+    protected static boolean CALCULATE_DCLOGSUMS = true;
     protected static ResourceBundle rb;
 
     //these arrays are to store the information necessary to update PTModelNew.tazData
@@ -79,6 +80,7 @@ public class HouseholdWorker extends MessageProcessingTask {
     int currentNonWorkSegment =-1;
     
     TableDataSet alphaToBetaTable;
+    AlphaToBeta a2b = null;
 
     PTResults results;
 
@@ -110,6 +112,9 @@ public class HouseholdWorker extends MessageProcessingTask {
                 }
                 rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
 
+                //get the list of Matrices to collapse from properties file
+                matricesToCollapse = ResourceUtil.getList(rb,"matrices.for.pi");
+
                 PTModelInputs ptInputs = new PTModelInputs(rb);
                 logger.info("Setting up the model");
                 logger.info("\tsetting seed");
@@ -125,6 +130,7 @@ public class HouseholdWorker extends MessageProcessingTask {
 
                 LaborFlows lf = new LaborFlows(rb);
                 alphaToBetaTable = loadTableDataSet(rb,"alphatobeta.file");
+                a2b = new AlphaToBeta(alphaToBetaTable);
                 lf.setZoneMap(alphaToBetaTable);
 
                 logger.info("Reading Labor Flows");
@@ -197,6 +203,8 @@ public class HouseholdWorker extends MessageProcessingTask {
         String purpose = String.valueOf(msg.getValue("purpose"));
         Integer segment = (Integer) msg.getValue("segment");
 
+        String purSeg = purpose + segment.toString();
+
         //Creating the ModeChoiceLogsum Matrix
         logger.info("Creating ModeChoiceLogsumMatrix for purpose: " + purpose +
             " segment: " + segment);
@@ -210,8 +218,13 @@ public class HouseholdWorker extends MessageProcessingTask {
         logger.fine("Created ModeChoiceLogsumMatrix in " +
             ((System.currentTimeMillis() - startTime) / 1000) + " seconds.");
         
-        //Collapse the matrix
-        collapseMCLogsums(m,msg);
+        //Collapse the required matrices
+
+        if (matricesToCollapse.contains(purSeg)) {
+            logger.info("Collapsing ModeChoiceLogsumMatrix for purpose: " + purpose +
+                " segment: " + segment);
+            collapseMCLogsums(m,a2b);
+        }
         
         //Sending message to TaskMasterQueue
         msg.setId(MessageID.MC_LOGSUMS_CREATED);
@@ -224,28 +237,21 @@ public class HouseholdWorker extends MessageProcessingTask {
      * collapsed matrix will be send to the fileWriterQueue.
      * 
      * @param m  Logsum matrix
-     * @param msg Message
+     * @param a2b AlphaToBeta mapping
      */
-    public void collapseMCLogsums(Matrix m, Message msg){
-        
-            String purpose = String.valueOf(msg.getValue("purpose"));
-            Integer segment = (Integer) msg.getValue("segment");
-
-            //Creating the ModeChoiceLogsum Matrix
-            logger.info("Collapsing ModeChoiceLogsumMatrix for purpose: " + purpose +
-                " segment: " + segment);
-            
-            alphaToBetaTable = loadTableDataSet(rb,"alphatobeta.file");
-            
-            AlphaToBeta aToB = new AlphaToBeta(alphaToBetaTable);
-            
-            MatrixCompression mc = new MatrixCompression(aToB);
+    public void collapseMCLogsums(Matrix m, AlphaToBeta a2b){
+            MatrixCompression mc = new MatrixCompression(a2b);
             
             Matrix compressedMatrix = mc.getCompressedMatrix(m,"MEAN");
- 
-            compressedMatrix.setName(m.getName()+"beta");
+
+        //Need to do a little work to get only the purpose/segment part out of the name
+            String newName = m.getName();
+            newName = newName.replaceAll("ls","betals");
+        logger.info("Old name: " + m.getName() + " New name: " + newName);
+            compressedMatrix.setName(newName);
             
             //Sending message to TaskMasterQueue
+            Message msg = createMessage();
             msg.setId(MessageID.MC_LOGSUMS_COLLAPSED);
             msg.setValue("matrix", compressedMatrix);
             sendTo(fileWriterQueue, msg);
