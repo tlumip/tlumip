@@ -18,24 +18,34 @@ import java.text.DecimalFormat;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.matrix.ZipMatrixReader;
 import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.AlphaToBeta;
 
 
 public class FreightDemand3 {
     private static Logger logger = Logger.getLogger("com.pb.despair.ct");
     private boolean debug;
-    final static int HIGHEST_BETA_ZONE = 4142;  // highest zone+1
-    final static double SMALLEST_ALLOWABLE_TONNAGE = 0.025;  // interzonal interchange threshold
+    static int HIGHEST_BETA_ZONE;  // 
+    static double SMALLEST_ALLOWABLE_TONNAGE;  // interzonal interchange threshold- read in from properties file
     String[] commodityList;
     ModalDistributions md;
     ValueDensityFunction vdf;
     Random rn;
     String inputPath;
     String outputPath;
-    ResourceBundle rb;
+    ResourceBundle ctRb;
     long outputRecordsWritten = 0L;
 
-    FreightDemand3(ResourceBundle rb, boolean debug, String ctInputs, String ctOutputs, long seed){
-        this.rb = rb;
+    FreightDemand3(ResourceBundle appRb, ResourceBundle globalRb, boolean debug, String ctInputs, String ctOutputs, long seed){
+        //set the ctRb to the ct.properties resource bundle and get the smallest allowable tonnage from there.
+        this.ctRb = appRb;
+        SMALLEST_ALLOWABLE_TONNAGE = Double.parseDouble(ResourceUtil.getProperty(ctRb, "SMALLEST_ALLOWABLE_TONNAGE"));
+
+        //from global.properties file we need the path to the alpha2beta file so that we can initialize the
+        //highest beta zone number.
+        File alpha2beta = new File(ResourceUtil.getProperty(globalRb,"alphatobeta.file"));
+        AlphaToBeta a2b = new AlphaToBeta(alpha2beta);
+        HIGHEST_BETA_ZONE = a2b.getMaxBetaZone();
+
         this.debug = debug;
         this.inputPath = ctInputs;
         this.outputPath = ctOutputs;
@@ -53,7 +63,7 @@ public class FreightDemand3 {
         //TransportableGoods.csv file that is in the reference directory and put them
         // into a commodityList array.
         ArrayList commodities = new ArrayList();
-        String goodsFile = ResourceUtil.getProperty(rb, "goods.file");
+        String goodsFile = ResourceUtil.getProperty(ctRb, "goods.file");
         String line;
         StringTokenizer st;
         String commodity;
@@ -91,7 +101,7 @@ public class FreightDemand3 {
 
         //Let's first read in the betapkdist.zip skim matrix
         logger.info("Reading in Skim matrix");
-        String distanceFile = ResourceUtil.getProperty(rb, "betapkdist.skim.file");
+        String distanceFile = ResourceUtil.getProperty(ctRb, "betapkdist.skim.file");
         ZipMatrixReader zr = new ZipMatrixReader(new File(distanceFile));
         Matrix distMatrix = zr.readMatrix();
 
@@ -102,7 +112,7 @@ public class FreightDemand3 {
         Matrix pFlowMatrix; //production flows
         float[][] pFlows;
         PrintWriter pw; //used to write out the txt files.
-        String piInputPath = ResourceUtil.getProperty(rb,"pi.input.data");
+        String piInputPath = ResourceUtil.getProperty(ctRb,"pi.input.data");
         for(int i=0; i<commodityList.length; i++){
             //Read in the buying file and the selling file
             logger.info("Reading flow values for Commodity: " + commodityList[i]);
@@ -162,7 +172,7 @@ public class FreightDemand3 {
 
 
   public void calculateTonnage () {
-    Matrix2d m = new Matrix2d(HIGHEST_BETA_ZONE, HIGHEST_BETA_ZONE, "");
+    Matrix2d m = new Matrix2d(HIGHEST_BETA_ZONE+1, HIGHEST_BETA_ZONE+1, "");
     BufferedReader br;
     StringTokenizer st;
     String s, activity, modeOfTransport;
@@ -231,8 +241,8 @@ public class FreightDemand3 {
       // Calculate daily demand for each origin-destination interchange
       double residual = 0.0;
       int p, q;   // matrix indices
-      for (p=0; p<HIGHEST_BETA_ZONE; p++)
-        for (q=0; q<HIGHEST_BETA_ZONE; q++) {
+      for (p=0; p< m.getRowSize(); p++)
+        for (q=0; q<m.getColumnSize(); q++) {
           m.cell[p][q] *= scalingFactor;
           // We need to eliminate extremely small shipments, which are an artifact of
           // equilibrium nature of PI rather than real demand at that level.
@@ -247,8 +257,8 @@ public class FreightDemand3 {
       printString += (CTHelper.rightAlign(dw.format(residual),10));
         logger.info(printString);
       if (residual>0.0) {
-        for (p=0; p<HIGHEST_BETA_ZONE; p++)
-          for (q=0; q<HIGHEST_BETA_ZONE; q++)
+        for (p=0; p<m.getRowSize(); p++)
+          for (q=0; q<m.getColumnSize(); q++)
             if (m.cell[p][q]>0.0) m.cell[p][q] *= weeklyTons/(weeklyTons-residual);
       }
 
@@ -299,11 +309,12 @@ public class FreightDemand3 {
     public static void main(String[] args) {
         Date start = new Date();
         ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/ct/ct.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/global.properties"));
         String inputPath = ResourceUtil.getProperty(rb,"ct.base.data");
         String outputPath = ResourceUtil.getProperty(rb,"ct.current.data");
         boolean debug = (Boolean.valueOf(ResourceUtil.getProperty(rb, "debug"))).booleanValue();
         long randomSeed = Long.parseLong(ResourceUtil.getProperty(rb, "randomSeed"));
-        FreightDemand3 fd = new FreightDemand3(rb,debug,inputPath,outputPath,randomSeed);
+        FreightDemand3 fd = new FreightDemand3(rb,globalRb,debug,inputPath,outputPath,randomSeed);
         fd.run();
         logger.info("total time: "+CTHelper.elapsedTime(start, new Date()));
    }

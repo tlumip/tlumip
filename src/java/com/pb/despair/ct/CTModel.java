@@ -40,7 +40,7 @@ public class CTModel extends ModelComponent {
         // This translates PI output (annual dollar flows at beta zone level) to
         // weekly tons by commodity class (SCTG01-SCTG43), and writes output in
         // binary format.
-        FreightDemand3 fd = new FreightDemand3(appRb,debug,inputPath,outputPath,randomSeed);
+        FreightDemand3 fd = new FreightDemand3(appRb,globalRb,debug,inputPath,outputPath,randomSeed);
 	    fd.run();  //writes WeeklyDemand.binary
 
         // Translates weekly demand from beta zones into discrete daily shipments in
