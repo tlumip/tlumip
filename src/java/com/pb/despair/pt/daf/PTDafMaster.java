@@ -168,7 +168,6 @@ public class PTDafMaster extends MessageProcessingTask {
 
             if (mcLogsumCount == totalModeChoiceLogsums) {
                 logger.info("ModeChoice Logsums completed.");
-//                startWorkplaceLocation();
                 createWorkplaceLocationMessages();
             }
 
@@ -344,104 +343,6 @@ public class PTDafMaster extends MessageProcessingTask {
 
         unemployedPersonList =  null;
         personList = null;
-    }
-
-    /**
-     * startWorkPlaceLocation - sends messages to the work queues to create LaborFlowProbability matrices
-     * iterates through all household and occupation segments,
-     * bundles up workers in each combination of household and occupation
-     * sends out messages: each node to run workplace location model on
-     * one combination household segment/occupation group
-     * Finally, add the unemployed persons to the person array.
-     */
-    private void startWorkplaceLocation() {
-        int personNumber = 0;
-        totalWorkers = 0;
-
-        PTPerson[] personsSubset;
-        logger.info(
-            "Sending messages for workers to create Labor Flow Probability Matrices.");
-
-        Arrays.sort(persons); //sorts persons by HH work segment and then by occupation
-        //iterate through household market segments, occupation categories
-        for (int segment = 0; segment < TOTALSEGMENTS; segment++) {
-            for (int occupation = 1; occupation <= TOTALOCCUPATIONS;
-                    occupation++) {
-
-                //create a message, set the occupation and segment
-                Message laborFlowMessage = createMessage();
-                laborFlowMessage.setId(MessageID.CALCULATE_WORKPLACE_LOCATIONS);
-                laborFlowMessage.setValue("occupation", new Integer(occupation));
-                laborFlowMessage.setValue("segment", new Integer(segment));
-
-                //TODO OK for now, but inefficient to start at 0 every time
-                personNumber = 0;
-
-                //the persons array has already been sorted by occupation and segment
-                //find the first person in the person array for this segment
-                while ((personNumber < persons.length) &&
-                        ((persons[personNumber].occupation != occupation) ||
-                        (persons[personNumber].householdWorkSegment != segment))) {
-                    personNumber++;
-                }
-
-                int p = 0;
-                ArrayList personList = new ArrayList();
-
-                //add the persons in this segment to an arraylist personList
-                while ((personNumber < persons.length) &&
-                        (persons[personNumber].occupation == occupation) &&
-                        (persons[personNumber].householdWorkSegment == segment) ) {
-                    if(persons[personNumber].employed){
-                        personList.add(p, persons[personNumber]);
-
-                        //logger.info("occupation "+occupation+" segment: "+segment);
-                        totalWorkers++;
-                        p++;
-                    }
-                    personNumber++;
-                }
-
-                //transfer the arraylist to an array
-                logger.info("Number of employed persons in occupation "+occupation+" - segment "+segment+": " + p);
-                personsSubset = new PTPerson[personList.size()];
-                personList.toArray(personsSubset);
-
-                //send the workers to a node to process for workplace location model
-                if (personsSubset.length > 0) {
-                    laborFlowMessage.setValue("persons", personsSubset);
-
-                    String queueName = getQueueName2();
-                    logger.info("Sending Message to" + queueName +
-                        " to calculate labor flow probabilities for occupation " +
-                        occupation + " segment: " + segment +
-                        " total persons : " + personsSubset.length);
-                    sendTo(queueName, laborFlowMessage);
-                }
-
-                personList = null;
-            }
-        }
-        logger.info("PTDafMaster adding unemployed back into persons array");
-        addUnemployedToArray();
-        logger.info("\tTotal working persons: " + totalWorkers);
-    }
-
-    /**
-     * Put the unemployed persons in the person array
-     *
-     */
-    private void addUnemployedToArray() {
-        int unemployedCount = 0;
-        for (int i = 0; i < persons.length; i++) {
-            if (!persons[i].employed) {
-                unemployedCount++;
-                persons[personsWithWorkplaceCount] = persons[i];
-                personsWithWorkplaceCount++;
-            }
-        }
-        logger.info("\tTotal Persons: "+ persons.length + "  \n\tUnemployed Persons: "+ unemployedCount +
-                " \n\tPercentage: " + ((double)unemployedCount/persons.length)*100 + "%");
     }
 
     /**
