@@ -113,74 +113,52 @@ public class PTDataWriter {
                    //print weekday home-based tours first
                    for(int tourNumber=0;tourNumber<thisPerson.weekdayTours.length;++tourNumber){
                        Tour thisTour = thisPerson.weekdayTours[tourNumber];
-                       int tourLength = thisPerson.weekdayTours[tourNumber].tourString.length();
                             if(thisTour.intermediateStop1!=null){
                                 oFile.print(thisPerson.weekdayTours[tourNumber].begin.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].begin.endTime+",");
-                                //oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.timeToActivity+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.distanceToActivity+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryMode.type+",");
-                                if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
-                                   thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
-                                	oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.tripMode.type+",");
-                                oFile.println();
+                                oFile.println(thisPerson.weekdayTours[tourNumber].intermediateStop1.tripMode.type);
+
                                 oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.endTime+",");
-                                //oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.timeToActivity+",");    
-                                oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.distanceToActivity+",");   
+                                oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.distanceToActivity+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryMode.type+",");
-                                if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
-                                   thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
-                                	oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.tripMode.type+",");
-                                oFile.println();
+                                oFile.println(thisPerson.weekdayTours[tourNumber].primaryDestination.tripMode.type);
                             }
                             else{
                                 oFile.print(thisPerson.weekdayTours[tourNumber].begin.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].begin.endTime+",");
-                                //oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.timeToActivity+","); 
-                                oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.distanceToActivity+",");    
+                                oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.distanceToActivity+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryMode.type+",");
-                                if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
-                                        thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
-                                	oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.tripMode.type+",");
-                                oFile.println();
+                              	oFile.println(thisPerson.weekdayTours[tourNumber].primaryDestination.tripMode.type);
                             }
+
                             if(thisTour.intermediateStop2!=null){
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.endTime+",");
-                                //oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.timeToActivity+","); 
-                                oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.distanceToActivity+",");  
+                                oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.distanceToActivity+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryMode.type+",");
-                                if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
-                                        thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
-                                	oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.tripMode.type+",");
-                                oFile.println();
+                                oFile.println(thisPerson.weekdayTours[tourNumber].intermediateStop2.tripMode.type);
+
                                 oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.endTime+",");
-                                //oFile.print(thisPerson.weekdayTours[tourNumber].end.timeToActivity+",");    
-                                oFile.print(thisPerson.weekdayTours[tourNumber].end.distanceToActivity+",");    
+                                oFile.print(thisPerson.weekdayTours[tourNumber].end.distanceToActivity+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].end.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryMode.type+",");
-                                if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
-                                        thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
-                                	oFile.print(thisPerson.weekdayTours[tourNumber].end.tripMode.type+",");
-                                oFile.println();
+                                oFile.println(thisPerson.weekdayTours[tourNumber].end.tripMode.type);
                             }
                             else{
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.endTime+",");
-                                //oFile.print(thisPerson.weekdayTours[tourNumber].end.timeToActivity+",");  
-                                oFile.print(thisPerson.weekdayTours[tourNumber].end.distanceToActivity+",");  
+                                oFile.print(thisPerson.weekdayTours[tourNumber].end.distanceToActivity+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].end.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryMode.type+",");
-                                if(thisTour.primaryMode.type==ModeType.AUTODRIVER ||
-                                        thisTour.primaryMode.type==ModeType.AUTOPASSENGER)
-                                	oFile.print(thisPerson.weekdayTours[tourNumber].end.tripMode.type+",");
-                                oFile.println();
+                                oFile.print(thisPerson.weekdayTours[tourNumber].end.tripMode.type);
                             }
                          
                     }
