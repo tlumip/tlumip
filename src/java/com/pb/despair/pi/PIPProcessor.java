@@ -730,12 +730,18 @@ public class PIPProcessor {
                 table = getJDBCTableReader().readTable(tableName);
             } else {
                 fileName = inputPath +tableName + ".csv";
-                CSVFileReader reader = new CSVFileReader();
-                table = reader.readFile(new File(fileName));
+                File file = new File(fileName);
+                if(file.exists()){
+                    CSVFileReader reader = new CSVFileReader();
+                    table = reader.readFile(new File(fileName));
+                }else{
+                    logger.warn("File does not exist - returning null");
+                }
             }
         } catch (IOException e) {
-            logger.fatal("Can't find input table " + fileName);
+            logger.fatal("Can't find input table " + fileName + " even though the file exists!!");
             e.printStackTrace();
+            System.exit(10);
         }
         return table;
     }
