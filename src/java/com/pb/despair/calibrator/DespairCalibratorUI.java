@@ -97,7 +97,7 @@ public class DespairCalibratorUI extends CalibrationStrategyUI {
         
         TableDataSetCollection myData = new TableDataSetCollection(r,w);
 
-        ModelInputsAndOutputs y = new TableDataSetInputsAndOutputs(myDirectory.getAbsolutePath(),myData);
+        ModelInputsAndOutputs y = new PecasDirectoryInputsAndOutputs(myDirectory.getAbsolutePath(),myData);
 
         /*
 		 * try { y = new ModelInputsAndOutputs( new

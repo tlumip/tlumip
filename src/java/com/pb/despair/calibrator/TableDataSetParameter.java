@@ -71,18 +71,18 @@ public class TableDataSetParameter extends Parameter {
     double perturbation = .01;
 
     public double retrieveValue(ModelInputsAndOutputs y) {
-        if (!(y instanceof TableDataSetInputsAndOutputs)) {
+        if (!(y instanceof PecasDirectoryInputsAndOutputs)) {
             throw new RuntimeException("TableDataSetParameter can only work with ModelInputsAndOutputs of type TableDataSetCollection");
         }
-        setValue(theData.retrieveValue(((TableDataSetInputsAndOutputs) y).myTableDataSetCollection));
+        setValue(theData.retrieveValue(((PecasDirectoryInputsAndOutputs) y).myTableDataSetCollection));
         return value;
     }
 
     public void putValue(ModelInputsAndOutputs y) {
-        if (!(y instanceof TableDataSetInputsAndOutputs)) {
-            throw new RuntimeException("TableDataSetParameter can only work with ModelInputsAndOutputs of type TableDataSetInputsAndOutputs");
+        if (!(y instanceof PecasDirectoryInputsAndOutputs)) {
+            throw new RuntimeException("TableDataSetParameter can only work with ModelInputsAndOutputs of type PecasDirectoryInputsAndOutputs");
         }
-        theData.putValue(((TableDataSetInputsAndOutputs) y).myTableDataSetCollection, (float) value);
+        theData.putValue(((PecasDirectoryInputsAndOutputs) y).myTableDataSetCollection, (float) value);
     }
 
     public JPanel createUI() {

@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
+import com.pb.common.datafile.GeneralDecimalFormat;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.TableDataSetCollection;
 import com.pb.common.datafile.TableDataSetIndex;
@@ -46,6 +47,20 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     public void doProjectSpecificInputProcessing() {
+
+        String calibrationMetaParameters = ResourceUtil.getProperty(rb,"pi.readMetaParameters");
+        if (calibrationMetaParameters.equalsIgnoreCase("true")) {
+            setUpMetaParameters();
+        }
+        
+        boolean doIntegratedModuleRun = false;
+        String oregonInputsString = ResourceUtil.getProperty(rb, "pi.oregonInputs");
+        if (oregonInputsString != null ) {
+            if (oregonInputsString.equalsIgnoreCase("true")) {
+                doIntegratedModuleRun = true;
+            }
+        }
+        if (!doIntegratedModuleRun) return;
         String currPath = ResourceUtil.getProperty(rb,"pi.current.data");
         File actW = new File(currPath + "ActivitiesW.csv");
         if(actW.exists()){
@@ -65,11 +80,6 @@ public class OregonPIPProcessor extends PIPProcessor {
             logger.info("Deleted old ActivitiesZonalValuesW.csv to prepare for new file");
         }
 
-
-        String calibrationMetaParameters = ResourceUtil.getProperty(rb,"pi.readMetaParameters");
-        if (calibrationMetaParameters.equalsIgnoreCase("true")) {
-            setUpMetaParameters();
-        }
         createActivitiesWFile();
         createFloorspaceWFile();
         createActivitiesZonalValuesWFile();
@@ -376,11 +386,13 @@ public class OregonPIPProcessor extends PIPProcessor {
      * Read in some parameter functions, and adjust the parameters as appropriate
      */
     private void setUpMetaParameters() {
+        logger.info("Generating parameters from metaparameters");
         CSVFileReader reader = new CSVFileReader();
         CSVFileWriter writer = new CSVFileWriter();
         String piInputsPath = ResourceUtil.getProperty(rb,"pi.base.data");
         reader.setMyDirectory(new File(piInputsPath));
         writer.setMyDirectory(new File(piInputsPath));
+        writer.setMyDecimalFormat(new GeneralDecimalFormat("0.############E0",10000,.001));
         TableDataSetCollection myCollection = new TableDataSetCollection(reader,writer);
         TableDataSetIndex metaParamIndex = new TableDataSetIndex(myCollection,"MetaParameters");
         String[] temp = {"ParameterName"};

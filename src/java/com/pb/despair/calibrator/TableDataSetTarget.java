@@ -62,11 +62,11 @@ public class TableDataSetTarget extends TargetAdapter {
     }
 
     //    public double retrieveValue(ModelInputsAndOutputs y) {
-    //        if (!(y instanceof TableDataSetInputsAndOutputs)) {
+    //        if (!(y instanceof PecasDirectoryInputsAndOutputs)) {
     //            throw new RuntimeException("TableDataSetTarget can only work with
-	// ModelInputsAndOutputs of type TableDataSetInputsAndOutputs");
+	// ModelInputsAndOutputs of type PecasDirectoryInputsAndOutputs");
     //        }
-    //        return indexedValue.retrieveValue(((TableDataSetInputsAndOutputs)
+    //        return indexedValue.retrieveValue(((PecasDirectoryInputsAndOutputs)
 	// y).myTableDataSetCollection);
     //    }
 
@@ -128,10 +128,10 @@ public class TableDataSetTarget extends TargetAdapter {
 	 * @see com.hbaspecto.calibrator.TargetAdapter#getValue(com.hbaspecto.calibrator.ModelInputsAndOutputs)
 	 */
     public double getValue(ModelInputsAndOutputs y) {
-        if (!(y instanceof TableDataSetInputsAndOutputs)) {
-            throw new RuntimeException("TableDataSetTargets can only work with model outputs of of type TableDataSetInputsAndOutputs");
+        if (!(y instanceof PecasDirectoryInputsAndOutputs)) {
+            throw new RuntimeException("TableDataSetTargets can only work with model outputs of of type PecasDirectoryInputsAndOutputs");
         }
-        return indexedValue.retrieveValue(((TableDataSetInputsAndOutputs) y).myTableDataSetCollection);
+        return indexedValue.retrieveValue(((PecasDirectoryInputsAndOutputs) y).myTableDataSetCollection);
     }
 
     /**
@@ -189,8 +189,8 @@ public class TableDataSetTarget extends TargetAdapter {
                             targetsToBeRetrieved.remove(t);
                         }
                         try {
-                            if (t.getModelInputsAndOutputs() instanceof TableDataSetInputsAndOutputs) {
-                               TableDataSetInputsAndOutputs tdsio = (TableDataSetInputsAndOutputs) t.getModelInputsAndOutputs();
+                            if (t.getModelInputsAndOutputs() instanceof PecasDirectoryInputsAndOutputs) {
+                               PecasDirectoryInputsAndOutputs tdsio = (PecasDirectoryInputsAndOutputs) t.getModelInputsAndOutputs();
                                t.getIndexedValue().retrieveValue(tdsio.myTableDataSetCollection);
                             }
                         } catch (Exception e) {
@@ -218,9 +218,9 @@ public class TableDataSetTarget extends TargetAdapter {
         ModelInputsAndOutputs mio = getModelInputsAndOutputs();
         if (mio == null)
             return false;
-        if (!(mio instanceof TableDataSetInputsAndOutputs))
+        if (!(mio instanceof PecasDirectoryInputsAndOutputs))
             return false;
-        TableDataSetCollection tdsc = ((TableDataSetInputsAndOutputs) mio).myTableDataSetCollection;
+        TableDataSetCollection tdsc = ((PecasDirectoryInputsAndOutputs) mio).myTableDataSetCollection;
         return !(indexedValue.hasValidIndexes(tdsc));
     }
 

@@ -39,7 +39,6 @@ public class StringIndexedFloatTarget extends TargetAdapter implements Serializa
     private String[][] stringKeyNameValues;
     static final long serialVersionUID = 1822253333333324622L;
     transient StringIndexedNDimensionalMatrix myMatrix = null;
-    static HashMap loadedFiles = new HashMap();
     private String fieldAndMatrixName;
     private String fileAndTableName;
 
@@ -60,36 +59,6 @@ public class StringIndexedFloatTarget extends TargetAdapter implements Serializa
      */
     String getFileAndTableName() {
         return fileAndTableName;
-    }
-
-    static StringIndexedNDimensionalMatrix getMatrixByName(String fileName, String tableName) {
-        StringIndexedNDimensionalMatrix theOneWereLookingFor = null;
-        WeakHashMap loadedTables = (WeakHashMap) loadedFiles.get(fileName);
-        if (loadedTables!=null) {
-            theOneWereLookingFor = (StringIndexedNDimensionalMatrix) loadedTables.get(tableName);
-        }
-        if (theOneWereLookingFor!=null) return theOneWereLookingFor;
-        try {
-            java.io.FileInputStream fis = new java.io.FileInputStream(fileName);
-            java.io.ObjectInputStream in = new java.io.ObjectInputStream(fis);
-            StringIndexedNDimensionalMatrix temp = null;
-            loadedTables = new WeakHashMap();
-            loadedFiles.put(fileName,loadedTables);
-            while (fis.available()>0) { 
-                Object another = in.readObject();
-                if (another instanceof StringIndexedNDimensionalMatrix) {
-                    temp = (StringIndexedNDimensionalMatrix) another;
-                    if (temp.matrixName.equals(tableName)) {
-                        theOneWereLookingFor = temp;
-                    }
-                    loadedTables.put(temp.matrixName,temp);
-                }
-            }
-        } catch (Exception e) {
-            logger.severe("Cant read in stringIndexedTable "+fileName+" : "+tableName);
-            throw new RuntimeException("Cant read in stringIndexedTable "+fileName+" : "+tableName);
-           }
-        return theOneWereLookingFor;
     }
 
     /*
@@ -202,12 +171,12 @@ public class StringIndexedFloatTarget extends TargetAdapter implements Serializa
 	 * @see com.hbaspecto.calibrator.TargetAdapter#getValue(com.hbaspecto.calibrator.ModelInputsAndOutputs)
 	 */
     public double getValue(ModelInputsAndOutputs y) {
-        if (!(y instanceof TableDataSetInputsAndOutputs)) {
-            logger.severe("StringIndexedFloatTargets can only work with model outputs of of type TableDataSetInputsAndOutputs");
-            throw new RuntimeException("StringIndexedFloatTargets can only work with model outputs of of type TableDataSetInputsAndOutputs");
+        if (!(y instanceof PecasDirectoryInputsAndOutputs)) {
+            logger.severe("StringIndexedFloatTargets can only work with model outputs of of type PecasDirectoryInputsAndOutputs");
+            throw new RuntimeException("StringIndexedFloatTargets can only work with model outputs of of type PecasDirectoryInputsAndOutputs");
         }
-        TableDataSetInputsAndOutputs t = (TableDataSetInputsAndOutputs) y;
-        StringIndexedNDimensionalMatrix aOne = getMatrixByName(t.getDirectory()+File.separator+fileAndTableName+".bin",fieldAndMatrixName);
+        PecasDirectoryInputsAndOutputs t = (PecasDirectoryInputsAndOutputs) y;
+        StringIndexedNDimensionalMatrix aOne = t.getMatrixByName(t.getDirectory()+File.separator+fileAndTableName+".bin",fieldAndMatrixName);
         if (aOne != myMatrix) {
             myMatrix = aOne;
             columnOrderOK = false;

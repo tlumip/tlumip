@@ -60,12 +60,7 @@ public class PIControl {
     public void readData(){
         logger.info("Reading data and setting up for PI run");
         long startTime = System.currentTimeMillis();
-        String oregonInputsString = ResourceUtil.getProperty(rb, "pi.oregonInputs");
-        if (oregonInputsString != null ) {
-            if (oregonInputsString.equalsIgnoreCase("true")) {
-                piReaderWriter.doProjectSpecificInputProcessing();
-             }
-        }
+        piReaderWriter.doProjectSpecificInputProcessing();
         piReaderWriter.setUpPi();
         logger.info("Setup is complete. Time in seconds: "+((System.currentTimeMillis()-startTime)/1000.0));
         return;
