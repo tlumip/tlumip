@@ -11,6 +11,7 @@ import com.pb.despair.pt.*;
 import java.io.*;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 
 /**
@@ -256,7 +257,7 @@ public class PTDafMaster extends MessageProcessingTask {
                     new Character(mcPurposes.charAt(purpose)));
                 mcLogsumMessage.setValue("segment", new Integer(segment));
 
-                String queueName = getQueueName();
+                String queueName = getQueueName2();
                 mcLogsumMessage.setValue("queue", queueName);
                 logger.info("Sending MC logsums to " + queueName + " : " +
                     thisPurpose + segment);
@@ -415,7 +416,7 @@ public class PTDafMaster extends MessageProcessingTask {
                     new Character(mcPurposes.charAt(purpose)));
                 dcLogsumMessage.setValue("segment", new Integer(segment));
 
-                String queueName = getQueueName();
+                String queueName = getQueueName2();
                 dcLogsumMessage.setValue("queue", queueName);
                 logger.info("Sending DC logsums to " + queueName + " : " +
                     thisPurpose + segment);
@@ -436,11 +437,7 @@ public class PTDafMaster extends MessageProcessingTask {
         logger.fine("Processing households.");
          //Sort hhs by work segment, non-work segment
          Arrays.sort(households);
-        //create an index array so that the households array can be updated with the newly processed households.
-        indexArray = new int[households.length+1]; //the HH.ID's start at 1 so we need length + 1
-        for (int i=0; i<households.length; i++){ //
-            indexArray[households[i].ID] = i;
-        }
+
         int initalBlockSize = 20;
 
         //iterate through number of workers, 20 household blocks
@@ -533,50 +530,6 @@ public class PTDafMaster extends MessageProcessingTask {
     }
 
     /**
-     * This method will summarize the Tours as follows:
-     *  1.  tours by activity purpose and mode ("w,b,c,o,r,s" : "driver,passenger,walk,bike,wtransit,transitp,ptransti,dtransit")
-     *  2.  average tour distance by purpose and mode (purposes are numbered 1-6  : modes are numbered 1-8
-     *  3.  work tours by work market segment and mode ("0-8" : see modes above)
-     *  4.  non-work tours by purpose, non-work segment and mode ("b,c,o,r,s" : "0-8" : see modes above)
-     *  5.  trips on work tours by work market segment and mode ("0-8" : above modes + drive,shared2,shared3+)
-     *  6.  trips on non-work tours by purpose, non-work segments and mode ("0-8" : modes are numbered 1-3)
-     *  7.  average tour distance for work tours by work market segment and mode
-     *  8.  average tour distance for non-work tours by purpose, non-work segment and mode
-     * This method will be called at the end of PTModel after all Households have been
-     * operated on. (PTDafMaster will call)
-     */
-    private void summarizeTours(Message msg) {
-        PTHousehold[] hhs = (PTHousehold[]) msg.getValue("households");
-        PTSummarizer.summarizeTours(hhs);
-    }//end of Summarize Tours
-
-    /**
-     * Get the households from the message,update
-     * the householdsProcessedCount, write logging statements, and send the
-     * households to the writeResults method of the results object.
-     * @param msg
-     */
-    private void householdResults(Message msg) {
-        logger.info(getName() + " received messageId=" + msg.getId() +
-            " message from=" + msg.getSender());
-
-        PTHousehold[] householdBlock = (PTHousehold[]) msg.getValue(
-                "households");
-        householdsProcessedCount = householdsProcessedCount + householdBlock.length;
-        logger.info("Households processed so far: " +
-            householdsProcessedCount);
-        logger.fine("Number of Households in this Array: " +
-            householdBlock.length);
-
-       for (int i=0;i< householdBlock.length;i++){
-           households[indexArray[householdBlock[i].ID]] = householdBlock[i];
-       }
-        results.writeResults(householdBlock);
-    }
-
-
-
-    /**
      * getQueueName() is used when spraying an equal number of messages accross all WorkQueues.
      */
     private String getQueueName() {
@@ -611,6 +564,41 @@ public class PTDafMaster extends MessageProcessingTask {
             lastWorkQueue = thisWorkQueue;
 
             return queue;
+        }
+    }
+
+    public static void main(String[] args) {
+
+        Logger logger = Logger.getLogger("com.pb.despair.pt");
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
+        //Read the SynPop data
+        PTDataReader dataReader = new PTDataReader(rb);
+        logger.info("Adding synthetic population from database");
+        PTHousehold[] households = dataReader.readHouseholds("households.file");
+        int totalHouseholds = households.length;
+        logger.info("Total Number of HHs :" + totalHouseholds);
+
+        logger.info("Reading the Persons file");
+        PTPerson[] persons = dataReader.readPersons("persons.file");
+
+        //add worker info to Households and add homeTAZ and hh work segment to persons
+        //This method sorts households and persons by ID.  Leaves arrays in sorted positions.
+        dataReader.addPersonInfoToHouseholdsAndHouseholdInfoToPersons(households,
+                persons);
+
+        //Sort hhs by work segment, non-work segment
+        Arrays.sort(households);
+
+        int[][] workByNonWork = PTSummarizer.summarizeHHsByWorkAndNonWorkSegments(households);
+        System.out.println("work,0,1,2,3,4,5,6,7,8");
+        String row = "";
+        for(int r=0; r<workByNonWork.length; r++){
+            row+=r+",";
+            for(int c=0; c<workByNonWork[0].length; c++){
+                row+= workByNonWork[r][c]+",";
+            }
+            System.out.println(row);
+            row="";
         }
     }
 }
