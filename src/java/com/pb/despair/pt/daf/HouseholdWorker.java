@@ -50,22 +50,17 @@ public class HouseholdWorker extends MessageProcessingTask {
     public static int[] householdsByTaz;
     public static int[] postSecOccup;
     public static int[] otherSchoolOccup;
-    
+
+    static AlphaToBeta a2b = null;
+
     CreateModeChoiceLogsums mcLogsumCalculator = new CreateModeChoiceLogsums();
     CreateDestinationChoiceLogsums dcLogsumCalculator = new CreateDestinationChoiceLogsums();
     WorkplaceLocationModel workLocationModel = new WorkplaceLocationModel();
     DCExpUtilitiesManager expUtilitiesManager;
     PTModel ptModel;
+    PTResults ptResults; //used by models to write debug info if model is unsuccessful
 
-    Matrix logsumMatrix;
-    ModeChoiceLogsums workBasedModeChoiceLogsums;
-    MatrixCollection nonWorkModeChoiceLogsums;
 
-    // These variables keep track of the Matrices currently in memory
-    int lastWorkplaceLocationSegment = -1;
-    int lastWorkSegment = -1;
-    int lastNonWorkSegment = -1;
-    
     boolean firstHouseholdBlock = true;
     boolean firstDCLogsum = true;
     
@@ -80,10 +75,6 @@ public class HouseholdWorker extends MessageProcessingTask {
     int currentWorkSegment = -1;
     int currentNonWorkSegment =-1;
     
-    static AlphaToBeta a2b = null;
-
-    PTResults results;
-
 
     /**
      * Onstart method sets up model
@@ -158,6 +149,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             expUtilitiesManager = new DCExpUtilitiesManager(ptRb);
 
             ptModel = new PTModel(ptRb, globalRb);
+            ptResults = new PTResults(ptRb);
 
             logger.info( "***" + getName() + " finished onStart()");
         }

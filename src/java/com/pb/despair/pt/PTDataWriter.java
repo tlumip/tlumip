@@ -1,5 +1,6 @@
 package com.pb.despair.pt;
-import com.pb.despair.model.ModeType;
+
+
 import java.util.logging.Logger;
 import java.io.PrintWriter;
 
@@ -14,7 +15,8 @@ import java.io.PrintWriter;
  */
 
 public class PTDataWriter {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+
+     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
      public PTDataWriter(){
           
      }
@@ -38,6 +40,7 @@ public class PTDataWriter {
                          
                          oFile.print(thisHousehold.ID+",");
                          oFile.print(thisPerson.ID+",");
+                         oFile.print(thisPerson.age+",");
                          oFile.print("1,"); //weekdayTour=1 (TRUE)
                          thisTour.printCSV(oFile);
                          oFile.println();
@@ -50,6 +53,7 @@ public class PTDataWriter {
                         
                          oFile.print(thisHousehold.ID+",");
                          oFile.print(thisPerson.ID+",");
+                         oFile.print(thisPerson.age+",");
                          oFile.print("1,"); //weekdayTour=1 (TRUE)
                          thisTour.printCSV(oFile);
                          oFile.println();
@@ -64,6 +68,7 @@ public class PTDataWriter {
                         
                          oFile.print(thisHousehold.ID+",");
                          oFile.print(thisPerson.ID+",");
+                         oFile.print(thisPerson.age+",");
                          oFile.print("0,"); //weekdayTour=0 (FALSE)
                          thisTour.printCSV(oFile);
                          oFile.println();
@@ -76,6 +81,7 @@ public class PTDataWriter {
                          
                          oFile.print(thisHousehold.ID+",");
                          oFile.print(thisPerson.ID+",");
+                         oFile.print(thisPerson.age+",");
                          oFile.print("0,"); //weekdayTour=0 (FALSE)
                          thisTour.printCSV(oFile);
                          oFile.println();
@@ -116,28 +122,40 @@ public class PTDataWriter {
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
                             oFile.print(thisTour.primaryMode.type+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].begin.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.distanceToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.timeToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].begin.endTime+",");
-                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayTours[tourNumber].intermediateStop1.activityPurpose)+",");
-                            oFile.println(thisPerson.weekdayTours[tourNumber].intermediateStop1.tripMode.type);
+                            oFile.print(thisTour.begin.location.zoneNumber+",");
+                            oFile.print(thisTour.intermediateStop1.location.zoneNumber+",");
+                            oFile.print(thisTour.intermediateStop1.distanceToActivity+",");
+                            oFile.print(thisTour.intermediateStop1.timeToActivity+",");
+                            oFile.print(thisTour.begin.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.intermediateStop1.activityPurpose)+",");
+                            oFile.println(thisTour.intermediateStop1.tripMode.type);
 
                             oFile.print(households[hhNumber].ID+",");
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
                             oFile.print(thisTour.primaryMode.type+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.distanceToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.timeToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop1.endTime+",");
-                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayTours[tourNumber].primaryDestination.activityPurpose)+",");
-                            oFile.println(thisPerson.weekdayTours[tourNumber].primaryDestination.tripMode.type);
+                            oFile.print(thisTour.intermediateStop1.location.zoneNumber+",");
+                            oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                            oFile.print(thisTour.primaryDestination.distanceToActivity+",");
+                            oFile.print(thisTour.primaryDestination.timeToActivity+",");
+                            oFile.print(thisTour.intermediateStop1.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            oFile.println(thisTour.primaryDestination.tripMode.type);
                         }
                         else{
                             oFile.print(households[hhNumber].ID+",");
@@ -145,14 +163,20 @@ public class PTDataWriter {
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
                             oFile.print(thisTour.primaryMode.type+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].begin.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.distanceToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.timeToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].begin.endTime+",");
-                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayTours[tourNumber].primaryDestination.activityPurpose)+",");
-                            oFile.println(thisPerson.weekdayTours[tourNumber].primaryDestination.tripMode.type);
+                            oFile.print(thisTour.begin.location.zoneNumber+",");
+                            oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                            oFile.print(thisTour.primaryDestination.distanceToActivity+",");
+                            oFile.print(thisTour.primaryDestination.timeToActivity+",");
+                            oFile.print(thisTour.begin.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            oFile.println(thisTour.primaryDestination.tripMode.type);
                         }
 
                         if(thisTour.intermediateStop2!=null){
@@ -161,28 +185,40 @@ public class PTDataWriter {
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
                             oFile.print(thisTour.primaryMode.type+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.distanceToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.timeToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.endTime+",");
-                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayTours[tourNumber].intermediateStop2.activityPurpose)+",");
-                            oFile.println(thisPerson.weekdayTours[tourNumber].intermediateStop2.tripMode.type);
+                            oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                            oFile.print(thisTour.intermediateStop2.location.zoneNumber+",");
+                            oFile.print(thisTour.intermediateStop2.distanceToActivity+",");
+                            oFile.print(thisTour.intermediateStop2.timeToActivity+",");
+                            oFile.print(thisTour.primaryDestination.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.intermediateStop2.activityPurpose)+",");
+                            oFile.println(thisTour.intermediateStop2.tripMode.type);
 
                             oFile.print(households[hhNumber].ID+",");
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
                             oFile.print(thisTour.primaryMode.type+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].end.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].end.distanceToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].end.timeToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].intermediateStop2.endTime+",");
-                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayTours[tourNumber].end.activityPurpose)+",");
-                            oFile.println(thisPerson.weekdayTours[tourNumber].end.tripMode.type);
+                            oFile.print(thisTour.intermediateStop2.location.zoneNumber+",");
+                            oFile.print(thisTour.end.location.zoneNumber+",");
+                            oFile.print(thisTour.end.distanceToActivity+",");
+                            oFile.print(thisTour.end.timeToActivity+",");
+                            oFile.print(thisTour.intermediateStop2.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.end.activityPurpose)+",");
+                            oFile.println(thisTour.end.tripMode.type);
                         }
                         else{
                             oFile.print(households[hhNumber].ID+",");
@@ -190,54 +226,63 @@ public class PTDataWriter {
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
                             oFile.print(thisTour.primaryMode.type+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].end.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].end.distanceToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].end.timeToActivity+",");
-                            oFile.print(thisPerson.weekdayTours[tourNumber].primaryDestination.endTime+",");
-                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayTours[tourNumber].end.activityPurpose)+",");
-                            oFile.println(thisPerson.weekdayTours[tourNumber].end.tripMode.type);
+                            oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                            oFile.print(thisTour.end.location.zoneNumber+",");
+                            oFile.print(thisTour.end.distanceToActivity+",");
+                            oFile.print(thisTour.end.timeToActivity+",");
+                            oFile.print(thisTour.primaryDestination.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.end.activityPurpose)+",");
+                            oFile.println(thisTour.end.tripMode.type);
                         }
                          
                     }
                   //Now print the weekday work based tours - if there are any.
                   if (thisPerson.weekdayWorkBasedTours != null) {
                       for(int tourNumber=0;tourNumber<thisPerson.weekdayWorkBasedTours.length;++tourNumber){
+                          Tour thisTour = thisPerson.weekdayWorkBasedTours[tourNumber];
                           oFile.print(households[hhNumber].ID+",");
                           oFile.print(thisPerson.ID + ",");
                           oFile.print("1,"); //weekdayTour=1 (TRUE)
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].tourNumber+",");  //unique tour number
-                          oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.activityPurpose)+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].primaryMode.type+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].begin.location.zoneNumber+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.distanceToActivity+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.timeToActivity+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].begin.endTime+",");
-                          oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.activityPurpose)+",");
+                          oFile.print(thisTour.tourNumber+",");  //unique tour number
+                          oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                          oFile.print(thisPerson.occupation+",");
+                          oFile.print(thisTour.primaryMode.type+",");
+                          oFile.print(thisTour.begin.location.zoneNumber+",");
+                          oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                          oFile.print(thisTour.primaryDestination.distanceToActivity+",");
+                          oFile.print(thisTour.primaryDestination.timeToActivity+",");
+                          oFile.print(thisTour.begin.endTime+",");
+                          oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                           //we currently do not calculate a trip mode so we will get a null pointer if
                           //we use the line that is commented out.  So I am just printing out the tour mode as if
                           //it were the trip mode (which it might be for all I know)
-//                          oFile.println(thisPerson.weekdayWorkBasedTours[tourNumber].primaryMode.type);
-                          oFile.println(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.tripMode.type);
+//                          oFile.println(thisTour.primaryMode.type);
+                          oFile.println(thisTour.primaryDestination.tripMode.type);
 
                           oFile.print(households[hhNumber].ID+",");
                           oFile.print(thisPerson.ID + ",");
                           oFile.print("1,"); //weekdayTour=1 (TRUE)
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].tourNumber+",");
-                          oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.activityPurpose)+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].primaryMode.type+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].end.location.zoneNumber+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].end.distanceToActivity+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].end.timeToActivity+",");
-                          oFile.print(thisPerson.weekdayWorkBasedTours[tourNumber].primaryDestination.endTime+",");
-                          oFile.print(ActivityPurpose.getActivityPurposeChar(thisPerson.weekdayWorkBasedTours[tourNumber].end.activityPurpose)+",");
+                          oFile.print(thisTour.tourNumber+",");
+                          oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                          oFile.print(thisPerson.occupation+",");
+                          oFile.print(thisTour.primaryMode.type+",");
+                          oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                          oFile.print(thisTour.end.location.zoneNumber+",");
+                          oFile.print(thisTour.end.distanceToActivity+",");
+                          oFile.print(thisTour.end.timeToActivity+",");
+                          oFile.print(thisTour.primaryDestination.endTime+",");
+                          oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.end.activityPurpose)+",");
                           //we currently do not calculate a trip mode so we will get a null pointer if
                           //we use the line that is commented out.  So I am just printing out the tour mode as if
                           //it were the trip mode (which it might be for all I know)
-//                          oFile.println(thisPerson.weekdayWorkBasedTours[tourNumber].primaryMode.type);
+//                          oFile.println(thisTour.primaryMode.type);
                           oFile.println(thisPerson.weekdayTours[tourNumber].end.tripMode.type);
                       }
                   }
@@ -263,62 +308,136 @@ public class PTDataWriter {
         for(int hhNumber=0;hhNumber<households.length;++hhNumber){
               for(int personNumber=0;personNumber<households[hhNumber].persons.length;++personNumber){
                    PTPerson thisPerson = households[hhNumber].persons[personNumber];
-                    
-                   //print weekday home-based tours first
-                   for(int tourNumber=0;tourNumber<thisPerson.weekendTours.length;++tourNumber){
-                        Tour thisTour = thisPerson.weekendTours[tourNumber];
+                   //print weekend tours
+                   for(int tourNumber=0;tourNumber<thisPerson.weekdayTours.length;++tourNumber){
+                       Tour thisTour = thisPerson.weekendTours[tourNumber];
                         if(thisTour.intermediateStop1!=null){
-                            oFile.print(thisPerson.weekendTours[tourNumber].begin.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].begin.endTime+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop1.timeToActivity+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop1.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryMode.type+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop1.tripMode.type+",");
-                            oFile.println();
-                            oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop1.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop1.endTime+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.timeToActivity+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryMode.type+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.tripMode.type+",");
-                            oFile.println();
+                            oFile.print(households[hhNumber].ID+",");
+                            oFile.print(thisPerson.ID + ",");
+                            oFile.print("0,"); //weekdayTour=0 (FALSE)
+                            oFile.print(thisTour.tourNumber+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
+                            oFile.print(thisTour.primaryMode.type+",");
+                            oFile.print(thisTour.begin.location.zoneNumber+",");
+                            oFile.print(thisTour.intermediateStop1.location.zoneNumber+",");
+                            oFile.print(thisTour.intermediateStop1.distanceToActivity+",");
+                            oFile.print(thisTour.intermediateStop1.timeToActivity+",");
+                            oFile.print(thisTour.begin.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.intermediateStop1.activityPurpose)+",");
+                            oFile.println(thisTour.intermediateStop1.tripMode.type);
+
+                            oFile.print(households[hhNumber].ID+",");
+                            oFile.print(thisPerson.ID + ",");
+                            oFile.print("0,"); //weekdayTour=0 (FALSE)
+                            oFile.print(thisTour.tourNumber+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
+                            oFile.print(thisTour.primaryMode.type+",");
+                            oFile.print(thisTour.intermediateStop1.location.zoneNumber+",");
+                            oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                            oFile.print(thisTour.primaryDestination.distanceToActivity+",");
+                            oFile.print(thisTour.primaryDestination.timeToActivity+",");
+                            oFile.print(thisTour.intermediateStop1.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            oFile.println(thisTour.primaryDestination.tripMode.type);
                         }
                         else{
-                            oFile.print(thisPerson.weekendTours[tourNumber].begin.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].begin.endTime+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.timeToActivity+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryMode.type+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.tripMode.type+",");
-                            oFile.println();
+                            oFile.print(households[hhNumber].ID+",");
+                            oFile.print(thisPerson.ID + ",");
+                            oFile.print("0,"); //weekdayTour=0 (FALSE)
+                            oFile.print(thisTour.tourNumber+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
+                            oFile.print(thisTour.primaryMode.type+",");
+                            oFile.print(thisTour.begin.location.zoneNumber+",");
+                            oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                            oFile.print(thisTour.primaryDestination.distanceToActivity+",");
+                            oFile.print(thisTour.primaryDestination.timeToActivity+",");
+                            oFile.print(thisTour.begin.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            oFile.println(thisTour.primaryDestination.tripMode.type);
                         }
+
                         if(thisTour.intermediateStop2!=null){
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.endTime+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop2.timeToActivity+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop2.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryMode.type+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop2.tripMode.type+",");
-                            oFile.println();
-                            oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop2.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].intermediateStop2.endTime+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].end.timeToActivity+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].end.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryMode.type+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].end.tripMode.type+",");
-                            oFile.println();
+                            oFile.print(households[hhNumber].ID+",");
+                            oFile.print(thisPerson.ID + ",");
+                            oFile.print("0,"); //weekdayTour=0 (FALSE)
+                            oFile.print(thisTour.tourNumber+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
+                            oFile.print(thisTour.primaryMode.type+",");
+                            oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                            oFile.print(thisTour.intermediateStop2.location.zoneNumber+",");
+                            oFile.print(thisTour.intermediateStop2.distanceToActivity+",");
+                            oFile.print(thisTour.intermediateStop2.timeToActivity+",");
+                            oFile.print(thisTour.primaryDestination.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.intermediateStop2.activityPurpose)+",");
+                            oFile.println(thisTour.intermediateStop2.tripMode.type);
+
+                            oFile.print(households[hhNumber].ID+",");
+                            oFile.print(thisPerson.ID + ",");
+                            oFile.print("0,"); //weekdayTour=0 (FALSE)
+                            oFile.print(thisTour.tourNumber+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
+                            oFile.print(thisTour.primaryMode.type+",");
+                            oFile.print(thisTour.intermediateStop2.location.zoneNumber+",");
+                            oFile.print(thisTour.end.location.zoneNumber+",");
+                            oFile.print(thisTour.end.distanceToActivity+",");
+                            oFile.print(thisTour.end.timeToActivity+",");
+                            oFile.print(thisTour.intermediateStop2.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.end.activityPurpose)+",");
+                            oFile.println(thisTour.end.tripMode.type);
                         }
                         else{
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryDestination.endTime+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].end.timeToActivity+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].end.location.zoneNumber+",");
-                            oFile.print(thisPerson.weekendTours[tourNumber].primaryMode.type+",");
-                            //oFile.print(thisPerson.weekendTours[tourNumber].end.tripMode.type+",");
-                            oFile.println();
+                            oFile.print(households[hhNumber].ID+",");
+                            oFile.print(thisPerson.ID + ",");
+                            oFile.print("0,"); //weekdayTour=0 (FALSE)
+                            oFile.print(thisTour.tourNumber+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
+                            if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
+                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                else oFile.print("3,"); //indicates a college school tour
+                            }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
+                                oFile.print(thisPerson.occupation+",");
+                            }else oFile.print("0,"); //no segment associated with this tour
+                            oFile.print(thisTour.primaryMode.type+",");
+                            oFile.print(thisTour.primaryDestination.location.zoneNumber+",");
+                            oFile.print(thisTour.end.location.zoneNumber+",");
+                            oFile.print(thisTour.end.distanceToActivity+",");
+                            oFile.print(thisTour.end.timeToActivity+",");
+                            oFile.print(thisTour.primaryDestination.endTime+",");
+                            oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.end.activityPurpose)+",");
+                            oFile.println(thisTour.end.tripMode.type);
                         }
-                         
-                    }
+
+                    } //end tours
               }//end persons
          }//end households
 
@@ -334,6 +453,7 @@ public class PTDataWriter {
                
                 oFile.print(thisHousehold.ID+","+
                             thisPerson.ID+","+
+                            thisPerson.age+"," +
                             "1," + //weekdayTour=1 (TRUE)
                             thisPerson.weekdayPatternLogsum+",");
                 thisWeekdayPattern.printCSV(oFile);
@@ -351,6 +471,7 @@ public class PTDataWriter {
                 Pattern thisWeekendPattern = households[hhNumber].persons[personNumber].weekendPattern;
                 oFile.print(thisHousehold.ID+","+
                             thisPerson.ID+","+
+                            thisPerson.age+"," +
                             thisPerson.weekendPatternLogsum+",");
                 thisWeekendPattern.printCSV(oFile);
                 oFile.println();

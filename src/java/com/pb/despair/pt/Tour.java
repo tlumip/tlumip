@@ -5,7 +5,6 @@ import com.pb.despair.model.ModeType;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import java.util.Date;
 
 /** 
  * A class containing tour attributes 
@@ -249,98 +248,9 @@ public class Tour implements Serializable{
      };               
      
      
-//   to write tour characteristics to text file, csv
-     /*void setDistance(PrintWriter file, Tour thisTour, SkimsInMemory skims){
-          float distanceToIStop1;
-          float distanceToPrimaryDestination;
-          float distanceToIStop2;
-          float distanceToEnd;
-          
-          if (hasIntermediateStop1(thisTour.tourString)==1){
-              distanceToIStop1=skims.pkDist.getValueAt(thisTour.begin.location.zoneNumber,
-                                                       thisTour.intermediateStop1.location.zoneNumber);
-              distanceToPrimaryDestination=skims.pkDist.getValueAt(thisTour.intermediateStop1.location.zoneNumber,
-                                                       thisTour.primaryDestination.location.zoneNumber);                               
-          }
-          else {
-              distanceToIStop1=0;          
-              distanceToPrimaryDestination=skims.pkDist.getValueAt(thisTour.begin.location.zoneNumber,
-                                                                   thisTour.primaryDestination.location.zoneNumber); 
-          }
-                                                                              
-          if (hasIntermediateStop2(thisTour.tourString)==1){
-             distanceToIStop2=skims.pkDist.getValueAt(thisTour.primaryDestination.location.zoneNumber,
-                                                      thisTour.intermediateStop2.location.zoneNumber);
-             distanceToEnd=skims.pkDist.getValueAt(thisTour.intermediateStop2.location.zoneNumber,
-                                                      thisTour.end.location.zoneNumber);                               
-          }          
-          else {
-             distanceToIStop2=0;
-             distanceToEnd=skims.pkDist.getValueAt(thisTour.primaryDestination.location.zoneNumber,
-                                                                  thisTour.end.location.zoneNumber);                                                                   
-          }
-          file.print(thisTour.tourString+",");
-          file.print(thisTour.tourNumber+",");
-          begin.printCSV(file);
-          if(hasIntermediateStop1(thisTour.tourString)==1)
-               intermediateStop1.printCSV(file);
-          else
-               file.print("0,0,0,0,0,0,0,0,0,0,");
-          primaryDestination.printCSV(file);
-          if(hasIntermediateStop2(thisTour.tourString)==1)
-               intermediateStop2.printCSV(file);
-          else
-               file.print("0,0,0,0,0,0,0,0,0,0,");
-          end.printCSV(file);
-          
-          file.print(primaryMode.type);
-          
-     }*/
-     
-     
-    /*  Write tour characteristics to text file, in csv format
-     *  The following  fields will be written:
-     *  tourString
-     *  tourNumber
-     *  begin.activityPurpose
-     *  begin.startTime
-     *  begin.endTime
-     *  begin.timeToActivity
-     *  begin.distanceToActivity
-     *  begin.tripModeType
-     *  begin.location.zoneNumber
-     *  stop1.activityPurpose
-     *  stop1.startTime
-     *  stop1.endTime
-     *  stop1.timeToActivity
-     *  stop1.distanceToActivity
-     *  stop1.tripModeType
-     *  stop1.location.zoneNumber
-     *  pdest.activityPurpose
-     *  pdest.startTime
-     *  pdest.endTime
-     *  pdest.timeToActivity
-     *  pdest.distanceToActivity
-     *  pdest.tripModeType
-     *  pdest.location.zoneNumber
-     *  stop2.activityPurpose       
-     *  stop2.startTime             
-     *  stop2.endTime               
-     *  stop2.timeToActivity        
-     *  stop2.distanceToActivity    
-     *  stop2.tripModeType          
-     *  stop2.location.zoneNumber  
-     *  end.activityPurpose        
-     *  end.startTime             
-     *  end.endTime               
-     *  end.timeToActivity        
-     *  end.distanceToActivity    
-     *  end.tripModeType          
-     *  end.location.zoneNumber   
-     *  tourMode
-     */
+
      void printCSV(PrintWriter file){
-//          file.print(new Date()+",");
+
           file.print(tourString+",");
           file.print(tourNumber+",");
           file.print(departDist+",");
@@ -357,10 +267,13 @@ public class Tour implements Serializable{
           end.printCSV(file);
 
         if (primaryMode != null) {
-            file.print(primaryMode.type);
+            file.println(primaryMode.type);
+        }else{
+            file.print("no mode");
         }
 
         file.flush();
+        //the calling method will close the file.
 
      }
      

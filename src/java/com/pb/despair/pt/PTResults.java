@@ -1,13 +1,12 @@
 package com.pb.despair.pt;
 
-import java.io.PrintWriter;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.matrix.MatrixWriter;
+import com.pb.common.matrix.MatrixType;
 
 /**
  * PTResults
@@ -21,6 +20,7 @@ public class PTResults {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.PTModel");
     PTTimer timer = new PTTimer();
     PTDataWriter ptWriter = new PTDataWriter();
+    static PrintWriter debug;
     PrintWriter weekdayTour;
     PrintWriter weekdayPattern;
     PrintWriter weekdayTrip;
@@ -29,10 +29,10 @@ public class PTResults {
     PrintWriter weekendTrip;
     PrintWriter householdData;
 
-    ResourceBundle rb;
+    static ResourceBundle rb;
 
     public PTResults(ResourceBundle rb){
-        this.rb = rb;
+        PTResults.rb = rb;
     }
     
     public static PrintWriter open(String textFileName){
@@ -68,14 +68,10 @@ public class PTResults {
         }
     }
     
-    public void printHeader(PrintWriter pw, String header){
-        
-    }
-    
     public void createFiles(){
         weekdayTour = open(ResourceUtil.getProperty(rb, "weekdayTour.file"));
-        weekdayTour.println(",,,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
-        weekdayTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#,departDist," +
+        weekdayTour.println(",,,,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
+        weekdayTour.println("hhID,personID,personAge,weekdayTour(yes/no),tourString,tour#,departDist," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
@@ -84,19 +80,19 @@ public class PTResults {
                 "primaryMode");
 
         weekdayPattern = open(ResourceUtil.getProperty(rb, "weekdayPattern.file"));
-        weekdayPattern.println("hhID,personID,weekdayTour(yes/no),patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
+        weekdayPattern.println("hhID,personID,personAge,weekdayTour(yes/no),patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
                 "nShopActivities,nRecreateActivities,nOtherActivities");
 
         weekdayTrip = open(ResourceUtil.getProperty(rb, "weekdayTrip.file"));
-        weekdayTrip.println("hhID,personID,weekdayTour(yes/no),tour#,tourPurpose,tourMode,origin,destination,distance,time,tripStartTime,tripPurpose,tripMode");
+        weekdayTrip.println("hhID,personID,weekdayTour(yes/no),tour#,tourPurpose,tourSegment,tourMode,origin,destination,distance,time,tripStartTime,tripPurpose,tripMode");
 
         householdData = open(ResourceUtil.getProperty(rb, "householdData.file"));
         householdData.println("ID,size,autos,workers,income,singleFamily,multiFamily,homeTaz");        
         
         if(PTModel.RUN_WEEKEND_MODEL){
             weekendTour = open(ResourceUtil.getProperty(rb, "weekendTour.file"));
-            weekendTour.println(",,,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
-            weekendTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#,departDist" +
+            weekendTour.println(",,,,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
+            weekendTour.println("hhID,personID,personAge,weekdayTour(yes/no),tourString,tour#,departDist," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
                 "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
@@ -105,11 +101,11 @@ public class PTResults {
                 "primaryMode");
 
             weekendPattern = open(ResourceUtil.getProperty(rb, "weekendPattern.file"));
-            weekendPattern.println("hhID,personID,patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
+            weekendPattern.println("hhID,personID,personAge,patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
                 "nShopActivities,nRecreateActivities,nOtherActivities");
 
             weekendTrip = open(ResourceUtil.getProperty(rb, "weekendTrip.file"));
-            weekendTrip.println("hhID,personID,tour#,tourPurpose,tripPurpose,origin,tripStartTime,distance,destination,tourMode,tripMode");
+            weekendTrip.println("hhID,personID,weekdayTour(yes/no),tour#,tourPurpose,tourSegment,tourMode,origin,destination,distance,time,tripStartTime,tripPurpose,tripMode");
         }
     }
 
@@ -134,8 +130,52 @@ public class PTResults {
           timer.endTimer();
                 
   
-     }//end constructor    
-     
+     }
+
+    public static PrintWriter createTourDebugFile(String fileName){
+        String pathToDebugDir = ResourceUtil.getProperty(rb,"debugFiles.path");
+        debug = open(pathToDebugDir + fileName);
+        logger.info("Writing to " + pathToDebugDir + fileName);
+        debug.println(",,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
+        debug.println("tourString,tour#,departDist," +
+                    "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                    "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                    "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                    "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                    "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                    "primaryMode");
+        debug.flush();
+        return debug;
+    }
+
+    public static PrintWriter createTazDebugFile(String fileName){
+        String pathToDebugDir = ResourceUtil.getProperty(rb,"debugFiles.path");
+        //check to see if the file has already been written.  If so, we don't need to write it again.
+        if(new File(pathToDebugDir + fileName).exists()) debug=null;
+        //if file doesn't exists than create it and return the writer
+        else {
+            logger.info("Writing to " + pathToDebugDir + fileName);
+            debug = open(pathToDebugDir + fileName);
+            debug.println(",,,,,,,,,TourSizeTerms,,,,,,,,,,,,TourLnSizeTerms,,,,,,,,,,,,StopSizeTerms,,,,,,,StopLnSizeTerms");
+            debug.println("zoneNumber,households,workParkingCost," +
+                    "nonWorkParkingCost,acres,pricePerAcre,pricePerSqFtSFD,singleFamilyHH,multiFamilyHH," +
+                    "h,w1,w2,w3,w4,b,c1,c2,c3,s,r,o"+
+                    "h,w1,w2,w3,w4,b,c1,c2,c3,s,r,o"+
+                    "h,w,b,c,s,r,o"+
+                    "h,w,b,c,s,r,o");
+            debug.flush();
+        }
+
+        return debug;
+    }
+
+    public static MatrixWriter createMatrixWriter(String fileName){
+        String pathToDebugDir = ResourceUtil.getProperty(rb,"debugFiles.path");
+        MatrixWriter mWriter = MatrixWriter.createWriter(MatrixType.BINARY, new File(pathToDebugDir + fileName));
+        return mWriter;
+    }
+
+
     public static void main(String[] args){
         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
         ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");

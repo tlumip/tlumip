@@ -225,19 +225,21 @@ public class Taz implements Alternative, Cloneable{
      public void initSizeTermArray(){
         tourSizeTerm[ActivityPurpose.HOME] = new double[1];
         tourSizeTerm[ActivityPurpose.WORK] = new double[ActivityPurpose.WORK_SEGMENTS];
+         tourSizeTerm[ActivityPurpose.WORK_BASED] = new double[1];
         tourSizeTerm[ActivityPurpose.SCHOOL] = new double[ActivityPurpose.SCHOOL_SEGMENTS];
         tourSizeTerm[ActivityPurpose.SHOP] = new double[1];
         tourSizeTerm[ActivityPurpose.RECREATE] = new double[1];
         tourSizeTerm[ActivityPurpose.OTHER] = new double[1];
-        tourSizeTerm[ActivityPurpose.WORK_BASED] = new double[1];
+
 
         tourLnSizeTerm[ActivityPurpose.HOME] = new double[1];
         tourLnSizeTerm[ActivityPurpose.WORK] = new double[ActivityPurpose.WORK_SEGMENTS];
+         tourLnSizeTerm[ActivityPurpose.WORK_BASED] = new double[1];
         tourLnSizeTerm[ActivityPurpose.SCHOOL] = new double[ActivityPurpose.SCHOOL_SEGMENTS];
         tourLnSizeTerm[ActivityPurpose.SHOP] = new double[1];
         tourLnSizeTerm[ActivityPurpose.RECREATE] = new double[1];
         tourLnSizeTerm[ActivityPurpose.OTHER] = new double[1];
-        tourLnSizeTerm[ActivityPurpose.WORK_BASED] = new double[1];
+
         
     }
     // New method calculates the size terms in constructor to save run time.
@@ -407,20 +409,38 @@ public class Taz implements Alternative, Cloneable{
 
 
 
-     public void print(PrintWriter p){
+     public void printCSV(PrintWriter p){
 
           p.print(
-                " "+ zoneNumber
-               +" "+ households       
-               +" "+ workParkingCost
-               +" "+ nonWorkParkingCost
-               +" "+ acres
-               +" "+ pricePerAcre
-               +" "+ pricePerSqFtSFD          
-               +" "+ singleFamilyHH
-               +" "+ multiFamilyHH 
-          );
-          
+                  zoneNumber+","
+               + households+","
+               + workParkingCost+","
+               + nonWorkParkingCost+","
+               + acres+","
+               + pricePerAcre+","
+               + pricePerSqFtSFD+","
+               + singleFamilyHH+","
+               + multiFamilyHH+",");
+
+         for(int i=0;i<tourSizeTerm.length;i++){
+                for(int j=0; j<tourSizeTerm[i].length; j++){
+                   p.print(tourSizeTerm[i][j]+",");
+                }
+         }
+         for(int i=0;i<tourLnSizeTerm.length; i++){
+             for(int j=0; j<tourLnSizeTerm[i].length; j++){
+                 p.print(tourLnSizeTerm[i][j]+",");
+             }
+         }
+         for(int i=0; i<stopSizeTerm.length; i++){
+             p.print(stopSizeTerm[i]+",");
+         }
+         for(int i=0; i<stopLnSizeTerm.length; i++){
+             if(i<stopLnSizeTerm.length-1) p.print(stopLnSizeTerm[i]+",");
+             else p.println(stopLnSizeTerm[i]);
+         }
+         p.flush();
+         //methods calling this method will close the file when finished.
 
      };
      /**

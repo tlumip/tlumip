@@ -378,7 +378,6 @@ public void buildLogitModels(){
                                                             thisTour, 
                                                             PTModelInputs.skims, 
                                                             PTModelInputs.tmpd, 
-                                                            PTModelInputs.tdpd,
                                                             tazs,
                                                             um,
                                                             tmcm

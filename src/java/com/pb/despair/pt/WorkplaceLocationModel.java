@@ -11,6 +11,7 @@ import com.pb.common.util.SeededRandom;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
+import com.pb.common.matrix.MatrixWriter;
 
 
 /** 
@@ -56,20 +57,8 @@ public class WorkplaceLocationModel{
             while(destinationEnum.hasMoreElements()){
                 counter++;
             	Taz destinationTaz = (Taz) destinationEnum.nextElement();
-                float flow = laborFlowMatrix.getValueAt(origin,destinationTaz.zoneNumber);
-                if(Float.isNaN(flow)) {
-                    logger.severe("FLOW IS NaN. matrix is " + laborFlowMatrix.getName() + " origin: " + origin
-                                    + " destination " + destinationTaz.zoneNumber);
-                    System.exit(10);
-                }
-            	probabilityTotal = probabilityTotal+(laborFlowMatrix.getValueAt(origin,destinationTaz.zoneNumber));
-                if(Double.isNaN(probabilityTotal)) {
-                    logger.severe("Probability IS NaN. matrix is " + laborFlowMatrix.getName() + " origin: " + origin
-                                    + " destination " + destinationTaz.zoneNumber +
-                                    "laborFlowValue is: " + laborFlowMatrix.getValueAt(origin,destinationTaz.zoneNumber));
-                    System.exit(10);
-                }
-            	if (probabilityTotal > selector){
+                probabilityTotal = probabilityTotal+(laborFlowMatrix.getValueAt(origin,destinationTaz.zoneNumber));
+                if (probabilityTotal > selector){
             		destination = destinationTaz.zoneNumber;
             		//logger.finer("Workplace location: "+destination);
             		break;
@@ -80,9 +69,16 @@ public class WorkplaceLocationModel{
             	logger.severe("Error With workplace location model - destination TAZ shouldn't ==0!");
                 logger.severe("Selector value: " + selector + " Probability total: " + probabilityTotal +
                         " Counter: " + counter);
-                System.exit(1);
+                logger.severe("PersonID "+ thisPerson.ID+" Industry "+thisPerson.industry+
+                        " Occupation "+thisPerson.occupation+" WorkSegment "+thisPerson.householdWorkSegment);
+                logger.severe("The labor flow matrix will be written to the debug directory");
+                MatrixWriter mWriter = PTResults.createMatrixWriter(laborFlowMatrix.getName());
+                mWriter.writeMatrix(laborFlowMatrix);
+                //in the interest of not stopping the model run we will assign the
+                // destinationTaz to be the originTaz.  The user will be notified at the
+                // end of the run
+                destination = (int) thisPerson.homeTaz;
             }
-            //lastWorkLogsumSegment = thisPerson.occupation*10 + thisPerson.workSegment;
         }
         return (short)destination;
     }
