@@ -2,10 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="/common-base"/>
-	<classpathentry kind="src" path="/jakarta-commons"/>
-	<classpathentry kind="src" path="/logging-log4j-1.2.9"/>
 	<classpathentry kind="src" path="/common-daf-v2"/>
 	<classpathentry kind="src" path="/calibrator"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/jim/Util/svn_workspace/third-party/logging-log4j-1.2.9/log4j-1.2.9.jar"/>
+	<classpathentry kind="lib" path="C:/jim/Util/svn_workspace/third-party/jakarta-commons/commons-digester-1.5/commons-digester.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
