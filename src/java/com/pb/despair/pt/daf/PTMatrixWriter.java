@@ -1,8 +1,6 @@
 package com.pb.despair.pt.daf;
 
 import java.io.File;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -40,23 +38,20 @@ public class PTMatrixWriter extends MessageProcessingTask{
                 //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
                 //that was written by the Application Orchestrator
                 
-            	BufferedReader reader = null;
-                String scenarioName = null;
+            	String scenarioName = null;
                 int timeInterval = -1;
-                String pathToRb = null;
-                try {
-                    logger.info("Reading RunParams.txt file");
-                    reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
-                    scenarioName = reader.readLine();
-                    logger.info("\tScenario Name: " + scenarioName);
-                    timeInterval = Integer.parseInt(reader.readLine());
-                    logger.info("\tTime Interval: " + timeInterval);
-                    pathToRb = reader.readLine();
-                    logger.info("\tResourceBundle Path: " + pathToRb);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+                String pathToPtRb = null;
+                
+                logger.info("Reading RunParams.properties file");
+                ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File(Scenario.runParamsFileName));
+                scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
+                logger.info("\tScenario Name: " + scenarioName);
+                timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));
+                logger.info("\tTime Interval: " + timeInterval);
+                pathToPtRb = ResourceUtil.getProperty(runParamsRb,"pathToAppRb");
+                logger.info("\tResourceBundle Path: " + pathToPtRb);
+                
+                rb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
 
                 initialized = true;
             }

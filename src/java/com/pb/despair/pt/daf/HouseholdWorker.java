@@ -30,8 +30,8 @@ import org.apache.log4j.Logger;
  * HouseholdWorker processes all messages sent by PTDafMaster
  *
  *
- * @author    Steve Hansen
- * @version   1.0, 5/5/2004
+ * @author    Christi Willison
+ * @version   3.0, 3/8/2005
  *
  */
 public class HouseholdWorker extends MessageProcessingTask {
@@ -82,29 +82,27 @@ public class HouseholdWorker extends MessageProcessingTask {
         synchronized (lock) {
             logger.info( "***" + getName() + " started");
             if (!initialized) {
-                //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
+                //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.properties file
                 //that was written by the Application Orchestrator
-                BufferedReader reader = null;
                 String scenarioName = null;
                 int timeInterval = -1;
                 String pathToPtRb = null;
                 String pathToGlobalRb = null;
-                try {
-                    logger.info("Reading RunParams.txt file");
-                    reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
-                    scenarioName = reader.readLine();
-                    logger.info("\tScenario Name: " + scenarioName);
-                    timeInterval = Integer.parseInt(reader.readLine());
-                    logger.info("\tTime Interval: " + timeInterval);
-                    pathToPtRb = reader.readLine();
-                    logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
-                    pathToGlobalRb = reader.readLine();
-                    logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                
+                logger.info("Reading RunParams.properties file");
+                ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File(Scenario.runParamsFileName));
+                scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
+                logger.info("\tScenario Name: " + scenarioName);
+                timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));
+                logger.info("\tTime Interval: " + timeInterval);
+                pathToPtRb = ResourceUtil.getProperty(runParamsRb,"pathToAppRb");
+                logger.info("\tResourceBundle Path: " + pathToPtRb);
+                pathToGlobalRb = ResourceUtil.getProperty(runParamsRb,"pathToGlobalRb");
+                logger.info("\tResourceBundle Path: " + pathToGlobalRb);
+                
                 ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
                 globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
+                
                 //set whether you want to calculate the dc and mode choice logsums
                 //in production mode these should always be true.
                 String dcLogsumBoolean = ResourceUtil.getProperty(ptRb, "calculate.dc.logsums");
@@ -417,6 +415,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                     dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
                     Matrix expUtilities = dcLogsumCalculator.getExpUtilities(dcPurpose, segment.intValue());
                     dcExpUtilitiesMessage.setValue("matrix", expUtilities);
+                    Thread.sleep((long)(Math.random() * 10));
                     sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
 
                 }
@@ -436,6 +435,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                 dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
                 Matrix expUtilities = dcLogsumCalculator.getExpUtilities(purpose, segment.intValue());
                 dcExpUtilitiesMessage.setValue("matrix", expUtilities);
+                Thread.sleep((long)(Math.random() * 10));
                 sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
 //             dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);     //BINARY-ZIP
 //            dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb);

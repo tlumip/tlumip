@@ -14,6 +14,6 @@ package com.pb.despair.pt.daf;
  */
 public class Scenario {
 
-	public static final String runParamsFileName = "/models/tlumip/daf/RunParams.txt";
+	public static final String runParamsFileName = "/models/tlumip/daf/RunParams.properties";
 	
 }
