@@ -22,12 +22,13 @@
             <include name="**/lib/*.zip"/>
         </fileset>
 
-
-
-        <fileset dir="${basedir}">
-            <include name="**/lib/*.jar"/>
-            <include name="**/lib/*.zip"/>
+        <fileset dir="${thirdParty.dir}">
+            <include name="**/logging-log4j-1.2.9/*.jar"/>
+            <include name="**/mtj/*.jar"/>
+            <include name="**/jakarta-commons/commons-digester-1.5/*.jar"/>
         </fileset>
+
+
     </path>
 
 
