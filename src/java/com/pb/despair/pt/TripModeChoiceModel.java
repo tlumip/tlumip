@@ -29,7 +29,12 @@ public class TripModeChoiceModel{
      DriveAlone driveAlone = new DriveAlone();
      SharedRide2 sharedRide2 = new SharedRide2();
      SharedRide3Plus sharedRide3Plus = new SharedRide3Plus();
-     
+
+    WalkTrip walkTrip = new WalkTrip();
+    BikeTrip bikeTrip = new BikeTrip();
+    DriveTransitTrip driveTransitTrip = new DriveTransitTrip();
+    WalkTransitTrip walkTransitTrip = new WalkTransitTrip();
+
      public TripModeChoiceModel(){
          
          autoNest.addAlternative(driveAlone);
@@ -46,10 +51,49 @@ public class TripModeChoiceModel{
                                     TazData tazs
                                     ){
                
-          if(thisTour.primaryMode.type!=ModeType.AUTODRIVER &&
-               thisTour.primaryMode.type!=ModeType.AUTOPASSENGER)
-               return;
+//          if(thisTour.primaryMode.type!=ModeType.AUTODRIVER &&
+//               thisTour.primaryMode.type!=ModeType.AUTOPASSENGER)
+//               return;
+         //All trips on WALK tours should be assigned WALKTRIP
+         if(thisTour.primaryMode.type == ModeType.WALK){
+             if(thisTour.intermediateStop1 != null) thisTour.intermediateStop1.tripMode = walkTrip;
+             thisTour.primaryDestination.tripMode = walkTrip;
+             if(thisTour.intermediateStop2 != null) thisTour.intermediateStop2.tripMode=walkTrip;
+             thisTour.end.tripMode = walkTrip;
+             return;
+         }
+         //All trips on BIKE tours should be assigned BIKETRIP
+         if(thisTour.primaryMode.type == ModeType.BIKE){
+             if(thisTour.intermediateStop1 != null) thisTour.intermediateStop1.tripMode = bikeTrip;
+             thisTour.primaryDestination.tripMode = bikeTrip;
+             if(thisTour.intermediateStop2 != null) thisTour.intermediateStop2.tripMode=bikeTrip;
+             thisTour.end.tripMode = bikeTrip;
+             return;
+         }
+         //All trips on WALKTRANSIT tours should be assigned WALKTRANSITTRIP
+         if(thisTour.primaryMode.type == ModeType.WALKTRANSIT){
+             if(thisTour.intermediateStop1 != null) thisTour.intermediateStop1.tripMode = walkTransitTrip;
+             thisTour.primaryDestination.tripMode = walkTransitTrip;
+             if(thisTour.intermediateStop2 != null) thisTour.intermediateStop2.tripMode=walkTransitTrip;
+             thisTour.end.tripMode = walkTransitTrip;
+             return;
+         }
+         //The non-drive-access portion of DRIVETRANSIT Tours should be assigned WALKTRANSITTRIP
+         //The drive-access portion of DRIVETRANSIT tours (the first and last trip of these tours)
+         //should be assigned DRIVETRANSTITRIP.
+         if(thisTour.primaryMode.type == ModeType.DRIVETRANSIT){
+             if(thisTour.intermediateStop1 != null) {
+                 thisTour.intermediateStop1.tripMode = driveTransitTrip;
+                 thisTour.primaryDestination.tripMode = walkTransitTrip;
+             }else thisTour.primaryDestination.tripMode = driveTransitTrip;
+             if(thisTour.intermediateStop2 != null) thisTour.intermediateStop2.tripMode = walkTransitTrip;
+             thisTour.end.tripMode = driveTransitTrip;
+             return;
+         }
 
+         //To get this far, the tour must either be an AutoDriver, AutoPassenger,
+         // TransitPassenger or PassengerTransit tour.  If it is a passenger tour
+         //then "DRIVEALONE" should not be available.
 
           //set person tour mode attributes
           PersonTripModeAttributes personAttributes = new PersonTripModeAttributes(thisHousehold,thisPerson);
@@ -176,20 +220,8 @@ public class TripModeChoiceModel{
                            Mode tourMode, 
                            ZoneAttributes thisZone, 
                            Activity destActivity){
-          
-          
-          //set top level
-          //LogitModel thisModel = new LogitModel("thisModel");
 
-          //create modes
-          //DriveAlone driveAlone = new DriveAlone();
-          //SharedRide2 sharedRide2 = new SharedRide2();
-          //SharedRide3Plus sharedRide3Plus = new SharedRide3Plus();
-
-            driveAlone.setAvailability(true);
-            sharedRide2.setAvailability(true);
-            sharedRide3Plus.setAvailability(true);                 
-            //calculate utilities
+         // set availabilities and calculate utilities
             driveAlone.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);                         
             sharedRide2.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);             
             sharedRide3Plus.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);
