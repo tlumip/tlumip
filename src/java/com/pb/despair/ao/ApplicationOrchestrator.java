@@ -125,7 +125,7 @@ public class ApplicationOrchestrator {
             String propPath = rootDir + "/scenario_" + scenarioName + "/t" + i + "/runLog.properties";
             propFile = new File(propPath);
             if(propFile.exists()){
-                logger.info(" Reading in Run Log and updating the RunLog HashMap: ");
+                logger.info(" Reading in Run Log from year " + i + " and updating the RunLog HashMap: ");
                 runLogRb = ResourceUtil.getPropertyBundle(new File(propPath));
                 Enumeration rbEnum = runLogRb.getKeys();
                 while (rbEnum.hasMoreElements()) {
@@ -166,10 +166,11 @@ public class ApplicationOrchestrator {
             appPropertyFile =  new File(outputPath + "spg/spg.properties");
         //Deal with the PTDAF and PIDAF exceptions
         }else if (appName.endsWith("daf")) {
-            appPropertyTemplate = new File(templatePath + appName.substring(0,(appName.length()-3)) +
-                    "/" + appName.substring(0,(appName.length()-3)) + ".properties"); //subtract off the 'daf' part
-            appPropertyFile = new File(outputPath + appName.substring(0,(appName.length()-3)) +
-                    "/" + appName.substring(0,(appName.length()-3)) + ".properties");
+            appName = appName.substring(0,(appName.length()-3));
+            appPropertyTemplate = new File(templatePath + appName +
+                    "/" + appName + "Template.properties"); //subtract off the 'daf' part
+            appPropertyFile = new File(outputPath + appName +
+                    "/" + appName + ".properties");
         } else if (appName.equalsIgnoreCase("global")) {
             appPropertyTemplate = new File(templatePath + "globalTemplate.properties");
             appPropertyFile = new File(outputPath + "global.properties");
