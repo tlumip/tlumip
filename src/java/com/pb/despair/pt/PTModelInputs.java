@@ -121,7 +121,8 @@ public class PTModelInputs extends ModelComponent implements Serializable{
 
     public static void readDCLogsums(ResourceBundle rb){
         dcLogsums= new AllDestinationChoiceLogsums();
-        dcLogsums.readDCLogsums(rb);
+        dcLogsums.readDCLogsums(rb);        //BINARY-ZIP
+//        dcLogsums.readBinaryDCLogsums(rb);
     }
     
     public void readSkims(){
