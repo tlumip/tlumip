@@ -90,7 +90,7 @@ public class AllDestinationChoiceLogsums {
                                                                              +"dcls");*/
                       thisHousehold.persons[i].workBasedDCLogsum = mc.getValue(thisHousehold.homeTaz, 0, 
                                                                           "b"+new Integer(workHouseholdSegment).toString()
-                                                                             +"dcls.zip");
+                                                                             +"dcls");
                        //thisHousehold.persons[i].workDCLogsum=((Float)logsums.get("w"+new Integer(workPersonSegment).toString()
                        //  +new Integer(workHouseholdSegment).toString()+new Integer(thisHousehold.homeTaz).toString())).doubleValue();
                       //thisHousehold.persons[i].workBasedDCLogsum=((Float)logsums.get("b"+new Integer(nonWorkHouseholdSegment).toString()
@@ -100,7 +100,7 @@ public class AllDestinationChoiceLogsums {
                      thisHousehold.persons[i].schoolDCLogsum = mc.getValue(thisHousehold.homeTaz, 0, 
                                                                            "c"+new Integer(studentPersonSegment).toString()
                                                                            +new Integer(nonWorkHouseholdSegment).toString()
-                                                                           +"dcls.zip");
+                                                                           +"dcls");
                       //thisHousehold.persons[i].schoolDCLogsum=((Float)logsums.get("c"+new Integer(studentPersonSegment).toString()
                     //+new Integer(nonWorkHouseholdSegment).toString()+new Integer(thisHousehold.homeTaz).toString())).doubleValue();
                   }
@@ -108,15 +108,15 @@ public class AllDestinationChoiceLogsums {
                  thisHousehold.persons[i].shopDCLogsum=mc.getValue(thisHousehold.homeTaz, 0, 
                                                                    "s"
                                                                    +new Integer(nonWorkHouseholdSegment).toString()
-                                                                   +"dcls.zip");
+                                                                   +"dcls");
                  thisHousehold.persons[i].recreateDCLogsum=mc.getValue(thisHousehold.homeTaz, 0, 
                                                                        "r"
                                                                        +new Integer(nonWorkHouseholdSegment).toString()
-                                                                        +"dcls.zip");
+                                                                        +"dcls");
                  thisHousehold.persons[i].otherDCLogsum=mc.getValue(thisHousehold.homeTaz, 0, 
                                                                     "o"
                                                                     +new Integer(nonWorkHouseholdSegment).toString()
-                                                                    +"dcls.zip");
+                                                                    +"dcls");
  
           }
 
