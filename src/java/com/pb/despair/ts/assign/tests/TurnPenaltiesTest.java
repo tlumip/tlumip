@@ -36,9 +36,9 @@ public class TurnPenaltiesTest {
 	}
     
 	
-	private void runTest (String period) {
+	private void runTest (String period, float volumeFactor) {
         
-		g = new Network( tsPropertyMap, globalPropertyMap, period );
+		g = new Network( tsPropertyMap, globalPropertyMap, period, volumeFactor );
 		logger.info ("done building Network object.");
 
 		
@@ -68,7 +68,7 @@ public class TurnPenaltiesTest {
 		long startTime = System.currentTimeMillis();
 		
 		TurnPenaltiesTest test = new TurnPenaltiesTest();
-		test.runTest("peak");
+		test.runTest("peak", 0.5f);
         
 		logger.info("TurnPenaltiesTest() finished in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");

@@ -179,10 +179,14 @@ public class AuxTrNetTest {
 	    
 		long startTime = System.currentTimeMillis();
 
-		writeZipTransitSkims( "peak", "Walk", PeakWalkTransitSkimFileNames );
-		writeZipTransitSkims( "peak", "Drive", PeakDriveTransitSkimFileNames );
-		writeZipTransitSkims( "offpeak", "Walk", OffPeakWalkTransitSkimFileNames );
-		writeZipTransitSkims( "offpeak", "Drive", OffPeakDriveTransitSkimFileNames );
+        // get off-peak period definitions from property file
+		float peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
+		float offPeakFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
+
+		writeZipTransitSkims( "peak", "Walk", peakFactor, PeakWalkTransitSkimFileNames );
+		writeZipTransitSkims( "peak", "Drive", peakFactor, PeakDriveTransitSkimFileNames );
+		writeZipTransitSkims( "offpeak", "Walk", offPeakFactor, OffPeakWalkTransitSkimFileNames );
+		writeZipTransitSkims( "offpeak", "Drive", offPeakFactor, OffPeakDriveTransitSkimFileNames );
 		
 		logger.info("AuxTrNetTest.runTest() finished in " +
 			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
@@ -192,10 +196,10 @@ public class AuxTrNetTest {
 
 	
 	
-	public void writeZipTransitSkims ( String period, String accessMode, String[] transitSkimFileNames ) {
+	public void writeZipTransitSkims ( String period, String accessMode, float volumeFactor, String[] transitSkimFileNames ) {
 	    
 		// generate a set of output zip format peak walk transit skims
-		Matrix[] skims = getTransitSkims ( period, accessMode );
+		Matrix[] skims = getTransitSkims ( period, accessMode, volumeFactor );
 		for (int i=0; i < skims.length; i++) {
 			writeZipMatrix( skims[i], transitSkimFileNames[i] );
 		}
@@ -204,7 +208,7 @@ public class AuxTrNetTest {
 		
 	
 	
-	public Matrix[] getTransitSkims ( String period, String accessMode ) {
+	public Matrix[] getTransitSkims ( String period, String accessMode, float volumeFactor ) {
         
 		
 		String diskObjectFileName = null;
@@ -217,7 +221,7 @@ public class AuxTrNetTest {
 		else
 		    diskObjectFileName = path + "/" + key + ".diskObject";
 		if ( CREATE_NEW_NETWORK ) {
-			ag = createTransitNetwork ( period, accessMode );
+			ag = createTransitNetwork ( period, accessMode, volumeFactor );
 			DataWriter.writeDiskObject ( ag, diskObjectFileName, key );
 		}
 		else {
@@ -306,14 +310,14 @@ public class AuxTrNetTest {
     
 
 	
-	private AuxTrNet createTransitNetwork ( String period, String accessMode ) {
+	private AuxTrNet createTransitNetwork ( String period, String accessMode, float volumeFactor ) {
         
 		long totalTime = 0;
 		long startTime = System.currentTimeMillis();
 		
 
 		// create a highway network oject
-		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
+		Network g = new Network( tsPropertyMap, globalPropertyMap, period, volumeFactor );
 		logger.info (g.getLinkCount() + " highway links");
 		logger.info (g.getNodeCount() + " highway nodes");
 

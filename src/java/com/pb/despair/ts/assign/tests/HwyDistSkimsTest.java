@@ -52,13 +52,14 @@ public class HwyDistSkimsTest {
 	
     public static void main (String[] args) {
     	
-    	String period = "peak";
-        
 		long startTime = System.currentTimeMillis();
 		
-		HwyDistSkimsTest test = new HwyDistSkimsTest();
+    	String period = "peak";
+		float peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
         
-        g = new Network( tsPropertyMap, globalPropertyMap, period );
+		HwyDistSkimsTest test = new HwyDistSkimsTest();
+		
+        g = new Network( tsPropertyMap, globalPropertyMap, period, peakFactor );
 		logger.info ("done building Network object.");
         
         Skims sk = new Skims( g, tsPropertyMap, globalPropertyMap );
