@@ -6,6 +6,6 @@
 	<classpathentry kind="src" path="/common-daf-v2"/>
 	<classpathentry kind="src" path="/common-assign"/>
 	<classpathentry kind="lib" path="/common-base/lib/commons-digester.jar"/>
-	<classpathentry kind="src" path="/hbaspecto"/>
+	<classpathentry exported="true" kind="src" path="/hbaspecto"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
