@@ -86,7 +86,9 @@ public class StopDestinationChoiceModel{
                  float walkTime=0;
                  float bikeTime=0;
                  float transitGeneralizedCost=0;
-                 float[] autoDists= new float[2];
+                 float[] autoDists= new float[2]; //autoDists[0] = distance from origin to destination
+                                                  //autoDists[1] = distance from origin to stop to destination
+                                                  //if autoDist[1] > 2 * autoDists[0] then that stop zone is not available.
 
                  if(thisTour.primaryMode.type==ModeType.WALK)
                          walkTime=skims.getAdditionalWalkTime(thisTour.begin.location.zoneNumber,
