@@ -39,6 +39,9 @@ public class PTDafMaster extends MessageProcessingTask {
     static int TOTAL_DCLOGSUMS; //is total segments * the dc logsum activity purposes.length
     static int TOTAL_DCEXPUTILS; //is the same as the total number of dc logsums.
 
+    static String DEBUG_FILES_PATH; //location of debug files, need to delete all files during onStart and report presence
+                                                        //of any new files created during model run at the end of PT
+
     PTDataReader dataReader;
 
     PTHousehold[] households;
@@ -113,6 +116,7 @@ public class PTDafMaster extends MessageProcessingTask {
         // pt related properties
         MAXBLOCKSIZE = Integer.parseInt(ResourceUtil.getProperty(ptRb,"max.block.size"));
         TOTAL_COLLAPSED_MCLOGSUMS = ResourceUtil.getList(ptRb,"matrices.for.pi").size();
+        DEBUG_FILES_PATH = ResourceUtil.getProperty(ptRb, "debugFiles.path");
         if(logger.isDebugEnabled()) {
             logger.debug("Total Collapsed Mode Choice Logsums: " + TOTAL_COLLAPSED_MCLOGSUMS);
         }
@@ -134,6 +138,17 @@ public class PTDafMaster extends MessageProcessingTask {
             logger.debug("Total Mode Choice Logsums: " + TOTAL_MCLOGSUMS);
             logger.debug("Total Destination Choice Logsums: " + TOTAL_DCLOGSUMS);
             logger.debug("Total Exponentiated Destination Choice Logsums: " + TOTAL_DCEXPUTILS);
+        }
+
+        //Check for existence of any files in the "debug" directory and delete them, new files
+        // created during run will be reported on after the model has finished
+        File debugDir = new File(DEBUG_FILES_PATH);
+        File[] debugFiles = debugDir.listFiles();
+        if(debugFiles.length != 0){
+            for(int f=0;f<debugFiles.length; f++){
+                debugFiles[f].delete();
+                if(logger.isDebugEnabled()) logger.debug("File " + debugFiles[f] + " deleted");
+            }
         }
 
         //Start mode choice logsums.  The workers will decide if the MC Logsums
@@ -227,8 +242,6 @@ public class PTDafMaster extends MessageProcessingTask {
             if (personsWithWorkplaceCount == persons.length) {
                 setTazDataArrays();
                 households = dataReader.addPersonsToHouseholds(households,persons);
-//                Arrays.sort(households);  //moved to the beginning of the HH processing method.
-
             }
 
         } else if (msg.getId().equals(MessageID.TAZDATA_UPDATED)) {
@@ -279,6 +292,16 @@ public class PTDafMaster extends MessageProcessingTask {
             }
 
         } else if(msg.getId().equals(MessageID.ALL_FILES_WRITTEN)){
+            //check to see if any debug files were created.  This indicates that there were tours that could
+            //not find destinations or stops that couldn't find locations, etc.
+            File debugDir = new File(DEBUG_FILES_PATH);
+            File[] debugFiles = debugDir.listFiles();
+            if(debugFiles.length != 0){
+                logger.info("This run of the PTModel had unresolved problems.\n" +
+                        "Please look at the files in  " + debugDir.getAbsolutePath() + " for further info.");
+            }
+
+            //Signal to the File Monitor that the model is finished.
             logger.info("Signaling to the File Monitor that the model is finished");
             File doneFile = new File(ResourceUtil.getProperty(ptRb,"done.file"));
 

@@ -1,13 +1,13 @@
 package com.pb.despair.pt;
 
-import java.util.ResourceBundle;
-import org.apache.log4j.Logger;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 
 /** 
@@ -92,7 +92,11 @@ public class PatternChoiceParameters {
      float recreateStops;
      float otherStops;
      float workDummyIndustryRetail;       
-     float workDummyIndustryPersonalServices;     
+     float workDummyIndustryPersonalServices;
+    float oneTour;
+    float twoTours;
+    float threeTours;
+    float fourPlusTours;
 
 
     //constructor
@@ -185,7 +189,11 @@ public class PatternChoiceParameters {
               otherStops=                                             table.getValueAt(rowNumber, table.getColumnPosition("otherStops"));
               workDummyIndustryRetail                                 = table.getValueAt(rowNumber, table.getColumnPosition("workDummyIndustryRetail"));
               workDummyIndustryPersonalServices                         = table.getValueAt(rowNumber, table.getColumnPosition("workDummyIndustryPersonalServices"));
-       
+              oneTour=                                                         table.getValueAt(rowNumber,table.getColumnPosition("oneTour"));
+              twoTours=                                                         table.getValueAt(rowNumber,table.getColumnPosition("twoTours"));
+              threeTours=                                                         table.getValueAt(rowNumber,table.getColumnPosition("threeTours"));
+              fourPlusTours=                                                         table.getValueAt(rowNumber,table.getColumnPosition("fourPlusTours"));
+
         }catch(IOException e) {
             logger.fatal("Error reading PatternChoiceParameters file.");
             //TODO - log exception to the node exception file

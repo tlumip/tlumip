@@ -1,9 +1,10 @@
 package com.pb.despair.pt;
 
 import com.pb.common.model.Alternative;
+import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
 import java.io.Serializable;
-import org.apache.log4j.Logger;
 /** 
  * Pattern.java stores the out-of-home activity pattern for each person-day,
  * as well as summary information about the pattern that can
@@ -41,6 +42,7 @@ public class Pattern implements Alternative, Serializable, Cloneable {
      public int toursEquals3Plus;
      public int toursEquals3;
      public int toursEquals4;
+     public int toursEquals4Plus;
      public int toursEquals5Plus;
      public int workOnly;
      public int schoolOnly;
@@ -184,12 +186,14 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                toursEquals1=1;
           if(homeActivities==3)
                toursEquals2=1;
-          if(homeActivities>=4)
-               toursEquals3Plus=1;
           if(homeActivities==4)
                toursEquals3=1;
-          if(homeActivities==5)
+         if(homeActivities==5)
                toursEquals4=1;
+         if(homeActivities>=4)
+               toursEquals3Plus=1;
+          if(homeActivities>=5)
+                toursEquals4Plus=1;
           if(homeActivities>=6)
                toursEquals5Plus=1;
                
@@ -693,7 +697,8 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
           }
 
                utility=(
-                 params.workWorker                              *  wrkDummy * persAttr.worker
+
+                  params.workWorker                              *  wrkDummy * persAttr.worker
                + params.schoolStudent                           *  schDummy * persAttr.student
                + params.shopActivityDummyFemale                 *  shpDummy * persAttr.female
                + params.shopActivityDummyUnemployed             *  shpDummy * persAttr.unemployed
@@ -763,7 +768,10 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                + params.otherStops                              * stopsOnOtherTours
                + params.workDummyIndustryRetail                 * wrkDummy * persAttr.industryEqualsRetail          
                + params.workDummyIndustryPersonalServices         * wrkDummy * persAttr.industryEqualsPersonalServices
-
+               + params.oneTour                               * toursEquals1
+               + params.twoTours                               * toursEquals2
+               + params.threeTours                               * toursEquals3
+               + params.fourPlusTours                        *  toursEquals4Plus
           );
 
          //moving this to the beginning of the method to avoid

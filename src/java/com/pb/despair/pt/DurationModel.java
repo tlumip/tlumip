@@ -111,7 +111,7 @@ public class DurationModel{
           short duration=0;
           
           //call appropriate method
-          if(thisActivity.activityPurpose==ActivityPurpose.WORK||thisActivity.activityPurpose==ActivityPurpose.WORK_BASED)
+          if(thisActivity.activityPurpose==ActivityPurpose.WORK || thisActivity.activityPurpose==ActivityPurpose.WORK_BASED)
                duration=calculateWorkDuration(thisActivity);
           else if(thisActivity.activityPurpose==ActivityPurpose.SCHOOL)
                duration=calculateSchoolDuration(thisActivity);

@@ -30,7 +30,7 @@ public class DurationModelParameters {
                  female,                                        /* person is female */
                  income60Plus,                                  /* person has income > 60,000 */
                  worksTwoJobs,                                  /* person works 2 jobs */
-                 age19to21,                                     /* person is age 18-20 */
+                 age19to21,                                     /* person is age 19-21 */
                  age25Plus,                                     /* person is age 25 or older */
                  autos0,                                        /* person has no car */
                  industryEqualsRetail,                          /* person works in retail */
