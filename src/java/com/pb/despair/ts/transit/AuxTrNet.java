@@ -170,7 +170,7 @@ public class AuxTrNet implements Serializable {
 			    // Keep a list of transit lines using each network link.  Save using xxxyyy where xxx is rte and yyy is seg.
 			    // A link will therefore be able to look up all transit routes serving the link using tr.transitPaths[rte].get(seg)
 			    // for all the rteseg values stored for the link.
-			    gSegs[ts.link].add( Integer.valueOf(rte*1000 + seg) );
+			    gSegs[ts.link].add( new Integer(rte*1000 + seg) );
 			    
 				if (debug) logger.info ("anode=" + indexNode[anode] + ", bnode=" + indexNode[bnode] + ", ttf=" + ts.getTtf() );
 
