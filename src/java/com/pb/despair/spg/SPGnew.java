@@ -6,6 +6,7 @@ import com.pb.common.util.SeededRandom;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
+import com.pb.common.datafile.GeneralDecimalFormat;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.despair.model.Halo;
 import com.pb.despair.model.IncomeSize;
@@ -1977,7 +1978,7 @@ public class SPGnew {
 		CSVFileWriter writer = new CSVFileWriter();
         
 		try {
-			writer.writeFile( table, new File( fileName ) );
+			writer.writeFile( table, new File( fileName ), new GeneralDecimalFormat("0.#####E0",10000000,.01 ) );
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
