@@ -1295,15 +1295,16 @@ public class PIPProcessor {
         zonalMakeUseCoefficients = null;
         StringIndexedNDimensionalMatrix utilities = null;
         StringIndexedNDimensionalMatrix quantities = null;
+       // create this whether or not we're writing out the binary files; need it later (otherwise we could do "if (binary)" { up here)
+        int[] shape = new int[4];
+        String[] columnNames = {"Activity","ZoneNumber","Commodity","MorU"};
+        shape[3] = 2; // "M" or "U"
+        shape[1] = AbstractTAZ.getAllZones().length;
+        shape[2]= AbstractCommodity.getAllCommodities().size();
+        shape[0] = ProductionActivity.getAllProductionActivities().size();
+        zonalMakeUseCoefficients = new StringIndexedNDimensionalMatrix("Coefficient",4,shape,columnNames);
+        zonalMakeUseCoefficients.setAddKeysOnTheFly(true);
         if (binary) {
-            int[] shape = new int[4];
-            String[] columnNames = {"Activity","ZoneNumber","Commodity","MorU"};
-            shape[3] = 2; // "M" or "U"
-            shape[1] = AbstractTAZ.getAllZones().length;
-            shape[2]= AbstractCommodity.getAllCommodities().size();
-            shape[0] = ProductionActivity.getAllProductionActivities().size();
-            zonalMakeUseCoefficients = new StringIndexedNDimensionalMatrix("Coefficient",4,shape,columnNames);
-            zonalMakeUseCoefficients.setAddKeysOnTheFly(true);
             utilities = new StringIndexedNDimensionalMatrix("Utility",4,shape,columnNames);
             utilities.setAddKeysOnTheFly(true);
             quantities = new StringIndexedNDimensionalMatrix("Amount",4,shape,columnNames);
@@ -1359,9 +1360,9 @@ public class PIPProcessor {
                                 zMakeUseFile.write(buyingZUtilities[c]+",");
                                 zMakeUseFile.write(activityAmount*consumptionAmounts[c]+"\n");
                             }
+                            indices[2] = com.getName();
+                            zonalMakeUseCoefficients.setValue((float) consumptionAmounts[c],indices);
                             if (binary) {
-                                indices[2] = com.getName();
-                                zonalMakeUseCoefficients.setValue((float) consumptionAmounts[c],indices);
                                 utilities.setValue((float) buyingZUtilities[c],indices);
                                 quantities.setValue((float) (activityAmount*consumptionAmounts[c]),indices);
                             }
@@ -1380,9 +1381,9 @@ public class PIPProcessor {
                                 zMakeUseFile.write(sellingZUtilities[c]+",");
                                 zMakeUseFile.write(activityAmount*productionAmounts[c]+"\n");
                             }
+                            indices[2] = com.getName();
+                            zonalMakeUseCoefficients.setValue((float) productionAmounts[c],indices);
                             if (binary) {
-                                indices[2] = com.getName();
-                                zonalMakeUseCoefficients.setValue((float) productionAmounts[c],indices);
                                 utilities.setValue((float) sellingZUtilities[c],indices);
                                 quantities.setValue((float) (activityAmount*productionAmounts[c]),indices);
                             }
