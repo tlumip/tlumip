@@ -798,12 +798,7 @@ IQOut.af <- cbind(AZone=as.numeric(rownames(totQ.af)), resQNew$IQ.af, nresQNew$I
 write.table(IQOut.af, paste(ALDCurrDirectory, "Increments_Matrix.csv", sep="/"), row.names=FALSE, col.names=TRUE, sep=",")
 rm(IQOut.af)
 
-##/
- # Write out the residential and non-residential capacity utilization in matrix form
- #@param resQNew$propCap.af
- #@param nresQNew$propCap.af
- #@return "ResNonResCapacityUtilization.output"
-##RCUOut.af <- cbind(cbind(AZone=as.numeric(rownames(totQ.af)), resQNew$IQ.af, nresQNew$IQ.af)
+
 
 #/
 # Detach cf, funs and vars
