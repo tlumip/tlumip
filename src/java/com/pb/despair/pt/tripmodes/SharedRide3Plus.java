@@ -40,9 +40,14 @@ public class SharedRide3Plus extends Mode {
      
      public void calcUtility(TravelTimeAndCost tc, ZoneAttributes z,TripModeParameters c, PersonTripModeAttributes p, Mode tourMode,
           Activity thisActivity){
-               
+
+        hasUtility = false;
+              utility=-999;
+              isAvailable = true;
+
           if(tc.sharedRide3Time==0) isAvailable=false;
-          if(tourMode.type!=ModeType.AUTODRIVER && tourMode.type!=ModeType.AUTOPASSENGER)
+          if(tourMode.type!=ModeType.AUTODRIVER && tourMode.type!=ModeType.AUTOPASSENGER
+             && tourMode.type!=ModeType.TRANSITPASSENGER && tourMode.type!=ModeType.PASSENGERTRANSIT)
                isAvailable=false;
                
           int autoDriver=0;
