@@ -4,6 +4,9 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.util.ObjectUtil;
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.matrix.AlphaToBeta;
 
 import com.pb.despair.pt.*;
 
@@ -24,12 +27,10 @@ import java.util.logging.Logger;
  */
 public class PTDafMaster extends MessageProcessingTask {
     boolean debug = false;
-    static final String mcPurposes = new String("wcsrob"); //work,school,shop,recreate,other,workbased
-    static final int TOTALSEGMENTS = 9;
-    static final int TOTALOCCUPATIONS = 8;
-    static final int TOTAL_DCLOGSUMS = 63;
-    static final int TOTAL_DCEXPUTILS = 63;
-    static final int MAXZONENUMBER = 4141;
+    static int TOTALSEGMENTS; //is defined by the PTHousehold class and will be set after households are created
+    static int TOTAL_DCLOGSUMS; //is total segments * the dc logsum activity purposes.length
+    static int TOTAL_DCEXPUTILS; //is the same as the total number of dc logsums.
+    static int MAXALPHAZONENUMBER; //will be set once the a2b object is read in.
 
     static int MAXBLOCKSIZE;  //will be initialized through resource bundle as it may change depending
                                 //on the scenario (ex. 5000 for pleaseWork, 8 for smallPop)
@@ -57,7 +58,8 @@ public class PTDafMaster extends MessageProcessingTask {
     int householdsProcessedCount = 0;
     int householdCounter = 0;
     ResourceBundle ptdafRb; //this will be read in after the scenarioName has been read in from RunParams.txt
-    ResourceBundle ptRb; // this will be read in after pathToRb has been read in from RunParams.txt
+    ResourceBundle ptRb; // this will be read in after pathToPtRb has been read in from RunParams.txt
+    ResourceBundle globalRb; //this will be read in after pathToGlobalRb has been read in from RunParams.txt
     int NUMBER_OF_WORK_QUEUES;
     int NUMBER_OF_WORK_QUEUES_AGGREGATE;
     int lastWorkQueue;
@@ -79,7 +81,8 @@ public class PTDafMaster extends MessageProcessingTask {
         BufferedReader reader = null;
         String scenarioName = null;
         int timeInterval = -1;
-        String pathToRb = null;
+        String pathToPtRb = null;
+        String pathToGlobalRb = null;
         try {
             logger.info("Reading RunParams.txt file");
             reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
@@ -87,11 +90,15 @@ public class PTDafMaster extends MessageProcessingTask {
             logger.info("\tScenario Name: " + scenarioName);
             timeInterval = Integer.parseInt(reader.readLine());
             logger.info("\tTime Interval: " + timeInterval);
-            pathToRb = reader.readLine();
-            logger.info("\tResourceBundle Path: " + pathToRb);
+            pathToPtRb = reader.readLine();
+            logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
+            pathToGlobalRb = reader.readLine();
+            logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        //Get the global properties file.
+        globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
         //Get properties files and set class attributes based on those properties.
             //First get the ptdaf.properties which will be in the classpath and
             //set the number of work queues
@@ -100,7 +107,7 @@ public class PTDafMaster extends MessageProcessingTask {
         NUMBER_OF_WORK_QUEUES_AGGREGATE = Integer.parseInt(ResourceUtil.getProperty(ptdafRb, "workQueuesAggregate"));
         lastWorkQueue = NUMBER_OF_WORK_QUEUES_AGGREGATE;
             //Next get pt.properties and set max block size.
-        ptRb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+        ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
         MAXBLOCKSIZE = Integer.parseInt(ResourceUtil.getProperty(ptRb,"max.block.size"));
         totalCollapsedModeChoiceLogsums = ResourceUtil.getList(ptRb,"matrices.for.pi").size();
         logger.info("totalCollapsedModeChoiceLogsums: " + totalCollapsedModeChoiceLogsums);
@@ -119,6 +126,9 @@ public class PTDafMaster extends MessageProcessingTask {
         totalHouseholds = households.length;
         logger.info("Total Number of HHs: " + totalHouseholds);
         if(debug) logger.fine("Size of households: " + ObjectUtil.sizeOf(households));
+        TOTALSEGMENTS = PTHousehold.NUM_WORK_SEGMENTS;
+        TOTAL_DCLOGSUMS = ActivityPurpose.DC_LOGSUM_PURPOSES.length * TOTALSEGMENTS;
+        TOTAL_DCEXPUTILS = TOTAL_DCLOGSUMS;
 
         logger.info("Reading the Persons file");
         persons = dataReader.readPersons("persons.file");
@@ -139,6 +149,10 @@ public class PTDafMaster extends MessageProcessingTask {
 
         PTSummarizer.summarizeHouseholds(households,ResourceUtil.getProperty(ptRb,"hhSummary.file"));
         PTSummarizer.summarizePersons(persons,ResourceUtil.getProperty(ptRb,"personSummary.file"));
+
+        TableDataSet alphaToBetaTable = loadTableDataSet(ptRb,"alphatobeta.file");
+        AlphaToBeta a2b = new AlphaToBeta(alphaToBetaTable);
+        MAXALPHAZONENUMBER = a2b.getMaxAlphaZone();
 
         logger.info("Finished onStart()");
     }
@@ -262,16 +276,16 @@ public class PTDafMaster extends MessageProcessingTask {
     private void startMCLogsums() {
         logger.info("Creating tour mode choice logsums");
 
-        //enter loop on purposes
-        for (int purpose = 0; purpose < mcPurposes.length(); ++purpose) {
-            char thisPurpose = mcPurposes.charAt(purpose);
+        //enter loop on purposes (skip home purpose)
+        for (int purpose = 1; purpose < ActivityPurpose.ACTIVITY_PURPOSES.length; ++purpose) {
+            char thisPurpose = ActivityPurpose.ACTIVITY_PURPOSES[purpose];
 
             //enter loop on segments
             for (int segment = 0; segment < TOTALSEGMENTS; ++segment) {
                 Message mcLogsumMessage = createMessage();
                 mcLogsumMessage.setId(MessageID.CREATE_MC_LOGSUMS);
                 mcLogsumMessage.setValue("purpose",
-                    new Character(mcPurposes.charAt(purpose)));
+                    new Character(ActivityPurpose.ACTIVITY_PURPOSES[purpose]));
                 mcLogsumMessage.setValue("segment", new Integer(segment));
 
                 String queueName = getQueueName2();
@@ -384,9 +398,9 @@ public class PTDafMaster extends MessageProcessingTask {
      */
     private void setTazDataArrays() {
         logger.info("Sending message to workers to update TAZ data");
-    	int[] householdsByTaz = new int[MAXZONENUMBER+1];
-        int[] postSecOccup = new int[MAXZONENUMBER+1];
-        int[] otherSchoolOccup = new int[MAXZONENUMBER+1];
+    	int[] householdsByTaz = new int[MAXALPHAZONENUMBER+1];
+        int[] postSecOccup = new int[MAXALPHAZONENUMBER+1];
+        int[] otherSchoolOccup = new int[MAXALPHAZONENUMBER+1];
 
         for(int p=0;p<persons.length;p++){
             if(persons[p].occupation==OccupationCode.P0ST_SEC_TEACHERS)
@@ -422,16 +436,16 @@ public class PTDafMaster extends MessageProcessingTask {
     private void startDCLogsums() {
         logger.info("Creating tour destination choice logsums");
 
-        //enter loop on purposes - start at 1 because you don't need to create DC logsums for work purposes
-        for (int purpose = 1; purpose < mcPurposes.length(); ++purpose) {
-            char thisPurpose = mcPurposes.charAt(purpose);
+        //enter loop on purposes - start at 2 because you don't need to create DC logsums for home or work purposes
+        for (int purpose = 2; purpose < ActivityPurpose.ACTIVITY_PURPOSES.length; ++purpose) {
+            char thisPurpose = ActivityPurpose.ACTIVITY_PURPOSES[purpose];
 
             //enter loop on segments
             for (int segment = 0; segment < TOTALSEGMENTS; ++segment) {
                 Message dcLogsumMessage = createMessage();
                 dcLogsumMessage.setId(MessageID.CREATE_DC_LOGSUMS);
                 dcLogsumMessage.setValue("purpose",
-                    new Character(mcPurposes.charAt(purpose)));
+                    new Character(thisPurpose));
                 dcLogsumMessage.setValue("segment", new Integer(segment));
 
                 String queueName = getQueueName2();
@@ -583,6 +597,21 @@ public class PTDafMaster extends MessageProcessingTask {
 
             return queue;
         }
+    }
+
+    private TableDataSet loadTableDataSet(ResourceBundle rb,String pathName) {
+        String path = ResourceUtil.getProperty(rb, pathName);
+        try {
+            String fullPath = path;
+            CSVFileReader reader = new CSVFileReader();
+            TableDataSet table = reader.readFile(new File(fullPath));
+            return table;
+
+        } catch (IOException e) {
+            logger.severe("Can't find input table "+path);
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void main(String[] args) {

@@ -142,7 +142,7 @@ public class PTServerTask extends Task{
         if(CREATE_MODE_CHOICE_LOGSUMS){
             Message startMCLogsumsMsg = mFactory.createMessage();
             startMCLogsumsMsg.setId(MessageID.NUM_OF_WORK_QUEUES);
-            startMCLogsumsMsg.setValue("resourceBundle",ptRb);
+            startMCLogsumsMsg.setValue("appRb",ptRb);
             startMCLogsumsMsg.setValue("nWorkQueues",new Integer(nWorkQueues));
             startMCLogsumsMsg.setValue("alphaToBetaMap", a2b);
             ModeChoiceServerQueue.send(startMCLogsumsMsg);

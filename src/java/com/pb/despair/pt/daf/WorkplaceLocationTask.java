@@ -31,7 +31,8 @@ public class WorkplaceLocationTask  extends MessageProcessingTask{
 
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
     protected static Object lock = new Object();
-    protected static ResourceBundle rb;
+    protected static ResourceBundle ptRb;
+    protected static ResourceBundle globalRb;
     protected static boolean initialized = false;
     String fileWriterQueue = "FileWriterQueue";
     LogsumManager logsumManager;
@@ -50,34 +51,38 @@ public class WorkplaceLocationTask  extends MessageProcessingTask{
                 //that was written by the Application Orchestrator
                 BufferedReader reader = null;
                 int timeInterval = -1;
-                String pathToRb = null;
+                String pathToPtRb = null;
+                String pathToGlobalRb = null;
                 try {
                     logger.info("Reading RunParams.txt file");
                     reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
                     timeInterval = Integer.parseInt(reader.readLine());
                     logger.info("\tTime Interval: " + timeInterval);
-                    pathToRb = reader.readLine();
-                    logger.info("\tResourceBundle Path: " + pathToRb);
+                    pathToPtRb = reader.readLine();
+                    logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
+                    pathToGlobalRb = reader.readLine();
+                    logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+                ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
+                globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 
-                PTModelInputs ptInputs = new PTModelInputs(rb);
+                PTModelInputs ptInputs = new PTModelInputs(ptRb);
                 logger.info("Setting up the workplace model");
                 ptInputs.setSeed(2002);
                 ptInputs.getParameters();
-                ptInputs.readSkims();
+                ptInputs.readSkims(globalRb);
                 ptInputs.readTazData();
-                LaborFlows lf = new LaborFlows(rb);
-                lf.setZoneMap(TableDataSetLoader.loadTableDataSet(rb,"alphatobeta.file"));
-                lf.readAlphaValues(TableDataSetLoader.loadTableDataSet(rb,"productionValues.file"),
-                    TableDataSetLoader.loadTableDataSet(rb,"consumptionValues.file"));
+                LaborFlows lf = new LaborFlows(ptRb);
+                lf.setZoneMap(TableDataSetLoader.loadTableDataSet(ptRb,"alphatobeta.file"));
+                lf.readAlphaValues(TableDataSetLoader.loadTableDataSet(ptRb,"productionValues.file"),
+                    TableDataSetLoader.loadTableDataSet(ptRb,"consumptionValues.file"));
                 lf.readBetaLaborFlows();
                 initialized = true;
             }
 
-            logsumManager = new LogsumManager(rb);
+            logsumManager = new LogsumManager(ptRb);
             logger.info( "***" + getName() + " finished onStart()");
         }
     }
@@ -108,8 +113,7 @@ public class WorkplaceLocationTask  extends MessageProcessingTask{
             Integer segment = (Integer) msg.getValue("segment");
             PTPerson[] persons = (PTPerson[]) msg.getValue("persons");
 
-            String path = ResourceUtil.getProperty(rb, "mcLogsum.path");
-            ModeChoiceLogsums mcl = new ModeChoiceLogsums(rb);
+            ModeChoiceLogsums mcl = new ModeChoiceLogsums(ptRb);
             mcl.readLogsums('w',segment.intValue());
             Matrix modeChoiceLogsum =mcl.getMatrix();
 

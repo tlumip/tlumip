@@ -26,7 +26,8 @@ import com.pb.despair.pt.PTModelInputs;
 public class AggregateDestinationChoiceLogsumsTask  extends MessageProcessingTask {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
     protected static Object lock = new Object();
-    protected static ResourceBundle rb;
+    protected static ResourceBundle ptRb;
+    protected static ResourceBundle globalRb;
     protected static boolean initialized = false;
     boolean firstDCLogsum = true;
     CreateDestinationChoiceLogsums dcLogsumCalculator = new CreateDestinationChoiceLogsums();
@@ -45,24 +46,28 @@ public class AggregateDestinationChoiceLogsumsTask  extends MessageProcessingTas
                 //that was written by the Application Orchestrator
                 BufferedReader reader = null;
                 int timeInterval = -1;
-                String pathToRb = null;
+                String pathToPtRb = null;
+                String pathToGlobalRb = null;
                 try {
                     logger.info("Reading RunParams.txt file");
                     reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
                     timeInterval = Integer.parseInt(reader.readLine());
                     logger.info("\tTime Interval: " + timeInterval);
-                    pathToRb = reader.readLine();
-                    logger.info("\tResourceBundle Path: " + pathToRb);
+                    pathToPtRb = reader.readLine();
+                    logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
+                    pathToGlobalRb = reader.readLine();
+                    logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+                ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
+                globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 
-                PTModelInputs ptInputs = new PTModelInputs(rb);
+                PTModelInputs ptInputs = new PTModelInputs(ptRb);
                 logger.info("Setting up the aggregate mode choice model");
                 ptInputs.setSeed(2002);
                 ptInputs.getParameters();
-                ptInputs.readSkims();
+                ptInputs.readSkims(globalRb);
                 ptInputs.readTazData();
 
                 initialized = true;
@@ -97,8 +102,8 @@ public class AggregateDestinationChoiceLogsumsTask  extends MessageProcessingTas
         String purpose = String.valueOf(msg.getValue("purpose"));
         Integer segment = (Integer) msg.getValue("segment");
 
-        String path = ResourceUtil.getProperty(rb, "mcLogsum.path");
-        ModeChoiceLogsums mcl = new ModeChoiceLogsums(rb);
+        String path = ResourceUtil.getProperty(ptRb, "mcLogsum.path");
+        ModeChoiceLogsums mcl = new ModeChoiceLogsums(ptRb);
         mcl.readLogsums(purpose.charAt(0),segment.intValue());
         Matrix modeChoiceLogsum =mcl.getMatrix();
 

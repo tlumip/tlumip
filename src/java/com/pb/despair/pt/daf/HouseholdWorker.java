@@ -43,7 +43,8 @@ public class HouseholdWorker extends MessageProcessingTask {
     protected static boolean CALCULATE_MCLOGSUMS = true;
     protected static ArrayList matricesToCollapse;
     protected static boolean CALCULATE_DCLOGSUMS = true;
-    protected static ResourceBundle rb;
+    protected static ResourceBundle ptRb;
+    protected static ResourceBundle globalRb;
 
     //these arrays are to store the information necessary to update PTModelNew.tazData
     public static int[] householdsByTaz;
@@ -96,7 +97,8 @@ public class HouseholdWorker extends MessageProcessingTask {
                 BufferedReader reader = null;
                 String scenarioName = null;
                 int timeInterval = -1;
-                String pathToRb = null;
+                String pathToPtRb = null;
+                String pathToGlobalRb = null;
                 try {
                     logger.info("Reading RunParams.txt file");
                     reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
@@ -104,28 +106,30 @@ public class HouseholdWorker extends MessageProcessingTask {
                     logger.info("\tScenario Name: " + scenarioName);
                     timeInterval = Integer.parseInt(reader.readLine());
                     logger.info("\tTime Interval: " + timeInterval);
-                    pathToRb = reader.readLine();
-                    logger.info("\tResourceBundle Path: " + pathToRb);
+                    pathToPtRb = reader.readLine();
+                    logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
+                    pathToGlobalRb = reader.readLine();
+                    logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
-
+                ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
+                globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
                 //set whether you want to calculate the dc and mode choice logsums
                 //in production mode these should always be true.
-                String dcLogsumBoolean = ResourceUtil.getProperty(rb, "calculate.dc.logsums");
+                String dcLogsumBoolean = ResourceUtil.getProperty(ptRb, "calculate.dc.logsums");
                 if(dcLogsumBoolean != null){
                     CALCULATE_DCLOGSUMS = new Boolean(dcLogsumBoolean).booleanValue();
                 } //otherwise it has already been initialized to true.
-                String mcLogsumBoolean = ResourceUtil.getProperty(rb, "calculate.mc.logsums");
+                String mcLogsumBoolean = ResourceUtil.getProperty(ptRb, "calculate.mc.logsums");
                 if(mcLogsumBoolean != null){
                     CALCULATE_MCLOGSUMS = new Boolean(mcLogsumBoolean).booleanValue();
                 } //otherwise it has already been initialized to true
 
                 //get the list of Matrices to collapse from properties file
-                matricesToCollapse = ResourceUtil.getList(rb,"matrices.for.pi");
+                matricesToCollapse = ResourceUtil.getList(ptRb,"matrices.for.pi");
 
-                PTModelInputs ptInputs = new PTModelInputs(rb);
+                PTModelInputs ptInputs = new PTModelInputs(ptRb);
                 logger.info("Setting up the model");
                 logger.info("\tsetting seed");
                 ptInputs.setSeed(2002);
@@ -134,26 +138,26 @@ public class HouseholdWorker extends MessageProcessingTask {
                 logger.info("\treading parameter files");
                 ptInputs.getParameters();
                 logger.info("\treading skims into memory");
-                ptInputs.readSkims();
+                ptInputs.readSkims(globalRb);
                 logger.info("\treading taz data into memory");
                 ptInputs.readTazData();
 
-                LaborFlows lf = new LaborFlows(rb);
-                TableDataSet alphaToBetaTable = loadTableDataSet(rb,"alphatobeta.file");
+                LaborFlows lf = new LaborFlows(ptRb);
+                TableDataSet alphaToBetaTable = loadTableDataSet(ptRb,"alphatobeta.file");
                 a2b = new AlphaToBeta(alphaToBetaTable);
                 lf.setZoneMap(alphaToBetaTable);
 
                 logger.info("Reading Labor Flows");
-                lf.readAlphaValues(loadTableDataSet(rb,"productionValues.file"),
-                                   loadTableDataSet(rb,"consumptionValues.file"));
+                lf.readAlphaValues(loadTableDataSet(ptRb,"productionValues.file"),
+                                   loadTableDataSet(ptRb,"consumptionValues.file"));
 
                 lf.readBetaLaborFlows();
                 initialized = true;
             }
 
-            expUtilitiesManager = new DCExpUtilitiesManager(rb);
+            expUtilitiesManager = new DCExpUtilitiesManager(ptRb);
 
-            ptModel = new PTModel(rb);
+            ptModel = new PTModel(ptRb);
 
             logger.info( "***" + getName() + " finished onStart()");
         }
@@ -192,8 +196,6 @@ public class HouseholdWorker extends MessageProcessingTask {
         } else if (msg.getId().equals(MessageID.CREATE_DC_LOGSUMS)) {
             if(CALCULATE_DCLOGSUMS) createDCLogsums(msg);
             else {
-                String purpose = String.valueOf(msg.getValue("purpose"));
-                Integer segment = (Integer) msg.getValue("segment");
                 if(String.valueOf(msg.getValue("purpose")).equals("c")){
                     for (int i = 1; i <= 3; i++) {
                         Message dcSchoolMessage = createMessage();
@@ -312,7 +314,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         Integer segment = (Integer) msg.getValue("segment");
         PTPerson[] persons = (PTPerson[]) msg.getValue("persons");
 
-        ModeChoiceLogsums mcl = new ModeChoiceLogsums(rb);
+        ModeChoiceLogsums mcl = new ModeChoiceLogsums(ptRb);
 //        logger.info("\t\t" + getName() + ": Reading logsum w"+ segment.intValue() + "ls.zip" );//BINARY-ZIP
 //        mcl.readLogsums('w',segment.intValue());        //BINARY-ZIP
         logger.info("\t\t" + getName() + ": Reading logsum w"+ segment.intValue() + "ls.binary" );
@@ -390,8 +392,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         String purpose = String.valueOf(msg.getValue("purpose"));
         Integer segment = (Integer) msg.getValue("segment");
 
-        String path = ResourceUtil.getProperty(rb, "mcLogsum.path");
-        ModeChoiceLogsums mcl = new ModeChoiceLogsums(rb);
+        ModeChoiceLogsums mcl = new ModeChoiceLogsums(ptRb);
 //        mcl.readLogsums(purpose.charAt(0),segment.intValue());   //BINARY-ZIP
         mcl.readBinaryLogsums(purpose.charAt(0),segment.intValue());
         Matrix modeChoiceLogsum =mcl.getMatrix();
@@ -563,13 +564,13 @@ public class HouseholdWorker extends MessageProcessingTask {
         synchronized (lock) {
             if (!dcLoaded) {
                 logger.info(getName() + " reading DC Logsums");
-                PTModelInputs.readDCLogsums(rb);
+                PTModelInputs.readDCLogsums(ptRb);
             }
             dcLoaded = true;
         }
     }
 
-    private static TableDataSet loadTableDataSet(ResourceBundle rb,String pathName) {
+    private TableDataSet loadTableDataSet(ResourceBundle rb,String pathName) {
         String path = ResourceUtil.getProperty(rb, pathName);
         try {
             String fullPath = path;

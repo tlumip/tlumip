@@ -24,7 +24,8 @@ import com.pb.despair.pt.PTModelInputs;
 public class UpdateTazdataTask extends MessageProcessingTask{
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
     protected static Object lock = new Object();
-    protected static ResourceBundle rb;
+    protected static ResourceBundle ptRb;
+    protected static ResourceBundle globalRb;
     protected static boolean initialized = false;
     String fileWriterQueue = "FileWriterQueue";
 
@@ -45,23 +46,30 @@ public class UpdateTazdataTask extends MessageProcessingTask{
                 //that was written by the Application Orchestrator
                 BufferedReader reader = null;
                 int timeInterval = -1;
-                String pathToRb = null;
+                String pathToPtRb = null;
+                String pathToGlobalRb = null;
                 try {
                     logger.info("Reading RunParams.txt file");
                     reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
                     timeInterval = Integer.parseInt(reader.readLine());
                     logger.info("\tTime Interval: " + timeInterval);
-                    pathToRb = reader.readLine();
-                    logger.info("\tResourceBundle Path: " + pathToRb);
+                    pathToPtRb = reader.readLine();
+                    logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
+                    pathToGlobalRb = reader.readLine();
+                    logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+                ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
+                globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 
-                PTModelInputs ptInputs = new PTModelInputs(rb);
-                logger.info("Setting up the workplace model");
-                ptInputs.readSkims();
+                PTModelInputs ptInputs = new PTModelInputs(ptRb);
+                logger.info("Setting up the aggregate mode choice model");
+                ptInputs.setSeed(2002);
+                ptInputs.getParameters();
+                ptInputs.readSkims(globalRb);
                 ptInputs.readTazData();
+
                 initialized = true;
             }
 

@@ -24,7 +24,10 @@ import com.pb.despair.model.SkimsInMemory;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class PTDafReader extends MessageProcessingTask{
-    SkimsInMemory skims = new SkimsInMemory();
+
+    SkimsInMemory skims;
+
+
     public void onStart() {
         logger.info( "***" + getName() + " started");
 
@@ -32,22 +35,27 @@ public class PTDafReader extends MessageProcessingTask{
         //that was written by the Application Orchestrator
         BufferedReader reader = null;
         int timeInterval = -1;
-        String pathToRb = null;
+        String pathToPtRb = null;
+        String pathToGlobalRb = null;
         try {
             logger.info("Reading RunParams.txt file");
             reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
             timeInterval = Integer.parseInt(reader.readLine());
             logger.info("\tTime Interval: " + timeInterval);
-            pathToRb = reader.readLine();
-            logger.info("\tResourceBundle Path: " + pathToRb);
+            pathToPtRb = reader.readLine();
+            logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
+            pathToGlobalRb = reader.readLine();
+            logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        ResourceBundle PTrb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+        ResourceBundle ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 
-        ResourceBundle rb = ResourceUtil.getResourceBundle("ptdaf");
-        final int NUMBER_OF_WORK_QUEUES = Integer.parseInt(ResourceUtil.getProperty(rb,"workQueues"));
-        skims.readSkims(PTrb);
+        ResourceBundle ptDafRb = ResourceUtil.getResourceBundle("ptdaf");
+        final int NUMBER_OF_WORK_QUEUES = Integer.parseInt(ResourceUtil.getProperty(ptDafRb,"workQueues"));
+        skims = new SkimsInMemory(globalRb);
+        skims.readSkims(ptRb);
         for(int q=1;q<=NUMBER_OF_WORK_QUEUES;q++){
             Message skimsMessage = createMessage();
             skimsMessage.setId(MessageID.SKIMS);
