@@ -2,7 +2,6 @@ package com.pb.despair.ts.transit;
 
 import com.pb.despair.ts.assign.Network;
 
-import com.pb.common.calculator.LinkCalculator;
 import com.pb.common.util.IndexSort;
 import com.pb.common.util.Justify;
 
@@ -11,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -30,7 +30,6 @@ public class AuxTrNet implements Serializable {
 
 //	static final double MAX_WALK_ACCESS_DIST = 2.0;   // miles
 	static final double MAX_WALK_ACCESS_DIST = 100.0;   // miles
-	static final double WALK_ACCESS_SPEED = 3.5;      // miles per hour
 
 	// OVT_COEFF is used as both a scale variable and as a utility coefficient.
 	// It's value is assumed positive for use as a scale variable, and
@@ -83,6 +82,7 @@ public class AuxTrNet implements Serializable {
 	double[] gDist;
 	double[] gCongestedTime;
 
+	ArrayList[] gSegs = null;
 	String accessMode = null;
 
 
@@ -96,7 +96,6 @@ public class AuxTrNet implements Serializable {
 		ia = new int[maxAuxLinks];
 		ib = new int[maxAuxLinks];
 		linkType = new int[maxAuxLinks];
-		ttf = new int[maxAuxLinks];
 		freq = new double[maxAuxLinks];
 		cost = new double[maxAuxLinks];
 		invTime = new double[maxAuxLinks];
@@ -112,7 +111,11 @@ public class AuxTrNet implements Serializable {
 		indexNode = g.getIndexNode();
 		gDist = g.getDist();
 		gCongestedTime = g.getTransitTime();
-
+		gSegs = new ArrayList[g.getLinkCount()];
+		
+		for (int i=0; i < gSegs.length; i++)
+			gSegs[i] = new ArrayList();
+		
 		this.g = g;
 		this.tr = tr;
 	}
@@ -145,19 +148,19 @@ public class AuxTrNet implements Serializable {
 			ts = (TrSegment)tr.transitPath[rte].get(0);
 			startNode = gia[ts.link];
 			startAuxNode = nextNode;
-			if (debug) logger.info ("rte=" + rte + ", startNode=" + startNode + ", startAuxNode=" + startAuxNode);
+			if (debug) logger.info ("rte=" + rte + ", startNode=" + indexNode[startNode] + ", startAuxNode=" + startAuxNode);
 			for (int seg=0; seg < tr.transitPath[rte].size(); seg++) {
 			    ts = (TrSegment)tr.transitPath[rte].get(seg);
 
 			    anode = gia[ts.link];
 			    bnode = gib[ts.link];
 			    
-			    ttf[ts.link] = ts.getTtf();
+			    // Keep a list of transit lines using each network link.  Save using xxxyyy where xxx is rte and yyy is seg.
+			    // A link will therefore be able to look up all transit routes serving the link using tr.transitPaths[rte].get(seg)
+			    // for all the rteseg values stored for the link.
+			    gSegs[ts.link].add( Integer.valueOf(rte*1000 + seg) );
 			    
-			    int dummy=0;
-			    if (indexNode[anode] == 24923 && indexNode[bnode] == 24915) {
-			    	dummy = 1;
-			    }
+				if (debug) logger.info ("anode=" + indexNode[anode] + ", bnode=" + indexNode[bnode] + ", ttf=" + ts.getTtf() );
 
 				    // add auxilliary links for route segment
 			    if (ts.layover) {
@@ -205,10 +208,6 @@ public class AuxTrNet implements Serializable {
 		logger.info (auxNodes + " is max auxilliary transit node.");
 
 		resizeAuxNetLinkAttributes ();
-		
-		// apply transit vdfs to calculate in-vehicle times for links
-		g.setTtf( ttf );
-		g.appylTransitVdfs();
 		
 	}
 
@@ -323,8 +322,8 @@ public class AuxTrNet implements Serializable {
 
 			if ( accessMode.equalsIgnoreCase("walk") ) {
 
-			    if (gMode[i].indexOf('w') < 0) {
-			        // not a walk link
+			    if ( gMode[i].indexOf('w') < 0 && gMode[i].indexOf('s') < 0 ) {
+			        // not a walk access link
 			        continue;
 			    }
 				else {
@@ -384,6 +383,37 @@ public class AuxTrNet implements Serializable {
 		
 		return aux;
 	}
+	
+	
+	
+//	private void calculateInVehicleTimes() {
+//		
+//		for (int i=0; i < gSegs.length; i++) {
+//			
+//			// if this link doesn't serve any transit routes, skip to next link
+//			if (gSegs[i].size() == 0)
+//				continue;
+//			
+//			
+//			// loop through the transit lines served by this link and accumualte travel time and headway
+//			double[] times = new double[gSegs[i].size()];
+//			double[] hdwys = new double[gSegs[i].size()];
+//			double totalTime = 0.0;
+//			double totalHeadway = 0.0;
+//			for (int j=0; j < gSegs[i].size(); j++) {
+//				Integer rteSeg = (Integer)gSegs[i].get(j);
+//				int rte = rteSeg.intValue()/1000;
+//				int seg = rteSeg.intValue() - 1000*rte;
+//				TrSegment ts = (TrSegment)tr.transitPath[rte].get(seg);
+//				times[j] = g.applyLinkTransitVdf( ts.link, ts.ttf );
+//				hdwys[j] = tr.getHeadway(rte);
+//				totalTime += times[j];
+//				totalHeadway += hdwys[j];
+//			}
+//
+//		}
+//		
+//	}
 
 
 	public void printAuxTrLinks (int rte, TrRoute tr) {
@@ -546,7 +576,7 @@ public class AuxTrNet implements Serializable {
 		freq[aux] = INFINITY;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
-		invTime[aux] = getLinkInVehicleTime(ts.link);
+		invTime[aux] = g.applyLinkTransitVdf( ts.link, ts.ttf );
 		layoverTime[aux] = 0.0;
 		linkType[aux] = 1;
 	}
@@ -649,7 +679,7 @@ public class AuxTrNet implements Serializable {
 
   double getMaxWalkAccessTime() {
 	// return time in minutes to walk the maximum walk access distance
-	return (60.0*(MAX_WALK_ACCESS_DIST/WALK_ACCESS_SPEED));
+	return (60.0*(MAX_WALK_ACCESS_DIST/g.getWalkSpeed()));
   }
 
 	double getLinkFare () {
