@@ -40,7 +40,7 @@ public class AuxTrNetTest {
 	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.tests");
 
 	
-	static final boolean CREATE_NEW_NETWORK = true;
+	static final boolean CREATE_NEW_NETWORK = false;
 	
 	
 	public static final String AUX_TRANSIT_NETWORK_LISTING = "c:\\jim\\tlumip\\aux_transit_net.listing";

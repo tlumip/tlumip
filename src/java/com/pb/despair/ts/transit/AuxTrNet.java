@@ -35,17 +35,29 @@ public class AuxTrNet implements Serializable {
 	// It's value is assumed positive for use as a scale variable, and
 	// whenever it is used as a coefficient, the resulting value is subtracted from utility,
 	// thus using an implied negative sign.
+//	static final double VALUE_OF_TIME		= 12.0;							//  $/hour
+//	static final double IVT_COEFF			= 0.025;						// 	1/min
+//	static final double OVT_COEFF			= 2.0*IVT_COEFF;				//  1/min (assumes IVT_COEFF is negative)
+//	static final double COST_COEFF			= IVT_COEFF*60/VALUE_OF_TIME;	//	1/$
+//	static final double FIRST_WAIT_COEFF	= 2.5*IVT_COEFF;				//  1/min
+//	static final double XFR_WAIT_COEFF		= 2.0*FIRST_WAIT_COEFF;			//	1/min
+//	static final double DRIVE_ACCESS_COEFF  = 4.0*IVT_COEFF;				//	1/min
+//	static final double WALK_ACCESS_COEFF	= 2.0*IVT_COEFF;				//	1/min
+//	static final double WALK_EGRESS_COEFF	= 2.0*IVT_COEFF;				//	1/min
+//	static final double WALK_XFR_COEFF    	= 2.0*IVT_COEFF;				//  1/min
+//	static final double TRANSFER_COEFF		= 2.0*IVT_COEFF;				//  1/xfrs
+
 	static final double VALUE_OF_TIME		= 12.0;							//  $/hour
-	static final double IVT_COEFF			= 0.025;						// 	1/min
-	static final double OVT_COEFF			= 2.0*IVT_COEFF;				//  1/min (assumes IVT_COEFF is negative)
-	static final double COST_COEFF			= IVT_COEFF*60/VALUE_OF_TIME;	//	1/$
-	static final double FIRST_WAIT_COEFF	= 2.5*IVT_COEFF;				//  1/min
-	static final double XFR_WAIT_COEFF		= 2.0*FIRST_WAIT_COEFF;			//	1/min
-	static final double DRIVE_ACCESS_COEFF  = 4.0*IVT_COEFF;				//	1/min
-	static final double WALK_ACCESS_COEFF	= 2.0*IVT_COEFF;				//	1/min
-	static final double WALK_EGRESS_COEFF	= 2.0*IVT_COEFF;				//	1/min
-	static final double WALK_XFR_COEFF    	= 2.0*IVT_COEFF;				//  1/min
-	static final double TRANSFER_COEFF		= 2.0*IVT_COEFF;				//  1/xfrs
+	static final double IVT_COEFF			= 1.0;	 						// 	1/min
+	static final double OVT_COEFF			= 3.0;							//  1/min (assumes IVT_COEFF is negative)
+	static final double COST_COEFF			= 0.0;							//	1/$
+	static final double FIRST_WAIT_COEFF	= 3.0;							//  1/min
+	static final double XFR_WAIT_COEFF		= 3.0;							//	1/min
+	static final double DRIVE_ACCESS_COEFF  = 3.0;							//	1/min
+	static final double WALK_ACCESS_COEFF	= 3.0;							//	1/min
+	static final double WALK_EGRESS_COEFF	= 3.0;							//	1/min
+	static final double WALK_XFR_COEFF    	= 3.0;							//  1/min
+	static final double TRANSFER_COEFF		= 3.0;							//  1/xfrs
 
 	Network g;
 	TrRoute tr;

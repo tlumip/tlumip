@@ -214,29 +214,37 @@ public class OpStrategy {
 
 			count ++;
 
+			// get the highway network link index for the given transit network link index
+			m = ag.hwyLink[k];
+			
+			int dummy = 0;
+//			if ( indexNode[gia[m]] == 24923 ) {
+			if ( ag.ib[k] == 25911 && ag.linkType[k] == 0 ) {
+				dummy = 1;
+//				debug = true;
+			}
+			
 			if (! tested[k]) {
 				tested[k] = true;
 				if (ag.ia[k] != dest) {
 
-					// get the highway network link index for the given transit network link index
-					m = ag.hwyLink[k];
+					// log some information about the starting condition of the candidate link being examined
+					if (debug) {
+						logger.info ("");
+						
+						logger.info ("k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k]);
+						logger.info ("nodeLabel[ag.ia=" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
+						logger.info ("nodeLabel[ag.ib=" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
+						logger.info ("nodeFreq[ag.ia=" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
+						logger.info ("nodeFreq[ag.ib=" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
+						logger.info ("ag.freq[k=" + k + "]=" + ag.freq[k]);
+						logger.info ("ag.getUtility(k=" + k + ")=" + ag.getUtility(k, 0));
+					}
+
 					
 					// if the anode's label is at least as big as bnode's label + lik's utility, the link is a candidate to be added to strategy; otherwise get next link. 
 					if (nodeLabel[ag.ia[k]] >= (nodeLabel[ag.ib[k]] + ag.getUtility(k))) {
 
-						// log some information about the starting condition of the candidate link being examined
-						if (debug) {
-							logger.info ("");
-							logger.info ("k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k]);
-							logger.info ("nodeLabel[ag.ia=" + ag.ia[k] + "]=" + nodeLabel[ag.ia[k]]);
-							logger.info ("nodeLabel[ag.ib=" + ag.ib[k] + "]=" + nodeLabel[ag.ib[k]]);
-							logger.info ("nodeFreq[ag.ia=" + ag.ia[k] + "]=" + nodeFreq[ag.ia[k]]);
-							logger.info ("nodeFreq[ag.ib=" + ag.ib[k] + "]=" + nodeFreq[ag.ib[k]]);
-							logger.info ("ag.freq[k=" + k + "]=" + ag.freq[k]);
-							logger.info ("ag.getUtility(k=" + k + ")=" + ag.getUtility(k, 0));
-						}
-
-						
 						if ((nodeLabel[ag.ia[k]] == AuxTrNet.INFINITY) && (nodeFreq[ag.ia[k]] == 0.0)) { // first time anode is encountered
 							if (debug) logger.info ("first time anode encountered");
 							if (ag.freq[k] == AuxTrNet.INFINITY) { // non-boarding link
@@ -341,9 +349,10 @@ public class OpStrategy {
 		// calculate linkLabels[] for use in ordering the contents of the heap.
 		// linkLabel[k] is the cumulative utility from ia[k] to dest.
 
-		int i, j, k;
+		int i, j, k, m;
 		int start, end;
 		boolean debug = classDebug;
+//		boolean debug = true;
 
 		if (debug) {
 			logger.info ("");
@@ -370,9 +379,11 @@ public class OpStrategy {
 		}
 		for (i=start; i < end; i++) {
 			k = ag.indexb[i];
+			m = ag.hwyLink[k];
+			
 			linkLabel[k] = nodeLabel[ag.ib[k]] + ag.getUtility(k);
 			if (debug)
-				logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + ag.linkType[k] + ", ia=" + ag.ia[k] + "(" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0 ) + "), ib=" + ag.ib[k] + "(" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0 ) + "), linkLabel[k]=" + myFormat.right(linkLabel[k], 15, 6));
+				logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + ag.linkType[k] + ", ia=" + ag.ia[k] + "(" + indexNode[gia[m]] + "), ib=" + ag.ib[k] + "(" + indexNode[gib[m]] + "), linkLabel[k]=" + myFormat.right(linkLabel[k], 15, 6));
 			candidateHeap.add(k);
 
 		}
@@ -409,10 +420,31 @@ public class OpStrategy {
 			ib = ag.ib[k];
 
 			int dummy = 0;
-			if ( indexNode[gia[m]] == 2 ) {
+//			if ( indexNode[gia[m]] == 24923 && ag.linkType[k] == 0 ) {
+			if ( ia == 15470 ) {
 				dummy = 1;
+				debug = true;
 			}
 			
+
+			if (debug) {
+				logger.info ("");
+				logger.info ("=====================================================================================================");
+				logger.info ("k=" + k + ", i=" + i + ", m=" + m + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", ag.an[k]=" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + ", ag.bn[k]=" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) + ", g.an[k]=" + indexNode[gia[m]] + ", g.bn[k]=" + indexNode[gib[m]] );
+				logger.info ("=====================================================================================================");
+				logger.info ("");
+				logger.info (myFormat.left(("first[ia]="),25)                     + myFormat.right (first[ia],15));
+				logger.info (myFormat.left(("ag.linkType[" + k + "]="),25)        + myFormat.right (ag.linkType[k],15));
+				logger.info (myFormat.left(("ag.walkTime[" + k + "]="),25)        + (ag.walkTime[k]        == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.walkTime[k]        == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.walkTime[k],15, 4))));
+				logger.info (myFormat.left(("ag.invTime[" + k + "]="),25)         + (ag.invTime[k]         == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.invTime[k]         == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.invTime[k],15, 4))));
+				logger.info (myFormat.left(("ag.driveAccTime[" + k + "]="),25)    + (ag.driveAccTime[k]    == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.driveAccTime[k]    == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.driveAccTime[k],15, 4))));
+				logger.info (myFormat.left(("ag.cost[" + k + "]="),25)            + (ag.cost[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.cost[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.cost[k],15, 4))));
+				logger.info (myFormat.left(("ag.freq[" + k + "]="),25)            + (ag.freq[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.freq[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.freq[k],15, 4))));
+				logger.info (myFormat.left(("nodeFreq[" + ia + "]="),25)          + (nodeFreq[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ia],15, 4))));
+				logger.info (myFormat.left(("nodeFreq[" + ib + "]="),25)          + (nodeFreq[ib]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ib]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ib],15, 4))));
+			}
+
+
 			if (first[ia]) {
 			    if (nodeFreq[ia] == AuxTrNet.INFINITY) {
 			        if (ag.freq[k] == AuxTrNet.INFINITY) {
@@ -470,22 +502,8 @@ public class OpStrategy {
 		      	}
 		  	}
 
-
+			
 			if (debug) {
-				logger.info ("");
-				logger.info ("=====================================================================================================");
-				logger.info ("k=" + k + ", i=" + i + ", m=" + m + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", ag.an[k]=" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + ", ag.bn[k]=" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) + ", g.an[k]=" + indexNode[gia[m]] + ", g.bn[k]=" + indexNode[gib[m]] );
-				logger.info ("=====================================================================================================");
-				logger.info ("");
-				logger.info (myFormat.left(("first[ia]="),25)                     + myFormat.right (first[ia],15));
-				logger.info (myFormat.left(("ag.linkType[" + k + "]="),25)        + myFormat.right (ag.linkType[k],15));
-				logger.info (myFormat.left(("ag.walkTime[" + k + "]="),25)        + (ag.walkTime[k]        == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.walkTime[k]        == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.walkTime[k],15, 4))));
-				logger.info (myFormat.left(("ag.invTime[" + k + "]="),25)         + (ag.invTime[k]         == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.invTime[k]         == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.invTime[k],15, 4))));
-				logger.info (myFormat.left(("ag.driveAccTime[" + k + "]="),25)    + (ag.driveAccTime[k]    == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.driveAccTime[k]    == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.driveAccTime[k],15, 4))));
-				logger.info (myFormat.left(("ag.cost[" + k + "]="),25)            + (ag.cost[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.cost[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.cost[k],15, 4))));
-				logger.info (myFormat.left(("ag.freq[" + k + "]="),25)            + (ag.freq[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.freq[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.freq[k],15, 4))));
-				logger.info (myFormat.left(("nodeFreq[" + ia + "]="),25)          + (nodeFreq[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ia],15, 4))));
-				logger.info (myFormat.left(("nodeFreq[" + ib + "]="),25)          + (nodeFreq[ib]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ib]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ib],15, 4))));
 				logger.info (myFormat.left(("nodeAccWalkTime[" + ia + "]="),25)   + (nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeAccWalkTime[ia],15, 4))));
 				logger.info (myFormat.left(("nodeAccWalkTime[" + ib + "]="),25)   + (nodeAccWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeAccWalkTime[ib],15, 4))));
 				logger.info (myFormat.left(("nodeEgrWalkTime[" + ia + "]="),25)   + (nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeEgrWalkTime[ia],15, 4))));
@@ -509,6 +527,7 @@ public class OpStrategy {
 			}
 
 		}
+
 	}
 
 
@@ -817,8 +836,8 @@ public class OpStrategy {
 		int i, k = 0, origIndex = 0, stopLink;
 		double flow;
 
-		boolean debug = true;
-//		boolean debug = classDebug;
+//		boolean debug = true;
+		boolean debug = classDebug;
 
 		logger.info ("");
 		logger.info ("loading Walk-Transit, inStrategyCount=" + inStrategyCount);
@@ -1610,21 +1629,36 @@ public class OpStrategy {
 
 			public void add(int x) {
 
-                if (DEBUG) logger.info("adding " + x + ", last=" + last + "   " + indexNode[ag.ia[x]] + "   " + indexNode[ag.ia[x]] + "   " + linkLabel[x]);
+				int addIndex;
+				
+				int m = ag.hwyLink[x];
+                if (DEBUG) logger.info("adding " + x + ", last=" + last + ", ag.ia[x]= " + ag.ia[x] +", g.an= " + indexNode[gia[m]] + ", ag.ib[x]= " + ag.ib[x] + ", g.bn= " + indexNode[gib[m]] + ", linkLabel[x]=" + linkLabel[x]);
       
                 if (heapContents[ag.ia[x]] == 1) {
+                	addIndex = -1;
     				for (int i = last; i >= 0; i--) {
-    				    if ( ag.ia[data[i]] == ag.ia[x] )
-    				        percolateUp(i);
+    				    if ( ag.ia[data[i]] == ag.ia[x] ) {
+    				    	addIndex = i;
+    				    	break;
+    				    }
+    				}
+
+    				if (addIndex < 0) {
+        				// not in the heap any longer, so add it at end
+	                	last++;
+	                	addIndex = last;
+	    				data[last] = x;
     				}
                 }
                 else {
-    				data[++last] = x;
-    				percolateUp(last);
-    
-    				heapContents[ag.ia[x]] = 1;
+                	last++;
+                	addIndex = last;
+    				data[last] = x;
                 }
 
+				percolateUp(addIndex);
+				heapContents[ag.ia[x]] = 1;
+				
 			}
 
 
