@@ -69,6 +69,8 @@ public class SPGnew {
 	Halo halo = null;
 	EdIndustry edInd = null;
 	Workers workers = null;
+	Occupation occ = null;	
+	IncomeSize incSize = null;
 	
 	
 	int[][][] hhArray = null;
@@ -96,36 +98,33 @@ public class SPGnew {
 	
 	
     public SPGnew () {
-
 		propertyMap = ResourceUtil.getResourceBundleAsHashMap("spg");
-
-		SeededRandom.setSeed( 0 );
-		
-		halo = new Halo( (String)propertyMap.get("zoneIndex.fileName") );
-
+        spgInit ();
     }
 
-    public SPGnew ( String propertFileName ) {
-
-		propertyMap = ResourceUtil.getResourceBundleAsHashMap( propertFileName );
-
-		SeededRandom.setSeed( 0 );
-		
-		halo = new Halo( (String)propertyMap.get("zoneIndex.fileName") );
-
+    public SPGnew ( String propertyFileName ) {
+		propertyMap = ResourceUtil.getResourceBundleAsHashMap( propertyFileName );
+        spgInit ();
     }
 
     public SPGnew (ResourceBundle rb) {
-
         propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+        spgInit ();
+    }
 
+    private void spgInit () {
+    	
 		SeededRandom.setSeed( 0 );
 
 		halo = new Halo( (String)propertyMap.get("zoneIndex.fileName") );
+		
+		edInd = new EdIndustry();
+		workers = new Workers();
+		occ = new Occupation();
+		incSize = new IncomeSize();
+
 
     }
-
-
 
 
     // SPG1 - Select households randomly from Pums records in halo.  Keep track of which
@@ -168,7 +167,6 @@ public class SPGnew {
 		
 		// get the array of regional employment targets which must be matched by workers in 
 		// selected households.
-		edInd = new EdIndustry();
 		tempEmploymentTargets = edInd.getRegionalIndustryEmployment( (String)propertyMap.get("ed.employment.fileName") );
 		employmentTargets = new int[tempEmploymentTargets.length];
 		double remainder = 0.0;
@@ -189,7 +187,6 @@ public class SPGnew {
 		
 		
 		// read the number of households in each workers per household category.
-		workers = new Workers();
         logger.info("Worker Marginal File Path" + (String)propertyMap.get("workers.marginal.fileName"));
 		hhWorkerTargets = workers.getWorkersPerHousehold( (String)propertyMap.get("workers.marginal.fileName") );
 		
@@ -359,9 +356,6 @@ public class SPGnew {
 
 		
 		// get the regional number of employed persons by industry and occupation in hhArray from SPG1
-		Occupation occ = new Occupation();
-		IncomeSize incSize = new IncomeSize();
-
 		int[][] indJobs = new int[4][edInd.getNumberEdIndustries()];
 		int[][] occJobs = new int[4][occ.getNumberOccupations()];
 		int[][] hhIncSizes = new int[2][incSize.getNumberIncomeSizes()];
@@ -434,8 +428,8 @@ public class SPGnew {
 		
 	
 		
-//		logger.info ("summarizing and writing frequency tables by state");
-//		writeFrequencyTables();
+		logger.info ("summarizing and writing frequency tables by state");
+		writeFrequencyTables();
 		
 		
 		
@@ -456,8 +450,6 @@ public class SPGnew {
 		int[] indexZone = halo.getIndexZone();
 		int[] zoneIndex = halo.getZoneIndex();
 
-		IncomeSize incSize = new IncomeSize();
-		Occupation occ = new Occupation();
 
 		int numOccupations = occ.getNumberOccupations();
 		int numIncomeSizes = incSize.getNumberIncomeSizes();
@@ -1597,12 +1589,10 @@ public class SPGnew {
 		int[] pumsIndFreq = new int[edInd.getNumberEdIndustries()];
 		int[] pumsWtIndFreq = new int[edInd.getNumberEdIndustries()];
 
-		Occupation occ = new Occupation();
 		int[] occFreq = new int[occ.getNumberOccupations()];
 		int[] pumsOccFreq = new int[occ.getNumberOccupations()];
 		int[] pumsWtOccFreq = new int[occ.getNumberOccupations()];
 
-		IncomeSize incSize = new IncomeSize();
 		int[] incSizeFreq = new int[incSize.getNumberIncomeSizes()];
 		int[] pumsIncSizeFreq = new int[incSize.getNumberIncomeSizes()];
 		int[] pumsWtIncSizeFreq = new int[incSize.getNumberIncomeSizes()];
@@ -1766,7 +1756,6 @@ public class SPGnew {
 		int incomeSizeCode;
 		
 
-		IncomeSize incSize = new IncomeSize();
 
 		int numIncomeSizes = incSize.getNumberIncomeSizes();
 		householdsByIncomeSize = new int[numIncomeSizes];
@@ -1812,26 +1801,173 @@ public class SPGnew {
 	
 
     private void writeFreqSummaryToLogger ( String tableTitle, String fieldName, String[] freqDescriptions, int[] freqs ) {
-    
-		// print a simple summary table
-		logger.info( "Frequency Report table: " + tableTitle );
-		logger.info( "Frequency for field " + fieldName );
-		logger.info(Format.print("%8s", "Value") + Format.print("%13s", "Description") + Format.print("%45s", "Frequency"));
+        
+    		// print a simple summary table
+    		logger.info( "Frequency Report table: " + tableTitle );
+    		logger.info( "Frequency for field " + fieldName );
+    		logger.info(Format.print("%8s", "Value") + Format.print("%13s", "Description") + Format.print("%45s", "Frequency"));
+    		
+    		int total = 0;
+    		for (int i = 0; i < freqs.length; i++) {
+    			if (freqs[i] > 0) {
+    				String description = freqDescriptions[i];
+    				logger.info( Format.print("%8d", i) + "  " + Format.print("%-45s", description) + Format.print("%11d", freqs[i] ) );
+    				total += freqs[i];
+    			}
+    		}
+    		
+    		logger.info(Format.print("%15s", "Total") +	Format.print("%51d\n\n\n", total));
+    	}
+        
+        
+
+    // write out the summary statistics for the final synthetic population and the corresponding weighted PUMS summaries
+    // statistics are summarized for various categories by PUMA
+    private void writeFreqSummaryToCsvFile () {
+
+    	String state;
+    	int puma;
+    	String incomeSizeLabel;
+    	String industryLabel;
+    	String occupationLabel;
+    	int value;
+    	
+    	int pumaIndex;
+		int numPersons;
+		int pumsIncomeCode;
+		int pumsIndustryCode;
+		int pumsOccupationCode;
+		int incomeSizeCode;
+		int edIndustryCode;
+		int occupationCode;
 		
-		int total = 0;
-		for (int i = 0; i < freqs.length; i++) {
-			if (freqs[i] > 0) {
-				String description = freqDescriptions[i];
-				logger.info( Format.print("%8d", i) + "  " + Format.print("%-45s", description) + Format.print("%11d", freqs[i] ) );
-				total += freqs[i];
+
+		
+		int[][] pumas = halo.getPumas();
+		int numIncomeSizes = incSize.getNumberIncomeSizes();
+		int numOccupations = occ.getNumberOccupations();
+		int numIndustries = edInd.getNumberEdIndustries();
+		
+		// define array of states by pumas for summarizing data
+		int[][][] hhsByStatePumaCategory = new int[pumas.length][][];
+		int[][][][] personsByStatePumaIndOcc = new int[pumas.length][][][];
+		for (int i=0; i < pumas.length; i++) {
+			hhsByStatePumaCategory[i] = new int[pumas[i].length][];
+			personsByStatePumaIndOcc[i] = new int[pumas[i].length][][];
+		}
+		
+		
+		
+
+		// summarize households by household size/income categories over all final synthetic households
+		// and summarize persons by industryt by occupation;
+		// i index loops over states, j index loops over pumas in states
+		for (int i=0; i < pumas.length; i++) {
+			for (int j=0; j < pumas[i].length; j++) {
+				hhsByStatePumaCategory[i][j] = new int[numIncomeSizes];
+				personsByStatePumaIndOcc[i][j] = new int[numIndustries][numOccupations];
 			}
 		}
 		
-		logger.info(Format.print("%15s", "Total") +	Format.print("%51d\n\n\n", total));
+		
+
+		// loop over all PUMS records used in making synthetic population and summarize
+		// by incomeSize and industry/occupation categories by state and puma
+		for (int i=0; i < hhArray.length; i++) {
+
+			for (int k=0; k < hhArray[i].length; k++) {
+		
+				puma = hhArray[i][k][PUMA_ATTRIB_INDEX];
+				pumaIndex = halo.getPumaIndex(i,puma);
+				
+				numPersons = hhArray[i][k][NUM_PERSONS_ATTRIB_INDEX];
+				pumsIncomeCode = hhArray[i][k][HH_INCOME_ATTRIB_INDEX];
+
+				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons);
+
+				for (int j=0; j < numPersons; j++) {
+					pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0];
+					pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 1];
+					edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
+					occupationCode = occ.getOccupation(pumsOccupationCode);
+
+					personsByStatePumaIndOcc[i][pumaIndex][edIndustryCode][occupationCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
+				}
+				
+				hhsByStatePumaCategory[i][pumaIndex][incomeSizeCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
+
+			}
+		    
+		}
+
+
+    	
+		String incomeSizeFileName = (String)propertyMap.get("incomeSizeCalibration.fileName");    	
+		String industryOccupationFileName = (String)propertyMap.get("industryOccupationCalibration.fileName");    	
+    	
+    	
+		PrintWriter outStream = null;
+
+        // open output stream for writing SPG1 calibration results file
+		try {
+			
+			// write csv file header record
+			outStream = new PrintWriter (new BufferedWriter( new FileWriter(incomeSizeFileName) ) );
+			outStream.println ( "State,PUMA,IncomeSize,Frequency");
+
+			// write hh size/income category descriptions and frequencies by state and puma
+			for (int i=0; i < hhsByStatePumaCategory.length; i++) {
+				for (int j=0; j < hhsByStatePumaCategory[i].length; j++) {
+					for (int k=0; k < hhsByStatePumaCategory[i][j].length; k++) {
+						
+						state = halo.getStateLabel(i);
+						puma = halo.getPumaLabel(i, j);
+						incomeSizeLabel = incSize.getIncomeSizeLabel(k);
+						value = hhsByStatePumaCategory[i][j][k];
+						
+						outStream.println( state + "," + puma + "," + incomeSizeLabel + "," + value );
+					}
+				}
+			}
+			outStream.close();
+
+
+		
+		
+			// write csv file header record
+			outStream = new PrintWriter (new BufferedWriter( new FileWriter(industryOccupationFileName) ) );
+			outStream.println ( "State,PUMA,Industry,Occupation,Frequency");
+
+			// write hh size/income category descriptions and frequencies by state and puma
+			for (int i=0; i < personsByStatePumaIndOcc.length; i++) {
+				for (int j=0; j < personsByStatePumaIndOcc[i].length; j++) {
+					for (int k=0; k < personsByStatePumaIndOcc[i][j].length; k++) {
+						for (int m=0; m < personsByStatePumaIndOcc[i][j][k].length; m++) {
+							state = halo.getStateLabel(i);
+							puma = halo.getPumaLabel(i, j);
+							industryLabel = edInd.getEdIndustryLabel(k);
+							occupationLabel = occ.getOccupationLabel(m);
+							value = personsByStatePumaIndOcc[i][j][k][m];
+							
+							outStream.println( state + "," + puma + "," + industryLabel + "," + occupationLabel + "," + value );
+						}
+					}
+				}
+			}
+			outStream.close();
+
+		}
+		catch (IOException e) {
+			logger.severe ("I/O exception writing SPG calibration results file.");
+			e.printStackTrace();
+		}
+
+
 	}
-    
-    
-    
+			
+        
+        
+        
     // return a monte carlo selection from the range [0,...,probabilities.length-1]
 	// a return value of -1 indicates no selection alternatives had a positive probability.
 	public int getMonteCarloSelection (double[] probabilities) {
@@ -1913,10 +2049,7 @@ public class SPGnew {
 	    
 		
 		// get valuies from TableDataSet into array to return
-		Occupation occ = new Occupation();
-		IncomeSize inc = new IncomeSize();
-
-		double[][][] laborDollars = new double[halo.getNumberOfZones()][occ.getNumberOccupations()][inc.getNumberIncomeSizes()];
+		double[][][] laborDollars = new double[halo.getNumberOfZones()][occ.getNumberOccupations()][incSize.getNumberIncomeSizes()];
 
 		
 		
@@ -1931,7 +2064,7 @@ public class SPGnew {
 				continue;
 
 			dollars = 0.0;
-			for (int c=0; c < inc.getNumberIncomeSizes(); c++) {
+			for (int c=0; c < incSize.getNumberIncomeSizes(); c++) {
 				dollars = table.getValueAt(r+1, c+3);
 				laborDollars[index][occup][c] = dollars;
 				regionLaborDollars[occup][c] += dollars;
@@ -1971,13 +2104,11 @@ public class SPGnew {
 	    
 		
 		// get values from TableDataSet into array to return
-		IncomeSize inc = new IncomeSize();
-
-		int[][] dataTable = new int[halo.getNumberOfZones()][inc.getNumberIncomeSizes()];
+		int[][] dataTable = new int[halo.getNumberOfZones()][incSize.getNumberIncomeSizes()];
 
 		int totalHhs = 0;
 		for (int r=0; r < table.getRowCount(); r++) {
-			incomeSize = inc.getIncomeSizeIndex( table.getStringValueAt(r+1, 1) );
+			incomeSize = incSize.getIncomeSizeIndex( table.getStringValueAt(r+1, 1) );
 			
 			if (incomeSize >= 0) {
 			    
@@ -2039,6 +2170,7 @@ public class SPGnew {
             testSPG.spg1();
             TableDataSet table = testSPG.sumHouseholdsByIncomeSize();
             testSPG.writePiInputFile(table);
+            testSPG.writeFreqSummaryToCsvFile();
             logger.info("SPG1 finished in " + ((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
             startTime = System.currentTimeMillis();
         }
