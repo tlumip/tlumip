@@ -215,7 +215,10 @@ public class TableDataSetIndexedValuePanel extends JPanel implements javax.swing
             intKeysTableModel = new ColumnTitledStringArrayTableModel(getMyParam().getIntKeyNameValues());
             intKeysTableModel.addTableModelListener(new TableModelListener() {
                 public void tableChanged(TableModelEvent e) {
-                    getMyParam().setIntKeyNameValues(getIntKeysTableModel().getDataWithHeaders());
+                    //TODO make this faster; if only some values have changed don't get all data over again
+                    // e has info about what has actually changed
+                    getMyParam().updateIntKeys(e,getIntKeysTableModel().getDataWithHeaders());
+                    //getMyParam().setIntKeyNameValues(getIntKeysTableModel().getDataWithHeaders());
                 }
             });
         }
