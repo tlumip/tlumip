@@ -54,7 +54,7 @@ public class SPGnew {
 	static final int NUM_WORKERS_ATTRIB_INDEX = PUMSData.HHWRKRS_INDEX;
 	static final int PERSON_ARRAY_ATTRIB_INDEX = PUMSData.PERSON_ARRAY_INDEX;
 
-	static final double MAXIMUM_ALLOWED_CONTROL_DIFFERENCE = 1.0;
+	static final double MAXIMUM_ALLOWED_CONTROL_DIFFERENCE = 10.0;
 	
 	// person attributes for person j:
 	// industry: PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0
@@ -122,7 +122,7 @@ public class SPGnew {
     	
 		SeededRandom.setSeed( 0 );
 
-		halo = new Halo( (String)globalPropertyMap.get("alpha2beta.file") );
+		halo = new Halo( (String)globalPropertyMap.get("alphatobeta.file") );
 		
 		edInd = new EdIndustry();
 		workers = new Workers();
@@ -150,27 +150,45 @@ public class SPGnew {
 
 		double totalWorkers = 0.0;
 		double totalEmployees = 0.0;
+		double totalEdEmployment = 0.0;
 		
-		// get the array of regional employment targets which must be matched by workers in
-		// selected households.
+		
+		
+		// read the jobs per worker factors for each employment category
+		double[] jobsToWorkerFactors = null;
+        logger.info("Jobs to Worker factors File Path" + (String)spgPropertyMap.get("jobs.to.workers.fileName"));
+		jobsToWorkerFactors = workers.getJobsPerWorkerFactors( (String)spgPropertyMap.get("jobs.to.workers.fileName") );
+
+		
+		// get the array of regional employment targets which must be matched by workers in selected households.
+		// also apply the factors to reduce employment targets based on multiple jobs per worker and other definitional differences.
 		tempEmploymentTargets = edInd.getRegionalIndustryEmployment( (String)spgPropertyMap.get("ed.employment.fileName") );
 		employmentTargets = new int[tempEmploymentTargets.length];
 		double remainder = 0.0;
-		for (int i=0; i < tempEmploymentTargets.length; i++) {
-			remainder += ( tempEmploymentTargets[i] - (int)tempEmploymentTargets[i] );
-			employmentTargets[i] = (int)tempEmploymentTargets[i];
+		double reducedEmployment = 0.0;
+		for (int i=0; i < tempEmploymentTargets.length-1; i++) {
+			reducedEmployment = tempEmploymentTargets[i]*jobsToWorkerFactors[i];
+			remainder += ( reducedEmployment - (int)reducedEmployment );
+			employmentTargets[i] = (int)reducedEmployment;
 			if ( remainder >= 1.0 ) {
 				employmentTargets[i] += 1;
 				remainder -= 1.0;
 			}
 			totalEmployees += employmentTargets[i];
+			totalEdEmployment += tempEmploymentTargets[i];
 		}
 		if (remainder >= 0.5) {
 			employmentTargets[tempEmploymentTargets.length-2] ++; // if remainder > 0.5, add extra employee to last actual employment category (length-2).
 			totalEmployees ++;
 		}
 
-		
+        logger.info("Done reading employment data.");
+        logger.info("Total employment over all industries from ED = " + totalEdEmployment);
+        logger.info("Total employment after applying workersPerJob factors = " + totalEmployees);
+        logger.info("ED employment reduced by " + ((totalEdEmployment - totalEmployees)/totalEdEmployment) );
+
+        
+        
 		
 		// read the number of households in each workers per household category.
         logger.info("Worker Marginal File Path" + (String)spgPropertyMap.get("workers.marginal.fileName"));
@@ -221,9 +239,10 @@ public class SPGnew {
 			totalWorkers += i*hhWorkerTargets[i];
 		
 		
-		
-		logger.info ( "total employment from ED = " + Format.print(" %-10.0f", totalEmployees ) );
 		logger.info ( "total workers in final hh workers targets = " + Format.print(" %-10.0f", totalWorkers ) );
+
+
+		
 		
 		// count the total number of unique PUMS household records
 		int numHouseholds = getTotalPumsHouseholds();
@@ -1134,15 +1153,18 @@ public class SPGnew {
 		
 		// check for convergence and return
 		double maxDiff = 0.0;
+		double maxEDiff = 0.0;
+		double maxHDiff = 0.0;
 		for (int i=0; i < employmentTargets.length; i++) {
-			if ( Math.abs(employmentControlTotals[i] - employmentTargets[i]) > maxDiff )
-				maxDiff = Math.abs(employmentControlTotals[i] - employmentTargets[i]);
+			if ( Math.abs(employmentControlTotals[i] - employmentTargets[i]) > maxEDiff )
+				maxEDiff = Math.abs(employmentControlTotals[i] - employmentTargets[i]);
 		}
 		for (int i=0; i < hhWorkerTargets.length; i++) {
-			if ( Math.abs(hhWorkerControlTotals[i] - hhWorkerTargets[i]) > maxDiff )
-				maxDiff = Math.abs(hhWorkerControlTotals[i] - hhWorkerTargets[i]);
+			if ( Math.abs(hhWorkerControlTotals[i] - hhWorkerTargets[i]) > maxHDiff )
+				maxHDiff = Math.abs(hhWorkerControlTotals[i] - hhWorkerTargets[i]);
 		}
-
+		maxDiff = Math.max(maxEDiff, maxHDiff);
+		
 
 		
 		return ( maxDiff > MAXIMUM_ALLOWED_CONTROL_DIFFERENCE );
@@ -1356,7 +1378,7 @@ public class SPGnew {
 		
 		for (int i=0; i < halo.getNumberOfStates(); i++) {
             
-			hhList = pums.readSpg1Attributes ( PUMSFILE[i], (String)globalPropertyMap.get("alpha2beta.file") );
+			hhList = pums.readSpg1Attributes ( PUMSFILE[i], halo, workers );
 
 			logger.info ( hhList.size() + " household records found in " + halo.getStateLabel(i) + " PUMS data file." ); 
 

@@ -132,6 +132,29 @@ public class Workers {
 	}
 	
 	
+
+	// return the array of households by number of workers from the named file
+	public double[] getJobsPerWorkerFactors( String fileName ) {
+	 
+		String[] formats = { "STRING", "NUMBER" };
+		
+		// read the base households by number of workers file into a TableDataSet
+		CSVFileReader reader = new CSVFileReader();
+        
+		TableDataSet table = null;
+		try {
+			table = reader.readFileWithFormats( new File( fileName ), formats );
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	    
+		// this table has one row of number of households for each workers per household category
+		String[] tempIndustryLabels = table.getColumnAsString(1);
+		double[] factors = table.getColumnAsDouble(2);
+		
+		return factors;
+	}
+	
 	
 }
 

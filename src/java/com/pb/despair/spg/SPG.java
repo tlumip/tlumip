@@ -1214,6 +1214,8 @@ public class SPG {
 
 		hhArray = new int[halo.getNumberOfStates()][][];
 
+		Workers workers = new Workers();
+
 		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName") );
   		
 		String[] PUMSFILE = new String[halo.getNumberOfStates()];
@@ -1225,7 +1227,7 @@ public class SPG {
 		
 		for (int i=0; i < halo.getNumberOfStates(); i++) {
             
-			hhList = pums.readSpg1Attributes ( PUMSFILE[i], (String)globalPropertyMap.get("alpha2beta.file") );
+			hhList = pums.readSpg1Attributes ( PUMSFILE[i], halo, workers );
 
 			logger.info ( hhList.size() + " household records found in " + halo.getStateLabel(i) + " PUMS data file." ); 
 

@@ -35,7 +35,7 @@ public class PUMSData {
 
 
     
-	public ArrayList readSpg1Attributes (String fileName, String zoneIndexFile ) {
+	public ArrayList readSpg1Attributes (String fileName, Halo halo, Workers hhWorkers ) {
 
 		int recCount=0;
 		
@@ -49,9 +49,6 @@ public class PUMSData {
 
 		ArrayList hhList = new ArrayList();
 		int[] hhAttribs = null;
-		
-		Halo halo = new Halo( zoneIndexFile );
-		Workers hhWorkers = new Workers();
 		
 		
 		try {
