@@ -158,7 +158,7 @@ public class PTDataWriter {
                                 oFile.print(thisPerson.weekdayTours[tourNumber].end.distanceToActivity+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].end.location.zoneNumber+",");
                                 oFile.print(thisPerson.weekdayTours[tourNumber].primaryMode.type+",");
-                                oFile.print(thisPerson.weekdayTours[tourNumber].end.tripMode.type);
+                                oFile.println(thisPerson.weekdayTours[tourNumber].end.tripMode.type);
                             }
                          
                     }
