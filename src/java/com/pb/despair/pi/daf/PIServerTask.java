@@ -24,14 +24,17 @@ public class PIServerTask extends Task{
     private int nIterations = 0; //a counter to keep track of how many iterations it takes before the meritMeasure is within tolerance.
     protected static BooleanLock signal = new BooleanLock(false);
     OregonPIPProcessor piReaderWriter;
-    String scenarioName;
+    String scenarioName = "pleaseWork";
     ResourceBundle piRb = null;
-
+    ResourceBundle pidafRb = null;
+    
     public void onStart(){
         logger.info( "***" + getName() + " started");
         logger.info("Reading data and setting up for PI run");
         long startTime = System.currentTimeMillis();
 
+        pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
+        
         //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
         //that was written by the Application Orchestrator
         BufferedReader reader = null;
@@ -39,7 +42,7 @@ public class PIServerTask extends Task{
         String pathToRb = null;
         try {
             logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File("/models/tlumip/daf/RunParams.txt")));
+            reader = new BufferedReader(new FileReader(new File((String)ResourceUtil.getProperty(pidafRb,"run.param.file"))));
             scenarioName = reader.readLine();
             logger.info("\tScenario Name: " + scenarioName);
             timeInterval = Integer.parseInt(reader.readLine());
@@ -75,7 +78,6 @@ public class PIServerTask extends Task{
         long startTime = System.currentTimeMillis();
         //Read in from the properties file the number of nodes
         //so that we know how many worker ports we need
-        ResourceBundle pidafRb = ResourceUtil.getResourceBundle("pidaf_"+scenarioName);
         int nNodes = Integer.parseInt(ResourceUtil.getProperty(pidafRb,"nNodes"));
         int nWorkQueues = nNodes-1;
 
