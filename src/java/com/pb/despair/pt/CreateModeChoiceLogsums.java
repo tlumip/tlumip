@@ -31,8 +31,6 @@ public class CreateModeChoiceLogsums {
     
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");     
     boolean debug = false;
-    static final int TOTALSEGMENTS = 9;
-    static final String purposes = new String("wcsrob");  //work,school,shop,recreate,other,workbased
 
     //  arrays with segments
     static final int[] auwk0segs={1,0,0,1,0,0,1,0,0};
@@ -53,57 +51,52 @@ public class CreateModeChoiceLogsums {
     TravelTimeAndCost departCost;
     TravelTimeAndCost returnCost;
     PersonTourModeAttributes thisPerson;
-    //TourModeChoiceModel tmcm;
     TableDataSet alphaToBeta;
 
 
     public CreateModeChoiceLogsums(){}
 
     /**
-     * loadTableDataSet
-     * @param getProperty
+     * setModeChoiceLogsumMatrix
+     * Calculates Mode choice logsums and creates a logsum matrix
+     * @param taz
+     * @param theseParameters
+     * @param thisPurpose
+     * @param segment
      * @return
      */
-    //method is not used 9/10/2004
-//    public static TableDataSet loadTableDataSet(ResourceBundle rb, String getProperty) {
-//
-//        String tazToDistrictFile = "d:/tlumip_data/azonebzone";/*ResourceUtil.getProperty(rb, getProperty);*/
-//
-//        try {
-//            String fileName = tazToDistrictFile + ".csv";
-//            CSVFileReader reader = new CSVFileReader();
-//            TableDataSet table = reader.readFile(new File(fileName));
-//            return table;
-//        } catch (IOException e) {
-//            logger.severe("Can't find taz to district file");
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-    
-    /**
-     * get the necessary parameters
-     *
-     */ 
-   // public void buildTourModeChoiceModel(){
-        //read the skims into memory
-        //skims = new SkimsInMemory();
-        //skims.readSkims();
-          
-        //read the taz data from jDataStore; if it doesn't exist, write it to jDataStore from csv file first
-        //taz = new TazData();
-        //taz.readData("pt","tazData.file");
-          
-        //read the tourModeParameters from jDataStore; if they don't exist, write them to jDataStore first from csv
-        //tmp = new TourModeParametersData();
-        //tmp.readData("pt","tourDestinationParameters.file");
-        
-        //tmcm = new TourModeChoiceModel();
-        //tmcm.buildModel();
-        
-        //alphaToBeta = loadTableDataSet("pt", "alphatobeta");
-   // }
-    
+    public Matrix setModeChoiceLogsumMatrix(TazData taz, TourModeParameters theseParameters, char thisPurpose,
+                                            int segment, SkimsInMemory skims, TourModeChoiceModel tmcm) {
+
+        if(debug) logger.fine("Creating ModeChoiceLogsum Matrix for - Purpose: "+thisPurpose+"  Segment: "+segment);
+        String mName = new String(new Character(thisPurpose).toString()
+                                + new Integer(segment).toString()
+                                + new String("ls"));  //the extension will be added when the file is
+                                                      //written out - could be .zip or .binary
+
+        Matrix m = new Matrix(mName, "Created with CreateModeChoiceLogsums", taz.tazData.size(), taz.tazData.size());
+        m.setExternalNumbers(taz.getExternalNumberArray());
+
+        Enumeration originEnum=taz.tazData.elements();
+        while(originEnum.hasMoreElements()){
+            Taz originTaz = (Taz) originEnum.nextElement();
+            Enumeration destinationEnum=taz.tazData.elements();
+            while(destinationEnum.hasMoreElements()){
+
+                Taz destinationTaz = (Taz) destinationEnum.nextElement();
+//                thisPerson = setPersonTourModeAttributes(originTaz, destinationTaz, thisPurpose, segment);
+                setPersonTourModeAttributes(originTaz, destinationTaz, thisPurpose, segment);
+
+//                float logsum = getModeChoiceLogsum(skims,theseParameters,thisPerson,thisPurpose,segment,originTaz, destinationTaz, tmcm);
+                float logsum = getModeChoiceLogsum(skims,theseParameters,ptma,thisPurpose,segment,originTaz, destinationTaz, tmcm);
+
+                m.setValueAt(originTaz.zoneNumber,destinationTaz.zoneNumber,logsum);
+
+            } //end destination zone loop
+        } //end origin zone loop
+        return m;
+    }
+
     /**
      * Gets a mode choice logsum
      * @param skims
@@ -123,114 +116,84 @@ public class CreateModeChoiceLogsums {
                                       Taz originTaz,
                                       Taz destinationTaz,
                                       TourModeChoiceModel tmcm){
-                                          
+
         departCost = setDepartCost(thisPurpose, skims, originTaz, destinationTaz);
         //If drivetime > 300, then set logsum to -32
-        if(departCost.driveAloneTime>300) 
+        if(departCost.driveAloneTime > 300)
             return -32;
         else{
             returnCost = setReturnCost(thisPurpose, skims, originTaz, destinationTaz);
-                         
             //ZoneAttributes thisZone = new ZoneAttributes();
             thisZone.parkingCost = destinationTaz.getParkingCost(thisPurpose);
-            
-
-                                            
-            float logsum = calcTourModeChoiceUtility(tmcm,
-                                                 thisZone,
-                                                 theseParameters,
-                                                 thisPerson,
-                                                 thisPurpose);                                    
-     
+            float logsum = calcTourModeChoiceUtility(tmcm, thisZone, theseParameters, thisPerson, thisPurpose);
             return logsum;
         }
     }
-    
-    /**
-     * setModeChoiceLogsumMatrix 
-     * Calculates Mode choice logsums and creates a logsum matrix
-     * @param taz
-     * @param theseParameters
-     * @param thisPurpose
-     * @param segment
-     * @return
-     */ 
-    public Matrix setModeChoiceLogsumMatrix(TazData taz,
-                                             TourModeParameters theseParameters,                                             
-                                             char thisPurpose,
-                                             int segment,
-											 SkimsInMemory skims,
-                                             TourModeChoiceModel tmcm)
-    {
 
-        if(debug) logger.fine("Creating ModeChoiceLogsum Matrix for - Purpose: "+thisPurpose+"  Segment: "+segment);
-        String mName = new String(new Character(thisPurpose).toString() 
-                                + new Integer(segment).toString()
-                                + new String("ls"));  //the extension will be added when the file is
-                                                      //written out - could be .zip or .binary
-
-        Matrix m = new Matrix(mName,
-                              "Created with CreateModeChoiceLogsums",
-                              taz.tazData.size(),
-                              taz.tazData.size()
-                              );
-        //Set up external numbers         
-        int tazCounter=1;
-        //create an array lookup to store all tazs
-        int[] lookup = new int[taz.tazData.size()+1];
-        
-        //enumerate through all tazs and sort in lookup array 
-        Enumeration tazEnum=taz.tazData.elements();        
-        while(tazEnum.hasMoreElements()){
-            Taz thisTaz = (Taz) tazEnum.nextElement();
-            lookup[tazCounter]=thisTaz.zoneNumber;
-            tazCounter++;
-        }
-        
-        //sort array        
-        Arrays.sort(lookup);
-        m.setExternalNumbers(lookup);
-                                                                              
-        Enumeration originEnum=taz.tazData.elements();
-        //enter loop on origin zones
-        while(originEnum.hasMoreElements()){
-                    
-            Taz originTaz = (Taz) originEnum.nextElement();
-            Enumeration destinationEnum=taz.tazData.elements();
-            // Enter loop on destination zones
-            while(destinationEnum.hasMoreElements()){
-                        
-                Taz destinationTaz = (Taz) destinationEnum.nextElement();        
-                thisPerson = setPersonTourModeAttributes(originTaz,
-                                        destinationTaz,
-                                        thisPurpose,
-                                        segment
-                                        );
-                                        
-                float logsum = getModeChoiceLogsum(skims,theseParameters,thisPerson,thisPurpose,segment,originTaz, destinationTaz, tmcm);
-                m.setValueAt(originTaz.zoneNumber,destinationTaz.zoneNumber,logsum);
-                              
-            } //end destination zone loop
-        } //end origin zone loop
-        return m;         
-    }
-    
-    /**
-     * writeModeChoiceLogsumsMatrix
-     * This method is called either from writeBetaZoneModeChoiceLogsumsMatrix or writeAlphaZoneModeChoiceLogsumsMatrix
-     * @param thisMatrix
+    /** calcTourModeChoiceUtility
+     *
+     * @param tmcm - TourModeChoiceModel
+     * @param thisZone - Parking cost at the destination zone
+     * @param theseParameters - TourModeParameters
+     * @param thisPerson - PersonTourModeAttributes
+     * @param thisPurpose - char
+     * @return logsum for the origin-destination pair
      */
-    
-    private static void writeModeChoiceLogsumsMatrix(ResourceBundle rb, Matrix thisMatrix){
-       
-        logger.info("Writing Matrix "+thisMatrix.getName());
-        //get path
-        String path = ResourceUtil.getProperty(rb, "modeChoiceLogsums.path");
-        String mName = thisMatrix.getName()+".zip";        
-        MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(path+mName));  //Open for writing
-        mw.writeMatrix(thisMatrix);     
-    } 
-    
+    public float calcTourModeChoiceUtility(TourModeChoiceModel tmcm,
+                                            ZoneAttributes thisZone,
+                                            TourModeParameters theseParameters,
+                                            PersonTourModeAttributes thisPerson,
+                                            char thisPurpose){
+
+        //Set availabilities of all modes to true
+        tmcm.thisDriver.setAvailability(true);
+        tmcm.thisPassenger.setAvailability(true);
+        tmcm.thisWalk.setAvailability(true);
+        tmcm.thisBike.setAvailability(true);
+        tmcm.thisWalkTransit.setAvailability(true);
+        tmcm.thisTransitPassenger.setAvailability(true);
+        tmcm.thisDriveTransit.setAvailability(true);
+
+        //calculate utilites of all modes
+        tmcm.thisDriver.calcUtility( departCost, returnCost,
+                thisZone, theseParameters, thisPerson);
+
+        tmcm.thisPassenger.calcUtility( departCost, returnCost,
+                thisZone, theseParameters, thisPerson);
+
+        tmcm.thisWalk.calcUtility( departCost, returnCost,
+                thisZone, theseParameters, thisPerson);
+
+        tmcm.thisBike.calcUtility( departCost, returnCost,
+                theseParameters, thisPerson);
+
+        tmcm.thisWalkTransit.calcUtility( departCost, returnCost,
+                theseParameters, thisPerson);
+
+        tmcm.thisTransitPassenger.calcUtility( departCost, returnCost,
+                theseParameters, thisPerson);
+
+        tmcm.thisPassengerTransit.calcUtility( departCost, returnCost,
+                thisZone, theseParameters, thisPerson);
+
+        if(thisPurpose=='w')
+               tmcm.thisDriveTransit.calcUtility( departCost, returnCost,
+                     theseParameters, thisPerson);
+        else tmcm.thisDriveTransit.setAvailability(false);
+
+        //set dispersion parameters
+        tmcm.autoNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+        tmcm.nonMotorizedNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+        tmcm.transitNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+        tmcm.passengerNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+
+
+        //add alternatives, if they are available, to nesting structure
+        tmcm.root.computeAvailabilities();
+        float logsum =(float)tmcm.root.getUtility();
+        return logsum;
+     }
+
     /**
      * setPersonTourModeAttributes
      * 
@@ -334,70 +297,23 @@ public class CreateModeChoiceLogsums {
                                                                     1300);
     }//end setReturnCost 
     
-    /** calcTourModeChoiceUtility
-     * 
-     * @param tmcm - TourModeChoiceModel
-     * @param thisZone - Parking cost at the destination zone
-     * @param theseParameters - TourModeParameters
-     * @param thisPerson - PersonTourModeAttributes
-     * @param thisPurpose - char 
-     * @return logsum for the origin-destination pair
-     */ 
-    public float calcTourModeChoiceUtility(TourModeChoiceModel tmcm,
-                                            ZoneAttributes thisZone,
-                                            TourModeParameters theseParameters,
-                                            PersonTourModeAttributes thisPerson,
-                                            char thisPurpose){
-        
-        //Set availabilities of all modes to true                                        
-        tmcm.thisDriver.setAvailability(true);
-        tmcm.thisPassenger.setAvailability(true);
-        tmcm.thisWalk.setAvailability(true);
-        tmcm.thisBike.setAvailability(true);
-        tmcm.thisWalkTransit.setAvailability(true);
-        tmcm.thisTransitPassenger.setAvailability(true);
-        tmcm.thisDriveTransit.setAvailability(true);
-        
-        //calculate utilites of all modes                
-        tmcm.thisDriver.calcUtility( departCost, returnCost,
-                thisZone, theseParameters, thisPerson);
-                                             
-        tmcm.thisPassenger.calcUtility( departCost, returnCost,
-                thisZone, theseParameters, thisPerson);
-                  
-        tmcm.thisWalk.calcUtility( departCost, returnCost,
-                thisZone, theseParameters, thisPerson);
-                  
-        tmcm.thisBike.calcUtility( departCost, returnCost,
-                theseParameters, thisPerson);
-                  
-        tmcm.thisWalkTransit.calcUtility( departCost, returnCost,
-                theseParameters, thisPerson);
-                            
-        tmcm.thisTransitPassenger.calcUtility( departCost, returnCost,
-                theseParameters, thisPerson);
-                  
-        tmcm.thisPassengerTransit.calcUtility( departCost, returnCost,
-                thisZone, theseParameters, thisPerson);
-                              
-        if(thisPurpose=='w')
-               tmcm.thisDriveTransit.calcUtility( departCost, returnCost,
-                     theseParameters, thisPerson);
-        else tmcm.thisDriveTransit.setAvailability(false);
 
-        //set dispersion parameters
-        tmcm.autoNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
-        tmcm.nonMotorizedNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
-        tmcm.transitNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
-        tmcm.passengerNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
-                              
-                              
-        //add alternatives, if they are available, to nesting structure                              
-        tmcm.root.computeAvailabilities();
-        float logsum =(float)tmcm.root.getUtility();
-        return logsum;
-     }
-    
+    /**
+     * writeModeChoiceLogsumsMatrix
+     * This method is called either from writeBetaZoneModeChoiceLogsumsMatrix or writeAlphaZoneModeChoiceLogsumsMatrix
+     * @param thisMatrix
+     */
+
+    private static void writeModeChoiceLogsumsMatrix(ResourceBundle rb, Matrix thisMatrix){
+
+        logger.info("Writing Matrix "+thisMatrix.getName());
+        //get path
+        String path = ResourceUtil.getProperty(rb, "modeChoiceLogsums.path");
+        String mName = thisMatrix.getName()+".zip";
+        MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(path+mName));  //Open for writing
+        mw.writeMatrix(thisMatrix);
+    }
+
     public void compareOldAndNew(Matrix newMatrix, Matrix oldMatrix, TazData taz){
         Enumeration originEnum=taz.tazData.elements();
                 //enter loop on origin zones
@@ -492,6 +408,51 @@ public class CreateModeChoiceLogsums {
         logger.info("created tour mode choice logsums");
         System.exit(1);
     }//end main
+
+    /**
+     * loadTableDataSet
+     * @param getProperty
+     * @return
+     */
+    //method is not used 9/10/2004
+//    public static TableDataSet loadTableDataSet(ResourceBundle rb, String getProperty) {
+//
+//        String tazToDistrictFile = "d:/tlumip_data/azonebzone";/*ResourceUtil.getProperty(rb, getProperty);*/
+//
+//        try {
+//            String fileName = tazToDistrictFile + ".csv";
+//            CSVFileReader reader = new CSVFileReader();
+//            TableDataSet table = reader.readFile(new File(fileName));
+//            return table;
+//        } catch (IOException e) {
+//            logger.severe("Can't find taz to district file");
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
+    /**
+     * get the necessary parameters
+     *
+     */
+   // public void buildTourModeChoiceModel(){
+        //read the skims into memory
+        //skims = new SkimsInMemory();
+        //skims.readSkims();
+
+        //read the taz data from jDataStore; if it doesn't exist, write it to jDataStore from csv file first
+        //taz = new TazData();
+        //taz.readData("pt","tazData.file");
+
+        //read the tourModeParameters from jDataStore; if they don't exist, write them to jDataStore first from csv
+        //tmp = new TourModeParametersData();
+        //tmp.readData("pt","tourDestinationParameters.file");
+
+        //tmcm = new TourModeChoiceModel();
+        //tmcm.buildModel();
+
+        //alphaToBeta = loadTableDataSet("pt", "alphatobeta");
+   // }
 
 }
 

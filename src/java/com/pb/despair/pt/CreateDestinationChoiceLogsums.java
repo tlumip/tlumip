@@ -58,11 +58,8 @@ public class CreateDestinationChoiceLogsums {
              Taz destinationTaz = (Taz) tourDestinationEnum.nextElement();
              tourDCModel.addAlternative(destinationTaz);
          }
-        //create a Matrix to store exponentiated utilities from all origins to all destinations
-        expUtilities = new Matrix(tazs.tazData.size(),tazs.tazData.size());
-        int[] tazNumbers = tazs.getExternalNumberArray();
-        expUtilities.setExternalNumbers(tazNumbers);        
 
+         createNewExpMatrix(tazs);
     }
     
     /*
@@ -217,7 +214,15 @@ public class CreateDestinationChoiceLogsums {
     	}
       	return vector;
     }
-    
+
+    public void createNewExpMatrix(TazData tazs){
+        //create a Matrix to store exponentiated utilities from all origins to all destinations
+        expUtilities = new Matrix(tazs.tazData.size(),tazs.tazData.size());
+        int[] tazNumbers = tazs.getExternalNumberArray();
+        expUtilities.setExternalNumbers(tazNumbers);
+
+    }
+
     public static void main (String[] args){
         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
         CreateDestinationChoiceLogsums createDCLogsums = new CreateDestinationChoiceLogsums();

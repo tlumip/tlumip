@@ -22,57 +22,15 @@ import java.util.logging.Logger;
  *
  */
 public class TazData implements Cloneable{
+
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
     boolean debug = false;
     String tazDataTableName = "TazData";
 
     //a hashtable of taz objects
-    public static final int MAX_ZONE_NUMBER = 4141;
     public Hashtable tazData = new Hashtable();
- //   protected LogitModel tourDestinationChoiceModel;
 
-    public boolean hasTaz(int zoneNumber) {
-        return tazData.containsKey(new Integer(zoneNumber));
-    }
 
-    public static TableDataSet loadTableDataSet(ResourceBundle rb,
-        String fileName) {
-        try {
-            String tazFile = ResourceUtil.getProperty(rb, fileName);
-            CSVFileReader reader = new CSVFileReader();
-            TableDataSet table = reader.readFile(new File(tazFile));
-            logger.info("TazData: "+tazFile);
-
-            return table;
-        } catch (IOException e) {
-            logger.severe("Can't find TazData input table " + fileName);
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-    public Object clone(){
-        TazData newTazData;
-        try {
-            newTazData = (TazData) super.clone();
-            newTazData.tazDataTableName = "TazData";
-            newTazData.tazData = new Hashtable();
-            Enumeration tazEnum = tazData.elements();
-             while (tazEnum.hasMoreElements()) {
-                 Taz thisTaz = (Taz) tazEnum.nextElement();
-                 Taz tazCopy = (Taz) thisTaz.clone();
-                 newTazData.tazData.put(new Integer(tazCopy.zoneNumber), tazCopy);
-                 }
-            
-        }
-        catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e.toString());
-        }
-          
-
-        
-        return newTazData;
-    }
 
     public void readData(ResourceBundle rb, String fileName) {
         if(debug) logger.fine("Getting table: " + tazDataTableName);
@@ -194,6 +152,49 @@ public class TazData implements Cloneable{
         Arrays.sort(lookup);
 
         return lookup;
+    }
+
+    public boolean hasTaz(int zoneNumber) {
+        return tazData.containsKey(new Integer(zoneNumber));
+    }
+
+    public static TableDataSet loadTableDataSet(ResourceBundle rb,
+        String fileName) {
+        try {
+            String tazFile = ResourceUtil.getProperty(rb, fileName);
+            CSVFileReader reader = new CSVFileReader();
+            TableDataSet table = reader.readFile(new File(tazFile));
+            logger.info("TazData: "+tazFile);
+
+            return table;
+        } catch (IOException e) {
+            logger.severe("Can't find TazData input table " + fileName);
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+    public Object clone(){
+        TazData newTazData;
+        try {
+            newTazData = (TazData) super.clone();
+            newTazData.tazDataTableName = "TazData";
+            newTazData.tazData = new Hashtable();
+            Enumeration tazEnum = tazData.elements();
+             while (tazEnum.hasMoreElements()) {
+                 Taz thisTaz = (Taz) tazEnum.nextElement();
+                 Taz tazCopy = (Taz) thisTaz.clone();
+                 newTazData.tazData.put(new Integer(tazCopy.zoneNumber), tazCopy);
+                 }
+
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e.toString());
+        }
+
+
+
+        return newTazData;
     }
 
     public void summarizeTAZs(){

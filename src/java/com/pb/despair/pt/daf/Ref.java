@@ -12,6 +12,9 @@ public class Ref {
     static final int TOTAL_SEGMENTS = 9;
     static final int TOTAL_OCCUPATIONS = 8;
     static final int TOTAL_DCLOGSUMS = 63;
-    static final int MAXBLOCKSIZE = 5000;
-    static final int MAXZONENUMBER = 4141;
+    static final int TOTAL_MCLOGSUMS = 54;
+    static final int MAX_ZONE_NUMBER = 4141;
+    static final int MAX_BLOCK_SIZE= 5000;
+    public static final boolean RUN_WEEKEND_MODEL = false;
 }
+

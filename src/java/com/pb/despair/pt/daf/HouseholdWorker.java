@@ -40,7 +40,7 @@ public class HouseholdWorker extends MessageProcessingTask {
     protected static Object lock = new Object();
     protected static boolean initialized = false;
     protected static boolean dcLoaded = false;
-    protected static boolean CALCULATE_MCLOGSUMS = false;
+    protected static boolean CALCULATE_MCLOGSUMS = true;
     protected static ArrayList matricesToCollapse;
     protected static boolean CALCULATE_DCLOGSUMS = true;
     protected static ResourceBundle rb;
@@ -68,8 +68,7 @@ public class HouseholdWorker extends MessageProcessingTask {
     boolean firstHouseholdBlock = true;
     boolean firstDCLogsum = true;
     
-    String[] matrixWriterQueues = {"MatrixWriterQueue1","MatrixWriterQueue2","MatrixWriterQueue3"};
-    int toggle = 0;
+    String matrixWriterQueue = "MatrixWriterQueue1";
     double durationTime;
     double primaryTime;
     double secondaryTime;
@@ -162,7 +161,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             else {
                 msg.setId(MessageID.MC_LOGSUMS_CREATED);
                 msg.setValue("matrix",null);
-                sendTo(matrixWriterQueues[0], msg);
+                sendTo(matrixWriterQueue, msg);
 
                 String purpose = String.valueOf(msg.getValue("purpose"));
                 Integer segment = (Integer) msg.getValue("segment");
@@ -172,7 +171,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                     Message collapsedMsg = createMessage();
                     collapsedMsg.setId(MessageID.MC_LOGSUMS_COLLAPSED);
                     collapsedMsg.setValue("matrix",null);
-                    sendTo(matrixWriterQueues[0], collapsedMsg);
+                    sendTo(matrixWriterQueue, collapsedMsg);
                 }
              }
         } else if (msg.getId().equals(MessageID.CALCULATE_WORKPLACE_LOCATIONS)) {
@@ -187,13 +186,13 @@ public class HouseholdWorker extends MessageProcessingTask {
                         Message dcMessage = createMessage();
                         dcMessage.setId(MessageID.DC_LOGSUMS_CREATED);
                         dcMessage.setValue("matrix", null);
-                        sendTo(matrixWriterQueues[0], dcMessage);
+                        sendTo(matrixWriterQueue, dcMessage);
                     }
                 }
                 else {
                     msg.setId(MessageID.DC_LOGSUMS_CREATED);
                     msg.setValue("matrix", null);
-                    sendTo(matrixWriterQueues[0], msg);
+                    sendTo(matrixWriterQueue, msg);
                 }
             }
 
@@ -206,8 +205,6 @@ public class HouseholdWorker extends MessageProcessingTask {
     public void createMCLogsums(Message msg) {
         logger.fine("Free memory before creating MC logsum: " +
             Runtime.getRuntime().freeMemory());
-        String queue = matrixWriterQueues[toggle%2];
-        toggle++;
 
         String purpose = String.valueOf(msg.getValue("purpose"));
         Integer segment = (Integer) msg.getValue("segment");
@@ -232,17 +229,15 @@ public class HouseholdWorker extends MessageProcessingTask {
         if (matricesToCollapse.contains(purSeg)) {
             logger.info("Collapsing ModeChoiceLogsumMatrix for purpose: " + purpose +
                 " segment: " + segment);
-            collapseMCLogsums(m,a2b,queue);
+            collapseMCLogsums(m,a2b,matrixWriterQueue);
         }
         
         //Sending message to TaskMasterQueue
         msg.setId(MessageID.MC_LOGSUMS_CREATED);
         msg.setValue("matrix", m);
         try {
-            sendTo(queue, msg);
+            sendTo(matrixWriterQueue, msg);
         } catch (Exception e) {
-            logger.severe("Message was going to queue: " + queue);
-            logger.severe("Value of toggle: " + toggle);
             e.printStackTrace();
             System.exit(10);
         }
@@ -273,8 +268,6 @@ public class HouseholdWorker extends MessageProcessingTask {
         try {
             sendTo(queueName, msg);
         } catch (Exception e) {
-            logger.severe("Message was going to queue: " + queueName);
-            logger.severe("Value of toggle: " + toggle);
             e.printStackTrace();
             System.exit(1);
         }
@@ -367,11 +360,8 @@ public class HouseholdWorker extends MessageProcessingTask {
                     "in the ptModel tazs");
             dcLogsumCalculator.buildModel(PTModelInputs.tazs);
             firstDCLogsum=false;
-            toggle = 0;
         }
 
-        String queue = matrixWriterQueues[toggle%2];
-//        toggle++;
 
         String purpose = String.valueOf(msg.getValue("purpose"));
         Integer segment = (Integer) msg.getValue("segment");
@@ -392,62 +382,41 @@ public class HouseholdWorker extends MessageProcessingTask {
                     dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
 //
                     String dcPurpose = "c" + i;
+                    dcLogsumCalculator.createNewExpMatrix(PTModelInputs.tazs); //create a new matrix
                     Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
                     		PTModelInputs.tdpd, dcPurpose, segment.intValue(), modeChoiceLogsum);
                     dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
-                    sendTo(queue, dcLogsumMessage);
+                    sendTo(matrixWriterQueue, dcLogsumMessage);
 
 //                get the exponentiated utilities matrix and put it in another message
                     Message dcExpUtilitiesMessage = createMessage();
                     dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
-                    dcExpUtilitiesMessage.setValue("segment", segment);
-                    dcExpUtilitiesMessage.setValue("purpose", dcPurpose);
-                    dcExpUtilitiesMessage.setValue("time", Long.toString(System.currentTimeMillis()) );
                     Matrix expUtilities = dcLogsumCalculator.getExpUtilities(dcPurpose, segment.intValue());
                     dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-                    logger.warning(getName() + " Sending " + ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getName() +
-                            " with segment: " + (Integer)dcExpUtilitiesMessage.getValue("segment") +
-                            " and purpose: " + (String) dcExpUtilitiesMessage.getValue("purpose") +
-                            " and time: " + (String)dcExpUtilitiesMessage.getValue("time") +
-                            " and value in [1][1]: " +  ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getValueAt(1,1) +
-                            " and local Matrix name: " + expUtilities.getName() +
-                            " to " + matrixWriterQueues[i-1]);
+                    sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
 
-                    sendTo(matrixWriterQueues[i-1], dcExpUtilitiesMessage);
-//                dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb); //BINARY-ZIP
-//                dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb);
                 }
             } else if (!purpose.equals("w")) {
                 logger.info(getName() + " is calculating the DC Logsums for purpose " + purpose + ", market segment " + segment + " subpurpose 1");
                 Message dcLogsumMessage = createMessage();
                 dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
+
+                dcLogsumCalculator.createNewExpMatrix(PTModelInputs.tazs);
                 Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
                 		PTModelInputs.tdpd, purpose, segment.intValue(), modeChoiceLogsum);
                 dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
-                sendTo(queue, dcLogsumMessage);
+                sendTo(matrixWriterQueue, dcLogsumMessage);
 
                 //get the exponentiated utilities matrix and put it in another message
                 Message dcExpUtilitiesMessage = createMessage();
                 dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
                 Matrix expUtilities = dcLogsumCalculator.getExpUtilities(purpose, segment.intValue());
-                dcExpUtilitiesMessage.setValue("segment", segment);
-                dcExpUtilitiesMessage.setValue("purpose", purpose);
                 dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-                dcExpUtilitiesMessage.setValue("time", Long.toString(System.currentTimeMillis()) );
-                logger.warning(getName() + " Sending " + ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getName() +
-                            " with segment: " + (Integer)dcExpUtilitiesMessage.getValue("segment") +
-                            " and purpose: " + (String) dcExpUtilitiesMessage.getValue("purpose") +
-                            " and time: " + (String)dcExpUtilitiesMessage.getValue("time") +
-                            " and value in [1][1]: " +  ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getValueAt(1,1) +
-                            " and local Matrix name: " + expUtilities.getName() +
-                            " to " + queue);
-                sendTo(queue, dcExpUtilitiesMessage);
+                sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
 //             dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);     //BINARY-ZIP
 //            dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb);
             }
         } catch (Exception e) {
-            logger.severe("Message was going to queue: " + queue);
-            logger.severe("Value of toggle: " + toggle);
             e.printStackTrace();
             System.exit(1);
         }

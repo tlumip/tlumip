@@ -2,7 +2,6 @@ package com.pb.despair.pt.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
-import com.pb.common.daf.MessageFactory;
 import com.pb.common.util.ObjectUtil;
 import com.pb.common.util.ResourceUtil;
 

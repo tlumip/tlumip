@@ -192,7 +192,7 @@ public class AutoOwnershipModel {
      */
      public void sumRetailWithin30MinutesTransit(TazData tazdata){
 
-          String path = ResourceUtil.getProperty(rb, "skimPath.path");
+          String path = ResourceUtil.getProperty(rb, "transitSkims.path");
 
           //read the skims into memory
           try{

@@ -305,8 +305,8 @@ public class AlphaToBetaData {
         AlphaToBetaData aToB = new AlphaToBetaData();
         TableDataSet table = loadTableDataSet(rb, "alphatobeta");
                 
-        String path = ResourceUtil.getProperty(rb, "skimPath.path");
-        String writePathName = ResourceUtil.getProperty(rb, "betaSkimPath.path");
+        String path = ResourceUtil.getProperty(rb, "transitSkims.path");
+        String writePathName = ResourceUtil.getProperty(rb, "modeChoiceLogsumsWrite.path");
         
         for(int i=5;i<mName.length;i++){
             logger.info("Reading skims "+mName[i]);

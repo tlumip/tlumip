@@ -12,6 +12,7 @@ public final class MessageID{
 	
     //Messages sent from PTDafMaster
     public static final String CREATE_MC_LOGSUMS = "CreateMCLogsums";
+    public static final String CREATE_MC_LOGSUM = "CreateMCLogsum";
     public static final String CREATE_DC_LOGSUMS = "CreateDCLogsums";
     
     //public static final String CREATE_LABOR_FLOWS = "CreateLaborFlows";

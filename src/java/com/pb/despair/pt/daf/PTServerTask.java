@@ -4,6 +4,7 @@ import com.pb.common.daf.*;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.BooleanLock;
 import com.pb.common.util.ObjectUtil;
+import com.pb.common.matrix.AlphaToBeta;
 import com.pb.despair.pi.*;
 import com.pb.despair.model.OverflowException;
 import com.pb.despair.pt.PTDataReader;
@@ -28,6 +29,7 @@ public class PTServerTask extends Task{
     protected static BooleanLock signal = new BooleanLock(false);
     boolean CREATE_MODE_CHOICE_LOGSUMS=true;
     ResourceBundle ptRb;
+    AlphaToBeta a2b;
 
     public PTPerson[] persons; // will be initialized in the doWork method
     public PTHousehold[] households;
@@ -55,6 +57,9 @@ public class PTServerTask extends Task{
         }
         this.ptRb = ResourceUtil.getPropertyBundle(new File(pathToRb));
 
+        String file = ResourceUtil.getProperty(ptRb,"alphaToBeta.file");
+        this.a2b = new AlphaToBeta(new File(file));
+
 
     }
 
@@ -76,16 +81,12 @@ public class PTServerTask extends Task{
         //SignalTask Queue (used to initialize nHHs and nPersons)
         Port SignalQueue = pManager.createPort("SignalQueue");
 
+        Port ModeChoiceServerQueue = pManager.createPort("MCServerQueue");
+
         //Setup Work Ports
         Port[] SetupWorkPorts = new Port[nNodes-1];
         for(int i=0;i<nWorkQueues;i++){
             SetupWorkPorts[i] = pManager.createPort("SetupWorkQueue_"+ (i+1));
-        }
-
-        //Aggregate ModeChoice Logsum Work Ports
-        Port[] AMCLWorkPorts = new Port[nWorkQueues]; //the Server task will always be on node 0
-        for(int i=0;i<nWorkQueues;i++){             //work queues will always start on node 1 (and numbered 1...n)
-            AMCLWorkPorts[i] = pManager.createPort("AMCLWorkQueue_"+ (i+1)); //
         }
 
         //Workplace Location Work Ports
@@ -139,8 +140,12 @@ public class PTServerTask extends Task{
         //If required, send messages to the workers to calculate the Mode Choice Logsums.
         //Else, send messages to the workers to calculate the Workplace Locations.
         if(CREATE_MODE_CHOICE_LOGSUMS){
-            msgs = createAMCLWorkMessages(mFactory);
-            sendWorkToWorkQueues(msgs,AMCLWorkPorts,nWorkQueues);
+            Message startMCLogsumsMsg = mFactory.createMessage();
+            startMCLogsumsMsg.setId(MessageID.NUM_OF_WORK_QUEUES);
+            startMCLogsumsMsg.setValue("resourceBundle",ptRb);
+            startMCLogsumsMsg.setValue("nWorkQueues",new Integer(nWorkQueues));
+            startMCLogsumsMsg.setValue("alphaToBetaMap", a2b);
+            ModeChoiceServerQueue.send(startMCLogsumsMsg);
 
             //Set 'signal' to false and when the mode choice logsums have all been
             //calculated the SignalTask will flip the value to true and we will know
@@ -284,22 +289,7 @@ public class PTServerTask extends Task{
     }
 
 
-    private Message[] createAMCLWorkMessages(MessageFactory mFactory){
-        Message[] messages =  new Message[Ref.MC_PURPOSES.length()*Ref.TOTAL_SEGMENTS];
-        //Worker is asked to calculate the Mode Choice logsum for a particular
-        //purpose/segment pair.  Total number of messages is nPurposes*nSegments.
-        for (int purpose = 0; purpose < Ref.MC_PURPOSES.length(); ++purpose) {
-            for (int segment = 0; segment < Ref.TOTAL_SEGMENTS; ++segment) {
-                Message mcLogsumMessage = mFactory.createMessage();
-                mcLogsumMessage.setId(MessageID.CREATE_MC_LOGSUMS);
-                mcLogsumMessage.setValue("purpose",
-                    new Character(Ref.MC_PURPOSES.charAt(purpose)));
-                mcLogsumMessage.setValue("segment", new Integer(segment));
-                messages[(purpose*Ref.TOTAL_SEGMENTS) + segment] = mcLogsumMessage;
-            }
-        }
-        return messages;
-    }
+    
 
     private Message[] createWorkplaceLocationWorkMessages(MessageFactory mFactory){
         //Sort the person array by segment, occupation code so the first person will
@@ -361,9 +351,9 @@ public class PTServerTask extends Task{
 
     private Message[] createTazUpdateWorkMessages(MessageFactory mFactory, int nWorkQueues){
         Message[] messages =  new Message[nWorkQueues];
-        int[] householdsByTaz = new int[Ref.MAXZONENUMBER+1];
-        int[] postSecOccup = new int[Ref.MAXZONENUMBER+1];
-        int[] otherSchoolOccup = new int[Ref.MAXZONENUMBER+1];
+        int[] householdsByTaz = new int[Ref.MAX_ZONE_NUMBER+1];
+        int[] postSecOccup = new int[Ref.MAX_ZONE_NUMBER+1];
+        int[] otherSchoolOccup = new int[Ref.MAX_ZONE_NUMBER+1];
 
         for(int p=0;p<persons.length;p++){
             if(persons[p].occupation==OccupationCode.P0ST_SEC_TEACHERS)
@@ -408,7 +398,7 @@ public class PTServerTask extends Task{
     private Message[] createHHWorkMessages(MessageFactory mFactory, int nWorkQueues){
         Arrays.sort(households); //first sort by workLogsumSegment, nonWorkLogsumSegment
         int nMsgsPerQueue = 20;
-        int blockSize = Math.min(Ref.MAXBLOCKSIZE, households.length); //might have less than 5000 households
+        int blockSize = Math.min(Ref.MAX_BLOCK_SIZE, households.length); //might have less than 5000 households
         int hhCount = 0;
         Message[] messages = new Message[nMsgsPerQueue * nWorkQueues];
         for(int m=0; m<(nMsgsPerQueue * nWorkQueues); m++){
