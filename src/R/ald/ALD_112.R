@@ -664,7 +664,7 @@ totQ.af <- cbind(currQ.af$res, currQ.af$nres, quant.af$agfor)
  # @return "FloorspaceInventory.csv" - matrix results in the ALDCurrDirectory
 ##/
 # Write in ALD matrix format that ALD and PT can read
-writeTmTable(totQ.af, paste(ALDCurrDirectory, "FloorspaceInventory.csv", sep="/"), "Azone")
+writeTmTable(totQ.af, ColNm="AZone", FileNm=paste(ALDCurrDirectory, "FloorspaceInventory.csv", sep="/"))
 
 ##/
  # Write out residential and nonresidential floorspace allocation calculations for diagnostic purposes
