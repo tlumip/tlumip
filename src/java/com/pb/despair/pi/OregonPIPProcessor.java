@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
+import java.util.HashMap;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
@@ -11,6 +12,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.TableDataSetCollection;
 import com.pb.common.datafile.TableDataSetIndex;
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.matrix.AlphaToBeta;
 import com.pb.despair.model.IncomeSize;
 import com.pb.despair.model.Industry;
 import com.pb.despair.model.LaborProductionAndConsumption;
@@ -22,6 +24,7 @@ import com.pb.despair.model.TransportKnowledge;
  *
  */
 public class OregonPIPProcessor extends PIPProcessor {
+    private boolean debug = false;
 
     public OregonPIPProcessor() {
         super();
@@ -51,6 +54,12 @@ public class OregonPIPProcessor extends PIPProcessor {
             logger.info("Deleted old FloorspaceW.csv to prepare for new file");
         }
 
+        File zoneW = new File(currPath + "ActivitiesZonalValuesW.csv");
+        if(zoneW.exists()){
+            zoneW.delete();
+            logger.info("Deleted old ActivitiesZonalValuesW.csv to prepare for new file");
+        }
+
         String oregonInputsString = ResourceUtil.getProperty(rb, "pi.oregonInputs");
         if (oregonInputsString != null ) {
             if (oregonInputsString.equalsIgnoreCase("true")) {
@@ -65,12 +74,9 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     private void doOregonSpecificInputProcessing() {
-        if(loadTableDataSet("ActivitesW","pi.current.data") == null){
-            createActivitiesWFile();
-        }
-        if(loadTableDataSet("FloorspaceW","pi.current.data") == null){
-            createFloorspaceWFile();
-        }
+        createActivitiesWFile();
+        createFloorspaceWFile();
+        createActivitiesZonalValuesWFile();
     }
 
     private void createActivitiesWFile(){
@@ -161,6 +167,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     */
 
     public void createFloorspaceWFile() {
+        logger.info("Creating new FloorspaceW.csv using current ALD PIAgForestFloorspace.csv file");
         //Read in the FloorspaceI.csv file that was produced by ALD
         TableDataSet floorspaceTable = loadTableDataSet("FloorspaceI","ald.input.data");
         //And the PIAgForestFloorspace.csv file that was created by Tara
@@ -215,7 +222,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                 }
             }
         }
-        logger.info("Replaced " + replaceCount + " values in the Floorspace Table");
+        logger.fine("Replaced " + replaceCount + " values in the Floorspace Table");
         //Now write out the FloorspaceW.csv file
         String piOutputsPath = ResourceUtil.getProperty(rb, "output.data");
         CSVFileWriter writer = new CSVFileWriter();
@@ -247,6 +254,126 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
             fi.inventory[alphaZone]+= quantity;
         }
+    }
+    /* This method will read in the base year ActivitiesZonalValues file and
+    * update the "InitialQuantity" field with the previous year's construction values from ALD's
+    * Increment.csv file, and the "Quantity" numberfrom the previous year's ActivityLocations.csv
+    * pi file
+    */
+    private void createActivitiesZonalValuesWFile(){
+        logger.info("Creating new ActivitiesZonalValuesW.csv using current PI and ALD data");
+        //First read in the t0/pi/ActivitiesZonalValuesI.csv file
+        TableDataSet zonalValuesTable = loadTableDataSet("ActivitiesZonalValuesI","pi.base.data");
+
+        //Next read in the alpha2beta.csv file from the reference directory.  This will set
+        //up a look-up array so that we know which alphazones are in which beta zones
+        //It will also set the max alpha and max beta zone which we can "get" from a2bMap.
+        TableDataSet alpha2betaTable = loadTableDataSet("alpha2beta","reference.data");
+        AlphaToBeta a2bMap = new AlphaToBeta(alpha2betaTable);
+
+        //Next read in the previous year's pi/ActivityLocations.csv file.
+        // ( if this file doesn't exist we will assume that it is year 1 and we do not
+        //   need to integrate the 2 files)
+        logger.info("\tChecking for previous year's ActivityLocations.csv file");
+        TableDataSet actLocationTable = loadTableDataSet("ActivityLocations","pi.previous.data");
+        if(actLocationTable != null){  // null implies that the file was not there so can skip this step
+            logger.info("\t\tFound it!  Updating Initial Quantities....");
+            HashMap activityQuantities = new HashMap();
+            for(int r= 1; r<= actLocationTable.getRowCount();r++){
+                String activity = actLocationTable.getStringValueAt(r,"Activity"); //get the activityName
+                int zone = (int) actLocationTable.getValueAt(r,"ZoneNumber");
+                float qty = actLocationTable.getValueAt(r,"Quantity");
+                if(!activityQuantities.containsKey(activity)){  //this activity is not yet in the Map
+                    float[] qtyByZone = new float[a2bMap.getMaxBetaZone() + 1];
+                    qtyByZone[zone] = qty;
+                    activityQuantities.put(activity,qtyByZone);
+                }else{ //this activity is already in the map, so get the array and put in the value
+                    ((float[]) activityQuantities.get(activity))[zone]=qty;
+                }
+            } //next row of table
+
+            //Now that all the info is in the HashMap, go thru the ZonalValuesTable and update
+            //the info
+            int initQtyCol = zonalValuesTable.getColumnPosition("InitialQuantity");
+            int count = 0;
+            for(int r=1; r<= zonalValuesTable.getRowCount(); r++){
+                String activity = zonalValuesTable.getStringValueAt(r,"Activity");
+                int zone = (int) zonalValuesTable.getValueAt(r,"ZoneNumber");
+                float qty = ((float[])activityQuantities.get(activity))[zone];
+                zonalValuesTable.setValueAt(r,initQtyCol,qty);
+                count++;
+            }
+            logger.info("\t\t\tWe replaced " + count + " quantities in the ZonalValuesTable");
+        }//  We are done integrating the ActivityLocations info into ZonalValuesTable
+        else logger.info("\tNo base year ActivityLocations file - Do the ConstructionSizeTerm updates");
+        //Now we need to read in the floorspace quantities from the ALD Increments.csv file
+        //add up the sqft by betazone and then update the "SizeTerm" in the ZonalValuesTable
+        int nFlrNames = 0;                                   //use thess to make sure the increments
+        int[] nAddsByZone = new int[a2bMap.getMaxAlphaZone() + 1]; //file only lists each flrType/zone pair once.
+        String currentFlrName = "";
+
+        logger.info("\tChecking for current year ALD Increments.csv file");
+        TableDataSet incrementsTable = loadTableDataSet("Increments","ald.input.data");
+        if(incrementsTable == null) logger.warning("\tALD has not been run or did not output an Increments.csv file." +
+                "  The construction size terms will not be updated. ");
+        else {
+            logger.info("\t\tFound it! We are now updating the construction size terms....");
+            float[] mSqftByAZone = new float[a2bMap.getMaxAlphaZone() + 1];
+            for(int r=1; r<= incrementsTable.getRowCount(); r++){
+                String flrName = incrementsTable.getStringValueAt(r,"FLRName");
+                if(!flrName.equals(currentFlrName)){
+                    nFlrNames++;
+                    currentFlrName = flrName;
+                }
+                int zone = (int)incrementsTable.getValueAt(r,"AZone");
+                float mSqft = incrementsTable.getValueAt(r,"IncMSQFT");
+                if(mSqft < 0) mSqft=0;  //don't add up negative numbers
+                mSqftByAZone[zone] += mSqft;
+                nAddsByZone[zone]++;
+            }
+            //Each floor name should have had 1 value for each zone so each element in the nAddsByZone array
+            //should be equal to the nFlrNames.  If not, we have a problem with the Increments.csv file
+            logger.info("\t\t\tEach Zone should have added up " + nFlrNames + " values");
+            int[] aZones = a2bMap.getAlphaExternals();
+            for(int i=1; i< aZones.length; i++){
+                if(nAddsByZone[aZones[i]] != nFlrNames){
+                    logger.warning("\t\t\t\tZone " + a2bMap.getAlphaExternals()[i] + "added up " + nAddsByZone[a2bMap.getAlphaExternals()[i]]);
+                    logger.warning("\t\t\t\tCheck the ald/Increments.csv file - there is an error");
+                }
+            }
+            logger.info("\t\t\tIf no warning messages appeared, proceed");
+
+            //Now that we have the total by alpha zone we need to get the total by beta zone
+            float[] mSqftByBZone = new float[a2bMap.getMaxBetaZone() + 1];
+            for(int i=1; i<aZones.length; i++){
+                int betaZone = a2bMap.getBetaZone(aZones[i]);
+                if(debug) logger.info("alphaZone " + aZones[i] + " = betaZone " + betaZone);
+                mSqftByBZone[betaZone] += mSqftByAZone[aZones[i]];
+            }
+
+            //And then update the ZonalValuesTable
+            int sizeTermCol = zonalValuesTable.getColumnPosition("SizeTerm");
+            for(int r=1; r<=zonalValuesTable.getRowCount();r++){
+                String activity = zonalValuesTable.getStringValueAt(r,"Activity");
+                if(!activity.equalsIgnoreCase("CONSTRUCTION")) continue;
+                else{
+                    int zone = (int)zonalValuesTable.getValueAt(r,"ZoneNumber");
+                    zonalValuesTable.setValueAt(r,sizeTermCol,mSqftByBZone[zone]);
+                }
+            }
+        }//the SizeTerms have been updated
+
+        //OK, now write out the zonalValuesTable as ActivitiesZonalValuesW.csv into
+        //the current pi directory
+        logger.info("Writing out the ActivitiesZonalValuesW.csv file to the current pi directory");
+        String piOutputsPath = ResourceUtil.getProperty(rb, "output.data");
+        CSVFileWriter writer = new CSVFileWriter();
+        try {
+            writer.writeFile(zonalValuesTable, new File(piOutputsPath + "ActivitiesZonalValuesW.csv"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
