@@ -440,6 +440,9 @@ public class PIModel extends ModelComponent {
         double meritMeasure = 0;
         Iterator commodities = Commodity.getAllCommodities().iterator();
         while (commodities.hasNext()) {
+            int numExchanges =0;
+            double totalSurplus = 0;
+            double totalPrice  = 0;
             double maxSurplus = 0;
             double maxSurplusSigned = 0;
             double maxPrice = Double.MIN_VALUE;
@@ -460,6 +463,9 @@ public class PIModel extends ModelComponent {
                     maxSurplus = Math.abs(surplus);
                     maxSurplusSigned = surplus;
                 }
+                totalSurplus += ex.exchangeSurplus();
+                totalPrice += ex.getPrice();
+                numExchanges ++;
                 if (ex.getPrice() > maxPrice) {
                     maxPrice = ex.getPrice();
                     maxPriceExchange = ex;
@@ -485,6 +491,8 @@ public class PIModel extends ModelComponent {
             if (minPriceExchange != null) {
                 logger.info("\t PMin " + minPrice + " in " + minPriceExchange);
             }
+            logger.info("\t Total surplus "+totalSurplus);
+            logger.info("\t Average price "+totalPrice/numExchanges);
             
             if (commodityMeritMeasure > c.oldMeritMeasure) {
                 // reactivate this if you need separate step sizes for different commodities
@@ -563,11 +571,22 @@ public class PIModel extends ModelComponent {
             } else {
                 List exchanges = c.getAllExchanges();
                 deltaPricesDouble = new double[exchanges.size()];
+                double totalIncrease = 0;
+                int numExchanges = 0;
                 for (int xNum=0;xNum<exchanges.size();xNum++) {
                     Exchange x = (Exchange) exchanges.get(xNum);
                     double[] sAndD = x.calculateSurplusAndDerviative();
                     double increase = (-sAndD[0]-totalSurplusVector.get(commodityNumber)/deltaPricesDouble.length)/sAndD[1];
-                    deltaPricesDouble[xNum] = increase;
+                    
+                    //commented out for debugging total price change calcs,Jan 17 2005 
+                    //deltaPricesDouble[xNum] = increase;
+                    totalIncrease += increase;
+                    numExchanges ++;
+                }
+                // but average price change for this commodity should be zero.
+                for (int xNum=0;xNum<exchanges.size();xNum++) {
+                    //commented out for debugging total price change calcs,Jan 17 2005 
+//                    deltaPricesDouble[xNum] -= totalIncrease/numExchanges;
                 }
             }
             Iterator exIt = c.getAllExchanges().iterator();

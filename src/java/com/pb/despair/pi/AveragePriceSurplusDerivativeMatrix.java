@@ -53,6 +53,7 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
                     throw new RuntimeException("Can't solve for amounts in zone",e);
                 }
                 DenseMatrix dulbydprice = new DenseMatrix(fpl.numColumns(),numCommodities);
+                dulbydprice.zero();
                 int[] rows = new int[1];
                 int[] columns = new int[numCommodities];
                 double[][] valuesToAdd = new double[1][];

@@ -514,8 +514,13 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         if (! (pf instanceof LogitSubstitution)) throw new RuntimeException("full derivative calculations can only be used with LogitSubstitution right now");
         LogitSubstitution cfl = (LogitSubstitution) cf;
         LogitSubstitution pfl = (LogitSubstitution) pf;
-        DiagMatrix dSellingUtilitiesByDPrices = new DiagMatrix(pf.size());
-        DiagMatrix dBuyingUtilitiesByDPrices = new DiagMatrix(cf.size());
+        
+        // using DiagMatrix is too slow -- use double[] instead
+        //DiagMatrix dSellingUtilitiesByDPrices = new DiagMatrix(pf.size());
+        //DiagMatrix dBuyingUtilitiesByDPrices = new DiagMatrix(cf.size());
+        
+        double[] sellingPriceCoefficients = new double[pf.size()];
+        double[] buyingPriceCoefficients = new double[cf.size()];
         
         
 //        double[][] dSellingUtilitiesByDPrices = new double[pf.size()][firstDerivatives.sizeOfColumns()];
@@ -524,38 +529,57 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         for (int c = 0; c < pf.size(); c++) {
             Commodity commodity = (Commodity) pf.commodityAt(c);
             if (commodity != null) {
-                dSellingUtilitiesByDPrices.set(c,c,commodity.getSellingUtilityPriceCoefficient());
+                // this was this DiagMatrix
+                //dSellingUtilitiesByDPrices.set(c,c,commodity.getSellingUtilityPriceCoefficient());
+                sellingPriceCoefficients[c]=commodity.getSellingUtilityPriceCoefficient();
             }
         }
         
         for (int c = 0; c < cf.size(); c++) {
             Commodity commodity = (Commodity) cf.commodityAt(c);
             if (commodity != null) {
-                dBuyingUtilitiesByDPrices.set(c,c,commodity.getBuyingUtilityPriceCoefficient());
+                // this was with DiagMatrix
+                //dBuyingUtilitiesByDPrices.set(c,c,commodity.getBuyingUtilityPriceCoefficient());
+                buyingPriceCoefficients[c] = commodity.getBuyingUtilityPriceCoefficient();
             }
         }
-        mt.DenseMatrix dSellingProductionByDPrices = new mt.DenseMatrix(pf.size(),pf.size());
-        mt.DenseMatrix productionDerivatives = new mt.DenseMatrix(pfl.productionUtilitiesDerivatives(sellingCommodityUtilities));
+        // this is too slow too, use double[][] instead.
+        //mt.DenseMatrix dSellingProductionByDPrices = new mt.DenseMatrix(pf.size(),pf.size());
+        // mt.DenseMatrix productionDerivatives = new mt.DenseMatrix(pfl.productionUtilitiesDerivatives(sellingCommodityUtilities)); //0.94% of time here
+        double[][] productionDerivatives = pfl.productionUtilitiesDerivatives(sellingCommodityUtilities);
         // multiplying by a diagonal is very slow in mtj; not (by default) smart enough to do it quickly.  
         // so instead we transpose, and premultiply, then transpose again.
-        dSellingUtilitiesByDPrices.mult(getQuantity(),productionDerivatives.transpose(),dSellingProductionByDPrices); // 0.25% of time here
-        dSellingProductionByDPrices.transpose();
+        // but that's still too slow, so just do it in double[][] manually
+        //dSellingUtilitiesByDPrices.mult(getQuantity(),productionDerivatives.transpose(),dSellingProductionByDPrices); //3.33 % of time here (0.25% of time with full commodity derivs)
+        //dSellingProductionByDPrices.transpose();// 1.48% of time here
 
         // this is the original way
         //productionDerivatives.mult(getQuantity(),dSellingUtilitiesByDPrices,dSellingProductionByDPrices);
+        double quantity = getQuantity();
+        for (int row=0;row<productionDerivatives.length;row++) {
+            for (int col=0;col<productionDerivatives[row].length;col++) {
+                averagePriceSurplusMatrix.add(row,col,productionDerivatives[row][col]*(quantity*sellingPriceCoefficients[col]));
+            }
+        }
         
-        mt.DenseMatrix dBuyingProductionByDPrices = new mt.DenseMatrix(cf.size(),cf.size());
-        mt.DenseMatrix consumptionDerivatives = new mt.DenseMatrix(cfl.productionUtilitiesDerivatives(buyingCommodityUtilities));
+        //mt.DenseMatrix dBuyingProductionByDPrices = new mt.DenseMatrix(cf.size(),cf.size());
+        //mt.DenseMatrix consumptionDerivatives = new mt.DenseMatrix(cfl.productionUtilitiesDerivatives(buyingCommodityUtilities)); // 1.2% here
+        double[][] consumptionDerivatives = cfl.productionUtilitiesDerivatives(buyingCommodityUtilities);
         
         // fancy way with transpose
-        dSellingUtilitiesByDPrices.mult(getQuantity(),consumptionDerivatives.transpose(),dBuyingProductionByDPrices); // 0.25% of time here
-        dBuyingProductionByDPrices.transpose();
+        //dSellingUtilitiesByDPrices.mult(getQuantity(),consumptionDerivatives.transpose(),dBuyingProductionByDPrices); //3.27% of time here // 0.25% of time here
+        //dBuyingProductionByDPrices.transpose(); // 1.5% of time here
         // original way
         //consumptionDerivatives.mult(getQuantity(),dBuyingUtilitiesByDPrices,dBuyingProductionByDPrices);
+        for (int row=0;row<consumptionDerivatives.length;row++) {
+            for (int col=0;col<consumptionDerivatives[row].length;col++) {
+                averagePriceSurplusMatrix.add(row,col,consumptionDerivatives[row][col]*quantity*buyingPriceCoefficients[col]); 
+            }
+        }
 
         // put stuff in right place
-        averagePriceSurplusMatrix.add(dSellingProductionByDPrices);
-        averagePriceSurplusMatrix.add(dBuyingProductionByDPrices);
+        //averagePriceSurplusMatrix.add(dSellingProductionByDPrices);//1.3% of time here
+        //averagePriceSurplusMatrix.add(dBuyingProductionByDPrices);
     }
 
 //    /**
