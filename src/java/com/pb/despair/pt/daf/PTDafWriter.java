@@ -90,6 +90,8 @@ public class PTDafWriter extends MessageProcessingTask{
             PTHousehold[] hhs = (PTHousehold[])msg.getValue("households");
             summarizeTours(hhs);
             writeResults(hhs);
+            
+            hhs = null;
         }
         else if(msg.getId().equals(MessageID.ALL_HOUSEHOLDS_PROCESSED)){
             PTSummarizer.writeTourSummaryToFile(ResourceUtil.getProperty(rb,"tourSummary.file"));
@@ -117,7 +119,7 @@ public class PTDafWriter extends MessageProcessingTask{
             MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP, new File(path + m.getName() + ".zip"));  //Open for writing
             mw.writeMatrix(m);
 
-            logger.info("Wrote Matrix "+m.getName()+" to disk in "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+            logger.info("Wrote Matrix "+m.getName()+" to disk in "+(System.currentTimeMillis()-startTime)/1000.0 +" seconds");
             logger.info("Free memory after writing Matrix : "+m.getName()+" memory: "+Runtime.getRuntime().freeMemory());
             msg.setValue("matrix",null);
         }
@@ -133,7 +135,7 @@ public class PTDafWriter extends MessageProcessingTask{
             MatrixWriter mw = MatrixWriter.createWriter(MatrixType.BINARY,new File(path + m.getName() + ".binary"));
             mw.writeMatrix(m);
 
-            logger.info("Wrote Matrix "+m.getName()+".binary to disk in "+(System.currentTimeMillis()-startTime)/1000+" seconds");
+            logger.info("Wrote Matrix "+m.getName()+".binary to disk in "+(System.currentTimeMillis()-startTime)/1000.0+" seconds");
             logger.info("Free memory after writing Matrix : "+m.getName()+" memory: "+Runtime.getRuntime().freeMemory());
             msg.setValue("matrix",null);
         }
@@ -155,7 +157,6 @@ public class PTDafWriter extends MessageProcessingTask{
      */
     private void summarizeTours(PTHousehold[] hhs) {
         PTSummarizer.summarizeTours(hhs);
-        hhs = null;
     }//end of Summarize Tours
 
     /**
@@ -165,7 +166,6 @@ public class PTDafWriter extends MessageProcessingTask{
      */
     private void writeResults(PTHousehold[] hhs) {
         results.writeResults(hhs);
-        hhs = null;
     }
 
 }
