@@ -79,8 +79,7 @@ public class HouseholdWorker extends MessageProcessingTask {
     int currentWorkSegment = -1;
     int currentNonWorkSegment =-1;
     
-    TableDataSet alphaToBetaTable;
-    AlphaToBeta a2b = null;
+    static AlphaToBeta a2b = null;
 
     PTResults results;
 
@@ -129,7 +128,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                 ptInputs.readTazData();
 
                 LaborFlows lf = new LaborFlows(rb);
-                alphaToBetaTable = loadTableDataSet(rb,"alphatobeta.file");
+                TableDataSet alphaToBetaTable = loadTableDataSet(rb,"alphatobeta.file");
                 a2b = new AlphaToBeta(alphaToBetaTable);
                 lf.setZoneMap(alphaToBetaTable);
 
