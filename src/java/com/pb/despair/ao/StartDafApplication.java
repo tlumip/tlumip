@@ -53,7 +53,6 @@ public class StartDafApplication {
 
     private File getCommandFile(String cmdFilePath){
         File cmdFile = new File(cmdFilePath+"commandFile.txt");
-//        File cmdFile = new File("/home/christi/JavaModules/commandFile.txt");
         if(!cmdFile.exists()){
             logger.info("The file used by the FileMonitor class does not exist - creating file");
             try {
