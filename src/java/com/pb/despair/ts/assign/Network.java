@@ -79,7 +79,7 @@ public class Network implements Serializable {
     HashMap globalPropertyMap = null;
 
 
-    public Network ( HashMap tsPropertyMap, HashMap globalPropertyMap, String period ) {
+    public Network ( HashMap tsPropertyMap, HashMap globalPropertyMap, String period, float volumeFactor ) {
 
 		float[][] turnDefs = null;
 
@@ -123,7 +123,7 @@ public class Network implements Serializable {
 		ipa = setForwardStarArrays ();
 		
 		// calculate the derived link attributes for the network
-		derivedLinkTable = deriveLinkAttributes();
+		derivedLinkTable = deriveLinkAttributes( volumeFactor );
 
 
 		// merge the derived link attributes into the linkTable TableDataSet,
@@ -348,22 +348,6 @@ public class Network implements Serializable {
 		    this.WALK_SPEED = Double.parseDouble ( (String)globalPropertyMap.get( "WALK_MPH" ) );
 
 		
-<<<<<<< .mine
-		if ( period == "peak" ) {
-			if ( (String)globalPropertyMap.get( "AM_PEAK_VOL_FACTOR" ) != null ){
-				this.volumeFactor = Float.parseFloat ( (String)globalPropertyMap.get( "AM_PEAK_VOL_FACTOR" ) );
-				logger.info("AM_PEAK_VOL_FACTOR = " + volumeFactor);
-			}
-		}
-		else {
-			if ( (String)globalPropertyMap.get( "OFF_PEAK_VOL_FACTOR" ) != null ){
-				this.volumeFactor = Float.parseFloat ( (String)globalPropertyMap.get( "OFF_PEAK_VOL_FACTOR" ) );
-				logger.info("OFF_PEAK_VOL_FACTOR = " + volumeFactor);
-			}
-		}
-		
-=======
->>>>>>> .r398
     }
     
 	/**
@@ -395,8 +379,8 @@ public class Network implements Serializable {
 	 * Use this method to read the Emme2 d211 text file format network into
 	 * a simple data table.
 	 */
-	private TableDataSet deriveLinkAttributes () {
-	    logger.info("Inside the deriveLinkAttributes method, volumeFactor is " + volumeFactor);
+	private TableDataSet deriveLinkAttributes ( float volumeFactor ) {
+
 		int[] turnPenaltyIndex = new int[linkTable.getRowCount()];
 		int[] ttf = new int[linkTable.getRowCount()];
 		float[] length = new float[linkTable.getRowCount()];
@@ -459,6 +443,7 @@ public class Network implements Serializable {
 
 			capacity[i] *= linkTable.getValueAt( i+1, "lanes" );
 			originalCapacity[i] = capacity[i];
+			capacity[i] /= volumeFactor;
 			
 
 			float dist = linkTable.getValueAt( i+1, "dist" );
@@ -506,12 +491,13 @@ public class Network implements Serializable {
 
 			
 			freeFlowSpeed[i] = ul1;
-			congestedTime[i] = ul1;
+			congestedTime[i] = (float)((dist/ul1)*60.0);
 			freeFlowTime[i] = congestedTime[i];
 			oldTime[i] = congestedTime[i];
+			float ul3 = (float)((dist/ul1)*60.0);
 
 			linkTable.setValueAt( i+1, linkTable.getColumnPosition("ul1"), ul1);
-			linkTable.setValueAt( i+1, linkTable.getColumnPosition("ul3"), ul1);
+			linkTable.setValueAt( i+1, linkTable.getColumnPosition("ul3"), ul3);
 
 		}
 	    
