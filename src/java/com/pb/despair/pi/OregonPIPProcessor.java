@@ -37,19 +37,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         super(timePeriod, piRb, globalRb);
     }
 
-    protected static class FloorspaceQuantityStorage {
-        final String floorspaceTypeName;
-        final float [] inventory;
 
-        FloorspaceQuantityStorage(String commodityName, int arraySize) {
-            floorspaceTypeName = commodityName;
-            inventory = new float[arraySize];
-        }
-
-        public Commodity getFloorspaceType() {
-            return Commodity.retrieveCommodity(floorspaceTypeName);
-        }
-    }
 
     /* (non-Javadoc)
      * @see com.pb.despair.pi.PIPProcessor#setUpPi()
