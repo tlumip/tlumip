@@ -46,7 +46,7 @@ public class CalibrationFileWriter {
         for(int i=0; i< dataSets.length; i++){
             String fileName = ResourceUtil.getProperty(rb, (dataSets[i].getName()+ ".file"));
             String fullPath = outputPath+fileName;
-            logger.info("Full path to output file is: " + fullPath);
+            logger.fine("Full path to output file is: " + fullPath);
             writeCalibrationOutputFile(fullPath, dataSets[i]);
         }
 

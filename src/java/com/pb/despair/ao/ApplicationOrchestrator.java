@@ -51,9 +51,9 @@ public class ApplicationOrchestrator {
         this.t = timeInterval;
         this.rb = findResourceBundle(findPathToResourceBundle("ao"));
 
-        this.baseYear = Integer.parseInt(ResourceUtil.getProperty(this.rb, "baseYear"));
+        this.baseYear = Integer.parseInt(ResourceUtil.getProperty(this.rb, "base.year"));
 
-        String calibrationProperty = ResourceUtil.getProperty(rb,"calibrationMode");
+        String calibrationProperty = ResourceUtil.getProperty(rb,"calibration.mode");
 
         if(calibrationProperty != null){
             boolean calibrate = new Boolean(calibrationProperty).booleanValue();

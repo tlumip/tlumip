@@ -18,7 +18,7 @@ import java.io.File;
  */
 public class CalibrationManager {
     private static Logger logger = Logger.getLogger("com.pb.despair.CalibrationManager");
-    boolean debug = true;
+    boolean debug = false;
 
     ResourceBundle rb;          //calibration.properties which will have the names of all calibration
                                 //files for all applications
