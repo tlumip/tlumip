@@ -55,7 +55,7 @@ public class SPGnew {
 	static final int NUM_WORKERS_ATTRIB_INDEX = PUMSData.HHWRKRS_INDEX;
 	static final int PERSON_ARRAY_ATTRIB_INDEX = PUMSData.PERSON_ARRAY_INDEX;
 
-	static final double MINIMUM_REQUIRED_BALANCING_FACTOR = 1.0e-7;
+	static final double MINIMUM_REQUIRED_BALANCING_FACTOR = 1.0e-5;
 	
 	// person attributes for person j:
 	// industry: PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0
@@ -190,6 +190,7 @@ public class SPGnew {
 		
 		// read the number of households in each workers per household category.
 		workers = new Workers();
+        logger.info("Worker Marginal File Path" + (String)propertyMap.get("workers.marginal.fileName"));
 		hhWorkerTargets = workers.getWorkersPerHousehold( (String)propertyMap.get("workers.marginal.fileName") );
 		
 		// adjust the hh worker targets to be consistent with total employment
