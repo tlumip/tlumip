@@ -13,8 +13,8 @@ public class PersonDurationAttributes{
 
      public int singleAdultWithOnePlusChildren;
      public int autos0;
-     public int age18to20;
-     public int age21to25;
+     public int age19to21;
+     public int age22to24;
      public int industryEqualsRetail;
      public int industryEqualsPersonServices;
      public int worksTwoJobs;
@@ -35,8 +35,8 @@ public class PersonDurationAttributes{
  
           singleAdultWithOnePlusChildren=0;
           autos0=0;
-          age18to20=0;
-          age21to25=0;
+          age19to21=0;
+          age22to24=0;
           industryEqualsRetail=0;
           industryEqualsPersonServices=0;
           worksTwoJobs=0;
@@ -45,10 +45,10 @@ public class PersonDurationAttributes{
           female=0;
           householdSize3Plus=0;
 
-          if(thisPerson.age>=18 && thisPerson.age<21)
-              age18to20=1; 
-          if(thisPerson.age>=21 && thisPerson.age<25)
-               age21to25=1;          
+          if(thisPerson.age>=19 && thisPerson.age<22)
+              age19to21=1;
+          if(thisPerson.age>=22 && thisPerson.age<25)
+               age22to24=1;
           if(thisPerson.age>=25)
                age25Plus=1;
           
@@ -78,7 +78,7 @@ public class PersonDurationAttributes{
           for(int i=0;i<thisHousehold.persons.length;++i){
                if(thisHousehold.persons[i].age<5)
                     ++children;
-               if(thisHousehold.persons[i].age>19)
+               if(thisHousehold.persons[i].age>=19)
                     ++adults;
           }
           if(thisPerson.age>19 && children>0 && adults==1)

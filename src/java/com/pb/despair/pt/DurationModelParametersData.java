@@ -61,7 +61,7 @@ public class DurationModelParametersData {
                 parameterObject.female                                 = table.getValueAt(rowNumber,table.getColumnPosition("female"));
                 parameterObject.income60Plus                           = table.getValueAt(rowNumber,table.getColumnPosition("income60Plus"));
                 parameterObject.worksTwoJobs                           = table.getValueAt(rowNumber,table.getColumnPosition("worksTwoJobs"));
-                parameterObject.age18to20                              = table.getValueAt(rowNumber,table.getColumnPosition("age18to20"));
+                parameterObject.age19to21                              = table.getValueAt(rowNumber,table.getColumnPosition("age19to21"));
                 parameterObject.age25Plus                              = table.getValueAt(rowNumber,table.getColumnPosition("age25Plus"));
                 parameterObject.autos0                                 = table.getValueAt(rowNumber,table.getColumnPosition("autos0"));
                 parameterObject.industryEqualsRetail                   = table.getValueAt(rowNumber,table.getColumnPosition("industryEqualsRetail"));

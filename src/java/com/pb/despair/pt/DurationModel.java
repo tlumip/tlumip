@@ -241,7 +241,7 @@ public class DurationModel{
                + param.toursEquals3Plus*thisPattern.toursEquals3Plus     //Three or more tours in pattern
                + param.singleAdultWithOnePlusChildren*thisPersonAttributes.singleAdultWithOnePlusChildren//Single adult with 1+ children
                + param.autos0*thisPersonAttributes.autos0     //0 Autos
-               + param.age18to20*thisPersonAttributes.age18to20 //Age 18to20
+               + param.age19to21*thisPersonAttributes.age19to21 //Age 19to21
                + param.shopOnlyInPattern*thisPattern.shopOnly                //Only shop activities in pattern
                + param.recreateOnlyInPattern*thisPattern.recreateOnly           //Only recreate activities in pattern
                + param.otherOnlyInPattern*thisPattern.otherOnly           //Only other activities in pattern
