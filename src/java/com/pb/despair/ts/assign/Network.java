@@ -294,7 +294,7 @@ public class Network implements Serializable {
     	
 
     	// get the filename for the alpha/beta zone correspomdence file
-		String zoneIndexFile = (String) globalPropertyMap.get( "alphatobeta.file" );
+		String zoneIndexFile = (String) globalPropertyMap.get( "alpha2beta.file" );
 
 		// create a Halo object for defining the extent of the study area
 		AlphaToBeta a2b = new AlphaToBeta(new File(zoneIndexFile));
