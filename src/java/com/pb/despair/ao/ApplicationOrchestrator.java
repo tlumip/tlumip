@@ -11,6 +11,7 @@ import java.io.IOException;
 
 import com.pb.despair.model.ModelComponent;
 import com.pb.despair.ed.EDControl;
+import com.pb.despair.ed.EDSummarizer;
 import com.pb.despair.pi.PIModel;
 import com.pb.despair.ald.ALDModel;
 import com.pb.despair.spg.SPGnew;
@@ -118,21 +119,35 @@ public class ApplicationOrchestrator {
         writer.close();
     }
 
-    public void runEDModel(int timeInterval, ResourceBundle rb, int baseYear){
-        ModelComponent comp = new EDControl(baseYear,timeInterval,rb);
+    public void runEDModel(int timeInterval, ResourceBundle appRb, int baseYear){
+        //all calibration properties live in the ao.properties file
+        boolean createCalibrationFiles = (new Boolean(ResourceUtil.getProperty(this.rb,"create.calibration.files"))).booleanValue();
+        if(createCalibrationFiles){
+            createEDCalibrationFiles(baseYear, timeInterval, appRb);
+        }
+        ModelComponent comp = new EDControl(baseYear,timeInterval,appRb);
         comp.startModel(timeInterval);
 
     }
 
-    public void runALDModel(int timeInterval, ResourceBundle rb){
-        ALDModel ald = new ALDModel();
-        ald.setProperties(rb);
-        ald.startModel(timeInterval);
+    public void runALDModel(int timeInterval, ResourceBundle appRb){
+        ModelComponent comp = new ALDModel();
+        comp.setProperties(appRb);
+        comp.startModel(timeInterval);
     }
 
-    public void runSPG1Model(int timeInterval, ResourceBundle rb){
+    public void runALDDAFModel(int timeInterval, String pathToAppRb, String nodeName){
+        //Since AO doesn't communicate directly with ALD we need to write the absolute
+        //path to the resource bundle and the time interval into a file, "RunParams.txt"
+        //that will be read by the PIServer Task when the ALDDAF application is launched.
+        writeRunParamsToFile(timeInterval, pathToAppRb);
+        StartDafApplication appRunner = new StartDafApplication("alddaf", nodeName, timeInterval, rb);
+        appRunner.run();
+    }
 
-		SPGnew testSPG = new SPGnew(rb);
+    public void runSPG1Model(int timeInterval, ResourceBundle appRb){
+
+		SPGnew testSPG = new SPGnew(appRb);
 
 		testSPG.getHHAttributesFromPUMS();
 		testSPG.spg1();
@@ -142,9 +157,9 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runPIModel(int timeInterval, ResourceBundle rb){
+    public void runPIModel(int timeInterval, ResourceBundle appRb){
         ModelComponent comp = new PIModel();
-        comp.setProperties(rb);
+        comp.setProperties(appRb);
         comp.startModel(timeInterval);
     }
 
@@ -157,9 +172,9 @@ public class ApplicationOrchestrator {
         appRunner.run();
     }
 
-    public void runSPG2Model(int timeInterval, ResourceBundle rb){
+    public void runSPG2Model(int timeInterval, ResourceBundle appRb){
 
-		SPGnew testSPG = new SPGnew(rb);
+		SPGnew testSPG = new SPGnew(appRb);
         testSPG.spg2();
         testSPG.writeHHOutputAttributesFromPUMS();
 
@@ -171,15 +186,15 @@ public class ApplicationOrchestrator {
         appRunner.run();
     }
 
-    public void runCTModel(int timeInterval, ResourceBundle rb){
-        ModelComponent comp = new CTModel(rb);
+    public void runCTModel(int timeInterval, ResourceBundle appRb){
+        ModelComponent comp = new CTModel(appRb);
         comp.startModel(timeInterval);
 
     }
 
-    public void runTSModel(int timeInterval, ResourceBundle rb){
+    public void runTSModel(int timeInterval, ResourceBundle appRb){
 
-		TS ts = new TS(rb);
+		TS ts = new TS(appRb);
         ts.assignPeakAuto();
         ts.assignOffPeakAuto();
 
@@ -292,6 +307,9 @@ public class ApplicationOrchestrator {
         }else if(appName.equalsIgnoreCase("ALD")){
             logger.info("AO will now start ALD for simulation year " + (baseYear+t));
             ao.runALDModel(t, appRb);
+        }else if(appName.equalsIgnoreCase("ALDDAF")){
+            logger.info("AO will now start ALDDAF for simulation year " + (baseYear+t));
+            ao.runALDDAFModel(t, pathToAppRb,nodeName);
         }else if(appName.equalsIgnoreCase("SPG1")){
             logger.info("AO will now start SPG1 for simulation year " + (baseYear+t));
 			ao.runSPG1Model(t,appRb);
@@ -335,7 +353,33 @@ public class ApplicationOrchestrator {
 
     }
 
+    private void createEDCalibrationFiles(int baseYear, int timeInterval, ResourceBundle appRb){
+        //get the data location from ed's property file but all the calibration file names from the ao.properties file.
+        String dataLocation = ResourceUtil.getProperty(appRb, "defaultDataLocation");
+        //the following properties are listed in ao.properties
+        String calibrationOutputPath = ResourceUtil.getProperty(this.rb, "calibration.output.path");
+        String employmentFile = ResourceUtil.getProperty(this.rb, "ed.emp.output.file");
+        String activityFile = ResourceUtil.getProperty(this.rb, "ed.act.output.file");
+        String constructionFile = ResourceUtil.getProperty(this.rb, "ed.constr.output.file");
+        String populationFile = ResourceUtil.getProperty(this.rb, "ed.pop.output.file");
 
+        EDSummarizer.writeEmploymentCalibrationOutputFile(new File(calibrationOutputPath + "t" + (timeInterval-1) + "/ed/" + employmentFile),
+                                                          new File(dataLocation), (baseYear + timeInterval) ,
+                                                          calibrationOutputPath + "t" + timeInterval + "/ed/" + employmentFile);
+
+        EDSummarizer.writeActivityCalibrationOutputFile(new File(calibrationOutputPath + "t" + (timeInterval-1) + "/ed/" + activityFile),
+                                                          new File(dataLocation), (baseYear + timeInterval) ,
+                                                          calibrationOutputPath + "t" + timeInterval + "/ed/" + activityFile);
+
+        EDSummarizer.writeConstructionCalibrationOutputFile(new File(calibrationOutputPath + "t" + (timeInterval-1) + "/ed/" + constructionFile),
+                                                            new File(dataLocation), (baseYear + timeInterval) ,
+                                                            calibrationOutputPath + "t" + timeInterval + "/ed/" + constructionFile);
+
+        EDSummarizer.writePopulationCalibrationOutputFile(new File(calibrationOutputPath + "t" + (timeInterval-1) + "/ed/" + populationFile),
+                                                            new File(dataLocation), (baseYear + timeInterval) ,
+                                                            calibrationOutputPath + "t" + timeInterval + "/ed/" + populationFile);
+
+    }
 
 
 }

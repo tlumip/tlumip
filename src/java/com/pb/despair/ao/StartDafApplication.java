@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 public class StartDafApplication {
     private static Logger logger = Logger.getLogger("com.pb.despair.ao");
     private ResourceBundle rb; //this is ao.properties
-    private long commandSleepTime = 45000;
+    private long commandSleepTime = 52000;
     private long fileCheckSleepTime = 2000;
     private int t;
     String pathPrefix;
@@ -55,8 +55,14 @@ public class StartDafApplication {
         File cmdFile = new File(cmdFilePath+"commandFile.txt");
 //        File cmdFile = new File("/home/christi/JavaModules/commandFile.txt");
         if(!cmdFile.exists()){
-            logger.severe("The file used by the FileMonitor class does not exist - check path");
-            System.exit(10);
+            logger.info("The file used by the FileMonitor class does not exist - creating file");
+            try {
+                cmdFile.createNewFile();
+            } catch (IOException e) {
+                logger.severe(cmdFile.getAbsolutePath() + " could not be created");
+                e.printStackTrace();
+                System.exit(10);
+            }
         }
         logger.info("Command file has been found");
         return cmdFile;
@@ -151,7 +157,8 @@ public class StartDafApplication {
 
         //construct the path to the $appName_done.txt file
         //and delete the file if it already exists
-        String doneFile = pathPrefix + "t" + t + "/" + appName.substring(0,2) + "/" + appName + "_done.txt";
+        int appIndex = appName.indexOf("daf");
+        String doneFile = pathPrefix + "t" + t + "/" + appName.substring(0,appIndex) + "/" + appName + "_done.txt";
         logger.info("DoneFile Path: " + doneFile);
         appDone = new File(doneFile);
         deleteAppDoneFile(appDone);
