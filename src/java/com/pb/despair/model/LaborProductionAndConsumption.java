@@ -431,6 +431,7 @@ public class LaborProductionAndConsumption {
         float betaValue;
         float value;
         TableDataSet table = new TableDataSet();
+        table.setName(fName);
         table.appendColumn(zoneFloatArray(),"zoneNumber");
         Iterator o = occupationSet.iterator();
         while(o.hasNext()){
