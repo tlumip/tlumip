@@ -140,7 +140,8 @@ public class PIControl {
                 //TODO user specify whether to use full derivatives;
                 // warning! using full derivatives requires lots and lots of memory (e.g. maybe 14GB for Oregon).
                 // and hasn't been fully tested yet.
-                pi.calculateNewPrices();
+                pi.calculateNewPricesUsingBlockDerivatives();
+                //pi.calculateNewPrices();
                 //pi.calculateNewPricesUsingFullDerivatives();
                 
                 if (!nanPresent)nanPresent = pi.calculateCompositeBuyAndSellUtilities(); //distributed
@@ -168,6 +169,7 @@ public class PIControl {
                     pi.backUpToLastValidPrices();
                     nIterations = maxIterations-1;
                     logger.severe("!!  Can't get past infinity without going below minimum step size -- terminating at last valid prices");
+                    // TODO need to exit with a different error code if this happens -- this is worse than just not reaching our convergence criteria
                 } else {
                     pi.decreaseStepSizeAndAdjustPrices();
                     logger.info("!!  Not Improving -- decreasing step size to "+pi.getStepSize());

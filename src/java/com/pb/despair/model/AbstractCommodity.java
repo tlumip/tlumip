@@ -2,15 +2,14 @@
 
 package com.pb.despair.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Vector;
-import java.util.HashMap;
+import java.util.*;
 
 abstract public class AbstractCommodity {
 	
 	private static int nextCommodityNumber = 0;
-	protected static final HashMap allCommodities = new HashMap();
+    public final int commodityNumber;
+	protected static final HashMap allCommoditiesHashmap = new HashMap();
+    protected static final ArrayList allCommoditiesArrayList = new ArrayList();
 	/** An attribute that represents ... */
 	public final String name;
     /**
@@ -21,19 +20,22 @@ abstract public class AbstractCommodity {
 
     protected AbstractCommodity(String name) {
         this.name = name;
-        allCommodities.put(name,this);
-    }
+        this.commodityNumber = nextCommodityNumber;
+        nextCommodityNumber++;
+        allCommoditiesHashmap.put(name,this);
+        allCommoditiesArrayList.add(this);
+       }
 
-    /**
-     * This method is temporary and should be deleted.  It will throw an error. 
-     * The only reason it is here is because without a public default constructor 
-     * Together 4.1 refuses to show properties (with attributes and get and set methods) 
-     * properly on class diagrams. 
-     */
-    public AbstractCommodity() {
-        throw new Error("Don't instantiate AbstractCommodity");
-    }
-
+//    /**
+//     * This method is temporary and should be deleted.  It will throw an error. 
+//     * The only reason it is here is because without a public default constructor 
+//     * Together 4.1 refuses to show properties (with attributes and get and set methods) 
+//     * properly on class diagrams. 
+//     */
+//    public AbstractCommodity() {
+//        throw new Error("Don't instantiate AbstractCommodity");
+//    }
+//
 
 
     public void setCommodityTravelPreferences(TravelUtilityCalculatorInterface commodityTravelPreferences){ this.commodityTravelPreferences = commodityTravelPreferences; }
@@ -58,7 +60,7 @@ abstract public class AbstractCommodity {
      * @return An unmodifiable collection of all the commodities that have been created 
      */
     public static Collection getAllCommodities() {
-        return allCommodities.values();
+        return allCommoditiesArrayList;
     }
 
     

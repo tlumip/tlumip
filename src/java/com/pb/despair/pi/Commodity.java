@@ -181,7 +181,7 @@ public class Commodity extends AbstractCommodity {
     }
 
     public static Commodity retrieveCommodity(String name) {
-        Commodity commodity = (Commodity)allCommodities.get(name);
+        Commodity commodity = (Commodity)allCommoditiesHashmap.get(name);
         if (commodity == null) {
             return null;
         }
@@ -410,6 +410,21 @@ public class Commodity extends AbstractCommodity {
         Matrix m = new Matrix(flows);
         m.setExternalNumbers(zoneNumbers);
         return m;
+    }
+
+    /**
+     * @return
+     */
+    public double[] getSurplusInAllExchanges() {
+        double[] surplus = new double[getAllExchanges().size()];
+        Iterator exIt = getAllExchanges().iterator();
+        int exNum = 0;
+        while (exIt.hasNext()) {
+            Exchange x = (Exchange) exIt.next();
+            surplus[exNum] = x.calculateSurplus();
+            exNum++;
+        }
+        return surplus;
     }
 
 

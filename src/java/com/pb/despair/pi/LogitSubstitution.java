@@ -233,6 +233,114 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
         return utilityDerivatives;
     }
     
+    public double[][] productionUtilitiesDerivatives(double[] commodityUtilities) {
+        // TODO check this calculation numerically.
+        double[] amounts = new double[sortedQuantitiesToUse.size()];
+        double[][] utilityDerivatives = new double[amounts.length][amounts.length];
+        double[] probabilities = getExtraProductionProbabilities(commodityUtilities);
+        Quantity q = null;
+        for (int commodityIndex = 0; commodityIndex < amounts.length; commodityIndex++) {
+            q = (Quantity) sortedQuantitiesToUse.get(commodityIndex);
+            if (q != null) {
+                for (int utilityIndex=0;utilityIndex<amounts.length;utilityIndex++) {
+                    if (commodityIndex!=utilityIndex) {
+                        Quantity q2 = (Quantity) sortedQuantitiesToUse.get(utilityIndex);
+                        if (q2!=null) {
+                            
+                            // short way after algebraic simplification
+                            utilityDerivatives[utilityIndex][commodityIndex] =
+                                -lambda*q.discretionary*q2.discretionary*probabilities[commodityIndex]*probabilities[utilityIndex];
+                            // long way before algebraic simplification -- beware rounding errors
+                            // the effect of losing the extra (minimum+discretionary) associated with this production option
+
+//                            utilityDerivatives[utilityIndex][commodityIndex]=
+//                                (q.minimum+q.discretionary)*(-lambda*q2.discretionary*probabilities[commodityIndex]*probabilities[utilityIndex]);
+//                            for (int commodityIndex2=0; commodityIndex2<amounts.length;commodityIndex2++) {
+//                                if (commodityIndex2==commodityIndex) {
+//                                    // nothing extra
+//                                } else if (commodityIndex2==utilityIndex) {
+//                                    // the effect of getting more minimum in the option where utility goes up
+//                                    utilityDerivatives[utilityIndex][commodityIndex]+=
+//                                        lambda*q.minimum*q2.discretionary*(probabilities[commodityIndex2]*(1-probabilities[commodityIndex2]));
+//                                } else {
+//                                    // the effect of losing minimum in the options where share goes down
+//                                    utilityDerivatives[utilityIndex][commodityIndex] +=
+//                                        -lambda*q.minimum*q2.discretionary*probabilities[commodityIndex2]*probabilities[utilityIndex];
+//                                }
+//                            }
+                        }
+                    } else {
+                        // short way after algebraic simplification
+                        utilityDerivatives[utilityIndex][commodityIndex]=lambda*q.discretionary*q.discretionary*probabilities[commodityIndex]*probabilities[commodityIndex];
+                        
+                        // long way before algebraic simplification .. beware rounding errors
+                        // the effect of getting extra (minimum+discretionary)
+//                        utilityDerivatives[utilityIndex][commodityIndex]=
+//                            (q.minimum+q.discretionary)*(lambda*q.discretionary*probabilities[commodityIndex]*(1-probabilities[commodityIndex]));
+//                        for (int commodityIndex2=0; commodityIndex2<amounts.length;commodityIndex2++) {
+//                            if (commodityIndex2 != commodityIndex) { 
+//                                // the effect of losing minimum on the other options
+//                                utilityDerivatives[utilityIndex][commodityIndex]+=
+//                                    -lambda*q.minimum*q.discretionary*probabilities[commodityIndex]*probabilities[commodityIndex2];
+//                            }
+//                        }
+                    }
+                }
+            }
+        }
+        return utilityDerivatives;
+    }
+
+    private double[] getExtraProductionProbabilities(double[] individualCommodityUtilities) {
+        double[] probabilities = new double[sortedQuantitiesToUse.size()];
+        if (individualCommodityUtilities.length != probabilities.length) {
+            throw new Error("Incorrect number of commodities for production/consumption function calculation");
+        }
+        Quantity q = null;
+        double denominator = 0;
+        boolean foundOne = false;
+        for (int c = 0; c < probabilities.length; c++) {
+
+            // first use the amounts array to store the numerator of the logit choice
+            q = (Quantity) sortedQuantitiesToUse.get(c);
+            if (q == null) {
+                probabilities[c] = 0;
+            } else {
+                if (q.discretionary == 0) {
+                    probabilities[c] = 0;
+                } else {
+                    foundOne = true;
+                    probabilities[c] = Math.exp(lambda * q.discretionary * (individualCommodityUtilities[c] * q.utilityScale + q.utilityOffset));
+                }
+
+                denominator += probabilities[c];
+            }
+        }
+        if (nonModelledDenominatorTerm) denominator += Math.exp(lambda * utilityOfNonModelledAlternative);
+        // split equally if all alternatives are negative infinity
+        // could try to use exceptions instead -- throw a NoAlternativeAvailable exception?
+        if (denominator == 0 && foundOne) {
+            for (int c = 0; c < probabilities.length; c++) {
+                probabilities[c] = 1;
+                denominator += probabilities[c];
+            }
+        }
+        for (int c = 0; c < probabilities.length; c++) {
+            q = (Quantity) sortedQuantitiesToUse.get(c);
+            if (q != null) {
+                if (!foundOne) {
+                    probabilities[c] = 0;
+                    // no alternative producation choices
+                } else {
+                    probabilities[c] = probabilities[c] / denominator;
+                }
+            }
+        }
+        return probabilities;
+        
+        
+    }
+    
     private double[][] probabilitiesFullDerivativesMultiply(double[] individualCommodityUtilities, double[][] productionUtilitiesDerivativeWRTPrices) {
         double[][] derivatives = new double[sortedQuantitiesToUse.size()][productionUtilitiesDerivativeWRTPrices[0].length];
         double[] weights = new double[sortedQuantitiesToUse.size()];

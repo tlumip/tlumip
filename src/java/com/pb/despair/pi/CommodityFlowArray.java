@@ -366,7 +366,7 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
         double[] weights;
         List theExchanges = com.getAllExchanges();
         if ((com.exchangeType == 'p' && theCommodityZUtility instanceof SellingZUtility) || com.exchangeType == 's' &&
-                theCommodityZUtility instanceof BuyingZUtility) {
+                theCommodityZUtility instanceof BuyingZUtility || com.exchangeType == 'n') {
             weights = new double[theExchanges.size()];
             Exchange thisExchangeHere = com.getExchange(theCommodityZUtility.getTaz().getZoneIndex());
             int index = theExchanges.indexOf(thisExchangeHere);
@@ -431,10 +431,10 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
             double[] derivativeComponents = new double[theExchanges.size()];
             
             // debug March 24 2004 JEA
-            if (com.name.equals("3_OthTchr")) {
-                // this next line is just a place to set a breakpoint.
-                weights = new double[theExchanges.size()];
-            }
+//            if (com.name.equals("3_OthTchr")) {
+//                // this next line is just a place to set a breakpoint.
+//                weights = new double[theExchanges.size()];
+//            }
             synchronized (theExchanges) {
                 Iterator it = theExchanges.iterator();
                 int i = 0;
@@ -442,11 +442,11 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
                     Exchange x = (Exchange) it.next();
                     double utility = calcUtilityForExchange(x);
                     weights[i] = Math.exp(dispersionParameter * utility);
-                    if (theCommodityZUtility instanceof SellingZUtility) {
-                        derivativeComponents[i] =weights[i]* theCommodityZUtility.myCommodity.getSellingUtilityPriceCoefficient();
-                    } else {
-                        derivativeComponents[i] =weights[i]* theCommodityZUtility.myCommodity.getBuyingUtilityPriceCoefficient();
-                    }
+//                    if (theCommodityZUtility instanceof SellingZUtility) {
+//                        derivativeComponents[i] =weights[i]* theCommodityZUtility.myCommodity.getSellingUtilityPriceCoefficient();
+//                    } else {
+//                        derivativeComponents[i] =weights[i]* theCommodityZUtility.myCommodity.getBuyingUtilityPriceCoefficient();
+//                    }
                     if (Double.isNaN(weights[i])) {
                         logger.severe("hmm, Commodity Flow "
                                 + i

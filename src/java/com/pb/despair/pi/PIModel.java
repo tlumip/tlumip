@@ -8,8 +8,12 @@ import com.pb.despair.model.ModelComponent;
 import com.pb.despair.model.OverflowException;
 import com.pb.despair.model.ProductionActivity;
 
-import drasys.or.linear.algebra.*;
-import drasys.or.matrix.*;
+// use this to uncomment calculateNewPricesUsingfullDerivatives
+//import drasys.or.linear.algebra.*;
+//import drasys.or.matrix.*;
+
+import mt.*;
+import smt.iter.*;
 
 import java.util.Collection;
 import java.util.Hashtable;
@@ -497,129 +501,181 @@ public class PIModel extends ModelComponent {
         setExchangePrices(oldPricesC);
     }
     
-    public void calculateNewPricesUsingFullDerivatives() {
-        Algebra a = new Algebra();
-
+    public void calculateNewPricesUsingBlockDerivatives() {
         newPricesC = new HashMap();
+        logger.info("Calculating average commodity price change");
+        AveragePriceSurplusDerivativeMatrix.calculateMatrixSize();
         
-        // set up storage of full derivatives
-        Collection allCommodities = AbstractCommodity.getAllCommodities();
-        Iterator comIt = allCommodities.iterator();
-        int numberOfExchanges = 0;
-        HashMap exchangeNumbering = new HashMap();
+        AveragePriceSurplusDerivativeMatrix avgMatrix = new AveragePriceSurplusDerivativeMatrix();
+        DenseVector totalSurplusVector = new TotalSurplusVector();
+        Vector averagePriceChange  = totalSurplusVector.copy();
+        totalSurplusVector.scale(-1);
+        avgMatrix.solve(totalSurplusVector,averagePriceChange);
+        
+        Iterator comIt = Commodity.getAllCommodities().iterator();
+        int commodityNumber = 0;
         while (comIt.hasNext()) {
             Commodity c = (Commodity) comIt.next();
-            Collection exchanges = c.getAllExchanges();
-            Iterator exIt = exchanges.iterator();
-            while (exIt.hasNext()) {
-                Exchange ex = (Exchange) exIt.next();
-                exchangeNumbering.put(ex,new Integer(numberOfExchanges));
-                numberOfExchanges++;
+            logger.info("Calculating local price change for commodity "+c);
+            CommodityPriceSurplusDerivativeMatrix comMatrix = new CommodityPriceSurplusDerivativeMatrix(c);
+            double[] surplus = c.getSurplusInAllExchanges();
+            DenseVector deltaSurplusPlus = new DenseVector(surplus.length+1);
+            for (int i=0;i<surplus.length;i++) {
+                deltaSurplusPlus.set(i,-surplus[i]-totalSurplusVector.get(commodityNumber)/surplus.length);
             }
-        }
-        
-        // here is where we're going to put them
-        DenseMatrix firstDerivatives = new DenseMatrix(numberOfExchanges,numberOfExchanges);
-
-        
-        // populate storage of full derivatives
-        Iterator actIt = AggregateActivity.getAllProductionActivities().iterator();
-        while (actIt.hasNext()) {
-            ProductionActivity prodActivity = (ProductionActivity) actIt.next();
-            if (prodActivity instanceof AggregateActivity) {
-                AggregateActivity activity = (AggregateActivity) prodActivity;
-                DenseVector pl;
-                DenseMatrix fpl;
-                try {
-                    pl= new DenseVector(activity.logitModelOfZonePossibilities.getChoiceProbabilities());
-                    fpl = new DenseMatrix(activity.logitModelOfZonePossibilities.choiceProbabilityDerivatives());
-                    
-                } catch (ChoiceModelOverflowException e) {
-                    e.printStackTrace();
-                    throw new RuntimeException("Can't solve for amounts in zone",e);
-                }
-                DenseMatrix dulbydprice = new DenseMatrix(0,numberOfExchanges);
-                for (int location =0;location<pl.size();location++) {
-                    AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
-                    DenseVector dul1bydprice = new DenseVector(l.calculateLocationUtilityDerivatives(exchangeNumbering));
-                    dulbydprice.addRow(dul1bydprice);
-                }
-                MatrixI dLocationByPrice=null;
-                try {
-                    dLocationByPrice = a.multiply(fpl,dulbydprice);
-                } catch (AlgebraException e1) {
-                    e1.printStackTrace();
-                    throw new RuntimeException(e1);
-                }
-                for (int location =0;location<pl.size();location++) {
-                    VectorI dThisLocationByPrices = new DenseVector(dLocationByPrice.sizeOfColumns());
-                    for (int i=0;i<dThisLocationByPrices.size();i++) {
-                        dThisLocationByPrices.setElementAt(i,dLocationByPrice.elementAt(location,i));
-                    }
-                    AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
-                    l.addTwoComponentsOfDerivativesToMatrix(activity.getTotalAmount(),firstDerivatives,dThisLocationByPrices,exchangeNumbering); 
-               }
+            deltaSurplusPlus.set(surplus.length,0);
+            //DenseMatrix crossTransposed = new DenseMatrix(surplus.length,surplus.length);
+            //comMatrix.transAmult(comMatrix,crossTransposed);
+            //DenseVector crossTransposedVector = new DenseVector(surplus.length);
+            //comMatrix.transMult(deltaSurplusPlus,crossTransposedVector);
+            DenseVector deltaPrices = new DenseVector(surplus.length);
+            // regular solution
+            //crossTransposed.solve(crossTransposedVector,deltaPrices);
+            // using the libraries least squares type rectangular matrix solver
+            try {
+                comMatrix.solve(deltaSurplusPlus,deltaPrices);
+            } catch (MatrixSingularException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Can't find delta prices for commodity "+c,e);
             }
-        }
-
-        // now add the components associated with the derivative of exchange location choice
-        comIt = allCommodities.iterator();
-        while (comIt.hasNext()) {
-            Commodity c = (Commodity) comIt.next();
-            AbstractTAZ[] allZones = AbstractTAZ.getAllZones();
-            Matrix exchangeChoiceDerivatives = null;
-            for (int z=0;z<allZones.length;z++) {
-                CommodityZUtility bzu = c.retrieveCommodityZUtility(allZones[z],false);
-                CommodityZUtility szu = c.retrieveCommodityZUtility(allZones[z],true);
-                try {
-                    Matrix bzuDerivatives = new DenseMatrix(bzu.myFlows.getChoiceDerivatives());
-                    ContiguousVector diagonal = new ContiguousVector(bzuDerivatives.sizeOfColumns());
-                    diagonal.setElements(-bzu.getQuantity()*c.getBuyingUtilityPriceCoefficient());
-                    SparseMatrix diagonalMatrix = new SparseMatrix(bzuDerivatives.sizeOfColumns(), bzuDerivatives.sizeOfRows());
-                    diagonalMatrix.setDiagonal(diagonal);
-                    bzuDerivatives = a.multiply(bzuDerivatives,diagonalMatrix);
-                    
-                    Matrix szuDerivatives = new DenseMatrix(szu.myFlows.getChoiceDerivatives());
-                    diagonal.setElements(szu.getQuantity()*c.getSellingUtilityPriceCoefficient());
-                    diagonalMatrix.setDiagonal(diagonal);
-                    szuDerivatives = a.multiply(szuDerivatives,diagonalMatrix);
-                    if (exchangeChoiceDerivatives ==null) exchangeChoiceDerivatives = szuDerivatives;
-                    else exchangeChoiceDerivatives = a.add(exchangeChoiceDerivatives,bzuDerivatives);
-                    exchangeChoiceDerivatives = a.add(exchangeChoiceDerivatives,szuDerivatives);
-               } catch (AlgebraException e) {
-                   logger.severe("Algebra exception in figuring out derivatives");
-                   throw new RuntimeException(e);
-               }
-               
-            }
-            // now finished with the commodity, need to add this submatrix to the big matrix
             Iterator exIt = c.getAllExchanges().iterator();
-            int exNumber = 0;
-            int[] exNumbers = new int[exchangeChoiceDerivatives.sizeOfColumns()];
+            int xNum =0;
             while (exIt.hasNext()) {
                 Exchange x = (Exchange) exIt.next();
-                exNumbers[exNumber] = ((Integer) exchangeNumbering.get(x)).intValue();
+                double price = x.getPrice()+stepSize*(averagePriceChange.get(commodityNumber)+deltaPrices.get(xNum));
+                newPricesC.put(x,new Double(price));
+                xNum++;
             }
-            for (int row=0;row<exNumbers.length;row++) {
-                for (int col=0;col<exNumbers.length;col++) {
-                    int globalRow = exNumbers[row];
-                    int globalCol = exNumbers[col];
-                    firstDerivatives.setElementAt(globalRow,globalCol,
-                            firstDerivatives.elementAt(globalRow,globalCol)+exchangeChoiceDerivatives.elementAt(row,col));
-                }
-            }
+            commodityNumber++;
+            
         }
-        
-        //TODO set up 1d vector of surpluses using OR objects
-        
-        //TODO calculate Hessian etc., modifying diagonal
-        
-        //TODO  solve for new prices
-        
-        // TODO put new prices into newPricesC
-        
         setExchangePrices(newPricesC);
+       
     }
+    
+//    public void calculateNewPricesUsingFullDerivatives() {
+//        Algebra a = new Algebra();
+//
+//        newPricesC = new HashMap();
+//        
+//        // set up storage of full derivatives
+//        Collection allCommodities = AbstractCommodity.getAllCommodities();
+//        Iterator comIt = allCommodities.iterator();
+//        int numberOfExchanges = 0;
+//        HashMap exchangeNumbering = new HashMap();
+//        while (comIt.hasNext()) {
+//            Commodity c = (Commodity) comIt.next();
+//            Collection exchanges = c.getAllExchanges();
+//            Iterator exIt = exchanges.iterator();
+//            while (exIt.hasNext()) {
+//                Exchange ex = (Exchange) exIt.next();
+//                exchangeNumbering.put(ex,new Integer(numberOfExchanges));
+//                numberOfExchanges++;
+//            }
+//        }
+//        
+//        // here is where we're going to put them
+//        DenseMatrix firstDerivatives = new DenseMatrix(numberOfExchanges,numberOfExchanges);
+//
+//        
+//        // populate storage of full derivatives
+//        Iterator actIt = AggregateActivity.getAllProductionActivities().iterator();
+//        while (actIt.hasNext()) {
+//            ProductionActivity prodActivity = (ProductionActivity) actIt.next();
+//            if (prodActivity instanceof AggregateActivity) {
+//                AggregateActivity activity = (AggregateActivity) prodActivity;
+//                DenseVector pl;
+//                DenseMatrix fpl;
+//                try {
+//                    pl= new DenseVector(activity.logitModelOfZonePossibilities.getChoiceProbabilities());
+//                    fpl = new DenseMatrix(activity.logitModelOfZonePossibilities.choiceProbabilityDerivatives());
+//                    
+//                } catch (ChoiceModelOverflowException e) {
+//                    e.printStackTrace();
+//                    throw new RuntimeException("Can't solve for amounts in zone",e);
+//                }
+//                DenseMatrix dulbydprice = new DenseMatrix(0,numberOfExchanges);
+//                for (int location =0;location<pl.size();location++) {
+//                    AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
+//                    DenseVector dul1bydprice = new DenseVector(l.calculateLocationUtilityDerivatives(exchangeNumbering));
+//                    dulbydprice.addRow(dul1bydprice);
+//                }
+//                MatrixI dLocationByPrice=null;
+//                try {
+//                    dLocationByPrice = a.multiply(fpl,dulbydprice);
+//                } catch (AlgebraException e1) {
+//                    e1.printStackTrace();
+//                    throw new RuntimeException(e1);
+//                }
+//                for (int location =0;location<pl.size();location++) {
+//                    VectorI dThisLocationByPrices = new DenseVector(dLocationByPrice.sizeOfColumns());
+//                    for (int i=0;i<dThisLocationByPrices.size();i++) {
+//                        dThisLocationByPrices.setElementAt(i,dLocationByPrice.elementAt(location,i));
+//                    }
+//                    AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
+//                    l.addTwoComponentsOfDerivativesToMatrix(activity.getTotalAmount(),firstDerivatives,dThisLocationByPrices,exchangeNumbering); 
+//               }
+//            }
+//        }
+//
+//        // now add the components associated with the derivative of exchange location choice
+//        comIt = allCommodities.iterator();
+//        while (comIt.hasNext()) {
+//            Commodity c = (Commodity) comIt.next();
+//            AbstractTAZ[] allZones = AbstractTAZ.getAllZones();
+//            Matrix exchangeChoiceDerivatives = null;
+//            for (int z=0;z<allZones.length;z++) {
+//                CommodityZUtility bzu = c.retrieveCommodityZUtility(allZones[z],false);
+//                CommodityZUtility szu = c.retrieveCommodityZUtility(allZones[z],true);
+//                try {
+//                    Matrix bzuDerivatives = new DenseMatrix(bzu.myFlows.getChoiceDerivatives());
+//                    ContiguousVector diagonal = new ContiguousVector(bzuDerivatives.sizeOfColumns());
+//                    diagonal.setElements(-bzu.getQuantity()*c.getBuyingUtilityPriceCoefficient());
+//                    SparseMatrix diagonalMatrix = new SparseMatrix(bzuDerivatives.sizeOfColumns(), bzuDerivatives.sizeOfRows());
+//                    diagonalMatrix.setDiagonal(diagonal);
+//                    bzuDerivatives = a.multiply(bzuDerivatives,diagonalMatrix);
+//                    
+//                    Matrix szuDerivatives = new DenseMatrix(szu.myFlows.getChoiceDerivatives());
+//                    diagonal.setElements(szu.getQuantity()*c.getSellingUtilityPriceCoefficient());
+//                    diagonalMatrix.setDiagonal(diagonal);
+//                    szuDerivatives = a.multiply(szuDerivatives,diagonalMatrix);
+//                    if (exchangeChoiceDerivatives ==null) exchangeChoiceDerivatives = szuDerivatives;
+//                    else exchangeChoiceDerivatives = a.add(exchangeChoiceDerivatives,bzuDerivatives);
+//                    exchangeChoiceDerivatives = a.add(exchangeChoiceDerivatives,szuDerivatives);
+//               } catch (AlgebraException e) {
+//                   logger.severe("Algebra exception in figuring out derivatives");
+//                   throw new RuntimeException(e);
+//               }
+//               
+//            }
+//            // now finished with the commodity, need to add this submatrix to the big matrix
+//            Iterator exIt = c.getAllExchanges().iterator();
+//            int exNumber = 0;
+//            int[] exNumbers = new int[exchangeChoiceDerivatives.sizeOfColumns()];
+//            while (exIt.hasNext()) {
+//                Exchange x = (Exchange) exIt.next();
+//                exNumbers[exNumber] = ((Integer) exchangeNumbering.get(x)).intValue();
+//            }
+//            for (int row=0;row<exNumbers.length;row++) {
+//                for (int col=0;col<exNumbers.length;col++) {
+//                    int globalRow = exNumbers[row];
+//                    int globalCol = exNumbers[col];
+//                    firstDerivatives.setElementAt(globalRow,globalCol,
+//                            firstDerivatives.elementAt(globalRow,globalCol)+exchangeChoiceDerivatives.elementAt(row,col));
+//                }
+//            }
+//        }
+//        
+//        //TODO set up 1d vector of surpluses using OR objects
+//        
+//        //TODO calculate Hessian etc., modifying diagonal
+//        
+//        //TODO  solve for new prices
+//        
+//        // TODO put new prices into newPricesC
+//        
+//        setExchangePrices(newPricesC);
+//    }
 
     public void calculateNewPrices() {
         newPricesC = new HashMap();
