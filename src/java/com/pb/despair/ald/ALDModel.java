@@ -48,6 +48,7 @@ public class ALDModel extends ModelComponent {
         try {
 //            process = rt.exec("cmd.exe /c " + execCommand);
             process = rt.exec(execCommand);
+            logger.info("ALD is done");
         } catch (IOException e) {
             e.printStackTrace();
         }
