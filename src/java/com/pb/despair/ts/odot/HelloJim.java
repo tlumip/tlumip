@@ -4,7 +4,7 @@
  * To change the template for this generated file go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-package com.pb.despair.ts;
+package com.pb.despair.ts.odot;
 
 import java.io.FileWriter;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.pb.despair.ts;
+package com.pb.despair.ts.assign;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +17,6 @@ import com.pb.common.matrix.MatrixViewer;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
 
-import com.pb.common.assign.Network;
-import com.pb.common.assign.ShortestPathTreeH;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.TableDataSet;
@@ -28,12 +26,12 @@ import com.pb.common.util.MessageWindow;
 
 public class Skims {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts");
+	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
 
 	MessageWindow mw;
 	HashMap propertyMap;
 	
-	boolean useMessageWindow = true;
+	boolean useMessageWindow = false;
 	
     Network g;
 
@@ -42,7 +40,7 @@ public class Skims {
 
 	Matrix newSkimMatrix;
 
-    public Skims (int timePeriod, ResourceBundle rb) {
+    public Skims ( ResourceBundle rb, String timePeriod ) {
 
         propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
 
@@ -52,7 +50,7 @@ public class Skims {
 		// have been done, so build a new Network object which initialize 
 		// the congested time field for computing time related skims.
 		if ( networkDiskObjectFile == null ) {
-			g = new Network( propertyMap );
+			g = new Network( propertyMap, timePeriod );
 		}
 		// otherwise, read the DiskObject file and use the congested time field
 		// for computing time related skims.
@@ -81,27 +79,8 @@ public class Skims {
 
     }
 
-    public Skims (ResourceBundle rb) {
 
-        propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-
-		g = new Network( propertyMap );
-
-		// take a column of alpha zone numbers from a TableDataSet and puts them into an array for
-	    // purposes of setting external numbers.	     */
-		String zoneCorrespondenceFile = (String)propertyMap.get("zoneIndex.fileName");
-		try {
-            CSVFileReader reader = new CSVFileReader();
-            TableDataSet table = reader.readFile(new File(zoneCorrespondenceFile));
-	        alphaNumberArray = table.getColumnAsInt( 1 );
-	        betaNumberArray = table.getColumnAsInt( 2 );
-        } catch (IOException e) {
-            logger.severe("Can't get zone numbers from zonal correspondence file");
-            e.printStackTrace();
-        }
-	 }
-
-    public Skims (Network g, HashMap map) {
+    public Skims ( Network g, HashMap map ) {
 
         this.g = g;
         this.propertyMap = map;
@@ -268,6 +247,22 @@ public class Skims {
 	}
 
 
+    /**
+	 * get peak alpha zone SOV distance skim array
+	 */
+	public double[][] getSovDistSkims () {
+
+		// set the highway network attribute on which to skim the network - distance in this case
+		double[] linkCost = g.getDist();
+		
+        // get the skims as a double[][] array 
+        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+
+	    return zeroBasedFloatArray;
+	    
+	}
+
+
 	/**
 	 * build network skim array, return as double[][].
 	 * the highway network attribute on which to skim the network is passed in.
@@ -335,7 +330,7 @@ public class Skims {
     	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
 
     	logger.info ("creating Skims object.");
-        Skims s = new Skims ( 0, rb );
+        Skims s = new Skims ( rb, "peak" );
 
     	logger.info ("skimming network and creating Matrix object.");
         Matrix m = s.getSovDistSkimAsMatrix();

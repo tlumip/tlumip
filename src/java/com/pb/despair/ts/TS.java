@@ -8,15 +8,15 @@ package com.pb.despair.ts;
 
 
 import com.pb.despair.model.ModeType;
+import com.pb.despair.ts.assign.FW;
+import com.pb.despair.ts.assign.Network;
+import com.pb.despair.ts.assign.Skims;
 
 
-import com.pb.common.assign.Network;
-import com.pb.common.assign.FW;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.util.ResourceUtil;
-import com.pb.common.matrix.Matrix;
 
 import java.util.HashMap;
 import java.io.File;
@@ -56,15 +56,9 @@ public class TS {
 
         propertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
 
-
 	    // get trip list filenames from property file
 		ptFileName = (String)propertyMap.get("pt.fileName");
 		ctFileName = (String)propertyMap.get("ct.fileName");
-
-		// get peak period definitions from property file
-		peakStart = Integer.parseInt( (String)propertyMap.get("amPeak.start") );
-		peakEnd = Integer.parseInt( (String)propertyMap.get("amPeak.end") );
-		peakFactor = Float.parseFloat( (String)propertyMap.get("amPeak.volumeFactor") );
 		
 	}
 
@@ -72,24 +66,9 @@ public class TS {
 
         propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
 
-
 	    // get trip list filenames from property file
 		ptFileName = (String)propertyMap.get("pt.fileName");
 		ctFileName = (String)propertyMap.get("ct.fileName");
-
-		// get peak period definitions from property file
-		peakStart = Integer.parseInt( (String)propertyMap.get("amPeak.start") );
-		peakEnd = Integer.parseInt( (String)propertyMap.get("amPeak.end") );
-		peakFactor = Float.parseFloat( (String)propertyMap.get("amPeak.volumeFactor") );
-
-        // get off-peak period definitions from property file
-		offPeakStart = Integer.parseInt( (String)propertyMap.get("offPeak.start") );
-		offPeakEnd = Integer.parseInt( (String)propertyMap.get("offPeak.end") );
-		offPeakFactor = Float.parseFloat( (String)propertyMap.get("offPeak.volumeFactor") );
-
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("creating Highway Network object at: " + myDateString);
-		g = new Network( propertyMap );
 
 	}
 
@@ -115,6 +94,16 @@ public class TS {
 		int totalTrips;
 		int linkCount;
 		String myDateString;
+
+		
+		// get peak period definitions from property file
+		peakStart = Integer.parseInt( (String)propertyMap.get("amPeak.start") );
+		peakEnd = Integer.parseInt( (String)propertyMap.get("amPeak.end") );
+		peakFactor = Float.parseFloat( (String)propertyMap.get("amPeak.volumeFactor") );
+
+        myDateString = DateFormat.getDateTimeInstance().format(new Date());
+		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
+		g = new Network( propertyMap, "peak" );
 
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -156,6 +145,13 @@ public class TS {
         int totalTrips;
 		int linkCount;
 		String myDateString;
+
+		
+		
+        // get off-peak period definitions from property file
+		offPeakStart = Integer.parseInt( (String)propertyMap.get("offPeak.start") );
+		offPeakEnd = Integer.parseInt( (String)propertyMap.get("offPeak.end") );
+		offPeakFactor = Float.parseFloat( (String)propertyMap.get("offPeak.volumeFactor") );
 
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());

@@ -1,4 +1,4 @@
-package com.pb.despair.ts;
+package com.pb.despair.ts.odot;
 
 /**
  *
@@ -12,8 +12,8 @@ package com.pb.despair.ts;
 
 
 
-import com.pb.common.assign.Network;
-import com.pb.common.assign.FW;
+import com.pb.despair.ts.assign.Network;
+import com.pb.despair.ts.assign.FW;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 public class OdotAssign {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts");
+	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.odot");
 
 	protected static Network g = null;
 
@@ -53,6 +53,7 @@ public class OdotAssign {
         
 		long startTime = System.currentTimeMillis();
 		
+		String period = "peak";
 		
 		HashMap propertyMap;
 		String tripFileName = null;
@@ -78,7 +79,7 @@ public class OdotAssign {
 		
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Highway Network object at: " + myDateString);
-		g = new Network( propertyMap );
+		g = new Network( propertyMap, period );
 		
 		
 		// create Frank-Wolfe Algortihm Object
