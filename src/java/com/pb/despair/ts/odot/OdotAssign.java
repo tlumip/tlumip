@@ -83,10 +83,12 @@ public class OdotAssign {
 		tripFileName = (String)tsPropertyMap.get("pt.fileName");
 
 
+		float peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
+		
 		
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Highway Network object at: " + myDateString);
-		g = new Network( tsPropertyMap, globalPropertyMap, period );
+		g = new Network( tsPropertyMap, globalPropertyMap, period, peakFactor );
 		
 		
 		// create Frank-Wolfe Algortihm Object
