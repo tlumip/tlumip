@@ -39,6 +39,9 @@ public class TransitSkimManager {
 	
 	public static final String AUX_TRANSIT_NETWORK_LISTING = "c:\\jim\\tlumip\\aux_transit_net.listing";
 
+	float peakFactor;
+	float offPeakFactor;
+
 	AuxTrNet ag = null;	
 	
 	HashMap tsPropertyMap = null;
@@ -54,6 +57,9 @@ public class TransitSkimManager {
 		// get the items in the properties file
 		tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap ("ts" );
         globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap ("global" );
+
+		peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
+		offPeakFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
 
 	}
     
@@ -289,9 +295,15 @@ public class TransitSkimManager {
 		long totalTime = 0;
 		long startTime = System.currentTimeMillis();
 		
+		float volumeFactor;
+		
+		if ( period.compareToIgnoreCase("peak") == 1 )
+			volumeFactor = peakFactor;
+		else
+			volumeFactor = offPeakFactor;
 
 		// create a highway network oject
-		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
+		Network g = new Network( tsPropertyMap, globalPropertyMap, period, volumeFactor );
 		logger.info (g.getLinkCount() + " highway links");
 		logger.info (g.getNodeCount() + " highway nodes");
 
