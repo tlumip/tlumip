@@ -7,10 +7,8 @@ import com.pb.despair.model.ProductionActivity;
 
 import drasys.or.linear.algebra.Algebra;
 import drasys.or.linear.algebra.CroutPivot;
-import drasys.or.linear.algebra.QRIteration;
 import drasys.or.matrix.DenseMatrix;
 import drasys.or.matrix.DenseVector;
-import drasys.or.matrix.VectorI;
 
 // use this to uncomment calculateNewPricesUsingfullDerivatives
 //import drasys.or.linear.algebra.*;
