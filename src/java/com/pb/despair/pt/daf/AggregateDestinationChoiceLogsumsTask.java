@@ -112,14 +112,14 @@ public class AggregateDestinationChoiceLogsumsTask  extends MessageProcessingTas
 
                 String dcPurpose = "c" + i;
                 Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
-                PTModelInputs.tdpd, dcPurpose, segment.intValue(), modeChoiceLogsum);
+                		PTModelInputs.tdpd, dcPurpose, segment.intValue(), modeChoiceLogsum);
                 dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
                 sendTo(fileWriterQueue, dcLogsumMessage);
                 
                 //get the exponentiated utilities matrix and put it in another message
                 Message dcExpUtilitiesMessage = createMessage();
                 dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
-                Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
+                Matrix expUtilities = dcLogsumCalculator.getExpUtilities(dcPurpose, segment.intValue());
                 dcExpUtilitiesMessage.setValue("matrix", expUtilities);
                 sendTo(fileWriterQueue, dcExpUtilitiesMessage);
                 
@@ -129,14 +129,14 @@ public class AggregateDestinationChoiceLogsumsTask  extends MessageProcessingTas
             Message dcLogsumMessage = createMessage();
             dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
             Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
-            PTModelInputs.tdpd, purpose, segment.intValue(), modeChoiceLogsum);
+            		PTModelInputs.tdpd, purpose, segment.intValue(), modeChoiceLogsum);
             dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
             sendTo(fileWriterQueue, dcLogsumMessage);
             
             //get the exponentiated utilities matrix and put it in another message
             Message dcExpUtilitiesMessage = createMessage();
             dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
-            Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
+            Matrix expUtilities = dcLogsumCalculator.getExpUtilities(purpose, segment.intValue());
             dcExpUtilitiesMessage.setValue("matrix", expUtilities);
             sendTo(fileWriterQueue, dcExpUtilitiesMessage);
 

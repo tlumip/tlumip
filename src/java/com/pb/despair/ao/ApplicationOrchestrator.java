@@ -13,7 +13,6 @@ import com.pb.despair.model.ModelComponent;
 import com.pb.despair.ed.EDControl;
 import com.pb.despair.pi.PIModel;
 import com.pb.despair.ald.ALDModel;
-import com.pb.despair.spg.SPG;
 import com.pb.despair.spg.SPGnew;
 import com.pb.despair.ct.CTModel;
 import com.pb.despair.ts.TS;
@@ -182,6 +181,7 @@ public class ApplicationOrchestrator {
 
 		TS ts = new TS(rb);
         ts.assignPeakAuto();
+        ts.assignOffPeakAuto();
 
     }
 

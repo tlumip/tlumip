@@ -68,8 +68,12 @@ public class CreateDestinationChoiceLogsums {
     /*
      * Get the exponentiated utilities matrix for this purpose.
      */
-    public Matrix getExpUtilities(){
-        return expUtilities;
+    public Matrix getExpUtilities(String thisPurpose, int marketSegment){
+
+        //set the name of the exponentiated utilities matrix
+        expUtilities.setName(thisPurpose+marketSegment+"dceu"); //extension will be added when the matrix is written out.
+
+    	return expUtilities;
     }
 
     /**
@@ -198,9 +202,6 @@ public class CreateDestinationChoiceLogsums {
         vector.setName(thisPurpose+marketSegment+"dcls");  //the extension will be added when the matrix is written out.
       	vector.setExternalNumbers(tazNumbers);
         
-        //set the name of the exponentiated utilities matrix
-        expUtilities.setName(thisPurpose+marketSegment+"dceu"); //extension will be added when the matrix is written out.
-
         TourDestinationParameters theseParameters = 
             (TourDestinationParameters) tdp.getParameters(purpose,segment);
     	//Loop on origin zones

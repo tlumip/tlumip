@@ -384,7 +384,7 @@ public class HouseholdWorker extends MessageProcessingTask {
 
         try {
             if (purpose.equals("c")) {
-                for (int i = 3; i >= 1; i--) {
+                for (int i = 1; i <= 3; i++) {
                     logger.info(getName() + " is calculating the DC Logsums for purpose c, market segment " + segment + " subpurpose " + i);
 
                     //create a message to store the dc logsum vector
@@ -393,7 +393,7 @@ public class HouseholdWorker extends MessageProcessingTask {
 //
                     String dcPurpose = "c" + i;
                     Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
-                    PTModelInputs.tdpd, dcPurpose, segment.intValue(), modeChoiceLogsum);
+                    		PTModelInputs.tdpd, dcPurpose, segment.intValue(), modeChoiceLogsum);
                     dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
                     sendTo(queue, dcLogsumMessage);
 
@@ -403,13 +403,14 @@ public class HouseholdWorker extends MessageProcessingTask {
                     dcExpUtilitiesMessage.setValue("segment", segment);
                     dcExpUtilitiesMessage.setValue("purpose", dcPurpose);
                     dcExpUtilitiesMessage.setValue("time", Long.toString(System.currentTimeMillis()) );
-                    Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
+                    Matrix expUtilities = dcLogsumCalculator.getExpUtilities(dcPurpose, segment.intValue());
                     dcExpUtilitiesMessage.setValue("matrix", expUtilities);
                     logger.warning(getName() + " Sending " + ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getName() +
                             " with segment: " + (Integer)dcExpUtilitiesMessage.getValue("segment") +
                             " and purpose: " + (String) dcExpUtilitiesMessage.getValue("purpose") +
                             " and time: " + (String)dcExpUtilitiesMessage.getValue("time") +
                             " and value in [1][1]: " +  ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getValueAt(1,1) +
+                            " and local Matrix name: " + expUtilities.getName() +
                             " to " + matrixWriterQueues[i-1]);
 
                     sendTo(matrixWriterQueues[i-1], dcExpUtilitiesMessage);
@@ -421,14 +422,14 @@ public class HouseholdWorker extends MessageProcessingTask {
                 Message dcLogsumMessage = createMessage();
                 dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
                 Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
-                PTModelInputs.tdpd, purpose, segment.intValue(), modeChoiceLogsum);
+                		PTModelInputs.tdpd, purpose, segment.intValue(), modeChoiceLogsum);
                 dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
                 sendTo(queue, dcLogsumMessage);
 
                 //get the exponentiated utilities matrix and put it in another message
                 Message dcExpUtilitiesMessage = createMessage();
                 dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
-                Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
+                Matrix expUtilities = dcLogsumCalculator.getExpUtilities(purpose, segment.intValue());
                 dcExpUtilitiesMessage.setValue("segment", segment);
                 dcExpUtilitiesMessage.setValue("purpose", purpose);
                 dcExpUtilitiesMessage.setValue("matrix", expUtilities);
@@ -437,6 +438,8 @@ public class HouseholdWorker extends MessageProcessingTask {
                             " with segment: " + (Integer)dcExpUtilitiesMessage.getValue("segment") +
                             " and purpose: " + (String) dcExpUtilitiesMessage.getValue("purpose") +
                             " and time: " + (String)dcExpUtilitiesMessage.getValue("time") +
+                            " and value in [1][1]: " +  ((Matrix)dcExpUtilitiesMessage.getValue("matrix")).getValueAt(1,1) +
+                            " and local Matrix name: " + expUtilities.getName() +
                             " to " + queue);
                 sendTo(queue, dcExpUtilitiesMessage);
 //             dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);     //BINARY-ZIP
