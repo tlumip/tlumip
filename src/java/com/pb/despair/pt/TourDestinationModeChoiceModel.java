@@ -129,39 +129,43 @@ public class TourDestinationModeChoiceModel{
                    Taz destinationTaz = (Taz) enum.nextElement();
                   
                    float expUtility=expUtilities.getValueAt(thisTour.begin.location.zoneNumber,destinationTaz.zoneNumber);
-                   culmProbability += (double) (expUtility/totalExpUtility);
+                   culmProbability += (double)(expUtility)/totalExpUtility;
                   
                   if(culmProbability>rNumber){
                     chosenTaz=destinationTaz;
                     break;
                   }  
                } //end destinations
-               thisTour.primaryDestination.location.zoneNumber = chosenTaz.zoneNumber;
+               if(chosenTaz==null){
+                   logger.severe("Error in tour destination choice: no zones available for this household, tour");
+                   logger.severe("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
+                   try {
+                       logger.severe("Writing Tour Debug info to the /models/tlumip/debug directory");
+                       thisTour.printCSV(new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+".csv")));
+                   } catch (IOException e1) {
+                       e1.printStackTrace();  
+                   }
+                   enum = tazs.tazData.elements();
+                   expUtilities = um.getMatrix(activityPurpose,purposeSegment);
+                   for(int i=0;i<tazs.tazData.size();++i){
+                       Taz taz = (Taz)enum.nextElement();
+                       logger.severe("**** Attributes of destination "+taz.zoneNumber);
+                       taz.print();
+                       logger.severe("exputility "+expUtilities.getValueAt(thisTour.begin.location.zoneNumber,taz.zoneNumber));
+                   }
+                   logger.severe("TASK IS EXITING - FATAL ERROR");
+                   System.exit(1);  //no sense in going on as we have a fundamental problem.
+               }
 
-            if(chosenTaz==null){
-                logger.severe("Error in tour destination choice: no zones available for this household, tour");
-                logger.severe("Household "+thisHousehold.ID+" Person "+thisPerson.ID+" Tour "+thisTour.tourNumber);
-                enum = tazs.tazData.elements();
-                expUtilities = um.getMatrix(activityPurpose,purposeSegment);
-                try {
-                    logger.severe("Writing Tour Debug info to the /models/tlumip/debug directory");
-                    thisTour.printCSV(new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop1.csv")));
-                } catch (IOException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-                 for(int i=0;i<tazs.tazData.size();++i){
-                    Taz taz = (Taz)enum.nextElement();
-                    logger.severe("**** Attributes of destination "+taz.zoneNumber);
-                    taz.print();
-                     logger.severe("exputility "+expUtilities.getValueAt(thisTour.begin.location.zoneNumber,taz.zoneNumber));
-                 }
+              thisTour.primaryDestination.location.zoneNumber = chosenTaz.zoneNumber;
 
-            }
           }else {//the primary destination is work (or work-based) and therefore the chosenTaz is the workplace location
                 chosenTaz = (Taz)tazs.tazData.get(new Integer(thisTour.primaryDestination.location.zoneNumber));
                 if(chosenTaz == null){
                     logger.severe("Work (or Work-based) tour has a primary destination of 0 - not right!!");
                     logger.severe("HHID: " + thisHousehold.ID + " PersonID: " + thisPerson.ID);
+                    logger.severe("TASK IS EXITING - FATAL ERROR");
+                    System.exit(1);  //no sense in going on as we have a fundamental problem.
                 }
           }
           //choose mode
