@@ -16,7 +16,9 @@ public abstract class ModelComponent
 
     //Name of model component
     String name;
-    public ResourceBundle resourceBundle;
+    public ResourceBundle appRb; //this resource bundle holds application specific properties
+    public ResourceBundle globalRb; //this resource bundle holds global definitions that are common
+                                    //to several applications.
 
     public String getName() {
         return name;
@@ -29,8 +31,13 @@ public abstract class ModelComponent
 
     abstract public void startModel(int timeInterval);
 
-    public void setProperties(ResourceBundle rb){
-        this.resourceBundle = rb;
+    public void setApplicationResourceBundle(ResourceBundle appRb){
+        this.appRb = appRb;
+    }
+
+    public void setResourceBundles(ResourceBundle appRb, ResourceBundle globalRb){
+        setApplicationResourceBundle(appRb);
+        this.globalRb = globalRb;
     }
 
 

@@ -21,6 +21,7 @@ import com.pb.common.util.ResourceUtil;
 public class PeakAutoSkims extends TransportKnowledge {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pi");
     static final int MAXBETAZONENUMBER=4141;
+    static final int MAXZONENUMBER=5000;
     private Matrix pkTime,pkDist;
 
     /*
@@ -49,8 +50,8 @@ public class PeakAutoSkims extends TransportKnowledge {
     /* This constructor is called whent the skims are in a CSV format
     */
     public PeakAutoSkims(TableDataSet s, int originField, int destinationField, int distanceField, int timeField) {
-        int[] userToSequentialLookup = new int[SkimsInMemory.MAXZONENUMBER+1];
-        int[] sequentialToUserLookup = new int[SkimsInMemory.MAXZONENUMBER+1];
+        int[] userToSequentialLookup = new int[MAXZONENUMBER+1];
+        int[] sequentialToUserLookup = new int[MAXZONENUMBER+1];
         for (int i =0; i<userToSequentialLookup.length;i++) {
                     userToSequentialLookup[i] = -1;
         }

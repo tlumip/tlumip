@@ -23,73 +23,35 @@ public class SkimsInMemory implements Serializable {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");	
     public MatrixCollection pkwlk,pkdrv,opwlk,opdrv;
     public Matrix pkTime,pkDist,opTime,opDist;
-	public static int AOC = 12;
-	public static int WALKMPH=3;
-	public static int BIKEMPH=12;
-	public static int FIRSTWAITSEGMENT=10;
-	public static int DRIVETRANSITMPH=25;
-    static final int MAX_SEQUENTIAL_TAZ=3000;     
-    static final int MAXZONENUMBER=5000;     
+	public static int AOC;
+	public static float WALKMPH;
+	public static float BIKEMPH;
+    public static float DRIVETRANSITMPH;
+	public static int FIRSTWAITSEGMENT;
+	public static int AMPEAKSTART;
+    public static int AMPEAKEND;
+    public static int PMPEAKSTART;
+    public static int PMPEAKEND;
     public static String[] mNameGlobal;
     TravelTimeAndCost tc = new TravelTimeAndCost();
     
-     public static void main(String[] args) {
-        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
-        SkimsInMemory skims= new SkimsInMemory();
-        skims.readSkims(rb);
-        skims.checkSkims(skims);
-     }
-    public void checkSkims(SkimsInMemory skims) { 
-    
-        int ptaz=1;
-        int ataz=1;
-        
-        //check 1    
-        logger.info("PTAZ "+ptaz+ " ATAZ "+ataz);
-        float pkwtivt = skims.pkwlk.getValue(ptaz,ataz,"pwtivt");
-        float pkdtfwt = skims.pkdrv.getValue(ptaz,ataz,"pdtfwt");
-        float pktimet = skims.pkTime.getValueAt(ptaz,ataz);       
-        logger.info("pk walk time "+pkwtivt);
-        logger.info("pk drive fwait "+pkdtfwt);       
-        logger.info("pkTime "+pktimet);
-        ptaz=1;
-        ataz=2;
-        
-        //check 2    
-        logger.info("PTAZ "+ptaz+ " ATAZ "+ataz);
-        pkwtivt = skims.pkwlk.getValue(ptaz,ataz,"pwtivt");
-        pkdtfwt = skims.pkdrv.getValue(ptaz,ataz,"pdtfwt");       
-        pktimet = skims.pkTime.getValueAt(ptaz,ataz);  
-        logger.info("pk walk time "+pkwtivt);
-        logger.info("pk drive fwait "+pkdtfwt);       
-        logger.info("pkTime "+pktimet);
 
-        //check 3
-        ptaz=1;
-        ataz=1240;
-        logger.info("PTAZ "+ptaz+ " ATAZ "+ataz);
-        pkwtivt = skims.pkwlk.getValue(ptaz,ataz,"pwtivt");
-        pkdtfwt = skims.pkdrv.getValue(ptaz,ataz,"pdtfwt");     
-        pktimet = skims.pkTime.getValueAt(ptaz,ataz);  
-        logger.info("pk walk time "+pkwtivt);
-        logger.info("pk drive fwait "+pkdtfwt);
-        logger.info("pkTime "+pktimet);
-        
-        //check 4
-        ptaz=2;
-        ataz=3;
-        logger.info("PTAZ "+ptaz+ " ATAZ "+ataz);
-        pkwtivt = skims.pkwlk.getValue(ptaz,ataz,"pwtivt");
-        pkdtfwt = skims.pkdrv.getValue(ptaz,ataz,"pdtfwt");  
-        pktimet = skims.pkTime.getValueAt(ptaz,ataz);     
-        logger.info("pk walk time "+pkwtivt);
-        logger.info("pk drive fwait "+pkdtfwt);
-        logger.info("pkTime "+pktimet);
-        logger.info(" ");
-     }
-     
-	public SkimsInMemory() {
+    private SkimsInMemory() {
     }
+
+    public SkimsInMemory(ResourceBundle globalRb){
+        AOC = Integer.parseInt(ResourceUtil.getProperty(globalRb, "AOC"));
+        WALKMPH = Float.parseFloat(ResourceUtil.getProperty(globalRb, "WALK_MPH"));
+        BIKEMPH = Float.parseFloat(ResourceUtil.getProperty(globalRb,"BIKE_MPH"));
+        DRIVETRANSITMPH = Float.parseFloat(ResourceUtil.getProperty(globalRb,"DRIVE_TRANSIT_MPH"));
+        FIRSTWAITSEGMENT = Integer.parseInt(ResourceUtil.getProperty(globalRb,"FIRST_WAIT_SEGMENT"));
+        AMPEAKSTART = Integer.parseInt(ResourceUtil.getProperty(globalRb, "AM_PEAK_START"));
+        AMPEAKEND =  Integer.parseInt(ResourceUtil.getProperty(globalRb, "AM_PEAK_END"));
+        PMPEAKSTART = Integer.parseInt(ResourceUtil.getProperty(globalRb, "PM_PEAK_START"));
+        PMPEAKEND = Integer.parseInt(ResourceUtil.getProperty(globalRb, "PM_PEAK_END"));
+
+    }
+
     //createSkimsMatrices (6 file inputs)
     public MatrixCollection createSkimsMatrices(File ivt, File fwt, File twt, File aux, File brd, File far){
         
@@ -266,9 +228,9 @@ public class SkimsInMemory implements Serializable {
 	
     
     public float getDistance(int endTime, int originTaz, int destinationTaz){
-        if((endTime>=700 && endTime<=830)||(endTime>=1600 && endTime<=1800)){  //peak
+        if((endTime>=AMPEAKSTART && endTime<=AMPEAKEND)||(endTime>=PMPEAKSTART && endTime<=PMPEAKEND)){  //peak
             //if PM Peak, then reverse origin and destination to get peak skims 
-            if (endTime>=1600 && endTime<=1800)
+            if (endTime>=PMPEAKSTART && endTime<=PMPEAKEND)
                 return pkDist.getValueAt(destinationTaz,originTaz); 
             else
                 return pkDist.getValueAt(originTaz,destinationTaz);
@@ -291,9 +253,9 @@ public class SkimsInMemory implements Serializable {
 		
 		//TravelTimeAndCost tc = new TravelTimeAndCost();
 	
-   		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
+   		if((time>=AMPEAKSTART && time<=AMPEAKEND)||(time>=PMPEAKSTART && time<=PMPEAKEND)){  //peak
             //if PM Peak, then reverse origin and destination to get peak skims 
-			if (time>=1600 && time<=1800){
+			if (time>=PMPEAKSTART && time<=PMPEAKEND){
 			
                 tc.driveAloneTime  = pkTime.getValueAt(destinationTaz, originTaz);
                 tc.sharedRide2Time = pkTime.getValueAt(destinationTaz, originTaz);
@@ -322,7 +284,7 @@ public class SkimsInMemory implements Serializable {
 			tc.bikeDistance        = pkDist.getValueAt(originTaz,destinationTaz);               
 			
             // if PM Peak, then reverse origin and destination to get peak skims
-            if (time>=1600 && time<=1800){
+            if (time>=PMPEAKSTART && time<=PMPEAKEND){
 			    tc.walkTransitInVehicleTime      = pkwlk.getValue(destinationTaz,originTaz,"pwtivt");  
 			    if(tc.walkTransitInVehicleTime>0){          
 				    tc.walkTransitFirstWaitTime      = pkwlk.getValue(destinationTaz,originTaz,"pwtfwt");             
@@ -443,7 +405,7 @@ public class SkimsInMemory implements Serializable {
 		float directTime=0;
 		float totalTime=0;
 		
-		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
+		if((time>=AMPEAKSTART && time<=AMPEAKEND)||(time>=PMPEAKSTART && time<=PMPEAKEND)){  //peak
 			directTime = pkTime.getValueAt(fromTaz,toTaz);
 			totalTime = pkTime.getValueAt(fromTaz,stopTaz)
 				+ 	pkTime.getValueAt(stopTaz,toTaz);
@@ -468,7 +430,7 @@ public class SkimsInMemory implements Serializable {
 		float directTime=0;
 		float totalTime=0;
 		
-		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
+		if((time>=AMPEAKSTART && time<=AMPEAKEND)||(time>=PMPEAKSTART && time<=PMPEAKEND)){  //peak
 			directTime = (pkTime.getValueAt(fromTaz,toTaz)/WALKMPH)*60;
 			totalTime = (pkTime.getValueAt(fromTaz,stopTaz)/WALKMPH)*60
 				+ (pkTime.getValueAt(stopTaz,toTaz)/WALKMPH)*60;
@@ -494,7 +456,7 @@ public class SkimsInMemory implements Serializable {
 		float directTime=0;
 		float totalTime=0;
 		
-		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
+		if((time>=AMPEAKSTART && time<=AMPEAKEND)||(time>=PMPEAKSTART && time<=PMPEAKEND)){  //peak
 			directTime = (pkTime.getValueAt(fromTaz,toTaz)/BIKEMPH)*60;
 			totalTime = (pkTime.getValueAt(fromTaz,stopTaz)/BIKEMPH)*60
 				+ (pkTime.getValueAt(stopTaz,toTaz)/BIKEMPH)*60;
@@ -529,7 +491,7 @@ public class SkimsInMemory implements Serializable {
 		//  the following formula was used to compute generalized cost for model estimation:
 		//  	costToStop= ivtToStop + 1.5*fwtToStop + 2.5*(transfer wait) + 3.0*auxToStop
 		
-		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
+		if((time>=AMPEAKSTART && time<=AMPEAKEND)||(time>=PMPEAKSTART && time<=PMPEAKEND)){  //peak
 
 			//fromTaz->toTaz
 			inVehicleTime      = pkwlk.getValue(fromTaz,toTaz,"pwtivt");            
@@ -614,7 +576,7 @@ public class SkimsInMemory implements Serializable {
 
 		float[] autoDists = new float[2];
 
-		if((time>=700 && time<=830)||(time>=1600 && time<=1800)){  //peak
+		if((time>=AMPEAKSTART && time<=AMPEAKEND)||(time>=PMPEAKSTART && time<=PMPEAKEND)){  //peak
 			autoDists[0] = pkDist.getValueAt(fromTaz,toTaz);
 			autoDists[1] = pkDist.getValueAt(fromTaz,stopTaz)+ pkDist.getValueAt(stopTaz,toTaz);
 		}else{
@@ -625,6 +587,62 @@ public class SkimsInMemory implements Serializable {
 		return autoDists;
 
 	}
+
+    public void checkSkims(SkimsInMemory skims) {
+
+        int ptaz=1;
+        int ataz=1;
+
+        //check 1
+        logger.info("PTAZ "+ptaz+ " ATAZ "+ataz);
+        float pkwtivt = skims.pkwlk.getValue(ptaz,ataz,"pwtivt");
+        float pkdtfwt = skims.pkdrv.getValue(ptaz,ataz,"pdtfwt");
+        float pktimet = skims.pkTime.getValueAt(ptaz,ataz);
+        logger.info("pk walk time "+pkwtivt);
+        logger.info("pk drive fwait "+pkdtfwt);
+        logger.info("pkTime "+pktimet);
+        ptaz=1;
+        ataz=2;
+
+        //check 2
+        logger.info("PTAZ "+ptaz+ " ATAZ "+ataz);
+        pkwtivt = skims.pkwlk.getValue(ptaz,ataz,"pwtivt");
+        pkdtfwt = skims.pkdrv.getValue(ptaz,ataz,"pdtfwt");
+        pktimet = skims.pkTime.getValueAt(ptaz,ataz);
+        logger.info("pk walk time "+pkwtivt);
+        logger.info("pk drive fwait "+pkdtfwt);
+        logger.info("pkTime "+pktimet);
+
+        //check 3
+        ptaz=1;
+        ataz=1240;
+        logger.info("PTAZ "+ptaz+ " ATAZ "+ataz);
+        pkwtivt = skims.pkwlk.getValue(ptaz,ataz,"pwtivt");
+        pkdtfwt = skims.pkdrv.getValue(ptaz,ataz,"pdtfwt");
+        pktimet = skims.pkTime.getValueAt(ptaz,ataz);
+        logger.info("pk walk time "+pkwtivt);
+        logger.info("pk drive fwait "+pkdtfwt);
+        logger.info("pkTime "+pktimet);
+
+        //check 4
+        ptaz=2;
+        ataz=3;
+        logger.info("PTAZ "+ptaz+ " ATAZ "+ataz);
+        pkwtivt = skims.pkwlk.getValue(ptaz,ataz,"pwtivt");
+        pkdtfwt = skims.pkdrv.getValue(ptaz,ataz,"pdtfwt");
+        pktimet = skims.pkTime.getValueAt(ptaz,ataz);
+        logger.info("pk walk time "+pkwtivt);
+        logger.info("pk drive fwait "+pkdtfwt);
+        logger.info("pkTime "+pktimet);
+        logger.info(" ");
+     }
+
+    public static void main(String[] args) {
+        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        SkimsInMemory skims= new SkimsInMemory();
+        skims.readSkims(rb);
+        skims.checkSkims(skims);
+     }
 
 
 
