@@ -1,4 +1,5 @@
 package com.pb.despair.pt.tripmodes;
+
 import com.pb.despair.model.Mode;
 import com.pb.despair.model.ModeType;
 import com.pb.despair.model.TravelTimeAndCost;

@@ -1,11 +1,8 @@
 package com.pb.despair.pt.tripmodes;
+
 import com.pb.despair.model.Mode;
 import com.pb.despair.model.ModeType;
-import com.pb.despair.model.TravelTimeAndCost;
-import com.pb.despair.pt.Activity;
-import com.pb.despair.pt.PersonTripModeAttributes;
-import com.pb.despair.pt.TripModeParameters;
-import com.pb.despair.pt.ZoneAttributes;
+
 
 import org.apache.log4j.Logger;
 /** 
