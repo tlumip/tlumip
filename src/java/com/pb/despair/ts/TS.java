@@ -172,9 +172,9 @@ public class TS {
 		
 		
         // get off-peak period definitions from property file
-		offPeakStart = Integer.parseInt( (String)globalPropertyMap.get("offPeak.start") );
-		offPeakEnd = Integer.parseInt( (String)globalPropertyMap.get("offPeak.end") );
-		offPeakFactor = Float.parseFloat( (String)globalPropertyMap.get("offPeak.volumeFactor") );
+		offPeakStart = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
+		offPeakEnd = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+		offPeakFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
 
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
