@@ -1834,6 +1834,7 @@ public class SPGnew {
     	
     	int pumaIndex;
 		int numPersons;
+		int numWorkers;
 		int pumsIncomeCode;
 		int pumsIndustryCode;
 		int pumsOccupationCode;
@@ -1847,12 +1848,13 @@ public class SPGnew {
 		int numIncomeSizes = incSize.getNumberIncomeSizes();
 		int numOccupations = occ.getNumberOccupations();
 		int numIndustries = edInd.getNumberEdIndustries();
+		int numWorkerCategories = 6;
 		
 		// define array of states by pumas for summarizing data
-		int[][][] hhsByStatePumaCategory = new int[pumas.length][][];
+		int[][][][] hhsByStatePumaCategory = new int[pumas.length][][][];
 		int[][][][] personsByStatePumaIndOcc = new int[pumas.length][][][];
 		for (int i=0; i < pumas.length; i++) {
-			hhsByStatePumaCategory[i] = new int[pumas[i].length][];
+			hhsByStatePumaCategory[i] = new int[pumas[i].length][][];
 			personsByStatePumaIndOcc[i] = new int[pumas[i].length][][];
 		}
 		
@@ -1864,7 +1866,7 @@ public class SPGnew {
 		// i index loops over states, j index loops over pumas in states
 		for (int i=0; i < pumas.length; i++) {
 			for (int j=0; j < pumas[i].length; j++) {
-				hhsByStatePumaCategory[i][j] = new int[numIncomeSizes];
+				hhsByStatePumaCategory[i][j] = new int[numIncomeSizes][numWorkerCategories];
 				personsByStatePumaIndOcc[i][j] = new int[numIndustries][numOccupations];
 			}
 		}
@@ -1882,6 +1884,9 @@ public class SPGnew {
 				
 				numPersons = hhArray[i][k][NUM_PERSONS_ATTRIB_INDEX];
 				pumsIncomeCode = hhArray[i][k][HH_INCOME_ATTRIB_INDEX];
+				numWorkers = hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
+				if (numWorkers > 5)
+					numWorkers = 5;
 
 				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons);
 
@@ -1894,7 +1899,7 @@ public class SPGnew {
 					personsByStatePumaIndOcc[i][pumaIndex][edIndustryCode][occupationCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 				}
 				
-				hhsByStatePumaCategory[i][pumaIndex][incomeSizeCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
+				hhsByStatePumaCategory[i][pumaIndex][incomeSizeCode][numWorkers] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 
 			}
 		    
@@ -1913,19 +1918,22 @@ public class SPGnew {
 			
 			// write csv file header record
 			outStream = new PrintWriter (new BufferedWriter( new FileWriter(incomeSizeFileName) ) );
-			outStream.println ( "State,PUMA,IncomeSize,Frequency");
+			outStream.println ( "State,PUMA,IncomeSize,Workers,Frequency");
 
 			// write hh size/income category descriptions and frequencies by state and puma
 			for (int i=0; i < hhsByStatePumaCategory.length; i++) {
 				for (int j=0; j < hhsByStatePumaCategory[i].length; j++) {
 					for (int k=0; k < hhsByStatePumaCategory[i][j].length; k++) {
+						for (int m=0; m < hhsByStatePumaCategory[i][j][k].length; m++) {
 						
-						state = halo.getStateLabel(i);
-						puma = halo.getPumaLabel(i, j);
-						incomeSizeLabel = incSize.getIncomeSizeLabel(k);
-						value = hhsByStatePumaCategory[i][j][k];
+							state = halo.getStateLabel(i);
+							puma = halo.getPumaLabel(i, j);
+							incomeSizeLabel = incSize.getIncomeSizeLabel(k);
+							value = hhsByStatePumaCategory[i][j][k][m];
 						
-						outStream.println( state + "," + puma + "," + incomeSizeLabel + "," + value );
+							if (value > 0)
+								outStream.println( state + "," + puma + "," + incomeSizeLabel + "," + (m < 5 ? Integer.toString(m) : "5+") + "," + value );
+						}
 					}
 				}
 			}

@@ -1,5 +1,11 @@
 package com.pb.despair.model;
 
+import java.io.File;
+import java.io.IOException;
+
+import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.datafile.TableDataSet;
+
 
 public class IncomeSize {
 
@@ -135,5 +141,36 @@ public class IncomeSize {
 		return incomeSizeLabels;
 	}
 
+	
+	
+		// return the array of households by Income/HHSize HH Category from the named file
+	public int[] getIncSizeHouseholds( String fileName ) {
+	 
+		String[] formats = { "STRING", "NUMBER" };
+		
+		// read the base households by incSize file into a TableDataSet
+		CSVFileReader reader = new CSVFileReader();
+        
+		TableDataSet table = null;
+		try {
+			table = reader.readFileWithFormats( new File( fileName ), formats );
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	    
+		// this table has one row of number of households for each incSize category
+		String[] tempIncSizeLabels = table.getColumnAsString(1);
+		int[] incSize = table.getColumnAsInt(2);
+		
+		incomeSizeLabels = new String[tempIncSizeLabels.length];
+
+		for (int i=0; i < tempIncSizeLabels.length; i++)
+			incomeSizeLabels[i] = tempIncSizeLabels[i];
+	    
+		return incSize;
+	}
+	
+	
+	
 }
 
