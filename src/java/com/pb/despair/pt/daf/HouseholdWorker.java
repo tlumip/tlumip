@@ -111,6 +111,17 @@ public class HouseholdWorker extends MessageProcessingTask {
                 }
                 rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
 
+                //set whether you want to calculate the dc and mode choice logsums
+                //in production mode these should always be true.
+                String dcLogsumBoolean = ResourceUtil.getProperty(rb, "calculate.dc.logsums");
+                if(dcLogsumBoolean != null){
+                    CALCULATE_DCLOGSUMS = new Boolean(dcLogsumBoolean).booleanValue();
+                } //otherwise it has already been initialized to true.
+                String mcLogsumBoolean = ResourceUtil.getProperty(rb, "calculate.mc.logsums");
+                if(mcLogsumBoolean != null){
+                    CALCULATE_MCLOGSUMS = new Boolean(mcLogsumBoolean).booleanValue();
+                } //otherwise it has already been initialized to true
+
                 //get the list of Matrices to collapse from properties file
                 matricesToCollapse = ResourceUtil.getList(rb,"matrices.for.pi");
 
@@ -358,7 +369,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         if (firstDCLogsum) {
             logger.info(getName() + " is setting population, school occupation and collapsing employment " +
                     "in the ptModel tazs");
-            dcLogsumCalculator.buildModel(PTModelInputs.tazs);
+            dcLogsumCalculator.buildModel(PTModelInputs.tazs, PTModelInputs.getSkims());
             firstDCLogsum=false;
         }
 
