@@ -34,6 +34,13 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
         numCommodities = Commodity.getAllCommodities().size();
         matrixSize = numCommodities ;
     }
+    
+    private double[][] getAveragePriceSurplusDerivativeMatrixForActivity(AggregateActivity a) {
+        // TODO write this method and then take the method below and have it call this method
+        // eventually this will be called by the DAF routines as a worker task, once for each
+        // activity on separate processors.
+        return null;
+    }
 
     public AveragePriceSurplusDerivativeMatrix() {
         super(matrixSize, matrixSize);

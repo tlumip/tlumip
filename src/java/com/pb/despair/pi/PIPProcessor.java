@@ -1478,6 +1478,9 @@ public class PIPProcessor {
                                 }
                             }
                         }
+                        if (totalFloorspaceConsumption == 0) {
+                            // TODO do something smart with activities that consume no floorspace
+                        }
                         for (int c =0; c<amounts.length;c++) {
                             Commodity commodity = (Commodity) cf.commodityAt(c);
                             if (commodity!=null) {
