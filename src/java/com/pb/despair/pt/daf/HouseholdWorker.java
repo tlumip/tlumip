@@ -226,7 +226,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         PTPerson[] persons = (PTPerson[]) msg.getValue("persons");
 
         ModeChoiceLogsums mcl = new ModeChoiceLogsums(rb);
-        logger.info("\t\t" + getName() + "Reading logsum "+name);
+        logger.info("\t\t" + getName() + ": Reading logsum w"+ segment.intValue() + "ls.zip" );
         mcl.readLogsums('w',segment.intValue());        //BINARY-ZIP
 //        mcl.readBinaryLogsums('w',segment.intValue());
         Matrix modeChoiceLogsum = mcl.getMatrix();
