@@ -46,7 +46,8 @@ public class Network implements Serializable {
 	int numCentroids;
 	int maxNode;
 
-	boolean[][] validLink = null;
+	boolean[] validLinks = null;
+	boolean[][] validLinksForClass = null;
     int[] indexNode = null;
     int[] nodeIndex = null;
 	int[] sortedLinkIndexA;
@@ -134,8 +135,8 @@ public class Network implements Serializable {
 		
 		// calculate the congested link travel times based on the vdf functions defined
 		fdLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "fd" ), "vdf" );
-		applyVdfs();
-		logLinkTimeFreqs();
+		applyVdfs(validLinks);
+		logLinkTimeFreqs(validLinks);
 		
 
 
@@ -227,8 +228,15 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsDouble( "transitTime" );
 	}
 
-	public float getSumOfVdfIntegrals () {
-		return linkTable.getColumnTotal( linkTable.getColumnPosition("vdfIntegral") );
+	public double getSumOfVdfIntegrals (boolean[] validLinks) {
+		double[] integrals = linkTable.getColumnAsDouble("vdfIntegral");
+		
+		double sum = 0.0;
+		for (int k=0; k < integrals.length; k++)
+			if ( validLinks[k] )
+				sum += integrals[k];
+			
+		return sum;
 	}
 
 	public double[] getFreeFlowTime () {
@@ -270,8 +278,8 @@ public class Network implements Serializable {
 	}
     
     
-    public boolean[] getValidLink ( int userClass ) {
-        return validLink[userClass];
+    public boolean[] getValidLinkForClass ( int userClass ) {
+        return validLinksForClass[userClass];
     }
 
     public void setVolau ( double[] volau ) {
@@ -380,8 +388,10 @@ public class Network implements Serializable {
 		double[][] flow = new double[NUM_AUTO_CLASSES][linkTable.getRowCount()];
 		boolean[] centroid = new boolean[linkTable.getRowCount()];
 		String[] centroidString = new String[linkTable.getRowCount()];
-		validLink = new boolean[NUM_AUTO_CLASSES][linkTable.getRowCount()];
+		validLinksForClass = new boolean[NUM_AUTO_CLASSES][linkTable.getRowCount()];
+		validLinks = new boolean[linkTable.getRowCount()];
 
+		Arrays.fill (validLinks, false);
 
 		for (int i=0; i < linkTable.getRowCount(); i++) {
 		    
@@ -398,8 +408,13 @@ public class Network implements Serializable {
     
 
 			// set speed and capacity fields based on values in ul1; set minimum link distance.
+			String mode = linkTable.getStringValueAt( i+1, "mode" );
 			float ul1 = linkTable.getValueAt( i+1, "ul1" );
 
+			
+			// can't have zero speed for highway links, so fix those here for now
+			if ( ul1 == 0 && mode.indexOf('a') >= 0 )
+				ul1 = 15;
 			
 			if ( centroid[i] )
 				capacity[i] = 9999;
@@ -436,12 +451,17 @@ public class Network implements Serializable {
 			
 			// initialize the valid links for shortest paths flags
 			for (int j=0; j < NUM_AUTO_CLASSES; j++) {
-				validLink[j][i] = true;
+			    if ( mode.indexOf('a') >= 0 ) {
+			    	validLinksForClass[j][i] = true;
+			    	validLinks[i] = true;
+			    }
+			    else {
+			    	validLinksForClass[j][i] = false;
+			    }
 			}
 	        
 
 
-			
 			
 			// redefine link vdf attributes - 1=non-centroid, 2=centroid
 			if ( centroid[i] )
@@ -526,17 +546,26 @@ public class Network implements Serializable {
 	
 	
 	public void applyVdfs () {
-	
-		double[] results = fdLc.solve();
-		linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
+		
+			double[] results = fdLc.solve();
+			linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
 
-	}
+		}
+		
+		
+		
+	public void applyVdfs ( boolean[] validLinks ) {
+		
+			double[] results = fdLc.solve(validLinks);
+			linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
+
+		}
+		
+		
+		
+	public void applyVdfIntegrals ( boolean[] validLinks ) {
 	
-	
-	
-	public void applyVdfIntegrals () {
-	
-		double[] results = fdiLc.solve();
+		double[] results = fdiLc.solve(validLinks);
 		linkTable.setColumnAsDouble( linkTable.getColumnPosition("vdfIntegral"), results );
 
 	}
@@ -772,7 +801,7 @@ public class Network implements Serializable {
 
 	
 	
-	public void logLinkTimeFreqs () {
+	public void logLinkTimeFreqs ( boolean[] validLinks ) {
 	    
 		int[] ia = getIa();
 		int[] ib = getIb();
@@ -781,6 +810,10 @@ public class Network implements Serializable {
 		int[] buckets = new int[8];
 
 		for (int i=0; i < congestedTime.length; i++) {
+			
+			if ( !validLinks[i] )
+				continue;
+			
 			if ( congestedTime[i] > 0 && congestedTime[i] <= 1.0 )
 				buckets[0]++;
 			else if ( congestedTime[i] > 1.0 && congestedTime[i] <= 10.0 )
@@ -807,6 +840,7 @@ public class Network implements Serializable {
 
 		logger.info ("");
 		logger.info ( "frequency table of free flow link travel times");
+		logger.info ( "for links valid for at least one user class");
 		logger.info ( buckets[5] + " == 0");
 		logger.info ( "0 < " + buckets[0] + " <= 1.0");
 		logger.info ( "1.0 < " + buckets[1] + " <= 10.0");

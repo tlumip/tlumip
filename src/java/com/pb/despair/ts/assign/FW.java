@@ -103,19 +103,21 @@ public class FW {
 		// set the highway network attribute on which to skim the network
 		double[] linkCost = g.getCongestedTime();
 		
+		
 		double[] aon;
 	
 		// determine which links are valid parts of paths for this skim
+		boolean[] validLinksForClass = null;
 		boolean[] validLinks = new boolean[g.getLinkCount()];
-		Arrays.fill (validLinks, false);
-		String[] mode = g.getMode();
-		for (int i=0; i < validLinks.length; i++) {
-		    if ( mode[i].indexOf('a') >= 0 )
-		        validLinks[i] = true;
+	    Arrays.fill (validLinks, false);
+		for (int m=0; m < numAutoClasses; m++) {
+		validLinksForClass = g.getValidLinkForClass(m);
+			for (int k=0; k < g.getLinkCount(); k++)
+				if (validLinksForClass[k])
+					validLinks[k] = true;
 		}
-   
-		sp.setLinkCost( linkCost );
-		sp.setValidLinks( validLinks );
+
+			
 		
 		
 
@@ -138,6 +140,11 @@ public class FW {
 			for (int origin=START_ORIG; origin < END_ORIG; origin++) {
 			    
 				for (int m=0; m < numAutoClasses; m++) {
+
+					validLinksForClass = g.getValidLinkForClass(m);
+
+					sp.setLinkCost( linkCost );
+					sp.setValidLinks( validLinksForClass );
 
 					if (origin % 500 == 0)
 						logger.info ("assigning origin " + origin);
@@ -172,7 +179,7 @@ public class FW {
 
             // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
             if (iter > 0) {
-                if ( bisect ( iter ) ) {
+                if ( bisect ( iter, validLinks ) ) {
                     logger.error ("Exact FW optimal solution found.  Unlikely, better check into this!");
                     iter = MAX_FW_ITERS;
                 }
@@ -185,8 +192,8 @@ public class FW {
 
 
             // print assignment iterations report
-            lub = ofValue();
-			gap = Math.abs(ofGap());
+            lub = ofValue(validLinks);
+			gap = Math.abs(ofGap( validLinks ));
             if ( ( lub - gap ) > glb )
                 glb = lub - gap;
 
@@ -201,6 +208,7 @@ public class FW {
 
             // update link flows and times
 			for (int k=0; k < volau.length; k++) {
+				volau[k] = 0;
 				for (int m=0; m < numAutoClasses; m++) {
 					flow[m][k] = flow[m][k] + lambdas[iter]*(aonFlow[m][k] - flow[m][k]);
 					volau[k] += flow[m][k];
@@ -208,12 +216,12 @@ public class FW {
 			}
 			g.setFlows(flow);
 			g.setVolau(volau);
-            g.applyVdfs();
+            g.applyVdfs(validLinks);
 
 			linkCost = g.getCongestedTime();
 			sp.setLinkCost( linkCost );
 
-			g.logLinkTimeFreqs ();
+			g.logLinkTimeFreqs (validLinks);
 			
         } // end of FW iter loop
 
@@ -248,13 +256,13 @@ public class FW {
 
 
     //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
-    boolean bisect ( int iter ) {
+    boolean bisect ( int iter, boolean[] validLinks ) {
         
         double x=0.0, xleft=0.0, xright=1.0, gap=0.0;
 
         int numBisectIterations = (int)(Math.log(1.0e-07)/Math.log(0.5) + 1.5);
         
-        gap = ofGap();
+        gap = ofGap( validLinks );
         
         if (Math.abs(gap) <= 1.0e-07) {
             lambdas[iter] = 0.5;
@@ -271,7 +279,7 @@ public class FW {
             }
 
             for (int n=0; n < numBisectIterations; n++) {
-                gap = bisectGap(x);
+                gap = bisectGap(x, validLinks );
                 if (gap <= 0)
                     xleft = x;
                 else
@@ -303,7 +311,7 @@ public class FW {
     }
 
 
-    double ofValue ()  {
+    double ofValue (boolean[] validLinks)  {
 
 		// sum total flow over all user classes for each link 
         for (int k=0; k < volau.length; k++) {
@@ -313,14 +321,14 @@ public class FW {
         }
         
 		g.setVolau(volau);
-        g.applyVdfIntegrals();
+        g.applyVdfIntegrals(validLinks);
 
-        return( g.getSumOfVdfIntegrals() );
+        return( g.getSumOfVdfIntegrals(validLinks) );
     }
 
 
 
-    double ofGap () {
+    double ofGap ( boolean[] validLinks ) {
 
 		double[] totAonFlow = new double[g.getLinkCount()];
         
@@ -335,18 +343,25 @@ public class FW {
 		}
         
 		g.setVolau(volau);
-		g.applyVdfs();
+		g.applyVdfs(validLinks);
 		double[] cTime = g.getCongestedTime();
 		
 		double gap = 0.0;
-		for (int k=0; k < volau.length; k++)
-            gap += cTime[k]*(totAonFlow[k] - volau[k]);
+		int dummy = 0;
+		for (int k=0; k < volau.length; k++) {
+            if ( validLinks[k] ) {
+            	if ( !( isValidDoubleValue(cTime[k]) && isValidDoubleValue(totAonFlow[k]) && isValidDoubleValue(volau[k]) ) ) {
+            		dummy = 1;
+            	}
+            	gap += cTime[k]*(totAonFlow[k] - volau[k]);
+            }
+		}
 
         return(gap);
     }
 
 
-    double bisectGap (double x) {
+    double bisectGap (double x, boolean[] validLinks ) {
 
 		double[] totAonFlow = new double[g.getLinkCount()];
 		double[] totalFlow = new double[g.getLinkCount()];
@@ -364,13 +379,13 @@ public class FW {
 		}
         
 		g.setVolau(volau);
-		g.applyVdfs();
+		g.applyVdfs(validLinks);
 		double[] cTime = g.getCongestedTime();
 
         double gap = 0.0;
 		for (int k=0; k < cTime.length; k++)
-            gap += cTime[k]*(totAonFlow[k] - volau[k]);
-//            gap += cTime[k]*(totAonFlow[k] - totalFlow[k]);
+            if ( validLinks[k] )
+            	gap += cTime[k]*(totAonFlow[k] - volau[k]);
 
 
         return(gap);
@@ -456,4 +471,17 @@ public class FW {
 	
 	}
 
+	
+	
+	private boolean isValidNonPositiveDoubleValue( double value ) {
+		return ( value >= -Double.MAX_VALUE && value <= 0.0 );
+	}
+
+	private boolean isValidNonNegativeDoubleValue( double value ) {
+		return ( value >= 0.0 && value <= Double.MAX_VALUE );
+	}
+
+	private boolean isValidDoubleValue( double value ) {
+		return ( value >= -Double.MAX_VALUE && value <= Double.MAX_VALUE );
+	}
 }
