@@ -268,6 +268,18 @@ public class PTSummarizer {
         }
     } //end of summarizeHouseholds
 
+    /* This method will count the number of hhs in each work/non-work segment group.
+    *  The values will be used to determine the number of blocks per worker when
+    *  it comes time to send the hhs off to the workers.
+    */
+    public static int[][] summarizeHHsByWorkAndNonWorkSegments(PTHousehold[] hhs){
+        int[][] workByNonWork = new int[9][9]; //nWorkSegs by nNonWorkSegs
+        for(int h=0; h< hhs.length; h++){
+            workByNonWork[hhs[h].calcWorkLogsumSegment()][hhs[h].calcNonWorkLogsumSegment()]++;
+        }
+        return workByNonWork;
+    }
+
     /* This method will summarize the Persons by
     *  1.  age range (0-4,5-18,19-39,40-65,66-80,80+)
     *  2.  gender  (m,f)
