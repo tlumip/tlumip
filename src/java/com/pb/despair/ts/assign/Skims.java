@@ -331,18 +331,28 @@ public class Skims {
 		}
 		
 		double[][] skimMatrix =  hwySkim ( linkCost, validLinks, alphaNumberArray );
-		
+		int minI = 0;
+        int minJ = 0;
 		// set intrazonal values to 0.5*nearest neighbor
 		for (int i=0; i < skimMatrix.length; i++) {
 			
 			// find minimum valued row element
 			double minValue = Double.MAX_VALUE;
 			for (int j=0; j < skimMatrix.length; j++)
-				if ( skimMatrix[i][j] < minValue )
-					minValue = skimMatrix[i][j]; 
-			
+				if ( i != j && skimMatrix[i][j] < minValue ){
+					minValue = skimMatrix[i][j];
+                    minI = i;
+                    minJ = j;
+                }
+
 			// set intrazonal value
-			skimMatrix[i][i] = 0.5*minValue;
+            if(minValue <= 0) {
+                logger.severe("Hwy skim min value is " + minValue + "@ rowIndex " + minI + ", colIndex " + minJ);
+                logger.severe("System will exit, no hwy skims have been written");
+                System.exit(10);
+            }
+
+            skimMatrix[i][i] = 0.5*minValue;
 			
 		}
 		
