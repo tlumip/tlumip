@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 
@@ -137,9 +137,7 @@ public class AuxTrNet implements Serializable {
 
 	    this.accessMode = accessMode;
 	    
-		double headway;
 		TrSegment ts;
-		boolean debug = false;
 
 		int aux;
 		int nextNode;
@@ -160,7 +158,9 @@ public class AuxTrNet implements Serializable {
 			ts = (TrSegment)tr.transitPath[rte].get(0);
 			startNode = gia[ts.link];
 			startAuxNode = nextNode;
-			if (debug) logger.info ("rte=" + rte + ", startNode=" + indexNode[startNode] + ", startAuxNode=" + startAuxNode);
+			if(logger.isDebugEnabled()) {
+                logger.debug ("rte=" + rte + ", startNode=" + indexNode[startNode] + ", startAuxNode=" + startAuxNode);
+            }
 			for (int seg=0; seg < tr.transitPath[rte].size(); seg++) {
 			    ts = (TrSegment)tr.transitPath[rte].get(seg);
 
@@ -172,27 +172,39 @@ public class AuxTrNet implements Serializable {
 			    // for all the rteseg values stored for the link.
 			    gSegs[ts.link].add( new Integer(rte*1000 + seg) );
 			    
-				if (debug) logger.info ("anode=" + indexNode[anode] + ", bnode=" + indexNode[bnode] + ", ttf=" + ts.getTtf() );
+				if(logger.isDebugEnabled()) {
+                    logger.debug ("anode=" + indexNode[anode] + ", bnode=" + indexNode[bnode] + ", ttf=" + ts.getTtf() );
+                }
 
 				    // add auxilliary links for route segment
 			    if (ts.layover) {
 			        if (anode == startNode) {
-			            if (debug) logger.info ("layover at startnode:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+			            if(logger.isDebugEnabled()) {
+                            logger.debug ("layover at startnode:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                        }
 			           	addAuxLayoverLink (aux++, nextNode, startAuxNode, ts, rte);
 			            nextNode++;
 			        }
 			        else {
-			        	if (debug) logger.info ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+			        	if(logger.isDebugEnabled()) {
+                            logger.debug ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                        }
 			       	   	addAuxLayoverLink (aux++, nextNode, nextNode + 1, ts, rte);
 						nextNode++;
 			        	if (ts.board) {
-							if (debug) logger.info ("board after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+							if(logger.isDebugEnabled()) {
+                                logger.debug ("board after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                            }
 			       	       	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte);
 			       	   	}
-						if (debug) logger.info ("in-veh after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+						if(logger.isDebugEnabled()) {
+                            logger.debug ("in-veh after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                        }
 			       	  	addAuxInVehicleLink (aux++, nextNode, ts, rte);
 			        	if (ts.alight) {
-			        	    if (debug) logger.info ("alight after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+			        	    if(logger.isDebugEnabled()) {
+                                logger.debug ("alight after layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                            }
 			       	    	addAuxAlightingLink (aux++, nextNode, bnode, ts, rte);
 			        	}
 			        	nextNode++;
@@ -200,13 +212,19 @@ public class AuxTrNet implements Serializable {
 			    }
 			    else {
 			        if (ts.board) {
-			            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+			            if(logger.isDebugEnabled()) {
+                            logger.debug ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                        }
 			           	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte);
 			        }
-			        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+			        if(logger.isDebugEnabled()) {
+                        logger.debug ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                    }
 			       	addAuxInVehicleLink (aux++, nextNode, ts, rte);
 			   	   	if (ts.alight) {
-						if (debug) logger.info ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+						if(logger.isDebugEnabled()) {
+                            logger.debug ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                        }
 						addAuxAlightingLink (aux++, nextNode, bnode, ts, rte);
 					}
 					nextNode++;
@@ -365,10 +383,7 @@ public class AuxTrNet implements Serializable {
 				        continue;
 				    }
 				    
-				    int dummy=0;
-				    if (aux == 4130) {
-				        dummy = 1;
-				    }
+				    
 				    
 					hwyLink[aux] = i;
 					trRoute[aux] = -1;
@@ -481,7 +496,7 @@ public class AuxTrNet implements Serializable {
 
 	public void printAuxTranNetwork (String fileName) {
 
-		int i, k, start=0, end;
+		int i, k;
 
 		try {
 			PrintWriter out = new PrintWriter (
