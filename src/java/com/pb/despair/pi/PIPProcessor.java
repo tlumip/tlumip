@@ -6,6 +6,7 @@ import com.pb.common.datafile.JDBCTableReader;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixHistogram;
+import com.pb.common.matrix.StringIndexedNDimensionalMatrix;
 import com.pb.common.matrix.ZipMatrixWriter;
 import com.pb.common.sql.JDBCConnection;
 import com.pb.despair.model.*;
@@ -1160,7 +1161,6 @@ public class PIPProcessor {
     }
 
     private void writeLocationTable() {
-
         BufferedWriter locationsFile;
         try {
             locationsFile = new BufferedWriter(new FileWriter(getOutputPath() + "ActivityLocations.csv"));
@@ -1191,10 +1191,44 @@ public class PIPProcessor {
     }
 
     public void writeZonalMakeUseCoefficients() {
-        BufferedWriter zMakeUseFile;
+        boolean ascii = true; //default
+        String temp = ResourceUtil.getProperty(rb,"pi.writeAsciiZonalMakeUse");
+        if (temp!=null) {
+            if (temp.equalsIgnoreCase("false")) {
+                ascii = false;
+            }
+        }
+        boolean binary = false; //default
+        temp = ResourceUtil.getProperty(rb,"pi.writeBinaryZonalMakeUse");
+        if (temp!=null) {
+            if (temp.equalsIgnoreCase("true")) {
+                binary = true;
+            }
+        }
+        StringIndexedNDimensionalMatrix coeffs = null;
+        StringIndexedNDimensionalMatrix utilities = null;
+        StringIndexedNDimensionalMatrix quantities = null;
+        if (binary) {
+            int[] shape = new int[4];
+            String[] columnNames = {"Activity","ZoneNumber","Commodity","MorU"};
+            shape[3] = 2; // "M" or "U"
+            shape[1] = AbstractTAZ.getAllZones().length;
+            shape[2]= AbstractCommodity.getAllCommodities().size();
+            shape[0] = ProductionActivity.getAllProductionActivities().size();
+            coeffs = new StringIndexedNDimensionalMatrix("Coefficient",4,shape,columnNames);
+            coeffs.setAddKeysOnTheFly(true);
+            utilities = new StringIndexedNDimensionalMatrix("Utility",4,shape,columnNames);
+            utilities.setAddKeysOnTheFly(true);
+            quantities = new StringIndexedNDimensionalMatrix("Amount",4,shape,columnNames);
+            quantities.setAddKeysOnTheFly(true);
+            
+        }
+        BufferedWriter zMakeUseFile = null;
         try {
-            zMakeUseFile = new BufferedWriter(new FileWriter(getOutputPath() + "ZonalMakeUse.csv"));
-            zMakeUseFile.write("Activity,ZoneNumber,Commodity,MorU,Coefficient,Utility,Amount\n");
+            if (ascii) {
+                zMakeUseFile = new BufferedWriter(new FileWriter(getOutputPath() + "ZonalMakeUse.csv"));
+                zMakeUseFile.write("Activity,ZoneNumber,Commodity,MorU,Coefficient,Utility,Amount\n");
+            }
             Iterator it = ProductionActivity.getAllProductionActivities().iterator();
             while (it.hasNext()) {
                 ProductionActivity p = (ProductionActivity)it.next();
@@ -1222,37 +1256,77 @@ public class PIPProcessor {
                     } //CUSellc,z and CUBuyc,z have now been calculated for the commodites made or used by the activity
                     double[] productionAmounts = pf.calcAmounts(sellingZUtilities);
                     double activityAmount = p.getMyDistribution()[z].getQuantity();
+                    String[] indices = new String[4];
+                    indices[0] = p.name;
+                    indices[1] = Integer.toString(zones[z].getZoneUserNumber());
+                    indices[3] = "U";
                     for (int c = 0; c < cf.size(); c++) {
                         AbstractCommodity com = cf.commodityAt(c);
                         if (com!= null) {
-                            zMakeUseFile.write(p.name+",");
-                            zMakeUseFile.write(zones[z].getZoneUserNumber()+",");
-                            zMakeUseFile.write(com.getName()+",");
-                            zMakeUseFile.write("U,");
-                            zMakeUseFile.write(consumptionAmounts[c]+",");
-                            zMakeUseFile.write(buyingZUtilities[c]+",");
-                            zMakeUseFile.write(activityAmount*consumptionAmounts[c]+"\n");
+                            if (ascii) {
+                                zMakeUseFile.write(p.name+",");
+                                zMakeUseFile.write(zones[z].getZoneUserNumber()+",");
+                                zMakeUseFile.write(com.getName()+",");
+                                zMakeUseFile.write("U,");
+                                zMakeUseFile.write(consumptionAmounts[c]+",");
+                                zMakeUseFile.write(buyingZUtilities[c]+",");
+                                zMakeUseFile.write(activityAmount*consumptionAmounts[c]+"\n");
+                            }
+                            if (binary) {
+                                indices[2] = com.getName();
+                                coeffs.setValue((float) consumptionAmounts[c],indices);
+                                utilities.setValue((float) buyingZUtilities[c],indices);
+                                quantities.setValue((float) (activityAmount*consumptionAmounts[c]),indices);
+                            }
                         }
                     } 
+                    indices[3] = "M";
                     for (int c = 0; c < pf.size(); c++) {
                         AbstractCommodity com = pf.commodityAt(c);
                         if (com!= null) {
-                            zMakeUseFile.write(p.name+",");
-                            zMakeUseFile.write(zones[z].getZoneUserNumber()+",");
-                            zMakeUseFile.write(com.getName()+",");
-                            zMakeUseFile.write("M,");
-                            zMakeUseFile.write(productionAmounts[c]+",");
-                            zMakeUseFile.write(sellingZUtilities[c]+",");
-                            zMakeUseFile.write(activityAmount*productionAmounts[c]+"\n");
+                            if (ascii) {
+                                zMakeUseFile.write(p.name+",");
+                                zMakeUseFile.write(zones[z].getZoneUserNumber()+",");
+                                zMakeUseFile.write(com.getName()+",");
+                                zMakeUseFile.write("M,");
+                                zMakeUseFile.write(productionAmounts[c]+",");
+                                zMakeUseFile.write(sellingZUtilities[c]+",");
+                                zMakeUseFile.write(activityAmount*productionAmounts[c]+"\n");
+                            }
+                            if (binary) {
+                                indices[2] = com.getName();
+                                coeffs.setValue((float) productionAmounts[c],indices);
+                                utilities.setValue((float) sellingZUtilities[c],indices);
+                                quantities.setValue((float) (activityAmount*productionAmounts[c]),indices);
+                            }
+                            
                            }
                     }
                 } // end of zone loop
             } // end of production activity loop
             logger.info("ZonalMakeUse.csv has been written");
-            zMakeUseFile.close();
+            if (ascii) {
+                zMakeUseFile.close();
+            }
         } catch (Exception e) {
             logger.severe("Can't create ZonalMakeUse output file");
             e.printStackTrace();
+        }
+        if (binary) {
+            String filename = getOutputPath() + "ZonalMakeUse.bin";
+            if (filename != null) {
+                try {
+                    java.io.FileOutputStream fos = new java.io.FileOutputStream(filename);
+                    java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(fos);
+                    out.writeObject(coeffs);
+                    out.writeObject(utilities);
+                    out.writeObject(quantities);
+                    out.flush();
+                    out.close();
+                } catch (java.io.IOException e) {
+                    logger.severe("Can't write out zonal make use binary file "+e);
+                }
+            }
         }
     }
 

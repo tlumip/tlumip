@@ -20,6 +20,7 @@ public abstract class TableDataSetMultipleRatioRelationship implements Dialogabl
     TableDataSetIndexedValue commonElements = new TableDataSetIndexedValue();
     double weight;
     static final long serialVersionUID = 4517743004455337485L;
+    private boolean generateStringIndexedFloatTargets = false;
     
     public String toString() {
         if (name!=null) {
@@ -73,6 +74,14 @@ public abstract class TableDataSetMultipleRatioRelationship implements Dialogabl
             name = new String();
         }
         return name;
+    }
+
+    void setGenerateStringIndexedFloatTargets(boolean generateStringIndexedFloatTargets) {
+        this.generateStringIndexedFloatTargets = generateStringIndexedFloatTargets;
+    }
+
+    boolean isGenerateStringIndexedFloatTargets() {
+        return generateStringIndexedFloatTargets;
     }
 
     private String name;

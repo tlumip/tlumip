@@ -8,6 +8,7 @@ package com.pb.despair.calibrator;
 
 import java.io.IOException;
 
+import com.hbaspecto.calibrator.DirectoryModelInputsAndOutputs;
 import com.hbaspecto.calibrator.ModelInputsAndOutputs;
 import com.pb.common.datafile.*;
 
@@ -17,15 +18,17 @@ import com.pb.common.datafile.*;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class TableDataSetInputsAndOutputs implements ModelInputsAndOutputs {
+public class TableDataSetInputsAndOutputs implements DirectoryModelInputsAndOutputs {
 
     public final TableDataSetCollection myTableDataSetCollection;
+    private String myDirectory;
     
     /**
      * 
      */
-    public TableDataSetInputsAndOutputs(TableDataSetCollection collection) {
+    public TableDataSetInputsAndOutputs(String directoryForBinaryFiles, TableDataSetCollection collection) {
         myTableDataSetCollection = collection;
+        myDirectory = directoryForBinaryFiles;
     }
 
     /* (non-Javadoc)
@@ -40,6 +43,13 @@ public class TableDataSetInputsAndOutputs implements ModelInputsAndOutputs {
      */
     public void invalidate() throws IOException {
         myTableDataSetCollection.invalidate();
+    }
+
+    /* (non-Javadoc)
+     * @see com.hbaspecto.calibrator.DirectoryModelInputsAndOutputs#getDirectory()
+     */
+    public String getDirectory() {
+        return myDirectory;
     }
 
 }

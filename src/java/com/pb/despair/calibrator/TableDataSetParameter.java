@@ -111,9 +111,8 @@ public class TableDataSetParameter extends Parameter {
                     text = doc.getText(doc.getStartPosition().getOffset(), doc.getLength());
                     perturbation = Double.valueOf(text).doubleValue();
                 } catch (NumberFormatException e) {
-                    // TODO Auto-generated catch block
+                    // jsut don't change it until user enters correct value
                 } catch (BadLocationException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                     text = "";
                 }
@@ -143,9 +142,8 @@ public class TableDataSetParameter extends Parameter {
                     text = doc.getText(doc.getStartPosition().getOffset(), doc.getLength());
                     setValue(Double.valueOf(text).doubleValue());
                 } catch (NumberFormatException e) {
-                    // TODO Auto-generated catch block
+                    // just don't change it until user enters valid number
                 } catch (BadLocationException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                     text = "";
                 }

@@ -40,9 +40,9 @@ public class TableDataSetTarget extends TargetAdapter {
 	 * @see java.lang.Object#clone()
 	 */
     public Object clone() throws CloneNotSupportedException {
-        TableDataSetIndexedValue newOne = (TableDataSetIndexedValue) super.clone();
-        stringKeysTableModel = null;
-        intKeysTableModel = null;
+        TableDataSetTarget newOne = (TableDataSetTarget) super.clone();
+        newOne.stringKeysTableModel = null;
+        newOne.intKeysTableModel = null;
         return newOne;
     }
 
