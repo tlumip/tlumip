@@ -139,7 +139,7 @@ public class Halo {
 		CSVFileReader reader = new CSVFileReader();
         
 		TableDataSet table = null;
-		String[] columnFormats = { "NUMBER", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "STRING" };
+		String[] columnFormats = { "NUMBER", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "STRING", "NUMBER", "STRING" };
 		try {
 			table = reader.readFileWithFormats( new File(fileName), columnFormats );
 		} catch (IOException e) {
