@@ -122,7 +122,7 @@ rm(fieldNames, fieldTypes, alphaBeta)
 ##/
 fieldNames <- c("ConstructionType", "TotalDollars")
 nivqData <- read.table(input$nivqData, header=T, sep=",")
-nivq <- nivqData[,2] 
+nivq <- (nivqData[,2] / 1000000)
 names(nivq) <- c("res", "nres")
 vars$nivq <- as.list(nivq)
 rm(fieldNames,nivqData, nivq)
