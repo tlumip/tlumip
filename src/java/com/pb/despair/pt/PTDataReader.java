@@ -29,7 +29,7 @@ public class PTDataReader{
     }
 
     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
-    boolean debug = false;
+    boolean debug = true;
 
     public BufferedReader openFile(String name){
         try {
@@ -95,21 +95,21 @@ public class PTDataReader{
             while(line!=null){
                 fields = line.split(",");
                 thisHousehold = new PTHousehold();
-                thisHousehold.ID = (int)Integer.parseInt(fields[0]);
-                thisHousehold.income = (int)Integer.parseInt(fields[24]);
-                thisHousehold.autos = (byte)Integer.parseInt(fields[14]);
-                //TODO this should be field 36 on the cluster, 41 using the old file format
-                thisHousehold.homeTaz = (short)Integer.parseInt(fields[36]);
-                thisHousehold.size = (byte)Integer.parseInt(fields[2]);
-            
+                thisHousehold.ID = (int)Integer.parseInt(fields[0]);  //HH_ID
+                thisHousehold.size = (byte)Integer.parseInt(fields[1]);  //PERSONS
                 //get units and set vars
-                int units = (int)Integer.parseInt(fields[4]);
+                int units = (int)Integer.parseInt(fields[2]); //UNITS1
                 if(units==1||units==2||units==3)     //mobile home, one-family detached, one-family attached = single-family
                     thisHousehold.singleFamily=true;
                 else
                     thisHousehold.multiFamily=true;
+                thisHousehold.autos = (byte)Integer.parseInt(fields[3]); //AUTOS
+                thisHousehold.income = (int)Integer.parseInt(fields[4]);  //RHHINC
+                thisHousehold.homeTaz = (short)Integer.parseInt(fields[5]);  //ALPHAZONE
+
                 if(thisHousehold.homeTaz>4105&&thisHousehold.homeTaz<4135)
                     logger.info("taz: "+thisHousehold.homeTaz);
+
                 householdArray[householdCounter] = thisHousehold;
                 line = hhReader.readLine();
                 householdCounter++;
@@ -145,25 +145,23 @@ public class PTDataReader{
             while(personLine!=null){
             	fields = personLine.split(",");
                 thisPerson = new PTPerson();
-                thisPerson.hhID = (int)Integer.parseInt(fields[0]);
-                thisPerson.age =(byte)Integer.parseInt(fields[6]);
-                thisPerson.female = (int)Integer.parseInt(fields[4])==1 ? true : false;
-                        
-                int employStatus = (int)Integer.parseInt(fields[18]);
-                if (employStatus == 0 || employStatus == 3 || employStatus == 6)
-                	thisPerson.employed = false;
-                else 
-                    thisPerson.employed = true;
-                 
-                int school = (int)Integer.parseInt(fields[10]);
+                thisPerson.hhID = (int)Integer.parseInt(fields[0]); //HH_ID
+                thisPerson.ID = Integer.parseInt(fields[1]);      //PERS_ID
+                thisPerson.female = (int)Integer.parseInt(fields[2])==1 ? true : false; //SEX
+                thisPerson.age =(byte)Integer.parseInt(fields[3]); //AGE
+                int school = (int)Integer.parseInt(fields[4]);  //SCHOOL
                 if(school==0||school==1)
                     thisPerson.student=false;
                 else
                     thisPerson.student=true;
-                    
-                thisPerson.occupation = (byte)OccupationCode.codeOccupationFromPUMS((int)Integer.parseInt(fields[30]));
-                thisPerson.industry = (byte)(new EdIndustry()).getEdIndustry((int)Integer.parseInt(fields[29]));
-                thisPerson.ID = Integer.parseInt(fields[1]);
+                int employStatus = (int)Integer.parseInt(fields[5]);   //RLABOR
+                if (employStatus == 0 || employStatus == 3 || employStatus == 6)
+                	thisPerson.employed = false;
+                else 
+                    thisPerson.employed = true;
+                thisPerson.industry = (byte)(new EdIndustry()).getEdIndustry((int)Integer.parseInt(fields[6])); //INDUSTRY
+                thisPerson.occupation = (byte)OccupationCode.codeOccupationFromPUMS((int)Integer.parseInt(fields[7]));  //OCCUP
+
                 personArray[personCounter]=thisPerson;
                 personCounter++;
                 personLine = personReader.readLine();
