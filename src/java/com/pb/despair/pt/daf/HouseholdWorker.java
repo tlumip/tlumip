@@ -198,10 +198,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                     for (int i = 1; i <= 3; i++) {
                         Message dcSchoolMessage = createMessage();
                         dcSchoolMessage.setId(MessageID.DC_LOGSUMS_CREATED);
-                        dcSchoolMessage.setValue("purpose", (purpose+i));
-                        dcSchoolMessage.setValue("segment", segment);
                         dcSchoolMessage.setValue("matrix", null);
-                        logger.info("Sending matrix " + dcSchoolMessage.getValue("purpose"));
                         sendTo(matrixWriterQueue, dcSchoolMessage);
 
                         Message dcExpUtilitiesMessage = createMessage();
@@ -213,10 +210,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                 else {
                     Message dcMessage = createMessage();
                     dcMessage.setId(MessageID.DC_LOGSUMS_CREATED);
-                    dcMessage.setValue("purpose",purpose);
-                    dcMessage.setValue("segment", segment);
                     dcMessage.setValue("matrix", null);
-                    logger.info("Sending matrix " + dcMessage.getValue("purpose"));
                     sendTo(matrixWriterQueue, dcMessage);
 
                     Message dcExpUtilitiesMessage = createMessage();

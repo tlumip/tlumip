@@ -83,7 +83,6 @@ public class PTMatrixWriter extends MessageProcessingTask{
 
         else if(msg.getId().equals(MessageID.DC_LOGSUMS_CREATED)){
 //            writeMatrix(msg, dcLogsumsWritePath);                //BINARY-ZIP
-            logger.info("Matrix Writer received matrix " + msg.getValue("purpose")+msg.getValue("segment"));
             writeBinaryMatrix(msg,dcLogsumsWritePath);
         }
 
