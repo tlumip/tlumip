@@ -7,7 +7,6 @@
 		<project>common-base</project>
 		<project>common-base-old</project>
 		<project>common-daf-v2</project>
-		<project>jakarta-commons</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
