@@ -66,7 +66,25 @@
     <resource name="Jeramiah">
         <type>worker</type>
         <ip>10.79.60.202</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Malachi">
+        <type>worker</type>
+        <ip>10.79.60.209</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Obadiah">
+        <type>worker</type>
+        <ip>10.79.60.211</ip>
         <status>not available</status>
+    </resource>
+
+    <resource name="Jonah">
+        <type>worker</type>
+        <ip>10.79.60.212</ip>
+        <status>available</status>
     </resource>
 
     <scenario name="pleaseWork">
