@@ -320,15 +320,27 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
      * @return partial derivatives of probability of choosing an exchange zone 
      * w.r.t. utility of that exchange zone. 
      */
-    public double[][] getChoiceDerivatives() {
+    public double[][] getChoiceDerivatives(double[][] arrayToPossiblyReuse) {
         Commodity com = theCommodityZUtility.getCommodity();
         double[] weights;
+        double[][] returns;
         Collection theExchanges = com.getAllExchanges();
         Iterator it = theExchanges.iterator();
         weights = new double[theExchanges.size()];
+        if (!(arrayToPossiblyReuse.length == theExchanges.size() && arrayToPossiblyReuse[0].length== theExchanges.size())) {
+            returns = new double[theExchanges.size()][theExchanges.size()];
+        } else {
+            returns = arrayToPossiblyReuse;
+        }
         if ((com.exchangeType == 'p' && theCommodityZUtility instanceof SellingZUtility) || com.exchangeType == 'c' &&
                 theCommodityZUtility instanceof BuyingZUtility || com.exchangeType == 'n') {
-            double[][] returns = new double[theExchanges.size()][theExchanges.size()];
+            int i;
+            int j;
+            for (i =0;i<returns.length;i++) {
+                for (j=0;j<returns[i].length;j++) {
+                    returns[i][j]=0;
+                }
+            }
             return returns;
         }
         double sum = 0;
@@ -344,10 +356,10 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
             sum += weights[i];
             i++;
         }
-        double[][] returns = new double[weights.length][weights.length];
         if (sum != 0) {
+            int j;
             for (i = 0; i < weights.length; i++) {
-                for (int j =0;j<weights.length;j++) {
+                for (j =weights.length-1;j>=0;j--) {
                     if (i==j) { 
                        returns[i][j] = dispersionParameter*((weights[i]/sum)*(1-weights[i]/sum));
                     } else {

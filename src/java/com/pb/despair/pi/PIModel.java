@@ -696,17 +696,20 @@ public class PIModel extends ModelComponent {
                     }
                     CroutPivot solver2 = new CroutPivot(comMatrix);
                     solver2.solveEquations(deltaSurplusPlus, deltaPrices);
-                    if (stepSize*localPriceStepSizeAdjustment>=1) {
+                    if (stepSize*localPriceStepSizeAdjustment>1) {
                         for (int i=0;i<deltaPrices.size();i++) {
                             deltaPrices.setElementAt(i,deltaPrices.elementAt(i)*stepSize*localPriceStepSizeAdjustment);
                         }
                     }
+                    
+                    // TODO experiment with not setting average price change to zero (ie comment out this block)
                     double totalPrice = deltaPrices.sum();
                     deltaPricesDouble = deltaPrices.getArray();
                     // make sure average price change is zero
                     for (int i = 0; i < deltaPricesDouble.length; i++) {
                         deltaPricesDouble[i] -= totalPrice / deltaPricesDouble.length;
                     }
+                    
                 } catch (Exception e) {
                     e.printStackTrace();
                     throw new RuntimeException(e);

@@ -113,7 +113,7 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
         }
     }
 
-    public boolean isLogitScaleOk(boolean selling) {
+    public double logitScaleRatio(boolean selling) {
         double totalScale = 0;
         double maxAdditionalScale = 0;
         for (int c = 0; c < sortedQuantitiesToUse.size(); c++) {
@@ -129,9 +129,10 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
         }
         totalScale += maxAdditionalScale;
         double maxThisScale = 1/Math.sqrt(totalScale);
-        if (this.lambda<maxThisScale) return true;
-        logger.warn("Dispersion parameter for "+this+" is too high, maximum "+maxThisScale);
-        return false;
+        if (this.lambda>maxThisScale) {
+            logger.warn("Dispersion parameter for "+this+" is too high, maximum "+maxThisScale);
+        }
+        return lambda/maxThisScale;
     }
 
     public double[] overallUtilityDerivatives(double[] individualCommodityUtilities) {

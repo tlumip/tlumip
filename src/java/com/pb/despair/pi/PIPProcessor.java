@@ -705,15 +705,21 @@ public class PIPProcessor {
             aa.getConsumptionFunction().sortToMatch(Commodity.getAllCommodities());
             if (aa.getConsumptionFunction() instanceof LogitSubstitution) {
                 LogitSubstitution cf = (LogitSubstitution) aa.getConsumptionFunction();
-                if (!cf.isLogitScaleOk(false)) {
-                    logger.warn("logit scale for consumption for activity "+aa+" is too high");
+                double ratio = cf.logitScaleRatio(false);
+                if (ratio>1) {
+                    logger.warn("logit scale for consumption for activity "+aa+" is too high, ratio "+ratio);
+                } else {
+                    logger.info("logit scale ratio for consumption for activity "+aa+" is "+ratio);
                 }
             }
             aa.getProductionFunction().sortToMatch(Commodity.getAllCommodities());
             if (aa.getProductionFunction() instanceof LogitSubstitution) {
-                LogitSubstitution pf = (LogitSubstitution) aa.getConsumptionFunction();
-                if (!pf.isLogitScaleOk(true)) {
-                    logger.warn("logit scale for production for activity "+aa+" is too high");
+                LogitSubstitution pf = (LogitSubstitution) aa.getProductionFunction();
+                double ratio = pf.logitScaleRatio(true);
+                if (ratio >1) {
+                    logger.warn("logit scale for production for activity "+aa+" is too high, ratio "+ratio);
+                } else {
+                    logger.info("logit scale ratio for production for activity "+aa+" is "+ratio);
                 }
             }
         }
@@ -1202,7 +1208,12 @@ public class PIPProcessor {
         logger.info("Writing Location Tables ");
         writeLocationTable();
         if (ResourceUtil.getProperty(piRb,"pi.useFloorspaceZones").equalsIgnoreCase("true")) {
-            writeFloorspaceZoneLocationTable();
+            String writeOutFloorspaceZones = ResourceUtil.getProperty(piRb,"pi.splitOutputToFloorspaceZones");
+            if (writeOutFloorspaceZones !=null ) {
+                if (!writeOutFloorspaceZones.equalsIgnoreCase("false")) {
+                    writeFloorspaceZoneTables();
+                }
+            }
         }
             
 
@@ -1404,7 +1415,7 @@ public class PIPProcessor {
         }
     }
 
-    private void writeFloorspaceZoneLocationTable() {
+    private void writeFloorspaceZoneTables() {
         int[] makeUseArraySize = new int[2];
         makeUseArraySize[0] = Commodity.getAllCommodities().size();
         makeUseArraySize[1] = maxAlphaZone()+1;

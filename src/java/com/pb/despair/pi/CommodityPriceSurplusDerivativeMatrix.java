@@ -38,6 +38,9 @@ public class CommodityPriceSurplusDerivativeMatrix {
         data = new double[size][size];
         
         commodity = c;
+        double[][] temp = new double[1][1];
+        int i;
+        int j;
 
         //Exchange[] exchanges = (Exchange[]) c.getAllExchanges().toArray(new Exchange[1]);
         AbstractTAZ[] allZones = AbstractTAZ.getAllZones();
@@ -54,20 +57,20 @@ public class CommodityPriceSurplusDerivativeMatrix {
                 CommodityZUtility bzu = c.retrieveCommodityZUtility(allZones[z], false);
                 CommodityZUtility szu = c.retrieveCommodityZUtility(allZones[z], true);
                 if ((c.exchangeType != 'n' && c.exchangeType != 'c')) {
-                    double[][] temp = bzu.myFlows.getChoiceDerivatives();
+                    temp = bzu.myFlows.getChoiceDerivatives(temp);
                     double scale = -bzu.getQuantity() * c.getBuyingUtilityPriceCoefficient();
-                    for (int i = 0; i < temp.length; i++) {
-                        for (int j = 0; j < temp[i].length; j++) {
+                    for (i = 0; i < temp.length; i++) {
+                        for (j = 0; j < temp[i].length; j++) {
                             data[i][j]+=temp[i][j]*scale;
                         }
                     }
                 }
                 //            MatrixI bzuDerivatives = new DenseMatrix(temp);
                 if ((c.exchangeType != 'n' && c.exchangeType != 'p')) {
-                    double[][] temp = szu.myFlows.getChoiceDerivatives();
+                    temp = szu.myFlows.getChoiceDerivatives(temp);
                     double scale = szu.getQuantity() * c.getSellingUtilityPriceCoefficient();
-                    for (int i = 0; i < temp.length; i++) {
-                        for (int j = 0; j < temp[i].length; j++) {
+                    for (i = 0; i < temp.length; i++) {
+                        for (j = 0; j < temp[i].length; j++) {
                             data[i][j]+=temp[i][j]*scale;
                         }
                     }
@@ -75,6 +78,7 @@ public class CommodityPriceSurplusDerivativeMatrix {
 
                 // now add in the effect of changes in production, consumption
                 // and location
+                // TODO simplify if there is no exchange choice (not transportable, or exchanged where bought)
                 double[] xProbabilitiesDouble = bzu.getExchangeProbabilities();
                 //DenseVector xProbabilities = new DenseVector(xProbabilitiesDouble);
                 // create a column matrix;
@@ -88,14 +92,17 @@ public class CommodityPriceSurplusDerivativeMatrix {
 
                 //exchangeQuantityChangeByPrice = a.multiply(xProbabilitiesMatrix, logSumDerivativesMatrix);
                 double bzuDerivative = bzu.getDerivative();
-                for (int r = 0; r < xProbabilitiesDouble.length; r++) {
-                    for (int col = 0; col < logSumDerivativesDouble.length; col++) {
+                int col;
+                int r;
+                for (r = 0; r < xProbabilitiesDouble.length; r++) {
+                    for (col = logSumDerivativesDouble.length-1; col>=0; col--) {
 //                        data[r][col]+=exchangeQuantityChangeByPrice.elementAt(r, col) * -bzu.getDerivative();
                         data[r][col]+=xProbabilitiesDouble[r]*logSumDerivativesDouble[col]* -bzuDerivative;
                     }
                 }
 
                 // now for selling
+                // TODO simplify if there is no exchange choice (non transportable, or exchanged where sold)
                 xProbabilitiesDouble = szu.getExchangeProbabilities();
                 //xProbabilities = new DenseVector(xProbabilitiesDouble);
                 // create a column matrix;
@@ -109,9 +116,8 @@ public class CommodityPriceSurplusDerivativeMatrix {
                 //exchangeQuantityChangeByPrice = a.multiply(xProbabilitiesMatrix, logSumDerivativesMatrix);
                 double szuDerivative = szu.getDerivative();
 
-                for (int r = 0; r < xProbabilitiesDouble.length; r++) {
-                    for (int col = 0; col < logSumDerivativesDouble.length; col++) {
-//                        data[r][col]+=exchangeQuantityChangeByPrice.elementAt(r, col) * szu.getDerivative();
+                for ( r = 0; r < xProbabilitiesDouble.length; r++) {
+                    for (col = logSumDerivativesDouble.length-1;col>=0;col--) {
                         data[r][col]+=xProbabilitiesDouble[r]*logSumDerivativesDouble[col] * szuDerivative;
                     }
                 }
