@@ -9,10 +9,6 @@ package com.pb.despair.pi;
 import com.pb.despair.model.*;
 
 import drasys.or.linear.algebra.Algebra;
-import drasys.or.linear.algebra.AlgebraException;
-import drasys.or.matrix.DenseMatrix;
-import drasys.or.matrix.DenseVector;
-import drasys.or.matrix.MatrixI;
 
 //import mt.*;
 
