@@ -145,8 +145,8 @@ public class EdIndustry {
 	}
 	
 	
-	// return the array of ed industry employment from the named file
-	public float[] getEdIndustryEmployment( String fileName ) {
+	// return the array of regional industry employment from the named file
+	public float[] getRegionalIndustryEmployment( String fileName ) {
 	 
 		// read the ED regional employment by industry output file into a TableDataSet
 		CSVFileReader reader = new CSVFileReader();
@@ -159,15 +159,20 @@ public class EdIndustry {
 		}
 	    
 		// this table has one row of employment totals for each industry
-		String[] tempIndustryLabels = table.getColumnAsString(1);
-		float[] edIndustryEmployment = table.getColumnAsFloat(2);
+		String[] tempEdIndustryLabels = table.getColumnAsString(1);
+		float[] tempEdIndustryEmployment = table.getColumnAsFloat(2);
+		edIndustryLabels = new String[tempEdIndustryLabels.length + 1];
+		edIndustryEmployment = new float[tempEdIndustryLabels.length + 1];
 		
-		edIndustryLabels = new String[tempIndustryLabels.length+1];
-		for (int i=0; i < tempIndustryLabels.length; i++)
-		    edIndustryLabels[i] = tempIndustryLabels[i];
-		edIndustryLabels[edIndustryLabels.length-1] = "UNEMPLOYED";
-	    
+		for (int i=0; i < tempEdIndustryLabels.length; i++) {
+			edIndustryLabels[i] = tempEdIndustryLabels[i];
+			edIndustryEmployment[i] = tempEdIndustryEmployment[i];
+		}
+		edIndustryLabels[tempEdIndustryLabels.length] = "UNEMPLOYED";
+		edIndustryEmployment[tempEdIndustryLabels.length] = 0.0f;
+		
 		return edIndustryEmployment;
+		
 	}
 	
 	

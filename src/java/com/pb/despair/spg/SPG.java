@@ -54,7 +54,11 @@ public class SPG {
 	static final int NUM_WORKERS_ATTRIB_INDEX = PUMSData.HHWRKRS_INDEX;
 	static final int PERSON_ARRAY_ATTRIB_INDEX = PUMSData.PERSON_ARRAY_INDEX;
 
-
+//	static final int START_CHECKING_HH_CONSTRAINT_THRESHOLD = 100;
+	static final int START_CHECKING_HH_CONSTRAINT_THRESHOLD = 100000;
+	static final float ACCEPTABLE_CONSTRAINT_ERROR = 0.02f;
+	
+	
 	// person attributes for person i:
 	// industry: PERSON_ARRAY_ATTRIB_INDEX + i*3 + 0
 	// occup:    PERSON_ARRAY_ATTRIB_INDEX + i*3 + 1
@@ -78,6 +82,16 @@ public class SPG {
     public SPG () {
 
 		propertyMap = ResourceUtil.getResourceBundleAsHashMap("spg");
+
+		SeededRandom.setSeed( 0 );
+		
+		halo = new Halo( (String)propertyMap.get("zoneIndex.fileName") );
+
+    }
+
+    public SPG ( String propertFileName ) {
+
+		propertyMap = ResourceUtil.getResourceBundleAsHashMap( propertFileName );
 
 		SeededRandom.setSeed( 0 );
 		
@@ -120,15 +134,15 @@ public class SPG {
 		int finalPersonsInUnemployedHHs = 0;
 		int personsInEmployedHHs = 0;
 		int employedHHs = 0;
-	    int edCategoriesNotFilled;
-	    int workersCategoriesNotFilled;
-		int employeedPersonsInHH;
+	    int edCategoriesNotFilled = 0;
+	    int totalEmployedHouseholds;
 		int pumsIndustryCode;
 		int pumsOccupationCode;
 		int edIndustryCode;
 		int pumsIncomeCode;
         int incomeSizeCode;
         int workersCode;
+        int numWorkers;
 		int temp;
 		int[] hhAttribs = null;
 		
@@ -137,61 +151,113 @@ public class SPG {
 		// get the array of ED employment which must be matched by person employment in 
 		// selected households.
 		EdIndustry edInd = new EdIndustry();
-		float[] edEmployment = edInd.getEdIndustryEmployment( (String)propertyMap.get("ed.employment.fileName") );
+		float[] edEmployment = edInd.getRegionalIndustryEmployment( (String)propertyMap.get("ed.employment.fileName") );
 		float[] tempEdEmployment = new float[edEmployment.length];
 
+		
 		Workers workers = new Workers();
+		
+		// read the marginal distribution of households by workers per household from properties file
 		int[] workersPerHousehold = workers.getWorkersPerHousehold( (String)propertyMap.get("workers.marginal.fileName") );
+		
 		
 		// count the total number of unique PUMS household records
 		int numHouseholds = getTotalPumsHouseholds();
 		int numWeightedHouseholds = getTotalWeightedPumsHouseholds();
 
 		
+		// calculate proportions of 1 worker, 2 worker, etc. households relative to total employed households
+		float[] fixedWorkersProportions = workers.getWorkersPerHouseholdProportions( workersPerHousehold );
+		float[] tempWorkerProportions = new float[fixedWorkersProportions.length];
+		int[] tempWorkers = new int[fixedWorkersProportions.length];
+		
 		
 		// draw pums households randomly until all employment categories are filled by the employment of the persons in the hhs.
 		while ( employmentRemaining ( edEmployment ) ) {
 
 			// get the indices into the hhArray for a household drawn at random
-			int[] stateAndHouseholdIndices = getRandomHouseholdIndices ( numWeightedHouseholds );
+			int[] stateAndHouseholdIndices = getRandomHouseholdIndices ( numHouseholds );
 			randomDrawCount++;
 
+		    if (randomDrawCount % 1000000 == 0) {
+		        logger.info ("randomDrawCount = " + randomDrawCount);
+		    }  
+
+		    int dummy = 0;
+		    if (randomDrawCount % 100000000 == 0) {
+		        dummy = 1;
+		    }  
+
 			// if household is not unemployed, decrement industry categories for persons in household
+			boolean hhCategoriesNotFilled = false;
+			boolean employmentCategoriesNotFilled = false;
 			hhAttribs = hhArray[stateAndHouseholdIndices[0]][stateAndHouseholdIndices[1]];
 			if ( hhAttribs[NUM_WORKERS_ATTRIB_INDEX] > 0 ) {
 		        
-			    // see if there's a non-filled category for every worker.
+			    // see if the proportion of households for the number of workers in this
+				// household does not exceed the proportion from the fixed marginals.
 			    // if so, this is a selected hh, otherwise it's an overflow hh.
-				edCategoriesNotFilled = 0;
-				workersCategoriesNotFilled = 0;
-				employeedPersonsInHH = 0;
-				for (int i=0; i < edEmployment.length; i++)
-				    tempEdEmployment[i] = edEmployment[i];
-				for (int i=0; i < workersPerHousehold.length; i++)
-				    tempEdEmployment[i] = edEmployment[i];
-				for (int i=0; i < hhAttribs[NUM_PERSONS_ATTRIB_INDEX]; i++) {
-				    
-					pumsIndustryCode = hhAttribs[PERSON_ARRAY_ATTRIB_INDEX + i*3 + 0];
-			        employed = hhAttribs[PERSON_ARRAY_ATTRIB_INDEX + i*3 + 2];
+				//
+				// household category constraints are not checked until a sufficient
+				// number of households have been selected.
 
-			        if ( employed > 0 && pumsIndustryCode > 0 ) {
-							employeedPersonsInHH++;
-							edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
-							if ( tempEdEmployment[edIndustryCode] > 0 ) {
-								tempEdEmployment[edIndustryCode]--;
-								edCategoriesNotFilled++;
-							}
+				if ( hhAttribs[NUM_WORKERS_ATTRIB_INDEX] < tempWorkers.length - 1 )
+					numWorkers = hhAttribs[NUM_WORKERS_ATTRIB_INDEX];
+				else
+					numWorkers = tempWorkers.length - 1;
+				
+				if ( numSelectedHHs > START_CHECKING_HH_CONSTRAINT_THRESHOLD || employmentFilled ( edEmployment ) ) {
+				
+					totalEmployedHouseholds = 0;
+					for (int i=1; i < fixedWorkersProportions.length; i++)
+						tempWorkerProportions[i] = ((float)tempWorkers[i])/numSelectedHHs;
+					
+					hhCategoriesNotFilled = fixedWorkersProportions[numWorkers]*(1.0 + ACCEPTABLE_CONSTRAINT_ERROR) > tempWorkerProportions[numWorkers];
+					
+				}
+				else {
+					
+					hhCategoriesNotFilled = true;
+					
+				}
+
+				
+				if ( hhCategoriesNotFilled ) {
+					
+				    // see if there's a non-filled employment category for every worker.
+				    // if so, this is be a selected hh, otherwise it's an overflow hh.
+					edCategoriesNotFilled = 0;
+					employedPersonsInHH = 0;
+					for (int i=0; i < edEmployment.length; i++)
+					    tempEdEmployment[i] = edEmployment[i];
+					for (int i=0; i < hhAttribs[NUM_PERSONS_ATTRIB_INDEX]; i++) {
+					    
+						pumsIndustryCode = hhAttribs[PERSON_ARRAY_ATTRIB_INDEX + i*3 + 0];
+				        employed = hhAttribs[PERSON_ARRAY_ATTRIB_INDEX + i*3 + 2];
+	
+				        if ( employed > 0 && pumsIndustryCode > 0 ) {
+								employedPersonsInHH++;
+								edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
+								if ( tempEdEmployment[edIndustryCode] > 0 ) {
+									tempEdEmployment[edIndustryCode]--;
+									edCategoriesNotFilled++;
+								}
+						}
+	
 					}
-
+				
+					if ( employedPersonsInHH == edCategoriesNotFilled )
+						employmentCategoriesNotFilled = true;
 				}
 
 				
 				// increment the hhAttrib accordingly
-				if ( employeedPersonsInHH == edCategoriesNotFilled ) {
+				if ( hhCategoriesNotFilled && employmentCategoriesNotFilled ) {
 				    
 				    // there was a non-filled employment category for each worker in the hh
 				    hhAttribs[HH_SELECTED_INDEX]++;
 					numSelectedHHs ++;
+					tempWorkers[numWorkers]++;
 
 					// loop through employeed persons and decrement industry category for each.
 					for (int i=0; i < hhAttribs[NUM_PERSONS_ATTRIB_INDEX]; i++) {
@@ -236,6 +302,8 @@ public class SPG {
 
 		}
 		
+		logger.info ("done selecting households from PUMS.");
+		logger.info ("decrementing unemployed households.");
 		
 		
 		// Determine the number of selected unemployed households such that
@@ -267,7 +335,7 @@ public class SPG {
 		for (int i=0; i < numDiscardedUnemployed; i++) {
 		    
 		    // select one of the PUMS households randomly, then increase hh index if necessary until we get an unemployed one
-		    int[] stateAndHouseholdIndices = getRandomHouseholdIndices (numWeightedHouseholds);
+		    int[] stateAndHouseholdIndices = getRandomHouseholdIndices (numHouseholds);
 		    hhAttribs = hhArray[stateAndHouseholdIndices[0]][stateAndHouseholdIndices[1]];
 		    int j = stateAndHouseholdIndices[0];
 		    int k = stateAndHouseholdIndices[1];
@@ -293,6 +361,7 @@ public class SPG {
 		}
 		
 		
+		logger.info ("summarizing households and persons from synthetic population.");
 
 		// count up the final numbers of selected employed and unemployed hhs and persons
 		for (int i=0; i < hhArray.length; i++) {
@@ -944,11 +1013,11 @@ public class SPG {
 	// draw a household at random from the total number of hhs.  
 	// for this random hh index, determine which state and hh index
 	// within states to which it refers and return those two values.
-	private int[] getRandomHouseholdIndices ( int numWeightedHouseholds ) {
+	private int[] getRandomHouseholdIndices ( int numHouseholds ) {
 	
 		int[] returnValues = new int[2];
 
-	    int randomIndex = (int)(SeededRandom.getRandom()*numWeightedHouseholds);
+	    int randomIndex = (int)(SeededRandom.getRandom()*numHouseholds);
 	    
 	    int cumulativeTotalHHs = 0;
 	    for (int i=0; i < hhArray.length; i++) {
@@ -1020,12 +1089,26 @@ public class SPG {
 	}
 	
 
-	
+
 	// determine whether any ED industry categories have remaining employment
 	private boolean employmentRemaining ( float[] edEmployment ) {
 	
 	    for (int i=0; i < edEmployment.length; i++) {
-	        if (edEmployment[i] > 0)
+	        if (edEmployment[i] >= 1)
+	            return true;
+	    }
+	    
+	    return false;
+	    
+	}
+
+	
+	
+	// determine whether any ED industry categories have been filled
+	private boolean employmentFilled ( float[] edEmployment ) {
+	
+	    for (int i=0; i < edEmployment.length; i++) {
+	        if (edEmployment[i] < 1)
 	            return true;
 	    }
 	    
@@ -1802,7 +1885,7 @@ public class SPG {
         
 		long startTime = System.currentTimeMillis();
 		String which = args[0];
-        SPG testSPG = new SPG();
+        SPG testSPG = new SPG( "spg_full" );
 
         if(which.equals("spg1"))
 		{

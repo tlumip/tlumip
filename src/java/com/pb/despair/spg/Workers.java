@@ -10,21 +10,32 @@ import com.pb.common.datafile.TableDataSet;
 public class Workers {
 
     String[] workersLabels = {
-		"0",
-		"1",
-		"2",
-		"3",
-		"4",
-		"5",
-		"6",
-		"7",
-		"8",
-		"9",
-		"10+"
-    };
-    
-    
-    
+    		"0",
+    		"1",
+    		"2",
+    		"3",
+    		"4",
+    		"5",
+    		"6",
+    		"7",
+    		"8",
+    		"9",
+    		"10+"
+        };
+        
+        
+        
+    String[] fixedCategories = {
+    		"0",
+    		"1",
+    		"2",
+    		"3",
+    		"4",
+    		"5+"
+        };
+        
+        
+        
     public Workers () {
     }
 
@@ -71,12 +82,14 @@ public class Workers {
 	// return the array of households by number of workers from the named file
 	public int[] getWorkersPerHousehold( String fileName ) {
 	 
+		String[] formats = { "STRING", "NUMBER" };
+		
 		// read the base households by number of workers file into a TableDataSet
 		CSVFileReader reader = new CSVFileReader();
         
 		TableDataSet table = null;
 		try {
-			table = reader.readFile(new File( fileName ));
+			table = reader.readFileWithFormats( new File( fileName ), formats );
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -85,12 +98,39 @@ public class Workers {
 		String[] tempWorkersLabels = table.getColumnAsString(1);
 		int[] workers = table.getColumnAsInt(2);
 		
-		tempWorkersLabels = new String[tempWorkersLabels.length+1];
+		workersLabels = new String[tempWorkersLabels.length];
+
 		for (int i=0; i < tempWorkersLabels.length; i++)
 		    workersLabels[i] = tempWorkersLabels[i];
 	    
 		return workers;
 	}
+	
+	
+	// return the proportions of worker categories relative to total employed households
+	public float[] getWorkersPerHouseholdProportions( int[] workersPerHousehold ) {
+		
+		float[] proportions = new float[fixedCategories.length];
+		float[] tempWorkers = new float[fixedCategories.length];
+		float totalEmployedHouseholds = 0;
+		
+		// workers in employed households start at workers category 1
+		for (int i=1; i < workersPerHousehold.length; i++) {
+			totalEmployedHouseholds += workersPerHousehold[i];
+			if (i < fixedCategories.length - 1)
+				tempWorkers[i] = workersPerHousehold[i];
+			else
+				tempWorkers[fixedCategories.length - 1] += workersPerHousehold[i];
+		}
+		
+		
+		// calculate proportions of workers in employed households
+		for (int i=1; i < fixedCategories.length; i++)
+			proportions[i] = tempWorkers[i]/totalEmployedHouseholds;
+		
+		return proportions;
+	}
+	
 	
 	
 }
