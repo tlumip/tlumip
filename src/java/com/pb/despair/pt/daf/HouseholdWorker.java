@@ -5,6 +5,8 @@ import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.MatrixCompression;
+import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.MatrixCollection;
 import com.pb.common.util.ResourceUtil;
 
@@ -75,6 +77,8 @@ public class HouseholdWorker extends MessageProcessingTask {
 
     int currentWorkSegment = -1;
     int currentNonWorkSegment =-1;
+    
+    TableDataSet alphaToBetaTable;
 
     PTResults results;
 
@@ -120,7 +124,8 @@ public class HouseholdWorker extends MessageProcessingTask {
                 ptInputs.readTazData();
 
                 LaborFlows lf = new LaborFlows(rb);
-                lf.setZoneMap(loadTableDataSet(rb,"alphatobeta.file"));
+                alphaToBetaTable = loadTableDataSet(rb,"alphatobeta.file");
+                lf.setZoneMap(alphaToBetaTable);
 
                 logger.info("Reading Labor Flows");
                 lf.readAlphaValues(loadTableDataSet(rb,"productionValues.file"),
@@ -204,11 +209,47 @@ public class HouseholdWorker extends MessageProcessingTask {
                 PTModelInputs.getSkims(), new TourModeChoiceModel());
         logger.fine("Created ModeChoiceLogsumMatrix in " +
             ((System.currentTimeMillis() - startTime) / 1000) + " seconds.");
-
+        
+        //Collapse the matrix
+        collapseMCLogsums(m,msg);
+        
         //Sending message to TaskMasterQueue
         msg.setId(MessageID.MC_LOGSUMS_CREATED);
         msg.setValue("matrix", m);
         sendTo(fileWriterQueue, msg);
+    }
+    
+    /**
+     * Collapse the logsums in the alpha zone matrix to beta zones.  The
+     * collapsed matrix will be send to the fileWriterQueue.
+     * 
+     * @param m  Logsum matrix
+     * @param msg Message
+     */
+    public void collapseMCLogsums(Matrix m, Message msg){
+        
+            String purpose = String.valueOf(msg.getValue("purpose"));
+            Integer segment = (Integer) msg.getValue("segment");
+
+            //Creating the ModeChoiceLogsum Matrix
+            logger.info("Collapsing ModeChoiceLogsumMatrix for purpose: " + purpose +
+                " segment: " + segment);
+            
+            alphaToBetaTable = loadTableDataSet(rb,"alphatobeta.file");
+            
+            AlphaToBeta aToB = new AlphaToBeta(alphaToBetaTable);
+            
+            MatrixCompression mc = new MatrixCompression(aToB);
+            
+            Matrix compressedMatrix = mc.getCompressedMatrix(m,"MEAN");
+ 
+            compressedMatrix.setName(m.getName()+"beta");
+            
+            //Sending message to TaskMasterQueue
+            msg.setId(MessageID.MC_LOGSUMS_COLLAPSED);
+            msg.setValue("matrix", compressedMatrix);
+            sendTo(fileWriterQueue, msg);
+            
     }
 
     /**
