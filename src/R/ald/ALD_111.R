@@ -102,8 +102,8 @@ rm(fieldNames, fieldTypes, floorDefDesc)
  # @param input$alphaBetaCorrespondence
  # @return vars$alphaBeta - a list with elements $alphaZone, $betaZone
 ##/
-fieldNames <- c("alphaZone", "betaZone", "state", "county", "fips", "puma1pct", "puma5pct", "gridAcres", "luIntensity","MPOcalibrationzones", "MPOmodeledzones")
-fieldTypes <- c("character", "character", "character", "character", "character", "character", "character", "numeric", "character", "character", "character")
+fieldNames <- c("alphaZone", "betaZone", "state", "county", "fips", "puma1pct", "puma5pct", "gridAcres", "luIntensity","MPOcalibrationzones", "MPOmodeledzones","ACT","aggACT")
+fieldTypes <- c("character", "character", "character", "character", "character", "character", "character", "numeric", "character", "character", "character","numeric","character")
 alphaBeta <- read.table(input$alphaBetaCorrespondence, header=T, sep=",", col.names=fieldNames, colClasses=fieldTypes)
 alphaBeta <- alphaBeta[order(as.numeric(alphaBeta$alphaZone)),1:2]
 vars$alphaBeta <- as.list(alphaBeta)
