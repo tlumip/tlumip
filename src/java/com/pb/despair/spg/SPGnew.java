@@ -122,7 +122,7 @@ public class SPGnew {
     	
 		SeededRandom.setSeed( 0 );
 
-		halo = new Halo( (String)globalPropertyMap.get("alphatobeta.file") );
+		halo = new Halo( (String)globalPropertyMap.get("alpha2beta.file") );
 		
 		edInd = new EdIndustry();
 		workers = new Workers();
