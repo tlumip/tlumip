@@ -16,11 +16,11 @@ import java.util.logging.Logger;
  */
 public class SomeSkims extends TransportKnowledge implements TravelAttributesInterface {
     protected static Logger logger = Logger.getLogger("com.pb.despair.pi");
-    static final int MAXBETAZONENUMBER=4141;
+
     private ArrayList matrixList = new ArrayList();
     public Matrix[] matrices = new Matrix[0];
     private ArrayList matrixNameList = new ArrayList();
-    ResourceBundle myRb;
+
     String my1stPath;
     String my2ndPath;
 
