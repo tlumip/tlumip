@@ -2,8 +2,18 @@ package com.pb.despair.ao;
 
 import org.apache.commons.digester.Digester;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.log4j.Logger;
+
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.FileWriter;
@@ -35,6 +45,10 @@ public class ApplicationOrchestrator {
 //    private int baseYear;
     AOProperties aoProps;
     ResourceBundle rb;
+    BufferedWriter runLogWriter;
+    File runLogPropFile;
+    HashMap runLogHashmap;
+    
 //    CalibrationManager cManager;
 
     public ApplicationOrchestrator(){
@@ -51,23 +65,6 @@ public class ApplicationOrchestrator {
         this.t = timeInterval;
         this.rb = findResourceBundle(findPathToResourceBundle("ao"));
 
-        //We are going to have the CalibrationManager be a stand-alone program
-        //because several of the applications use outside programs such as SAS to
-        //digest the output and this takes longer than just writing a file.
-        //Therefore we will call it separately and not while the apps are running.
-
-//        this.baseYear = Integer.parseInt(ResourceUtil.getProperty(this.rb, "base.year"));
-//        String calibrationProperty = ResourceUtil.getProperty(rb,"calibration.mode");
-//
-//        if(calibrationProperty != null){
-//            boolean calibrate = new Boolean(calibrationProperty).booleanValue();
-//            if(calibrate){
-//                ResourceBundle calibrationProperties = findResourceBundle(findPathToResourceBundle("calibration"));
-//                cManager = new CalibrationManager(calibrationProperties, scenarioName, timeInterval, baseYear);
-//            }
-//        }
-
-
     }
 
     public void setRb(ResourceBundle rb) {
@@ -76,6 +73,102 @@ public class ApplicationOrchestrator {
 
     public ResourceBundle getRb() {
         return rb;
+    }
+    
+    private void createRunLogPropFile(){
+        runLogPropFile = new File(rootDir + "/scenario_" + scenarioName + "/t" + t + "/runLog.properties");
+        if(!runLogPropFile.exists()){ 
+	        try { //create the file and write the current year into it.
+	            logger.info("Writing the current year into the run log");
+	            runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, true));
+	            runLogWriter.write("# Filter values for properties files");
+	            runLogWriter.newLine();
+	            runLogWriter.write("CURRENT_YEAR=" + t);
+	            runLogWriter.newLine();
+	            runLogWriter.flush();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+        }else { // the file may have already been created by a call from an earlier app.
+            	// so just attach a writer to it that can append the appLog info.
+            try {
+                runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, true));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private void updateRunLogPropertiesHashmap (int t){
+        //Get the base year runLog and read in all of the properties into a hashmap.
+        String initialRunLogPath = rootDir + "/scenario_" + scenarioName + "/t0/runLog.properties";
+        ResourceBundle runLogRb = ResourceUtil.getPropertyBundle(new File(initialRunLogPath));
+        runLogHashmap = ResourceUtil.changeResourceBundleIntoHashMap(runLogRb);
+        
+        //Now update the hashmap with the most current values by looking for runLog.properties
+        //files in the t1, t2, up to tn directories and replacing any of the runLog properties
+        //with the current values.
+        int i = 1;
+        File propFile = null;
+        String keyName = null;
+        String value = null;
+        
+        while (i<=t){
+            String propPath = rootDir + "/scenario_" + scenarioName + "/t" + i + "/runLog.properties";
+            propFile = new File(propPath);
+            if(propFile.exists()){
+                logger.info(" Reading in Run Log and updating the RunLog HashMap: ");
+                runLogRb = ResourceUtil.getPropertyBundle(new File(initialRunLogPath));
+                Enumeration rbEnum = runLogRb.getKeys();
+                while (rbEnum.hasMoreElements()) {
+                    //get the name and value pair from the current run log and
+                    keyName = (String) rbEnum.nextElement();
+                    value = runLogRb.getString(keyName);
+                  
+                    //if the key already exists in the hashmap (which it should) replace
+                    //the matching value with the runLog value.
+                    if(runLogHashmap.containsKey(keyName)){
+                        runLogHashmap.put(keyName,value);
+                    }else {
+                        logger.info("The RunLog HashMap doesn't contain the key " + keyName);
+                    }
+                }
+                i++;
+            }else {
+                if(t==1){
+                    logger.info("No applications have been run yet so no run log exists");
+                }else logger.warn("NO RUN LOG EXISTS - PROPERTIES FILES WILL BE INCORRECT");
+                i++;
+            }
+        }
+       
+    }
+    
+    private void createAppRb(String appName){
+        //First read in the template properties file.  This will have default values and
+        //tokens (surrounded by @ symbols).  The tokens will be replace with the values
+        //in the runLogHashMap
+        ResourceBundle rbTemplate = findResourceBundle(findPathToResourceBundle(appName));
+        HashMap rbMap = ResourceUtil.changeResourceBundleIntoHashMap(rbTemplate);
+        
+        ArrayList rbKeys = (ArrayList) rbMap.keySet();
+        Iterator keys = runLogHashmap.keySet().iterator();
+	    while (keys.hasNext()) {
+	        String keyName = (String) keys.next();
+	        String hashmapValue = (String) runLogHashmap.get(keyName);
+	
+	        //Build a pattern and compile it
+	        String patternStr = "@" + keyName + "@";
+	        Pattern pattern = Pattern.compile(patternStr);
+	
+	        // Replace all occurrences of pattern in input string
+	        while(rbKeys.iterator().hasNext()){
+	            String tempStr = new String((rbMap.get(rbKeys.iterator().next());
+	            Matcher matcher = pattern.matcher(tempStr);
+	            tempStr = matcher.replaceAll(hashmapValue);
+	            rbMap.put
+	        }
+        }	
     }
 
     /* PTDAF and PIDAF just need the path to the resource bundle
@@ -96,6 +189,7 @@ public class ApplicationOrchestrator {
             }else if (appName.endsWith("daf")) {
                 propFile = new File(propPath + appName.substring(0,(appName.length()-3)) +
                         "/" + appName.substring(0,(appName.length()-3)) + ".properties"); //subtract off the 'daf' part
+            //Deal with the global exception
             } else if (appName.equalsIgnoreCase("global")) {
                 propFile = new File(propPath + "global.properties");
             } else{
@@ -140,7 +234,24 @@ public class ApplicationOrchestrator {
         }
         writer.close();
     }
-
+    
+    public void writeRunParamsToPropertiesFile(int timeInterval, String pathToAppRb, String pathToGlobalRb){
+        File runParams = new File(rootDir + "/daf/RunParams.properties");
+        logger.info("Writing 'timeInterval' and 'pathToRb' into " + runParams.getAbsolutePath());
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileWriter(runParams));
+            writer.println("scenarioName=" + scenarioName);
+            writer.println("timeInterval=" + timeInterval);
+            writer.println("pathToAppRb=" + pathToAppRb);
+            writer.println("pathToGlobalRb=" + pathToGlobalRb);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        writer.close();
+    }
+    
+    
     public void runEDModel(int timeInterval, ResourceBundle appRb, int baseYear){
 
         ModelComponent comp = new EDControl(baseYear,timeInterval,appRb);
@@ -176,7 +287,7 @@ public class ApplicationOrchestrator {
         //Since AO doesn't communicate directly with PI we need to write the absolute
         //path to the resource bundle and the time interval into a file, "RunParams.txt"
         //that will be read by the PIServer Task when the PIDAF application is launched.
-        writeRunParamsToFile(timeInterval, pathToAppRb, pathToGlobalRb);
+        writeRunParamsToPropertiesFile(timeInterval, pathToAppRb, pathToGlobalRb);
         StartDafApplication appRunner = new StartDafApplication("pidaf", nodeName, timeInterval, rb);
         appRunner.run();
     }
@@ -190,7 +301,7 @@ public class ApplicationOrchestrator {
     }
 
     public void runPTDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb,String nodeName){
-        writeRunParamsToFile(timeInterval, pathToAppRb, pathToGlobalRb);
+        writeRunParamsToPropertiesFile(timeInterval, pathToAppRb, pathToGlobalRb);
         StartDafApplication appRunner = new StartDafApplication("ptdaf", nodeName, timeInterval, rb);
         appRunner.run();
     }
@@ -207,6 +318,20 @@ public class ApplicationOrchestrator {
         ts.assignPeakAuto();
         ts.assignOffPeakAuto();
 
+    }
+    
+    private void logAppRun(String appName){
+        if (appName.endsWith("daf")) {
+            appName = appName.substring(0,(appName.length()-3));
+        }
+        try {
+            logger.info("Writing the application name and the timeInterval for run into the run log");
+            runLogWriter.write(appName.toUpperCase() + "_LAST_RUN=" + t);
+            runLogWriter.newLine();
+            runLogWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void addPropertiesObject(AOProperties properties){
@@ -300,8 +425,27 @@ public class ApplicationOrchestrator {
 			logger.info("Node to Start Cluster: "+ nodeName);
         }
 
+        //Create an ApplicationOrchestrator object that will handle creating the
+        //resource bundle for the appropriate app, retrieve that resource bundle and
+        //start the application, passing along the property bundle
         ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,scenarioName,t);
         int baseYear = Integer.parseInt(ResourceUtil.getProperty(ao.getRb(), "base.year"));
+        
+        //AO needs to create the runLogProperty file and write in the current year.  This file will 
+        //then be updated by any application that runs.
+        ao.createRunLogPropFile();
+        
+        
+        //At this point, AO knows what app is being run and what year it is.  We need to 
+        //read in the $appNameTemplate.properties file and the runLog.properties files starting 
+        //in year interval=0 and moving up to interval=t.  We will fill up a hashmap with the appropriate
+        //values and then replace all property file tokens. 
+        ao.updateRunLogPropertiesHashmap(t);
+        
+        //Read in the appNameTemplate.properties from the t0 directory and replace
+        //all patterns with values from the RunLogHashMap and write properties file
+        //to the appropriate directory.
+        ao.createAppRb(appName);
 
         String pathToAppRb = ao.findPathToResourceBundle(appName);
         ResourceBundle appRb = null;
@@ -362,7 +506,9 @@ public class ApplicationOrchestrator {
 //        }
 //        System.out.println(ao.toString());
 
-
+        ao.logAppRun(appName);
+        
+        logger.info(appName + " is complete");
     }
 
 
