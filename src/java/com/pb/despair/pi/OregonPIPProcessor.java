@@ -333,7 +333,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             int[] aZones = a2bMap.getAlphaExternals();
             for(int i=1; i< aZones.length; i++){
                 if(nAddsByZone[aZones[i]] != nFlrNames){
-                    logger.warning("\t\t\t\tZone " + a2bMap.getAlphaExternals()[i] + "added up " + nAddsByZone[a2bMap.getAlphaExternals()[i]]);
+                    logger.warning("\t\t\t\tZone " + a2bMap.getAlphaExternals()[i] + " added up " + nAddsByZone[a2bMap.getAlphaExternals()[i]]);
                     logger.warning("\t\t\t\tCheck the ald/Increments.csv file - there is an error");
                 }
             }
