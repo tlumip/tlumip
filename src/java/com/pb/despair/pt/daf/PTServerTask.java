@@ -319,8 +319,7 @@ public class PTServerTask extends Task{
             int segment = persons[index].householdWorkSegment;
             int occupation = persons[index].occupation;
             int nPersons = 0;  //number of people in subgroup for the seg/occ pair.
-            while(persons[index].householdWorkSegment == segment &&
-                    persons[index].occupation == occupation){
+            while(persons[index].householdWorkSegment == segment && persons[index].occupation == occupation){
                 if(persons[index].occupation == 0){  //person is unemployed, save for later
                     nUnemployed++;
                     unemployedPersonList.add(persons[index]);
