@@ -77,9 +77,17 @@ public class PTResults {
     //files instead.
     public void createFiles(){
         weekdayTour = open(ResourceUtil.getProperty(rb, "weekdayTour.file"));
-        weekdayTour.println("header");
+        weekdayTour.println(",,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
+        weekdayTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "primaryMode");
         weekdayPattern = open(ResourceUtil.getProperty(rb, "weekdayPattern.file"));
-        weekdayPattern.println("header");
+        weekdayPattern.println("hhID,personID,patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
+                "nShopActivities,nRecreateActivities,nOtherActivities");
         weekdayTrip = open(ResourceUtil.getProperty(rb, "weekdayTrip.file"));
         weekdayTrip.println("origin,tripStartTime,distance,destination,tourMode,tripMode");
         householdData = open(ResourceUtil.getProperty(rb, "householdData.file"));
@@ -87,19 +95,35 @@ public class PTResults {
         
         if(PTModel.RUN_WEEKEND_MODEL){
             weekendTour = open(ResourceUtil.getProperty(rb, "weekendTour.file"));
-            weekendTour.println("header");
+            weekendTour.println(",,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
+            weekendTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "primaryMode");
             weekendPattern = open(ResourceUtil.getProperty(rb, "weekendPattern.file"));
-            weekendPattern.println("header");
+            weekendPattern.println("hhID,personID,patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
+                "nShopActivities,nRecreateActivities,nOtherActivities");
             weekendTrip = open(ResourceUtil.getProperty(rb, "weekendTrip.file"));
-            weekendTrip.println("header");
+            weekendTrip.println("origin,tripStartTime,distance,destination,tourMode,tripMode");
         }
     }
 
     public void createWorkerFiles(String WorkerName){
         weekdayTour = open((ResourceUtil.getProperty(rb, "weekdayTour.file") + "." + WorkerName + ".csv"));
-        weekdayTour.println("header");
+        weekdayTour.println(",,,,,Begin,,,,,,,IMStop1,,,,,,,PrimaryDestination,,,,,,,IMStop2,,,,,,,End");
+        weekdayTour.println("hhID,personID,weekdayTour(yes/no),tourString,tour#," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                "primaryMode");
         weekdayPattern = open((ResourceUtil.getProperty(rb, "weekdayPattern.file") + "." + WorkerName + ".csv"));
-        weekdayPattern.println("header");
+        weekdayPattern.println("hhID,personID,patternLogsum,pattern,nHomeActivities,nWorkActivities,nSchoolActivities," +
+                "nShopActivities,nRecreateActivities,nOtherActivities");
         weekdayTrip = open((ResourceUtil.getProperty(rb, "weekdayTrip.file") + "." + WorkerName + ".csv"));
         weekdayTrip.println("origin,tripStartTime,distance,destination,tourMode,tripMode");
         householdData = open((ResourceUtil.getProperty(rb, "householdData.file") + "." + WorkerName + ".csv"));

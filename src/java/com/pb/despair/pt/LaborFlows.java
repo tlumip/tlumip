@@ -82,6 +82,10 @@ public class LaborFlows implements Serializable{
 
         logger.fine("Set travel propensity Matrix.");
         Matrix alphaPropensityMatrix = new Matrix(m.getRowCount(),m.getColumnCount());
+        String name = m.getName();
+        int lsIndex = name.indexOf("ls");
+        name = name.substring(0,lsIndex) + "propensity";
+        alphaPropensityMatrix.setName(name);
         alphaPropensityMatrix.setExternalNumbers(m.getExternalNumbers());
     	int origin;
     	int destination;

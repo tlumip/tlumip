@@ -340,7 +340,7 @@ public class Tour implements Serializable{
      *  tourMode
      */
      void printCSV(PrintWriter file){
-          file.print(new Date()+",");
+//          file.print(new Date()+",");
           file.print(tourString+",");
           file.print(tourNumber+",");
           begin.printCSV(file);
