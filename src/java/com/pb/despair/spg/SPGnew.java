@@ -54,7 +54,7 @@ public class SPGnew {
 	static final int NUM_WORKERS_ATTRIB_INDEX = PUMSData.HHWRKRS_INDEX;
 	static final int PERSON_ARRAY_ATTRIB_INDEX = PUMSData.PERSON_ARRAY_INDEX;
 
-	static final double MAXIMUM_ALLOWED_CONTROL_DIFFERENCE = 10.0;
+	static final double MAXIMUM_ALLOWED_CONTROL_DIFFERENCE = 1.0;
 	
 	// person attributes for person j:
 	// industry: PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0
@@ -146,8 +146,10 @@ public class SPGnew {
 		int pumsOccupationCode;
 		int pumsIncomeCode;
         int incomeSizeCode;
+        int numWorkers;
         int workersCode;
-
+        int pumsHHWeight;
+        
 		double totalWorkers = 0.0;
 		double totalEmployees = 0.0;
 		double totalEdEmployment = 0.0;
@@ -246,10 +248,11 @@ public class SPGnew {
 		
 		// count the total number of unique PUMS household records
 		int numHouseholds = getTotalPumsHouseholds();
-		int numWorkers = getTotalWorkers();
+		int[] pumsTotalWorkers = getTotalWorkers(); // element 0: total sample, element 1: total weighted
+		int numWeightedWorkers = pumsTotalWorkers[1];
 
 		// set the dimensions for the control arrays, then initialize their
-		initializeTableBalancingArrays( numHouseholds, numWorkers, employmentTargets );
+		initializeTableBalancingArrays( numHouseholds, numWeightedWorkers, employmentTargets );
 		
 
 		
@@ -300,13 +303,14 @@ public class SPGnew {
 		
 				numWorkers = hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
 				workersCode = workers.getWorkers(numWorkers); 
+				pumsHHWeight = hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
 
 				// check the observed zero workers per household category to see if the PUMS household is unemployed or not
 				// if so, the integerized final hhWeight is the number of times this unemployed hh is selected.
 				if ( workersCode == 0 ) {
 					hhArray[i][k][HH_SELECTED_INDEX] = 0;
-					buckets[0] += hhWeights[hhid] - (int)hhWeights[hhid];
-					hhArray[i][k][HH_UNEMPLOYED_INDEX] = (int)hhWeights[hhid];
+					buckets[0] += hhWeights[hhid]*pumsHHWeight - (int)(hhWeights[hhid]*pumsHHWeight);
+					hhArray[i][k][HH_UNEMPLOYED_INDEX] = (int)(hhWeights[hhid]*pumsHHWeight);
 					if ( buckets[0] >= 1.0 ) {
 						hhArray[i][k][HH_UNEMPLOYED_INDEX] += 1;
 						buckets[0] -= 1.0;
@@ -315,8 +319,8 @@ public class SPGnew {
 				// else, the integerized final hhWeight is the number of times this employed hh is selected.
 				else {
 					hhArray[i][k][HH_UNEMPLOYED_INDEX] = 0;
-					buckets[workersCode] += hhWeights[hhid] - (int)hhWeights[hhid];
-					hhArray[i][k][HH_SELECTED_INDEX] = (int)hhWeights[hhid];
+					buckets[workersCode] += hhWeights[hhid]*pumsHHWeight - (int)(hhWeights[hhid]*pumsHHWeight);
+					hhArray[i][k][HH_SELECTED_INDEX] = (int)(hhWeights[hhid]*pumsHHWeight);
 					if ( buckets[workersCode] >= 1.0 ) {
 						hhArray[i][k][HH_SELECTED_INDEX] += 1;
 						buckets[workersCode] -= 1.0;
@@ -355,21 +359,29 @@ public class SPGnew {
         // get the regional number of employed persons by industry and occupation in hhArray from SPG1
 		int[][] indJobs = new int[4][edInd.getNumberEdIndustries()];
 		int[][] occJobs = new int[4][occ.getNumberOccupations()];
-		int[][] hhIncSizes = new int[2][incSize.getNumberIncomeSizes()];
-		int[][] hhWorkers = new int[2][workers.getNumberWorkerCategories()];
+		int[][] hhIncSizes = new int[4][incSize.getNumberIncomeSizes()];
+		int[][] hhWorkers = new int[4][workers.getNumberWorkerCategories()];
 		for (int i=0; i < hhArray.length; i++) {
 			for (int k=0; k < hhArray[i].length; k++) {
 
 			    int hhSize = hhArray[i][k][NUM_PERSONS_ATTRIB_INDEX];
 				pumsIncomeCode = hhArray[i][k][HH_INCOME_ATTRIB_INDEX];
+				workersCode = hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
 
 				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, hhSize); 
 				hhIncSizes[1][incomeSizeCode] += hhArray[i][k][HH_SELECTED_INDEX];
 				hhIncSizes[0][incomeSizeCode] += hhArray[i][k][HH_UNEMPLOYED_INDEX];
+				if ( workersCode > 0 )
+					hhIncSizes[3][incomeSizeCode] += hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
+				else
+					hhIncSizes[2][incomeSizeCode] += hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
 
-				workersCode = hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
 				hhWorkers[1][workersCode] += hhArray[i][k][HH_SELECTED_INDEX];
 				hhWorkers[0][workersCode] += hhArray[i][k][HH_UNEMPLOYED_INDEX];
+				if ( workersCode > 0 )
+					hhWorkers[3][workersCode] += hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
+				else
+					hhWorkers[2][workersCode] += hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
 				
 				for (int j=0; j < hhSize; j++) {
 
@@ -418,8 +430,16 @@ public class SPGnew {
 		writeFreqSummaryToLogger ( "unemployed households by household category", "HH_INCOME_SIZE", incSize.getIncomeSizeLabels(), hhIncSizes[0] );		
 
 		logger.info ("");
+		writeFreqSummaryToLogger ( "employed PUMS weighted households by household category", "HH_INCOME_SIZE", incSize.getIncomeSizeLabels(), hhIncSizes[3] );		
+		writeFreqSummaryToLogger ( "unemployed PUMS weighted households by household category", "HH_INCOME_SIZE", incSize.getIncomeSizeLabels(), hhIncSizes[2] );		
+
+		logger.info ("");
 		writeFreqSummaryToLogger ( "employed households by Number of Workers in Household", "HH_WORKERS", workers.getWorkersLabels(), hhWorkers[1] );		
 		writeFreqSummaryToLogger ( "unemployed households by Number of Workers in Household", "HH_WORKERS", workers.getWorkersLabels(), hhWorkers[0] );		
+		
+		logger.info ("");
+		writeFreqSummaryToLogger ( "employed PUMS weighted households by Number of Workers in Household", "HH_WORKERS", workers.getWorkersLabels(), hhWorkers[3] );		
+		writeFreqSummaryToLogger ( "unemployed PUMS weighted households by Number of Workers in Household", "HH_WORKERS", workers.getWorkersLabels(), hhWorkers[2] );		
 		
 
 		
@@ -1012,6 +1032,7 @@ public class SPGnew {
 		int pumsIndustryCode = 0;
 		int edIndustryCode = 0;
 		int employmentStatusCode = 0;
+		int pumsHHWeight;
 		
 		int numWorkerCategories = workers.getNumberWorkerCategories();
 		int numEmploymentCategories = edInd.getNumberEdIndustries();
@@ -1042,6 +1063,7 @@ public class SPGnew {
 			// loop over household records for this state
 			for (int k=0; k < hhArray[i].length; k++) {
 			
+				pumsHHWeight = hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
 				numPersons = hhArray[i][k][NUM_PERSONS_ATTRIB_INDEX];
 				numWorkers = hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
 				workersCode = workers.getWorkers(numWorkers); 
@@ -1050,9 +1072,9 @@ public class SPGnew {
 				hhWeights[hhid] = hhWeight; 
 
 				// set the fixed observed number of workers in this hh
-				observedHhWorkers[hhid][workersCode] = 1;
-				hhWorkerControls[hhid][workersCode] = hhWeight;
-				hhWorkerControlTotals[workersCode] += hhWeight;
+				observedHhWorkers[hhid][workersCode] = pumsHHWeight;
+				hhWorkerControls[hhid][workersCode] = hhWeight*pumsHHWeight;
+				hhWorkerControlTotals[workersCode] += hhWeight*pumsHHWeight;
 
 				// loop through person attributes for this household 
 				for (int j=0; j < numPersons; j++) {
@@ -1064,9 +1086,9 @@ public class SPGnew {
 						// set the fixed observed employment value for employment category of this worker
 						pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0];
 						edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
-						observedEmployment[hhid][edIndustryCode] += 1;
-						employmentControls[hhid][edIndustryCode] += hhWeight;
-						employmentControlTotals[edIndustryCode] += hhWeight;
+						observedEmployment[hhid][edIndustryCode] += pumsHHWeight;
+						employmentControls[hhid][edIndustryCode] += hhWeight*pumsHHWeight;
+						employmentControlTotals[edIndustryCode] += hhWeight*pumsHHWeight;
 
 					}
 					
@@ -1208,17 +1230,20 @@ public class SPGnew {
 			
 				
 			
-    // count the total number of workers in the PUMS sample 
-	public int getTotalWorkers () {
+    // count the total number of workers in the PUMS sample
+	// return an int[] wher the zero element has total sample workers
+	// and the ones element has total weighted workers.
+	public int[] getTotalWorkers () {
 
 		int w;
 		int[] workerBins = new int[workers.getNumberWorkerCategories()];
 		
-		int numWorkers = 0;
+		int[] numWorkers = new int[2];
 		
 		for (int i=0; i < hhArray.length; i++) {
 			for (int k=0; k < hhArray[i].length; k++) {
-				numWorkers += hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
+				numWorkers[0] += hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
+				numWorkers[1] += ( hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX]*hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX] );
 				w = hhArray[i][k][NUM_WORKERS_ATTRIB_INDEX];
 				if ( w > workers.getNumberWorkerCategories()-1 )
 					w = workers.getNumberWorkerCategories()-1;
@@ -1604,13 +1629,13 @@ public class SPGnew {
 		int[] pumsOccFreq = new int[occ.getNumberOccupations()];
 		int[] pumsWtOccFreq = new int[occ.getNumberOccupations()];
 
-		int[] incSizeFreq = new int[incSize.getNumberIncomeSizes()];
+		int[][] incSizeFreq = new int[2][incSize.getNumberIncomeSizes()];
 		int[] pumsIncSizeFreq = new int[incSize.getNumberIncomeSizes()];
-		int[] pumsWtIncSizeFreq = new int[incSize.getNumberIncomeSizes()];
+		int[][] pumsWtIncSizeFreq = new int[2][incSize.getNumberIncomeSizes()];
 
-		int[] workersFreq = new int[workers.getNumberWorkerCategories()];
+		int[][] workersFreq = new int[2][workers.getNumberWorkerCategories()];
 		int[] pumsWorkersFreq = new int[workers.getNumberWorkerCategories()];
-		int[] pumsWtWorkersFreq = new int[workers.getNumberWorkerCategories()];
+		int[][] pumsWtWorkersFreq = new int[2][workers.getNumberWorkerCategories()];
 
 
 
@@ -1622,16 +1647,20 @@ public class SPGnew {
 
 			Arrays.fill (edIndFreq, 0);
 			Arrays.fill (occFreq, 0);
-			Arrays.fill (incSizeFreq, 0);
-			Arrays.fill (workersFreq, 0);
+			Arrays.fill (incSizeFreq[0], 0);
+			Arrays.fill (workersFreq[0], 0);
+			Arrays.fill (incSizeFreq[1], 0);
+			Arrays.fill (workersFreq[1], 0);
 			Arrays.fill (pumsIndFreq, 0);
 			Arrays.fill (pumsOccFreq, 0);
 			Arrays.fill (pumsIncSizeFreq, 0);
 			Arrays.fill (pumsWorkersFreq, 0);
 			Arrays.fill (pumsWtIndFreq, 0);
 			Arrays.fill (pumsWtOccFreq, 0);
-			Arrays.fill (pumsWtIncSizeFreq, 0);
-			Arrays.fill (pumsWtWorkersFreq, 0);
+			Arrays.fill (pumsWtIncSizeFreq[0], 0);
+			Arrays.fill (pumsWtWorkersFreq[0], 0);
+			Arrays.fill (pumsWtIncSizeFreq[1], 0);
+			Arrays.fill (pumsWtWorkersFreq[1], 0);
 		    
 			for (int k=0; k < hhArray[i].length; k++) {
 		
@@ -1641,13 +1670,25 @@ public class SPGnew {
 				pumsHHWeight = hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
 
 				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons); 
-				incSizeFreq[incomeSizeCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
+				if ( numWorkers > 0 )
+					incSizeFreq[0][incomeSizeCode] += hhArray[i][k][HH_SELECTED_INDEX];
+				else
+					incSizeFreq[1][incomeSizeCode] += hhArray[i][k][HH_UNEMPLOYED_INDEX];
 				pumsIncSizeFreq[incomeSizeCode]++;
-				pumsWtIncSizeFreq[incomeSizeCode] += pumsHHWeight;
+				if ( numWorkers > 0 )
+					pumsWtIncSizeFreq[0][incomeSizeCode] += pumsHHWeight;
+				else
+					pumsWtIncSizeFreq[1][incomeSizeCode] += pumsHHWeight;
 
-				workersFreq[numWorkers] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
+				if ( numWorkers > 0 )
+					workersFreq[0][numWorkers] += hhArray[i][k][HH_SELECTED_INDEX];
+				else
+					workersFreq[1][numWorkers] += hhArray[i][k][HH_UNEMPLOYED_INDEX];
 				pumsWorkersFreq[numWorkers]++;
-				pumsWtWorkersFreq[numWorkers] += pumsHHWeight;
+				if ( numWorkers > 0 )
+					pumsWtWorkersFreq[0][numWorkers] += pumsHHWeight;
+				else
+					pumsWtWorkersFreq[1][numWorkers] += pumsHHWeight;
 
 				for (int j=0; j < numPersons; j++) {
 
@@ -1675,16 +1716,20 @@ public class SPGnew {
 		    
 			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Employed Persons by ED Industry categories for all households in final sample", "Industry", edInd.getEdIndustryLabels(), edIndFreq );
 			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Employed Persons by Occupation categories for all households in final sample", "Occupation", occ.getOccupationLabels(), occFreq );
-			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Income/Household Size categories for all households in final sample", "IncomeSize", incSize.getIncomeSizeLabels(), incSizeFreq );
-			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Workers categories for all households in final sample", "Workers", workers.getWorkersLabels(), workersFreq );
+			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Income/Household Size categories for all employed households in final sample", "IncomeSize", incSize.getIncomeSizeLabels(), incSizeFreq[0] );
+			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Income/Household Size categories for all unemployed households in final sample", "IncomeSize", incSize.getIncomeSizeLabels(), incSizeFreq[1] );
+			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Workers categories for all employed households in final sample", "Workers", workers.getWorkersLabels(), workersFreq[0] );
+			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Workers categories for all unemployed households in final sample", "Workers", workers.getWorkersLabels(), workersFreq[1] );
 			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Employed Persons by ED Industry categories for all PUMS households", "Industry", edInd.getEdIndustryLabels(), pumsIndFreq );
 			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Employed Persons by Occupation categories for all PUMS households", "Occupation", occ.getOccupationLabels(), pumsOccFreq );
 			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Income/Household Size categories for all PUMS households", "IncomeSize", incSize.getIncomeSizeLabels(), pumsIncSizeFreq );
 			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Workers categories for all PUMS households", "Workers", workers.getWorkersLabels(), pumsWorkersFreq );
 			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Employed Persons by ED Industry categories for all Weighted PUMS households", "Industry", edInd.getEdIndustryLabels(), pumsWtIndFreq );
 			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Employed Persons by Occupation categories for all Weighted PUMS households", "Occupation", occ.getOccupationLabels(), pumsWtOccFreq );
-			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Income/Household Size categories for all Weighted PUMS households", "IncomeSize", incSize.getIncomeSizeLabels(), pumsWtIncSizeFreq );
-			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Workers categories for all Weighted PUMS households", "Workers", workers.getWorkersLabels(), pumsWtWorkersFreq );
+			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Income/Household Size categories for all Weighted PUMS employed households", "IncomeSize", incSize.getIncomeSizeLabels(), pumsWtIncSizeFreq[0] );
+			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Income/Household Size categories for all Weighted PUMS unemployed households", "IncomeSize", incSize.getIncomeSizeLabels(), pumsWtIncSizeFreq[1] );
+			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Workers categories for all Weighted PUMS employed households", "Workers", workers.getWorkersLabels(), pumsWtWorkersFreq[0] );
+			writeFreqSummaryToLogger( halo.getStateLabel(i) + " Households by Workers categories for all Weighted PUMS unemployed households", "Workers", workers.getWorkersLabels(), pumsWtWorkersFreq[1] );
 		
 		}
 
@@ -1695,16 +1740,20 @@ public class SPGnew {
 		// PUMS records, and weighted PUMS records over all states combined in the halo area.
 		Arrays.fill (edIndFreq, 0);
 		Arrays.fill (occFreq, 0);
-		Arrays.fill (incSizeFreq, 0);
-		Arrays.fill (workersFreq, 0);
+		Arrays.fill (incSizeFreq[0], 0);
+		Arrays.fill (workersFreq[0], 0);
+		Arrays.fill (incSizeFreq[1], 0);
+		Arrays.fill (workersFreq[1], 0);
 		Arrays.fill (pumsIndFreq, 0);
 		Arrays.fill (pumsOccFreq, 0);
 		Arrays.fill (pumsIncSizeFreq, 0);
 		Arrays.fill (pumsWorkersFreq, 0);
 		Arrays.fill (pumsWtIndFreq, 0);
 		Arrays.fill (pumsWtOccFreq, 0);
-		Arrays.fill (pumsWtIncSizeFreq, 0);
-		Arrays.fill (pumsWtWorkersFreq, 0);
+		Arrays.fill (pumsWtIncSizeFreq[0], 0);
+		Arrays.fill (pumsWtWorkersFreq[0], 0);
+		Arrays.fill (pumsWtIncSizeFreq[1], 0);
+		Arrays.fill (pumsWtWorkersFreq[1], 0);
 	    
 		for (int i=0; i < hhArray.length; i++) {
 
@@ -1715,14 +1764,28 @@ public class SPGnew {
 				pumsIncomeCode = hhArray[i][k][HH_INCOME_ATTRIB_INDEX];
 				pumsHHWeight = hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
 
-				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons); 
-				incSizeFreq[incomeSizeCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
+				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons);
+				if ( numWorkers > 0 ) {
+					incSizeFreq[0][incomeSizeCode] += hhArray[i][k][HH_SELECTED_INDEX];
+				}
+				else {
+					incSizeFreq[1][incomeSizeCode] += hhArray[i][k][HH_UNEMPLOYED_INDEX];
+				}
 				pumsIncSizeFreq[incomeSizeCode]++;
-				pumsWtIncSizeFreq[incomeSizeCode] += pumsHHWeight;
+				if ( numWorkers > 0 )
+					pumsWtIncSizeFreq[0][incomeSizeCode] += pumsHHWeight;
+				else
+					pumsWtIncSizeFreq[1][incomeSizeCode] += pumsHHWeight;
 
-				workersFreq[numWorkers] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
+				if ( numWorkers > 0 )
+					workersFreq[0][numWorkers] += hhArray[i][k][HH_SELECTED_INDEX];
+				else
+					workersFreq[1][numWorkers] += hhArray[i][k][HH_UNEMPLOYED_INDEX];
 				pumsWorkersFreq[numWorkers]++;
-				pumsWtWorkersFreq[numWorkers] += pumsHHWeight;
+				if ( numWorkers > 0 )
+					pumsWtWorkersFreq[0][numWorkers] += pumsHHWeight;
+				else
+					pumsWtWorkersFreq[1][numWorkers] += pumsHHWeight;
 
 				for (int j=0; j < numPersons; j++) {
 
@@ -1752,16 +1815,20 @@ public class SPGnew {
 
 		writeFreqSummaryToLogger( " Regional Employed Persons by ED Industry categories for all households in final sample", "Industry", edInd.getEdIndustryLabels(), edIndFreq );
 		writeFreqSummaryToLogger( " Regional Employed Persons by Occupation categories for all households in final sample", "Occupation", occ.getOccupationLabels(), occFreq );
-		writeFreqSummaryToLogger( " Regional Households by Income/Household Size categories for all households in final sample", "IncomeSize", incSize.getIncomeSizeLabels(), incSizeFreq );
-		writeFreqSummaryToLogger( " Regional Households by Workers categories for all households in final sample", "Workers", workers.getWorkersLabels(), workersFreq );
+		writeFreqSummaryToLogger( " Regional Households by Income/Household Size categories for all employed households in final sample", "IncomeSize", incSize.getIncomeSizeLabels(), incSizeFreq[0] );
+		writeFreqSummaryToLogger( " Regional Households by Income/Household Size categories for all unemployed households in final sample", "IncomeSize", incSize.getIncomeSizeLabels(), incSizeFreq[1] );
+		writeFreqSummaryToLogger( " Regional Households by Workers categories for all employed households in final sample", "Workers", workers.getWorkersLabels(), workersFreq[0] );
+		writeFreqSummaryToLogger( " Regional Households by Workers categories for all unemployed households in final sample", "Workers", workers.getWorkersLabels(), workersFreq[1] );
 		writeFreqSummaryToLogger( " Regional Employed Persons by ED Industry categories for all PUMS households", "Industry", edInd.getEdIndustryLabels(), pumsIndFreq );
 		writeFreqSummaryToLogger( " Regional Employed Persons by Occupation categories for all PUMS households", "Occupation", occ.getOccupationLabels(), pumsOccFreq );
 		writeFreqSummaryToLogger( " Regional Households by Income/Household Size categories for all PUMS households", "IncomeSize", incSize.getIncomeSizeLabels(), pumsIncSizeFreq );
 		writeFreqSummaryToLogger( " Regional Households by Workers categories for all PUMS households", "Workers", workers.getWorkersLabels(), pumsWorkersFreq );
 		writeFreqSummaryToLogger( " Regional Employed Persons by ED Industry categories for all Weighted PUMS households", "Industry", edInd.getEdIndustryLabels(), pumsWtIndFreq );
 		writeFreqSummaryToLogger( " Regional Employed Persons by Occupation categories for all Weighted PUMS households", "Occupation", occ.getOccupationLabels(), pumsWtOccFreq );
-		writeFreqSummaryToLogger( " Regional Households by Income/Household Size categories for all Weighted PUMS households", "IncomeSize", incSize.getIncomeSizeLabels(), pumsWtIncSizeFreq );
-		writeFreqSummaryToLogger( " Regional Households by Workers categories for all Weighted PUMS households", "Workers", workers.getWorkersLabels(), pumsWtWorkersFreq );
+		writeFreqSummaryToLogger( " Regional Households by Income/Household Size categories for all Weighted PUMS employed households", "IncomeSize", incSize.getIncomeSizeLabels(), pumsWtIncSizeFreq[0] );
+		writeFreqSummaryToLogger( " Regional Households by Income/Household Size categories for all Weighted PUMS unemployed households", "IncomeSize", incSize.getIncomeSizeLabels(), pumsWtIncSizeFreq[1] );
+		writeFreqSummaryToLogger( " Regional Households by Workers categories for all Weighted PUMS employed households", "Workers", workers.getWorkersLabels(), pumsWtWorkersFreq[0] );
+		writeFreqSummaryToLogger( " Regional Households by Workers categories for all Weighted PUMS unemployed households", "Workers", workers.getWorkersLabels(), pumsWtWorkersFreq[1] );
 	
 	}
 		
