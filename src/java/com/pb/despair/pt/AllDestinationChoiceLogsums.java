@@ -41,11 +41,27 @@ public class AllDestinationChoiceLogsums {
                                                                 +purposes[purpose]+segment+"dcls.zip"));
                  Matrix m = reader.readMatrix();
                  mc.addMatrix(m);
-                 if(debug) logger.info("matrix name: "+m.getName());
+                 if(debug) logger.info("matrix name: "+m.getName()+".zip");
              }
          }
      }
-     
+
+    public void readBinaryDCLogsums(ResourceBundle rb){
+         String dcLogsumFile = ResourceUtil.getProperty(rb, "dcLogsum.path");
+         if(debug) logger.info("dcLogsumFile: "+dcLogsumFile);
+
+         mc = new MatrixCollection();
+         for(int purpose=0;purpose<TOTALPURPOSES;purpose++){
+             for(int segment=0;segment<TOTALSEGMENTS;segment++){
+                 MatrixReader reader = MatrixReader.createReader(MatrixType.BINARY, new File(dcLogsumFile
+                                                                +purposes[purpose]+segment+"dcls.binary"));
+                 Matrix m = reader.readMatrix();
+                 mc.addMatrix(m);
+                 if(debug) logger.info("matrix name: "+m.getName()+".binary");
+             }
+         }
+     }
+
      /**
      *
      * This class sets DC Logsums for all persons in the hh
