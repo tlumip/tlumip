@@ -159,7 +159,7 @@ public class PTPerson implements Serializable, Comparable{
           
           int segment=1;
           
-          if(age>18)          //College +
+          if(age > 18)          //College +
                segment=3;
                
           return segment;
