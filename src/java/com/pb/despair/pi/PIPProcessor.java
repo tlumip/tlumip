@@ -35,7 +35,8 @@ public class PIPProcessor {
     //when PI is run in monolithic fashion.  Otherwise, these params are passed to
     //the PIPProcessor constructor when called from PIDAF (see PIServerTask's 'onStart( )' method)
     private int timePeriod;
-    protected ResourceBundle rb;
+    protected ResourceBundle piRb;
+    protected ResourceBundle globalRb;
 
     private TAZ[] zones; //will be initialized in setUpZones method after length has been determined.
 
@@ -47,9 +48,10 @@ public class PIPProcessor {
     public PIPProcessor(){
     }
 
-    public PIPProcessor(int timePeriod, ResourceBundle rb){
+    public PIPProcessor(int timePeriod, ResourceBundle piRb, ResourceBundle globalRb){
         this.timePeriod = timePeriod;
-        this.rb = rb;
+        this.piRb = piRb;
+        this.globalRb = globalRb;
     }
 
     public void setUpPi() {
@@ -143,12 +145,12 @@ public class PIPProcessor {
 
     protected void setUpProductionActivities() {
         logger.info("Setting up Production Activities");
-        boolean logitProduction = (ResourceUtil.getProperty(rb, "pi.useLogitProduction").equalsIgnoreCase("true"));
+        boolean logitProduction = (ResourceUtil.getProperty(piRb, "pi.useLogitProduction").equalsIgnoreCase("true"));
         if (logitProduction) logger.fine("using logit substitution production function");
         int numMissingZonalValueErrors = 0;
         TableDataSet ptab = null;
         TableDataSet zonalData = null;
-        String oregonInputsString = ResourceUtil.getProperty(rb, "pi.oregonInputs");
+        String oregonInputsString = ResourceUtil.getProperty(piRb, "pi.oregonInputs");
         if (oregonInputsString != null ) {
             if (oregonInputsString.equalsIgnoreCase("true")) {
                 ptab= loadTableDataSet("ActivitiesW","pi.current.data");
@@ -335,7 +337,7 @@ public class PIPProcessor {
     protected void readFloorspaceZones() {
         logger.info("Reading Floorspace Zones");
         floorspaceZoneCrossref = new Hashtable();
-        if (ResourceUtil.getProperty(rb,"pi.useFloorspaceZones").equalsIgnoreCase("true")) {
+        if (ResourceUtil.getProperty(piRb,"pi.useFloorspaceZones").equalsIgnoreCase("true")) {
             TableDataSet alphaZoneTable = loadTableDataSet("FloorspaceZonesI","pi.base.data");
             for (int zRow = 1; zRow <= alphaZoneTable.getRowCount(); zRow++) {
                 Integer floorspaceZone = new Integer( (int) alphaZoneTable.getValueAt(zRow, "FloorspaceZone"));
@@ -575,9 +577,9 @@ public class PIPProcessor {
 
     protected void setUpTransportConditions(String[] skimNames) {
         logger.info("Setting up Transport Conditions");
-        String skimFormat = ResourceUtil.getProperty(rb, "Model.skimFormat");
+        String skimFormat = ResourceUtil.getProperty(piRb, "Model.skimFormat");
         if (skimFormat.equals("TableDataSet")) {
-            String path = ResourceUtil.getProperty(rb, "skim.data");
+            String path = ResourceUtil.getProperty(piRb, "skim.data");
             try {
                 CSVFileReader reader = new CSVFileReader();
                 reader.setDelimSet(" ,\t\n\r\f\"");
@@ -592,8 +594,8 @@ public class PIPProcessor {
             }
 
         } else {
-            String path1 = ResourceUtil.getProperty(rb, "skim.data");
-            String path2 = ResourceUtil.getProperty(rb, "skim.data1");
+            String path1 = ResourceUtil.getProperty(piRb, "skim.data");
+            String path2 = ResourceUtil.getProperty(piRb, "skim.data1");
             
             SomeSkims someSkims = new SomeSkims(path1, path2);
             TransportKnowledge.globalTransportKnowledge = someSkims;
@@ -697,14 +699,14 @@ public class PIPProcessor {
 
     protected TableDataSet loadTableDataSet(String tableName, String source) {
         boolean useSQLInputs=false;
-        String useSqlInputsString = ResourceUtil.getProperty(rb, "pi.useSQLInputs");
+        String useSqlInputsString = ResourceUtil.getProperty(piRb, "pi.useSQLInputs");
         if (useSqlInputsString != null) {
             if (useSqlInputsString.equalsIgnoreCase("true")) {
                 useSQLInputs = true;
             }
         }
 
-        String inputPath = ResourceUtil.getProperty(rb, source);
+        String inputPath = ResourceUtil.getProperty(piRb, source);
         if(inputPath == null){
             logger.warning("Property '" + source + "' could not be found in ResourceBundle");
             return null;
@@ -728,7 +730,7 @@ public class PIPProcessor {
     protected JDBCTableReader getJDBCTableReader() {
         JDBCTableReader jdbcTableReader = new JDBCTableReader(getJDBCConnection());
         String excelInputs =
-                ResourceUtil.getProperty(rb, "pi.excelInputs");
+                ResourceUtil.getProperty(piRb, "pi.excelInputs");
         if (excelInputs != null) {
             if (excelInputs.equalsIgnoreCase("true")) {
                 jdbcTableReader.setMangleTableNamesForExcel(true);
@@ -740,9 +742,9 @@ public class PIPProcessor {
 
     private JDBCConnection getJDBCConnection() {
         String datasourceName =
-                ResourceUtil.getProperty(rb, "pi.datasource");
+                ResourceUtil.getProperty(piRb, "pi.datasource");
         String jdbcDriver =
-                ResourceUtil.getProperty(rb, "pi.jdbcDriver");
+                ResourceUtil.getProperty(piRb, "pi.jdbcDriver");
 //                Class.forName(jdbcDriver);
         JDBCConnection jdbcConnection = new JDBCConnection(datasourceName, jdbcDriver, "", "");
         return jdbcConnection;
@@ -856,16 +858,16 @@ public class PIPProcessor {
      */
     protected void recalcFloorspaceImport() {
         logger.info("Getting Floorspace Params from Property file");
-        String deltaString = ResourceUtil.getProperty(rb,"pi.floorspaceDelta");
+        String deltaString = ResourceUtil.getProperty(piRb,"pi.floorspaceDelta");
         if (deltaString ==null) {
             logger.warning("No pi.floorspaceDelta entry in properties file -- not calculating floorspace import from floorspace inventory");
             return;
         }
         double delta=Double.valueOf(deltaString).doubleValue();
-        double eta = Double.valueOf(ResourceUtil.getProperty(rb,"pi.floorspaceEta")).doubleValue();
-        double p0 = Double.valueOf(ResourceUtil.getProperty(rb,"pi.floorspaceP0")).doubleValue();
-        double slope = Double.valueOf(ResourceUtil.getProperty(rb,"pi.floorspaceSlope")).doubleValue();
-        double midpoint = Double.valueOf(ResourceUtil.getProperty(rb,"pi.floorspaceMidpoint")).doubleValue();
+        double eta = Double.valueOf(ResourceUtil.getProperty(piRb,"pi.floorspaceEta")).doubleValue();
+        double p0 = Double.valueOf(ResourceUtil.getProperty(piRb,"pi.floorspaceP0")).doubleValue();
+        double slope = Double.valueOf(ResourceUtil.getProperty(piRb,"pi.floorspaceSlope")).doubleValue();
+        double midpoint = Double.valueOf(ResourceUtil.getProperty(piRb,"pi.floorspaceMidpoint")).doubleValue();
         
         Iterator it = floorspaceInventory.values().iterator();
         while(it.hasNext()) {
@@ -1163,7 +1165,7 @@ public class PIPProcessor {
     public void writeLocationTables() {
         logger.info("Writing Location Tables ");
         writeLocationTable();
-        if (ResourceUtil.getProperty(rb,"pi.useFloorspaceZones").equalsIgnoreCase("true")) {
+        if (ResourceUtil.getProperty(piRb,"pi.useFloorspaceZones").equalsIgnoreCase("true")) {
             writeFloorspaceZoneLocationTable();
         }
             
@@ -1201,7 +1203,7 @@ public class PIPProcessor {
         try {
             locationsFile = new BufferedWriter(new FileWriter(getOutputPath() + "ActivityLocations.csv"));
             //TODO shall we write out the dollars spent and earned as well as the utility associated with size/variation/transport components?
-            boolean writeComponents = (ResourceUtil.getProperty(rb, "pi.writeUtilityComponents").equalsIgnoreCase("true"));
+            boolean writeComponents = (ResourceUtil.getProperty(piRb, "pi.writeUtilityComponents").equalsIgnoreCase("true"));
             locationsFile.write("Activity,ZoneNumber,Quantity,ProductionUtility,ConsumptionUtility,SizeUtility,LocationSpecificUtility,LocationUtility\n");
             Iterator it = ProductionActivity.getAllProductionActivities().iterator();
             while (it.hasNext()) {
@@ -1228,14 +1230,14 @@ public class PIPProcessor {
 
     public void writeZonalMakeUseCoefficients() {
         boolean ascii = true; //default
-        String temp = ResourceUtil.getProperty(rb,"pi.writeAsciiZonalMakeUse");
+        String temp = ResourceUtil.getProperty(piRb,"pi.writeAsciiZonalMakeUse");
         if (temp!=null) {
             if (temp.equalsIgnoreCase("false")) {
                 ascii = false;
             }
         }
         boolean binary = false; //default
-        temp = ResourceUtil.getProperty(rb,"pi.writeBinaryZonalMakeUse");
+        temp = ResourceUtil.getProperty(piRb,"pi.writeBinaryZonalMakeUse");
         if (temp!=null) {
             if (temp.equalsIgnoreCase("true")) {
                 binary = true;
@@ -1451,7 +1453,7 @@ public class PIPProcessor {
             BufferedWriter os = null;
             try {
                 os = new BufferedWriter(new FileWriter(getOutputPath() + "CommodityZUtilities.csv"));
-                boolean writeComponents = (ResourceUtil.getProperty(rb, "pi.writeUtilityComponents").equalsIgnoreCase("true"));
+                boolean writeComponents = (ResourceUtil.getProperty(piRb, "pi.writeUtilityComponents").equalsIgnoreCase("true"));
                 if (writeComponents) {
                     os.write("Commodity,Zone,BuyingOrSelling,Quantity,zUtility,VariationComponent,PriceComponent,SizeComponent,TransportComponent1,TransportComponent2,TransportComponent3,TransportComponent4\n");
                 } else {
@@ -1520,8 +1522,13 @@ public class PIPProcessor {
         this.timePeriod = timePeriod;
     }
 
-    public void setResourceBundle(ResourceBundle rb){
-        this.rb = rb;
+    public void setPiResourceBundle(ResourceBundle piRb){
+        this.piRb = piRb;
+    }
+
+    public void setResourceBundles(ResourceBundle piRb, ResourceBundle globalRb){
+        setPiResourceBundle(piRb);
+        this.globalRb = globalRb;
     }
 
     /**
@@ -1555,13 +1562,13 @@ public class PIPProcessor {
 
     private String getOutputPath() {
         if (outputPath == null) {
-            outputPath = ResourceUtil.getProperty(rb, "output.data");
+            outputPath = ResourceUtil.getProperty(piRb, "output.data");
         }
         return outputPath;
     }
 
     private boolean getWriteZipMatrices() {
-        String writem = ResourceUtil.getProperty(rb, "pi.writeFlowMatrices");
+        String writem = ResourceUtil.getProperty(piRb, "pi.writeFlowMatrices");
         if (writem==null) return true;
         if (writem.length()==0) return true;
         if (writem.equalsIgnoreCase("false")) return false;

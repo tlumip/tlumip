@@ -18,12 +18,14 @@ import com.pb.despair.model.OverflowException;
 public class PIControl {
     private static Logger logger = Logger.getLogger("com.pb.despair.pi");
     private int timePeriod;
-    private ResourceBundle rb;
+    private ResourceBundle piRb;
+    private ResourceBundle globalRb;
     private PIPProcessor piReaderWriter;
 
-    public PIControl(Class pProcessorClass, ResourceBundle rb){
+    public PIControl(Class pProcessorClass, ResourceBundle piRb, ResourceBundle globalRb){
         this.timePeriod = 1;
-        this.rb = rb;
+        this.piRb = piRb;
+        this.globalRb = globalRb;
         try {
             piReaderWriter = (PIPProcessor) pProcessorClass.newInstance();
         } catch (InstantiationException e) {
@@ -35,13 +37,13 @@ public class PIControl {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        piReaderWriter.setResourceBundle(this.rb);
+        piReaderWriter.setResourceBundles(this.piRb, this.globalRb);
         piReaderWriter.setTimePeriod(this.timePeriod);
     }
 
     public PIControl(Class pProcessorClass, ResourceBundle rb, int timePeriod){
         this.timePeriod = timePeriod;
-        this.rb = rb;
+        this.piRb = rb;
         try {
             piReaderWriter = (PIPProcessor) pProcessorClass.newInstance();
         } catch (InstantiationException e) {
@@ -53,7 +55,7 @@ public class PIControl {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        piReaderWriter.setResourceBundle(this.rb);
+        piReaderWriter.setResourceBundles(this.piRb, this.globalRb);
         piReaderWriter.setTimePeriod(this.timePeriod);
     }
 
@@ -79,10 +81,10 @@ public class PIControl {
         double newMeritMeasure;
         int nIterations=0; //a counter to keep track of how many iterations it takes before the meritMeasure is within tolerance.
 
-        PIModel pi = new PIModel(rb);
+        PIModel pi = new PIModel(piRb, globalRb);
         double tolerance = pi.convergenceTolerance; 
         
-        String maxIterationsString = ResourceUtil.getProperty(rb, "pi.maxIterations");
+        String maxIterationsString = ResourceUtil.getProperty(piRb, "pi.maxIterations");
         if (maxIterationsString == null) {
             logger.info("*   No 'pi.maxIterations' set in properties file -- using default");
         } else {
@@ -212,12 +214,13 @@ public class PIControl {
     }
 
     public static void main(String[] args) {
-        ResourceBundle rb = ResourceUtil.getResourceBundle("pi");
-        String pProcessorClass = ResourceUtil.getProperty(rb,"pprocessor.class");
+        ResourceBundle piRb = ResourceUtil.getResourceBundle("pi");
+        ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
+        String pProcessorClass = ResourceUtil.getProperty(piRb,"pprocessor.class");
         logger.info("PI will be using the " + pProcessorClass + " for pre and post PI processing");
         PIControl pi = null;
         try {
-            pi = new PIControl(Class.forName(pProcessorClass),rb);
+            pi = new PIControl(Class.forName(pProcessorClass),piRb, globalRb);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

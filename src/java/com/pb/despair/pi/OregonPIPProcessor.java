@@ -34,8 +34,8 @@ public class OregonPIPProcessor extends PIPProcessor {
     /**
      * @param timePeriod
      */
-    public OregonPIPProcessor(int timePeriod, ResourceBundle rb) {
-        super(timePeriod, rb);
+    public OregonPIPProcessor(int timePeriod, ResourceBundle piRb, ResourceBundle globalRb) {
+        super(timePeriod, piRb, globalRb);
     }
 
     /* (non-Javadoc)
@@ -48,20 +48,20 @@ public class OregonPIPProcessor extends PIPProcessor {
 
     public void doProjectSpecificInputProcessing() {
 
-        String calibrationMetaParameters = ResourceUtil.getProperty(rb,"pi.readMetaParameters");
+        String calibrationMetaParameters = ResourceUtil.getProperty(piRb,"pi.readMetaParameters");
         if (calibrationMetaParameters.equalsIgnoreCase("true")) {
             setUpMetaParameters();
         }
         
         boolean doIntegratedModuleRun = false;
-        String oregonInputsString = ResourceUtil.getProperty(rb, "pi.oregonInputs");
+        String oregonInputsString = ResourceUtil.getProperty(piRb, "pi.oregonInputs");
         if (oregonInputsString != null ) {
             if (oregonInputsString.equalsIgnoreCase("true")) {
                 doIntegratedModuleRun = true;
             }
         }
         if (!doIntegratedModuleRun) return;
-        String currPath = ResourceUtil.getProperty(rb,"pi.current.data");
+        String currPath = ResourceUtil.getProperty(piRb,"pi.current.data");
         File actW = new File(currPath + "ActivitiesW.csv");
         if(actW.exists()){
             actW.delete();
@@ -87,13 +87,13 @@ public class OregonPIPProcessor extends PIPProcessor {
 
     private void createActivitiesWFile(){
         logger.info("Creating new ActivitiesW.csv using current ED and ALD data");
-        boolean readSpgHHFile = (ResourceUtil.getProperty(rb, "pi.readHouseholdsByHHCategory").equalsIgnoreCase("true"));
-        boolean readEDDollarFile = (ResourceUtil.getProperty(rb, "pi.readActivityDollarDataForPI").equalsIgnoreCase("true"));
+        boolean readSpgHHFile = (ResourceUtil.getProperty(piRb, "pi.readHouseholdsByHHCategory").equalsIgnoreCase("true"));
+        boolean readEDDollarFile = (ResourceUtil.getProperty(piRb, "pi.readActivityDollarDataForPI").equalsIgnoreCase("true"));
         if(readSpgHHFile || readEDDollarFile)
         {
             CSVFileReader reader = new CSVFileReader();
             // read the PI intput file into a TableDataSet
-            String piInputsPath = ResourceUtil.getProperty(rb, "pi.base.data");
+            String piInputsPath = ResourceUtil.getProperty(piRb, "pi.base.data");
             TableDataSet actI = null;
             try {
                 actI = reader.readFile(new File(piInputsPath + "ActivitiesI.csv"));
@@ -105,7 +105,7 @@ public class OregonPIPProcessor extends PIPProcessor {
 
             // the SPG1 File has HHCategory as rows and Size as columns
             if (readSpgHHFile) {
-                String hhPath = ResourceUtil.getProperty(rb, "spg.input.data");
+                String hhPath = ResourceUtil.getProperty(piRb, "spg.input.data");
                 //read the SPG input file and put the data into an array by hhIndex
                 TableDataSet hh = null;
                 try {
@@ -131,7 +131,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
             //The ED File has 2 columns, Activity and Dollar Amounts
             if(readEDDollarFile){
-                String dollarPath = ResourceUtil.getProperty(rb,"ed.input.data");
+                String dollarPath = ResourceUtil.getProperty(piRb,"ed.input.data");
                 //read the ED input file and put the data into an array by Industry Index
                 TableDataSet dollars = null;
                 try {
@@ -155,7 +155,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                 }
             }
             // write the updated PI input file
-            String piOutputsPath = ResourceUtil.getProperty(rb, "output.data");
+            String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
             CSVFileWriter writer = new CSVFileWriter();
             try {
                 writer.writeFile(actI, new File(piOutputsPath + "ActivitiesW.csv"));
@@ -230,7 +230,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         }
         logger.fine("Replaced " + replaceCount + " values in the Floorspace Table");
         //Now write out the FloorspaceW.csv file
-        String piOutputsPath = ResourceUtil.getProperty(rb, "output.data");
+        String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
         CSVFileWriter writer = new CSVFileWriter();
         try {
             writer.writeFile(floorspaceTable, new File(piOutputsPath + "FloorspaceW.csv"));
@@ -372,7 +372,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         //OK, now write out the zonalValuesTable as ActivitiesZonalValuesW.csv into
         //the current pi directory
         logger.info("Writing out the ActivitiesZonalValuesW.csv file to the current pi directory");
-        String piOutputsPath = ResourceUtil.getProperty(rb, "output.data");
+        String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
         CSVFileWriter writer = new CSVFileWriter();
         try {
             writer.writeFile(zonalValuesTable, new File(piOutputsPath + "ActivitiesZonalValuesW.csv"));
@@ -389,7 +389,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         logger.info("Generating parameters from metaparameters");
         CSVFileReader reader = new CSVFileReader();
         CSVFileWriter writer = new CSVFileWriter();
-        String piInputsPath = ResourceUtil.getProperty(rb,"pi.base.data");
+        String piInputsPath = ResourceUtil.getProperty(piRb,"pi.base.data");
         reader.setMyDirectory(new File(piInputsPath));
         writer.setMyDirectory(new File(piInputsPath));
         writer.setMyDecimalFormat(new GeneralDecimalFormat("0.############E0",10000,.001));
@@ -525,8 +525,8 @@ public class OregonPIPProcessor extends PIPProcessor {
      */
     protected void setUpTransportConditions(String[] skimNames) {
         logger.info("Setting up Transport Conditions");
-        String path1 = ResourceUtil.getProperty(rb, "pt.input.data");
-        String path2 = ResourceUtil.getProperty(rb, "ts.input.data");
+        String path1 = ResourceUtil.getProperty(piRb, "pt.input.data");
+        String path2 = ResourceUtil.getProperty(piRb, "ts.input.data");
 
         SomeSkims someSkims = new SomeSkims(path1, path2);
         TransportKnowledge.globalTransportKnowledge = someSkims;
@@ -545,7 +545,7 @@ public class OregonPIPProcessor extends PIPProcessor {
 
     public void writeLaborConsumptionAndProductionFiles() {
         boolean writeTheseOutputs = false;
-        String oregonOutputsString = ResourceUtil.getProperty(rb, "pi.oregonOutputs");
+        String oregonOutputsString = ResourceUtil.getProperty(piRb, "pi.oregonOutputs");
         if (oregonOutputsString != null) {
             if (oregonOutputsString.equalsIgnoreCase("true")) {
                 writeTheseOutputs = true;
@@ -555,7 +555,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             logger.warning("Not writing Oregon-Specific Outputs (labour consumption and production)");
             return;
         }
-        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(rb);
+        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(piRb);
         TableDataSet householdQuantity = labor.loadTableDataSet("ActivityLocations2.csv","output.data");
         logger.fine("loaded ActivityLocations2.csv");
         TableDataSet alphaToBeta = labor.loadTableDataSet("alpha2beta.csv","reference.data");
@@ -583,8 +583,10 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     public static void main(String[] args) {
-        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/pi/pi.properties"));
-        OregonPIPProcessor pProcessor =  new OregonPIPProcessor(1,rb);
+        ResourceBundle piRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/pi/pi.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/global.properties"));
+
+        OregonPIPProcessor pProcessor =  new OregonPIPProcessor(1,piRb, globalRb);
         pProcessor.createFloorspaceWFile();
     }
 

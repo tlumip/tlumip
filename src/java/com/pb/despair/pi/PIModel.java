@@ -42,7 +42,7 @@ public class PIModel extends ModelComponent {
     public double convergenceTolerance;
 
     /* This constructor is only called by AO when running PI monolithically (which will not be called very often
-    * if ever).  The properties are set by a call to the setProperties method which is defined in the Model
+    * if ever).  The properties are set by a call to the setApplicationResourceBundle method which is defined in the Model
     * Component class and then PIModel is started by a call to the 'startModel(timeInterval)' method which
     * calls PIControl
     */
@@ -61,8 +61,9 @@ public class PIModel extends ModelComponent {
     * PIServerTask in it's 'onStart( ) method and will subsequently be passed to PIModel during the
     * 'new PIModel(rb)' call.
     */
-    public PIModel(ResourceBundle rb){
-        String initialStepSizeString = ResourceUtil.getProperty(rb, "pi.initialStepSize");
+    public PIModel(ResourceBundle piRb, ResourceBundle globalRb){
+        setResourceBundles(piRb, globalRb);
+        String initialStepSizeString = ResourceUtil.getProperty(piRb, "pi.initialStepSize");
         if (initialStepSizeString == null) {
             logger.info("*   No pi.initialStepSize set in properties file -- using default");
         } else {
@@ -71,7 +72,7 @@ public class PIModel extends ModelComponent {
             logger.info("*   Initial step size set to " + iss);
         }
 
-        String minimumStepSizeString = ResourceUtil.getProperty(rb, "pi.minimumStepSize");
+        String minimumStepSizeString = ResourceUtil.getProperty(piRb, "pi.minimumStepSize");
         if (minimumStepSizeString == null) {
             logger.info("*   No pi.minimumStepSize set in properties file -- using default");
         } else {
@@ -80,7 +81,7 @@ public class PIModel extends ModelComponent {
             logger.info("*   Minimum step size set to " + mss);
         }
 
-        String maximumStepSizeString = ResourceUtil.getProperty(rb, "pi.maximumStepSize");
+        String maximumStepSizeString = ResourceUtil.getProperty(piRb, "pi.maximumStepSize");
         if (maximumStepSizeString == null) {
             logger.info("*   No pi.maximumStepSize set in properties file -- using default");
         } else {
@@ -89,7 +90,7 @@ public class PIModel extends ModelComponent {
             logger.info("*   Maximum step size set to " + mss);
         }
 
-        String convergedString = ResourceUtil.getProperty(rb, "pi.converged");
+        String convergedString = ResourceUtil.getProperty(piRb, "pi.converged");
         if (convergedString == null) {
             logger.info("*   No pi.converged set in properties file -- using default");
         } else {
@@ -569,15 +570,15 @@ public class PIModel extends ModelComponent {
 
     /* This method is called by AO.  Before startModel is called the most
     * current pi.properties file has been found in the tn subdirectories
-    * and has been set by calling the setProperties method (a ModelComponent method)
+    * and has been set by calling the setApplicationResourceBundle method (a ModelComponent method)
     * from AO.
     */
     public void startModel(int timeInterval){
-        String pProcessorClass = ResourceUtil.getProperty(resourceBundle,"pprocessor.class");
+        String pProcessorClass = ResourceUtil.getProperty(appRb,"pprocessor.class");
         logger.info("PI will be using the " + pProcessorClass + " for pre and post PI processing");
         PIControl pi = null;
         try {
-            pi = new PIControl(Class.forName(pProcessorClass), resourceBundle);
+            pi = new PIControl(Class.forName(pProcessorClass), appRb, globalRb);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
