@@ -88,6 +88,7 @@ public class TableDataSetParameter extends Parameter {
     public JPanel createUI() {
         TableDataSetIndexedValuePanel myPanel = new TableDataSetIndexedValuePanel();
         myPanel.setMyParam(theData);
+        myPanel.setSize(new Dimension(500,300));
         JPanel perturbValuePanel = new JPanel();
         perturbValuePanel.setLayout(new GridLayout(2, 2));
         perturbValuePanel.add(new JLabel("Perturbation value"));
@@ -155,7 +156,7 @@ public class TableDataSetParameter extends Parameter {
         bothThings.setLayout(new FlowLayout());
         bothThings.add(myPanel);
         bothThings.add(perturbValuePanel);
-        bothThings.setPreferredSize(new Dimension(100, 100));
+        bothThings.setPreferredSize(new Dimension(600, 500));
         return bothThings;
     }
 

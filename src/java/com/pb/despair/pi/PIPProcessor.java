@@ -16,6 +16,12 @@ import java.util.logging.Logger;
 import java.io.*;
 
 /**
+ * @author jabraham
+ *
+ * To change the template for this generated type comment go to
+ * Window - Preferences - Java - Code Generation - Code and Comments
+ */
+/**
  * This class is responsible for reading in the PI input files
  * and setting up objects used by PIModel.  It is created by the PIControl
  * class which is responsible for setting the ResourceBundle and the timePeriod
@@ -1007,14 +1013,18 @@ public class PIPProcessor {
         }
 
 
-    public void writeFlowHistograms(String name) {
+    /**
+     * @param name name of the commodity to write histograms for 
+     * @param stream stream to write to, can be null in which case a file will be created and used
+     */
+    public void writeFlowHistograms(String name, Writer stream) {
         Commodity com = Commodity.retrieveCommodity(name);
         Matrix b = com.getBuyingFlowMatrix();
         Matrix s = com.getSellingFlowMatrix();
-        writeFlowHistograms(name,b,s);
+        writeFlowHistograms(stream,name,b,s);
     }
     
-    public void writeFlowZipMatrices(String name) {
+    public void writeFlowZipMatrices(String name, Writer histogramFile) {
         Commodity com = Commodity.retrieveCommodity(name);
         ZipMatrixWriter  zmw = new ZipMatrixWriter(new File(getOutputPath()+"buying_"+com.name+".zipMatrix"));
         Matrix b = com.getBuyingFlowMatrix();
@@ -1023,13 +1033,19 @@ public class PIPProcessor {
         Matrix s = com.getSellingFlowMatrix();
         zmw.writeMatrix(s);
         logger.info("Buying and Selling Commodity Flow Matrices have been written for " + name);
-        writeFlowHistograms(name,b,s);
+        writeFlowHistograms(histogramFile, name,b,s);
     }
     
-    private void writeFlowHistograms(String commodityName, Matrix buyingMatrix, Matrix sellingMatrix) {
-
+    /**
+     * @param histogramFile the file to write the histogram to.  Can be "null" in which case a file named 
+     * histograms_commodityName.csv will be created. 
+     * @param commodityName
+     * @param buyingMatrix
+     * @param sellingMatrix
+     */
+    private void writeFlowHistograms(Writer histogramFile, String commodityName, Matrix buyingMatrix, Matrix sellingMatrix) {
+        boolean closeHistogramFile = false;
         Iterator it = histogramSpecifications.iterator();
-        BufferedWriter histogramFile = null;
         while (it.hasNext()) {
             HistogramSpec hspec = (HistogramSpec) it.next();
             if (hspec.commodityName.equals(commodityName)) {
@@ -1053,8 +1069,11 @@ public class PIPProcessor {
                 mhBuying.generateHistogram(skim,buyingMatrix);
                 mhSelling.generateHistogram(skim,sellingMatrix);
                 try {
-                    if (histogramFile == null) histogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "histograms_"+commodityName+".csv"));
-                    histogramFile.write("Commodity,BuyingSelling,LowerBound,Quantity,AverageLength\n");
+                    if (histogramFile == null) {
+                        histogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "histograms_"+commodityName+".csv"));
+                        histogramFile.write("Commodity,BuyingSelling,BandNumber,LowerBound,Quantity,AverageLength\n");
+                        closeHistogramFile = true;
+                    }   
                     mhBuying.writeHistogram(commodityName,"buying", histogramFile);
                     mhSelling.writeHistogram(commodityName,"selling", histogramFile);
                 } catch (IOException e) {
@@ -1063,7 +1082,7 @@ public class PIPProcessor {
                 }
             }
         }
-        if (histogramFile !=null) {
+        if (histogramFile !=null && closeHistogramFile == true) {
             try {
                 histogramFile.close();
             } catch (IOException e) {
@@ -1074,17 +1093,33 @@ public class PIPProcessor {
     }
     
     public void writeAllFlowZipMatrices() {
-        Iterator com = Commodity.getAllCommodities().iterator();
-        while (com.hasNext()) {
-            writeFlowZipMatrices(((Commodity)com.next()).getName());
-        }
+        try {
+            BufferedWriter histogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "histograms.csv"));
+            histogramFile.write("Commodity,BuyingSelling,LowerBound,Quantity,AverageLength\n");
+            Iterator com = Commodity.getAllCommodities().iterator();
+            while (com.hasNext()) {
+                writeFlowZipMatrices(((Commodity)com.next()).getName(),histogramFile);
+            }
+            histogramFile.close();
+       } catch (IOException e) {
+           logger.severe("Problems writing histogram output file "+e);
+           e.printStackTrace();
+       }
     }
 
     public void writeAllHistograms() {
-        Iterator com = Commodity.getAllCommodities().iterator();
-        while (com.hasNext()) {
-            writeFlowHistograms(((Commodity)com.next()).getName());
-        }
+        try {
+            BufferedWriter histogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "histograms.csv"));
+            histogramFile.write("Commodity,BuyingSelling,BandNumber,LowerBound,Quantity,AverageLength\n");
+            Iterator com = Commodity.getAllCommodities().iterator();
+            while (com.hasNext()) {
+                writeFlowHistograms(((Commodity)com.next()).getName(),histogramFile);
+            }
+            histogramFile.close();
+        } catch (IOException e) {
+            logger.severe("Problems writing histogram output file "+e);
+            e.printStackTrace();
+         }
     }
 
     

@@ -120,7 +120,7 @@ public class TableDataSetTarget extends TargetAdapter {
     }
 
     public String toString() {
-        return ("T "+this.getTarget()+" val:"+this.getValue()+" "+ indexedValue.toString());
+        return ("T "+this.getTarget()+" val:"+getValueStatusString()+" "+ indexedValue.toString());
     }
 
     /*
@@ -223,6 +223,16 @@ public class TableDataSetTarget extends TargetAdapter {
             return false;
         TableDataSetCollection tdsc = ((PecasDirectoryInputsAndOutputs) mio).myTableDataSetCollection;
         return !(indexedValue.hasValidIndexes(tdsc));
+    }
+
+    /* (non-Javadoc)
+     * @see com.hbaspecto.calibrator.Target#getValueStatusString()
+     */
+    public String getValueStatusString() {
+        if (!(getModelInputsAndOutputs() instanceof PecasDirectoryInputsAndOutputs)) {
+            return("TableDataSetTargets can only work with model outputs of of type PecasDirectoryInputsAndOutputs");
+        }
+        else return indexedValue.retrieveValueStatusString(((PecasDirectoryInputsAndOutputs) getModelInputsAndOutputs()).myTableDataSetCollection);
     }
 
 }

@@ -251,4 +251,46 @@ public class StringIndexedFloatTarget extends TargetAdapter implements Serializa
         return stringKeyNameValues;
     }
 
+    /* (non-Javadoc)
+     * @see com.hbaspecto.calibrator.Target#getValueStatusString()
+     */
+    public String getValueStatusString() {
+        if (getModelInputsAndOutputs() == null) return "modelInputsAndOutputs still null";
+        if (!(getModelInputsAndOutputs() instanceof PecasDirectoryInputsAndOutputs)) {
+            return "StringIndexedFloatTargets can only work with model outputs of of type PecasDirectoryInputsAndOutputs";
+        }
+        PecasDirectoryInputsAndOutputs t = (PecasDirectoryInputsAndOutputs) getModelInputsAndOutputs();
+        StringIndexedNDimensionalMatrix aOne = null;
+        try {
+            aOne = t.getMatrixByName(t.getDirectory()+File.separator+fileAndTableName+".bin",fieldAndMatrixName);
+        } catch (RuntimeException e) {
+            return e.toString();
+        }
+        if (aOne == null) return ("Can't find matrix "+fileAndTableName+ " " +fieldAndMatrixName);
+        if (aOne != myMatrix) {
+            myMatrix = aOne;
+            columnOrderOK = false;
+        }
+        if (!columnOrderOK) {
+            for (int i =0; i<getStringKeyNameValues()[0].length;i++) {
+                int column = myMatrix.getColumn(getStringKeyNameValues()[0][i]);
+                if (column !=i) {
+                    swapColumns(i,column);
+                    i=-1;
+                }
+            }
+        }
+        columnOrderOK = true;
+        double value =0;
+        int num = 0;
+        for (int j=1;j<getStringKeyNameValues().length;j++) {
+            String[] keys = getStringKeyNameValues()[j];
+            value += myMatrix.getValue(keys);
+            num++;
+        }
+        if (num==0) return "no entries in matrix";
+        if (averageMode) value/=num;
+        return String.valueOf(value);
+    }
+
 }

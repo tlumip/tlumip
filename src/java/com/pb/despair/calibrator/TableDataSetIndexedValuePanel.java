@@ -113,7 +113,7 @@ public class TableDataSetIndexedValuePanel extends JPanel implements javax.swing
     private void initialize() {
         setName("TableDataSet Panel");
         setLayout(new java.awt.GridLayout());
-        setPreferredSize(new Dimension(300, 300));
+        setPreferredSize(new Dimension(500, 300));
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Basics", getBasicsPanel());
         tabbedPane.addTab("Keys-Values", getKeysPanel());

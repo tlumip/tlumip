@@ -86,7 +86,7 @@ public class CommodityOutputTask extends MessageProcessingTask {
 
         //TODO get the PProcessor class name from the properties file and instantiate using Class.newInstance()
         pwriter.writeExchangeResults(name);
-        pwriter.writeFlowZipMatrices(name);
+        pwriter.writeFlowZipMatrices(name,null);
 
         Message resultMsg = mFactory.createMessage();
         resultMsg.setId("FileWritten");
