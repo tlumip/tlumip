@@ -59,13 +59,15 @@ public class PTDafWriter extends MessageProcessingTask{
                 " @time="+ new Date());
         logger.info("Free memory before writing logsum to disk: "+Runtime.getRuntime().freeMemory());
         if(msg.getId().equals(MessageID.MC_LOGSUMS_CREATED))
-            writeBinaryMatrix(msg,"modeChoiceLogsumsWrite.path");
+            writeMatrix(msg,"modeChoiceLogsumsWrite.path");         //BINARY-ZIP
+//            writeBinaryMatrix(msg,"modeChoiceLogsumsWrite.path");
 
         else if(msg.getId().equals(MessageID.DC_LOGSUMS_CREATED))
-            writeMatrix(msg,"dcLogsumWrite.path");
-            
+            writeMatrix(msg,"dcLogsumWrite.path");                //BINARY-ZIP
+//            writeBinaryMatrix(msg,"dcLogsumWrite.path");
         else if(msg.getId().equals(MessageID.DC_EXPUTILITIES_CREATED))
-            writeBinaryMatrix(msg,"dcExpUtilitesWrite.path");
+            writeMatrix(msg,"dcExpUtilitesWrite.path");          //BINARY-ZIP
+//            writeBinaryMatrix(msg,"dcExpUtilitesWrite.path");
 
         else if(msg.getId().equals(MessageID.HOUSEHOLDS_PROCESSED)){
             //First create a new message (minus the household block) and
