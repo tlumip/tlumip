@@ -2,8 +2,18 @@ package com.pb.despair.pi;
 
 import com.pb.despair.model.*;
 
+import drasys.or.linear.algebra.Algebra;
+import drasys.or.linear.algebra.AlgebraException;
+import drasys.or.matrix.DenseMatrix;
+import drasys.or.matrix.DenseVector;
+import drasys.or.matrix.MatrixI;
+import drasys.or.matrix.SparseMatrix;
+import drasys.or.matrix.VectorI;
+
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 /**
@@ -21,9 +31,48 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
     ProductionFunction lastProductionFunction;
 
     static int numdebug = 0;
+    private double[] buyingCommodityUtilities;
+    private CommodityZUtility[] buyingZUtilities;
+    private CommodityZUtility[] sellingZUtilities;
+    private double[] sellingCommodityUtilities;
 
     public AggregateDistribution(ProductionActivity p, AbstractTAZ t) {
         super(p, t);
+    }
+    
+    private void initializeZUtilities() {
+        buyingCommodityUtilities = new double[lastConsumptionFunction.size()];
+        sellingCommodityUtilities = new double[lastProductionFunction.size()];
+        buyingZUtilities = new CommodityZUtility[lastConsumptionFunction.size()];
+        sellingZUtilities = new CommodityZUtility[lastProductionFunction.size()];
+        for (int c = 0; c < lastConsumptionFunction.size(); c++) {
+            Commodity com = (Commodity) lastConsumptionFunction.commodityAt(c);
+            if (com == null) buyingZUtilities[c] = null;
+            else buyingZUtilities[c] = com.retrieveCommodityZUtility(getMyTaz(), false);
+            if (com == null) {
+                buyingCommodityUtilities[c] = 0;
+            } else {
+                try {
+                    buyingCommodityUtilities[c] = com.calcZUtility(getMyTaz(), false);
+                } catch (OverflowException e1) {
+                    buyingCommodityUtilities[c] = Double.NaN;
+                }
+            }
+        }
+        for (int c = 0; c < lastProductionFunction.size(); c++) {
+            Commodity com = (Commodity) lastProductionFunction.commodityAt(c);
+            if (com == null) sellingZUtilities[c] = null;
+            else sellingZUtilities[c] = com.retrieveCommodityZUtility(getMyTaz(), true);
+            if (com == null) {
+                sellingCommodityUtilities[c] = 0;
+            } else {
+                try {
+                    sellingCommodityUtilities[c] = com.calcZUtility(getMyTaz(), true);
+                } catch (OverflowException e1) {
+                    sellingCommodityUtilities[c] = Double.NaN;
+                }
+            }
+        }
     }
 
 
@@ -34,34 +83,12 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
     public void updateLocationUtilityTerms(Writer w) {
         ConsumptionFunction cf = lastConsumptionFunction;
         ProductionFunction pf = lastProductionFunction;
-        double[] buyingCommodityUtilities = new double[cf.size()];
-        for (int c = 0; c < cf.size(); c++) {
-            AbstractCommodity com = cf.commodityAt(c);
-            if (com == null) {
-                buyingCommodityUtilities[c] = 0;
-            } else {
-                try {
-                    buyingCommodityUtilities[c] = cf.commodityAt(c).calcZUtility(getMyTaz(), false);
-                } catch (OverflowException e1) {
-                    buyingCommodityUtilities[c] = Double.NaN;
-                }
-            }
-        }
-        double[] sellingCommodityUtilities = new double[pf.size()];
-        for (int c = 0; c < pf.size(); c++) {
-            AbstractCommodity com = pf.commodityAt(c);
-            if (com == null) {
-                sellingCommodityUtilities[c] = 0;
-            } else {
-                try {
-                    sellingCommodityUtilities[c] = pf.commodityAt(c).calcZUtility(getMyTaz(), true);
-                } catch (OverflowException e1) {
-                    sellingCommodityUtilities[c] = Double.NaN;
-                }
-            }
-        }
+        
+        initializeZUtilities();
+        
         double productionUtility;
         double consumptionUtility;
+
         try {
             productionUtility = pf.overallUtility(sellingCommodityUtilities);
             consumptionUtility = cf.overallUtility(buyingCommodityUtilities);
@@ -121,24 +148,9 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         if (this.myProductionActivity.name.equals("WHOLESALE TRADE warehousing and transportation") && (myTaz.getZoneUserNumber()==874 || myTaz.getZoneUserNumber()==1394)) {
             debug = true;
         }
-        double[] buyingCommodityUtilities = new double[cf.size()];
-        for (int c = 0; c < cf.size(); c++) {
-            AbstractCommodity com = cf.commodityAt(c);
-            if (com == null) {
-                buyingCommodityUtilities[c] = 0;
-            } else {
-                buyingCommodityUtilities[c] = cf.commodityAt(c).calcZUtility(getMyTaz(), false);
-            }
-        }
-        double[] sellingCommodityUtilities = new double[pf.size()];
-        for (int c = 0; c < pf.size(); c++) {
-            AbstractCommodity com = pf.commodityAt(c);
-            if (com == null) {
-                sellingCommodityUtilities[c] = 0;
-            } else {
-                sellingCommodityUtilities[c] = pf.commodityAt(c).calcZUtility(getMyTaz(), true);
-            }
-        } //CUSellc,z and CUBuyc,z have now been calculated for the commodites made or used by the activity
+        
+        initializeZUtilities();
+
         double productionUtility;
         double consumptionUtility;
         try {
@@ -179,40 +191,14 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
             return calcLocationUtility(myProductionActivity.getConsumptionFunction(),
                     myProductionActivity.getProductionFunction(), higherLevelDispersionParameter);
         } catch (OverflowException e) {
-            throw new ChoiceModelOverflowException(e.toString());
-        }
-        // message #1.2.3.1.1 to aggregateFactors:com.pb.despair.pi.AggregateActivity
-        // ProductionFunction unnamed = aggregateFactors.getProductionFunction();
-        // message #1.2.3.1.2 to aggregateFactors:com.pb.despair.pi.AggregateActivity
-        // ConsumptionFunction unnamed = aggregateFactors.getConsumptionFunction();
-        // message #1.2.3.1.3 to myTaz:com.pb.despair.pi.TAZ
-        // double unnamed = myTaz.calcZUtility(com.pb.despair.pi.Commodity, boolean);
+            throw new ChoiceModelOverflowException(e.toString());}
     }
 
-/*    public double calcUtilityForPreferences(TravelPreferences tp, boolean withRouteChoice) {
-        // message #1.2.3.1.1 to aggregateFactors:com.pb.despair.pi.AggregateActivity
-        // ProductionFunction unnamed = aggregateFactors.getProductionFunction();
-        // message #1.2.3.1.2 to aggregateFactors:com.pb.despair.pi.AggregateActivity
-        // ConsumptionFunction unnamed = aggregateFactors.getConsumptionFunction();
-        // message #1.2.3.1.3 to myTaz:com.pb.despair.pi.TAZ
-        // double unnamed = myTaz.calcZUtilityForPreferences(com.pb.despair.pi.Commodity, boolean, TravelPreferences);
-    } */
-
-    //  public void setCommodityFlows() {
-    //  }
     public void setCommoditiesBoughtAndSold() throws OverflowException {
         setCommoditiesBoughtAndSold(myProductionActivity.getConsumptionFunction(),
                 myProductionActivity.getProductionFunction());
     }
 
-    // void clearCommodityPurchaseMemory() {
-    //     oldCommoditiesBought.clear();
-    //     oldCommoditiesSold.clear();
-    // }
-
-    // so we can do remigration as well as migration, keep track of what we put where.
-    //private Hashtable oldCommoditiesBought = new Hashtable();
-    //private Hashtable oldCommoditiesSold = new Hashtable();
 
     public String toString() {
         return myProductionActivity + " in " + getMyTaz();
@@ -242,7 +228,6 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
             try {
                 calcLocationUtilityDebug(lastConsumptionFunction, lastProductionFunction, true, ((AggregateActivity) myProductionActivity).getLocationDispersionParameter());
             } catch (OverflowException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             logger.severe("**********************************************");
@@ -266,25 +251,12 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         //if (myProductionActivity.name.equals("lt 10")) debug = true;
         if (getQuantity() == 0 && derivative == 0) return;
         
+        lastConsumptionFunction = cf;
+        lastProductionFunction = pf;
+        
         // first get the relevent ZUtilities and calculate the buying and selling utility values
-        double[] buyingCommodityUtilities = new double[cf.size()];
-        CommodityZUtility[] buyingZUtilities = new CommodityZUtility[cf.size()];
-        for (int c = 0; c < cf.size(); c++) {
-            Commodity commodity = (Commodity) cf.commodityAt(c);
-            if (commodity == null) buyingZUtilities[c] = null;
-            else buyingZUtilities[c] = commodity.retrieveCommodityZUtility(getMyTaz(), false);
-            if (commodity == null) buyingCommodityUtilities[c] = 0;
-            else buyingCommodityUtilities[c] = commodity.calcZUtility(getMyTaz(), false);
-        }
-        double[] sellingCommodityUtilities = new double[pf.size()];
-        CommodityZUtility[] sellingZUtilities = new CommodityZUtility[pf.size()];
-        for (int c = 0; c < pf.size(); c++) {
-            Commodity commodity = (Commodity) pf.commodityAt(c);
-            if (commodity == null) sellingZUtilities[c] = null;
-            else sellingZUtilities[c] = commodity.retrieveCommodityZUtility(getMyTaz(), true);
-            if (commodity == null) sellingCommodityUtilities[c] = 0;
-            else sellingCommodityUtilities[c] = commodity.calcZUtility(getMyTaz(), true);
-        }
+        initializeZUtilities();
+
         // then figure out how much we want to buy and sell
         double[] buyingQuantities = cf.calcAmounts(buyingCommodityUtilities);
         double[] sellingQuantities = pf.calcAmounts(sellingCommodityUtilities);
@@ -309,7 +281,6 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
                     if (getQuantity() != 0) {
                         buyingZUtilities[c].changeQuantityBy(getQuantity() * buyingQuantities[c]);
                     }
-                    //TODO: check to see whether we should be changing the derivative or setting it.
                     if (derivative == 0) {
                         buyingZUtilities[c].changeDerivativeBy(getQuantity() * buyingDerivatives[c]);
                     } else if (getQuantity() == 0) {
@@ -343,7 +314,6 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
                     } else if (getQuantity() == 0) {
                         sellingZUtilities[c].changeDerivativeBy(derivative * sellingCompositeUtilityDerivatives[c] * sellingQuantities[c]);
                     } else
-                    //TODO: check to see whether we should be changing the derivative or setting it.
                         sellingZUtilities[c].changeDerivativeBy(derivative * sellingCompositeUtilityDerivatives[c] * sellingQuantities[c] + getQuantity() * sellingDerivatives[c]);
                 } catch (OverflowException e) {
                     logger.severe("Overflow Error: " + myProductionActivity + " in " + myTaz + " produces " + buyingQuantities[c] + " of " + commodity + " leading to " + e);
@@ -352,5 +322,316 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
 
             }
         }
+    }
+
+
+    public void allocateLocationChoiceDerivatives(double totalActivityQuantity, MatrixI thePlaceToAddTheDerivatives, VectorI locationChoiceDerivatives, HashMap exchangeIndices) throws OverflowException {
+        
+        ConsumptionFunction cf = lastConsumptionFunction;
+        ProductionFunction pf = lastProductionFunction;
+        
+        initializeZUtilities();
+
+        // then figure out how much we want to buy and sell
+        double[] buyingQuantities = cf.calcAmounts(buyingCommodityUtilities);
+        double[] sellingQuantities = pf.calcAmounts(sellingCommodityUtilities);
+
+        // need these for later.
+        DenseMatrix locationDerivatives = new DenseMatrix(1,locationChoiceDerivatives.size());
+        locationDerivatives.setRow(0,locationChoiceDerivatives);
+        Algebra a = new Algebra();
+        
+        // then figure out the flows to move it through the network
+        for (int c = 0; c < cf.size(); c++) {
+            Commodity commodity = (Commodity) cf.commodityAt(c);
+            if (commodity != null) {
+                if (Double.isNaN(buyingQuantities[c]) || Double.isInfinite(buyingQuantities[c])) {
+                    logger.severe("Error in consumption :" + myProductionActivity + " in " + myTaz + " consumes " + buyingQuantities[c] + " of " + commodity);
+//                    throw new Error("Error: "+myProductionActivity+" in "+myTaz+" consumes "+buyingQuantities[c]+" of "+commodity);
+                }
+                DenseMatrix locationCausedDerivatives=null;
+                try {
+                    double buyingQuantity = -totalActivityQuantity*buyingQuantities[c];
+                    double[] buyingExchangeQuantities = buyingZUtilities[c].getExchangeProbabilities();
+                    for (int z=0;z<buyingExchangeQuantities.length;z++) {
+                        buyingExchangeQuantities[z]*=buyingQuantity;
+                    }
+                    locationCausedDerivatives = new DenseMatrix(buyingExchangeQuantities.length,1);
+                    locationCausedDerivatives.setColumn(0,new DenseVector(buyingExchangeQuantities));
+                    locationCausedDerivatives = a.multiply(locationCausedDerivatives,locationDerivatives);
+                            
+                } catch (AlgebraException e) {
+                    logger.severe("problem trying to figure out derivatives due to location changes." + e);
+                    e.printStackTrace();
+                }
+                
+                // now add it to the big matrix in the right spot
+                Iterator exIt = commodity.getAllExchanges().iterator();
+                int[] indices = new int[locationCausedDerivatives.sizeOfRows()];
+                int index = 0;
+                while (exIt.hasNext()) {
+                   Exchange x = (Exchange) exIt.next();
+                   int globalIndex = ((Integer) exchangeIndices.get(x)).intValue();
+                   indices[index]=globalIndex;
+                }
+                for (int row =0;row<indices.length;row++) {
+                    for (int col=0;col<indices.length;col++) {
+                        thePlaceToAddTheDerivatives.setElementAt(indices[row],indices[col],
+                                thePlaceToAddTheDerivatives.elementAt(indices[row],indices[col])+
+                                     locationCausedDerivatives.elementAt(row,col));
+                    }
+                }
+            }
+        }
+        for (int c = 0; c < pf.size(); c++) {
+            Commodity commodity = (Commodity) pf.commodityAt(c);
+            if (commodity != null) {
+                if (Double.isNaN(sellingQuantities[c]) || Double.isInfinite(sellingQuantities[c])) {
+                    logger.warning("Error in production: " + myProductionActivity + " in " + myTaz + " produces " + sellingQuantities[c] + " of " + commodity);
+                }
+                DenseMatrix locationCausedDerivatives=null;
+                try {
+                    double sellingQuantity = totalActivityQuantity*sellingQuantities[c];
+                    double[] sellingExchangeQuantities = sellingZUtilities[c].getExchangeProbabilities();
+                    for (int z=0;z<sellingExchangeQuantities.length;z++) {
+                        sellingExchangeQuantities[z]*=sellingQuantity;
+                    }
+                    locationCausedDerivatives = new DenseMatrix(sellingExchangeQuantities.length,1);
+                    locationCausedDerivatives.setColumn(0,new DenseVector(sellingExchangeQuantities));
+                    locationCausedDerivatives = a.multiply(locationCausedDerivatives,locationDerivatives);
+               } catch (AlgebraException e) {
+                   logger.severe("problem trying to figure out derivatives due to location changes." + e);
+                   e.printStackTrace();
+               }
+                   
+               
+               // now add it to the big matrix in the right spot
+               Iterator exIt = commodity.getAllExchanges().iterator();
+               int[] indices = new int[locationCausedDerivatives.sizeOfRows()];
+               int index = 0;
+               while (exIt.hasNext()) {
+                   Exchange x = (Exchange) exIt.next();
+                   int globalIndex = ((Integer) exchangeIndices.get(x)).intValue();
+                   indices[index]=globalIndex;
+               }
+               for (int row =0;row<indices.length;row++) {
+                   for (int col=0;col<indices.length;col++) {
+                       thePlaceToAddTheDerivatives.setElementAt(indices[row],indices[col],
+                               thePlaceToAddTheDerivatives.elementAt(indices[row],indices[col])+
+                               locationCausedDerivatives.elementAt(row,col));
+                   }
+               }
+              }
+        }
+    }
+
+    
+
+    /**
+     * @param firstDerivatives
+     * @param locationByPrice
+     * @param exchangeNumbering
+     */
+    public void addTwoComponentsOfDerivativesToMatrix(double activityAmount, MatrixI firstDerivatives, VectorI thisLocationByPrices, HashMap exchangeNumbering) {
+        if (lastConsumptionFunction == null) lastConsumptionFunction = myProductionActivity.getConsumptionFunction();
+        if (lastProductionFunction == null) lastProductionFunction = myProductionActivity.getProductionFunction();
+        try {
+            allocateLocationChoiceDerivatives(activityAmount, firstDerivatives, thisLocationByPrices, exchangeNumbering);
+        } catch (OverflowException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        allocateProductionChoiceDerivatives(firstDerivatives,exchangeNumbering);
+    }
+
+
+
+    /**
+     * @param firstDerivatives
+     * @param exchangeNumbering
+     */
+    private void allocateProductionChoiceDerivatives(MatrixI firstDerivatives, HashMap exchangeNumbering) {
+        ConsumptionFunction cf = lastConsumptionFunction;
+        ProductionFunction pf = lastProductionFunction;
+              
+        initializeZUtilities();
+        
+        
+        // TODO make it work with other production and consumption functions
+        if (! (cf instanceof LogitSubstitution)) throw new RuntimeException("full derivative calculations can only be used with LogitSubstitution right now");
+        if (! (pf instanceof LogitSubstitution)) throw new RuntimeException("full derivative calculations can only be used with LogitSubstitution right now");
+        LogitSubstitution cfl = (LogitSubstitution) cf;
+        LogitSubstitution pfl = (LogitSubstitution) pf;
+        
+        double[][] dSellingUtilitiesByDPrices = new double[pf.size()][firstDerivatives.sizeOfColumns()];
+        double[][] dBuyingUtilitiesByDPrices = new double[cf.size()][firstDerivatives.sizeOfColumns()];
+        
+        for (int c = 0; c < pf.size(); c++) {
+            Commodity commodity = (Commodity) pf.commodityAt(c);
+            if (commodity != null) {
+                double[] oneCommoditiesOverallUtilityDerivatives = sellingZUtilities[c].myFlows.getLogsumDerivativesWRTPrices(); 
+                Iterator exIt = commodity.getAllExchanges().iterator();
+                int exchangeIndex = 0;
+                while (exIt.hasNext()) {
+                    Exchange x = (Exchange) exIt.next();
+                    int index = ((Integer) exchangeNumbering.get(x)).intValue();
+                    dSellingUtilitiesByDPrices[c][index] = oneCommoditiesOverallUtilityDerivatives[exchangeIndex];
+                    exchangeIndex++;
+                }
+            }
+        }
+        
+        for (int c = 0; c < cf.size(); c++) {
+            Commodity commodity = (Commodity) cf.commodityAt(c);
+            if (commodity != null) {
+                double[] oneCommoditiesOverallUtilityDerivatives = buyingZUtilities[c].myFlows.getLogsumDerivativesWRTPrices(); 
+                Iterator exIt = commodity.getAllExchanges().iterator();
+                int exchangeIndex = 0;
+                while (exIt.hasNext()) {
+                    Exchange x = (Exchange) exIt.next();
+                    int index = ((Integer) exchangeNumbering.get(x)).intValue();
+                    dBuyingUtilitiesByDPrices[c][index] = oneCommoditiesOverallUtilityDerivatives[exchangeIndex];
+                    exchangeIndex++;
+                }
+            }
+        }
+        
+        MatrixI dSellingProductionByDPrices = new DenseMatrix(pfl.probabilitiesFullDerivatives(sellingCommodityUtilities,dSellingUtilitiesByDPrices));
+        MatrixI dBuyingConsumptionByDPrices = new DenseMatrix(cfl.probabilitiesFullDerivatives(buyingCommodityUtilities,dBuyingUtilitiesByDPrices));
+        
+        SparseMatrix diagonalMatrix = new SparseMatrix(firstDerivatives.sizeOfColumns(),firstDerivatives.sizeOfColumns());
+        DenseVector dv = new DenseVector(firstDerivatives.sizeOfColumns());
+        diagonalMatrix.setDiagonal(dv);
+        
+        diagonalMatrix.setElements(this.getQuantity());
+        Algebra a = new Algebra();
+        try {
+            dSellingProductionByDPrices = a.multiply(dSellingProductionByDPrices,diagonalMatrix);
+            diagonalMatrix.setElements(-this.getQuantity());
+            dBuyingConsumptionByDPrices = a.multiply(dBuyingConsumptionByDPrices,diagonalMatrix);
+        } catch (AlgebraException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        //allocate amount across exchanges (each row in matrix gets expanded to a z rows
+        for (int c = 0; c < pf.size(); c++) {
+            Commodity commodity = (Commodity) pf.commodityAt(c);
+            if (commodity != null) {
+                double[] allocationProbabilities = sellingZUtilities[c].myFlows.getChoiceProbabilities();
+                for (int priceIndex=0;priceIndex<firstDerivatives.sizeOfColumns();priceIndex++) {
+                    Iterator exIt = commodity.getAllExchanges().iterator();
+                    int localNumber = 0;
+                    while (exIt.hasNext()) {
+                        Exchange x = (Exchange) exIt.next();
+                        int globalNumber = ((Integer) exchangeNumbering.get(x)).intValue();
+                        firstDerivatives.setElementAt(globalNumber,priceIndex,
+                                firstDerivatives.elementAt(globalNumber,priceIndex)+
+                                   dSellingProductionByDPrices.elementAt(c,priceIndex)*
+                                    allocationProbabilities[localNumber]);
+                        localNumber++;
+                    }
+                }
+            }
+        }
+                
+        for (int c = 0; c < cf.size(); c++) {
+            Commodity commodity = (Commodity) cf.commodityAt(c);
+            if (commodity != null) {
+                double[] allocationProbabilities = buyingZUtilities[c].myFlows.getChoiceProbabilities();
+                for (int priceIndex=0;priceIndex<firstDerivatives.sizeOfColumns();priceIndex++) {
+                    Iterator exIt = commodity.getAllExchanges().iterator();
+                    int localNumber = 0;
+                    while (exIt.hasNext()) {
+                        Exchange x = (Exchange) exIt.next();
+                        int globalNumber = ((Integer) exchangeNumbering.get(x)).intValue();
+                        firstDerivatives.setElementAt(globalNumber,priceIndex,
+                                firstDerivatives.elementAt(globalNumber,priceIndex)+
+                                dBuyingConsumptionByDPrices.elementAt(c,priceIndex)*
+                                allocationProbabilities[localNumber]);
+                        localNumber++;
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    /**
+     * @param exchangeNumbering
+     * @return
+     */
+    public DenseVector calculateLocationUtilityDerivatives(HashMap exchangeNumbering) {
+        ConsumptionFunction cf = lastConsumptionFunction;
+        ProductionFunction pf = lastProductionFunction;
+        Algebra a = new Algebra();
+        try {
+        
+            initializeZUtilities();
+            double[] buyingCompositeUtilityDerivatives = cf.overallUtilityDerivatives(buyingCommodityUtilities);
+            double[] sellingCompositeUtilityDerivatives = pf.overallUtilityDerivatives(sellingCommodityUtilities);
+            DenseVector buying= new DenseVector(buyingCompositeUtilityDerivatives);
+            DenseVector selling =new DenseVector(sellingCompositeUtilityDerivatives);
+            
+            MatrixI buyingZUtilitiesWRTPrices = getBuyingZUtilitiesWRTPrices(exchangeNumbering);
+            MatrixI sellingZUtilitiesWRTPrices = getSellingZUtilitiesWRTPrices(exchangeNumbering);
+            
+            VectorI buyingOverallUtilityWRTPrices = a.multiply(buying,buyingZUtilitiesWRTPrices);
+            VectorI sellingOverallUtilityWRTPrices = a.multiply(selling,sellingZUtilitiesWRTPrices);
+            
+            return a.add(buyingOverallUtilityWRTPrices,sellingOverallUtilityWRTPrices);
+        } catch (AlgebraException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        
+        
+    }
+
+    /**
+     * @param exchangeNumbering
+     * @return
+     */
+    private MatrixI getBuyingZUtilitiesWRTPrices(HashMap exchangeNumbering) {
+        DenseMatrix derivatives = new DenseMatrix(buyingZUtilities.length,exchangeNumbering.size());
+        for (int c=0;c<buyingZUtilities.length;c++) {
+            if (buyingZUtilities[c]!=null) {
+                double[] logsumDerivatives = buyingZUtilities[c].myFlows.getLogsumDerivativesWRTPrices();
+                Commodity com = buyingZUtilities[c].myCommodity;
+                Iterator exIt = com.getAllExchanges().iterator();
+                int localLocation = 0;
+                while (exIt.hasNext()) {
+                    Exchange x = (Exchange) exIt.next();
+                    int globalLocation = ((Integer) exchangeNumbering.get(x)).intValue();
+                    derivatives.setElementAt(c,globalLocation,logsumDerivatives[localLocation]);
+                    localLocation++;
+                }
+            }
+        }
+        return derivatives;
+    }
+
+    /**
+     * @param exchangeNumbering
+     * @return
+     */
+    private MatrixI getSellingZUtilitiesWRTPrices(HashMap exchangeNumbering) {
+        DenseMatrix derivatives = new DenseMatrix(sellingZUtilities.length,exchangeNumbering.size());
+        for (int c=0;c<sellingZUtilities.length;c++) {
+            if (sellingZUtilities[c]!=null) {
+                double[] logsumDerivatives = sellingZUtilities[c].myFlows.getLogsumDerivativesWRTPrices();
+                Commodity com = sellingZUtilities[c].myCommodity;
+                Iterator exIt = com.getAllExchanges().iterator();
+                int localLocation = 0;
+                while (exIt.hasNext()) {
+                    Exchange x = (Exchange) exIt.next();
+                    int globalLocation = ((Integer) exchangeNumbering.get(x)).intValue();
+                    derivatives.setElementAt(c,globalLocation,logsumDerivatives[localLocation]);
+                    localLocation++;
+                }
+            }
+        }
+        return derivatives;
     }
 }

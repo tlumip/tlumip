@@ -77,7 +77,7 @@ public class Commodity extends AbstractCommodity {
         AbstractTAZ[] zones = AbstractTAZ.getAllZones();
         
         
-       // TODO remove this debugging code of May 27 2004
+       //  remove this debugging code of May 27 2004
        // if (this.name.equals("CONSTRUCTION")) {
             // we'll write out every single price to get to the bottom of this!
        //     StringBuffer pricesString = new StringBuffer();
@@ -97,7 +97,7 @@ public class Commodity extends AbstractCommodity {
         for (int z = 0; z < zones.length; z++) {
             AbstractTAZ t = zones[z];
             
-            //TODO remove this debug check statemtn
+            // just a debug check statemtn
            // if (t.zoneIndex!=z) {
            //     logger.severe("Zone index in array is not equal to zone index");
            //     throw new Error("Zone index in array is not equal to the index number assigned to the zone");
@@ -133,10 +133,6 @@ public class Commodity extends AbstractCommodity {
 	}
 	
 	public void unfixPricesAndConditions() {
-        // TODO remove this debugging code of May 27 2004
-      //  if (this.name.equals("CONSTRUCTION")) {
-       //     logger.info(this+ " prices are now unfixed");
-       // }
         
         AbstractTAZ[] zones = AbstractTAZ.getAllZones();
         for (int s = 0; s < 2; s++) {

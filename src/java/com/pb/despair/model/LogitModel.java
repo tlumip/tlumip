@@ -89,6 +89,38 @@ public class LogitModel extends DiscreteChoiceModel implements Alternative {
                return weights;
         }
     }
+    
+    public double[][] choiceProbabilityDerivatives() throws ChoiceModelOverflowException {
+        synchronized(alternatives) {
+            double[] weights = new double[alternatives.size()];
+            double sum = 0;
+            Iterator it = alternatives.listIterator();
+            int i = 0;
+            while (it.hasNext()) {
+                Alternative a = (Alternative) it.next();
+                double utility = a.getUtility(dispersionParameter);
+                weights[i] = Math.exp(dispersionParameter * utility);
+                if (Double.isNaN(weights[i])) {
+                    throw new ChoiceModelOverflowException("NAN in weight for alternative "+a);
+                }
+                sum += weights[i];
+                i++;
+            }
+            if (sum!=0) {
+                for (i = 0; i < weights.length; i++) {
+                    weights[i] /= sum;
+                }
+            }
+            double[][]derivatives = new double[weights.length][weights.length];
+            for (int a=0;a<derivatives.length;a++) {
+                derivatives[a][a] += dispersionParameter*weights[a];
+                for (int p=0;p<derivatives.length;p++) {
+                    derivatives[a][p]-=dispersionParameter*weights[a]*weights[p];
+                }
+            }
+            return derivatives;
+        }
+    }
 
      public Alternative alternativeAt(int i) { return (Alternative) alternatives.get(i);}// should throw an error if out of range
 

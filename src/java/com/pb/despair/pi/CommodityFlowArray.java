@@ -2,6 +2,7 @@
 
 package com.pb.despair.pi;
 
+import com.pb.common.sql.tests.MySQLTest;
 import com.pb.despair.model.AggregateAlternative;
 import com.pb.despair.model.ChoiceModelOverflowException;
 import com.pb.despair.model.OverflowException;
@@ -316,16 +317,62 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
 */
     }
 
+    /**
+     * @return partial derivatives of probability of choosing an exchange zone 
+     * w.r.t. utility of that exchange zone. 
+     */
+    public double[][] getChoiceDerivatives() {
+        Commodity com = theCommodityZUtility.getCommodity();
+        double[] weights;
+        Collection theExchanges = com.getAllExchanges();
+        Iterator it = theExchanges.iterator();
+        weights = new double[theExchanges.size()];
+        if ((com.exchangeType == 'p' && theCommodityZUtility instanceof SellingZUtility) || com.exchangeType == 's' &&
+                theCommodityZUtility instanceof BuyingZUtility || com.exchangeType == 'n') {
+            double[][] returns = new double[theExchanges.size()][theExchanges.size()];
+            return returns;
+        }
+        double sum = 0;
+        int i = 0;
+        while (it.hasNext()) {
+            Exchange x = (Exchange) it.next();
+            double utility = calcUtilityForExchange(x);
+            weights[i] = Math.exp(dispersionParameter * utility);
+            if (Double.isNaN(weights[i])) {
+                logger.severe("hmm, Commodity Flow " + i + " was such that LogitModel weight was NaN");
+                throw new Error("NAN in weight for CommodityFlow " + i);
+            }
+            sum += weights[i];
+            i++;
+        }
+        double[][] returns = new double[weights.length][weights.length];
+        if (sum != 0) {
+            for (i = 0; i < weights.length; i++) {
+                for (int j =0;j<weights.length;j++) {
+                    if (i==j) { 
+                       returns[i][j] = dispersionParameter*(weights[i]/sum*(1-weights[i]/sum));
+                    } else {
+                        returns[i][j] = -dispersionParameter*weights[i]*weights[j]/sum/sum;
+                    }
+                }
+            }
+        }
+        return returns;
+    }
+
+
     public double[] getChoiceProbabilities() {
         Commodity com = theCommodityZUtility.getCommodity();
         double[] weights;
+        List theExchanges = com.getAllExchanges();
         if ((com.exchangeType == 'p' && theCommodityZUtility instanceof SellingZUtility) || com.exchangeType == 's' &&
                 theCommodityZUtility instanceof BuyingZUtility) {
-            weights = new double[1];
-            weights[0] = 1;
+            weights = new double[theExchanges.size()];
+            Exchange thisExchangeHere = com.getExchange(theCommodityZUtility.getTaz().getZoneIndex());
+            int index = theExchanges.indexOf(thisExchangeHere);
+            weights[index] = 1;
             return weights;
         }
-        Collection theExchanges = com.getAllExchanges();
         Iterator it = theExchanges.iterator();
         weights = new double[theExchanges.size()];
         double sum = 0;
@@ -441,19 +488,23 @@ public class CommodityFlowArray implements AggregateAlternative /*CompositeAlter
         }
     }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /* method not used*/
-//   public void setAggregateQuantity(double amount)
-
-    /* attribute not used */
-    // public double[] quantities;
-    /* method not used*/
-//    void updateFlowTable(TableDataSet table)
-
-    /* MOVED TO PIDataWriter */
-    //void writeFlowsToFile(Writer f) throws IOException
-
+    /**
+     * @return
+     */
+    public double[] getLogsumDerivativesWRTPrices() {
+        // derivative of logsum is just the probabilities
+        double[] derivatives = this.getChoiceProbabilities();
+        double multiplier=0;
+        if (theCommodityZUtility instanceof SellingZUtility) {
+            multiplier = theCommodityZUtility.myCommodity.getSellingUtilityPriceCoefficient();
+        }
+        if (theCommodityZUtility instanceof BuyingZUtility) {
+            multiplier = theCommodityZUtility.myCommodity.getBuyingUtilityPriceCoefficient();
+        }
+        for (int i=0;i<derivatives.length;i++) {
+            derivatives[i] *= multiplier;
+        }
+        return derivatives;
+    }
 
 }

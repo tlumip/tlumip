@@ -36,7 +36,7 @@ public class CUResultProcessorTask extends MessageProcessingTask {
 
         Commodity c = Commodity.retrieveCommodity(name);
         
-        // TODO just for testing May 27 2004-- remove these 4 lines
+        //  just for testing May 27 2004-- remove these 4 lines
       //  if (name.equalsIgnoreCase("CONSTRUCTION")) {
         //    logger.info("CONSTRUCTION in zone "+AbstractTAZ.getZone(1).getZoneUserNumber()+" buying utility calculated is "+compUtils[0][1]);
         //    logger.info("CONSTRUCTION in zone "+AbstractTAZ.getZone(1).getZoneUserNumber()+" selling utility calculated is "+compUtils[1][1]);

@@ -180,6 +180,12 @@ abstract public class CommodityZUtility implements Alternative {
     public void setLastUtilityValid(boolean b){
         lastUtilityValid = b;
     }
+    /**
+     * @return
+     */
+    public double[] getExchangeProbabilities() {
+        return myFlows.getChoiceProbabilities();
+    }
 
 
 

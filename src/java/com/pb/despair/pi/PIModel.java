@@ -1,11 +1,17 @@
 package com.pb.despair.pi;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.despair.model.AbstractCommodity;
 import com.pb.despair.model.AbstractTAZ;
+import com.pb.despair.model.ChoiceModelOverflowException;
 import com.pb.despair.model.ModelComponent;
 import com.pb.despair.model.OverflowException;
 import com.pb.despair.model.ProductionActivity;
 
+import drasys.or.linear.algebra.*;
+import drasys.or.matrix.*;
+
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -124,19 +130,19 @@ public class PIModel extends ModelComponent {
         Iterator allOfUs = Commodity.getAllCommodities().iterator();
         while (allOfUs.hasNext()) {
             Commodity c = (Commodity) allOfUs.next();
-            // TODO just for debugging create storage to save composite utilities calculated
+            //  just for debugging create storage to save composite utilities calculated
             //double[][]compUtils = null;
             try {
-                // TODO just for debugging save the calculated compUtils
+                //  just for debugging save the calculated compUtils
                 //compUtils = c.fixPricesAndConditionsAtNewValues();
-                // TODO normally just do this"
+                //  normally just do this"
                 c.fixPricesAndConditionsAtNewValues();
             } catch (OverflowException e) {
                 nanPresent = true;
                 logger.warning("Overflow error in CUBuy, CUSell calcs");
             }
 
-            //TODO just for testing -- remove this code after May 27 2004.
+            // just for testing -- remove this code after May 27 2004.
             //if (c.getName().equalsIgnoreCase("CONSTRUCTION")) {
              //   logger.info("CONSTRUCTION in zone "+AbstractTAZ.getZone(1).getZoneUserNumber()+" buying utility calculated is "+compUtils[0][1]);
             //    logger.info("CONSTRUCTION in zone "+AbstractTAZ.getZone(1).getZoneUserNumber()+" selling utility calculated is "+compUtils[1][1]);
@@ -162,7 +168,7 @@ public class PIModel extends ModelComponent {
             e.printStackTrace();
         }
 
-        //TODO just for testing -- remove this code after May 27 2004.
+        // just for testing -- remove this code after May 27 2004.
         //if (name.equalsIgnoreCase("CONSTRUCTION")) {
         //    logger.info("CONSTRUCTION in zone "+AbstractTAZ.getZone(1).getZoneUserNumber()+" buying utility calculated is "+compUtils[0][1]);
         //    logger.info("CONSTRUCTION in zone "+AbstractTAZ.getZone(1).getZoneUserNumber()+" selling utility calculated is "+compUtils[1][1]);
@@ -225,6 +231,48 @@ public class PIModel extends ModelComponent {
         return nanPresent;
     }
 
+    /* This method calculates the Buying and Selling quantities of each commodity produced or consumed in
+     *  each zone that is allocated to a particular exchange zone for selling or buying.
+     *  Bc,z,k and Sc,z,k.
+     */
+    public boolean allocateQuantitiesToFlowsAndExchangesWithFullDerivatives(){
+        logger.fine("Beginning 'allocateQuantitiesToFlowsAndExchanges'");
+        long startTime = System.currentTimeMillis();
+        boolean nanPresent=false;
+        Commodity.clearAllCommodityExchangeQuantities();//iterates through the exchange objects inside the commodity
+        //objects and sets the sell, buy qtys and the derivatives to 0
+        Iterator allComms = Commodity.getAllCommodities().iterator();
+        int count=1;
+        while(allComms.hasNext()){
+            Commodity c = (Commodity) allComms.next();
+            long activityStartTime = System.currentTimeMillis();
+            for (int b = 0; b < 2; b++) {
+                Hashtable ht;
+                if (b == 0)
+                    ht = c.getBuyingTazZUtilities();
+                else
+                    ht = c.getSellingTazZUtilities();
+                Iterator it = ht.values().iterator();
+                while(it.hasNext()){
+                    CommodityZUtility czu = (CommodityZUtility) it.next();
+                    try {
+                        czu.allocateQuantityToFlowsAndExchanges();
+                    } catch (OverflowException e) {
+                        nanPresent = true;
+                        logger.warning("Overflow error in Bc,z,k and Sc,z,k calculations");
+                    }
+                }
+            }
+            c.setFlowsValid(true);
+            logger.finer("Finished allocating commodity "+ count + " in "+ (System.currentTimeMillis()-activityStartTime)/1000.0+ " seconds");
+            count++;
+        }
+        logger.info("All commodities have been allocated.  Time in seconds: "+(System.currentTimeMillis()-startTime)/1000.0);
+        return nanPresent;
+    }
+
+    
+    
     /* This method calculates the Buying and Selling quantities of each commodity produced or consumed in
     *  each zone that is allocated to a particular exchange zone for selling or buying.
     *  Bc,z,k and Sc,z,k.
@@ -332,7 +380,6 @@ public class PIModel extends ModelComponent {
             if (Double.isNaN(surplusAndDerivative[0]) || Double.isNaN(surplusAndDerivative[1]) ) {
                 nanPresent = true;
                 logger.warning("NaN present at "+ex);
-                //TODO when distributed we have to deal with these - but what is the best way?
             }
             sAndD[0][eIndex]=surplusAndDerivative[0];
             sAndD[1][eIndex]=surplusAndDerivative[1];
@@ -448,6 +495,130 @@ public class PIModel extends ModelComponent {
     
     public void backUpToLastValidPrices() {
         setExchangePrices(oldPricesC);
+    }
+    
+    public void calculateNewPricesUsingFullDerivatives() {
+        Algebra a = new Algebra();
+
+        newPricesC = new HashMap();
+        
+        // set up storage of full derivatives
+        Collection allCommodities = AbstractCommodity.getAllCommodities();
+        Iterator comIt = allCommodities.iterator();
+        int numberOfExchanges = 0;
+        HashMap exchangeNumbering = new HashMap();
+        while (comIt.hasNext()) {
+            Commodity c = (Commodity) comIt.next();
+            Collection exchanges = c.getAllExchanges();
+            Iterator exIt = exchanges.iterator();
+            while (exIt.hasNext()) {
+                Exchange ex = (Exchange) exIt.next();
+                exchangeNumbering.put(ex,new Integer(numberOfExchanges));
+                numberOfExchanges++;
+            }
+        }
+        
+        // here is where we're going to put them
+        DenseMatrix firstDerivatives = new DenseMatrix(numberOfExchanges,numberOfExchanges);
+
+        
+        // populate storage of full derivatives
+        Iterator actIt = AggregateActivity.getAllProductionActivities().iterator();
+        while (actIt.hasNext()) {
+            ProductionActivity prodActivity = (ProductionActivity) actIt.next();
+            if (prodActivity instanceof AggregateActivity) {
+                AggregateActivity activity = (AggregateActivity) prodActivity;
+                DenseVector pl;
+                DenseMatrix fpl;
+                try {
+                    pl= new DenseVector(activity.logitModelOfZonePossibilities.getChoiceProbabilities());
+                    fpl = new DenseMatrix(activity.logitModelOfZonePossibilities.choiceProbabilityDerivatives());
+                    
+                } catch (ChoiceModelOverflowException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("Can't solve for amounts in zone",e);
+                }
+                DenseMatrix dulbydprice = new DenseMatrix(0,numberOfExchanges);
+                for (int location =0;location<pl.size();location++) {
+                    AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
+                    DenseVector dul1bydprice = new DenseVector(l.calculateLocationUtilityDerivatives(exchangeNumbering));
+                    dulbydprice.addRow(dul1bydprice);
+                }
+                MatrixI dLocationByPrice=null;
+                try {
+                    dLocationByPrice = a.multiply(fpl,dulbydprice);
+                } catch (AlgebraException e1) {
+                    e1.printStackTrace();
+                    throw new RuntimeException(e1);
+                }
+                for (int location =0;location<pl.size();location++) {
+                    VectorI dThisLocationByPrices = new DenseVector(dLocationByPrice.sizeOfColumns());
+                    for (int i=0;i<dThisLocationByPrices.size();i++) {
+                        dThisLocationByPrices.setElementAt(i,dLocationByPrice.elementAt(location,i));
+                    }
+                    AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
+                    l.addTwoComponentsOfDerivativesToMatrix(activity.getTotalAmount(),firstDerivatives,dThisLocationByPrices,exchangeNumbering); 
+               }
+            }
+        }
+
+        // now add the components associated with the derivative of exchange location choice
+        comIt = allCommodities.iterator();
+        while (comIt.hasNext()) {
+            Commodity c = (Commodity) comIt.next();
+            AbstractTAZ[] allZones = AbstractTAZ.getAllZones();
+            Matrix exchangeChoiceDerivatives = null;
+            for (int z=0;z<allZones.length;z++) {
+                CommodityZUtility bzu = c.retrieveCommodityZUtility(allZones[z],false);
+                CommodityZUtility szu = c.retrieveCommodityZUtility(allZones[z],true);
+                try {
+                    Matrix bzuDerivatives = new DenseMatrix(bzu.myFlows.getChoiceDerivatives());
+                    ContiguousVector diagonal = new ContiguousVector(bzuDerivatives.sizeOfColumns());
+                    diagonal.setElements(-bzu.getQuantity()*c.getBuyingUtilityPriceCoefficient());
+                    SparseMatrix diagonalMatrix = new SparseMatrix(bzuDerivatives.sizeOfColumns(), bzuDerivatives.sizeOfRows());
+                    diagonalMatrix.setDiagonal(diagonal);
+                    bzuDerivatives = a.multiply(bzuDerivatives,diagonalMatrix);
+                    
+                    Matrix szuDerivatives = new DenseMatrix(szu.myFlows.getChoiceDerivatives());
+                    diagonal.setElements(szu.getQuantity()*c.getSellingUtilityPriceCoefficient());
+                    diagonalMatrix.setDiagonal(diagonal);
+                    szuDerivatives = a.multiply(szuDerivatives,diagonalMatrix);
+                    if (exchangeChoiceDerivatives ==null) exchangeChoiceDerivatives = szuDerivatives;
+                    else exchangeChoiceDerivatives = a.add(exchangeChoiceDerivatives,bzuDerivatives);
+                    exchangeChoiceDerivatives = a.add(exchangeChoiceDerivatives,szuDerivatives);
+               } catch (AlgebraException e) {
+                   logger.severe("Algebra exception in figuring out derivatives");
+                   throw new RuntimeException(e);
+               }
+               
+            }
+            // now finished with the commodity, need to add this submatrix to the big matrix
+            Iterator exIt = c.getAllExchanges().iterator();
+            int exNumber = 0;
+            int[] exNumbers = new int[exchangeChoiceDerivatives.sizeOfColumns()];
+            while (exIt.hasNext()) {
+                Exchange x = (Exchange) exIt.next();
+                exNumbers[exNumber] = ((Integer) exchangeNumbering.get(x)).intValue();
+            }
+            for (int row=0;row<exNumbers.length;row++) {
+                for (int col=0;col<exNumbers.length;col++) {
+                    int globalRow = exNumbers[row];
+                    int globalCol = exNumbers[col];
+                    firstDerivatives.setElementAt(globalRow,globalCol,
+                            firstDerivatives.elementAt(globalRow,globalCol)+exchangeChoiceDerivatives.elementAt(row,col));
+                }
+            }
+        }
+        
+        //TODO set up 1d vector of surpluses using OR objects
+        
+        //TODO calculate Hessian etc., modifying diagonal
+        
+        //TODO  solve for new prices
+        
+        // TODO put new prices into newPricesC
+        
+        setExchangePrices(newPricesC);
     }
 
     public void calculateNewPrices() {

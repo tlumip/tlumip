@@ -136,7 +136,13 @@ public class PIControl {
                     logger.info("!!  Not improving, but step size already at minimum "+pi.getStepSize());
                 }
                 pi.snapShotCurrentPrices();
+                
+                //TODO user specify whether to use full derivatives;
+                // warning! using full derivatives requires lots and lots of memory (e.g. maybe 14GB for Oregon).
+                // and hasn't been fully tested yet.
                 pi.calculateNewPrices();
+                //pi.calculateNewPricesUsingFullDerivatives();
+                
                 if (!nanPresent)nanPresent = pi.calculateCompositeBuyAndSellUtilities(); //distributed
                 if (!nanPresent)nanPresent = pi.recalculateTotalConsumptionAndProduction();
                 if (!nanPresent)nanPresent = pi.allocateQuantitiesToFlowsAndExchanges(); //distributed
