@@ -67,6 +67,22 @@ public class PIControl {
         logger.info("Setup is complete. Time in seconds: "+((System.currentTimeMillis()-startTime)/1000.0));
         return;
     }
+    
+    public static boolean readFlag(ResourceBundle rb, String flagName, boolean defaultValue) {
+        String stringVal = ResourceUtil.getProperty(rb, flagName);
+        if (stringVal == null) return defaultValue;
+        boolean retVal = defaultValue;
+        if (defaultValue == true) {
+            if (stringVal.equalsIgnoreCase("false")) {
+                retVal = false;
+            }
+        } else {
+            if (stringVal.equalsIgnoreCase("true")) {
+                retVal = true;
+            }
+        }
+        return retVal;
+    }
 
     public void runPI(){
         logger.info("*******************************************************************************************");
@@ -93,6 +109,11 @@ public class PIControl {
             logger.info("*   Maximum iteration set to " + mi);
         }
         if(maxIterations == 0) convergenceCriteriaMet=true;
+        
+        // flag as to whether to calculate average price
+        boolean calcAvgPrice = readFlag(piRb, "pi.calculateAveragePrices", false);
+        boolean calcDeltaUsingDerivatives = readFlag(piRb, "pi.useFullExchangeDerivatives", false);
+        
         logger.info("*******************************************************************************************");
 
         //calculates CUBuy and CUSell for all commodities in all zones
@@ -137,11 +158,15 @@ public class PIControl {
                 }
                 pi.snapShotCurrentPrices();
                 
-                //TODO user specify whether to use full derivatives;
-                // warning! using full derivatives requires lots and lots of memory (e.g. maybe 14GB for Oregon).
-                // and hasn't been fully tested yet.
-                pi.calculateNewPricesUsingBlockDerivatives();
-                //pi.calculateNewPrices();
+                if (calcAvgPrice) {
+                    pi.calculateNewPricesUsingBlockDerivatives(calcDeltaUsingDerivatives);
+                } else {
+                    pi.calculateNewPrices();
+                }
+
+                // this third option -- to use full derivatives -- doesn't fit 
+                // into 2GB of memory, so hasn't been tested.  It would probaly
+                // be very slow anyways.
                 //pi.calculateNewPricesUsingFullDerivatives();
                 
                 if (!nanPresent)nanPresent = pi.calculateCompositeBuyAndSellUtilities(); //distributed

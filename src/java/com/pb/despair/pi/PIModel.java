@@ -18,6 +18,7 @@ import smt.iter.*;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.HashMap;
@@ -501,7 +502,7 @@ public class PIModel extends ModelComponent {
         setExchangePrices(oldPricesC);
     }
     
-    public void calculateNewPricesUsingBlockDerivatives() {
+    public void calculateNewPricesUsingBlockDerivatives(boolean calcDeltaUsingDerivatives) {
         newPricesC = new HashMap();
         logger.info("Calculating average commodity price change");
         AveragePriceSurplusDerivativeMatrix.calculateMatrixSize();
@@ -517,32 +518,45 @@ public class PIModel extends ModelComponent {
         while (comIt.hasNext()) {
             Commodity c = (Commodity) comIt.next();
             logger.info("Calculating local price change for commodity "+c);
-            CommodityPriceSurplusDerivativeMatrix comMatrix = new CommodityPriceSurplusDerivativeMatrix(c);
-            double[] surplus = c.getSurplusInAllExchanges();
-            DenseVector deltaSurplusPlus = new DenseVector(surplus.length+1);
-            for (int i=0;i<surplus.length;i++) {
-                deltaSurplusPlus.set(i,-surplus[i]-totalSurplusVector.get(commodityNumber)/surplus.length);
-            }
-            deltaSurplusPlus.set(surplus.length,0);
-            //DenseMatrix crossTransposed = new DenseMatrix(surplus.length,surplus.length);
-            //comMatrix.transAmult(comMatrix,crossTransposed);
-            //DenseVector crossTransposedVector = new DenseVector(surplus.length);
-            //comMatrix.transMult(deltaSurplusPlus,crossTransposedVector);
-            DenseVector deltaPrices = new DenseVector(surplus.length);
-            // regular solution
-            //crossTransposed.solve(crossTransposedVector,deltaPrices);
-            // using the libraries least squares type rectangular matrix solver
-            try {
-                comMatrix.solve(deltaSurplusPlus,deltaPrices);
-            } catch (MatrixSingularException e) {
-                e.printStackTrace();
-                throw new RuntimeException("Can't find delta prices for commodity "+c,e);
+            double[] deltaPricesDouble = null;
+            if (calcDeltaUsingDerivatives) {
+                CommodityPriceSurplusDerivativeMatrix comMatrix = new CommodityPriceSurplusDerivativeMatrix(c);
+                double[] surplus = c.getSurplusInAllExchanges();
+                DenseVector deltaSurplusPlus = new DenseVector(surplus.length+1);
+                for (int i=0;i<surplus.length;i++) {
+                    deltaSurplusPlus.set(i,-surplus[i]-totalSurplusVector.get(commodityNumber)/surplus.length);
+                }
+                deltaSurplusPlus.set(surplus.length,0);
+                //DenseMatrix crossTransposed = new DenseMatrix(surplus.length,surplus.length);
+                //comMatrix.transAmult(comMatrix,crossTransposed);
+                //DenseVector crossTransposedVector = new DenseVector(surplus.length);
+                //comMatrix.transMult(deltaSurplusPlus,crossTransposedVector);
+                DenseVector deltaPrices = new DenseVector(surplus.length);
+                // regular solution
+                //crossTransposed.solve(crossTransposedVector,deltaPrices);
+                // using the libraries least squares type rectangular matrix solver
+                try {
+                    comMatrix.solve(deltaSurplusPlus,deltaPrices);
+                } catch (MatrixSingularException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("Can't find delta prices for commodity "+c,e);
+                }
+                deltaPricesDouble = deltaPrices.getData();
+            } else {
+                List exchanges = c.getAllExchanges();
+                deltaPricesDouble = new double[exchanges.size()];
+                for (int xNum=0;xNum<exchanges.size();xNum++) {
+                    Exchange x = (Exchange) exchanges.get(xNum);
+                    double[] sAndD = x.calculateSurplusAndDerviative();
+                    double increase = (-sAndD[0]-totalSurplusVector.get(commodityNumber)/deltaPricesDouble.length)/sAndD[1];
+                    deltaPricesDouble[xNum] = increase;
+                }
             }
             Iterator exIt = c.getAllExchanges().iterator();
             int xNum =0;
             while (exIt.hasNext()) {
                 Exchange x = (Exchange) exIt.next();
-                double price = x.getPrice()+stepSize*(averagePriceChange.get(commodityNumber)+deltaPrices.get(xNum));
+                double price = x.getPrice()+stepSize*(averagePriceChange.get(commodityNumber)+deltaPricesDouble[xNum]);
                 newPricesC.put(x,new Double(price));
                 xNum++;
             }

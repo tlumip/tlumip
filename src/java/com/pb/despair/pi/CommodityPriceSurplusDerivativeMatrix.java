@@ -39,20 +39,20 @@ public class CommodityPriceSurplusDerivativeMatrix extends DenseMatrix {
             // first add in the effect of exchange choice
             CommodityZUtility bzu = c.retrieveCommodityZUtility(allZones[z],false);
             CommodityZUtility szu = c.retrieveCommodityZUtility(allZones[z],true);
-            Matrix bzuDerivatives = new DenseMatrix(bzu.myFlows.getChoiceDerivatives());
-            bzuDerivatives.scale(-bzu.getQuantity()*c.getBuyingUtilityPriceCoefficient());
+            Matrix bzuDerivatives = new DenseMatrix(bzu.myFlows.getChoiceDerivatives()); //6.67% of time here
+            bzuDerivatives.scale(-bzu.getQuantity()*c.getBuyingUtilityPriceCoefficient()); //14.85% of time in this method
             
             
-            Matrix szuDerivatives = new DenseMatrix(szu.myFlows.getChoiceDerivatives());
-            szuDerivatives.scale(szu.getQuantity()*c.getSellingUtilityPriceCoefficient());
+            Matrix szuDerivatives = new DenseMatrix(szu.myFlows.getChoiceDerivatives()); // 5.6 % of time here
+            szuDerivatives.scale(szu.getQuantity()*c.getSellingUtilityPriceCoefficient()); // 5.46 % of time here
             
             //TODO check if we need to scale for the fact that the AVERAGE price goes down when one item goes down
             // TODO check if we need to scale for the fact that we're trying to solve (above average surplus)=0
             double[][] temp = new double[exchanges.length][exchanges.length];
-            bzuDerivatives.get(rows,rows,temp);
-            add(rows,rows,temp);
-            szuDerivatives.get(rows,rows,temp);
-            add(rows,rows,temp);
+            bzuDerivatives.get(rows,rows,temp); // 6.22 % of time in here
+            add(rows,rows,temp); // 7.04% of time in here
+            szuDerivatives.get(rows,rows,temp); // 6.33 % of time in here
+            add(rows,rows,temp); // 6.98% of time in here
             
             // now add in the effect of changes in production, consumption and location
             DenseVector xProbabilities = new DenseVector(bzu.getExchangeProbabilities());
@@ -62,10 +62,10 @@ public class CommodityPriceSurplusDerivativeMatrix extends DenseMatrix {
             DenseMatrix logSumDerivativesMatrixTranspose = new DenseMatrix(logSumDerivatives);
             DenseMatrix logSumDerivativesMatrix = new DenseMatrix(1,logSumDerivatives.size());
             logSumDerivativesMatrixTranspose.transpose(logSumDerivativesMatrix);
-            DenseMatrix exchangeQuantityChangeByPrice = new DenseMatrix(xProbabilities.size(),logSumDerivatives.size());
-            xProbabilitiesMatrix.mult(-bzu.getDerivative(),logSumDerivativesMatrix,exchangeQuantityChangeByPrice);
-            exchangeQuantityChangeByPrice.get(rows,rows,temp);
-            add(rows,rows,temp);
+            DenseMatrix exchangeQuantityChangeByPrice = new DenseMatrix(xProbabilities.size(),logSumDerivatives.size()); // 0.72% of time here
+            xProbabilitiesMatrix.mult(-bzu.getDerivative(),logSumDerivativesMatrix,exchangeQuantityChangeByPrice); // 1.28% of time here
+            exchangeQuantityChangeByPrice.get(rows,rows,temp); // 6.33 % of time here
+            add(rows,rows,temp); // 6.87% of time here
             
             // now for selling
             xProbabilities = new DenseVector(szu.getExchangeProbabilities());
@@ -76,9 +76,9 @@ public class CommodityPriceSurplusDerivativeMatrix extends DenseMatrix {
             logSumDerivativesMatrix = new DenseMatrix(1,logSumDerivatives.size());
             logSumDerivativesMatrixTranspose.transpose(logSumDerivativesMatrix);
             exchangeQuantityChangeByPrice = new DenseMatrix(xProbabilities.size(),logSumDerivatives.size());
-            xProbabilitiesMatrix.mult(szu.getDerivative(),logSumDerivativesMatrix,exchangeQuantityChangeByPrice);
-            exchangeQuantityChangeByPrice.get(rows,rows,temp);
-            add(rows,rows,temp);
+            xProbabilitiesMatrix.mult(szu.getDerivative(),logSumDerivativesMatrix,exchangeQuantityChangeByPrice); //.89% of time here
+            exchangeQuantityChangeByPrice.get(rows,rows,temp); // 6.32% of time in here
+            add(rows,rows,temp); //6.92% of time here 
             
         }
         
