@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
+﻿ 
 <project name="run-tlumip" default="echo" basedir=".">
 
     <!-- Access values defined in the environment -->
@@ -11,11 +10,7 @@
     <!-- ********************************************************* -->
     <!-- Setup the classpath -->
     <path id="run.classpath">
-        <pathelement path="${env.BASEDIR}/common-base/build/classes;${env.BASEDIR}/common-daf-v2/build/classes;${env.BASEDIR}/tlumip/build/classes"/>
-        <fileset dir="${env.BASEDIR}/common-base">
-            <include name="**/lib/*.jar"/>
-            <include name="**/lib/*.zip"/>
-        </fileset>
+        <pathelement path="${env.BASEDIR}/tlumip/runtime/common-base.jar;${env.BASEDIR}/tlumip/runtime/common-daf-v2.jar;${env.BASEDIR}/tlumip/runtime/common-assign.jar;${env.BASEDIR}/tlumip/runtime/tlumip.jar"/>
     </path>
 
 
@@ -56,6 +51,21 @@
             <arg line="${scenarioName}"/>
             <arg line="ald"/>
             <arg line="${t}"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <!-- Run ALDDAF on a DAF cluster (A DAF APPLICATION) -->
+    <target name="runALDDAF" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="alddaf"/>
+            <arg line="${t}"/>
+            <arg line="node0"/>
             <classpath>
                 <path refid="run.classpath"/>
             </classpath>
@@ -147,6 +157,8 @@
     <!-- Run CT in a new VM  (NOT A DAF APPLICATION) -->
     <target name="startCT" depends="echo">
         <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Xms1200m"/>
+            <jvmarg value="-Xmx1200m"/>
             <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
             <arg line="${root.dir}"/>
             <arg line="${scenarioName}"/>
@@ -161,6 +173,8 @@
     <!-- Run TS in a new VM  (NOT A DAF APPLICATION) -->
     <target name="startTS" depends="echo">
         <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Xms1200m"/>
+            <jvmarg value="-Xmx1200m"/>
             <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
             <arg line="${root.dir}"/>
             <arg line="${scenarioName}"/>
@@ -173,7 +187,7 @@
     </target>
 
      <!-- Runs all components on a DAF cluster   -->
-    <target name="runModelOnCluster" depends="startED,startALD,startSPG1,runPIDAF,startSPG2, runPTDAF">
+    <target name="runModelOnCluster" depends="startED,runALDDAF,startSPG1,runPIDAF,startSPG2,runPTDAF,startCT,startTS">
     </target>
 
     <!-- Runs all components in a monolithic fashion  -->
