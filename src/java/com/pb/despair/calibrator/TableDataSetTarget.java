@@ -32,6 +32,16 @@ public class TableDataSetTarget extends TargetAdapter {
 
     static final long serialVersionUID = 18222525268524622L;
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    public Object clone() throws CloneNotSupportedException {
+        TableDataSetIndexedValue newOne = (TableDataSetIndexedValue) super.clone();
+        stringKeysTableModel = null;
+        intKeysTableModel = null;
+        return newOne;
+    }
+
     public TableDataSetTarget(
         String tableName,
         String[] stringKeyNames,

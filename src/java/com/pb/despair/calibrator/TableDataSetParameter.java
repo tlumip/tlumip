@@ -30,6 +30,17 @@ public class TableDataSetParameter extends Parameter {
 
     static final long serialVersionUID = 1822253368524622L;
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
+    protected Object clone() throws CloneNotSupportedException {
+        TableDataSetParameter newOne = (TableDataSetParameter) super.clone();
+        newOne.theData = (TableDataSetIndexedValue) this.theData.clone();
+        stringKeysTableModel = null;
+        intKeysTableModel = null;
+        return newOne;
+    }
+
     public TableDataSetParameter(
         String tableName,
         String[] stringKeyNames,
