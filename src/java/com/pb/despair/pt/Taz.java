@@ -323,7 +323,7 @@ public class Taz implements Alternative, Cloneable{
             return;     //if you are walking and this zone is more than 2 hours away, it is unavailable
         if(mode.type == ModeType.BIKE && bikeTime > 120)
             return;     //if you are biking and this zone is more than 2 hours away, it is unavailable
-         if((mode.type == ModeType.AUTODRIVER || mode.type == ModeType.AUTOPASSENGER) && autoDists[1] > 2*autoDists[2])
+         if((mode.type == ModeType.AUTODRIVER || mode.type == ModeType.AUTOPASSENGER) && autoDists[0] > 2*autoDists[1])
             return;  //if you are driving and this zone takes you more than twice the distance you would have
                      //traveled if you didn't stop, it is unavailable.
         boolean flag = false;
