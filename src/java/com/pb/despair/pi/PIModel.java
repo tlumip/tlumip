@@ -572,16 +572,19 @@ public class PIModel extends ModelComponent {
             logger.info("\t Total surplus " + totalSurplus);
             logger.info("\t Average price " + totalPrice / numExchanges);
 
+            double rmsError = Math.sqrt(commodityMeritMeasure/c.getAllExchanges().size());
+            double oldRmsError = Math.sqrt(c.oldMeritMeasure/c.getAllExchanges().size());
             if (commodityMeritMeasure > c.oldMeritMeasure) {
                 if (c.scalingAdjustmentFactor > 1) {
                     c.scalingAdjustmentFactor= 1.0;
 //                    c.scalingAdjustmentFactor /= Math.pow(1+commoditySpecificScalingAdjustment,3);
                 }
-                logger.info("\t Meritmeasure " + commodityMeritMeasure + " NOT IMPROVING was " + c.oldMeritMeasure +" (adj now "+ c.scalingAdjustmentFactor +")");
+                logger.info("\t Commodity RMS Error " + rmsError + " NOT IMPROVING was " + oldRmsError +" (adj now "+ c.scalingAdjustmentFactor +")");
             } else {
                 c.scalingAdjustmentFactor *= (1+commoditySpecificScalingAdjustment);
-                logger.info("\t Meritmeasure " + commodityMeritMeasure + " (was " + c.oldMeritMeasure + ") (adj now "+ c.scalingAdjustmentFactor +")");
+                logger.info("\t Commodity RMS Error " + rmsError + " (was " + oldRmsError + ") (adj now "+ c.scalingAdjustmentFactor +")");
             }
+            logger.info("\t Weighted Commodity Merit Measure is "+commodityMeritMeasure*c.compositeMeritMeasureWeighting*c.compositeMeritMeasureWeighting);
             c.oldMeritMeasure = commodityMeritMeasure;
 
         }
