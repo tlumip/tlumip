@@ -30,11 +30,12 @@ public class Skims {
 	HashMap tsPropertyMap;
     HashMap globalPropertyMap;
 
+    Network g;
+    
 	boolean useMessageWindow = false;
 	
-    Network g;
 
-    int[] alphaNumberArray = null;
+	int[] alphaNumberArray = null;
 	int[] betaNumberArray = null;
 	int[] zonesToSkim = null;
 
@@ -43,7 +44,7 @@ public class Skims {
 	
 	Matrix newSkimMatrix;
 
-    public Skims ( ResourceBundle tsRb, ResourceBundle globalRb, String timePeriod ) {
+    public Skims ( ResourceBundle tsRb, ResourceBundle globalRb, String timePeriod, float volumeFactor ) {
 
         tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(tsRb);
         globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
@@ -54,7 +55,7 @@ public class Skims {
 		// have been done, so build a new Network object which initialize 
 		// the congested time field for computing time related skims.
 		if ( networkDiskObjectFile == null ) {
-			g = new Network( tsPropertyMap, globalPropertyMap, timePeriod );
+			g = new Network( tsPropertyMap, globalPropertyMap, timePeriod, volumeFactor );
 		}
 		// otherwise, read the DiskObject file and use the congested time field
 		// for computing time related skims.
@@ -196,7 +197,7 @@ public class Skims {
 		MatrixWriter mw;
 
 		// set the highway network attribute on which to skim the network - free flow time in this case
-		double[] linkCost = g.getFreeFlowTime();
+		double[] linkCost = g.getCongestedTime();
 		
         // get the skims as a double[][] array 
         double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
@@ -249,6 +250,53 @@ public class Skims {
 
 	    return zeroBasedDoubleArray;
 	    
+	}
+
+
+    
+    /**
+	 * get average SOV trip travel skim values: (dist,time).
+	 */
+	public double[] getAvgSovTripSkims ( double[][] trips ) {
+
+		double[] linkCost;
+		
+		// set the highway network attribute on which to skim the network - distance in this case
+		linkCost = g.getDist();
+		
+        // get the skims as a double[][] array 
+        double[][] zeroBasedDistArray = buildHwySkimMatrix( linkCost );
+
+		// set the highway network attribute on which to skim the network - distance in this case
+		linkCost = g.getCongestedTime();
+		
+        // get the skims as a double[][] array 
+        double[][] zeroBasedTimeArray = buildHwySkimMatrix( linkCost );
+
+        
+        double totalTrips = 0.0;
+        for (int i=1; i < trips.length; i++)
+            for (int j=1; j < trips.length; j++)
+            	totalTrips += trips[i][j];
+
+        
+    	double tripMiles = 0.0;
+        for (int i=0; i < zeroBasedDistArray.length; i++)
+            for (int j=0; j < zeroBasedDistArray.length; j++)
+            	tripMiles += trips[i+1][j+1]*zeroBasedDistArray[i][j];
+
+        
+    	double tripMinutes = 0.0;
+        for (int i=0; i < zeroBasedTimeArray.length; i++)
+            for (int j=0; j < zeroBasedTimeArray.length; j++)
+            	tripMinutes += trips[i+1][j+1]*zeroBasedTimeArray[i][j];
+        
+        double[] results = new double[2];
+        results[0] = tripMiles/totalTrips;
+        results[1] = tripMinutes/totalTrips;
+        
+        return results;
+
 	}
 
 
@@ -383,7 +431,7 @@ public class Skims {
     	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
         ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties"));
     	logger.info ("creating Skims object.");
-        Skims s = new Skims ( rb, globalRb, "peak" );
+        Skims s = new Skims ( rb, globalRb, "peak", 0.5f );
 
     	logger.info ("skimming network and creating Matrix object.");
         Matrix m = s.getSovDistSkimAsMatrix();
