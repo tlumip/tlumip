@@ -81,6 +81,44 @@ public class Skims {
 
     }
 
+    public Skims (ResourceBundle rb) {
+
+        propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+
+		g = new Network( propertyMap );
+
+		// take a column of alpha zone numbers from a TableDataSet and puts them into an array for
+	    // purposes of setting external numbers.	     */
+		String zoneCorrespondenceFile = (String)propertyMap.get("zoneIndex.fileName");
+		try {
+            CSVFileReader reader = new CSVFileReader();
+            TableDataSet table = reader.readFile(new File(zoneCorrespondenceFile));
+	        alphaNumberArray = table.getColumnAsInt( 1 );
+	        betaNumberArray = table.getColumnAsInt( 2 );
+        } catch (IOException e) {
+            logger.severe("Can't get zone numbers from zonal correspondence file");
+            e.printStackTrace();
+        }
+	 }
+
+    public Skims (Network g, HashMap map) {
+
+        this.g = g;
+        this.propertyMap = map;
+
+		// take a column of alpha zone numbers from a TableDataSet and puts them into an array for
+	    // purposes of setting external numbers.	     */
+		String zoneCorrespondenceFile = (String)propertyMap.get("zoneIndex.fileName");
+		try {
+            CSVFileReader reader = new CSVFileReader();
+            TableDataSet table = reader.readFile(new File(zoneCorrespondenceFile));
+	        alphaNumberArray = table.getColumnAsInt( 1 );
+	        betaNumberArray = table.getColumnAsInt( 2 );
+        } catch (IOException e) {
+            logger.severe("Can't get zone numbers from zonal correspondence file");
+            e.printStackTrace();
+        }
+	 }
 
 
 
@@ -146,7 +184,7 @@ public class Skims {
 	 */
 	public float[][] getSovTimeSkimAsFloatArray () {
 
-		double[][] tempDoubleArray = buildSovTimeSkimMatrix();
+		double[][] tempDoubleArray = buildPeakSovTimeSkimMatrix();
 		float[][] tempFloatArray = new float[tempDoubleArray.length][];
 	    
 	    
@@ -185,7 +223,7 @@ public class Skims {
 	/**
 	 * build sov time skims as double[][]
 	 */
-	private double[][] buildSovTimeSkimMatrix () {
+	private double[][] buildPeakSovTimeSkimMatrix () {
 
 		// set the highway network attribute on which to skim the network
 		double[] linkCost = g.getCongestedTime();
@@ -201,6 +239,27 @@ public class Skims {
 		
 		return hwySkim ( linkCost, validLinks );
        
+	}
+
+    /**
+	 * build sov time skims as double[][]
+	 */
+	private double[][] buildOffPeakSovTimeSkimMatrix () {
+
+		// set the highway network attribute on which to skim the network
+		double[] linkCost = g.getFreeFlowTime();
+
+		// specify which links are valid parts of paths for this skim matrix
+		boolean[] validLinks = new boolean[g.getLinkCount()];
+		Arrays.fill (validLinks, false);
+		String[] mode = g.getMode();
+		for (int i=0; i < validLinks.length; i++) {
+			if ( mode[i].indexOf('a') >= 0 )
+				validLinks[i] = true;
+		}
+
+		return hwySkim ( linkCost, validLinks );
+
 	}
 
 
@@ -232,7 +291,7 @@ public class Skims {
 	}
 
 
-	private Matrix getSqueezedMatrix (Matrix aMatrix) {
+	public Matrix getSqueezedMatrix (Matrix aMatrix) {
 		
         // alphaNumberArray and betaNumberArray were read in from correspondence file and are zero-based
         AlphaToBeta a2b = new AlphaToBeta (alphaNumberArray, betaNumberArray);

@@ -16,6 +16,7 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.matrix.Matrix;
 
 import java.util.HashMap;
 import java.io.File;
@@ -129,15 +130,35 @@ public class TS {
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("done with fw at: " + myDateString);
 
-
+        createSkims(g, propertyMap);
         
 		logger.info("assignPeakAuto() finished in " +
 			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
 		
     }
-    
-    
-    
+
+    public void createSkims(Network g, HashMap map){
+        Skims skims = new Skims(g, map);
+        logger.info ("skimming network and creating pk distance matrix.");
+        Matrix m = skims.getSovDistSkimAsMatrix();    //pkdist skim
+
+        //Write out matrix m
+
+        m = skims.getSovTimeSkimAsMatrix();   //pk time
+
+        // Write out m
+
+
+
+    	logger.info ("squeezing the pk dist alpha matrix to a pk dist beta matrix.");
+        Matrix mSqueezed = skims.getSqueezedMatrix(m);   //betapkdist skim
+
+
+
+    }
+
+
+
     private double[][] getAggregateTripTableFromCsvFile ( String fileName ) {
         
         int orig;
