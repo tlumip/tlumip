@@ -168,7 +168,15 @@ public class StopDestinationChoiceModel{
                 try {
                 	//TODO get debug filename from pt.properties
                     logger.severe("Writing Tour Debug info to the /models/tlumip/debug directory");
-                    thisTour.printCSV(new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop1.csv")));
+                    PrintWriter file = new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop1.csv"));
+                    file.println("tourString,tour#," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "primaryMode");
+                    thisTour.printCSV(file);
                 } catch (IOException e1) {
                     e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
@@ -273,8 +281,16 @@ public class StopDestinationChoiceModel{
                  try {
                 	//TODO get debug filename from pt.properties
                      logger.severe("Writing tour debug info to /models/tlumip/debug ");
-                      thisTour.printCSV(new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop2.csv")));
-                 } catch (IOException e1) {
+                     PrintWriter file = new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop1.csv"));
+                     file.println("tourString,tour#," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "primaryMode");
+                    thisTour.printCSV(file);
+                  } catch (IOException e1) {
                      e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                  }
              }

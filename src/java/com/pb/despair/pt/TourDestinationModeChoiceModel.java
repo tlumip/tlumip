@@ -142,7 +142,15 @@ public class TourDestinationModeChoiceModel{
                    try {
                 	//TODO get debug filename from pt.properties
                        logger.severe("Writing Tour Debug info to the /models/tlumip/debug directory");
-                       thisTour.printCSV(new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+".csv")));
+                       PrintWriter file = new PrintWriter(new FileWriter("/models/tlumip/debug/HH" + thisHousehold.ID + "Tour" + thisTour.tourNumber+"Stop1.csv"));
+                       file.println("tourString,tour#," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "activityPurpose,startTime,endTime,timeToActivity,distanceToActivity,tripMode,location," +
+                        "primaryMode");
+                    thisTour.printCSV(file);
                    } catch (IOException e1) {
                        e1.printStackTrace();  
                    }

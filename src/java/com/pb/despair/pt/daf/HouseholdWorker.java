@@ -192,18 +192,37 @@ public class HouseholdWorker extends MessageProcessingTask {
         } else if (msg.getId().equals(MessageID.CREATE_DC_LOGSUMS)) {
             if(CALCULATE_DCLOGSUMS) createDCLogsums(msg);
             else {
+                String purpose = String.valueOf(msg.getValue("purpose"));
+                Integer segment = (Integer) msg.getValue("segment");
                 if(String.valueOf(msg.getValue("purpose")).equals("c")){
                     for (int i = 1; i <= 3; i++) {
-                        Message dcMessage = createMessage();
-                        dcMessage.setId(MessageID.DC_LOGSUMS_CREATED);
-                        dcMessage.setValue("matrix", null);
-                        sendTo(matrixWriterQueue, dcMessage);
+                        Message dcSchoolMessage = createMessage();
+                        dcSchoolMessage.setId(MessageID.DC_LOGSUMS_CREATED);
+                        dcSchoolMessage.setValue("purpose", (purpose+i));
+                        dcSchoolMessage.setValue("segment", segment);
+                        dcSchoolMessage.setValue("matrix", null);
+                        logger.info("Sending matrix " + dcSchoolMessage.getValue("purpose"));
+                        sendTo(matrixWriterQueue, dcSchoolMessage);
+
+                        Message dcExpUtilitiesMessage = createMessage();
+                        dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
+                        dcExpUtilitiesMessage.setValue("matrix", null);
+                        sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
                     }
                 }
                 else {
-                    msg.setId(MessageID.DC_LOGSUMS_CREATED);
-                    msg.setValue("matrix", null);
-                    sendTo(matrixWriterQueue, msg);
+                    Message dcMessage = createMessage();
+                    dcMessage.setId(MessageID.DC_LOGSUMS_CREATED);
+                    dcMessage.setValue("purpose",purpose);
+                    dcMessage.setValue("segment", segment);
+                    dcMessage.setValue("matrix", null);
+                    logger.info("Sending matrix " + dcMessage.getValue("purpose"));
+                    sendTo(matrixWriterQueue, dcMessage);
+
+                    Message dcExpUtilitiesMessage = createMessage();
+                    dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
+                    dcExpUtilitiesMessage.setValue("matrix", null);
+                    sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
                 }
             }
 
