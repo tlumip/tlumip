@@ -8,6 +8,8 @@ import java.util.ResourceBundle;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.datafile.TableDataSetCollection;
+import com.pb.common.datafile.TableDataSetIndex;
 import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.IncomeSize;
 import com.pb.despair.model.Industry;
@@ -88,7 +90,147 @@ public class OregonPIPProcessor extends PIPProcessor {
 
             }
         }
+        String calibrationMetaParameters = ResourceUtil.getProperty(rb,"pi.readMetaParameters");
+        if (calibrationMetaParameters.equalsIgnoreCase("true")) {
+            setUpMetaParameters();
+        }
         super.setUpPi();
+    }
+
+    /**
+     * Read in some parameter functions, and adjust the parameters as appropriate 
+     */
+    private void setUpMetaParameters() {
+        CSVFileReader reader = new CSVFileReader();
+        CSVFileWriter writer = new CSVFileWriter();
+        String piInputsPath = ResourceUtil.getProperty(rb,"pi.base.data");
+        reader.setMyDirectory(new File(piInputsPath));
+        writer.setMyDirectory(new File(piInputsPath));
+        TableDataSetCollection myCollection = new TableDataSetCollection(reader,writer);
+        TableDataSetIndex metaParamIndex = new TableDataSetIndex(myCollection,"MetaParameters");
+        String[] temp = {"ParameterName"};
+        metaParamIndex.setIndexColumns(temp, new String[0]);
+        String[] smallHouseholds = {
+            "HH0to5k1to2",
+            "HH5to10k1to2",
+            "HH10to15k1to2",
+            "HH15to20k1to2",
+            "HH20to30k1to2",
+            "HH30to40k1to2",
+            "HH50to70k1to2",
+            "HH70kUp1to2"};
+        String[] largeHouseholds = {
+            "HH0to5k3plus",
+            "HH5to10k3plus",
+            "HH10to15k3plus",
+            "HH15to20k3plus",
+            "HH20to30k3plus",
+            "HH30to40k3plus",
+            "HH50to70k3plus",
+            "HH70kUp3plus"};
+        
+        TableDataSetIndex makeUseIndex = new TableDataSetIndex(myCollection,"MakeUseI");
+        String[] temp2 = {"Activity","Commodity","MorU"};
+        makeUseIndex.setIndexColumns(temp2, new String[0]);
+        
+        String[] parameterName = new String[1];
+        int[] nothing = new int[0];
+        TableDataSet parameters = metaParamIndex.getMyTableDataSet();
+        int column = parameters.checkColumnPosition("ParameterValue");
+        
+        // get parameters 1 at a time
+        parameterName[0] = "MHConstant";
+        int[] rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double mhConstant = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "MFConstant";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double mfConstant = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "ATConstant";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double atConstant = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "RuralConstant";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double ruralConstant = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "SFDLargeHHConstant";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double sfdLargeHHConstant = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "MHIncome";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double mhIncome = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "MFIncome";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double mfIncome = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "ATIncome";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double atIncome = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "RuralIncome";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double ruralIncome = parameters.getValueAt(rows[0],column);
+        parameterName[0] = "SFDLargeHHIncome";
+        rows = metaParamIndex.getRowNumbers(parameterName,nothing);
+        double sfdLargeHHIncome = parameters.getValueAt(rows[0],column);
+        
+        String[] makeUseKeys = new String[3];
+        makeUseKeys[2] = "U";
+        TableDataSet makeUseTable = makeUseIndex.getMyTableDataSet();
+        int constantColumn = makeUseTable.checkColumnPosition("UtilityOffset");
+        for (int incomeCat = 0;incomeCat<smallHouseholds.length;incomeCat++) {
+            // mobile home constants
+            makeUseKeys[0] = smallHouseholds[incomeCat];
+            makeUseKeys[1] = "FLR MH";
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mhConstant+incomeCat*mhIncome));
+            makeUseKeys[0] = largeHouseholds[incomeCat];
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mhConstant+incomeCat*mhIncome));
+            
+            // rural mobile home constants
+            makeUseKeys[0] = smallHouseholds[incomeCat];
+            makeUseKeys[1] = "FLR RRMH";
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mhConstant+incomeCat*(mhIncome+ruralIncome)+ruralConstant));
+            makeUseKeys[0] = largeHouseholds[incomeCat];
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mhConstant+incomeCat*(mhIncome+ruralIncome)+ruralConstant));
+            
+            // multi family constants
+            makeUseKeys[0] = smallHouseholds[incomeCat];
+            makeUseKeys[1] = "FLR MF";
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mfConstant+incomeCat*mfIncome));
+            makeUseKeys[0] = largeHouseholds[incomeCat];
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mfConstant+incomeCat*mfIncome));
+            
+            // attached home constants
+            makeUseKeys[0] = smallHouseholds[incomeCat];
+            makeUseKeys[1] = "FLR AT";
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (atConstant+incomeCat*atIncome));
+            makeUseKeys[0] = largeHouseholds[incomeCat];
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (atConstant+incomeCat*atIncome));
+            
+            // rural sfd constants
+            makeUseKeys[0] = smallHouseholds[incomeCat];
+            makeUseKeys[1] = "FLR RRSFD";
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (ruralConstant+incomeCat*ruralIncome));
+            makeUseKeys[0] = largeHouseholds[incomeCat];
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (ruralConstant+sfdLargeHHConstant+incomeCat*(ruralIncome+sfdLargeHHIncome)));
+            
+            // sfd constants
+            makeUseKeys[1] = "FLR SFD";
+            makeUseKeys[0] = largeHouseholds[incomeCat];
+            rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (sfdLargeHHConstant+incomeCat*sfdLargeHHIncome));
+            
+           }
+        makeUseIndex.dispose();
+        metaParamIndex.dispose();
+        myCollection.flush();
+        myCollection.close();
     }
 
     private void doOregonSpecificInputProcessing() {
