@@ -203,7 +203,17 @@ public class PatternChoiceParameters {
             //TODO - log exception to the node exception file
             e.printStackTrace();
      }
+    }
 
-      }
-}  
 
+
+    public static void main(String[] args) {
+        PatternChoiceParameters pcp = new PatternChoiceParameters();
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
+
+        pcp.readData(rb, new String("weekdayParameters.file"));
+
+    }
+
+
+}
