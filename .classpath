@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <classpathentry kind="src" path="src/java"/>
+    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+    <classpathentry kind="src" path="/common-base"/>
+    <classpathentry kind="src" path="/jakarta-commons"/>
+    <classpathentry kind="src" path="/common-daf-v2"/>
+    <classpathentry kind="lib" path="/common-base/lib/R.jar"/>
+    <classpathentry kind="src" path="/common-assign"/>
+    <classpathentry kind="output" path="build/classes"/>
+</classpath>

@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='US-ASCII' ?>
+
+<EDModelXML>
+	<SubModelXML type="simple" name="FinalDemand" order="1">
+		<equationXML type="simple" name="xnrcon">
+			<equationElementXML type="simple">
+				<variableXML name="Non-residential Construction">
+					<locationXML></locationXML>
+					<lagXML>0</lagXML>
+				</variableXML>
+			</equationElementXML>
+
+			<equationElementXML>
+				<parameterXML>0.82144</parameterXML>
+			</equationElementXML>
+
+			<equationElementXML>
+				<parameterXML>1000000</parameterXML>
+			</equationElementXML>
+
+			<equationElementXML>
+				<variableXML name="ONRI">
+					<locationXML />
+					<lagXML>0</lagXML>
+				</variableXML>
+			</equationElementXML>
+
+			<equationElementXML>
+				<variableXML name="OGCO">
+					<locationXML />
+					<lagXML>0</lagXML>
+				</variableXML>
+			</equationElementXML>
+			
+			<equationElementXML>
+				<operatorXML>+</operatorXML>
+			</equationElementXML>
+
+			<equationElementXML>
+				<variableXML name="ONRI">
+					<locationXML />
+					<lagXML>0</lagXML>
+				</variableXML>
+			</equationElementXML>
+
+			<equationElementXML>
+				<variableXML name="ORI">
+					<locationXML />
+					<lagXML>0</lagXML>
+				</variableXML>
+			</equationElementXML>
+			
+			<equationElementXML>
+				<variableXML name="OGCO">
+					<locationXML />
+					<lagXML>0</lagXML>
+				</variableXML>
+			</equationElementXML>
+
+			<equationElementXML>
+				<operatorXML>+</operatorXML>
+			</equationElementXML>
+			<equationElementXML>
+				<operatorXML>+</operatorXML>
+			</equationElementXML>
+			<equationElementXML>
+				<operatorXML>/</operatorXML>
+			</equationElementXML>
+			<equationElementXML>
+				<operatorXML>*</operatorXML>
+			</equationElementXML>
+			<equationElementXML>
+				<operatorXML>*</operatorXML>
+			</equationElementXML>
+		</equationXML>
+	</SubModelXML>
+</EDModelXML>

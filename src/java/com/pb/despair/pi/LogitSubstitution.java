@@ -1,0 +1,295 @@
+package com.pb.despair.pi;
+
+import com.pb.despair.model.AbstractCommodity;
+import com.pb.despair.model.ConsumptionFunction;
+import com.pb.despair.model.ProductionFunction;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Logger;
+
+/**
+ * This class calculates the overall utility of producing or
+ * consuming given the ZUtilities of individual commodities.
+ *
+ * @author John Abraham
+ */
+
+public class LogitSubstitution implements ConsumptionFunction, ProductionFunction {
+
+    private static Logger logger = Logger.getLogger("com.pb.despair.pi");
+
+//    double denominator;  // for interim calculation results
+    private double lambda;
+    private double scaling;
+    private double utilityOfNonModelledAlternative;
+    boolean nonModelledDenominatorTerm = false;
+
+    /**
+     * @link aggregation
+     *      @associates <{%Dst%}>
+     */
+    private ArrayList myCommodities = new ArrayList();
+    private ArrayList sortedQuantitiesToUse = null;
+
+    public static class Quantity {
+        final public Commodity com;
+        final public double minimum;
+        final public double discretionary;
+        final public double utilityScale;
+        final public double utilityOffset;
+
+        public String toString() {
+            return (com.toString() + " " + minimum + "+" + discretionary + "* exp(lambda * " + discretionary + " *(" + utilityScale + "*u+" +
+                    utilityOffset + "))/Sum(exp(lambda*discretionary*(scale*U+offset))))");
+        }
+
+
+
+        public Quantity(Commodity com, double minimum, double discretionary, double utilityScale,
+                        double utilityOffset) {
+            this.com = com;
+            this.minimum = minimum;
+            this.discretionary = discretionary;
+            this.utilityScale = utilityScale;
+            this.utilityOffset = utilityOffset;
+        }
+    }
+
+    // count of debugging printouts
+    int overallUtilityCalcPrint = -1;
+    int amountsCalcPrint = -1;
+
+    public LogitSubstitution(double scaling, double lambda) {
+        this.lambda = lambda;
+        this.scaling = scaling;
+    }
+
+    public double overallUtility(double[] individualCommodityUtilities) {
+        //this method calculates the CUProda,z or CUConsa,z (later comments refer to the CUProda,z calc.)
+        synchronized (this) {
+            // synchronized so that we can rely on the denominator calculation
+            // double[] amount = calcAmounts(individualCommodityUtilities);
+            double utility = 0;
+            boolean foundOne = false;
+            double denominator = 0;
+            for (int c = 0; c < sortedQuantitiesToUse.size(); c++) {
+                Quantity q = (Quantity) sortedQuantitiesToUse.get(c);
+                if (q != null) {
+                    if (q.minimum != 0) {
+                        //this is the sum of (MMinc,a * CUSellc,a,z) over c = sum(MMinc,a * (CUSellc,z * adj. factor + USellRefc,a)) over c
+                        utility += q.minimum * (individualCommodityUtilities[c] * q.utilityScale + q.utilityOffset);
+                    }
+                    if (q.discretionary != 0) {
+                        foundOne = true;
+                        // this  is sum (e^(lambda*MDiscc,a*CUSellc,a,z)) over c = sum(e^(lambda*UIProdc,a,z))over c
+                        denominator += Math.exp(lambda * q.discretionary * (individualCommodityUtilities[c] * q.utilityScale + q.utilityOffset));
+                    }
+                }
+            }
+            if (nonModelledDenominatorTerm) denominator += Math.exp(lambda * utilityOfNonModelledAlternative);
+            //CUProda,z = sum(MMinc,a)over c + 1/lambda*ln(sum(e^(lambda*UIProdc,a,z) over c)
+            if (foundOne) utility += 1 / lambda * Math.log(denominator);
+            if (Double.isNaN(utility) || overallUtilityCalcPrint > 0) {
+                logger.warning("building up a commodity utility to " + utility + ", details follow:");
+                double[] amount = calcAmounts(individualCommodityUtilities);
+                utility = 0;
+                for (int c = 0; c < sortedQuantitiesToUse.size(); c++) {
+                    Quantity q = (Quantity) sortedQuantitiesToUse.get(c);
+                    if (q != null) {
+                        utility += scaling * q.minimum * (individualCommodityUtilities[c] * q.utilityScale + q.utilityOffset);
+                        logger.warning(q + " has quantity " + amount[c] + " and indiv utility " +
+                                individualCommodityUtilities[c] + "; utility now is " + utility);
+                    } else {
+                        logger.warning("entry " + c + " is null -- no effect");
+                    }
+                }
+            }
+//            if (Double.isNaN(utility))
+//                throw new InvalidZUtilityError(this.toString());
+            if (overallUtilityCalcPrint > 0) overallUtilityCalcPrint--;
+            //Returns alphaprod (or alphacons) * CUProda,z
+            return utility * scaling;
+        }
+    }
+
+    public double[] overallUtilityDerivatives(double[] individualCommodityUtilities) {
+        double[] d1 = new double[sortedQuantitiesToUse.size()];
+        double[] d2 = new double[sortedQuantitiesToUse.size()];
+        double denominator = 0;
+        boolean foundOne = false;
+        for (int c = 0; c < sortedQuantitiesToUse.size(); c++) {
+            Quantity q = (Quantity) sortedQuantitiesToUse.get(c);
+            if (q != null) {
+                foundOne = true;
+                if (q.minimum != 0) {
+                    d1[c] = q.utilityScale * scaling * q.minimum;
+                }
+                if (q.discretionary != 0) {
+                    foundOne = true;
+                    d2[c] = Math.exp(lambda * q.discretionary * (individualCommodityUtilities[c] * q.utilityScale + q.utilityOffset));
+                    denominator += d2[c];
+                }
+            }
+        }
+        if (nonModelledDenominatorTerm) denominator += Math.exp(lambda * utilityOfNonModelledAlternative);
+        if (foundOne) {
+            for (int c = 0; c < sortedQuantitiesToUse.size(); c++) {
+                Quantity q = (Quantity) sortedQuantitiesToUse.get(c);
+                if (q != null) {
+                    if (q.discretionary != 0) {
+                        d1[c] += q.utilityScale * scaling * d2[c] / denominator * q.discretionary;
+                    }
+                }
+            }
+        }
+        return d1;
+    }
+
+    /**
+     * This function calculates the amount of each commodity given the utility of each commodity.
+     *
+     * @param individualCommodityUtilities the utility of buying or selling each of the individual commodities that make up
+     *                                     the list of commodities.   Length must match the length of the internal commodity list
+     * @return an array specifying the amount of each commodity
+     */
+
+    public double[] calcAmounts(double[] individualCommodityUtilities) {
+        double[] amounts = new double[sortedQuantitiesToUse.size()];
+        if (individualCommodityUtilities.length != amounts.length) {
+            throw new Error("Incorrect number of commodities for production/consumption function calculation");
+        }
+        Quantity q = null;
+        double denominator = 0;
+        boolean foundOne = false;
+        for (int c = 0; c < amounts.length; c++) {
+
+            // first use the amounts array to store the numerator of the logit choice
+            q = (Quantity) sortedQuantitiesToUse.get(c);
+            if (q == null) {
+                amounts[c] = 0;
+            } else {
+                if (q.discretionary == 0) {
+                    amounts[c] = 0;
+                } else {
+                    foundOne = true;
+                    amounts[c] = Math.exp(lambda * q.discretionary * (individualCommodityUtilities[c] * q.utilityScale + q.utilityOffset));
+                }
+
+                denominator += amounts[c];
+            }
+        }
+        // split equally if all alternatives are negative infinity
+        // TODO try to use exceptions instead -- throw a NoAlternativeAvailable exception?
+        if (nonModelledDenominatorTerm) denominator += Math.exp(lambda * utilityOfNonModelledAlternative);
+        if (denominator == 0 && foundOne) {
+            for (int c = 0; c < amounts.length; c++) {
+                amounts[c] = 1;
+                denominator += amounts[c];
+            }
+        }
+        for (int c = 0; c < amounts.length; c++) {
+            q = (Quantity) sortedQuantitiesToUse.get(c);
+            if (q != null) {
+                if (amountsCalcPrint > 0) logger.info(q + " has expQUtility " + amounts[c]);
+                if (!foundOne) {
+                    amounts[c] = q.minimum;
+                    // no alternative producation choices
+                } else {
+                    amounts[c] = q.minimum + (q.discretionary * (amounts[c] / denominator));
+                }
+                if (amountsCalcPrint > 0) logger.info(" and amount " + amounts[c] + " at utility " + individualCommodityUtilities[c]);
+            }
+        }
+        if (amountsCalcPrint > 0) --amountsCalcPrint;
+        return amounts;
+    }
+
+    public double[] amountsDerivatives(double[] individualCommodityUtilities) {
+        double[] derivatives = new double[sortedQuantitiesToUse.size()];
+        if (individualCommodityUtilities.length != derivatives.length) {
+            throw new Error("Incorrect number of commodities for production/consumption function calculation");
+        }
+        Quantity q = null;
+        double denom = 0;
+        for (int c = 0; c < derivatives.length; c++) {
+
+            // first use the amounts array to store the numerator of the logit choice
+            q = (Quantity) sortedQuantitiesToUse.get(c);
+            if (q == null) {
+                derivatives[c] = 0;
+            } else {
+                if (q.discretionary == 0) {
+                    derivatives[c] = 0;
+                } else {
+                    derivatives[c] = Math.exp(lambda * q.discretionary * (individualCommodityUtilities[c] * q.utilityScale + q.utilityOffset));
+                }
+
+                denom += derivatives[c];
+            }
+        }
+        if (nonModelledDenominatorTerm) denom += Math.exp(lambda * utilityOfNonModelledAlternative);
+        for (int c = 0; c < derivatives.length; c++) {
+            q = (Quantity) sortedQuantitiesToUse.get(c);
+            if (q != null) {
+                if (denom == 0) {
+                    derivatives[c] = 0;
+                } else {
+                    derivatives[c] = q.utilityScale * lambda * q.discretionary * q.discretionary * (derivatives[c] / denom) * (1 - (derivatives[c] / denom));
+                }
+            }
+        }
+        return derivatives;
+    }
+
+
+    public void sortToMatch(Collection commodityList) {
+        sortedQuantitiesToUse = new ArrayList();
+        Iterator commodityIterator = commodityList.iterator();
+        Iterator quantityIterator = null;
+        while (commodityIterator.hasNext()) {
+            Commodity c = (Commodity) commodityIterator.next();
+            quantityIterator = myCommodities.iterator();
+            boolean found = false;
+            while (quantityIterator.hasNext() && !found) {
+                Quantity q = (Quantity) quantityIterator.next();
+                if (q.com.equals(c)) {
+                    sortedQuantitiesToUse.add(q);
+                    found = true;
+                }
+            }
+            if (!found) {
+                //                    sortedQuantitiesToUse.add(new Quantity(c, 0, 0, 0, 0, 0));
+                sortedQuantitiesToUse.add(null);
+            }
+        }
+    }
+
+    public int size() {
+        return sortedQuantitiesToUse.size();
+    }
+
+    public void addCommodity(Quantity q) {
+        myCommodities.add(q);
+    }
+
+    public AbstractCommodity commodityAt(int i) {
+        Quantity q = (Quantity) sortedQuantitiesToUse.get(i);
+        if (q == null) return null;
+        return q.com;
+    }
+
+    /**
+     * @param utilityOfNonModelledAlternativeParameter
+     */
+    public void addNonModelledAlternative(float utilityOfNonModelledAlternativeParameter) {
+        utilityOfNonModelledAlternative = utilityOfNonModelledAlternativeParameter;
+        nonModelledDenominatorTerm = true;
+    }
+
+
+
+
+
+}

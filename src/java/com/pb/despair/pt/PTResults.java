@@ -1,0 +1,153 @@
+package com.pb.despair.pt;
+
+import java.io.PrintWriter;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
+
+import com.pb.common.util.ResourceUtil;
+
+/**
+ * PTResults
+ *
+ * @author Freedman
+ * @version Mar 3, 2004
+ * 
+ */
+public class PTResults {
+    
+    protected static Logger logger = Logger.getLogger("com.pb.despair.pt.PTModel");
+    PTTimer timer = new PTTimer();
+    PTDataWriter ptWriter = new PTDataWriter();
+    PrintWriter weekdayTour;
+    PrintWriter weekdayPattern;
+    PrintWriter weekdayTrip;
+    PrintWriter weekendTour;
+    PrintWriter weekendPattern;
+    PrintWriter weekendTrip;
+    PrintWriter householdData;
+
+    ResourceBundle rb;
+
+    public PTResults(ResourceBundle rb){
+        this.rb = rb;
+    }
+    
+    public static PrintWriter open(String textFileName){
+        
+        
+        try {            
+            //File fileName = new File(textFileName);
+            //fileName.createNewFile();
+            
+            PrintWriter pwFile;
+            pwFile = new PrintWriter(
+                    new BufferedWriter(
+                            new FileWriter(textFileName)));
+            return pwFile;
+        } catch (IOException e) {
+            logger.severe("Could not open file " + textFileName + " for writing\n");           
+            System.exit(1);
+        }
+        return null;
+    
+     }
+    
+    public void close(){
+        logger.info("Closing tour, pattern and trip output files.");
+        weekdayTour.close();
+        weekdayPattern.close();
+        weekdayTrip.close();
+        householdData.close();
+        if(PTModel.RUN_WEEKEND_MODEL){   
+            weekendTour.close();
+            weekendPattern.close();
+            weekendTrip.close();
+        }
+    }
+    
+    public void printHeader(PrintWriter pw, String header){
+        
+    }
+    
+    //TODO: create files to write to
+    //This method used to be called by PTDafMaster but we are now trying to have the workers write out these
+    //files instead.
+    public void createFiles(){
+        weekdayTour = open(ResourceUtil.getProperty(rb, "weekdayTour.file"));
+        weekdayTour.println("header");
+        weekdayPattern = open(ResourceUtil.getProperty(rb, "weekdayPattern.file"));
+        weekdayPattern.println("header");
+        weekdayTrip = open(ResourceUtil.getProperty(rb, "weekdayTrip.file"));
+        weekdayTrip.println("origin,tripStartTime,distance,destination,tourMode,tripMode");
+        householdData = open(ResourceUtil.getProperty(rb, "householdData.file"));
+        householdData.println("ID,size,autos,workers,income,singleFamily,multiFamily,homeTaz");        
+        
+        if(PTModel.RUN_WEEKEND_MODEL){
+            weekendTour = open(ResourceUtil.getProperty(rb, "weekendTour.file"));
+            weekendTour.println("header");
+            weekendPattern = open(ResourceUtil.getProperty(rb, "weekendPattern.file"));
+            weekendPattern.println("header");
+            weekendTrip = open(ResourceUtil.getProperty(rb, "weekendTrip.file"));
+            weekendTrip.println("header");
+        }
+    }
+
+    public void createWorkerFiles(String WorkerName){
+        weekdayTour = open((ResourceUtil.getProperty(rb, "weekdayTour.file") + "." + WorkerName + ".csv"));
+        weekdayTour.println("header");
+        weekdayPattern = open((ResourceUtil.getProperty(rb, "weekdayPattern.file") + "." + WorkerName + ".csv"));
+        weekdayPattern.println("header");
+        weekdayTrip = open((ResourceUtil.getProperty(rb, "weekdayTrip.file") + "." + WorkerName + ".csv"));
+        weekdayTrip.println("origin,tripStartTime,distance,destination,tourMode,tripMode");
+        householdData = open((ResourceUtil.getProperty(rb, "householdData.file") + "." + WorkerName + ".csv"));
+        householdData.println("ID,size,autos,workers,income,singleFamily,multiFamily,homeTaz");
+
+        if(PTModel.RUN_WEEKEND_MODEL){
+            weekendTour = open((ResourceUtil.getProperty(rb, "weekendTour.file") + "." + WorkerName + ".csv"));
+            weekendTour.println("header");
+            weekendPattern = open((ResourceUtil.getProperty(rb, "weekendPattern.file") + "." + WorkerName + ".csv"));
+            weekendPattern.println("header");
+            weekendTrip = open((ResourceUtil.getProperty(rb, "weekendTrip.file") + "." + WorkerName + ".csv"));
+            weekendTrip.println("header");
+        }
+    }
+
+    //TODO: refactor to write results for household array to results
+    public void writeResults(PTHousehold[] households){
+          
+          logger.info("Writing patterns and tours to csv file");
+          
+          ptWriter.writeToursToTextFile(households, weekdayTour, true);   
+          ptWriter.writeWeekdayPatternsToFile(households, weekdayPattern);
+          ptWriter.writeWeekdayTripsToFile(households, weekdayTrip);
+          
+          for(int i=0;i<households.length;++i)
+             households[i].printCSV(householdData);
+          
+          if(PTModel.RUN_WEEKEND_MODEL){     
+              ptWriter.writeToursToTextFile(households, weekendTour, false);      
+              ptWriter.writeWeekendPatternsToFile(households, weekendPattern);
+              ptWriter.writeWeekendTripsToFile(households, weekendTrip);
+          } 
+          timer.endTimer();
+                
+  
+     }//end constructor    
+     
+    public static void main(String[] args){
+        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+        PTResults results = new PTResults(rb);
+        PTHousehold[] households; 
+        
+        // Read household and person data  
+        PTDataReader dataReader = new PTDataReader(rb);
+        logger.info("Adding synthetic population from database"); 
+        households = dataReader.readHouseholds("households.file");
+        results.writeResults(households);
+        
+    }
+
+}

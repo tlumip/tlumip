@@ -1,0 +1,637 @@
+package com.pb.despair.pt.daf;
+
+import com.pb.common.daf.Message;
+import com.pb.common.daf.MessageProcessingTask;
+import com.pb.common.util.ObjectUtil;
+import com.pb.common.util.ResourceUtil;
+
+import com.pb.despair.pt.*;
+
+import java.io.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.ResourceBundle;
+
+
+/**
+ *
+ * PTDafMaster sends messages to work queues.
+ *
+ *
+ * @author    Steve Hansen
+ * @version   1.0, 5/5/2004
+ *
+ */
+public class PTDafMaster extends MessageProcessingTask {
+    boolean debug = false;
+    static final String mcPurposes = new String("wcsrob"); //work,school,shop,recreate,other,workbased
+    static final int TOTALSEGMENTS = 9;
+    static final int TOTALOCCUPATIONS = 8;
+    static final int TOTAL_DCLOGSUMS = 63;
+    static final int MAXZONENUMBER = 4141;
+
+    static int MAXBLOCKSIZE;  //will be initialized through resource bundle as it may change depending
+                                //on the scenario (ex. 5000 for pleaseWork, 8 for smallPop)
+
+                                                               
+    PTResults results;
+
+    int[] indexArray;
+    PTHousehold[] households;
+    PTPerson[] persons;
+    PTDataReader dataReader;
+    TazData tazData;
+    int totalHouseholds;
+    int totalPersons;
+    int totalModeChoiceLogsums = 0;
+    int totalDCLogsums = 0;
+    int totalWorkers = 0;
+    int mcLogsumCount = 0;
+    int dcLogsumCount = 0;
+    int tazUpdateCount = 0;
+    int personsWithWorkplaceCount = 0;
+    int householdsProcessedCount = 0;
+    int householdCounter = 0;
+    ResourceBundle ptdafRb; //this will be read in after the scenarioName has been read in from RunParams.txt
+    ResourceBundle ptRb; // this will be read in after pathToRb has been read in from RunParams.txt
+    int NUMBER_OF_WORK_QUEUES;
+    int NUMBER_OF_WORK_QUEUES_AGGREGATE;
+    int lastWorkQueue;
+
+    /**
+     * Read parameters
+     * Send out mode choice logsums to workers
+     * Read households
+     * Run household auto ownership model
+     * Read persons
+     * Set person attributes (Home TAZ, householdWorkLogsum) from household attributes
+     * Sort the person array by occupation (0->8) and householdWorkLogsumMarket (0->8)
+     */
+    public void onStart() {
+        logger.info("***" + getName() + " started");
+
+        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
+        //that was written by the Application Orchestrator
+        BufferedReader reader = null;
+        String scenarioName = null;
+        int timeInterval = -1;
+        String pathToRb = null;
+        try {
+            logger.info("Reading RunParams.txt file");
+            reader = new BufferedReader(new FileReader(new File("/models/tlumip/daf/RunParams.txt")));
+            scenarioName = reader.readLine();
+            logger.info("\tScenario Name: " + scenarioName);
+            timeInterval = Integer.parseInt(reader.readLine());
+            logger.info("\tTime Interval: " + timeInterval);
+            pathToRb = reader.readLine();
+            logger.info("\tResourceBundle Path: " + pathToRb);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //Get properties files and set class attributes based on those properties.
+            //First get the ptdaf.properties which will be in the classpath and
+            //set the number of work queues
+        ptdafRb = ResourceUtil.getResourceBundle("ptdaf_"+scenarioName);
+        NUMBER_OF_WORK_QUEUES = Integer.parseInt(ResourceUtil.getProperty(ptdafRb, "workQueues"));
+        NUMBER_OF_WORK_QUEUES_AGGREGATE = Integer.parseInt(ResourceUtil.getProperty(ptdafRb, "workQueuesAggregate"));
+        lastWorkQueue = NUMBER_OF_WORK_QUEUES_AGGREGATE;
+            //Next get pt.properties and set max block size.
+        ptRb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+        MAXBLOCKSIZE = Integer.parseInt(ResourceUtil.getProperty(ptRb,"max.block.size"));
+
+        //Start mode choice logsums.  The workers will decide if the MC Logsums
+        //actually need to be recalculated based on a class boolean.  If they
+        //don't need to be calculated the workers will send back an empty message.
+        //Either way, the Master will be able to go to the next model based
+        //on the total "MCLogsumsCreated" messages coming back.
+        logger.info("Starting the Mode Choice Logsum calculations");
+        startMCLogsums();
+        
+        //Read the SynPop data
+        dataReader = new PTDataReader(ptRb);
+        logger.info("Adding synthetic population from database");
+        households = dataReader.readHouseholds("households.file");
+        totalHouseholds = households.length;
+        logger.info("Total Number of HHs :" + totalHouseholds);
+        if(debug) logger.fine("Size of households: " + ObjectUtil.sizeOf(households));
+
+        logger.info("Reading the Persons file");
+        persons = dataReader.readPersons("persons.file");
+        if(debug) logger.fine("Size of persons: " + ObjectUtil.sizeOf(persons));
+        totalPersons = persons.length;
+
+        //add worker info to Households and add homeTAZ and hh work segment to persons
+        //This method sorts households and persons by ID.  Leaves arrays in sorted positions.
+        dataReader.addPersonInfoToHouseholdsAndHouseholdInfoToPersons(households,
+                persons);
+
+        //Persons must be read in and .addPersonInfo... must be called before running
+        //auto ownership, otherwise PTHousehold.workers will be 0 and
+        //the work segment will be calculated incorrectly.
+        logger.info("Starting the AutoOwnershipModel");
+        households = dataReader.runAutoOwnershipModel(households);
+
+        PTSummarizer.summarizeHouseholds(households,ResourceUtil.getProperty(ptRb,"hhSummary.file"));
+        PTSummarizer.summarizePersons(persons,ResourceUtil.getProperty(ptRb,"personSummary.file"));
+
+        logger.info("Finished onStart()");
+    }
+
+    /**
+     * Wait for message.  
+     * If message is MC_LOGSUMS_CREATED, startWorkplaceLocation
+     * If message is WORKPLACE_LOCATIONS_CALCULATED, add the 
+     *    workers to the persons array, and check if done with all segments.  
+     *    If done,
+     *       Set TazDataArrays, which will update the zone data in each
+     *         node with the number of households and teachers in each TAZ.
+     *       Add persons with workplace locations to households.
+     *       Sort the household array by worklogsum segment and non-worklogsum segment.
+     * If message is TAZDATA_UPDATED, check if all nodes have completed updating their data
+     *    If done, startDCLogsums()
+     * If message is DC_LOGSUMS_CREATED, check if all segments have been completed.
+     *    If done, startProcessHouseholds(): Send out initial blocks of households to workers.
+     * If message is HOUSEHOLDS_PROCESSED
+     *    Send households to householdResults method, which will increment up householdsProcessedCount
+     *       and send households for writing to results file.
+     *    If households processed less than total households, sendMoreHouseholds()
+     *   
+     *    
+     */
+    public void onMessage(Message msg) {
+        logger.info(getName() + " received messageId=" + msg.getId() +
+            " message from=" + msg.getSender() + " @time=" + new Date());
+
+        if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED)) {
+            mcLogsumCount++;
+            logger.fine("mcLogsumCount: " + mcLogsumCount);
+
+            if (mcLogsumCount == totalModeChoiceLogsums) {
+                logger.info("ModeChoice Logsums completed.");
+                startWorkplaceLocation();
+            }
+
+        } else if (msg.getId().equals(MessageID.WORKPLACE_LOCATIONS_CALCULATED)) {
+            addToPersonsArray(msg);
+            logger.info("Persons with workplace location: " +
+                personsWithWorkplaceCount);
+
+            //if the persons in the person array is equal to the total number of persons,
+            //we are done with the workplace location model
+            if (personsWithWorkplaceCount == totalPersons) {
+                setTazDataArrays();
+                households = dataReader.addPersonsToHouseholds(households,persons);
+//                Arrays.sort(households);  //moved to the beginning of the HH processing method.
+
+            }
+
+        } else if (msg.getId().equals(MessageID.TAZDATA_UPDATED)) {
+
+            tazUpdateCount++;
+            logger.fine("tazUpdateCount: " + tazUpdateCount);
+
+            if (tazUpdateCount == NUMBER_OF_WORK_QUEUES) {
+                logger.info("Taz data has been updated on all workers.");
+                startDCLogsums();
+            }
+
+        } else if (msg.getId().equals(MessageID.DC_LOGSUMS_CREATED) ||
+                msg.getId().equals(MessageID.DC_EXPUTILITIES_CREATED)) {
+
+            dcLogsumCount++;
+            if(debug) logger.info("dcLogsumCount: " + dcLogsumCount);
+
+            if (dcLogsumCount == TOTAL_DCLOGSUMS) {
+                logger.info("Destination Choice Logsums completed.");
+                startProcessHouseholds();
+            }
+
+        } else if (msg.getId().equals(MessageID.HOUSEHOLDS_PROCESSED)) {
+            householdsProcessedCount = householdsProcessedCount + ((Integer)msg.getValue("nHHs")).intValue();
+            logger.info("Households processed so far: " + householdsProcessedCount);
+
+            if ((((Integer) msg.getValue("sendMore")).intValue() == 1) &&
+                    (householdCounter < totalHouseholds)) {
+                sendMoreHouseholds(msg);
+            }
+
+            if (householdsProcessedCount == totalHouseholds) {
+                Message allDone = createMessage();
+                allDone.setId(MessageID.ALL_HOUSEHOLDS_PROCESSED);
+                sendTo("FileWriterQueue",allDone);
+            }
+
+        } else if(msg.getId().equals(MessageID.ALL_FILES_WRITTEN)){
+            logger.info("Signaling to the File Monitor that the model is finished");
+            File doneFile = new File(ResourceUtil.getProperty(ptRb,"done.file"));
+
+            try {
+                PrintWriter writer = new PrintWriter(new FileWriter(
+                            doneFile));
+                writer.println("pt daf is done." + new Date());
+                writer.close();
+                logger.info("pt daf is done.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * startMCLogsums - sends messages to the work queues to create MC Logsum matrices
+     *
+     */
+    private void startMCLogsums() {
+        logger.info("Creating tour mode choice logsums");
+
+        //enter loop on purposes
+        for (int purpose = 0; purpose < mcPurposes.length(); ++purpose) {
+            char thisPurpose = mcPurposes.charAt(purpose);
+
+            //enter loop on segments
+            for (int segment = 0; segment < TOTALSEGMENTS; ++segment) {
+                Message mcLogsumMessage = createMessage();
+                mcLogsumMessage.setId(MessageID.CREATE_MC_LOGSUMS);
+                mcLogsumMessage.setValue("purpose",
+                    new Character(mcPurposes.charAt(purpose)));
+                mcLogsumMessage.setValue("segment", new Integer(segment));
+
+                String queueName = getQueueName();
+                mcLogsumMessage.setValue("queue", queueName);
+                logger.info("Sending MC logsums to " + queueName + " : " +
+                    thisPurpose + segment);
+                sendTo(queueName, mcLogsumMessage);
+                totalModeChoiceLogsums++;
+            }
+        }
+    }
+
+    /**
+     * startWorkPlaceLocation - sends messages to the work queues to create LaborFlowProbability matrices
+     * iterates through all household and occupation segments,
+     * bundles up workers in each combination of household and occupation
+     * sends out messages: each node to run workplace location model on 
+     * one combination household segment/occupation group
+     * Finally, add the unemployed persons to the person array. 
+     */
+    private void startWorkplaceLocation() {
+        int personNumber = 0;
+        totalWorkers = 0;
+
+        PTPerson[] personsSubset;
+        logger.info(
+            "Sending messages for workers to create Labor Flow Probability Matrices.");
+
+        Arrays.sort(persons); //sorts persons by HH work segment and then by occupation
+        //iterate through household market segments, occupation categories
+        for (int segment = 0; segment < TOTALSEGMENTS; segment++) {
+            for (int occupation = 1; occupation <= TOTALOCCUPATIONS;
+                    occupation++) {
+                        
+                //create a message, set the occupation and segment
+                Message laborFlowMessage = createMessage();
+                laborFlowMessage.setId(MessageID.CALCULATE_WORKPLACE_LOCATIONS);
+                laborFlowMessage.setValue("occupation", new Integer(occupation));
+                laborFlowMessage.setValue("segment", new Integer(segment));
+
+                //TODO OK for now, but inefficient to start at 0 every time
+                personNumber = 0;
+
+                //the persons array has already been sorted by occupation and segment
+                //find the first person in the person array for this segment
+                while ((personNumber < persons.length) &&
+                        ((persons[personNumber].occupation != occupation) ||
+                        (persons[personNumber].householdWorkSegment != segment))) {
+                    personNumber++;
+                }
+
+                int p = 0;
+                ArrayList personList = new ArrayList();
+
+                //add the persons in this segment to an arraylist personList
+                while ((personNumber < persons.length) &&
+                        (persons[personNumber].occupation == occupation) &&
+                        (persons[personNumber].householdWorkSegment == segment) ) {
+                    if(persons[personNumber].employed){
+                        personList.add(p, persons[personNumber]);
+
+                        //logger.info("occupation "+occupation+" segment: "+segment);
+                        totalWorkers++;
+                        p++;
+                    }
+                    personNumber++;
+                }
+
+                //transfer the arraylist to an array
+                logger.info("Number of employed persons in occupation "+occupation+" - segment "+segment+": " + p);
+                personsSubset = new PTPerson[personList.size()];
+                personList.toArray(personsSubset);
+
+                //send the workers to a node to process for workplace location model
+                if (personsSubset.length > 0) {
+                    laborFlowMessage.setValue("persons", personsSubset);
+
+                    String queueName = getQueueName2();
+                    logger.info("Sending Message to" + queueName +
+                        " to calculate labor flow probabilities for occupation " +
+                        occupation + " segment: " + segment +
+                        " total persons : " + personsSubset.length);
+                    sendTo(queueName, laborFlowMessage);
+                }
+
+                personList = null;
+            }
+        }
+        logger.info("PTDafMaster adding unemployed back into persons array");
+        addUnemployedToArray();
+        logger.info("\tTotal working persons: " + totalWorkers);
+    }
+
+    /**
+     * Put the unemployed persons in the person array
+     *
+     */
+    private void addUnemployedToArray() {
+        int unemployedCount = 0;
+        for (int i = 0; i < persons.length; i++) {
+            if (!persons[i].employed) {
+                unemployedCount++;
+                persons[personsWithWorkplaceCount] = persons[i];
+                personsWithWorkplaceCount++;
+            }
+        }
+        logger.info("\tTotal Persons: "+ persons.length + "  \n\tUnemployed Persons: "+ unemployedCount +
+                " \n\tPercentage: " + ((double)unemployedCount/persons.length)*100 + "%");
+    }
+
+    /**
+     * Add the workers from the persons array in the message to the persons array
+     * @param msg
+     */
+    private void addToPersonsArray(Message msg) {
+        PTPerson[] ps = (PTPerson[]) msg.getValue("persons");
+        for (int i = 0; i < ps.length; i++) {
+            persons[personsWithWorkplaceCount] = ps[i];
+            personsWithWorkplaceCount++;
+        }
+    }
+
+    /**
+     * Count the number of households, pre and post-secondary teachers
+     * in each taz and store in arrays.  Send the arrays to each node
+     * to update the data in memory.
+     *
+     */
+    private void setTazDataArrays() {
+        logger.info("Sending message to workers to update TAZ data");
+    	int[] householdsByTaz = new int[MAXZONENUMBER+1];
+        int[] postSecOccup = new int[MAXZONENUMBER+1];
+        int[] otherSchoolOccup = new int[MAXZONENUMBER+1];
+
+        for(int p=0;p<persons.length;p++){
+            if(persons[p].occupation==OccupationCode.P0ST_SEC_TEACHERS)
+                postSecOccup[persons[p].workTaz]++;
+            else if(persons[p].occupation==OccupationCode.OTHER_TEACHERS)
+                otherSchoolOccup[persons[p].workTaz]++;
+        }
+        for(int h=0;h<households.length;h++)
+            householdsByTaz[households[h].homeTaz]++;
+
+
+
+        for (int q = 1; q <= NUMBER_OF_WORK_QUEUES; q++) {
+            Message tazInfo = createMessage();
+            tazInfo.setId(MessageID.UPDATE_TAZDATA);
+            tazInfo.setValue("householdsByTaz",householdsByTaz);
+            tazInfo.setValue("postSecOccup",postSecOccup);
+            tazInfo.setValue("otherSchoolOccup",otherSchoolOccup);
+            String queueName = new String("WorkQueue" + q);
+            logger.info("Sending Message to" + queueName +
+                        " to update TAZ info");
+
+            sendTo(queueName, tazInfo);
+        }
+    }
+
+    /**
+     * Creates tour destination choice logsums for non-work purposes.
+     * Sends messages to workers to create dc logsums for a given purpose
+     * and market segment.
+     *
+     */
+    private void startDCLogsums() {
+        logger.info("Creating tour destination choice logsums");
+
+        //enter loop on purposes - start at 1 because you don't need to create DC logsums for work purposes
+        for (int purpose = 1; purpose < mcPurposes.length(); ++purpose) {
+            char thisPurpose = mcPurposes.charAt(purpose);
+
+            //enter loop on segments
+            for (int segment = 0; segment < TOTALSEGMENTS; ++segment) {
+                Message dcLogsumMessage = createMessage();
+                dcLogsumMessage.setId(MessageID.CREATE_DC_LOGSUMS);
+                dcLogsumMessage.setValue("purpose",
+                    new Character(mcPurposes.charAt(purpose)));
+                dcLogsumMessage.setValue("segment", new Integer(segment));
+
+                String queueName = getQueueName();
+                dcLogsumMessage.setValue("queue", queueName);
+                logger.info("Sending DC logsums to " + queueName + " : " +
+                    thisPurpose + segment);
+                sendTo(queueName, dcLogsumMessage);
+                totalDCLogsums++;
+            }
+        }
+        if(debug) logger.info("Total DC Logsums sent out: " + totalDCLogsums);
+    }
+    
+    /**
+     * Starts the household processing by sending a specified number of household blocks to each work queue.
+     * The second to last block will contain a message telling the worker node to send
+     * a message back to PTDafMaster to send more households.
+     *
+     */
+    private void startProcessHouseholds() {
+        logger.fine("Processing households.");
+         //Sort hhs by work segment, non-work segment
+         Arrays.sort(households);
+        //create an index array so that the households array can be updated with the newly processed households.
+        indexArray = new int[households.length+1]; //the HH.ID's start at 1 so we need length + 1
+        for (int i=0; i<households.length; i++){ //
+            indexArray[households[i].ID] = i;
+        }
+        int initalBlockSize = 20;
+
+        //iterate through number of workers, 20 household blocks
+        for (int q = 1; q <= NUMBER_OF_WORK_QUEUES; q++) {
+            for (int j = 0;j <= initalBlockSize; j++){ //consider: *Math.ceil(households.length / NUMBER_OF_WORK_QUEUES / MAXBLOCKSIZE)
+
+                //create an array of households
+                PTHousehold[] householdBlock = new PTHousehold[MAXBLOCKSIZE];
+
+                //fill it with households from the main household array
+                for (int k = 0; k < MAXBLOCKSIZE; k++) {
+                    if(householdCounter<households.length){
+                        householdBlock[k] = (PTHousehold) households[householdCounter];
+                        householdCounter++;
+                    }
+                }
+
+                Message processHouseholds = createMessage();
+                processHouseholds.setId(MessageID.PROCESS_HOUSEHOLDS);
+                processHouseholds.setValue("households", householdBlock);
+
+                //The "sendMore" key in the hashtable will be set to 1 for the second
+                //to last block, else 0.
+                if (j == (initalBlockSize - 2)) {
+                    processHouseholds.setValue("sendMore", new Integer(1));
+                } else {
+                    processHouseholds.setValue("sendMore", new Integer(0));
+                }
+
+                logger.fine("sendMore: " +
+                    (Integer) processHouseholds.getValue("sendMore"));
+
+                String queueName = new String("WorkQueue" + q);
+                processHouseholds.setValue("WorkQueue", queueName);
+                logger.info("Sending Message to process households to " +
+                    queueName);
+                sendTo(queueName, processHouseholds);
+                logger.fine("householdCounter = " + householdCounter);
+                householdBlock = null;
+            }
+        }
+    }
+
+    /**
+     * Send more households to workers
+     * 
+     * @param msg
+     */
+    private void sendMoreHouseholds(Message msg) {
+        int secondaryBlockSize = 6;
+        
+        //set block size to min of secondary block size or remaining households/block size
+        int thisBlockSize = Math.min(secondaryBlockSize,
+                (int) Math.ceil(
+                    (households.length - householdCounter) / MAXBLOCKSIZE));
+        logger.fine("blockSize:" + thisBlockSize);
+
+        for (int j = 0; j <= thisBlockSize; ++j) {
+            int nextBlockSize = Math.min(MAXBLOCKSIZE,
+                    households.length - householdCounter);
+            logger.fine("blockSize:" + nextBlockSize);
+
+            PTHousehold[] householdBlock = new PTHousehold[nextBlockSize];
+
+            for (int k = 0; k < nextBlockSize; k++) {
+                if(householdCounter<households.length){
+                    householdBlock[k] = (PTHousehold) households[householdCounter];
+                    householdCounter++;
+                }
+            }
+
+            Message processHouseholds = createMessage();
+            processHouseholds.setId(MessageID.PROCESS_HOUSEHOLDS);
+            processHouseholds.setValue("households", householdBlock);
+
+            if (j == (thisBlockSize - 2)) {
+                processHouseholds.setValue("sendMore", new Integer(1));
+            } else {
+                processHouseholds.setValue("sendMore", new Integer(0));
+            }
+
+            String queueName = (String) msg.getValue("WorkQueue");
+            processHouseholds.setValue("WorkQueue", queueName);
+            logger.info("Sending Message to process households to " +
+                queueName);
+            sendTo(queueName, processHouseholds);
+            logger.info("householdCounter = " + householdCounter);
+            householdBlock = null;
+        }
+    }
+
+    /**
+     * This method will summarize the Tours as follows:
+     *  1.  tours by activity purpose and mode ("w,b,c,o,r,s" : "driver,passenger,walk,bike,wtransit,transitp,ptransti,dtransit")
+     *  2.  average tour distance by purpose and mode (purposes are numbered 1-6  : modes are numbered 1-8
+     *  3.  work tours by work market segment and mode ("0-8" : see modes above)
+     *  4.  non-work tours by purpose, non-work segment and mode ("b,c,o,r,s" : "0-8" : see modes above)
+     *  5.  trips on work tours by work market segment and mode ("0-8" : above modes + drive,shared2,shared3+)
+     *  6.  trips on non-work tours by purpose, non-work segments and mode ("0-8" : modes are numbered 1-3)
+     *  7.  average tour distance for work tours by work market segment and mode
+     *  8.  average tour distance for non-work tours by purpose, non-work segment and mode
+     * This method will be called at the end of PTModel after all Households have been
+     * operated on. (PTDafMaster will call)
+     */
+    private void summarizeTours(Message msg) {
+        PTHousehold[] hhs = (PTHousehold[]) msg.getValue("households");
+        PTSummarizer.summarizeTours(hhs);
+    }//end of Summarize Tours
+
+    /**
+     * Get the households from the message,update
+     * the householdsProcessedCount, write logging statements, and send the
+     * households to the writeResults method of the results object.
+     * @param msg
+     */
+    private void householdResults(Message msg) {
+        logger.info(getName() + " received messageId=" + msg.getId() +
+            " message from=" + msg.getSender());
+
+        PTHousehold[] householdBlock = (PTHousehold[]) msg.getValue(
+                "households");
+        householdsProcessedCount = householdsProcessedCount + householdBlock.length;
+        logger.info("Households processed so far: " +
+            householdsProcessedCount);
+        logger.fine("Number of Households in this Array: " +
+            householdBlock.length);
+
+       for (int i=0;i< householdBlock.length;i++){
+           households[indexArray[householdBlock[i].ID]] = householdBlock[i];
+       }
+        results.writeResults(householdBlock);
+    }
+
+
+
+    /**
+     * getQueueName() is used when spraying an equal number of messages accross all WorkQueues.
+     */
+    private String getQueueName() {
+        if (lastWorkQueue == NUMBER_OF_WORK_QUEUES_AGGREGATE) {
+            int thisWorkQueue = 1;
+            String queue = new String("WorkQueue" + thisWorkQueue);
+            lastWorkQueue = thisWorkQueue;
+
+            return queue;
+        } else {
+            int thisWorkQueue = lastWorkQueue + 1;
+            String queue = new String("WorkQueue" + thisWorkQueue);
+            lastWorkQueue = thisWorkQueue;
+
+            return queue;
+        }
+    }
+
+    /**
+     * getQueueName() is used when spraying an equal number of messages accross all WorkQueues.
+     */
+    private String getQueueName2() {
+        if (lastWorkQueue == NUMBER_OF_WORK_QUEUES) {
+            int thisWorkQueue = 1;
+            String queue = new String("WorkQueue" + thisWorkQueue);
+            lastWorkQueue = thisWorkQueue;
+
+            return queue;
+        } else {
+            int thisWorkQueue = lastWorkQueue + 1;
+            String queue = new String("WorkQueue" + thisWorkQueue);
+            lastWorkQueue = thisWorkQueue;
+
+            return queue;
+        }
+    }
+}

@@ -1,0 +1,100 @@
+<?xml version="1.0" ?>
+<!-- Created by Christi Willison on 1/6/2004 -->
+<propertiesObject className="com.pb.despair.ao.AOProperties">
+    <property>
+        <!--need to specify the percentage of machines
+            that can be used for uploading SQL tables at the end
+            of modules that produce SQL tables -->
+        <name>useForUploads</name>
+        <value>30%</value>
+    </property>
+
+
+    <resource name="Zoink">
+        <type>server</type>
+        <ip>10.79.60.200</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Isaiah">
+        <node>node0</node>
+        <type>worker</type>
+        <ip>10.79.60.201</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Micah">
+        <node>node1</node>
+        <type>worker</type>
+        <ip>10.79.60.207</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Hosea">
+        <node>node2</node>
+        <type>worker</type>
+        <ip>10.79.60.206</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Amos">
+        <node>node3</node>
+        <type>worker</type>
+        <ip>10.79.60.205</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Daniel">
+        <node>node4</node>
+        <type>worker</type>
+        <ip>10.79.60.204</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Ezekiel">
+        <type>worker</type>
+        <ip>10.79.60.203</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Zechariah">
+        <type>worker</type>
+        <ip>10.79.60.208</ip>
+        <status>available</status>
+    </resource>
+
+    <resource name="Jeramiah">
+        <type>worker</type>
+        <ip>10.79.60.202</ip>
+        <status>not available</status>
+    </resource>
+
+    <scenario name="pleaseWork">
+        <start>1990</start>
+        <end>2020</end>
+     </scenario>
+
+    <!-- Event element will not be used for now but is holding a place
+    for describing events that will cause the modules to be run or not run
+    in a particular sequence -->
+    <events></events>
+
+
+    <intervalUpdate interval="3">
+        <fileUpdates>
+            <file>\newFile1</file>
+            <file>\newFile2</file>
+        </fileUpdates>
+        <policyFileUpdates>
+            <policyFile>\newPolicyFile1</policyFile>
+            <policyFile>\newPolicyFile2</policyFile>
+        </policyFileUpdates>
+    </intervalUpdate>
+
+    <intervalUpdate interval="12">
+        <policyFileUpdates>
+            <policyFile>\newNetworkFile1</policyFile>
+        </policyFileUpdates>
+    </intervalUpdate>
+
+</propertiesObject>

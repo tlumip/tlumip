@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="run-tlumip" default="echo" basedir=".">
+
+    <!-- Access values defined in the environment -->
+    <property environment="env"/>
+    <property name="root.dir" value="/models/tlumip"/>
+    <property name="t" value="1"/>
+
+
+    <!-- ********************************************************* -->
+    <!-- Setup the classpath -->
+    <path id="run.classpath">
+        <pathelement path="${env.BASEDIR}/common-base/build/classes;${env.BASEDIR}/common-daf-v2/build/classes;${env.BASEDIR}/tlumip/build/classes"/>
+        <fileset dir="${env.BASEDIR}/common-base">
+            <include name="**/lib/*.jar"/>
+            <include name="**/lib/*.zip"/>
+        </fileset>
+    </path>
+
+
+    <!-- ********************************************************* -->
+    <target name="echo">
+        <echo message="LOGFILE=${env.LOGFILE}"/>
+        <echo message="BASEDIR=${env.BASEDIR}"/>
+    </target>
+
+    <!-- ********************************************************* -->
+    <!-- The targets below will be used to start the components of the TLUMIP transitional model
+    <  *********************************************************** -->
+
+    <!-- Run ED in a new VM  (NOT A DAF APPLICATION) -->
+    <target name="startED" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Xms1200m"/>
+            <jvmarg value="-Xmx1200m"/>
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="ed"/>
+            <arg line="${t}"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+
+
+    <!-- Run ALD in a new VM  (NOT A DAF APPLICATION) -->
+    <target name="startALD" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Xms1200m"/>
+            <jvmarg value="-Xmx1200m"/>
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="ald"/>
+            <arg line="${t}"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+
+
+    <!-- Run SPG1 in a new VM  (NOT A DAF APPLICATION) -->
+    <target name="startSPG1" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Xms1200m"/>
+            <jvmarg value="-Xmx1200m"/>
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="spg1"/>
+            <arg line="${t}"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+
+
+    <!-- ********************************************************* -->
+    <!-- Run PI in a new VM (NOT A DAF APPLICATION) -->
+    <target name="startPI" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Xms1200m"/>
+            <jvmarg value="-Xmx1200m"/>
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="pi"/>
+            <arg line="${t}"/>
+            <classpath>
+                <path refid="run.classpath"/>
+             </classpath>
+        </java>
+    </target>
+
+    <!-- Run PIDAF on a DAF cluster (A DAF APPLICATION) -->
+    <target name="runPIDAF" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="pidaf"/>
+            <arg line="${t}"/>
+            <arg line="node0"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+
+     <!-- ********************************************************* -->
+    <!-- Run SPG2 in a new VM (NOT A DAF APPLICATION) -->
+    <target name="startSPG2" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Xms1200m"/>
+            <jvmarg value="-Xmx1200m"/>
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="spg2"/>
+            <arg line="${t}"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+
+    <!-- Run PTDAF on a DAF cluster (A DAF APPLICATION) -->
+    <target name="runPTDAF" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="ptdaf"/>
+            <arg line="${t}"/>
+            <arg line="node0"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+
+    <!-- Run CT in a new VM  (NOT A DAF APPLICATION) -->
+    <target name="startCT" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="ct"/>
+            <arg line="${t}"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+
+    <!-- Run TS in a new VM  (NOT A DAF APPLICATION) -->
+    <target name="startTS" depends="echo">
+        <java classname="com.pb.despair.ao.ApplicationOrchestrator" fork="yes">
+            <jvmarg value="-Djava.util.logging.config.file=${env.LOGFILE}"/>
+            <arg line="${root.dir}"/>
+            <arg line="${scenarioName}"/>
+            <arg line="ts"/>
+            <arg line="${t}"/>
+            <classpath>
+                <path refid="run.classpath"/>
+            </classpath>
+        </java>
+    </target>
+
+     <!-- Runs all components on a DAF cluster   -->
+    <target name="runModelOnCluster" depends="startED,startALD,startSPG1,runPIDAF,startSPG2, runPTDAF">
+    </target>
+
+    <!-- Runs all components in a monolithic fashion  -->
+    <target name="runModel" depends="startED,startALD,startSPG1,startPI,startSPG2">
+    </target>
+
+
+</project>

@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+	<!ENTITY properties SYSTEM "file:../common-base/config/properties.xml">
+	<!ENTITY targets SYSTEM "file:../common-base/config/targets.xml">
+]>
+
+<project name="tlumip" default="usage" basedir=".">
+	&properties;
+    &targets;
+    
+    
+    <!-- ********************************************************* -->
+    <!-- Setup the classpath -->
+    <path id="compile.classpath">
+        <pathelement location="${common-base.dir}/build/classes"/>
+        <pathelement location="${common-daf-v2.dir}/build/classes"/>
+        <pathelement location="${common-assign.dir}/build/classes"/>
+        <pathelement path="${build.classes.dir};${basedir}/config"/>
+        
+        <fileset dir="${common-base.dir}">
+            <include name="**/lib/*.jar"/>
+            <include name="**/lib/*.zip"/>
+        </fileset>
+
+        <fileset dir="${jakarta-commons.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+
+        <fileset dir="${basedir}">
+            <include name="**/lib/*.jar"/>
+            <include name="**/lib/*.zip"/>
+        </fileset>
+    </path>
+
+
+    <!-- ********************************************************* -->
+    <!-- Compile depedencies -->
+    <target name="pre-build" depends="">
+        <ant dir="${common-base.dir}" target="build" inheritAll="false"/>
+        <ant dir="${common-daf-v2.dir}" target="build" inheritAll="false"/>
+        <ant dir="${common-assign.dir}" target="build" inheritAll="false"/>
+    </target>
+
+
+    <!-- ********************************************************* -->
+    <!-- Create a set of jar files for release -->
+    <target name="release" depends="makejar">
+   
+        <!-- copy dependencies to release directory -->
+        <copy file="${common-base.dir}/release/common-base.jar" todir="${release.dir}"/>
+        <copy file="${common-daf-v2.dir}/release/common-daf-v2.jar" todir="${release.dir}"/>
+        <copy file="${common-assign.dir}/release/common-assign.jar" todir="${release.dir}"/>
+    </target>
+    
+</project>

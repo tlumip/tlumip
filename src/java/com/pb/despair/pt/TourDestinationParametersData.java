@@ -1,0 +1,108 @@
+package com.pb.despair.pt;
+
+import com.pb.common.util.ResourceUtil;
+import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.datafile.TableDataSet;
+import java.io.File;
+import java.io.IOException;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
+
+/**  
+ * A class to access Tour Destionation Parameters from TableDataSet
+ * 
+ * @author Joel Freedman
+ * @version 1.0 12/01/2003
+ * 
+ */
+public class TourDestinationParametersData {
+     protected static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    boolean debug = false;
+     String tourDestinationParametersTableName="TourDestinationParameters";
+
+     private TourDestinationParameters tourDestinationParameters[][] = new TourDestinationParameters[ActivityPurpose.ACTIVITY_PURPOSE.length][];
+     public TourDestinationParameters getParameters(int activityPurpose, int segment){
+        //work segments 1,2,3, and 4 are stored in array positions 0,1,2,3 respectively
+        //Same for schools segments.  that is why [segment-1]
+         return tourDestinationParameters[activityPurpose][segment-1];
+     }
+
+     public static TableDataSet loadTableDataSet(ResourceBundle rb, String fileName) {
+        
+        try {
+            String tazFile = ResourceUtil.getProperty(rb, fileName);
+            CSVFileReader reader = new CSVFileReader();
+            TableDataSet table = reader.readFile(new File(tazFile));
+            return table;
+        } catch (IOException e) {
+            logger.severe("Can't find TourDestinationParameters file " + fileName);
+            e.printStackTrace();
+        } 
+        return null;
+    }
+    
+     public void readData(ResourceBundle rb, String fileName){
+        
+        tourDestinationParameters[ActivityPurpose.WORK] = new TourDestinationParameters[ActivityPurpose.WORK_SEGMENTS];
+        tourDestinationParameters[ActivityPurpose.SCHOOL] = new TourDestinationParameters[ActivityPurpose.SCHOOL_SEGMENTS];
+        tourDestinationParameters[ActivityPurpose.SHOP] = new TourDestinationParameters[1];
+        tourDestinationParameters[ActivityPurpose.RECREATE] = new TourDestinationParameters[1];
+        tourDestinationParameters[ActivityPurpose.OTHER] = new TourDestinationParameters[1];
+        tourDestinationParameters[ActivityPurpose.WORK_BASED] = new TourDestinationParameters[1];
+        
+         if(debug) logger.fine("Getting table: "+fileName);
+         TableDataSet table = loadTableDataSet(rb, fileName);
+        try {
+            for(int rowNumber = 1; rowNumber<=table.getRowCount(); rowNumber++) {
+
+                 
+                TourDestinationParameters thisPurpose = new TourDestinationParameters();
+                thisPurpose.purpose             = table.getStringValueAt(rowNumber,table.getColumnPosition("Purpose")); 
+                thisPurpose.logsum              = table.getValueAt(rowNumber,table.getColumnPosition("logsum"));                      
+                thisPurpose.intraZonal          = table.getValueAt(rowNumber,table.getColumnPosition("intraZonal"));                  
+                thisPurpose.retail              = table.getValueAt(rowNumber,table.getColumnPosition("retail"));                
+                thisPurpose.nonRetail           = table.getValueAt(rowNumber,table.getColumnPosition("nonRetail"));                   
+                thisPurpose.gradeSchool         = table.getValueAt(rowNumber,table.getColumnPosition("gradeSchool"));                 
+                thisPurpose.secondarySchool     = table.getValueAt(rowNumber,table.getColumnPosition("secondarySchool"));             
+                thisPurpose.postSecondarySchool = table.getValueAt(rowNumber,table.getColumnPosition("postSecondarySchool"));         
+                thisPurpose.households          = table.getValueAt(rowNumber,table.getColumnPosition("households"));                  
+                thisPurpose.office              = table.getValueAt(rowNumber,table.getColumnPosition("office"));                      
+                thisPurpose.nonOffice           = table.getValueAt(rowNumber,table.getColumnPosition("nonOffice"));                   
+                thisPurpose.industrial          = table.getValueAt(rowNumber,table.getColumnPosition("industrial"));                  
+                thisPurpose.nonIndustrial       = table.getValueAt(rowNumber,table.getColumnPosition("nonIndustrial"));               
+                thisPurpose.otherWork           = table.getValueAt(rowNumber,table.getColumnPosition("otherWork"));                                   
+                
+                int purpose = ActivityPurpose.getActivityPurposeValue(thisPurpose.purpose.charAt(0));
+                if(thisPurpose.purpose.length()==2){
+                    if (debug) {
+                        logger.fine("first char "+thisPurpose.purpose.substring(0,1));
+                        logger.fine("second char "+thisPurpose.purpose.substring(1,2));
+                    }
+                    String second = new String(thisPurpose.purpose.substring(1,2));
+                    int segment = (Integer.valueOf(second)).intValue();
+                    tourDestinationParameters[purpose][segment-1] = thisPurpose;
+                }
+                else tourDestinationParameters[purpose][0] = thisPurpose;
+            }                                                            
+        } catch (Exception e) {            
+            logger.severe("Error reading TourDestinationParameters");                   
+            e.printStackTrace();                                         
+        }                                                                
+
+     };                                                                   
+                                                                          
+
+    public static void main (String[] args) throws Exception {
+        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+         TourDestinationParametersData tdpd = new TourDestinationParametersData();
+         tdpd.readData(rb, "tourDestinationParameters.file");
+         for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSE.length;i++){
+            int length = tdpd.tourDestinationParameters[i].length;
+            for(int j=0;j<length;j++){
+                logger.info("logsum for purpose "+i+" segment "+j+" = "+tdpd.getParameters(i,j).logsum);
+            }
+         }                                                                          
+         System.exit(1);                                                  
+    }                                       
+}                                                                        
+
