@@ -4,26 +4,20 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
-import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.util.ResourceUtil;
-
 import com.pb.despair.model.ModeChoiceLogsums;
 import com.pb.despair.pt.*;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-
-import java.lang.Runtime;
-
-import java.util.Date;
-import java.util.ResourceBundle;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import org.apache.log4j.Logger;
+import java.util.ResourceBundle;
 
 
 /**
@@ -532,8 +526,8 @@ public class HouseholdWorker extends MessageProcessingTask {
             households = ptModel.generateWeekendTours(households);
 
             for (int i = 0; i < households.length; i++) {
-                households[i] = (PTHousehold) ptModel.runWeekdayDurationDestinationModeChoiceModels(households[i],
-                        expUtilitiesManager).get(0);
+                households[i] = (PTHousehold) ptModel.runWeekendDurationDestinationModeChoiceModels(households[i],
+                        expUtilitiesManager);
             }
         }
         //Worker has processed all the households.  It will write out it's results to the local disk
