@@ -221,44 +221,25 @@ public class TripModeChoiceModel{
                            ZoneAttributes thisZone, 
                            Activity destActivity){
 
-         // set availabilities and calculate utilities
+            // set availabilities and calculate utilities
             driveAlone.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);                         
             sharedRide2.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);             
             sharedRide3Plus.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);
              
-
-          //add alternatives, if they are available, to nesting structure
-          //if(driveAlone.isAvailable){
-           //    autoNest.addAlternative(driveAlone);
-               
-          //     if(debug) System.out.println("Drive Alone Utility "+driveAlone.getUtility());
-          //}
-          //if(sharedRide2.isAvailable){
-          //    autoNest.addAlternative(sharedRide2);
-          //     if(debug) System.out.println("Shared Ride 2 Utility "+sharedRide2.getUtility());
-          //}
-          //if(sharedRide3Plus.isAvailable){
-          //    autoNest.addAlternative(sharedRide3Plus);
-          //     if(debug) System.out.println("Shared Ride 3+ Utility "+sharedRide3Plus.getUtility());
-          //}
-          
-          autoNest.computeAvailabilities();  
-          double logsum = autoNest.getUtility();     
-          autoNest.calculateProbabilities();
+            autoNest.computeAvailabilities();
+            double logsum = autoNest.getUtility();
+            autoNest.calculateProbabilities();
                                
-          if(debug) logger.finer("Logsum "+logsum);
+            if(debug) logger.finer("Logsum "+logsum);
 
-          try{ 
-               destActivity.tripMode = (Mode)autoNest.chooseAlternative();
-//                  if(debug){
-//                      destActivity.tripMode.print();
-////                      logger.finer("Chosen mode: "+destActivity.tripMode.alternativeName);
-//                  }
-          }catch(Exception e){
-               System.out.println(e);
-               logger.severe("Error in trip mode choice: no modes available ");
-               System.exit(1);
-          }
+            try{
+                 destActivity.tripMode = (Mode)autoNest.chooseAlternative();
+
+            }catch(Exception e){
+                 System.out.println(e);
+                 logger.severe("Error in trip mode choice: no modes available ");
+                 System.exit(1);
+            }
 
 
      }
