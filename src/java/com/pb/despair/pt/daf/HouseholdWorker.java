@@ -38,8 +38,8 @@ public class HouseholdWorker extends MessageProcessingTask {
     protected static Object lock = new Object();
     protected static boolean initialized = false;
     protected static boolean dcLoaded = false;
-    protected static boolean CALCULATE_MCLOGSUMS = true;
-    protected static boolean CALCULATE_DCLOGSUMS = true;
+    protected static boolean CALCULATE_MCLOGSUMS = false;
+    protected static boolean CALCULATE_DCLOGSUMS = false;
     protected static ResourceBundle rb;
 
     //these arrays are to store the information necessary to update PTModelNew.tazData
@@ -227,10 +227,10 @@ public class HouseholdWorker extends MessageProcessingTask {
 
         ModeChoiceLogsums mcl = new ModeChoiceLogsums(rb);
         logger.info("\t\t" + getName() + "Reading logsum "+name);
-        mcl.readBinaryLogsums('w',segment.intValue());
+        mcl.readLogsums('w',segment.intValue());        //BINARY-ZIP
+//        mcl.readBinaryLogsums('w',segment.intValue());
         Matrix modeChoiceLogsum = mcl.getMatrix();
         
-        //Write Labor Flow Probabilities to Disk
         logger.info("\t\t" + getName() + " is calculating AZ Labor flows.");
 
         Matrix m = LaborFlows.calculateAlphaLaborFlowsMatrix(modeChoiceLogsum,
@@ -302,8 +302,8 @@ public class HouseholdWorker extends MessageProcessingTask {
 
         String path = ResourceUtil.getProperty(rb, "mcLogsum.path");
         ModeChoiceLogsums mcl = new ModeChoiceLogsums(rb);
-//        mcl.readLogsums(purpose.charAt(0),segment.intValue());
-        mcl.readBinaryLogsums(purpose.charAt(0),segment.intValue());
+        mcl.readLogsums(purpose.charAt(0),segment.intValue());   //BINARY-ZIP
+//        mcl.readBinaryLogsums(purpose.charAt(0),segment.intValue());
         Matrix modeChoiceLogsum =mcl.getMatrix();
 
         if (purpose.equals("c")) {
@@ -311,39 +311,41 @@ public class HouseholdWorker extends MessageProcessingTask {
                 logger.info(getName() + " is calculating the DC Logsums for purpose c, market segment " + segment + " subpurpose " + i);
 
                 //create a message to store the dc logsum vector
-//                Message dcLogsumMessage = createMessage();
-//                dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
+                Message dcLogsumMessage = createMessage();
+                dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
 //
                 String dcPurpose = "c" + i;
                 Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
                 PTModelInputs.tdpd, dcPurpose, segment.intValue(), modeChoiceLogsum);
-//                dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
-//                sendTo(fileWriterQueue, dcLogsumMessage);
+                dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
+                sendTo(fileWriterQueue, dcLogsumMessage);
 
 //                get the exponentiated utilities matrix and put it in another message
-                Message dcExpUtilitiesMessage = createMessage();
-                dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
-                Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
-                dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-                sendTo(fileWriterQueue, dcExpUtilitiesMessage);
-//                dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);
+//                Message dcExpUtilitiesMessage = createMessage();
+//                dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
+//                Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
+//                dcExpUtilitiesMessage.setValue("matrix", expUtilities);
+//                sendTo(fileWriterQueue, dcExpUtilitiesMessage);
+                dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb); //BINARY-ZIP
+//                dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb); //BINARY-ZIP
             }
         } else if (!purpose.equals("w")) {
             logger.info(getName() + " is calculating the DC Logsums for purpose " + purpose + ", market segment " + segment + " subpurpose 1");
-//            Message dcLogsumMessage = createMessage();
-//            dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
+            Message dcLogsumMessage = createMessage();
+            dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
             Matrix dcLogsumMatrix = (Matrix) dcLogsumCalculator.getDCLogsumVector(PTModelInputs.tazs,
             PTModelInputs.tdpd, purpose, segment.intValue(), modeChoiceLogsum);
-//            dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
-//            sendTo(fileWriterQueue, dcLogsumMessage);
+            dcLogsumMessage.setValue("matrix", dcLogsumMatrix);
+            sendTo(fileWriterQueue, dcLogsumMessage);
 
             //get the exponentiated utilities matrix and put it in another message
-            Message dcExpUtilitiesMessage = createMessage();
-            dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
-            Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
-            dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-            sendTo(fileWriterQueue, dcExpUtilitiesMessage);
-//             dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);
+//            Message dcExpUtilitiesMessage = createMessage();
+//            dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
+//            Matrix expUtilities = dcLogsumCalculator.getExpUtilities();
+//            dcExpUtilitiesMessage.setValue("matrix", expUtilities);
+//            sendTo(fileWriterQueue, dcExpUtilitiesMessage);
+             dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);     //BINARY-ZIP
+//            dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb);
         }
         modeChoiceLogsum = null;
      }
