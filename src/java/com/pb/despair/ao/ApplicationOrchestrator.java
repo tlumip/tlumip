@@ -32,10 +32,10 @@ public class ApplicationOrchestrator {
     private String rootDir;
     private String scenarioName;
     private int t;
-    private int baseYear;
+//    private int baseYear;
     AOProperties aoProps;
     ResourceBundle rb;
-    CalibrationManager cManager;
+//    CalibrationManager cManager;
 
     public ApplicationOrchestrator(){
         aoProps=new AOProperties();
@@ -51,17 +51,21 @@ public class ApplicationOrchestrator {
         this.t = timeInterval;
         this.rb = findResourceBundle(findPathToResourceBundle("ao"));
 
-        this.baseYear = Integer.parseInt(ResourceUtil.getProperty(this.rb, "base.year"));
+        //We are going to have the CalibrationManager be a stand-alone program
+        //because several of the applications use outside programs such as SAS to
+        //digest the output and this takes longer than just writing a file.
+        //Therefore we will call it separately and not while the apps are running.
 
-        String calibrationProperty = ResourceUtil.getProperty(rb,"calibration.mode");
-
-        if(calibrationProperty != null){
-            boolean calibrate = new Boolean(calibrationProperty).booleanValue();
-            if(calibrate){
-                ResourceBundle calibrationProperties = findResourceBundle(findPathToResourceBundle("calibration"));
-                cManager = new CalibrationManager(calibrationProperties, scenarioName, timeInterval, baseYear);
-            }
-        }
+//        this.baseYear = Integer.parseInt(ResourceUtil.getProperty(this.rb, "base.year"));
+//        String calibrationProperty = ResourceUtil.getProperty(rb,"calibration.mode");
+//
+//        if(calibrationProperty != null){
+//            boolean calibrate = new Boolean(calibrationProperty).booleanValue();
+//            if(calibrate){
+//                ResourceBundle calibrationProperties = findResourceBundle(findPathToResourceBundle("calibration"));
+//                cManager = new CalibrationManager(calibrationProperties, scenarioName, timeInterval, baseYear);
+//            }
+//        }
 
 
     }
@@ -87,13 +91,15 @@ public class ApplicationOrchestrator {
             String propPath = rootDir + "/scenario_" + scenarioName + "/t" + i + "/";
             //Deal with SPG exception (appName=spg1 or spg2 but properties file is spg.properties for both)
             if(appName.startsWith("spg")){
-                propFile = new File(propPath + "/spg/spg.properties");
+                propFile = new File(propPath + "spg/spg.properties");
             //Deal with the PTDAF and PIDAF exceptions
             }else if (appName.endsWith("daf")) {
-                propFile = new File(propPath + "/" + appName.substring(0,(appName.length()-3)) +
+                propFile = new File(propPath + appName.substring(0,(appName.length()-3)) +
                         "/" + appName.substring(0,(appName.length()-3)) + ".properties"); //subtract off the 'daf' part
+            } else if (appName.equalsIgnoreCase("global")) {
+                propFile = new File(propPath + "global.properties");
             } else{
-                propFile = new File(propPath + "/" + appName + "/" + appName + ".properties");
+                propFile = new File(propPath + appName + "/" + appName + ".properties");
             }
 
             if(propFile.exists()){
@@ -119,7 +125,7 @@ public class ApplicationOrchestrator {
     }
 
 
-    public void writeRunParamsToFile(int timeInterval, String pathToRb){
+    public void writeRunParamsToFile(int timeInterval, String pathToAppRb, String pathToGlobalRb){
         File runParams = new File(rootDir + "/daf/RunParams.txt");
         logger.info("Writing 'timeInterval' and 'pathToRb' into " + runParams.getAbsolutePath());
         PrintWriter writer = null;
@@ -127,7 +133,8 @@ public class ApplicationOrchestrator {
             writer = new PrintWriter(new FileWriter(runParams));
             writer.println(scenarioName);
             writer.println(timeInterval);
-            writer.println(pathToRb);
+            writer.println(pathToAppRb);
+            writer.println(pathToGlobalRb);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -139,25 +146,12 @@ public class ApplicationOrchestrator {
         ModelComponent comp = new EDControl(baseYear,timeInterval,appRb);
         comp.startModel(timeInterval);
 
-        if(cManager.isThisApplicationBeingCalibrated("ed")){
-            cManager.produceCalibrationOutput("ed", appRb);
-        }
-
     }
 
     public void runALDModel(int timeInterval, ResourceBundle appRb){
         ModelComponent comp = new ALDModel();
-        comp.setProperties(appRb);
+        comp.setApplicationResourceBundle(appRb);
         comp.startModel(timeInterval);
-    }
-
-    public void runALDDAFModel(int timeInterval, String pathToAppRb, String nodeName){
-        //Since AO doesn't communicate directly with ALD we need to write the absolute
-        //path to the resource bundle and the time interval into a file, "RunParams.txt"
-        //that will be read by the PIServer Task when the ALDDAF application is launched.
-        writeRunParamsToFile(timeInterval, pathToAppRb);
-        StartDafApplication appRunner = new StartDafApplication("alddaf", nodeName, timeInterval, rb);
-        appRunner.run();
     }
 
     public void runSPG1Model(int timeInterval, ResourceBundle appRb){
@@ -172,17 +166,17 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runPIModel(int timeInterval, ResourceBundle appRb){
+    public void runPIModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
         ModelComponent comp = new PIModel();
-        comp.setProperties(appRb);
+        comp.setResourceBundles(appRb, globalRb);
         comp.startModel(timeInterval);
     }
 
-    public void runPIDAFModel(int timeInterval, String pathToAppRb, String nodeName){
+    public void runPIDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb, String nodeName){
         //Since AO doesn't communicate directly with PI we need to write the absolute
         //path to the resource bundle and the time interval into a file, "RunParams.txt"
         //that will be read by the PIServer Task when the PIDAF application is launched.
-        writeRunParamsToFile(timeInterval, pathToAppRb);
+        writeRunParamsToFile(timeInterval, pathToAppRb, pathToGlobalRb);
         StartDafApplication appRunner = new StartDafApplication("pidaf", nodeName, timeInterval, rb);
         appRunner.run();
     }
@@ -195,21 +189,21 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runPTDAFModel(int timeInterval, String pathToAppRb, String nodeName){
-        writeRunParamsToFile(timeInterval, pathToAppRb);
+    public void runPTDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb,String nodeName){
+        writeRunParamsToFile(timeInterval, pathToAppRb, pathToGlobalRb);
         StartDafApplication appRunner = new StartDafApplication("ptdaf", nodeName, timeInterval, rb);
         appRunner.run();
     }
 
-    public void runCTModel(int timeInterval, ResourceBundle appRb){
-        ModelComponent comp = new CTModel(appRb);
+    public void runCTModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+        ModelComponent comp = new CTModel(appRb, globalRb);
         comp.startModel(timeInterval);
 
     }
 
-    public void runTSModel(int timeInterval, ResourceBundle appRb){
+    public void runTSModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
-		TS ts = new TS(appRb);
+		TS ts = new TS(appRb, globalRb);
         ts.assignPeakAuto();
         ts.assignOffPeakAuto();
 
@@ -315,6 +309,12 @@ public class ApplicationOrchestrator {
             appRb = ao.findResourceBundle(pathToAppRb);
         }
 
+        String pathToGlobalRb = ao.findPathToResourceBundle("global");
+        ResourceBundle globalRb = null;
+        if(!appName.endsWith("daf")){
+            globalRb = ao.findResourceBundle(pathToGlobalRb);
+        }
+
 
         if(appName.equalsIgnoreCase("ED")){
             logger.info("AO will now start ED for simulation year " + (baseYear+t));
@@ -322,31 +322,28 @@ public class ApplicationOrchestrator {
         }else if(appName.equalsIgnoreCase("ALD")){
             logger.info("AO will now start ALD for simulation year " + (baseYear+t));
             ao.runALDModel(t, appRb);
-        }else if(appName.equalsIgnoreCase("ALDDAF")){
-            logger.info("AO will now start ALDDAF for simulation year " + (baseYear+t));
-            ao.runALDDAFModel(t, pathToAppRb,nodeName);
         }else if(appName.equalsIgnoreCase("SPG1")){
             logger.info("AO will now start SPG1 for simulation year " + (baseYear+t));
 			ao.runSPG1Model(t,appRb);
         }else if (appName.equalsIgnoreCase("PI")){
             logger.info("AO will now start PI for simulation year " + (baseYear+t));
-            ao.runPIModel(t,appRb);
+            ao.runPIModel(t,appRb,globalRb);
         }else if(appName.equalsIgnoreCase("PIDAF")){
             logger.info("AO will now start PIDAF for simulation year " + (baseYear+t));
-            ao.runPIDAFModel(t,pathToAppRb,nodeName);
+            ao.runPIDAFModel(t,pathToAppRb,pathToGlobalRb,nodeName);
         }else if (appName.equalsIgnoreCase("SPG2")){ //not a daf application
             logger.info("AO will now start SPG2 for simulation year " + (baseYear+t));
             ao.runSPG2Model(t,appRb);
         }else if(appName.equalsIgnoreCase("PTDAF")){
             logger.info("AO will now start PTDAF for simulation year " + (baseYear+t));
-            ao.runPTDAFModel(t, pathToAppRb,nodeName);
+            ao.runPTDAFModel(t, pathToAppRb,pathToGlobalRb,nodeName);
 
         }else if(appName.equalsIgnoreCase("CT")){
             logger.info("AO will now start CT for simulation year " + (baseYear+t));
-            ao.runCTModel(t, appRb);
+            ao.runCTModel(t, appRb, globalRb);
         }else if(appName.equalsIgnoreCase("TS")){
             logger.info("AO will now start TS for simulation year " + (baseYear+t));
-            ao.runTSModel(t, appRb);
+            ao.runTSModel(t, appRb, globalRb);
         }else {
             logger.severe("AppName not recognized");
         }
