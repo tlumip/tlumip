@@ -12,9 +12,9 @@ import javax.swing.JFrame;
 import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
-import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixViewer;
+import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
 
 import com.pb.common.assign.Network;
@@ -123,113 +123,159 @@ public class Skims {
 
 
     /**
-	 * return sov distance skims as Matrix
+	 * write out peak and off-peak, alpha and beta SOV distance skim matrices
 	 */
-	public Matrix getSovDistSkimAsMatrix () {
+	public void writeSovDistSkimMatrices () {
 
-        // get the skims as an array 
-        float[][] zeroBasedFloatArray = getSovDistSkimAsFloatArray();
+		String fileName;
+		MatrixWriter mw;
+		Matrix mSqueezed;
+		
+		// set the highway network attribute on which to skim the network - distance in this case
+		double[] linkCost = g.getDist();
+		
+        // get the skims as a double[][] array 
+        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
 
+        // copy the array to a ones-based float[][] for conversion to Matrix object
 		float[][] onesBasedFloatArray = new float[zeroBasedFloatArray.length+1][zeroBasedFloatArray.length+1];
 	    for (int i=1; i < onesBasedFloatArray.length; i++) {
            for (int j=1; j < onesBasedFloatArray[i].length; j++)
-           	  onesBasedFloatArray[i][j] = zeroBasedFloatArray[i-1][j-1];
+           	  onesBasedFloatArray[i][j] = (float)zeroBasedFloatArray[i-1][j-1];
 	    }
+	    zeroBasedFloatArray = null;
         
-	    // create a Matrix from the skims array
-	    newSkimMatrix = new Matrix( "", "SOV Distance Skims", onesBasedFloatArray );
+	    // create a Matrix from the peak alpha distance skims array and write to disk
+	    fileName = (String)propertyMap.get( "pkHwyDistSkim.fileName" );
+	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray );
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
-	    
-	    return newSkimMatrix;
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(newSkimMatrix);
+
+	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
+	    fileName = (String)propertyMap.get( "pkHwyDistBetaSkim.fileName" );
+        mSqueezed = getSqueezedMatrix(newSkimMatrix);
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(mSqueezed);
+        
+	    // create a Matrix from the off-peak alpha distance skims array and write to disk
+	    fileName = (String)propertyMap.get( "opHwyDistSkim.fileName" );
+	    newSkimMatrix = new Matrix( "opdist", "Off-peak SOV Distance Skims", onesBasedFloatArray );
+	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(newSkimMatrix);
+
 	}
 
 
     /**
-	 * return sov time skims as Matrix
+	 * write out peak alpha and beta SOV time skim matrices
 	 */
-	public Matrix getSovTimeSkimAsMatrix () {
+	public void writePeakSovTimeSkimMatrices () {
 
-        // get the skims as an array 
-        float[][] tempFloatArray = getSovTimeSkimAsFloatArray();
-    
-	    // create a Matrix from the skims array
-        Matrix newMatrix = new Matrix(tempFloatArray);
-        newMatrix.setExternalNumbers(alphaNumberArray);        
-	    
-	    return newMatrix;
-	}
-
-
-    /**
-	 * return sov distance skims as float[][]
-	 */
-	public float[][] getSovDistSkimAsFloatArray () {
-
-		double[][] tempDoubleArray = buildSovDistanceSkimMatrix();
-		float[][] tempFloatArray = new float[tempDoubleArray.length][];
-	    
-	    
-	    for (int i=0; i < tempDoubleArray.length; i++) {
-           tempFloatArray[i] = new float[tempDoubleArray[i].length];
-           for (int j=0; j < tempDoubleArray[i].length; j++)
-               tempFloatArray[i][j] = (float)tempDoubleArray[i][j];
-	    }
-	    
-	    return tempFloatArray;
-	}
-
-
-    /**
-	 * return sov time skims as float[][]
-	 */
-	public float[][] getSovTimeSkimAsFloatArray () {
-
-		double[][] tempDoubleArray = buildPeakSovTimeSkimMatrix();
-		float[][] tempFloatArray = new float[tempDoubleArray.length][];
-	    
-	    
-	    for (int i=0; i < tempDoubleArray.length; i++) {
-           tempFloatArray[i] = new float[tempDoubleArray[i].length];
-           for (int j=0; j < tempDoubleArray[i].length; j++)
-               tempFloatArray[i][j] = (float)tempDoubleArray[i][j];
-	    }
-	    
-	    return tempFloatArray;
-	}
-
-
-	/**
-	 * build sov distance skims as double[][]
-	 */
-	private double[][] buildSovDistanceSkimMatrix () {
-
-		// set the highway network attribute on which to skim the network
-		double[] linkCost = g.getDist();
+		String fileName;
+		MatrixWriter mw;
+		Matrix mSqueezed;
 		
-		// specify which links are valid parts of paths for this skim matrix
-		boolean[] validLinks = new boolean[g.getLinkCount()];
-		Arrays.fill (validLinks, false);
-		String[] mode = g.getMode();
-		for (int i=0; i < validLinks.length; i++) {
-			if ( mode[i].indexOf('a') >= 0 )
-				validLinks[i] = true;
-		}
-		
-		return hwySkim ( linkCost, validLinks );
-       
-	}
-
-
-	/**
-	 * build sov time skims as double[][]
-	 */
-	private double[][] buildPeakSovTimeSkimMatrix () {
-
-		// set the highway network attribute on which to skim the network
+		// set the highway network attribute on which to skim the network - congested time in this case
 		double[] linkCost = g.getCongestedTime();
 		
+        // get the skims as a double[][] array 
+        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+
+        // copy the array to a ones-based float[][] for conversion to Matrix object
+		float[][] onesBasedFloatArray = new float[zeroBasedFloatArray.length+1][zeroBasedFloatArray.length+1];
+	    for (int i=1; i < onesBasedFloatArray.length; i++) {
+           for (int j=1; j < onesBasedFloatArray[i].length; j++)
+           	  onesBasedFloatArray[i][j] = (float)zeroBasedFloatArray[i-1][j-1];
+	    }
+	    zeroBasedFloatArray = null;
+        
+	    // create a Matrix from the peak alpha congested time skims array and write to disk
+	    fileName = (String)propertyMap.get( "pkHwyTimeSkim.fileName" );
+	    newSkimMatrix = new Matrix( "pktime", "Peak SOV Time Skims", onesBasedFloatArray );
+	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(newSkimMatrix);
+
+	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
+	    fileName = (String)propertyMap.get( "pkHwyTimeBetaSkim.fileName" );
+        mSqueezed = getSqueezedMatrix(newSkimMatrix);
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(mSqueezed);
+        
+	}
+
+
+    /**
+	 * write out off-peak alpha and beta SOV time skim matrices
+	 */
+	public void writeOffPeakSovTimeSkimMatrices () {
+
+		String fileName;
+		MatrixWriter mw;
+		Matrix mSqueezed;
+		
+		// set the highway network attribute on which to skim the network - free flow time in this case
+		double[] linkCost = g.getFreeFlowTime();
+		
+        // get the skims as a double[][] array 
+        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+
+        // copy the array to a ones-based float[][] for conversion to Matrix object
+		float[][] onesBasedFloatArray = new float[zeroBasedFloatArray.length+1][zeroBasedFloatArray.length+1];
+	    for (int i=1; i < onesBasedFloatArray.length; i++) {
+           for (int j=1; j < onesBasedFloatArray[i].length; j++)
+           	  onesBasedFloatArray[i][j] = (float)zeroBasedFloatArray[i-1][j-1];
+	    }
+	    zeroBasedFloatArray = null;
+        
+	    // create a Matrix from the off-peak alpha congested time skims array and write to disk
+	    fileName = (String)propertyMap.get( "opHwyTimeSkim.fileName" );
+	    newSkimMatrix = new Matrix( "optime", "Off-peak SOV Time Skims", onesBasedFloatArray );
+	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(newSkimMatrix);
+
+	}
+
+
+    /**
+	 * get peak alpha zone SOV distance skim matrix
+	 */
+	private Matrix getSovDistSkimAsMatrix () {
+
+		// set the highway network attribute on which to skim the network - distance in this case
+		double[] linkCost = g.getDist();
+		
+        // get the skims as a double[][] array 
+        double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
+
+        // copy the array to a ones-based float[][] for conversion to Matrix object
+		float[][] onesBasedFloatArray = new float[zeroBasedFloatArray.length+1][zeroBasedFloatArray.length+1];
+	    for (int i=1; i < onesBasedFloatArray.length; i++) {
+           for (int j=1; j < onesBasedFloatArray[i].length; j++)
+           	  onesBasedFloatArray[i][j] = (float)zeroBasedFloatArray[i-1][j-1];
+	    }
+	    zeroBasedFloatArray = null;
+        
+	    // create a Matrix from the peak alpha distance skims array and return
+	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray );
+	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
+
+	    return newSkimMatrix;
+	    
+	}
+
+
+	/**
+	 * build network skim array, return as double[][].
+	 * the highway network attribute on which to skim the network is passed in.
+	 */
+	private double[][] buildHwySkimMatrix ( double[] linkCost) {
+		
 		// specify which links are valid parts of paths for this skim matrix
-		boolean[] validLinks = new boolean[g.getLinkCount()];
+		boolean[] validLinks = new boolean[linkCost.length];
 		Arrays.fill (validLinks, false);
 		String[] mode = g.getMode();
 		for (int i=0; i < validLinks.length; i++) {
@@ -239,27 +285,6 @@ public class Skims {
 		
 		return hwySkim ( linkCost, validLinks );
        
-	}
-
-    /**
-	 * build sov time skims as double[][]
-	 */
-	private double[][] buildOffPeakSovTimeSkimMatrix () {
-
-		// set the highway network attribute on which to skim the network
-		double[] linkCost = g.getFreeFlowTime();
-
-		// specify which links are valid parts of paths for this skim matrix
-		boolean[] validLinks = new boolean[g.getLinkCount()];
-		Arrays.fill (validLinks, false);
-		String[] mode = g.getMode();
-		for (int i=0; i < validLinks.length; i++) {
-			if ( mode[i].indexOf('a') >= 0 )
-				validLinks[i] = true;
-		}
-
-		return hwySkim ( linkCost, validLinks );
-
 	}
 
 
@@ -307,7 +332,7 @@ public class Skims {
 	public static void main(String[] args) {
 
     	
-    	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/skim.properties") );
+    	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
 
     	logger.info ("creating Skims object.");
         Skims s = new Skims ( 0, rb );
