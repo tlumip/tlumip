@@ -18,6 +18,7 @@ import com.pb.common.datafile.D231FileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.Format;
 import com.pb.common.util.IndexSort;
+import com.pb.common.matrix.AlphaToBeta;
 import com.pb.despair.model.Halo;
 
 /**
@@ -74,16 +75,18 @@ public class Network implements Serializable {
 
 	float[][][] turnTable = null;
 
-	HashMap propertyMap = null;
-	
-	
-    public Network ( HashMap propertyMap, String period ) {
+	HashMap tsPropertyMap = null;
+    HashMap globalPropertyMap = null;
+
+
+    public Network ( HashMap tsPropertyMap, HashMap globalPropertyMap, String period ) {
 
 		float[][] turnDefs = null;
 
-        this.propertyMap = propertyMap;
-        
-        
+        this.tsPropertyMap = tsPropertyMap;
+        this.globalPropertyMap = globalPropertyMap;
+
+
         // read the Network.properties file into a HashMap, and get the values.
 		readPropertyFile(period);
 		
@@ -107,8 +110,8 @@ public class Network implements Serializable {
 		}
 
 		// read link function definitions files (delay functions and integrals functions)		
-		lf = new LinkFunction ( (String)propertyMap.get("vdf.fileName"), "vdf");
-		lfi = new LinkFunction ( (String)propertyMap.get("vdfIntegral.fileName"), "vdf");
+		lf = new LinkFunction ( (String)tsPropertyMap.get("vdf.fileName"), "vdf");
+		lfi = new LinkFunction ( (String)tsPropertyMap.get("vdfIntegral.fileName"), "vdf");
 		
 		
 		// set the internal numbering for nodes and their correspondence to external numbering.
@@ -286,43 +289,43 @@ public class Network implements Serializable {
     	
 
     	// get the filename for the alpha/beta zone correspomdence file
-		String zoneIndexFile = (String) propertyMap.get( "zoneIndex.fileName" );
+		String zoneIndexFile = (String) globalPropertyMap.get( "alphatobeta.file" );
 
 		// create a Halo object for defining the extent of the study area
-		Halo halo = new Halo( zoneIndexFile );
-        
+		AlphaToBeta a2b = new AlphaToBeta(new File(zoneIndexFile));
+
     	// get the filename for the network node and link table
-		this.d211File = (String) propertyMap.get( "d211.fileName" );
+		this.d211File = (String) tsPropertyMap.get( "d211.fileName" );
 		
 		// get the filename for the turn table
-		this.d231File = (String) propertyMap.get( "d231.fileName" );
+		this.d231File = (String) tsPropertyMap.get( "d231.fileName" );
 		
 		// get the filename for the network node and link modifications table
-		this.d211ModsFile = (String) propertyMap.get( "d211Mods.fileName" );
+		this.d211ModsFile = (String) tsPropertyMap.get( "d211Mods.fileName" );
 		
 		// get the filename for the highway link volume delay function definition file
-		this.hwyVdfFile = (String) propertyMap.get(	"vdf.fileName" );
+		this.hwyVdfFile = (String) tsPropertyMap.get(	"vdf.fileName" );
 		
 		// get the filename for the highway link volume delay function integrals definition file
-		this.hwyVdfIntegralFile = (String) propertyMap.get(	"vdfIntegral.fileName" );
+		this.hwyVdfIntegralFile = (String) tsPropertyMap.get(	"vdfIntegral.fileName" );
 		
 		// get network properties
 		this.minCentroidLabel = 1;
-		this.maxCentroidLabel = halo.getMaxZoneNumber();
-		this.numAlphazones = halo.getNumberOfZones();
-		this.NUM_AUTO_CLASSES = Integer.parseInt ( (String)propertyMap.get( "NUM_AUTO_CLASSES" ) );
+		this.maxCentroidLabel = a2b.getMaxAlphaZone();
+		this.numAlphazones = a2b.getNumAlphaZones();
+		this.NUM_AUTO_CLASSES = Integer.parseInt ( (String)tsPropertyMap.get( "NUM_AUTO_CLASSES" ) );
 
-		if ( (String)propertyMap.get( "WALK_SPEED" ) != null )
-		    this.WALK_SPEED = Double.parseDouble ( (String)propertyMap.get( "WALK_SPEED" ) );
+		if ( (String)globalPropertyMap.get( "WALK_MPH" ) != null )
+		    this.WALK_SPEED = Double.parseDouble ( (String)globalPropertyMap.get( "WALK_MPH" ) );
 
 		
 		if ( period == "peak" ) {
-			if ( (String)propertyMap.get( "amPeak.volumeFactor" ) != null )
-				this.volumeFactor = Float.parseFloat ( (String)propertyMap.get( "amPeak.volumeFactor" ) );
+			if ( (String)globalPropertyMap.get( "AM_PEAK_VOL_FACTOR" ) != null )
+				this.volumeFactor = Float.parseFloat ( (String)globalPropertyMap.get( "AM_PEAK_VOL_FACTOR" ) );
 		}
 		else {
-			if ( (String)propertyMap.get( "offPeak.volumeFactor" ) != null )
-				this.volumeFactor = Float.parseFloat ( (String)propertyMap.get( "offPeak.volumeFactor" ) );
+			if ( (String)tsPropertyMap.get( "OFF_PEAK_VOL_FACTOR" ) != null )
+				this.volumeFactor = Float.parseFloat ( (String)globalPropertyMap.get( "OFF_PEAK_VOL_FACTOR" ) );
 		}
 		
     }

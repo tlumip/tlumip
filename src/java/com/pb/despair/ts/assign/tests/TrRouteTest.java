@@ -28,14 +28,18 @@ public class TrRouteTest {
 	
 
 	
-	HashMap propertyMap;
+	HashMap tsPropertyMap;
+    HashMap globalPropertyMap;
+
 	Network g = null;
 	
 	
 	
 	public TrRouteTest() {
 
-	    //propertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
+	    //tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
+        //globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap("global");
+
 
 	}
     
@@ -59,7 +63,7 @@ public class TrRouteTest {
 		
 
 		// create a highway network oject
-		Network g = new Network( propertyMap, period );
+		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
 
 		// create transit routes object with max 50 routes
 		TrRoute tr = new TrRoute (500);

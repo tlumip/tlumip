@@ -32,8 +32,8 @@ public class HwyDistSkimsTest {
 	static final String DATABANK = "c:\\jim\\tlumip\\TLUMIPEmme2\\emme2ban";
 	static final String CSVFILE = "c:\\jim\\tlumip\\TLUMIPEmme2\\sovDistSkimPk.csv";
     
-	static ResourceBundle rb;	
-	static HashMap propertyMap;
+	static HashMap tsPropertyMap;
+    static HashMap globalPropertyMap;
 	static Network g = null;
 	
 	PrintWriter outStream = null;
@@ -41,8 +41,11 @@ public class HwyDistSkimsTest {
 	
 	public HwyDistSkimsTest() {
 
-    	rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
-		propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+    	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
+		tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties") );
+		globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
 	}
     
@@ -55,10 +58,10 @@ public class HwyDistSkimsTest {
 		
 		HwyDistSkimsTest test = new HwyDistSkimsTest();
         
-        g = new Network( propertyMap, period );
+        g = new Network( tsPropertyMap, globalPropertyMap, period );
 		logger.info ("done building Network object.");
         
-        Skims sk = new Skims( g, propertyMap );
+        Skims sk = new Skims( g, tsPropertyMap, globalPropertyMap );
 		logger.info ("done building Skims object.");
 
 

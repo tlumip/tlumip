@@ -29,8 +29,9 @@ public class Skims {
 	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
 
 	MessageWindow mw;
-	HashMap propertyMap;
-	
+	HashMap tsPropertyMap;
+    HashMap globalPropertyMap;
+
 	boolean useMessageWindow = false;
 	
     Network g;
@@ -44,17 +45,18 @@ public class Skims {
 	
 	Matrix newSkimMatrix;
 
-    public Skims ( ResourceBundle rb, String timePeriod ) {
+    public Skims ( ResourceBundle tsRb, ResourceBundle globalRb, String timePeriod ) {
 
-        propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(tsRb);
+        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
-		String networkDiskObjectFile = (String)propertyMap.get("NetworkDiskObject.file");
+		String networkDiskObjectFile = (String)tsPropertyMap.get("NetworkDiskObject.file");
 		
 		// if no network DiskObject file exists, no previous assignments
 		// have been done, so build a new Network object which initialize 
 		// the congested time field for computing time related skims.
 		if ( networkDiskObjectFile == null ) {
-			g = new Network( propertyMap, timePeriod );
+			g = new Network( tsPropertyMap, globalPropertyMap, timePeriod );
 		}
 		// otherwise, read the DiskObject file and use the congested time field
 		// for computing time related skims.
@@ -68,10 +70,11 @@ public class Skims {
     }
 
 
-    public Skims ( Network g, HashMap map ) {
+    public Skims ( Network g, HashMap tsMap, HashMap globalMap ) {
 
         this.g = g;
-        this.propertyMap = map;
+        this.tsPropertyMap = tsMap;
+        this.globalPropertyMap = globalMap;
 
         initSkims ();
 
@@ -83,7 +86,7 @@ public class Skims {
 
 		// take a column of alpha zone numbers from a TableDataSet and puts them into an array for
 	    // purposes of setting external numbers.	     */
-		String zoneCorrespondenceFile = (String)propertyMap.get("zoneIndex.fileName");
+		String zoneCorrespondenceFile = (String)globalPropertyMap.get("alphatobeta.file");
 		try {
             CSVFileReader reader = new CSVFileReader();
             TableDataSet table = reader.readFile(new File(zoneCorrespondenceFile));
@@ -130,20 +133,20 @@ public class Skims {
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
 	    // create a Matrix from the peak alpha distance skims array and write to disk
-	    fileName = (String)propertyMap.get( "pkHwyDistSkim.fileName" );
+	    fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
         newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
 
 	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
-	    fileName = (String)propertyMap.get( "pkHwyDistBetaSkim.fileName" );
+	    fileName = (String)tsPropertyMap.get( "pkHwyDistBetaSkim.fileName" );
         mSqueezed = getSqueezedMatrix(newSkimMatrix);
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(mSqueezed);
         
 	    // create a Matrix from the off-peak alpha distance skims array and write to disk
-	    fileName = (String)propertyMap.get( "opHwyDistSkim.fileName" );
+	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
         newSkimMatrix = new Matrix( "opdist", "Off-peak SOV Distance Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
@@ -171,14 +174,14 @@ public class Skims {
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
 	    // create a Matrix from the peak alpha congested time skims array and write to disk
-	    fileName = (String)propertyMap.get( "pkHwyTimeSkim.fileName" );
+	    fileName = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
         newSkimMatrix = new Matrix( "pktime", "Peak SOV Time Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
 
 	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
-	    fileName = (String)propertyMap.get( "pkHwyTimeBetaSkim.fileName" );
+	    fileName = (String)tsPropertyMap.get( "pkHwyTimeBetaSkim.fileName" );
         mSqueezed = getSqueezedMatrix(newSkimMatrix);
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(mSqueezed);
@@ -204,7 +207,7 @@ public class Skims {
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
 	    // create a Matrix from the off-peak alpha congested time skims array and write to disk
-	    fileName = (String)propertyMap.get( "opHwyTimeSkim.fileName" );
+	    fileName = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
         newSkimMatrix = new Matrix( "optime", "Off-peak SOV Time Skims", zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
@@ -409,9 +412,9 @@ public class Skims {
 
     	
     	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
-
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties"));
     	logger.info ("creating Skims object.");
-        Skims s = new Skims ( rb, "peak" );
+        Skims s = new Skims ( rb, globalRb, "peak" );
 
     	logger.info ("skimming network and creating Matrix object.");
         Matrix m = s.getSovDistSkimAsMatrix();

@@ -52,9 +52,9 @@ public class FW {
 	DiskObjectArray fwPathsDoa = null;	
 
    
-    public FW ( HashMap propertyMap, Network g ) {
+    public FW ( HashMap tsPropertyMap, Network g ) {
 
-		this.propertyMap = propertyMap;
+		this.propertyMap = tsPropertyMap;
 		this.g = g;
         
         MAX_FW_ITERS = Integer.parseInt ( (String)propertyMap.get( "NUM_FW_ITERATIONS" ) );

@@ -41,9 +41,10 @@ public class TransitSkimManager {
 
 	AuxTrNet ag = null;	
 	
-	HashMap propertyMap = null;
+	HashMap tsPropertyMap = null;
+    HashMap globalPropertyMap = null;
 
-	
+
 	int MAX_ROUTES;
 	
 	
@@ -51,8 +52,9 @@ public class TransitSkimManager {
 	public TransitSkimManager() {
 
 		// get the items in the properties file
-		propertyMap = ResourceUtil.getResourceBundleAsHashMap ("ts" );
-        
+		tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap ("ts" );
+        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap ("global" );
+
 	}
     
 	
@@ -84,7 +86,7 @@ public class TransitSkimManager {
 		StringTokenizer st;
 		
 		// get the filenames for the peak walk transit output skims files
-		variableString = (String)propertyMap.get("pkWtSkim.fileNames");
+		variableString = (String)tsPropertyMap.get("pkWtSkim.fileNames");
 		variableList = new ArrayList();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -126,7 +128,7 @@ public class TransitSkimManager {
 		StringTokenizer st;
 		
 		// get the filenames for the peak walk transit output skims files
-		variableString = (String)propertyMap.get("pkDtSkim.fileNames");
+		variableString = (String)tsPropertyMap.get("pkDtSkim.fileNames");
 		variableList = new ArrayList();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -168,7 +170,7 @@ public class TransitSkimManager {
 		StringTokenizer st;
 		
 		// get the filenames for the offpeak walk transit output skims files
-		variableString = (String)propertyMap.get("opWtSkim.fileNames");
+		variableString = (String)tsPropertyMap.get("opWtSkim.fileNames");
 		variableList = new ArrayList();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -210,7 +212,7 @@ public class TransitSkimManager {
 		StringTokenizer st;
 		
 		// get the filenames for the offpeak walk transit output skims files
-		variableString = (String)propertyMap.get("opDtSkim.fileNames");
+		variableString = (String)tsPropertyMap.get("opDtSkim.fileNames");
 		variableList = new ArrayList();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -232,7 +234,7 @@ public class TransitSkimManager {
 		
 		// create a new transit network from d211 highway network file and d221 transit routes file, or read it from DiskObject.
 		String key = period + accessMode + "TransitNetwork";
-		String path = (String) propertyMap.get( "diskObject.pathName" );
+		String path = (String) tsPropertyMap.get( "diskObject.pathName" );
 		if ( path.endsWith("/") || path.endsWith("\\") )
 		    diskObjectFileName = path + key + ".diskObject";
 		else
@@ -289,18 +291,18 @@ public class TransitSkimManager {
 		
 
 		// create a highway network oject
-		Network g = new Network( propertyMap, period );
+		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
 		logger.info (g.getLinkCount() + " highway links");
 		logger.info (g.getNodeCount() + " highway nodes");
 
 
 		// get the filenames for the peak and off-peak route files
-		String d221PeakFile = (String) propertyMap.get( "d221.pk.fileName" );
-		String d221OffPeakFile = (String) propertyMap.get( "d221.op.fileName" );
+		String d221PeakFile = (String) tsPropertyMap.get( "d221.pk.fileName" );
+		String d221OffPeakFile = (String) tsPropertyMap.get( "d221.op.fileName" );
 
 		
 		// read parameter for maximum number of transit routes
-		MAX_ROUTES = Integer.parseInt ( (String)propertyMap.get("MAX_TRANSIT_ROUTES") );
+		MAX_ROUTES = Integer.parseInt ( (String)tsPropertyMap.get("MAX_TRANSIT_ROUTES") );
 
 		
 		

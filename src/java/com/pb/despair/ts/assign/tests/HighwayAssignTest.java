@@ -25,7 +25,8 @@ public class HighwayAssignTest {
 
 	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.tests");
 
-	HashMap propertyMap;
+	HashMap tsPropertyMap;
+    HashMap globalPropertyMap;
 
 	double[][][] multiclassTripTable = new double[2][][];
 	
@@ -35,7 +36,8 @@ public class HighwayAssignTest {
 	
 	public HighwayAssignTest() {
 
-	    propertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
+	    tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
+        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap("global");
 
 	}
     
@@ -63,19 +65,19 @@ public class HighwayAssignTest {
 
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Network object at: " + myDateString);
-		g = new Network( propertyMap, period );
+		g = new Network( tsPropertyMap, globalPropertyMap, period );
 		
 		
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW( propertyMap, g );
+		FW fw = new FW( tsPropertyMap, g );
 
 
 		// create highway skims object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating hwy skims object at: " + myDateString);
-		Skims highwaySkims = new Skims(g, propertyMap);
+		Skims highwaySkims = new Skims(g, tsPropertyMap, globalPropertyMap);
 
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("generating trips with gravity model at: " + myDateString);

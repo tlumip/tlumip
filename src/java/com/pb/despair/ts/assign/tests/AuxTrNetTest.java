@@ -55,7 +55,8 @@ public class AuxTrNetTest {
 	
 	AuxTrNet ag = null;	
 	
-	HashMap propertyMap = null;
+	HashMap tsPropertyMap = null;
+    HashMap globalPropertyMap = null;
 
 	String d221PeakFile = null;
 	String d221OffPeakFile = null;
@@ -69,21 +70,22 @@ public class AuxTrNetTest {
 	
 	
 	
-	public AuxTrNetTest( HashMap propertyMap ) {
+	public AuxTrNetTest( HashMap tsPropertyMap, HashMap globalPropertyMap ) {
 		
-		this.propertyMap = propertyMap;
-		
+		this.tsPropertyMap = tsPropertyMap;
+        this.globalPropertyMap = globalPropertyMap;
+
 
 		// get the filenames for the peak and off-peak route files
-		d221PeakFile = (String) propertyMap.get( "d221.pk.fileName" );
-		d221OffPeakFile = (String) propertyMap.get( "d221.op.fileName" );
+		d221PeakFile = (String) tsPropertyMap.get( "d221.pk.fileName" );
+		d221OffPeakFile = (String) tsPropertyMap.get( "d221.op.fileName" );
 
 		String variableString;
 		ArrayList variableList;
 		StringTokenizer st;
 		
 		// get the filenames for the peak walk transit output skims files
-		variableString = (String)propertyMap.get("pkWtSkim.fileNames");
+		variableString = (String)tsPropertyMap.get("pkWtSkim.fileNames");
 		variableList = new ArrayList();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -94,7 +96,7 @@ public class AuxTrNetTest {
 			PeakWalkTransitSkimFileNames[i] = (String)variableList.get(i);
 
 		// get the filenames for the peak drive transit output skims files
-		variableString = (String)propertyMap.get("pkDtSkim.fileNames");
+		variableString = (String)tsPropertyMap.get("pkDtSkim.fileNames");
 		variableList.clear();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -105,7 +107,7 @@ public class AuxTrNetTest {
 		PeakDriveTransitSkimFileNames[i] = (String)variableList.get(i);
 
 		// get the filenames for the peak walk transit output skims files
-		variableString = (String)propertyMap.get("opWtSkim.fileNames");
+		variableString = (String)tsPropertyMap.get("opWtSkim.fileNames");
 		variableList.clear();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -116,7 +118,7 @@ public class AuxTrNetTest {
 		OffPeakWalkTransitSkimFileNames[i] = (String)variableList.get(i);
 
 		// get the filenames for the peak drive transit output skims files
-		variableString = (String)propertyMap.get("opDtSkim.fileNames");
+		variableString = (String)tsPropertyMap.get("opDtSkim.fileNames");
 		variableList.clear();
 		st = new StringTokenizer(variableString, ", |");
 		while (st.hasMoreTokens()) {
@@ -128,7 +130,7 @@ public class AuxTrNetTest {
 
 		
 		// read parameter for maximum number of transit routes
-		MAX_ROUTES = Integer.parseInt ( (String)propertyMap.get("MAX_TRANSIT_ROUTES") );
+		MAX_ROUTES = Integer.parseInt ( (String)tsPropertyMap.get("MAX_TRANSIT_ROUTES") );
 
 	}
     
@@ -146,10 +148,13 @@ public class AuxTrNetTest {
 		
 		
     	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
-    	HashMap propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb); 
+    	HashMap propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties") );
+    	HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
     	logger.info ("building transit network");
-		AuxTrNetTest test = new AuxTrNetTest(propertyMap);
+		AuxTrNetTest test = new AuxTrNetTest(propertyMap, globalPropertyMap);
 		
 		/*
 		 * specify which period, accessmode and matrix element to view:
@@ -231,7 +236,7 @@ public class AuxTrNetTest {
 		
 		// create a new transit network from d211 highway network file and d221 transit routes file, or read it from DiskObject.
 		String key = period + accessMode + "TransitNetwork";
-		String path = (String) propertyMap.get( "diskObject.pathName" );
+		String path = (String) tsPropertyMap.get( "diskObject.pathName" );
 		if ( path.endsWith("/") || path.endsWith("\\") )
 		    diskObjectFileName = path + key + ".diskObject";
 		else
@@ -327,7 +332,7 @@ public class AuxTrNetTest {
 		
 
 		// create a highway network oject
-		Network g = new Network( propertyMap, period );
+		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
 		logger.info (g.getLinkCount() + " highway links");
 		logger.info (g.getNodeCount() + " highway nodes");
 

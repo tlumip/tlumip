@@ -43,19 +43,20 @@ public class OdotAssign {
 	
     public static void main (String[] args) {
         
-       System.out.println ( assignAggregateTrips( args[0] ) );
+       System.out.println ( assignAggregateTrips( args[0], args[1] ) );
 		
     }
 
     
     
-    public static String assignAggregateTrips ( String propertyFileName ) {
+    public static String assignAggregateTrips ( String tsPropertyFileName, String globalPropertyFileName ) {
         
 		long startTime = System.currentTimeMillis();
 		
 		String period = "peak";
 		
-		HashMap propertyMap;
+		HashMap tsPropertyMap;
+        HashMap globalPropertyMap;
 		String tripFileName = null;
 		double[][][] multiclassTripTable = new double[2][][];
 		
@@ -65,27 +66,33 @@ public class OdotAssign {
 		int linkCount;
 		String myDateString;
 
-		// create a HashMap of properties values
-	    int dotIndex = propertyFileName.indexOf("."); 
-	    String subString = propertyFileName.substring( 0, dotIndex ); 
-	    String propertyName = subString; 
-        propertyMap = ResourceUtil.getResourceBundleAsHashMap( propertyName );
-        
-		
+		// create a HashMap of ts properties values
+	    int dotIndex = tsPropertyFileName.indexOf(".");
+	    String subString = tsPropertyFileName.substring( 0, dotIndex );
+	    String propertyName = subString;
+        tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap( propertyName );
+
+        // create a HashMap of global properties values
+	    dotIndex = globalPropertyFileName.indexOf(".");
+	    subString = globalPropertyFileName.substring( 0, dotIndex );
+	    propertyName = subString;
+        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap( propertyName );
+
+
 	    // get trip list filenames from property file
-		tripFileName = (String)propertyMap.get("pt.fileName");
+		tripFileName = (String)tsPropertyMap.get("pt.fileName");
 
 
 		
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Highway Network object at: " + myDateString);
-		g = new Network( propertyMap, period );
+		g = new Network( tsPropertyMap, globalPropertyMap, period );
 		
 		
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW( propertyMap, g );
+		FW fw = new FW( tsPropertyMap, g );
 
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());

@@ -22,21 +22,23 @@ public class TurnPenaltiesTest {
 	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.tests");
 
     
-	HashMap propertyMap;
+	HashMap tsPropertyMap;
+    HashMap globalPropertyMap;
 	Network g = null;
 	
 	
 	
 	public TurnPenaltiesTest() {
 
-		propertyMap = ResourceUtil.getResourceBundleAsHashMap("tpTest");
+		tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("tpTest");
+        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap("global");
 
 	}
     
 	
 	private void runTest (String period) {
         
-		g = new Network( propertyMap, period );
+		g = new Network( tsPropertyMap, globalPropertyMap, period );
 		logger.info ("done building Network object.");
 
 		

@@ -106,14 +106,14 @@ public class TS {
 		int linkCount;
 		String myDateString;
 
-		// get peak period definitions from property file
-		peakStart = Integer.parseInt( (String)tsPropertyMap.get("amPeak.start") );
-		peakEnd = Integer.parseInt( (String)tsPropertyMap.get("amPeak.end") );
-		peakFactor = Float.parseFloat( (String)tsPropertyMap.get("amPeak.volumeFactor") );
+		// get peak period definitions from global property file
+		peakStart = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
+		peakEnd = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+		peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
 
         myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
-		g = new Network( tsPropertyMap, "peak" );
+		g = new Network( tsPropertyMap, globalPropertyMap, "peak" );
 
 		
 	
@@ -149,7 +149,7 @@ public class TS {
 		
 		logger.info("Writing Peak Time and Distance skims to disk");
         startTime = System.currentTimeMillis();
-        writePeakSkims(g, tsPropertyMap);
+        writePeakSkims(g, tsPropertyMap, globalPropertyMap);
         logger.info("wrote the peak skims in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
@@ -203,22 +203,22 @@ public class TS {
 		
         logger.info("Writing Off-Peak Time and Distance skims to disk");
         startTime = System.currentTimeMillis();
-        writeOffPeakSkims(g, tsPropertyMap);
+        writeOffPeakSkims(g, tsPropertyMap, globalPropertyMap);
         logger.info("wrote the Off-Peak skims in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
     }
 
-    public void writePeakSkims(Network g, HashMap map){
-        Skims skims = new Skims(g, map);
+    public void writePeakSkims(Network g, HashMap tsMap, HashMap globalMap){
+        Skims skims = new Skims(g, tsMap, globalMap);
         logger.info ("skimming network and creating pk time and distance matrices.");
         skims.writePeakSovTimeSkimMatrices();  //writes the alpha and beta pktime skims
         skims.writeSovDistSkimMatrices();     //writes alpha and beta pkdist  and
                                                 // off-peak distance skims
     }
 
-    public void writeOffPeakSkims(Network g, HashMap map){
-        Skims skims = new Skims(g, map);
+    public void writeOffPeakSkims(Network g, HashMap map, HashMap globalMap){
+        Skims skims = new Skims(g, map, globalMap);
         logger.info ("skimming network and creating off-pk time matrices.");
         skims.writeOffPeakSovTimeSkimMatrices();    //writes the alpha off-peak time skim
     }
