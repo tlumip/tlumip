@@ -47,16 +47,25 @@ public class LaborProductionAndConsumption {
     ResourceBundle rb;
 
     
-    String[] householdSegments = {"HH0to5k0to2","HH0to5k2plus",
-                                  "HH5to10k0to2","HH5to10k2plus",
-                                  "HH10to15k0to2","HH10to15k2plus",
-                                  "HH15to20k0to2","HH15to20k2plus",
-                                  "HH20to30k0to2","HH20to30k2plus",
-                                  "HH30to40k0to2","HH30to40k2plus",
-                                  "HH40to50k0to2","HH40to50k2plus",
-                                  "HH50to70k0to2","HH50to70k2plus",
-                                  "HH70kUp0to2", "HH70kUp2plus"
-                                  };
+    String[] householdSegments =  { "HH0to5k1to2",
+		                            "HH0to5k3plus",
+		                            "HH5to10k1to2",
+		                            "HH5to10k3plus",
+                                    "HH10to15k1to2",
+                                    "HH10to15k3plus",
+                                    "HH15to20k1to2",
+                                    "HH15to20k3plus",
+                                    "HH20to30k1to2",
+                                    "HH20to30k3plus",
+                                    "HH30to40k1to2",
+                                    "HH30to40k3plus",
+                                    "HH40to50k1to2",
+                                    "HH40to50k3plus",
+                                    "HH50to70k1to2",
+                                    "HH50to70k3plus",
+                                    "HH70kUp1to2",
+                                    "HH70kUp3plus"
+                                   };
     
     String[] occupations = {"1_ManPro","1a_Health","2_PstSec","3_OthTchr","4_OthP&T","5_RetSls","6_OthR&C","7_NonOfc"};
     
