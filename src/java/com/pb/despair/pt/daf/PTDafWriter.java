@@ -62,6 +62,10 @@ public class PTDafWriter extends MessageProcessingTask{
             writeMatrix(msg,"modeChoiceLogsumsWrite.path");         //BINARY-ZIP
 //            writeBinaryMatrix(msg,"modeChoiceLogsumsWrite.path");
 
+        if(msg.getId().equals(MessageID.MC_LOGSUMS_COLLAPSED))
+            writeMatrix(msg,"modeChoiceLogsumsWrite.path");         //BINARY-ZIP
+//            writeBinaryMatrix(msg,"modeChoiceLogsumsWrite.path");
+
         else if(msg.getId().equals(MessageID.DC_LOGSUMS_CREATED))
             writeMatrix(msg,"dcLogsumWrite.path");                //BINARY-ZIP
 //            writeBinaryMatrix(msg,"dcLogsumWrite.path");
