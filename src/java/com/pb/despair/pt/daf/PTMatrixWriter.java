@@ -63,7 +63,7 @@ public class PTMatrixWriter extends MessageProcessingTask{
             
             modeChoiceLogsumsWritePath = ResourceUtil.getProperty(rb, "modeChoiceLogsumsWrite.path");
             dcLogsumsWritePath = ResourceUtil.getProperty(rb, "dcLogsumsWrite.path");
-            dcExpUtilitesWritePath = ResourceUtil.getProperty(rb, "dcExpUtilitesWriteWrite.path");
+            dcExpUtilitesWritePath = ResourceUtil.getProperty(rb, "dcExpUtilitesWrite.path");
         
         }
         
