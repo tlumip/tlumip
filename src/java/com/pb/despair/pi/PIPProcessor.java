@@ -139,18 +139,21 @@ public class PIPProcessor {
         if (logitProduction) logger.fine("using logit substitution production function");
         int numMissingZonalValueErrors = 0;
         TableDataSet ptab = null;
+        TableDataSet zonalData = null;
         String oregonInputsString = ResourceUtil.getProperty(rb, "pi.oregonInputs");
         if (oregonInputsString != null ) {
             if (oregonInputsString.equalsIgnoreCase("true")) {
                 ptab= loadTableDataSet("ActivitiesW","pi.current.data");
+                zonalData = loadTableDataSet("ActivitiesZonalValuesW","pi.current.data");
             } else {
                 ptab = loadTableDataSet("ActivitiesI","pi.base.data");
-            } 
+                zonalData = loadTableDataSet("ActivitiesZonalValuesI","pi.base.data");
+            }
         }else {
-                ptab = loadTableDataSet("ActivitiesI","pi.base.data");
+            ptab = loadTableDataSet("ActivitiesI","pi.base.data");
+            zonalData = loadTableDataSet("ActivitiesZonalValuesI","pi.base.data");
         }
         
-        TableDataSet zonalData = loadTableDataSet("ActivitiesZonalValuesI","pi.base.data");
         Hashtable activityZonalHashtable = new Hashtable();
         for (int zRow = 1; zRow <= zonalData.getRowCount(); zRow++) {
             String activityZone = zonalData.getStringValueAt(zRow, "Activity") + "@" + ((int) zonalData.getValueAt(zRow, "ZoneNumber"));
@@ -694,16 +697,17 @@ public class PIPProcessor {
             return null;
         }
         TableDataSet table = null;
+        String fileName = null;
         try {
             if (useSQLInputs) {
                 table = getJDBCTableReader().readTable(tableName);
             } else {
-                String fileName = inputPath +tableName + ".csv";
+                fileName = inputPath +tableName + ".csv";
                 CSVFileReader reader = new CSVFileReader();
                 table = reader.readFile(new File(fileName));
             }
         } catch (IOException e) {
-            logger.severe("Can't find PI input table " + tableName);
+            logger.severe("Can't find input table " + fileName);
         }
         return table;
     }
