@@ -41,6 +41,11 @@ public class OregonPIPProcessor extends PIPProcessor {
      * @see com.pb.despair.pi.PIPProcessor#setUpPi()
      */
     public void setUpPi() {
+
+        super.setUpPi();
+    }
+
+    public void doProjectSpecificInputProcessing() {
         String currPath = ResourceUtil.getProperty(rb,"pi.current.data");
         File actW = new File(currPath + "ActivitiesW.csv");
         if(actW.exists()){
@@ -60,20 +65,11 @@ public class OregonPIPProcessor extends PIPProcessor {
             logger.info("Deleted old ActivitiesZonalValuesW.csv to prepare for new file");
         }
 
-        String oregonInputsString = ResourceUtil.getProperty(rb, "pi.oregonInputs");
-        if (oregonInputsString != null ) {
-            if (oregonInputsString.equalsIgnoreCase("true")) {
-                doOregonSpecificInputProcessing();
-             }
-        }
+
         String calibrationMetaParameters = ResourceUtil.getProperty(rb,"pi.readMetaParameters");
         if (calibrationMetaParameters.equalsIgnoreCase("true")) {
             setUpMetaParameters();
         }
-        super.setUpPi();
-    }
-
-    private void doOregonSpecificInputProcessing() {
         createActivitiesWFile();
         createFloorspaceWFile();
         createActivitiesZonalValuesWFile();

@@ -683,6 +683,10 @@ public class PIPProcessor {
 
     }
 
+    public void doProjectSpecificInputProcessing() {
+    
+    }
+
 
     protected TableDataSet loadTableDataSet(String tableName, String source) {
         boolean useSQLInputs=false;
