@@ -22,17 +22,11 @@
 ##/
 codeVersion <- "111"
 baseYearIndex <- 0
-os <- tolower(Sys.info()["sysname"])
-if(os == "windows"){
-    codePath <- sub("-", "", commandArgs()[4])
-    dataPath <- sub("-", "", commandArgs()[5])
-    currYearIndex <- as.numeric(sub("-", "", commandArgs()[6]))
-    }
-if(os == "linux"){
-    codePath <- sub("-", "", commandArgs()[6])
-    dataPath <- sub("-", "", commandArgs()[7])
-    currYearIndex <- as.numeric(sub("-", "", commandArgs()[8]))
-    }
+
+codePath <- sub("-", "", commandArgs()[length(commandArgs())-2])
+dataPath <- sub("-", "", commandArgs()[length(commandArgs())-1])
+currYearIndex <- as.numeric(sub("-", "", commandArgs()[length(commandArgs())]))
+
 if(currYearIndex == baseYearIndex){
     prevYearIndex <- baseYearIndex
 } else {
