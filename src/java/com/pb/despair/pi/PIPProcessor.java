@@ -1006,6 +1006,13 @@ public class PIPProcessor {
         }
 
 
+    public void writeFlowHistograms(String name) {
+        Commodity com = Commodity.retrieveCommodity(name);
+        Matrix b = com.getBuyingFlowMatrix();
+        Matrix s = com.getSellingFlowMatrix();
+        writeFlowHistograms(name,b,s);
+    }
+    
     public void writeFlowZipMatrices(String name) {
         Commodity com = Commodity.retrieveCommodity(name);
         ZipMatrixWriter  zmw = new ZipMatrixWriter(new File(getOutputPath()+"buying_"+com.name+".zipMatrix"));
@@ -1015,12 +1022,16 @@ public class PIPProcessor {
         Matrix s = com.getSellingFlowMatrix();
         zmw.writeMatrix(s);
         logger.info("Buying and Selling Commodity Flow Matrices have been written for " + name);
+        writeFlowHistograms(name,b,s);
+    }
+    
+    private void writeFlowHistograms(String commodityName, Matrix buyingMatrix, Matrix sellingMatrix) {
 
         Iterator it = histogramSpecifications.iterator();
         BufferedWriter histogramFile = null;
         while (it.hasNext()) {
             HistogramSpec hspec = (HistogramSpec) it.next();
-            if (hspec.commodityName.equals(name)) {
+            if (hspec.commodityName.equals(commodityName)) {
                 double[] boundaries = new double[hspec.boundaries.size()];
                 for (int bound=0;bound<hspec.boundaries.size();bound++) {
                     boundaries[bound] = (double) ((Float) hspec.boundaries.get(bound)).doubleValue();
@@ -1038,10 +1049,10 @@ public class PIPProcessor {
                     ((SomeSkims) TransportKnowledge.globalTransportKnowledge).addZipMatrix(hspec.categorizationSkim);
                     skim =((SomeSkims) TransportKnowledge.globalTransportKnowledge).getMatrix(hspec.categorizationSkim);
                 }
-                mhBuying.generateHistogram(skim,b);
-                mhSelling.generateHistogram(skim,s);
+                mhBuying.generateHistogram(skim,buyingMatrix);
+                mhSelling.generateHistogram(skim,sellingMatrix);
                 try {
-                    if (histogramFile == null) histogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "histograms_"+name+".csv"));
+                    if (histogramFile == null) histogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "histograms_"+commodityName+".csv"));
                     mhBuying.writeHistogram("buying", histogramFile);
                     mhSelling.writeHistogram("selling", histogramFile);
                 } catch (IOException e) {
@@ -1064,6 +1075,13 @@ public class PIPProcessor {
         Iterator com = Commodity.getAllCommodities().iterator();
         while (com.hasNext()) {
             writeFlowZipMatrices(((Commodity)com.next()).getName());
+        }
+    }
+
+    public void writeAllHistograms() {
+        Iterator com = Commodity.getAllCommodities().iterator();
+        while (com.hasNext()) {
+            writeFlowHistograms(((Commodity)com.next()).getName());
         }
     }
 
@@ -1412,8 +1430,12 @@ public class PIPProcessor {
         writeActivitySummary(); // write out the top level logsums for benefit analysis - ActivitySummary.csv
         logger.info("Writing buying_$commodityName.csv and selling_$commodityName.csv");
         readInHistogramSpecifications();
+        if (getWriteZipMatrices()) {
         writeAllFlowZipMatrices(); //writes out a 'buying_commodityName.csv' and a 'selling_commodityName.csv'
                                   //files for each commodity
+        } else {
+            writeAllHistograms();
+        }
         
     }
 
@@ -1428,4 +1450,12 @@ public class PIPProcessor {
         return outputPath;
     }
 
-}
+    private boolean getWriteZipMatrices() {
+        String writem = ResourceUtil.getProperty(rb, "pi.writeFlowMatrices");
+        if (writem==null) return true;
+        if (writem.length()==0) return true;
+        if (writem.equalsIgnoreCase("false")) return false;
+        return true;
+    }
+
+   }
