@@ -77,16 +77,21 @@ public class PTMatrixWriter extends MessageProcessingTask{
 //            writeMatrix(msg, modeChoiceLogsumsWritePath);         //BINARY-ZIP
             writeBinaryMatrix(msg,modeChoiceLogsumsWritePath);
 
-        if(msg.getId().equals(MessageID.MC_LOGSUMS_COLLAPSED))
+        else if(msg.getId().equals(MessageID.MC_LOGSUMS_COLLAPSED))
             writeMatrix(msg, modeChoiceLogsumsWritePath);         //BINARY-ZIP
 //            writeBinaryMatrix(msg,modeChoiceLogsumsWritePath);
 
         else if(msg.getId().equals(MessageID.DC_LOGSUMS_CREATED))
 //            writeMatrix(msg, dcLogsumsWritePath);                //BINARY-ZIP
             writeBinaryMatrix(msg,dcLogsumsWritePath);
-        else if(msg.getId().equals(MessageID.DC_EXPUTILITIES_CREATED))
+
+        else if(msg.getId().equals(MessageID.DC_EXPUTILITIES_CREATED)){
 //            writeMatrix(msg, dcExpUtilitesWritePath);          //BINARY-ZIP
+            logger.warning(getName() + " received matrix " + ((Matrix) msg.getValue("matrix")).getName() +  " from " + msg.getSender());
+            logger.warning(getName() + " with segment " +  (Integer) msg.getValue("segment") +   " from " + msg.getSender());
+            logger.warning(getName() + " and purpose " + (String) msg.getValue("purpose") + " from " + msg.getSender());
             writeBinaryMatrix(msg,dcExpUtilitesWritePath);
+        }
 
     }
     
@@ -117,7 +122,8 @@ public class PTMatrixWriter extends MessageProcessingTask{
             logger.info("Wrote Matrix "+m.getName()+".binary to "+ path + " in "+(System.currentTimeMillis()-startTime)/1000.0 +" seconds");
             logger.info("Free memory after writing Matrix : "+m.getName()+" memory: "+Runtime.getRuntime().freeMemory());
             msg.setValue("matrix",null);
-        }
+        }else logger.info("Matrix for segment " + msg.getValue("segment") +" and purpose " + msg.getValue("purpose")
+                + " is null");
         sendTo("TaskMasterQueue",msg);
         m=null;
     }

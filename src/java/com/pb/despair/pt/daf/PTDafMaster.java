@@ -29,6 +29,7 @@ public class PTDafMaster extends MessageProcessingTask {
     static final int TOTALSEGMENTS = 9;
     static final int TOTALOCCUPATIONS = 8;
     static final int TOTAL_DCLOGSUMS = 63;
+    static final int TOTAL_DCEXPUTILS = 63;
     static final int MAXZONENUMBER = 4141;
 
     static int MAXBLOCKSIZE;  //will be initialized through resource bundle as it may change depending
@@ -45,10 +46,13 @@ public class PTDafMaster extends MessageProcessingTask {
     int totalHouseholds;
     int totalPersons;
     int totalModeChoiceLogsums = 0;
+    int totalCollapsedModeChoiceLogsums = 0;
     int totalDCLogsums = 0;
     int totalWorkers = 0;
     int mcLogsumCount = 0;
+    int mcCollapsedLogsumCount = 0;
     int dcLogsumCount = 0;
+    int dcExpUtilCount = 0;
     int tazUpdateCount = 0;
     int personsWithWorkplaceCount = 0;
     int householdsProcessedCount = 0;
@@ -99,6 +103,7 @@ public class PTDafMaster extends MessageProcessingTask {
             //Next get pt.properties and set max block size.
         ptRb = ResourceUtil.getPropertyBundle(new File(pathToRb));
         MAXBLOCKSIZE = Integer.parseInt(ResourceUtil.getProperty(ptRb,"max.block.size"));
+        totalCollapsedModeChoiceLogsums = ResourceUtil.getList(ptRb,"matrices.for.pi").size();
 
         //Start mode choice logsums.  The workers will decide if the MC Logsums
         //actually need to be recalculated based on a class boolean.  If they
@@ -113,11 +118,12 @@ public class PTDafMaster extends MessageProcessingTask {
         logger.info("Adding synthetic population from database");
         households = dataReader.readHouseholds("households.file");
         totalHouseholds = households.length;
-        logger.info("Total Number of HHs :" + totalHouseholds);
+        logger.info("Total Number of HHs: " + totalHouseholds);
         if(debug) logger.fine("Size of households: " + ObjectUtil.sizeOf(households));
 
         logger.info("Reading the Persons file");
         persons = dataReader.readPersons("persons.file");
+        logger.info("Total Number of Persons: " + persons.length);
         if(debug) logger.fine("Size of persons: " + ObjectUtil.sizeOf(persons));
         totalPersons = persons.length;
 
@@ -163,11 +169,18 @@ public class PTDafMaster extends MessageProcessingTask {
         logger.info(getName() + " received messageId=" + msg.getId() +
             " message from=" + msg.getSender() + " @time=" + new Date());
 
-        if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED)) {
-            mcLogsumCount++;
-            logger.fine("mcLogsumCount: " + mcLogsumCount);
+        if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED) ||
+                msg.getId().equals(MessageID.MC_LOGSUMS_COLLAPSED)) {
 
-            if (mcLogsumCount == totalModeChoiceLogsums) {
+            if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED)) {
+                mcLogsumCount++;
+                logger.fine("mcLogsumCount: " + mcLogsumCount);
+            }else{
+                mcCollapsedLogsumCount++;
+                logger.fine("mcCollapsedLogsumCount: " + mcCollapsedLogsumCount);
+            }
+
+            if (mcLogsumCount == totalModeChoiceLogsums && mcCollapsedLogsumCount == totalCollapsedModeChoiceLogsums) {
                 logger.info("ModeChoice Logsums completed.");
                 createWorkplaceLocationMessages();
             }
@@ -196,12 +209,18 @@ public class PTDafMaster extends MessageProcessingTask {
                 startDCLogsums();
             }
 
-        } else if (msg.getId().equals(MessageID.DC_LOGSUMS_CREATED) ) {
+        } else if (msg.getId().equals(MessageID.DC_LOGSUMS_CREATED) ||
+                msg.getId().equals(MessageID.DC_EXPUTILITIES_CREATED)) {
 
-            dcLogsumCount++;
-            if(debug) logger.info("dcLogsumCount: " + dcLogsumCount);
+            if (msg.getId().equals(MessageID.DC_LOGSUMS_CREATED) ){
+                dcLogsumCount++;
+                if(debug) logger.info("dcLogsumCount: " + dcLogsumCount);
+            } else {
+                dcExpUtilCount++;
+                if(debug) logger.info("expUtilCount: " + dcExpUtilCount);
+            }
 
-            if (dcLogsumCount == TOTAL_DCLOGSUMS) {
+            if (dcLogsumCount == TOTAL_DCLOGSUMS  && dcExpUtilCount ==TOTAL_DCEXPUTILS) {
                 logger.info("Destination Choice Logsums completed.");
                 startProcessHouseholds();
             }
