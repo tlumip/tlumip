@@ -19,7 +19,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.Format;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
-import com.pb.despair.model.Halo;
 
 /**
  * This Network class contains the link and node data tables and
@@ -72,6 +71,7 @@ public class Network implements Serializable {
 	LinkCalculator fpLc = null;
 	LinkCalculator fdiLc = null;
 	LinkCalculator fpiLc = null;
+	LinkCalculator ftLc = null;
 
 	float[][][] turnTable = null;
 
@@ -149,8 +149,9 @@ public class Network implements Serializable {
 		// define link calculators for use in computing objective function and lambda vales
 		fdiLc = new LinkCalculator ( linkTable, lfi.getFunctionStrings( "fd" ), "vdf" );
 		fpiLc = new LinkCalculator ( linkTable, lfi.getFunctionStrings( "fp" ), "turnIndex" );
+
 		
-		
+		ftLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "ft" ), "vdf" );
 		
     }
 
@@ -246,6 +247,10 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsString( "mode" );
 	}
 
+	public double getWalkSpeed () {
+		return WALK_SPEED;
+	}
+
     public double[][] getFlows () {
          
         double[][] flows = new double[NUM_AUTO_CLASSES][];
@@ -312,7 +317,7 @@ public class Network implements Serializable {
 		// get network properties
 		this.minCentroidLabel = 1;
 		this.maxCentroidLabel = a2b.getMaxAlphaZone();
-		this.numAlphazones = a2b.getNumAlphaZones();
+		this.numAlphazones = a2b.alphaSize();
 		this.NUM_AUTO_CLASSES = Integer.parseInt ( (String)tsPropertyMap.get( "NUM_AUTO_CLASSES" ) );
 
 		if ( (String)globalPropertyMap.get( "WALK_MPH" ) != null )
@@ -539,15 +544,12 @@ public class Network implements Serializable {
 	}
 	
 	
-	public void appylTransitVdfs () {
+	public double applyLinkTransitVdf ( int hwyLinkIndex, int transitVdfIndex ) {
 		
-
-		// calculate the link in-vehicle travel times based on the transit vdf functions defined
-		LinkCalculator ftLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "ft" ), "ttf" );
-
-		double[] results = ftLc.solve();
-		linkTable.setColumnAsDouble( linkTable.getColumnPosition("transitTime"), results );
-
+		// calculate the link in-vehicle travel times based on the transit vdf index for the link passed in
+		double result = ftLc.solve(hwyLinkIndex, transitVdfIndex);
+		return result;
+		
 	}
 
 	
@@ -705,7 +707,8 @@ public class Network implements Serializable {
 		
 		
 		// otherwise, this downstream link is part of a penalized turn so return the turn penalty.
-		returnValue = fpLc.solve( fpIndex );
+		int k = getLinkIndex ( jn, kn );
+		returnValue = fpLc.solve( k, fpIndex );
 
 		
 		return returnValue;
