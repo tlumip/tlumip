@@ -314,6 +314,8 @@ public class PIPProcessor {
     }
     private final int maxHistogramBands = 100;
     private boolean logitProduction;
+    // 4 dimensional matrix, activity, zoneNumber, commodity, MorU
+    private StringIndexedNDimensionalMatrix zonalMakeUseCoefficients;
     
     protected String[] readInHistogramSpecifications() {
          ArrayList newSkimNames = new ArrayList();
@@ -1277,7 +1279,7 @@ public class PIPProcessor {
                 binary = true;
             }
         }
-        StringIndexedNDimensionalMatrix coeffs = null;
+        zonalMakeUseCoefficients = null;
         StringIndexedNDimensionalMatrix utilities = null;
         StringIndexedNDimensionalMatrix quantities = null;
         if (binary) {
@@ -1287,8 +1289,8 @@ public class PIPProcessor {
             shape[1] = AbstractTAZ.getAllZones().length;
             shape[2]= AbstractCommodity.getAllCommodities().size();
             shape[0] = ProductionActivity.getAllProductionActivities().size();
-            coeffs = new StringIndexedNDimensionalMatrix("Coefficient",4,shape,columnNames);
-            coeffs.setAddKeysOnTheFly(true);
+            zonalMakeUseCoefficients = new StringIndexedNDimensionalMatrix("Coefficient",4,shape,columnNames);
+            zonalMakeUseCoefficients.setAddKeysOnTheFly(true);
             utilities = new StringIndexedNDimensionalMatrix("Utility",4,shape,columnNames);
             utilities.setAddKeysOnTheFly(true);
             quantities = new StringIndexedNDimensionalMatrix("Amount",4,shape,columnNames);
@@ -1346,7 +1348,7 @@ public class PIPProcessor {
                             }
                             if (binary) {
                                 indices[2] = com.getName();
-                                coeffs.setValue((float) consumptionAmounts[c],indices);
+                                zonalMakeUseCoefficients.setValue((float) consumptionAmounts[c],indices);
                                 utilities.setValue((float) buyingZUtilities[c],indices);
                                 quantities.setValue((float) (activityAmount*consumptionAmounts[c]),indices);
                             }
@@ -1367,7 +1369,7 @@ public class PIPProcessor {
                             }
                             if (binary) {
                                 indices[2] = com.getName();
-                                coeffs.setValue((float) productionAmounts[c],indices);
+                                zonalMakeUseCoefficients.setValue((float) productionAmounts[c],indices);
                                 utilities.setValue((float) sellingZUtilities[c],indices);
                                 quantities.setValue((float) (activityAmount*productionAmounts[c]),indices);
                             }
@@ -1390,7 +1392,7 @@ public class PIPProcessor {
                 try {
                     java.io.FileOutputStream fos = new java.io.FileOutputStream(filename);
                     java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(fos);
-                    out.writeObject(coeffs);
+                    out.writeObject(zonalMakeUseCoefficients);
                     out.writeObject(utilities);
                     out.writeObject(quantities);
                     out.flush();
@@ -1403,6 +1405,32 @@ public class PIPProcessor {
     }
 
     private void writeFloorspaceZoneLocationTable() {
+        int[] makeUseArraySize = new int[2];
+        makeUseArraySize[0] = Commodity.getAllCommodities().size();
+        makeUseArraySize[1] = maxAlphaZone()+1;
+        String[] columnNames = new String[2];
+        columnNames[0] = "Commodity";
+        columnNames[1] = "FloorspaceZone";
+        StringIndexedNDimensionalMatrix zonalMake = new StringIndexedNDimensionalMatrix("zonalMake",2,makeUseArraySize,columnNames);
+        StringIndexedNDimensionalMatrix zonalUse = new StringIndexedNDimensionalMatrix("zonalUse",2,makeUseArraySize,columnNames);
+        
+        // set up indices for zonalMake and zonalUse
+        Commodity[] commodities = new Commodity[Commodity.getAllCommodities().size()];
+        commodities = (Commodity[]) Commodity.getAllCommodities().toArray(commodities);
+        String[] commodityNames = new String[commodities.length];
+        for (int c=0;c<commodityNames.length;c++) {
+            commodityNames[c] = commodities[c].name;
+        }
+        String[] alphaZoneNumberArray = new String[maxAlphaZone()+1];
+        for (int i=0;i<alphaZoneNumberArray.length;i++) {
+            alphaZoneNumberArray[i] = (new Integer(i)).toString();
+        }
+        String[][] zonalMakeIndicesKeys = new String[2][];
+        zonalMakeIndicesKeys[0] = commodityNames;
+        zonalMakeIndicesKeys[1] = alphaZoneNumberArray;
+        zonalMake.setStringKeys(zonalMakeIndicesKeys);
+        zonalUse.setStringKeys(zonalMakeIndicesKeys);
+        
         BufferedWriter locationsFile;
         try {
             locationsFile = new BufferedWriter(new FileWriter(getOutputPath() + "ActivityLocations2.csv"));
@@ -1410,6 +1438,7 @@ public class PIPProcessor {
             Iterator it = ProductionActivity.getAllProductionActivities().iterator();
             while (it.hasNext()) {
                 ProductionActivity p = (ProductionActivity)it.next();
+                logger.info("\t splitting "+p+" into FloorspaceZones");
                 ConsumptionFunction cf = p.getConsumptionFunction();
                 double[] activityLocationsSplit = new double[maxAlphaZone()+1];
                 for (int z = 0; z < p.getMyDistribution().length; z++) {
@@ -1467,11 +1496,51 @@ public class PIPProcessor {
                         e.printStackTrace();
                     }
                 } //end betazone loop
+                int[] zonalMakeUseIndices = new int[4];
+                String[] aZoneTotalMUIndices = new String[2];
+                zonalMakeUseIndices[0] = zonalMakeUseCoefficients.getIntLocationForDimension(0,p.name);
+                int makeIndex = zonalMakeUseCoefficients.getIntLocationForDimension(3,"M");
+                int useIndex = zonalMakeUseCoefficients.getIntLocationForDimension(3,"U");
                 for(int azone = 0; azone < activityLocationsSplit.length;azone++) {
-                    if (floorspaceZoneCrossref.get(new Integer(azone))!=null) {
+                    Integer integerAZone = new Integer(azone);
+                    String stringAZone = integerAZone.toString();
+                    Integer betaZone = (Integer) floorspaceZoneCrossref.get(integerAZone);
+                    if (betaZone !=null) {
+                        zonalMakeUseIndices[1] = zonalMakeUseCoefficients.getIntLocationForDimension(1,betaZone.toString());
                         locationsFile.write(p.name+",");
                         locationsFile.write(azone+",");
                         locationsFile.write(activityLocationsSplit[azone]+"\n");
+                        for (int commodity=0;commodity<commodityNames.length;commodity++) {
+                            zonalMakeUseIndices[2] = zonalMakeUseCoefficients.getIntLocationForDimension(2,commodityNames[commodity]);
+                            zonalMakeUseIndices[3] = makeIndex;
+                            aZoneTotalMUIndices[0] = commodityNames[commodity];
+                            aZoneTotalMUIndices[1] = stringAZone;
+                            int[] zonalMakeLocation = null;
+                            try {
+                                zonalMakeLocation = zonalMake.getIntLocation(aZoneTotalMUIndices);
+                            } catch (RuntimeException e) {
+                                // location doesnt exist yet
+                                zonalMake.setValue(0,aZoneTotalMUIndices);
+                                zonalMakeLocation = zonalMake.getIntLocation(aZoneTotalMUIndices);
+                            }
+                            float makeCoefficient = zonalMakeUseCoefficients.getValue(zonalMakeUseIndices);
+                            double zonalMakeValue = activityLocationsSplit[azone]*makeCoefficient;
+                            zonalMakeValue += zonalMake.getValue(zonalMakeLocation);
+                            zonalMake.setValue((float) zonalMakeValue,zonalMakeLocation);
+                            int[] zonalUseLocation = null;
+                            try {
+                                zonalUseLocation = zonalUse.getIntLocation(aZoneTotalMUIndices);
+                            } catch (RuntimeException e) {
+                                // location doesnt exist yet
+                                zonalUse.setValue(0,aZoneTotalMUIndices);
+                                zonalUseLocation = zonalMake.getIntLocation(aZoneTotalMUIndices);
+                            }
+                            zonalMakeUseIndices[3] = useIndex;
+                            float useCoefficient = zonalMakeUseCoefficients.getValue(zonalMakeUseIndices);
+                            double zonalUseValue = activityLocationsSplit[azone]*useCoefficient;
+                            zonalUseValue += zonalUse.getValue(zonalUseLocation);
+                            zonalUse.setValue((float) zonalUseValue,zonalUseLocation);
+                        }
                     }
                 }
             } // end production activity loop
@@ -1481,6 +1550,42 @@ public class PIPProcessor {
             logger.fatal("Can't create location output file");
             e.printStackTrace();
         }
+        String filename = getOutputPath() + "FloorspaceZoneTotalMakeUse.bin";
+        if (filename != null) {
+            try {
+                java.io.FileOutputStream fos = new java.io.FileOutputStream(filename);
+                java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(fos);
+                out.writeObject(zonalMakeUseCoefficients);
+                out.writeObject(zonalMake);
+                out.writeObject(zonalUse);
+                out.flush();
+                out.close();
+            } catch (java.io.IOException e) {
+                logger.fatal("Can't write out FloorspaceZoneTotalMakeUse use binary file "+e);
+            }
+        }
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(getOutputPath() + "FloorspaceZoneTotalMakeUse.csv"));
+            out.write("Commodity,ZoneNumber,Made,Used\n");
+            String[] index = new String[2];
+            for (int comNum=0;comNum<commodityNames.length;comNum++) {
+                index[0] = commodityNames[comNum];
+                for (int zoneNum=0;zoneNum<=maxAlphaZone();zoneNum++) {
+                    Integer betaZone = (Integer) floorspaceZoneCrossref.get(new Integer(zoneNum));
+                    if (betaZone!=null) {
+                        // valid alpha zone;
+                        index[1] = String.valueOf(zoneNum);
+                        out.write(commodityNames[comNum]+","+zoneNum+","+zonalMake.getValue(index)+","+zonalUse.getValue(index)+"\n");
+                    }
+                }
+            }
+            out.flush();
+            out.close();
+        } catch (java.io.IOException e) {
+            logger.fatal("Can't write out FloorspaceZoneTotalMakeUse use ascii csv file "+e);
+        }
+        
+
     }
     
     public void writeZUtilitiesTable() {
@@ -1570,11 +1675,12 @@ public class PIPProcessor {
      * 
      */
     public void writeOutputs() {
-        logger.info("Writing ActivityLocations.csv and ActivityLocations2.csv");
-        writeLocationTables();// writes out ActivityLocations.csv and ActivityLocations2.csv
         logger.info("Writing ZonalMakeUse.csv");
         writeZonalMakeUseCoefficients(); //writes out ZonalMakeUse.csv
+        logger.info("Writing ActivityLocations.csv and ActivityLocations2.csv");
+        writeLocationTables();// writes out ActivityLocations.csv and ActivityLocations2.csv
         logger.info("Writing CommodityZUtilities.csv");
+        zonalMakeUseCoefficients=null; // don't need this anymore, free the memory
         writeZUtilitiesTable(); //writes out CommodityZUtilities.csv
         logger.info("Writing ExchangeResults.csv");
         writeExchangeResults(); //write out ExchangeResults.csv (prices of all commodites at all exchanges)

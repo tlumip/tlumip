@@ -8,6 +8,7 @@ import com.pb.despair.model.ProductionActivity;
 import drasys.or.linear.algebra.Algebra;
 import drasys.or.linear.algebra.CroutPivot;
 import drasys.or.linear.algebra.QRIteration;
+import drasys.or.matrix.DenseMatrix;
 import drasys.or.matrix.DenseVector;
 import drasys.or.matrix.VectorI;
 
@@ -657,7 +658,8 @@ public class PIModel extends ModelComponent {
             double[] deltaPricesDouble = null;
             if (calcDeltaUsingDerivatives) {
                 try {
-                    CommodityPriceSurplusDerivativeMatrix comMatrix = new CommodityPriceSurplusDerivativeMatrix(c);
+                    CommodityPriceSurplusDerivativeMatrix comMatrixData = new CommodityPriceSurplusDerivativeMatrix(c);
+                    DenseMatrix comMatrix = new DenseMatrix(comMatrixData.data);
                     double[] surplus = c.getSurplusInAllExchanges();
                     for (int i = 0; i < surplus.length; i++) {
                         surplus[i] *= -1;

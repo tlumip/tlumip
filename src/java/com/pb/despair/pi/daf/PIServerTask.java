@@ -338,10 +338,10 @@ public class PIServerTask extends Task{
         logger.info("*   Final merit measure is "+ newMeritMeasure);
         logger.info("*********************************************************************************************");
 
-        logger.info("Writing ActivityLocations.csv and ActivityLocations2.csv");
-        piReaderWriter.writeLocationTables();// writes out ActivityLocations.csv and ActivityLocations2.csv
         logger.info("Writing ZonalMakeUse.csv");
         piReaderWriter.writeZonalMakeUseCoefficients(); //writes out ZonalMakeUse.csv
+        logger.info("Writing ActivityLocations.csv and ActivityLocations2.csv");
+        piReaderWriter.writeLocationTables();// writes out ActivityLocations.csv and ActivityLocations2.csv
         logger.info("Writing CommodityZUtilities.csv");
         piReaderWriter.writeZUtilitiesTable(); //writes out CommodityZUtilities.csv
         logger.info("Writing ExchangeResults.csv");
