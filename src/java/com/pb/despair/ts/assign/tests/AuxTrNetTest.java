@@ -256,6 +256,12 @@ public class AuxTrNetTest {
 		// create an optimal strategy object for this highway and transit network
 		OpStrategy os = new OpStrategy( ag );
 
+		int[] nodeIndex = ag.getHighwayNetwork().getNodeIndex();
+		os.buildStrategy( 0 );
+		os.getOptimalStrategyWtSkimsFromOrig( nodeIndex[24944] );
+		System.exit(1);
+		
+		
 //		// generate the walk transit skims to zone 1 and print values in tabular report
 //		int dest = 0;
 //		if ( os.buildStrategy( dest ) >= 0 ) {

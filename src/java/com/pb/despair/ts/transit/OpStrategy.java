@@ -31,6 +31,8 @@ public class OpStrategy {
 
 	static final double COMPARE_EPSILON = 1.0e-07;
 
+	static final double MIN_ALLOCATED_FLOW = 0.00001;
+	
 	static final int MAX_BOARDING_LINKS = 100;
 	static final double DRIVE_STOP_PCTS = 1;
 	static final double MIN_EXP = -308;
@@ -218,8 +220,7 @@ public class OpStrategy {
 			m = ag.hwyLink[k];
 			
 			int dummy = 0;
-//			if ( indexNode[gia[m]] == 24923 ) {
-			if ( ag.ib[k] == 25911 && ag.linkType[k] == 0 ) {
+			if ( indexNode[gia[m]] == 24923 ) {
 				dummy = 1;
 //				debug = true;
 			}
@@ -532,139 +533,190 @@ public class OpStrategy {
 
 
 
-//	public void getOptimalStrategySkimsFromOrig (int fromNode) {
-//
-//		int i, j, k, m;
-//		int start, end, check;
-//		double waitTime;
-//		
+	public void getOptimalStrategyWtSkimsFromOrig (int fromNode) {
+
+		int i, j, k, m;
+		int start, end, check;
+		int fromNodeIndex=0;
+		int count;
+		
+		double waitTime, flow;
+		
 //		boolean debug = classDebug;
-//		
-//		boolean firstBoard = false;
-//
-//
-//		if (fromNode == dest) return;
-//
-//
-//
-//		// find link indices exiting fromNode
-//		start = ag.ipa[fromNode];
-//		if (start == -1) {
-//			if (debug)
-//				logger.info ("no links exiting fromNode= " + fromNode + "(" + indexNode[fromNode] + ").  fromNode=" + fromNode + " is unconnected.");
-//			nodeEgrWalkTime[fromNode]   = 0.0;
-//			nodeTotWalkTime[fromNode]   = 0.0;
-//			nodeTotalWaitTime[fromNode] = 0.0;
-//			nodeCost[fromNode]          = 0.0;
-//			nodeInVehTime[fromNode]     = 0.0;
-//			nodeDriveAccTime[fromNode]  = 0.0;
-//			nodeBoardings[fromNode]     = 0.0;
-//			return;
-//		}
-//		
-//		j = fromNode + 1;
-//		while (ag.ipa[j] == -1)
-//			j++;
-//		end = ag.ipa[j];
-//
-//
-//		// 	accumulate access time on links in strategy until either a boarding link or dest is encountered
-//		while (!firstBoard) {
-//			check = 0;
-//			for (i=start; i < end; i++) {
-//
-//				k = ag.indexa[i];
-//				m = ag.hwyLink[k];
-//				
-//				if (debug)
-//					logger.info ("fromNode=" + fromNode + ", dest=" + dest + ", i=" + i + ", k=" + k + ", m=" + m + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", ag.an[k]=" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + ", ag.bn[k]=" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) + ", g.an[k]=" + indexNode[gia[m]] + ", g.an[k]=" + indexNode[gib[m]] + ", ag.linkType[k]=" + ag.linkType[k] + ", inStrategy[k]=" + inStrategy[k]);
-//				
-//				if (ag.linkType[k] == 0 || ag.ib[k] == dest) {
-//					firstBoard = true;
-//					break;
-//				}
-//				
-//				if (inStrategy[k] && ((nodeAccWalkTime[fromNode] + accessTime[k]) < ag.getMaxWalkAccessTime())) {
-//					check++;
-//					nodeAccWalkTime[fromNode] += ag.walkTime[k];
-//					nodeDriveAccTime[fromNode] += ag.driveAccTime[k];
-//					if (debug)
-//						logger.info ("ag.walkTime[k]=" + ag.walkTime[k] + ", ag.driveAccTime[k]=" + ag.driveAccTime[k] + ", ag.accessTime[k]=" + accessTime[k] + ", nodeAccWalkTime[fromNode]=" + nodeAccWalkTime[fromNode] + ", nodeDriveAccTime[fromNode]=" + nodeDriveAccTime[fromNode] + ", check=" + check);
-//					break;
-//				}
-//			}
-//			if (check == 0) {
-////				logger.info ("fromNode=" + fromNode + " is not connected to " + dest + "(" + indexNode[dest] + ").");
-//				nodeEgrWalkTime[fromNode]   = 0.0;
-//				nodeTotWalkTime[fromNode]   = 0.0;
-//				nodeTotalWaitTime[fromNode] = 0.0;
-//				nodeCost[fromNode]          = 0.0;
-//				nodeInVehTime[fromNode]     = 0.0;
-//				nodeDriveAccTime[fromNode]  = 0.0;
-//				nodeBoardings[fromNode]     = 0.0;
-//				return;
-////				logger.info ("rerun with debug = false in skimsFromOrig");
-////				System.exit(-1);
-//			}
-//
-//			// 	find link indices exiting bnode
-//			start = ag.ipa[ag.ib[k]];
-//			if (start == -1) {
-//				if (debug) {
-//					logger.info ("start == -1 for fromNode = " + fromNode + " in skimsFromOrig(fromNode=" + fromNode + "):  links exiting bnodes");
-//					logger.info ("no links exiting bnode= " + ag.ib[k] + "(" + indexNode[ag.ib[k]] + ").  fromNode is unconnected because bnode is unconnected.");
-//				}
-//				nodeEgrWalkTime[fromNode]   = 0.0;
-//				nodeTotWalkTime[fromNode]   = 0.0;
-//				nodeTotalWaitTime[fromNode] = 0.0;
-//				nodeCost[fromNode]          = 0.0;
-//				nodeInVehTime[fromNode]     = 0.0;
-//				nodeDriveAccTime[fromNode]  = 0.0;
-//				nodeBoardings[fromNode]     = 0.0;
-//				return;
-//			}
-//			j = ag.ib[k] + 1;
-//			while (ag.ipa[j] == -1)
-//				j++;
-//			end = ag.ipa[j];
-//		}
-//
-//		if (!firstBoard)
-//			nodeAccWalkTime[fromNode] = 0.0;
-//
-//		if (nodeAccWalkTime[fromNode] == nodeTotWalkTime[fromNode] && nodeEgrWalkTime[fromNode] > 0.0)
-//			nodeAccWalkTime[fromNode] = 0.0;
-//
-//
-//
-//		// find link indices exiting first boarding node from fromNode
-//		start = ag.ipa[ag.ia[k]];
-//		if (start == -1) {
-//			logger.info ("start == -1 for fromNode = " + fromNode + " in skimsFromOrig(fromNode=" + fromNode + "):  links exiting first boarding node");
-//			System.exit(-1);
-//		}
-//		j = ag.ia[k] + 1;
-//		while (ag.ipa[j] == -1)
-//			j++;
-//		end = ag.ipa[j];
-//
-//
-//		waitTime = 0.0;
-//		for (i=start; i < end; i++) {
-//			k = ag.indexa[i];
-//			if (inStrategy[k] && ag.linkType[k] == 0)
-//				waitTime += 1.0/nodeFreq[ag.ia[k]];
-//			if (debug)
-//				logger.info ("nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] + ", waitTime=" + waitTime);
-//		}
-//		nodeFirstWaitTime[fromNode] = waitTime;
-//		if (debug) {
-//			logger.info ("nodeFirstWaitTime[fromNode]=" + nodeFirstWaitTime[fromNode]);
-//			logger.info ("");
-//		}
-//
-//
-//	}
+		boolean debug = true;
+		
+		boolean firstBoard = false;
+
+
+		if (fromNode == dest) return;
+
+
+		// find the link index of the optimal strategy link exiting fromNode
+		// allocate 1 trip to routes between fromNode and dest to track proportions allocated to multiple paths in strategy
+		for (i=inStrategyCount - 1; i >= 0; i--) {
+			k = orderInStrategy[i];
+			m = ag.hwyLink[k];
+			if ( ag.ia[k] == fromNode ) {
+				fromNodeIndex = i;
+				nodeFlow[ag.ia[k]] = 1.0;
+				if (debug) {
+				    logger.info ("");
+				    logger.info ("fromNode=" + fromNode + "(" + indexNode[fromNode] + "), fromNodeIndex=" + fromNodeIndex + ", i=" + i + ", k=" + k + ", m=" + m + ", ag.ia=" + ag.ia[k] + ", ag.ib=" + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]]);
+				}
+				break;
+			}
+		}
+		
+
+		
+		// loop through links in optimal strategy starting at fromNode, stopping at dest
+		count = 0;
+		for (i=fromNodeIndex; i >= 0; i--) {
+		    
+			k = orderInStrategy[i];
+			m = ag.hwyLink[k];
+
+			if (nodeFlow[ag.ia[k]] > 0.0 || ag.ia[k] == fromNode) {
+				if (debug) {
+					logger.info ("count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", nodeFlow[ag.ia[k]]=" + nodeFlow[ag.ia[k]] + ", ag.freq[k]=" + ag.freq[k] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]]);
+				}
+
+			    flow = (ag.freq[k]/nodeFreq[ag.ia[k]])*nodeFlow[ag.ia[k]];
+			    
+			    if (ag.ia[orderInStrategy[i]] == ag.ia[orderInStrategy[fromNodeIndex]]) {
+			    	ag.flow[k] = 1.0;
+			    	nodeFlow[ag.ib[k]] = 1.0;
+			    	nodeFlow[ag.ia[k]] = 0.0;
+			    }
+			    else if (flow > MIN_ALLOCATED_FLOW) {
+			    	ag.flow[k] = flow;
+			    	nodeFlow[ag.ib[k]] = flow;
+			    	nodeFlow[ag.ia[k]] = 0.0;
+			    }
+				if (debug) {
+				    logger.info ("flow=" + flow + ", ag.flow[k]=" + ag.flow[k] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ag.ib[k]]);
+				}
+				
+				count++;
+			}
+		}
+		
+
+/*		
+		
+		// find link indices exiting fromNode
+		start = ag.ipa[fromNode];
+		if (start == -1) {
+			if (debug)
+				logger.info ("no links exiting fromNode= " + fromNode + "(" + indexNode[fromNode] + ").  fromNode=" + fromNode + " is unconnected.");
+			nodeEgrWalkTime[fromNode]   = 0.0;
+			nodeTotWalkTime[fromNode]   = 0.0;
+			nodeTotalWaitTime[fromNode] = 0.0;
+			nodeCost[fromNode]          = 0.0;
+			nodeInVehTime[fromNode]     = 0.0;
+			nodeBoardings[fromNode]     = 0.0;
+			return;
+		}
+		
+		j = fromNode + 1;
+		while (ag.ipa[j] == -1)
+			j++;
+		end = ag.ipa[j];
+
+
+		// 	accumulate access time on walk links in strategy until either a boarding link or dest is encountered
+		while (!firstBoard) {
+			check = 0;
+			for (i=start; i < end; i++) {
+
+				k = ag.indexa[i];
+				m = ag.hwyLink[k];
+				
+				if (debug)
+					logger.info ("fromNode=" + fromNode + ", dest=" + dest + ", i=" + i + ", k=" + k + ", m=" + m + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", ag.an[k]=" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + ", ag.bn[k]=" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) + ", g.an[k]=" + indexNode[gia[m]] + ", g.an[k]=" + indexNode[gib[m]] + ", ag.linkType[k]=" + ag.linkType[k] + ", inStrategy[k]=" + inStrategy[k]);
+				
+				if (ag.linkType[k] == 0 || ag.ib[k] == dest) {
+					firstBoard = true;
+					break;
+				}
+				
+				if (inStrategy[k] && ((nodeAccWalkTime[fromNode] + accessTime[k]) < ag.getMaxWalkAccessTime())) {
+					check++;
+					nodeAccWalkTime[fromNode] += ag.walkTime[k];
+					if (debug)
+						logger.info ("ag.walkTime[k]=" + ag.walkTime[k] + ", ag.accessTime[k]=" + accessTime[k] + ", nodeAccWalkTime[fromNode]=" + nodeAccWalkTime[fromNode] + ", check=" + check);
+					break;
+				}
+			}
+			if (check == 0) {
+				nodeEgrWalkTime[fromNode]   = 0.0;
+				nodeTotWalkTime[fromNode]   = 0.0;
+				nodeTotalWaitTime[fromNode] = 0.0;
+				nodeCost[fromNode]          = 0.0;
+				nodeInVehTime[fromNode]     = 0.0;
+				nodeBoardings[fromNode]     = 0.0;
+				return;
+			}
+
+			// 	find link indices exiting bnode
+			start = ag.ipa[ag.ib[k]];
+			if (start == -1) {
+				if (debug) {
+					logger.info ("start == -1 for fromNode = " + fromNode + " in skimsFromOrig(fromNode=" + fromNode + "):  links exiting bnodes");
+					logger.info ("no links exiting bnode= " + ag.ib[k] + "(" + indexNode[ag.ib[k]] + ").  fromNode is unconnected because bnode is unconnected.");
+				}
+				nodeEgrWalkTime[fromNode]   = 0.0;
+				nodeTotWalkTime[fromNode]   = 0.0;
+				nodeTotalWaitTime[fromNode] = 0.0;
+				nodeCost[fromNode]          = 0.0;
+				nodeInVehTime[fromNode]     = 0.0;
+				nodeDriveAccTime[fromNode]  = 0.0;
+				nodeBoardings[fromNode]     = 0.0;
+				return;
+			}
+			j = ag.ib[k] + 1;
+			while (ag.ipa[j] == -1)
+				j++;
+			end = ag.ipa[j];
+		}
+
+		if (!firstBoard)
+			nodeAccWalkTime[fromNode] = 0.0;
+
+		if (nodeAccWalkTime[fromNode] == nodeTotWalkTime[fromNode] && nodeEgrWalkTime[fromNode] > 0.0)
+			nodeAccWalkTime[fromNode] = 0.0;
+
+
+
+		// find link indices exiting first boarding node from fromNode
+		start = ag.ipa[ag.ia[k]];
+		if (start == -1) {
+			logger.info ("start == -1 for fromNode = " + fromNode + " in skimsFromOrig(fromNode=" + fromNode + "):  links exiting first boarding node");
+			System.exit(-1);
+		}
+		j = ag.ia[k] + 1;
+		while (ag.ipa[j] == -1)
+			j++;
+		end = ag.ipa[j];
+
+
+		waitTime = 0.0;
+		for (i=start; i < end; i++) {
+			k = ag.indexa[i];
+			if (inStrategy[k] && ag.linkType[k] == 0)
+				waitTime += 1.0/nodeFreq[ag.ia[k]];
+			if (debug)
+				logger.info ("nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] + ", waitTime=" + waitTime);
+		}
+		nodeFirstWaitTime[fromNode] = waitTime;
+		if (debug) {
+			logger.info ("nodeFirstWaitTime[fromNode]=" + nodeFirstWaitTime[fromNode]);
+			logger.info ("");
+		}
+
+*/
+
+	}
 
 
 
