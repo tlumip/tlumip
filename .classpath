@@ -4,8 +4,9 @@
 	<classpathentry kind="src" path="/common-base"/>
 	<classpathentry kind="src" path="/common-daf-v2"/>
 	<classpathentry kind="src" path="/common-assign"/>
-	<classpathentry kind="lib" path="/common-base/lib/commons-digester.jar"/>
 	<classpathentry kind="src" path="/calibrator"/>
 	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="/mtj"/>
+	<classpathentry kind="src" path="/jakarta-commons"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
