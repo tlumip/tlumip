@@ -1,4 +1,4 @@
-package com.pb.despair.ao;
+package com.pb.despair.reports;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;

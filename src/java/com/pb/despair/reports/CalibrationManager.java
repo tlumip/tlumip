@@ -1,4 +1,4 @@
-package com.pb.despair.ao;
+package com.pb.despair.reports;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
@@ -60,9 +60,8 @@ public class CalibrationManager {
     private void specifyWhichApplicationsToCalibrate(){
 
         ArrayList apps = ResourceUtil.getList(rb, "applications.in.calibration.mode");
-        if(apps.size() == 0) logger.warn("The ao.properties file indicated" +
-                "that calibration is required but no applications have been" +
-                "listed to be calibrated.  Check ao.properties and calibration.properties");
+        if(apps.size() == 0) logger.warn("Calibration is required but no applications have been" +
+                "listed to be calibrated.  Check calibration.properties");
 
         for(Iterator i = apps.iterator(); i.hasNext(); ){
             String app = (String) i.next();
