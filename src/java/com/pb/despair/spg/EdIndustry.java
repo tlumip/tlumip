@@ -12,7 +12,35 @@ public class EdIndustry {
     int[] pumsToEd = new int[1000];
     
     float[] edIndustryEmployment;
-    String[] edIndustryLabels;
+    String[] edIndustryLabels = {
+    		"ACCOMMODATIONS",
+			"AGRICULTURE AND MINING",
+			"COMMUNICATIONS AND UTILITIES",
+			"CONSTRUCTION",
+			"ELECTRONICS AND INSTRUMENTS-Light Industry",
+			"FIRE BUSINESS AND PROFESSIONAL SERVICES",
+			"FOOD PRODUCTS-Heavy Industry",
+			"FOOD PRODUCTS-Light Industry",
+			"FORESTRY AND LOGGING",
+			"GOVERNMENT ADMINISTRATION",
+			"HEALTH SERVICES-Hospital",
+			"HEALTH SERVICES-Institutional",
+			"HEALTH SERVICES-Office",
+			"HIGHER EDUCATION",
+			"HOMEBASED SERVICES",
+			"LOWER EDUCATION",
+			"LUMBER AND WOOD PRODUCTS-Heavy Industry",
+			"OTHER DURABLES-Heavy Industry",
+			"OTHER DURABLES-Light Industry",
+			"OTHER NON-DURABLES-Heavy Industry",
+			"OTHER NON-DURABLES-Light Industry",
+			"PERSONAL AND OTHER SERVICES AND AMUSEMENTS",
+			"PULP AND PAPER-Heavy Industry",
+			"RETAIL TRADE",
+			"TRANSPORT",
+			"WHOLESALE TRADE",
+			"UNEMPLOYED"
+    };
     
     
     public EdIndustry () {
@@ -71,14 +99,12 @@ public class EdIndustry {
 		// this table has one row of employment totals for each industry
 		String[] tempEdIndustryLabels = table.getColumnAsString(1);
 		float[] tempEdIndustryEmployment = table.getColumnAsFloat(2);
-		edIndustryLabels = new String[tempEdIndustryLabels.length + 1];
 		edIndustryEmployment = new float[tempEdIndustryLabels.length + 1];
 		
 		for (int i=0; i < tempEdIndustryLabels.length; i++) {
-			edIndustryLabels[i] = tempEdIndustryLabels[i];
-			edIndustryEmployment[i] = tempEdIndustryEmployment[i];
+	    	int industryIndex = getIndustryIndex( tempEdIndustryLabels[i] );
+			edIndustryEmployment[industryIndex] = tempEdIndustryEmployment[i];
 		}
-		edIndustryLabels[tempEdIndustryLabels.length] = "UNEMPLOYED";
 		edIndustryEmployment[tempEdIndustryLabels.length] = 0.0f;
 		
 		// establish the correspondence table between pums codes and ED industry categories

@@ -1647,12 +1647,12 @@ public class SPGnew {
 				pumsHHWeight = hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
 
 				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons); 
-				incSizeFreq[incomeSizeCode] += hhArray[i][k][HH_SELECTED_INDEX];
+				incSizeFreq[incomeSizeCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 				pumsIncSizeFreq[incomeSizeCode]++;
 				pumsWtIncSizeFreq[incomeSizeCode] += pumsHHWeight;
 
 				workersCode = workers.getWorkers(numWorkers); 
-				workersFreq[numWorkers] += hhArray[i][k][HH_SELECTED_INDEX];
+				workersFreq[numWorkers] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 				pumsWorkersFreq[numWorkers]++;
 				pumsWtWorkersFreq[numWorkers] += pumsHHWeight;
 
@@ -1662,11 +1662,11 @@ public class SPGnew {
 					edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
 					occupationCode = occ.getOccupation(pumsOccupationCode); 
 					
-					edIndFreq[edIndustryCode] += hhArray[i][k][HH_SELECTED_INDEX];
+					edIndFreq[edIndustryCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 					pumsIndFreq[edIndustryCode]++;
 					pumsWtIndFreq[edIndustryCode] += pumsHHWeight;
 
-					occFreq[occupationCode] += hhArray[i][k][HH_SELECTED_INDEX];
+					occFreq[occupationCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 					pumsOccFreq[occupationCode]++;
 					pumsWtOccFreq[occupationCode] += pumsHHWeight;
 				}
@@ -1716,12 +1716,12 @@ public class SPGnew {
 				pumsHHWeight = hhArray[i][k][HH_WEIGHT_ATTRIB_INDEX];
 
 				incomeSizeCode = incSize.getIncomeSize(pumsIncomeCode, numPersons); 
-				incSizeFreq[incomeSizeCode] += hhArray[i][k][HH_SELECTED_INDEX];
+				incSizeFreq[incomeSizeCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 				pumsIncSizeFreq[incomeSizeCode]++;
 				pumsWtIncSizeFreq[incomeSizeCode] += pumsHHWeight;
 
 				workersCode = workers.getWorkers(numWorkers); 
-				workersFreq[numWorkers] += hhArray[i][k][HH_SELECTED_INDEX];
+				workersFreq[numWorkers] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 				pumsWorkersFreq[numWorkers]++;
 				pumsWtWorkersFreq[numWorkers] += pumsHHWeight;
 
@@ -1732,11 +1732,11 @@ public class SPGnew {
 					edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
 					occupationCode = occ.getOccupation(pumsOccupationCode); 
 					
-					edIndFreq[edIndustryCode] += hhArray[i][k][HH_SELECTED_INDEX];
+					edIndFreq[edIndustryCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 					pumsIndFreq[edIndustryCode]++;
 					pumsWtIndFreq[edIndustryCode] += pumsHHWeight;
 
-					occFreq[occupationCode] += hhArray[i][k][HH_SELECTED_INDEX];
+					occFreq[occupationCode] += ( hhArray[i][k][HH_SELECTED_INDEX] + hhArray[i][k][HH_UNEMPLOYED_INDEX] );
 					pumsOccFreq[occupationCode]++;
 					pumsWtOccFreq[occupationCode] += pumsHHWeight;
 				
