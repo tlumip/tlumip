@@ -1988,7 +1988,10 @@ public class SPGnew {
 				hhs = (int)piHhs + (int)remainder;
 			
 				index = halo.getZoneIndex(zone);
-			
+
+                if (index <= 0 || index >= halo.getNumberOfZones())
+                    logger.info ("r="+r + ", index="+index + ", zone="+zone);
+
 				dataTable[index][incomeSize] = hhs;
 				
 				oldHhs = hhs;
