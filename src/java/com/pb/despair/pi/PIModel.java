@@ -55,7 +55,7 @@ public class PIModel extends ModelComponent {
 
     // re-activate this code if we need some specific adjustments for specific
     // stubborn commodities
-    // private double commoditySpecificScalingAdjustment = 0; //default value
+    private double commoditySpecificScalingAdjustment = 0; //default value
 
     HashMap newPricesC = null; //a new HashMap will be created every time
                                // "calculateNewPrices" is called
@@ -137,19 +137,17 @@ public class PIModel extends ModelComponent {
             logger.info("*   Local price step size adjustment set to " + lpssa);
         }
 
-        // reactivate this code for different step sizes for stubborn
-        // commodities
-        //String commoditySpecificAdjustmentString =
-        // ResourceUtil.getProperty(rb, "pi.commoditySpecificAdjustment");
-        //if (commoditySpecificAdjustmentString == null) {
-        //    logger.info("* No pi.commoditySpecificAdjustment set in properties
-        // file -- using default");
-        //} else {
-        //    double csa =
-        // Double.valueOf(commoditySpecificAdjustmentString).doubleValue();
-        //    this.commoditySpecificScalingAdjustment = csa;
-        //    logger.info("* Commodity specific adjustment set to " + csa);
-        //}
+        // different step sizes for stubborn    commodities
+        String commoditySpecificAdjustmentString =
+        ResourceUtil.getProperty(piRb, "pi.commoditySpecificAdjustment");
+        if (commoditySpecificAdjustmentString == null) {
+            logger.info("* No pi.commoditySpecificAdjustment set in properties file -- using default");
+        } else {
+            double csa =
+         Double.valueOf(commoditySpecificAdjustmentString).doubleValue();
+            this.commoditySpecificScalingAdjustment = csa;
+            logger.info("* Commodity specific adjustment set to " + csa);
+        }
 
     }
 
@@ -575,17 +573,14 @@ public class PIModel extends ModelComponent {
             logger.info("\t Average price " + totalPrice / numExchanges);
 
             if (commodityMeritMeasure > c.oldMeritMeasure) {
-                // reactivate this if you need separate step sizes for different
-                // commodities
-                //c.scalingAdjustmentFactor *= (1 +
-                // commoditySpecificScalingAdjustment);
-                logger.info("\t Meritmeasure " + commodityMeritMeasure + " NOT IMPROVING was " + c.oldMeritMeasure);
+                if (c.scalingAdjustmentFactor > 1) {
+                    c.scalingAdjustmentFactor= 1.0;
+//                    c.scalingAdjustmentFactor /= Math.pow(1+commoditySpecificScalingAdjustment,3);
+                }
+                logger.info("\t Meritmeasure " + commodityMeritMeasure + " NOT IMPROVING was " + c.oldMeritMeasure +" (adj now "+ c.scalingAdjustmentFactor +")");
             } else {
-                // reactivate this if you need separate step sizes for different
-                // commodities
-                //c.scalingAdjustmentFactor /= (1 +
-                // commoditySpecificScalingAdjustment);
-                logger.info("\t Meritmeasure " + commodityMeritMeasure + " (was " + c.oldMeritMeasure + ")");
+                c.scalingAdjustmentFactor *= (1+commoditySpecificScalingAdjustment);
+                logger.info("\t Meritmeasure " + commodityMeritMeasure + " (was " + c.oldMeritMeasure + ") (adj now "+ c.scalingAdjustmentFactor +")");
             }
             c.oldMeritMeasure = commodityMeritMeasure;
 
@@ -689,16 +684,16 @@ public class PIModel extends ModelComponent {
                     //                }
                     
                     // something like Levenberg Marquadt where we increase the diagonal
-                    if (stepSize*localPriceStepSizeAdjustment<1) {
+                    if (stepSize*localPriceStepSizeAdjustment*c.scalingAdjustmentFactor<1) {
                         for (int i=0;i<comMatrix.sizeOfColumns() ; i++) {
-                            comMatrix.setElementAt(i,i,comMatrix.elementAt(i,i)/stepSize/localPriceStepSizeAdjustment);
+                            comMatrix.setElementAt(i,i,comMatrix.elementAt(i,i)/stepSize/localPriceStepSizeAdjustment/c.scalingAdjustmentFactor);
                         }
                     }
                     CroutPivot solver2 = new CroutPivot(comMatrix);
                     solver2.solveEquations(deltaSurplusPlus, deltaPrices);
-                    if (stepSize*localPriceStepSizeAdjustment>1) {
+                    if (stepSize*localPriceStepSizeAdjustment*c.scalingAdjustmentFactor>1) {
                         for (int i=0;i<deltaPrices.size();i++) {
-                            deltaPrices.setElementAt(i,deltaPrices.elementAt(i)*stepSize*localPriceStepSizeAdjustment);
+                            deltaPrices.setElementAt(i,deltaPrices.elementAt(i)*stepSize*localPriceStepSizeAdjustment*c.scalingAdjustmentFactor);
                         }
                     }
                     
@@ -726,7 +721,7 @@ public class PIModel extends ModelComponent {
 
                     //                    double increase =
                     // (-sAndD[0]-totalSurplusVector.elementAt(commodityNumber)/deltaPricesDouble.length)/sAndD[1];
-                    deltaPricesDouble[xNum] = increase * stepSize * localPriceStepSizeAdjustment;
+                    deltaPricesDouble[xNum] = increase * stepSize * localPriceStepSizeAdjustment*c.scalingAdjustmentFactor;
                     totalIncrease += increase;
                     numExchanges++;
                 }
@@ -905,7 +900,7 @@ public class PIModel extends ModelComponent {
             while (exchanges.hasNext()) {
                 Exchange ex = (Exchange) exchanges.next();
                 double[] surplusAndDerivative = ex.exchangeSurplusAndDerivative();
-                Double newPrice = new Double(ex.getPrice() - ((stepSize * surplusAndDerivative[0]) / surplusAndDerivative[1]));
+                Double newPrice = new Double(ex.getPrice() - ((stepSize * c.scalingAdjustmentFactor * surplusAndDerivative[0]) / surplusAndDerivative[1]));
                 if (ex.monitor || Double.isNaN(surplusAndDerivative[0])) {
                     logger.info("Exchange:" + ex + " surplus:" + surplusAndDerivative[0] + " planning price change from " + ex.getPrice() + " to "
                             + newPrice);

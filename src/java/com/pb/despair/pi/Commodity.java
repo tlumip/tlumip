@@ -28,7 +28,7 @@ public class Commodity extends AbstractCommodity {
     double oldMeritMeasure = 0.0;
     
     // reactivate scalingAdjustmentFactor if you need bigger step sizes for some stubborn commodities
-    //double scalingAdjustmentFactor = 1.0;
+    double scalingAdjustmentFactor = 1.0;
     double compositeMeritMeasureWeighting = 1.0;
     private double expectedPrice;
     /**

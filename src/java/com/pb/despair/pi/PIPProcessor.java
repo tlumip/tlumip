@@ -1566,7 +1566,6 @@ public class PIPProcessor {
             try {
                 java.io.FileOutputStream fos = new java.io.FileOutputStream(filename);
                 java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(fos);
-                out.writeObject(zonalMakeUseCoefficients);
                 out.writeObject(zonalMake);
                 out.writeObject(zonalUse);
                 out.flush();
