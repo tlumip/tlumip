@@ -139,6 +139,9 @@ public class PIServerTask extends Task{
         boolean nanPresent=false;
         double oldMeritMeasure=Double.POSITIVE_INFINITY; //sum of squares of the surplus over all commodities, all zones
         double newMeritMeasure;
+        
+        boolean calcAvgPrice = readFlag(piRb, "pi.calculateAveragePrices", false);
+        boolean calcDeltaUsingDerivatives = readFlag(piRb, "pi.useFullExchangeDerivatives", false);
 
         //First send a commodity name to the CUWorkQueues so that CUWorkTask can calculate the composite utilities
         //for that commodity - the values will be returned to the CUResultsQueue on the local node
@@ -216,7 +219,11 @@ public class PIServerTask extends Task{
                     logger.info("!!  Not improving, but step size already at minimum "+pi.getStepSize());
                 }
                 pi.snapShotCurrentPrices();
-                pi.calculateNewPrices();
+                if (calcAvgPrice) {
+                    pi.calculateNewPricesUsingBlockDerivatives(calcDeltaUsingDerivatives);
+                } else {
+                    pi.calculateNewPrices();
+                }
 
                 //Now send work to the CUWorkQueue (Composite Utilitiy calculations)
                 msgs = createCUWorkMessages(mFactory);
@@ -324,6 +331,7 @@ public class PIServerTask extends Task{
             nanPresent = false;
             logger.info("*********************************************************************************************");
             logger.info("*   End of iteration "+ (nIterations)+".  Time in seconds: "+(System.currentTimeMillis()-iterationTime)/1000.0);
+            logger.info("*   Merit Measure is " + newMeritMeasure );
             logger.info("*********************************************************************************************");
         }
         String logStmt=null;
@@ -338,7 +346,7 @@ public class PIServerTask extends Task{
         logger.info("*   Final merit measure is "+ newMeritMeasure);
         logger.info("*********************************************************************************************");
 
-        logger.info("Writing ZonalMakeUse.csv");
+        logger.info("Writing ZonalMakeUse");
         piReaderWriter.writeZonalMakeUseCoefficients(); //writes out ZonalMakeUse.csv
         logger.info("Writing ActivityLocations.csv and ActivityLocations2.csv");
         piReaderWriter.writeLocationTables();// writes out ActivityLocations.csv and ActivityLocations2.csv
@@ -484,6 +492,22 @@ public class PIServerTask extends Task{
 
     public static void signalResultsProcessed() {
         signal.flipValue();
+    }
+    
+    public static boolean readFlag(ResourceBundle rb, String flagName, boolean defaultValue) {
+        String stringVal = ResourceUtil.getProperty(rb, flagName);
+        if (stringVal == null) return defaultValue;
+        boolean retVal = defaultValue;
+        if (defaultValue == true) {
+            if (stringVal.equalsIgnoreCase("false")) {
+                retVal = false;
+            }
+        } else {
+            if (stringVal.equalsIgnoreCase("true")) {
+                retVal = true;
+            }
+        }
+        return retVal;
     }
 
 }
