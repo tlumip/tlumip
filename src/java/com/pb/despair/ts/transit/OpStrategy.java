@@ -755,7 +755,7 @@ public class OpStrategy {
 				
 				if ( ag.linkType[k] == AuxTrNet.BOARDING_TYPE ) {
 					
-					tempNode = Integer.valueOf(ag.ia[k]);
+					tempNode = new Integer(ag.ia[k]);
 					
 					if ( firstWait == 0.0f ) {
 						boardings = (float)ag.flow[k];
