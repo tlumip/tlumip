@@ -57,8 +57,8 @@ public class DCExpUtilitiesManager implements Serializable{
              readNew[0]=1;
             logger.info("Updating work-based expUtilities: segment "+workSegment);
 
-            expUtilities[WORK_BASED]=readMatrix(new String("b"),workSegment); //BINARY-ZIP
-//             expUtilities[WORK_BASED]=readBinaryMatrix(new String("b"),workSegment);
+//            expUtilities[WORK_BASED]=readMatrix(new String("b"),workSegment); //BINARY-ZIP
+             expUtilities[WORK_BASED]=readBinaryMatrix(new String("b"),workSegment);
             currentWorkSegment=workSegment;
          }
      
@@ -67,17 +67,17 @@ public class DCExpUtilitiesManager implements Serializable{
              readNew[1] = 1;
              logger.info("Updating non-work expUtilities: segment "+nonWorkSegment);
             
-             expUtilities[SCHOOL1]=readMatrix(new String("c1"),nonWorkSegment);  //BINARY-ZIP
-             expUtilities[SCHOOL3]=readMatrix(new String("c3"),nonWorkSegment);  //BINARY-ZIP
-             expUtilities[SHOP]=readMatrix(new String("s"),nonWorkSegment);      //BINARY-ZIP
-             expUtilities[RECREATE]=readMatrix(new String("r"),nonWorkSegment);  //BINARY-ZIP
-             expUtilities[OTHER]=readMatrix(new String("o"),nonWorkSegment);    //BINARY-ZIP
+//             expUtilities[SCHOOL1]=readMatrix(new String("c1"),nonWorkSegment);  //BINARY-ZIP
+//             expUtilities[SCHOOL3]=readMatrix(new String("c3"),nonWorkSegment);  //BINARY-ZIP
+//             expUtilities[SHOP]=readMatrix(new String("s"),nonWorkSegment);      //BINARY-ZIP
+//             expUtilities[RECREATE]=readMatrix(new String("r"),nonWorkSegment);  //BINARY-ZIP
+//             expUtilities[OTHER]=readMatrix(new String("o"),nonWorkSegment);    //BINARY-ZIP
 
-//             expUtilities[SCHOOL1]=readBinaryMatrix(new String("c1"),nonWorkSegment);
-//             expUtilities[SCHOOL3]=readBinaryMatrix(new String("c3"),nonWorkSegment);
-//             expUtilities[SHOP]=readBinaryMatrix(new String("s"),nonWorkSegment);
-//             expUtilities[RECREATE]=readBinaryMatrix(new String("r"),nonWorkSegment);
-//             expUtilities[OTHER]=readBinaryMatrix(new String("o"),nonWorkSegment);
+             expUtilities[SCHOOL1]=readBinaryMatrix(new String("c1"),nonWorkSegment);
+             expUtilities[SCHOOL3]=readBinaryMatrix(new String("c3"),nonWorkSegment);
+             expUtilities[SHOP]=readBinaryMatrix(new String("s"),nonWorkSegment);
+             expUtilities[RECREATE]=readBinaryMatrix(new String("r"),nonWorkSegment);
+             expUtilities[OTHER]=readBinaryMatrix(new String("o"),nonWorkSegment);
 
              currentNonWorkSegment=nonWorkSegment;
          }
