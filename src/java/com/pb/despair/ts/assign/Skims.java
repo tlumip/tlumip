@@ -37,7 +37,8 @@ public class Skims {
 
     int[] alphaNumberArray = null;
 	int[] betaNumberArray = null;
-
+	int[] zonesToSkim = null;
+	
 	Matrix newSkimMatrix;
 
     public Skims ( ResourceBundle rb, String timePeriod ) {
@@ -73,6 +74,14 @@ public class Skims {
         }
 	    
 
+        // define which of the total set of centroids are within the Halo area and should have skim trees built
+	    zonesToSkim = new int[g.getMaxCentroid()+1];
+		Arrays.fill ( zonesToSkim, 0 );
+	    for (int i=0; i < alphaNumberArray.length; i++) {
+	    	zonesToSkim[alphaNumberArray[i]] = 1;
+	    }
+
+        
 		if ( useMessageWindow ) {
 			this.mw = new MessageWindow ( "Shortest Path Tree Skimming Progress" );
 		}
@@ -97,7 +106,16 @@ public class Skims {
             logger.severe("Can't get zone numbers from zonal correspondence file");
             e.printStackTrace();
         }
-	 }
+
+    
+        // define which of the total set of centroids are within the Halo area and should have skim trees built
+	    zonesToSkim = new int[g.getMaxCentroid()+1];
+		Arrays.fill ( zonesToSkim, 0 );
+	    for (int i=0; i < alphaNumberArray.length; i++) {
+	    	zonesToSkim[alphaNumberArray[i]] = 1;
+	    }
+
+    }
 
 
 
@@ -117,12 +135,7 @@ public class Skims {
         double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
 
         // copy the array to a ones-based float[][] for conversion to Matrix object
-		float[][] onesBasedFloatArray = new float[zeroBasedFloatArray.length+1][zeroBasedFloatArray.length+1];
-	    for (int i=1; i < onesBasedFloatArray.length; i++) {
-           for (int j=1; j < onesBasedFloatArray[i].length; j++)
-           	  onesBasedFloatArray[i][j] = (float)zeroBasedFloatArray[i-1][j-1];
-	    }
-	    zeroBasedFloatArray = null;
+        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedFloatArray );
         
 	    // create a Matrix from the peak alpha distance skims array and write to disk
 	    fileName = (String)propertyMap.get( "pkHwyDistSkim.fileName" );
@@ -159,16 +172,10 @@ public class Skims {
 		// set the highway network attribute on which to skim the network - congested time in this case
 		double[] linkCost = g.getCongestedTime();
 		
-        // get the skims as a double[][] array 
+        // get the skims as a double[][] array dimensioned to number of centroids (2984)
         double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
 
-        // copy the array to a ones-based float[][] for conversion to Matrix object
-		float[][] onesBasedFloatArray = new float[zeroBasedFloatArray.length+1][zeroBasedFloatArray.length+1];
-	    for (int i=1; i < onesBasedFloatArray.length; i++) {
-           for (int j=1; j < onesBasedFloatArray[i].length; j++)
-           	  onesBasedFloatArray[i][j] = (float)zeroBasedFloatArray[i-1][j-1];
-	    }
-	    zeroBasedFloatArray = null;
+        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedFloatArray );
         
 	    // create a Matrix from the peak alpha congested time skims array and write to disk
 	    fileName = (String)propertyMap.get( "pkHwyTimeSkim.fileName" );
@@ -201,13 +208,7 @@ public class Skims {
         // get the skims as a double[][] array 
         double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
 
-        // copy the array to a ones-based float[][] for conversion to Matrix object
-		float[][] onesBasedFloatArray = new float[zeroBasedFloatArray.length+1][zeroBasedFloatArray.length+1];
-	    for (int i=1; i < onesBasedFloatArray.length; i++) {
-           for (int j=1; j < onesBasedFloatArray[i].length; j++)
-           	  onesBasedFloatArray[i][j] = (float)zeroBasedFloatArray[i-1][j-1];
-	    }
-	    zeroBasedFloatArray = null;
+        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedFloatArray );
         
 	    // create a Matrix from the off-peak alpha congested time skims array and write to disk
 	    fileName = (String)propertyMap.get( "opHwyTimeSkim.fileName" );
@@ -227,16 +228,11 @@ public class Skims {
 		// set the highway network attribute on which to skim the network - distance in this case
 		double[] linkCost = g.getDist();
 		
-        // get the skims as a double[][] array 
+        // get the skims as a double[][] array
+		// skims are generated between all centroids in entire network (2985 total centroids)
         double[][] zeroBasedFloatArray = buildHwySkimMatrix( linkCost );
 
-        // copy the array to a ones-based float[][] for conversion to Matrix object
-		float[][] onesBasedFloatArray = new float[zeroBasedFloatArray.length+1][zeroBasedFloatArray.length+1];
-	    for (int i=1; i < onesBasedFloatArray.length; i++) {
-           for (int j=1; j < onesBasedFloatArray[i].length; j++)
-           	  onesBasedFloatArray[i][j] = (float)zeroBasedFloatArray[i-1][j-1];
-	    }
-	    zeroBasedFloatArray = null;
+        float[][] onesBasedFloatArray = getOnesBasedFloatArray ( zeroBasedFloatArray );
         
 	    // create a Matrix from the peak alpha distance skims array and return
 	    newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", onesBasedFloatArray );
@@ -263,11 +259,42 @@ public class Skims {
 	}
 
 
-	/**
+    private float[][] getOnesBasedFloatArray ( double[][] zeroBasedFloatArray ) {
+    	
+    	int z;
+    	int[] inToEx = g.getIndexNode();
+    	
+	    // copy the array to a ones-based float[][] for conversion to Matrix object
+	    // only the zones within the study area are saved to skim matrix (2950 total skim zones)
+		float[][] onesBasedFloatArray = new float[alphaNumberArray.length+1][alphaNumberArray.length+1];
+		int r = 1;
+	    for (int i=0; i < zeroBasedFloatArray.length; i++) {
+			int c = 1;
+			z = inToEx[i];
+	    	if ( zonesToSkim[z] == 1 ) {
+	    		for (int j=0; j < zeroBasedFloatArray[i].length; j++) {
+	    			z = inToEx[j];
+	    	    	if ( zonesToSkim[z] == 1 ) {
+	    	    		onesBasedFloatArray[r][c] = (float)zeroBasedFloatArray[i][j];
+	    	    		c++;
+	    	    	}
+	    		}
+	    		r++;
+	    	}
+	    }
+	    zeroBasedFloatArray = null;
+	    
+	    return onesBasedFloatArray;
+
+    }
+
+    
+    /**
 	 * build network skim array, return as double[][].
 	 * the highway network attribute on which to skim the network is passed in.
 	 */
-	private double[][] buildHwySkimMatrix ( double[] linkCost) {
+	private double[][] buildHwySkimMatrix ( double[] linkCost ) {
+		
 		
 		// specify which links are valid parts of paths for this skim matrix
 		boolean[] validLinks = new boolean[linkCost.length];
@@ -278,7 +305,7 @@ public class Skims {
 				validLinks[i] = true;
 		}
 		
-		return hwySkim ( linkCost, validLinks );
+		return hwySkim ( linkCost, validLinks, alphaNumberArray );
        
 	}
 
@@ -286,9 +313,12 @@ public class Skims {
 	/**
 	 * highway network skimming procedure
 	 */
-	private double[][] hwySkim ( double[] linkCost, boolean[] validLinks ) {
+	private double[][] hwySkim ( double[] linkCost, boolean[] validLinks, int[] alphaNumberArray ) {
 
 	    int i;
+	    
+	    
+	    
 		double[][] skimMatrix = new double[g.getNumCentroids()][];
 
 		// create a ShortestPathTreeH object
@@ -301,7 +331,7 @@ public class Skims {
 		
 		
 		for (i=0; i < g.getNumCentroids(); i++) {
-			if (useMessageWindow) mw.setMessage2 ( "Skimming shortest paths from zone " + (i+1) + " of " + g.getNumCentroids() + " zones." );
+			if (useMessageWindow) mw.setMessage2 ( "Skimming shortest paths from zone " + (i+1) + " of " + alphaNumberArray.length + " zones." );
 			sp.buildTree( i );
 			skimMatrix[i] = sp.getSkim();
 		}

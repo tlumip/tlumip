@@ -38,10 +38,11 @@ public class FW {
 	double[] volau;
 	int[] linkType;
     
-    int timePeriod, autoClass=0;
+    int autoClass=0;
     int numAutoClasses;
     int totalTrips=0, totalIJs=0;
     static long totalTime=0;
+    String timePeriod;
 
 	boolean DEBUG = false;
  
@@ -58,7 +59,7 @@ public class FW {
         
         MAX_FW_ITERS = Integer.parseInt ( (String)propertyMap.get( "NUM_FW_ITERATIONS" ) );
         numAutoClasses = Integer.parseInt ( (String)propertyMap.get( "NUM_AUTO_CLASSES" ) );
-		timePeriod = Integer.parseInt ( (String)propertyMap.get( "TIME_PERIOD" ) );
+		timePeriod = g.getTimePeriod();
 
         odTable = new double[numAutoClasses][][];
 

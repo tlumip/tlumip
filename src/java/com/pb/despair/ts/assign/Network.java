@@ -36,6 +36,7 @@ public class Network implements Serializable {
 	double WALK_SPEED;
 
 	
+	int numAlphazones;
 	int maxCentroid;
 	int numCentroids;
 	int maxNode;
@@ -295,6 +296,7 @@ public class Network implements Serializable {
 		// get network properties
 		this.minCentroidLabel = 1;
 		this.maxCentroidLabel = halo.getMaxZoneNumber();
+		this.numAlphazones = halo.getNumberOfZones();
 		this.NUM_AUTO_CLASSES = Integer.parseInt ( (String)propertyMap.get( "NUM_AUTO_CLASSES" ) );
 
 		if ( (String)propertyMap.get( "WALK_SPEED" ) != null )
