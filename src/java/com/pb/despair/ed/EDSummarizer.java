@@ -158,7 +158,7 @@ public class EDSummarizer {
             logger.severe("No calibration output file can be created - system will exit");
             System.exit(10);
         } else {
-            logger.info("Summarizing data from row " + rowIndex + " corresponding to year " + (int)table.getValueAt(rowIndex,"year"));
+            logger.fine("Summarizing data from row " + rowIndex + " corresponding to year " + (int)table.getValueAt(rowIndex,"year"));
         }
         return rowIndex;
     }
