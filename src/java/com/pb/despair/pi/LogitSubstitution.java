@@ -248,7 +248,7 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
                             
                             // short way after algebraic simplification
                             utilityDerivatives[utilityIndex][commodityIndex] =
-                                -lambda*q.discretionary*q2.discretionary*probabilities[commodityIndex]*probabilities[utilityIndex];
+                                -lambda*q.discretionary*q2.discretionary*probabilities[commodityIndex]*probabilities[utilityIndex]*q2.utilityScale;
                             // long way before algebraic simplification -- beware rounding errors
                             // the effect of losing the extra (minimum+discretionary) associated with this production option
 
@@ -270,7 +270,7 @@ public class LogitSubstitution implements ConsumptionFunction, ProductionFunctio
                         }
                     } else {
                         // short way after algebraic simplification
-                        utilityDerivatives[utilityIndex][commodityIndex]=lambda*q.discretionary*q.discretionary*probabilities[commodityIndex]*probabilities[commodityIndex];
+                        utilityDerivatives[utilityIndex][commodityIndex]=lambda*q.discretionary*q.discretionary*probabilities[commodityIndex]*(1-probabilities[commodityIndex])*q.utilityScale;
                         
                         // long way before algebraic simplification .. beware rounding errors
                         // the effect of getting extra (minimum+discretionary)

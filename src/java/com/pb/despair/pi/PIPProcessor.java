@@ -479,9 +479,10 @@ public class PIPProcessor {
                     exData = (ExchangeInputData) exchangeTempStorage.get(key);
                     if (exData == null) {
                         found = false;
-                    } else {
-                        logger.info("Using default exchange data for commodity " + c + " zone " + zones[z].getZoneUserNumber());
                     }
+//                    else {
+//                        logger.info("Using default exchange data for commodity " + c + " zone " + zones[z].getZoneUserNumber());
+//                    }
                 }
                 boolean specifiedExchange = false;
                 if (found) {
@@ -798,7 +799,8 @@ public class PIPProcessor {
                 logger.error("Bad commodity name in zone constant calculation "+commodityName);
                 throw new Error("Bad commodity name in zone constant calculation "+commodityName);
             }
-            FloorspaceQuantityStorage fsi = (FloorspaceQuantityStorage) floorspaceInventory.get(commodityName);
+            Object fsiObject = floorspaceInventory.get(commodityName);
+            FloorspaceQuantityStorage fsi = (FloorspaceQuantityStorage) fsiObject;
             for (int r = 0; r< fsi.inventory.length; r++ ) {
                 Integer betaZoneNumber = ((Integer) floorspaceZoneCrossref.get(new Integer(r)));
                 if (betaZoneNumber != null) {  

@@ -8,7 +8,13 @@ package com.pb.despair.pi;
 
 import com.pb.despair.model.*;
 
-import mt.*;
+import drasys.or.linear.algebra.Algebra;
+import drasys.or.linear.algebra.AlgebraException;
+import drasys.or.matrix.DenseMatrix;
+import drasys.or.matrix.DenseVector;
+import drasys.or.matrix.VectorI;
+
+//import mt.*;
 
 import java.util.*;
 
@@ -40,6 +46,7 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
             ProductionActivity prodActivity = (ProductionActivity) actIt.next();
             if (prodActivity instanceof AggregateActivity) {
                 AggregateActivity activity = (AggregateActivity) prodActivity;
+//                System.out.println(activity);
 
                 // build up relationship between average commodity price and total surplus
                 DenseVector pl;
@@ -52,8 +59,7 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
                     e.printStackTrace();
                     throw new RuntimeException("Can't solve for amounts in zone",e);
                 }
-                DenseMatrix dulbydprice = new DenseMatrix(fpl.numColumns(),numCommodities);
-                dulbydprice.zero();
+                DenseMatrix dulbydprice = new DenseMatrix(fpl.sizeOfColumns(),numCommodities);
                 int[] rows = new int[1];
                 int[] columns = new int[numCommodities];
                 double[][] valuesToAdd = new double[1][];
@@ -64,17 +70,27 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
                     rows[0] = location;
                     AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
                     valuesToAdd[0] = l.calculateLocationUtilityWRTAveragePrices();
-                    dulbydprice.set(rows,columns,valuesToAdd);
+                    //dulbydprice.set(rows,columns,valuesToAdd);
+                    dulbydprice.setRow(location,new DenseVector(valuesToAdd[0]));
                 }
                 DenseMatrix dLocationByDPrice = new DenseMatrix(AbstractTAZ.getAllZones().length,numCommodities);
-                fpl.mult(dulbydprice,dLocationByDPrice);
+                Algebra a = new Algebra();
+                try {
+                    //fpl.mult(dulbydprice,dLocationByDPrice);
+                    dLocationByDPrice = a.multiply(fpl,dulbydprice);
+                } catch (AlgebraException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                    throw new RuntimeException("Can't multiply matrices to figure out average price surplus",e1);
+                }
                 for (int location =0;location<pl.size();location++) {
-                    mt.Vector dThisLocationByPrices = new DenseVector(numCommodities);
+                    VectorI dThisLocationByPrices = new DenseVector(numCommodities);
                     for (int i=0;i<dThisLocationByPrices.size();i++) {
-                        dThisLocationByPrices.set(i,dLocationByDPrice.get(location,i));
+                        dThisLocationByPrices.setElementAt(i,dLocationByDPrice.elementAt(location,i));
                     }
                     AggregateDistribution l = (AggregateDistribution) activity.logitModelOfZonePossibilities.alternativeAt(location);
-                    l.addTwoComponentsOfDerivativesToAveragePriceMatrix(activity.getTotalAmount(),this,dThisLocationByPrices); 
+                    l.addTwoComponentsOfDerivativesToAveragePriceMatrix(activity.getTotalAmount(),this,dThisLocationByPrices);
+//                    System.out.println();
                 }
             }
         }
@@ -92,8 +108,18 @@ public class AveragePriceSurplusDerivativeMatrix extends DenseMatrix {
                 double[] importsAndExports = x.importsAndExports(x.getPrice());
                 derivative += importsAndExports[2] - importsAndExports[3];
             }
-            add(comNum,comNum,derivative);
+            setElementAt(comNum,comNum,
+                    elementAt(comNum,comNum)+derivative);
             comNum++;
         }
     }
+//    /* (non-Javadoc)
+//     * @see drasys.or.matrix.MatrixI#setElementAt(int, int, double)
+//     */
+//    public void setElementAt(int arg0, int arg1, double arg2) {
+//        if (arg0==62 && arg1==62) {
+//            System.out.print("\t"+arg2);
+//        }
+//        super.setElementAt(arg0, arg1, arg2);
+//    }
 }

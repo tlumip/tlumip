@@ -37,8 +37,6 @@ public class OregonPIPProcessor extends PIPProcessor {
         super(timePeriod, piRb, globalRb);
     }
 
-
-
     /* (non-Javadoc)
      * @see com.pb.despair.pi.PIPProcessor#setUpPi()
      */

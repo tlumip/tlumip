@@ -5,11 +5,17 @@ import com.pb.despair.model.ModelComponent;
 import com.pb.despair.model.OverflowException;
 import com.pb.despair.model.ProductionActivity;
 
+import drasys.or.linear.algebra.Algebra;
+import drasys.or.linear.algebra.CroutPivot;
+import drasys.or.linear.algebra.QRIteration;
+import drasys.or.matrix.DenseVector;
+import drasys.or.matrix.VectorI;
+
 // use this to uncomment calculateNewPricesUsingfullDerivatives
 //import drasys.or.linear.algebra.*;
 //import drasys.or.matrix.*;
 
-import mt.*;
+//import mt.*;
 
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -529,15 +535,27 @@ public class PIModel extends ModelComponent {
     }
     
     public void calculateNewPricesUsingBlockDerivatives(boolean calcDeltaUsingDerivatives) {
+        Algebra a = new Algebra();
         newPricesC = new HashMap();
         logger.info("Calculating average commodity price change");
         AveragePriceSurplusDerivativeMatrix.calculateMatrixSize();
         
         AveragePriceSurplusDerivativeMatrix avgMatrix = new AveragePriceSurplusDerivativeMatrix();
         DenseVector totalSurplusVector = new TotalSurplusVector();
-        Vector averagePriceChange  = totalSurplusVector.copy();
-        totalSurplusVector.scale(-1);
-        avgMatrix.solve(totalSurplusVector,averagePriceChange);
+//        VectorI averagePriceChange  = totalSurplusVector.copy();
+//        totalSurplusVector.scale(-1);
+        for (int i=0;i<totalSurplusVector.size();i++) {
+            totalSurplusVector.setElementAt(i,totalSurplusVector.elementAt(i)*-1);
+        }
+        DenseVector averagePriceChange = null;
+        try {
+            CroutPivot solver = new CroutPivot(avgMatrix);
+            averagePriceChange = solver.solveEquations(totalSurplusVector);
+    //        avgMatrix.solve(totalSurplusVector,averagePriceChange);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
         
         Iterator comIt = Commodity.getAllCommodities().iterator();
         int commodityNumber = 0;
@@ -546,13 +564,14 @@ public class PIModel extends ModelComponent {
             logger.info("Calculating local price change for commodity "+c);
             double[] deltaPricesDouble = null;
             if (calcDeltaUsingDerivatives) {
+                try {
                 CommodityPriceSurplusDerivativeMatrix comMatrix = new CommodityPriceSurplusDerivativeMatrix(c);
                 double[] surplus = c.getSurplusInAllExchanges();
                 DenseVector deltaSurplusPlus = new DenseVector(surplus.length+1);
                 for (int i=0;i<surplus.length;i++) {
-                    deltaSurplusPlus.set(i,-surplus[i]-totalSurplusVector.get(commodityNumber)/surplus.length);
+                    deltaSurplusPlus.setElementAt(i,-surplus[i]-totalSurplusVector.elementAt(commodityNumber)/surplus.length);
                 }
-                deltaSurplusPlus.set(surplus.length,0);
+                deltaSurplusPlus.setElementAt(surplus.length,0);
                 //DenseMatrix crossTransposed = new DenseMatrix(surplus.length,surplus.length);
                 //comMatrix.transAmult(comMatrix,crossTransposed);
                 //DenseVector crossTransposedVector = new DenseVector(surplus.length);
@@ -561,13 +580,19 @@ public class PIModel extends ModelComponent {
                 // regular solution
                 //crossTransposed.solve(crossTransposedVector,deltaPrices);
                 // using the libraries least squares type rectangular matrix solver
-                try {
-                    comMatrix.solve(deltaSurplusPlus,deltaPrices);
-                } catch (MatrixSingularException e) {
+//                try {
+//                    comMatrix.solve(deltaSurplusPlus,deltaPrices);
+//                } catch (MatrixSingularException e) {
+//                    e.printStackTrace();
+//                    throw new RuntimeException("Can't find delta prices for commodity "+c,e);
+//                }
+                QRIteration solver2 = new QRIteration(comMatrix);
+                solver2.solveEquations(deltaSurplusPlus,deltaPrices);
+                deltaPricesDouble = deltaPrices.getArray();
+                } catch (Exception e) {
                     e.printStackTrace();
-                    throw new RuntimeException("Can't find delta prices for commodity "+c,e);
+                    throw new RuntimeException(e);
                 }
-                deltaPricesDouble = deltaPrices.getData();
             } else {
                 List exchanges = c.getAllExchanges();
                 deltaPricesDouble = new double[exchanges.size()];
@@ -576,24 +601,21 @@ public class PIModel extends ModelComponent {
                 for (int xNum=0;xNum<exchanges.size();xNum++) {
                     Exchange x = (Exchange) exchanges.get(xNum);
                     double[] sAndD = x.calculateSurplusAndDerviative();
-                    double increase = (-sAndD[0]-totalSurplusVector.get(commodityNumber)/deltaPricesDouble.length)/sAndD[1];
-                    
-                    //commented out for debugging total price change calcs,Jan 17 2005 
-                    //deltaPricesDouble[xNum] = increase;
+                    double increase = (-sAndD[0]-totalSurplusVector.elementAt(commodityNumber)/deltaPricesDouble.length)/sAndD[1];
+                    deltaPricesDouble[xNum] = increase;
                     totalIncrease += increase;
                     numExchanges ++;
                 }
                 // but average price change for this commodity should be zero.
                 for (int xNum=0;xNum<exchanges.size();xNum++) {
-                    //commented out for debugging total price change calcs,Jan 17 2005 
-//                    deltaPricesDouble[xNum] -= totalIncrease/numExchanges;
+                    deltaPricesDouble[xNum] -= totalIncrease/numExchanges;
                 }
             }
             Iterator exIt = c.getAllExchanges().iterator();
             int xNum =0;
             while (exIt.hasNext()) {
                 Exchange x = (Exchange) exIt.next();
-                double price = x.getPrice()+stepSize*(averagePriceChange.get(commodityNumber)+deltaPricesDouble[xNum]);
+                double price = x.getPrice()+stepSize*(averagePriceChange.elementAt(commodityNumber)+deltaPricesDouble[xNum]);
                 newPricesC.put(x,new Double(price));
                 xNum++;
             }
@@ -773,6 +795,9 @@ public class PIModel extends ModelComponent {
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry) it.next();
             Exchange x = (Exchange) e.getKey();
+            if (x.myCommodity.name.equals("FLR Agriculture")) {
+                System.out.println(x.getPrice()+" to "+e.getValue()+" in "+x);
+            }
             Double price = (Double) e.getValue();
             x.setPrice(price.doubleValue());
         }

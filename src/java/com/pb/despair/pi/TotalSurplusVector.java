@@ -8,8 +8,7 @@ package com.pb.despair.pi;
 
 import java.util.Iterator;
 
-import mt.DenseVector;
-import mt.Vector;
+import drasys.or.matrix.DenseVector;
 
 /**
  * @author jabraham
@@ -30,7 +29,7 @@ public class TotalSurplusVector extends DenseVector {
             while (exIt.hasNext()) {
                 surplus += ((Exchange) exIt.next()).calculateSurplus();
             }
-            set(commodityIndex,surplus);
+            setElementAt(commodityIndex,surplus);
             commodityIndex++;
         }
     }

@@ -2,6 +2,9 @@ package com.pb.despair.pi;
 
 import com.pb.despair.model.*;
 
+import drasys.or.matrix.MatrixI;
+import drasys.or.matrix.VectorI;
+
 //import drasys.or.linear.algebra.Algebra;
 //import drasys.or.linear.algebra.AlgebraException;
 //import drasys.or.matrix.DenseMatrix;
@@ -13,7 +16,8 @@ import com.pb.despair.model.*;
 import java.io.IOException;
 import java.io.Writer;
 
-import mt.DiagMatrix;
+// backing up to ORObjects instead of MTJ because of MTJ Bugs
+//import mt.DiagMatrix;
 import org.apache.log4j.Logger;
 
 /**
@@ -326,7 +330,9 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
     /**
      * @param averagePriceSurplusMatrix
      */
-    private void allocateLocationChoiceAveragePriceDerivatives(double totalActivityQuantity, mt.Matrix averagePriceSurplusMatrix, mt.Vector locationChoiceDerivatives) throws OverflowException {
+    private void allocateLocationChoiceAveragePriceDerivatives(double totalActivityQuantity, MatrixI averagePriceSurplusMatrix, VectorI locationChoiceDerivatives) throws OverflowException {
+// this was the way with MTJ
+//        private void allocateLocationChoiceAveragePriceDerivatives(double totalActivityQuantity, mt.Matrix averagePriceSurplusMatrix, mt.Vector locationChoiceDerivatives) throws OverflowException {
         
         ConsumptionFunction cf = lastConsumptionFunction;
         ProductionFunction pf = lastProductionFunction;
@@ -345,7 +351,8 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
                 for (int c1=0;c1<locationChoiceDerivatives.size();c1++) {
                     // this is if the price of one commodity goes up the quantity of activity here will go
                     // down a bit, and hence to quantity bought/sold will also go down.
-                    averagePriceSurplusMatrix.add(c,c1,buyingQuantity*locationChoiceDerivatives.get(c1));
+                    averagePriceSurplusMatrix.setElementAt(c,c1,
+                            averagePriceSurplusMatrix.elementAt(c,c1)+buyingQuantity*locationChoiceDerivatives.elementAt(c1));
                 }
             }
         }
@@ -354,7 +361,8 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
             if (commodity != null) {
                 double sellingQuantity = totalActivityQuantity*sellingQuantities[c];
                 for (int c1=0;c1<locationChoiceDerivatives.size();c1++) {
-                    averagePriceSurplusMatrix.add(c,c1,sellingQuantity*locationChoiceDerivatives.get(c1));
+                    averagePriceSurplusMatrix.setElementAt(c,c1,
+                    averagePriceSurplusMatrix.elementAt(c,c1)+sellingQuantity*locationChoiceDerivatives.elementAt(c1));
                 }
            }
         }
@@ -487,22 +495,23 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
      * @param averagePriceSurplusMatrix
      * @param thisLocationByPrices
      */
-    public void addTwoComponentsOfDerivativesToAveragePriceMatrix(double activityAmount, mt.DenseMatrix averagePriceSurplusMatrix, mt.Vector thisLocationByPrices) {
+    public void addTwoComponentsOfDerivativesToAveragePriceMatrix(double activityAmount, MatrixI averagePriceSurplusMatrix, VectorI thisLocationByPrices) {
         if (lastConsumptionFunction == null) lastConsumptionFunction = myProductionActivity.getConsumptionFunction();
         if (lastProductionFunction == null) lastProductionFunction = myProductionActivity.getProductionFunction();
-        try {
-            allocateLocationChoiceAveragePriceDerivatives(activityAmount, averagePriceSurplusMatrix, thisLocationByPrices);
-        } catch (OverflowException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        // ignore this part for now -- can't do too much just moving activity around to places where production functinos are different
+//        try {
+//           allocateLocationChoiceAveragePriceDerivatives(activityAmount, averagePriceSurplusMatrix, thisLocationByPrices);
+//        } catch (OverflowException e) {
+//            e.printStackTrace();
+//            throw new RuntimeException(e);
+//        }
         allocateProductionChoiceAveragePriceDerivatives(averagePriceSurplusMatrix);
     }
     
     /**
      * @param averagePriceSurplusMatrix
      */
-    private void allocateProductionChoiceAveragePriceDerivatives(mt.DenseMatrix averagePriceSurplusMatrix) {
+    private void allocateProductionChoiceAveragePriceDerivatives(MatrixI averagePriceSurplusMatrix) {
         ConsumptionFunction cf = lastConsumptionFunction;
         ProductionFunction pf = lastProductionFunction;
         
@@ -558,7 +567,8 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         double quantity = getQuantity();
         for (int row=0;row<productionDerivatives.length;row++) {
             for (int col=0;col<productionDerivatives[row].length;col++) {
-                averagePriceSurplusMatrix.add(row,col,productionDerivatives[row][col]*(quantity*sellingPriceCoefficients[col]));
+                averagePriceSurplusMatrix.setElementAt(row,col,
+                 averagePriceSurplusMatrix.elementAt(row,col)+productionDerivatives[row][col]*(quantity*sellingPriceCoefficients[col]));
             }
         }
         
@@ -573,7 +583,8 @@ public class AggregateDistribution extends AmountInZone implements AggregateAlte
         //consumptionDerivatives.mult(getQuantity(),dBuyingUtilitiesByDPrices,dBuyingProductionByDPrices);
         for (int row=0;row<consumptionDerivatives.length;row++) {
             for (int col=0;col<consumptionDerivatives[row].length;col++) {
-                averagePriceSurplusMatrix.add(row,col,consumptionDerivatives[row][col]*quantity*buyingPriceCoefficients[col]); 
+                averagePriceSurplusMatrix.setElementAt(row,col,
+                averagePriceSurplusMatrix.elementAt(row,col)-consumptionDerivatives[row][col]*quantity*buyingPriceCoefficients[col]); 
             }
         }
 

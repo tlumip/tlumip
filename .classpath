@@ -6,7 +6,7 @@
 	<classpathentry kind="src" path="/common-assign"/>
 	<classpathentry kind="src" path="/calibrator"/>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="/mtj"/>
 	<classpathentry kind="src" path="/jakarta-commons"/>
+	<classpathentry kind="src" path="/logging-log4j-1.2.9"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
