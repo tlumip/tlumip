@@ -63,6 +63,7 @@ public class PIPProcessor {
     }
     
     protected  void readFloorspace() {
+        logger.info("Reading Floorspace File");
         if (maxAlphaZone == 0) readFloorspaceZones();
         TableDataSet floorspaceTable = loadTableDataSet("FloorspaceI","pi.base.data");
         floorspaceInventory = new Hashtable();
@@ -325,6 +326,7 @@ public class PIPProcessor {
     }
     
     protected void readFloorspaceZones() {
+        logger.info("Reading Floorspace Zones");
         floorspaceZoneCrossref = new Hashtable();
         if (ResourceUtil.getProperty(rb,"pi.useFloorspaceZones").equalsIgnoreCase("true")) {
             TableDataSet alphaZoneTable = loadTableDataSet("FloorspaceZonesI","pi.base.data");
@@ -739,6 +741,7 @@ public class PIPProcessor {
      *
      */
     protected void recalcActivitySizeTerms() {
+        logger.info("Reading Activity Size Terms");
         TableDataSet activitySizeTermsCalculation = loadTableDataSet("ActivitySizeTermsI","pi.base.data");
         if (activitySizeTermsCalculation == null) {
             logger.warning("No ActivitySizeTermsI table, not recalculating activity size terms from floorspace quantities");
@@ -778,6 +781,7 @@ public class PIPProcessor {
      * 
      */
     protected void recalcFloorspaceBuyingSizeTerms() {
+        logger.info("Reading Floorspace Buying Size Terms");
         TableDataSet floorspaceSizeTermsCalculation = null;
         try {
             floorspaceSizeTermsCalculation = loadTableDataSet("FloorspaceBuyingSizeTermsI","pi.base.data");
@@ -840,6 +844,7 @@ public class PIPProcessor {
      * 
      */
     protected void recalcFloorspaceImport() {
+        logger.info("Getting Floorspace Params from Property file");
         String deltaString = ResourceUtil.getProperty(rb,"pi.floorspaceDelta");
         if (deltaString ==null) {
             logger.warning("No pi.floorspaceDelta entry in properties file -- not calculating floorspace import from floorspace inventory");
