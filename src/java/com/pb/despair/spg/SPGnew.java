@@ -55,7 +55,7 @@ public class SPGnew {
 	static final int NUM_WORKERS_ATTRIB_INDEX = PUMSData.HHWRKRS_INDEX;
 	static final int PERSON_ARRAY_ATTRIB_INDEX = PUMSData.PERSON_ARRAY_INDEX;
 
-	static final double MINIMUM_REQUIRED_BALANCING_FACTOR = 1.0e-6;
+	static final double MINIMUM_REQUIRED_BALANCING_FACTOR = 1.0e-7;
 	
 	// person attributes for person j:
 	// industry: PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0
@@ -171,9 +171,19 @@ public class SPGnew {
 		edInd = new EdIndustry();
 		tempEmploymentTargets = edInd.getRegionalIndustryEmployment( (String)propertyMap.get("ed.employment.fileName") );
 		employmentTargets = new int[tempEmploymentTargets.length];
+		double remainder = 0.0;
 		for (int i=0; i < tempEmploymentTargets.length; i++) {
-			employmentTargets[i] = ((int)(tempEmploymentTargets[i] + 0.5));
-			totalEmployees += employmentTargets[i]; 
+			remainder += ( tempEmploymentTargets[i] - (int)tempEmploymentTargets[i] );
+			employmentTargets[i] = (int)tempEmploymentTargets[i];
+			if ( remainder >= 1.0 ) {
+				employmentTargets[i] += 1;
+				remainder -= 1.0;
+			}
+			totalEmployees += employmentTargets[i];
+		}
+		if (remainder >= 0.5) {
+			employmentTargets[tempEmploymentTargets.length-1] ++;
+			totalEmployees ++;
 		}
 
 		
@@ -195,14 +205,38 @@ public class SPGnew {
 		}
 		
 		// divide total employment by the hhFactor to get number of households consistent with specified employment and hh worker distribution
-		double totalHouseholds = totalEmployees/hhFactor;
+		double totalHouseholds = (int)(totalEmployees/hhFactor + 0.5);
 		
 		// calculate the new set of hh worker targets from these proportions and number of households
 		totalWorkers = 0.0;
+		remainder = 0.0;
 		for (int i=0; i < hhWorkerTargets.length; i++) {
-			hhWorkerTargets[i] = ((int)(workerProportions[i] * totalHouseholds + 0.5));
+			remainder += ( workerProportions[i]*totalHouseholds - ((int)(workerProportions[i]*totalHouseholds)) );
+			hhWorkerTargets[i] = ((int)(workerProportions[i] * totalHouseholds));
+			if ( remainder >= 1.0 ) {
+				hhWorkerTargets[i] += 1;
+				remainder -= 1.0;
+			}
 			totalWorkers += i*hhWorkerTargets[i];
 		}
+		if (remainder >= 0.5) {
+			hhWorkerTargets[hhWorkerTargets.length-1] += 1;
+			totalWorkers += (hhWorkerTargets.length-1);
+		}
+		
+		// adjust targets so that number of workers in employment categories match number of workers in workers per household categories
+		int diff = ((int)(totalEmployees - totalWorkers));
+		if ( diff > 0 )
+			hhWorkerTargets[diff]++;
+		else if ( diff < 0 )
+			hhWorkerTargets[-diff]--;
+
+		// check adjustment
+		totalWorkers = 0.0;
+		for (int i=0; i < hhWorkerTargets.length; i++)
+			totalWorkers += i*hhWorkerTargets[i];
+		
+		
 		
 		logger.info ( "total employment from ED = " + Format.print(" %-10.0f", totalEmployees ) );
 		logger.info ( "total workers in final hh workers targets = " + Format.print(" %-10.0f", totalWorkers ) );
@@ -1934,7 +1968,7 @@ public class SPGnew {
 		}
 	    
 		
-		// get valuies from TableDataSet into array to return
+		// get values from TableDataSet into array to return
 		IncomeSize inc = new IncomeSize();
 
 		int[][] dataTable = new int[halo.getNumberOfZones()][inc.getNumberIncomeSizes()];
