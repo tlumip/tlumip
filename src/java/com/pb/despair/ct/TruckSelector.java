@@ -29,6 +29,47 @@ class TruckSelector {
     readVehicleTypeAttributes(vehicleTypeAttributes);
     readCommodityVehicleTypes(commodityVehicleTypes);
   }
+  
+  private void readVehicleTypeAttributes (File f) {
+    try {
+      int bufferSize = 122434;
+      BufferedReader br = new BufferedReader(new FileReader(f), bufferSize);
+      String s;
+      StringTokenizer st;
+      logger.info("Reading " + f.getAbsolutePath() + " length: " + f.length());
+
+      // First determine how many non-commented records are in the file
+      br.mark(bufferSize-1);
+      int records = 0;
+      while ((s = br.readLine()) != null) {
+        if (s.startsWith("#")) continue;
+        ++records;
+      }
+
+      // Now we can initialize the vehicle type structures to hold the data we
+      // are about to read
+      tf$label = new String[records];
+      tf$grossVehicleWeight = new float[records];
+      tf$payloadCapacity = new float[records];
+      tf$shiftMinutes = new float[records];
+      tf$averageDwellTimes = new float[records];
+
+      // And finally, fill the attribute table with data
+      br.reset();
+      int index = 0;
+      while ((s = br.readLine()) != null) {
+        if (s.startsWith("#")) continue;
+        st = new StringTokenizer(s, " ,");
+        tf$label[index] = st.nextToken();
+        tf$grossVehicleWeight[index] = Float.parseFloat(st.nextToken());
+        tf$payloadCapacity[index] = Float.parseFloat(st.nextToken());
+        tf$shiftMinutes[index] = Float.parseFloat(st.nextToken());
+        tf$averageDwellTimes[index] = Float.parseFloat(st.nextToken());
+        index++;
+      }
+      br.close();
+    } catch (IOException e) { e.printStackTrace(); }
+  }
 
   private void readCommodityVehicleTypes (File f) {
     // Get ready to populate probabilities table
@@ -75,45 +116,7 @@ class TruckSelector {
   }
 
 
-  private void readVehicleTypeAttributes (File f) {
-    try {
-      int bufferSize = 122434;
-      BufferedReader br = new BufferedReader(new FileReader(f), bufferSize);
-      String s;
-      StringTokenizer st;
-      logger.info("Reading " + f.getAbsolutePath() + " length: " + f.length());
-
-      // First determine how many non-commented records are in the file
-      br.mark(bufferSize-1);
-      int records = 0;
-      while ((s = br.readLine()) != null) {
-        if (s.startsWith("#")) continue;
-        ++records;
-      }
-
-      // Now we can initialize the vehicle type structures to hold the data we
-      // are about to read
-      tf$label = new String[records];
-      tf$grossVehicleWeight = new float[records];
-      tf$payloadCapacity = new float[records];
-      tf$shiftMinutes = new float[records];
-      tf$averageDwellTimes = new float[records];
-
-      // And finally, fill the attribute table with data
-      br.reset();
-      int index = 0;
-      while ((s = br.readLine()) != null) {
-        if (s.startsWith("#")) continue;
-        st = new StringTokenizer(s, " ,");
-        tf$label[index] = st.nextToken();
-        tf$grossVehicleWeight[index] = Float.parseFloat(st.nextToken());
-        tf$payloadCapacity[index] = Float.parseFloat(st.nextToken());
-        tf$shiftMinutes[index] = Float.parseFloat(st.nextToken());
-        tf$averageDwellTimes[index++] = Float.parseFloat(st.nextToken());
-      }
-      br.close();
-    } catch (IOException e) { e.printStackTrace(); }
-  }
+  
 
   private int getIndex (String truckType) {
     // You would think that just putting the labels into a hashmap and then
