@@ -2,6 +2,7 @@ package com.pb.despair.pt.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
+import com.pb.common.daf.MessageFactory;
 import com.pb.common.util.ObjectUtil;
 import com.pb.common.util.ResourceUtil;
 
@@ -9,10 +10,7 @@ import com.pb.despair.pt.*;
 
 import java.io.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.ResourceBundle;
+import java.util.*;
 
 
 /**
@@ -170,7 +168,8 @@ public class PTDafMaster extends MessageProcessingTask {
 
             if (mcLogsumCount == totalModeChoiceLogsums) {
                 logger.info("ModeChoice Logsums completed.");
-                startWorkplaceLocation();
+//                startWorkplaceLocation();
+                createWorkplaceLocationMessages();
             }
 
         } else if (msg.getId().equals(MessageID.WORKPLACE_LOCATIONS_CALCULATED)) {
@@ -269,12 +268,91 @@ public class PTDafMaster extends MessageProcessingTask {
     }
 
     /**
+     * createWorkPlaceLocationMessages - sends messages to the work queues to create LaborFlowProbability matrices
+     * iterates through all household and occupation segments,
+     * bundles up workers in each combination of household and occupation
+     * sends out messages: each node to run workplace location model on
+     * one combination household segment/occupation group
+     * Finally, add the unemployed persons to the person array.
+     */
+    private void createWorkplaceLocationMessages(){
+        //Sort the person array by segment, occupation code so the first person will
+        //have segment code 0, occupation code 0 followed by segment code 0, occupation code 1, etc.
+        Arrays.sort(persons); //sorts persons by workSegment (0-8) and then by occupation code (0-8)
+
+        //We want to find all persons that match a particular segment/occupation pair and send those
+        //off to a worker to be processed.
+        int index = 0; //index will keep track of where we are in the person array
+        int nUnemployed = 0;
+        int totalWorkers = 0;
+        ArrayList unemployedPersonList = new ArrayList();
+        ArrayList personList = new ArrayList();
+        while(index < persons.length){
+            int segment = persons[index].householdWorkSegment;
+            int occupation = persons[index].occupation;
+            int nPersons = 0;  //number of people in subgroup for the seg/occ pair.
+            while(persons[index].householdWorkSegment == segment && persons[index].occupation == occupation){
+                if(persons[index].employed){
+                    if(persons[index].occupation == 0) logger.warning("Employed person has an occupation code of 'UNEMPLOYED'");
+                    totalWorkers++;
+                    nPersons++;
+                    personList.add(persons[index]);
+                    index++;
+                }else{    //the person is unemployed - their occupation code may or may not be 0.
+                    nUnemployed++;
+                    unemployedPersonList.add(persons[index]);
+                    index++; //go to next person
+                }
+                if(index == persons.length) break;  //the last person has been processed.
+            }
+            if(nPersons > 0){ //there were persons that matched the seg/occ pair (occ != 0)
+                PTPerson[] personsSubset = new PTPerson[nPersons];
+                personList.toArray(personsSubset);
+                //create a message, set the occupation and segment
+                Message laborFlowMessage = createMessage();
+                laborFlowMessage.setId(MessageID.CALCULATE_WORKPLACE_LOCATIONS);
+                laborFlowMessage.setValue("segment", new Integer(segment));
+                laborFlowMessage.setValue("occupation", new Integer(occupation));
+                laborFlowMessage.setValue("persons", personsSubset);
+                String queueName = getQueueName2();
+                logger.info("Sending Person Message to " + queueName + ": segment "
+                        + segment + " - occupation " + occupation + ": total persons: " + nPersons);
+                sendTo(queueName, laborFlowMessage);
+
+
+                personList.clear(); //empty the array list so that we can put the
+                                    //next group of persons in it.
+            }
+        }
+        logger.info("Total persons: " + persons.length);
+        logger.info("\tTotal unemployed persons: " + nUnemployed);
+        logger.info("\tTotal working persons: " + totalWorkers);
+        logger.info("Percent Unemployed: " + ((double)nUnemployed/persons.length)*100 + "%");
+        personsWithWorkplaceCount = nUnemployed;   //used as a place holder for persons coming back from
+                                                   //the workers.  They will be placed in the array
+                                                   //starting at this number.
+
+        //Once the entire list of persons has been processed, we need to put the unemployed
+        // persons back into the persons array and convert the
+        //message list into an array of messages so that they can be distributed to
+        //the workers.
+        Iterator iter = unemployedPersonList.iterator();
+        while (iter.hasNext()){
+            persons[nUnemployed-1] = (PTPerson) iter.next();  //the order doesn't matter so just start at
+            nUnemployed--;                                //the array position corresponding to the nUnemployed-1
+        }                                                 //and work backward.
+
+        unemployedPersonList =  null;
+        personList = null;
+    }
+
+    /**
      * startWorkPlaceLocation - sends messages to the work queues to create LaborFlowProbability matrices
      * iterates through all household and occupation segments,
      * bundles up workers in each combination of household and occupation
-     * sends out messages: each node to run workplace location model on 
+     * sends out messages: each node to run workplace location model on
      * one combination household segment/occupation group
-     * Finally, add the unemployed persons to the person array. 
+     * Finally, add the unemployed persons to the person array.
      */
     private void startWorkplaceLocation() {
         int personNumber = 0;
@@ -289,7 +367,7 @@ public class PTDafMaster extends MessageProcessingTask {
         for (int segment = 0; segment < TOTALSEGMENTS; segment++) {
             for (int occupation = 1; occupation <= TOTALOCCUPATIONS;
                     occupation++) {
-                        
+
                 //create a message, set the occupation and segment
                 Message laborFlowMessage = createMessage();
                 laborFlowMessage.setId(MessageID.CALCULATE_WORKPLACE_LOCATIONS);
