@@ -53,8 +53,8 @@ public class TourDestinationModeChoiceModel{
             //first figure out what purpose segment we are using so that we can pull the correct
             //expUtilities matrix
             int purposeSegment=0;
-            if(activityPurpose==ActivityPurpose.SCHOOL && thisPerson.age<18) purposeSegment=1;
-            else if(activityPurpose==ActivityPurpose.SCHOOL && thisPerson.age>=18) purposeSegment=3;
+            if(activityPurpose==ActivityPurpose.SCHOOL && thisPerson.age<=18) purposeSegment=1;
+            else if(activityPurpose==ActivityPurpose.SCHOOL && thisPerson.age>18) purposeSegment=3;
             Matrix expUtilities = um.getMatrix(activityPurpose,purposeSegment);
 
             //some debug logging statements used when things go wrong.

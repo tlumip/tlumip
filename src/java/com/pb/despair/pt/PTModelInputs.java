@@ -35,6 +35,8 @@ public class PTModelInputs extends ModelComponent implements Serializable{
     public static Patterns wkdayPatterns;
     public static Patterns wkendPatterns;
 
+    public static DurationModelParametersData dmpd;
+
     public static TourModeParametersData tmpd;
     public static TourDestinationParametersData tdpd;
 
@@ -113,7 +115,12 @@ public class PTModelInputs extends ModelComponent implements Serializable{
         wkendParams = new PatternChoiceParameters();
         wkendParams.readData(ptRb,"weekendParameters.file");
           
-
+        //read the tourModeParameters from csv to TableDataSet
+        if(logger.isDebugEnabled()) {
+            logger.debug("Reading duration model parameters");
+        }
+        dmpd = new DurationModelParametersData();
+        dmpd.readData(ptRb,"durationModelParameters.file");
 
         //read the tourModeParameters from csv to TableDataSet
         if(logger.isDebugEnabled()) {

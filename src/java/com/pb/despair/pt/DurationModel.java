@@ -15,20 +15,29 @@ import org.apache.log4j.Logger;
  */
 
 public class DurationModel{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.DurationModel");
+    final static Logger logger = Logger.getLogger(DurationModel.class);
      //attributes
      Pattern thisPattern;
      PersonDurationAttributes thisPersonAttributes = new PersonDurationAttributes();
      private Tour thisTour;
      public static final int randomDraws=1;
      final static boolean constrained=true;
-     
+     DurationModelParametersData dmpd;
+    
+    boolean firstHomeLogged = false,
+            intermedHomeLogged = false,
+            workLogged = false,
+            shopLogged = false,
+            recreateLogged = false,
+            otherLogged = false,
+            schoolLogged = false;
+
      /**
       * Constructor with no arguments.
       *
       */
-     public DurationModel(){
-         
+     public DurationModel(DurationModelParametersData dmpd){
+        this.dmpd = dmpd;
      }
      
      /**
@@ -224,169 +233,197 @@ public class DurationModel{
      }
           
      public short calculateFirstHomeDuration(Activity thisActivity){
-          
+          DurationModelParameters param = getParametersFromParametersDataArray("firstHome");
           double expression=          
-                 -0.0537*thisPattern.IStopsEquals1           //One intermediate stop in pattern
-               + -0.0740*thisPattern.IStopsEquals2Plus     //Two or more intermediate stops in pattern
-               + -0.1115*thisPattern.toursEquals2          //Two tours in pattern
-               + -0.1972*thisPattern.toursEquals3Plus     //Three or more tours in pattern
-               + -0.1157*thisPersonAttributes.singleAdultWithOnePlusChildren//Single adult with 1+ children
-               + -0.0475*thisPersonAttributes.autos0     //0 Autos
-               +  0.1535*thisPersonAttributes.age18to20 //Age 18to20
-               +  0.0860*thisPattern.shopOnly                //Only shop activities in pattern
-               +  0.0563*thisPattern.recreateOnly           //Only recreate activities in pattern
-               +  0.0201*thisPattern.otherOnly           //Only other activities in pattern
-               + -0.2349*thisPattern.tour1IsWork          //First tour is work
-               + -0.2295*thisPattern.tour1IsSchool          //First tour is school     
-               +  5.9243;                                        //constant
+                 param.IStopsInPatternEquals1*thisPattern.IStopsEquals1           //One intermediate stop in pattern
+               + param.IStopsInPatternEquals2Plus*thisPattern.IStopsEquals2Plus     //Two or more intermediate stops in pattern
+               + param.toursEquals2*thisPattern.toursEquals2          //Two tours in pattern
+               + param.toursEquals3Plus*thisPattern.toursEquals3Plus     //Three or more tours in pattern
+               + param.singleAdultWithOnePlusChildren*thisPersonAttributes.singleAdultWithOnePlusChildren//Single adult with 1+ children
+               + param.autos0*thisPersonAttributes.autos0     //0 Autos
+               + param.age18to20*thisPersonAttributes.age18to20 //Age 18to20
+               + param.shopOnlyInPattern*thisPattern.shopOnly                //Only shop activities in pattern
+               + param.recreateOnlyInPattern*thisPattern.recreateOnly           //Only recreate activities in pattern
+               + param.otherOnlyInPattern*thisPattern.otherOnly           //Only other activities in pattern
+               + param.tour1IsWork*thisPattern.tour1IsWork          //First tour is work
+               + param.tour1IsSchool*thisPattern.tour1IsSchool          //First tour is school
+               + param.constant;                                        //constant
                
-          double shape= 0.5826;
-     
+          double shape= (double) param.shape;
+          if(logger.isDebugEnabled() && !firstHomeLogged) {
+              logger.debug("Shape Param for First Home: " + param.shape);
+              firstHomeLogged = true;
+          }
           return (short)(Math.round(solveForT(shape,expression,thisActivity)));
      }
 
      public short calculateIntermediateHomeDuration(Activity thisActivity){
-          
+          DurationModelParameters param = getParametersFromParametersDataArray("intermedHome");
           double expression=
-                 -0.3001*thisPattern.toursEquals3          //Three Tours 
-               + -0.4694*thisPattern.toursEquals4          //Four Tours
-               + -0.6910*thisPattern.toursEquals5Plus     //Five or More Tours
-               + -0.4126*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))     //Start MD
-               + -0.6741*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))    //Start PM
-               + -0.8*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))       //Start EV
-               +  5.2806;                                         //Constant
+                 param.toursEquals3*thisPattern.toursEquals3          //Three Tours
+               + param.toursEquals4*thisPattern.toursEquals4          //Four Tours
+               + param.toursEquals5Plus*thisPattern.toursEquals5Plus     //Five or More Tours
+               + param.mdActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))     //Start MD
+               + param.pmActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))    //Start PM
+               + param.evActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))       //Start EV
+               + param.constant;                                         //Constant
           
-          double shape=1.0342;
+          double shape= (double) param.shape;
+          if(logger.isDebugEnabled() && !intermedHomeLogged) {
+              logger.debug("Shape Param for Intermediate Home: " + param.shape);
+              intermedHomeLogged = true;
+          }
           return (short)(Math.round(solveForT(shape,expression,thisActivity)));
      }
 
      public short calculateWorkDuration(Activity thisActivity){
-          
+          DurationModelParameters param = getParametersFromParametersDataArray("work");
           double expression=
-                 -0.0948*thisPattern.IStopsEquals1          //One Daily Intermediate Stop
-               + -0.1330*thisPattern.IStopsEquals2          //Two Daily Intermediate Stops
-               + -0.2472*thisPattern.IStopsEquals3          //Three Daily Intermediate Stops
-               + -0.3718*thisPattern.IStopsEquals4Plus     //Four + Daily Intermediate Stops
-               + -0.0656*thisPattern.toursEquals2          //Two Tours
-               + -0.1667*thisPattern.toursEquals3          //Three Tours
-               + -0.2242*thisPattern.toursEquals4          //Four Tours
-               + -0.3444*thisPattern.toursEquals5Plus     //Five or More Tours
-               +  0.0199*thisPersonAttributes.industryEqualsRetail //Retail Industry
-               + -0.0484*thisPersonAttributes.industryEqualsPersonServices//Personal Services
-               + -0.3078*thisPersonAttributes.worksTwoJobs//Works Two Jobs
-               + -0.1063*thisPattern.schDummy               //School Activity
-               + -0.0625*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))    //Activity Start AM
-               + -0.2484*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))   //Activity Start MD
-               + -0.4032*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))  //Activity Start PM
-               + -0.6898*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))  //Activity Start EV
-               +  6.3855;                                         //Constant
+                 param.IStopsInPatternEquals1*thisPattern.IStopsEquals1          //One Daily Intermediate Stop
+               + param.IStopsInPatternEquals2*thisPattern.IStopsEquals2          //Two Daily Intermediate Stops
+               + param.IStopsInPatternEquals3*thisPattern.IStopsEquals3          //Three Daily Intermediate Stops
+               + param.IStopsInPatternEquals4Plus*thisPattern.IStopsEquals4Plus     //Four + Daily Intermediate Stops
+               + param.toursEquals2*thisPattern.toursEquals2          //Two Tours
+               + param.toursEquals3*thisPattern.toursEquals3          //Three Tours
+               + param.toursEquals4*thisPattern.toursEquals4          //Four Tours
+               + param.toursEquals5Plus*thisPattern.toursEquals5Plus     //Five or More Tours
+               + param.industryEqualsRetail*thisPersonAttributes.industryEqualsRetail //Retail Industry
+               + param.industryEqualsPersonServices*thisPersonAttributes.industryEqualsPersonServices//Personal Services
+               + param.worksTwoJobs*thisPersonAttributes.worksTwoJobs//Works Two Jobs
+               + param.schDummy*thisPattern.schDummy               //School Activity
+               + param.amActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))    //Activity Start AM
+               + param.mdActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))   //Activity Start MD
+               + param.pmActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))  //Activity Start PM
+               + param.evActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))  //Activity Start EV
+               + param.constant;                                         //Constant
 
-          double shape=(1/3.3986);
+          double shape= (double) param.shape;
+         if(logger.isDebugEnabled() && !workLogged) {
+              logger.debug("Shape Param for Work: " + param.shape);
+              workLogged = true;
+          }
           return (short)(Math.round(solveForT(shape,expression,thisActivity)));
      }
 
      public short calculateSchoolDuration(Activity thisActivity){
-          
+          DurationModelParameters param = getParametersFromParametersDataArray("school");
           double expression=
-                 -0.1013*thisPattern.toursEquals2          //Two Tours
-               + -0.2356*thisPattern.toursEquals3          //Three Tours
-               + -0.3167*thisPattern.toursEquals4          //Four Tours
-               + -0.4125*thisPattern.toursEquals5Plus     //Five or More Tours
-               + -0.2045*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))   //Start AM
-               + -0.5112*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))     //Start MD
-               + -0.8908*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))    //Start PM
-               + -1.1053*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))     //Start EV
-               + -0.0792*thisPattern.IStopsEquals1          //One intermediate stop in pattern
-               + -0.0966*thisPattern.IStopsEquals2          //Two intermediate stops in pattern
-               + -0.1749*(thisPattern.IStopsEquals3+thisPattern.IStopsEquals4Plus)//Three or More Intermediate Stops in Pattern
-               + -0.1257*thisTour.iStopsCheck(1,thisTour.tourString) //One intermediate stop on Tour
-               + -0.1356*thisTour.iStopsCheck(2,thisTour.tourString) //Two Intermediate Stops on Tour
-               + -0.0711*thisPattern.wrkDummy               //Work Activity in Pattern
-               + -0.0857*thisPersonAttributes.age25Plus//Age is >=25 years
-               +  6.3140;                                         //Constant
+                 param.toursEquals2*thisPattern.toursEquals2          //Two Tours
+               + param.toursEquals3*thisPattern.toursEquals3          //Three Tours
+               + param.toursEquals4*thisPattern.toursEquals4          //Four Tours
+               + param.toursEquals5Plus*thisPattern.toursEquals5Plus     //Five or More Tours
+               + param.amActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))   //Start AM
+               + param.mdActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))     //Start MD
+               + param.pmActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))    //Start PM
+               + param.evActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))     //Start EV
+               + param.IStopsInPatternEquals1*thisPattern.IStopsEquals1          //One intermediate stop in pattern
+               + param.IStopsInPatternEquals2*thisPattern.IStopsEquals2          //Two intermediate stops in pattern
+               + param.IStopsInPatternEquals3*(thisPattern.IStopsEquals3
+               + param.IStopsInPatternEquals4Plus*thisPattern.IStopsEquals4Plus)//Three or More Intermediate Stops in Pattern
+               + param.IStopsOnTourEquals1*thisTour.iStopsCheck(1,thisTour.tourString) //One intermediate stop on Tour
+               + param.IStopsOnTourEquals2*thisTour.iStopsCheck(2,thisTour.tourString) //Two Intermediate Stops on Tour
+               + param.wkDummy*thisPattern.wrkDummy               //Work Activity in Pattern
+               + param.age25Plus*thisPersonAttributes.age25Plus//Age is >=25 years
+               + param.constant;                                         //Constant
           
-          double shape=(1/3.1369);
-          return (short)(Math.round(solveForT(shape,expression,thisActivity)));          
+          double shape=(double) param.shape;
+         if(logger.isDebugEnabled() && !schoolLogged) {
+              logger.debug("Shape Param for School: " + param.shape);
+              schoolLogged = true;
+          }
+          return (short)(Math.round(solveForT(shape,expression,thisActivity)));
      }
      public short calculateShopDuration(Activity thisActivity){
-          
+          DurationModelParameters param = getParametersFromParametersDataArray("shop");
           double expression=
-                 -0.1429*thisPattern.toursEquals2          //Two Tours
-               + -0.2949*thisPattern.toursEquals3          //Three Tours
-               + -0.4102*thisPattern.toursEquals4          //Four Tours
-               + -0.5177*thisPattern.toursEquals5Plus      //Five or More Tours
-               + -0.3274*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))  //Activity Start AM
-               + -0.5239*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))  //Activity Start MD
-               + -0.8438*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM")) //Activity Start PM
-               + -1.0081*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))   //Activity Start EV
-               + -0.2146*thisPattern.IStopsEquals1          //One Daily Intermediate Stop
-               + -0.2659*thisPattern.IStopsEquals2          //Two Daily Intermediate Stops
-               + -0.3860*thisPattern.IStopsEquals3       //Three Daily Intermediate Stops
-               + -0.2977*thisPattern.IStopsEquals4Plus     //Four + Daily Intermediate Stops
-               +  0.1570*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.PRIMARY_DESTINATION))    //Primary Destination
-               + -0.0633*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.INTERMEDIATE_STOP))
+                 param.toursEquals2*thisPattern.toursEquals2          //Two Tours
+               + param.toursEquals3*thisPattern.toursEquals3          //Three Tours
+               + param.toursEquals4*thisPattern.toursEquals4          //Four Tours
+               + param.toursEquals5Plus*thisPattern.toursEquals5Plus      //Five or More Tours
+               + param.amActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))  //Activity Start AM
+               + param.mdActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))  //Activity Start MD
+               + param.pmActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM")) //Activity Start PM
+               + param.evActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))   //Activity Start EV
+               + param.IStopsInPatternEquals1*thisPattern.IStopsEquals1          //One Daily Intermediate Stop
+               + param.IStopsInPatternEquals2*thisPattern.IStopsEquals2          //Two Daily Intermediate Stops
+               + param.IStopsInPatternEquals3*thisPattern.IStopsEquals3       //Three Daily Intermediate Stops
+               + param.IStopsInPatternEquals4Plus*thisPattern.IStopsEquals4Plus     //Four + Daily Intermediate Stops
+               + param.activityIsPrimaryDestination*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.PRIMARY_DESTINATION))    //Primary Destination
+               + param.activityIsIntermediateStopOnShopTour*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.INTERMEDIATE_STOP))
                *(thisTour.primaryDestination.checkActivityPurpose(thisActivity.activityPurpose,ActivityPurpose.SHOP)) //Intermediate Stop on Shop Tour
-               +  0.0284*thisPersonAttributes.income60Plus //Income > $60k
-               +  0.1042*thisPersonAttributes.female      //Female 
-               +  0.0676*thisPersonAttributes.householdSize3Plus //HH Size 3+
-               +  4.7248;                                         //Constant
+               + param.income60Plus*thisPersonAttributes.income60Plus //Income > $60k
+               + param.female*thisPersonAttributes.female      //Female
+               + param.householdSize3Plus*thisPersonAttributes.householdSize3Plus //HH Size 3+
+               + param.constant;                                         //Constant
  
-          double shape=1.1938;
-          return (short)(Math.round(solveForT(shape,expression,thisActivity)));     
+          double shape=param.shape;
+         if(logger.isDebugEnabled() && !shopLogged) {
+              logger.debug("Shape Param for Shop: " + param.shape);
+              shopLogged = true;
+          }
+          return (short)(Math.round(solveForT(shape,expression,thisActivity)));
      }
      public short calculateRecreateDuration(Activity thisActivity){
-          
+          DurationModelParameters param = getParametersFromParametersDataArray("recreate");
           double expression=    
-                    -0.3123*thisPattern.toursEquals2          //Two Tours
-               + -0.4793*thisPattern.toursEquals3          //Three Tours
-               + -0.6116*thisPattern.toursEquals4          //Four Tours
-               + -0.6341*thisPattern.toursEquals5Plus      //Five or More Tours
-               + -0.1879*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))  //Activity Start AM
-               + -0.5474*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))    //Activity Start MD
-               + -0.6692*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))   //Activity Start PM
-               + -0.7487*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))  //Activity Start EV
-               + -0.0858*thisPattern.IStopsEquals1          //One Daily Intermediate Stop
-               + -0.1617*thisPattern.IStopsEquals2          //Two Daily Intermediate Stops
-               + -0.2072*thisPattern.IStopsEquals3       //Three Daily Intermediate Stops
-               + -0.2452*thisPattern.IStopsEquals4Plus     //Four + Daily Intermediate Stops
-               + -0.4296*thisTour.iStopsCheck(1,thisTour.tourString)  //One intermediate stop on Tour
-               + -0.2238*thisTour.iStopsCheck(2,thisTour.tourString) //Two Intermediate Stops on Tour
-               + -0.0579*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.INTERMEDIATE_STOP))
-               *(thisTour.primaryDestination.checkActivityPurpose(thisActivity.activityPurpose,ActivityPurpose.WORK)) //Intermediate Stop on Work Tour
-               +  0.0785*thisPattern.isWeekend               //Weekend
-               +  5.9603;                                        //Constant
+                      param.toursEquals2*thisPattern.toursEquals2          //Two Tours
+                    + param.toursEquals3*thisPattern.toursEquals3          //Three Tours
+                    + param.toursEquals4*thisPattern.toursEquals4          //Four Tours
+                    + param.toursEquals5Plus*thisPattern.toursEquals5Plus      //Five or More Tours
+                    + param.amActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))  //Activity Start AM
+                    + param.mdActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))    //Activity Start MD
+                    + param.pmActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))   //Activity Start PM
+                    + param.evActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))  //Activity Start EV
+                    + param.IStopsInPatternEquals1*thisPattern.IStopsEquals1          //One Daily Intermediate Stop
+                    + param.IStopsInPatternEquals2*thisPattern.IStopsEquals2          //Two Daily Intermediate Stops
+                    + param.IStopsInPatternEquals3*thisPattern.IStopsEquals3       //Three Daily Intermediate Stops
+                    + param.IStopsInPatternEquals4Plus*thisPattern.IStopsEquals4Plus     //Four + Daily Intermediate Stops
+                    + param.IStopsOnTourEquals1*thisTour.iStopsCheck(1,thisTour.tourString)  //One intermediate stop on Tour
+                    + param.IStopsOnTourEquals2*thisTour.iStopsCheck(2,thisTour.tourString) //Two Intermediate Stops on Tour
+                    + param.activityIsIntermediateStopOnWorkTour*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.INTERMEDIATE_STOP))
+                                    *(thisTour.primaryDestination.checkActivityPurpose(thisActivity.activityPurpose,ActivityPurpose.WORK)) //Intermediate Stop on Work Tour
+                    + param.isWeekend*thisPattern.isWeekend               //Weekend
+                    + param.constant;                                        //Constant
           
-          double shape=1.5357;
-          return (short)(Math.round(solveForT(shape,expression,thisActivity)));     
+          double shape=param.shape;
+         if(logger.isDebugEnabled() && !recreateLogged) {
+              logger.debug("Shape Param for recreate: " + param.shape);
+              recreateLogged = true;
+          }
+          return (short)(Math.round(solveForT(shape,expression,thisActivity)));
      }
 
      public short calculateOtherDuration(Activity thisActivity){
-          
+          DurationModelParameters param = getParametersFromParametersDataArray("other");
           double expression=    
-                 -0.3500*thisPattern.toursEquals2          //Two Tours
-               + -0.7273*thisPattern.toursEquals3          //Three Tours
-               + -1.0913*thisPattern.toursEquals4          //Four Tours
-               + -1.4537*thisPattern.toursEquals5Plus      //Five or More Tours
-               + -0.5729*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))               //Activity Start AM
-               + -0.9544*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))  //Activity Start MD
-               + -1.0905*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))   //Activity Start PM
-               + -1.0664*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))   //Activity Start EV
-               + -0.1807*thisPattern.IStopsEquals1     //One Daily Intermediate Stop
-               + -0.5475*thisPattern.IStopsEquals2          //Two Daily Intermediate Stops
-               + -0.6421*thisPattern.IStopsEquals3Plus     //Three or More Daily Intermediate Stops
-               + -0.5545*thisTour.iStopsCheck(1,thisTour.tourString)          //One intermediate stop on Tour
-               + -0.1122*thisTour.iStopsCheck(2,thisTour.tourString)          //Two Intermediate Stops on Tour
-               + -0.2401*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.INTERMEDIATE_STOP))
-               *(thisTour.primaryDestination.checkActivityPurpose(thisActivity.activityPurpose,ActivityPurpose.WORK)) //Work Tour Intermediate Stop
-               + -0.6859*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.INTERMEDIATE_STOP))
-               *(thisTour.primaryDestination.checkActivityPurpose(thisActivity.activityPurpose,ActivityPurpose.SCHOOL))//School Tour Intermediate Stop
-               + -0.2703*thisPersonAttributes.householdSize3Plus     //Household Size >=3
-               + -0.0880*thisPersonAttributes.singleAdultWithOnePlusChildren     //Single Adult with Child
-               +  0.1370*thisPersonAttributes.income60Plus//Household Income >=$60k
-               +  5.8489;                                         //Constant
+                 param.toursEquals2*thisPattern.toursEquals2          //Two Tours
+               + param.toursEquals3*thisPattern.toursEquals3          //Three Tours
+               + param.toursEquals4*thisPattern.toursEquals4          //Four Tours
+               + param.toursEquals5Plus*thisPattern.toursEquals5Plus      //Five or More Tours
+               + param.amActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"AM"))               //Activity Start AM
+               + param.mdActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"MD"))  //Activity Start MD
+               + param.pmActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"PM"))   //Activity Start PM
+               + param.evActivityStartTime*(thisActivity.startTimePeriodCheck(thisActivity.startTime,"EV"))   //Activity Start EV
+               + param.IStopsInPatternEquals1*thisPattern.IStopsEquals1     //One Daily Intermediate Stop
+               + param.IStopsInPatternEquals2*thisPattern.IStopsEquals2          //Two Daily Intermediate Stops
+               + param.IStopsInPatternEquals3Plus*thisPattern.IStopsEquals3Plus     //Three or More Daily Intermediate Stops
+               + param.IStopsOnTourEquals1*thisTour.iStopsCheck(1,thisTour.tourString)          //One intermediate stop on Tour
+               + param.IStopsOnTourEquals2*thisTour.iStopsCheck(2,thisTour.tourString)          //Two Intermediate Stops on Tour
+               + param.activityIsIntermediateStopOnWorkTour*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.INTERMEDIATE_STOP))
+                        *(thisTour.primaryDestination.checkActivityPurpose(thisActivity.activityPurpose,ActivityPurpose.WORK)) //Work Tour Intermediate Stop
+               + param.activityIsIntermediateStopOnSchoolTour*(thisActivity.checkActivityType(thisActivity.activityType,ActivityType.INTERMEDIATE_STOP))
+                        *(thisTour.primaryDestination.checkActivityPurpose(thisActivity.activityPurpose,ActivityPurpose.SCHOOL))//School Tour Intermediate Stop
+               + param.householdSize3Plus*thisPersonAttributes.householdSize3Plus     //Household Size >=3
+               + param.singleAdultWithOnePlusChildren*thisPersonAttributes.singleAdultWithOnePlusChildren     //Single Adult with Child
+               + param.income60Plus*thisPersonAttributes.income60Plus//Household Income >=$60k
+               + param.constant;                                         //Constant
 
-          double shape=1.3229;
-          return (short)(Math.round(solveForT(shape,expression,thisActivity)));     
+          double shape=param.shape;
+         if(logger.isDebugEnabled() && !otherLogged) {
+              logger.debug("Shape Param for Other: " + param.shape);
+              otherLogged = true;
+          }
+          return (short)(Math.round(solveForT(shape,expression,thisActivity)));
      }
 
      void calculateEndTime(Activity thisActivity){
@@ -426,7 +463,24 @@ public class DurationModel{
           
     }
 
-     
-    
+    DurationModelParameters getParametersFromParametersDataArray(String activityPurpose){
+
+        int i=0;
+        while( i<dmpd.parameters.length ){
+            //try to find the correct element in the array - if you do, return the object
+            if(dmpd.parameters[i].purpose.equalsIgnoreCase(activityPurpose)) return dmpd.parameters[i];
+
+            //otherwise go to next array element
+            i++;
+        }
+        //if you get to this line, then something is wrong because you should have found the activity
+        //you were looking for in the array
+        logger.error(activityPurpose + " was not found in parameters array - check parameters file for activity" +
+                " names - returning null");
+        return null;
+    }
+
+
+
 
 }

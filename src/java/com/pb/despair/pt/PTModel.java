@@ -97,7 +97,7 @@ public void buildLogitModels(){
         workBasedTourModel = new WorkBasedTourModel();
         workBasedTourModel.buildModel(tazs);
 
-        durationModel = new DurationModel();
+        durationModel = new DurationModel(PTModelInputs.dmpd);
     }
     /**
      * Choose a weekday pattern for each household

@@ -123,7 +123,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -143,7 +143,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -164,7 +164,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -186,7 +186,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -206,7 +206,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -227,7 +227,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -318,7 +318,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -338,7 +338,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -359,7 +359,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -381,7 +381,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -401,7 +401,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
@@ -422,7 +422,7 @@ public class PTDataWriter {
                             oFile.print(thisTour.tourNumber+",");
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
-                                if(thisPerson.age < 18) oFile.print("1,");  //indicates a K-12 school tour
+                                if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
                                 else oFile.print("3,"); //indicates a college school tour
                             }else if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'w'){
                                 oFile.print(thisPerson.occupation+",");
