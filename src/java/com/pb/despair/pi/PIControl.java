@@ -61,7 +61,7 @@ public class PIControl {
         logger.info("Reading data and setting up for PI run");
         long startTime = System.currentTimeMillis();
         piReaderWriter.setUpPi();
-        logger.info("Setup is complete. Time in seconds: "+((System.currentTimeMillis()-startTime)/1000));
+        logger.info("Setup is complete. Time in seconds: "+((System.currentTimeMillis()-startTime)/1000.0));
         return;
     }
 
@@ -195,7 +195,7 @@ public class PIControl {
         }
 
         logger.info("*********************************************************************************************");
-        logger.info(logStmt+((System.currentTimeMillis()-startTime)/1000));
+        logger.info(logStmt+((System.currentTimeMillis()-startTime)/1000.0));
         logger.info("*   Final merit measure is "+ newMeritMeasure);
         logger.info("*********************************************************************************************");
 
@@ -206,7 +206,7 @@ public class PIControl {
         logger.info("Writing out PI results - this takes up to 15 minutes");
         long startTime = System.currentTimeMillis();
         piReaderWriter.writeOutputs();
-        logger.info("Output has been written. Time in seconds: "+((System.currentTimeMillis()-startTime)/1000));
+        logger.info("Output has been written. Time in seconds: "+((System.currentTimeMillis()-startTime)/1000.0));
         return;
     }
 
