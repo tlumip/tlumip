@@ -348,6 +348,22 @@ public class Network implements Serializable {
 		    this.WALK_SPEED = Double.parseDouble ( (String)globalPropertyMap.get( "WALK_MPH" ) );
 
 		
+<<<<<<< .mine
+		if ( period == "peak" ) {
+			if ( (String)globalPropertyMap.get( "AM_PEAK_VOL_FACTOR" ) != null ){
+				this.volumeFactor = Float.parseFloat ( (String)globalPropertyMap.get( "AM_PEAK_VOL_FACTOR" ) );
+				logger.info("AM_PEAK_VOL_FACTOR = " + volumeFactor);
+			}
+		}
+		else {
+			if ( (String)globalPropertyMap.get( "OFF_PEAK_VOL_FACTOR" ) != null ){
+				this.volumeFactor = Float.parseFloat ( (String)globalPropertyMap.get( "OFF_PEAK_VOL_FACTOR" ) );
+				logger.info("OFF_PEAK_VOL_FACTOR = " + volumeFactor);
+			}
+		}
+		
+=======
+>>>>>>> .r398
     }
     
 	/**
@@ -380,7 +396,7 @@ public class Network implements Serializable {
 	 * a simple data table.
 	 */
 	private TableDataSet deriveLinkAttributes () {
-
+	    logger.info("Inside the deriveLinkAttributes method, volumeFactor is " + volumeFactor);
 		int[] turnPenaltyIndex = new int[linkTable.getRowCount()];
 		int[] ttf = new int[linkTable.getRowCount()];
 		float[] length = new float[linkTable.getRowCount()];
