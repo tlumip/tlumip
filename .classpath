@@ -1,11 +1,11 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="/common-base"/>
-	<classpathentry kind="src" path="/jakarta-commons"/>
-	<classpathentry kind="src" path="/logging-log4j-1.2.9"/>
-	<classpathentry kind="src" path="/common-daf-v2"/>
-	<classpathentry kind="src" path="/calibrator"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="build/classes"/>
+	<classpathentry kind="src" path="/calibrator"/>
+	<classpathentry kind="src" path="/common-base"/>
+	<classpathentry kind="src" path="/common-daf-v2"/>
+	<classpathentry kind="src" path="/logging-log4j-1.2.9"/>
+	<classpathentry kind="src" path="/jakarta-commons"/>
+	<classpathentry kind="output" path="build"/>
 </classpath>
