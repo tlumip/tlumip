@@ -1,5 +1,7 @@
 package com.pb.despair.pt;
 
+import java.io.PrintWriter;
+
 
 /** 
  * Person Attributes for Trip Mode Choice
@@ -59,6 +61,21 @@ public class PersonTripModeAttributes {
                   inchi=1;
                   
         }
+
+    public void print(PrintWriter file){
+        file.println("PersonTripModeAttributes:");
+        file.println("\tage = " + age);
+        file.println("\tautos = " + autos);
+        file.println("\tsize2 = " + size2);
+        file.println("\tsize3p = " + size3p);
+        file.println("\tinclow = " + inclow);
+        file.println("\tincmed = " + incmed);
+        file.println("\tinchi = " + inchi);
+        file.println();
+        file.println();
+
+        file.flush();
+    }
 
 }
      

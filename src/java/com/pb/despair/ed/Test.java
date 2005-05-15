@@ -31,7 +31,7 @@ static final String home= "C:\\eclipse\\workspace\\tlumip\\";
  		try
  		{
  			// Year TestYear propertiesFile
- 			EDControl e = new EDControl(new Integer(args[0]).intValue(), new Integer(args[1]).intValue(), args[2], true);
+ 			EDControl e = new EDControl(new Integer(args[0]).intValue(), new Integer(args[1]).intValue(), args[2]);
 			e.startModel();
 		  } catch(Exception ex) {
 			ex.printStackTrace();
@@ -44,7 +44,7 @@ static final String home= "C:\\eclipse\\workspace\\tlumip\\";
   public static void test5() {
     try {
       //EDControl e = new EDControl(CURRENTYEAR,DATALOCATION,home + XMLLOCATION, true);
-      EDControl e = new EDControl(CURRENTYEAR, 0, "C:/eclipse/workspace/tlumip/config/ed/ed.properties", true);
+      EDControl e = new EDControl(CURRENTYEAR, 0, "C:/eclipse/workspace/tlumip/config/ed/ed.properties");
       e.startModel();
     } catch(Exception ex) {
       ex.printStackTrace();

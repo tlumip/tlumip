@@ -1,12 +1,13 @@
 package com.pb.despair.pt;
 
-import java.io.*;
-import java.util.ResourceBundle;
+import com.pb.common.matrix.MatrixType;
+import com.pb.common.matrix.MatrixWriter;
+import com.pb.common.util.ResourceUtil;
 import org.apache.log4j.Logger;
 
-import com.pb.common.util.ResourceUtil;
-import com.pb.common.matrix.MatrixWriter;
-import com.pb.common.matrix.MatrixType;
+import java.io.*;
+import java.util.ResourceBundle;
+import java.util.Date;
 
 /**
  * PTResults
@@ -167,6 +168,17 @@ public class PTResults {
             debug.flush();
         }
 
+        return debug;
+    }
+
+    public static PrintWriter createTripModeDebugFile(String fileName){
+        String pathToDebugDir = ResourceUtil.getProperty(rb,"debugFiles.path");
+        debug = open(pathToDebugDir + fileName);
+        logger.info("Writing to " + pathToDebugDir + fileName);
+        debug.println("Trip Mode Choice Model Debug File");
+        debug.println("Written: " + new Date());
+        debug.println("No trip mode could be chosen.  Here is the summary followed by the details");
+        debug.flush();
         return debug;
     }
 

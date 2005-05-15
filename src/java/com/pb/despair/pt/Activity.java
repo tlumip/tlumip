@@ -3,8 +3,9 @@ package com.pb.despair.pt;
 import com.pb.despair.model.Mode;
 import com.pb.despair.model.UnitOfLand;
 import org.apache.log4j.Logger;
-import java.io.PrintWriter;
+
 import java.io.Serializable;
+import java.io.PrintWriter;
 import java.util.Vector;
 
 /** A class that represents an activity, part of a tour
@@ -56,56 +57,7 @@ public class Activity implements Serializable{
     */
     protected UnitOfLand nominalLocation;
 
-    // Operations
-    public void print() {
 
-        logger.info("Activity Number " + activityNumber);
-
-
-        if (activityType==ActivityType.PRIMARY_DESTINATION)
-            logger.info(", Primary Destination");
-        else if (activityType==ActivityType.INTERMEDIATE_STOP)
-            logger.info(", Intermediate Stop");
-        else if (activityType==ActivityType.BEGIN)
-            logger.info(", Tour Begin");
-        else if (activityType==ActivityType.END)
-            logger.info(", Tour End");
-
-        if (activityPurpose==ActivityPurpose.HOME)
-            logger.info("Activity Purpose:  Home");
-        if (activityPurpose==ActivityPurpose.WORK||activityPurpose==ActivityPurpose.WORK_BASED)
-            logger.info("Activity Purpose:  Work");
-        if (activityPurpose==ActivityPurpose.SCHOOL)
-            logger.info("Activity Purpose:  School");
-        if (activityPurpose==ActivityPurpose.SHOP)
-            logger.info("Activity Purpose:  Shop");
-        if (activityPurpose==ActivityPurpose.RECREATE)
-            logger.info("Activity Purpose:  Recreate");
-        if (activityPurpose==ActivityPurpose.OTHER)
-            logger.info("Activity Purpose:  Other");
-        if (activityPurpose==ActivityPurpose.WORK_BASED)
-            logger.info("Activity Purpose:  WorkBased");
-
-//        if (startAM == 1)
-//            logger.info("Activity Start Period:  AM");
-//        if (startMD == 1)
-//            logger.info("Activity Start Period:  MD");
-//        if (startPM == 1)
-//            logger.info("Activity Start Period:  PM");
-//        if (startEV == 1)
-//            logger.info("Activity Start Period:  EV");
-
-        logger.info("Activity Duration:  " + duration);
-        logger.info("       Start Time:  " + startTime);
-        logger.info("         End Time:  " + endTime);
-
-        logger.info("Location:");
-        location.print();
-
-        if (tripMode != null)
-            logger.info("Mode:  " + tripMode.alternativeName);
-
-    }
 
     //returns minutes left in day based on day ending 2:59 am, using ending time of activity
     public float minutesLeftInDay() {
@@ -161,6 +113,94 @@ public class Activity implements Serializable{
          startTime=(short)((endHours*100) + (hours*100)+ endMinutes + minutes);
     }
 
+    // Operations
+    public void print() {
+
+        logger.info("Activity Number " + activityNumber);
+
+
+        if (activityType==ActivityType.PRIMARY_DESTINATION)
+            logger.info(", Primary Destination");
+        else if (activityType==ActivityType.INTERMEDIATE_STOP)
+            logger.info(", Intermediate Stop");
+        else if (activityType==ActivityType.BEGIN)
+            logger.info(", Tour Begin");
+        else if (activityType==ActivityType.END)
+            logger.info(", Tour End");
+
+        if (activityPurpose==ActivityPurpose.HOME)
+            logger.info("Activity Purpose:  Home");
+        if (activityPurpose==ActivityPurpose.WORK||activityPurpose==ActivityPurpose.WORK_BASED)
+            logger.info("Activity Purpose:  Work");
+        if (activityPurpose==ActivityPurpose.SCHOOL)
+            logger.info("Activity Purpose:  School");
+        if (activityPurpose==ActivityPurpose.SHOP)
+            logger.info("Activity Purpose:  Shop");
+        if (activityPurpose==ActivityPurpose.RECREATE)
+            logger.info("Activity Purpose:  Recreate");
+        if (activityPurpose==ActivityPurpose.OTHER)
+            logger.info("Activity Purpose:  Other");
+        if (activityPurpose==ActivityPurpose.WORK_BASED)
+            logger.info("Activity Purpose:  WorkBased");
+
+//        if (startAM == 1)
+//            logger.info("Activity Start Period:  AM");
+//        if (startMD == 1)
+//            logger.info("Activity Start Period:  MD");
+//        if (startPM == 1)
+//            logger.info("Activity Start Period:  PM");
+//        if (startEV == 1)
+//            logger.info("Activity Start Period:  EV");
+
+        logger.info("Activity Duration:  " + duration);
+        logger.info("       Start Time:  " + startTime);
+        logger.info("         End Time:  " + endTime);
+
+        logger.info("Location:");
+        location.print();
+
+        if (tripMode != null)
+            logger.info("Mode:  " + tripMode.alternativeName);
+
+    }
+
+    public void print(PrintWriter file) {
+        file.println("Activity Attributes:");
+        file.println("\tActivity Number " + activityNumber);
+        file.print("Activity Type = ");
+         if (activityType==ActivityType.PRIMARY_DESTINATION)
+            file.println("\tPrimary Destination");
+        else if (activityType==ActivityType.INTERMEDIATE_STOP)
+            file.println("\tIntermediate Stop");
+        else if (activityType==ActivityType.BEGIN)
+            file.println("\tTour Begin");
+        else if (activityType==ActivityType.END)
+            file.println("\tTour End");
+        if (activityPurpose==ActivityPurpose.HOME)
+            file.println("\tActivity Purpose =  Home");
+        else if (activityPurpose==ActivityPurpose.WORK)
+            file.println("\tActivity Purpose =  Work");
+        else if (activityPurpose==ActivityPurpose.SCHOOL)
+            file.println("\tActivity Purpose =  School");
+        else if (activityPurpose==ActivityPurpose.SHOP)
+            file.println("\tActivity Purpose =  Shop");
+        else if (activityPurpose==ActivityPurpose.RECREATE)
+            file.println("\tActivity Purpose =  Recreate");
+        else if (activityPurpose==ActivityPurpose.OTHER)
+            file.println("\tActivity Purpose =  Other");
+        else if (activityPurpose==ActivityPurpose.WORK_BASED)
+            file.println("\tActivity Purpose =  WorkBased");
+        file.println("\tActivity Duration =  " + duration);
+        file.println("\tStart Time =  " + startTime);
+        file.println("\tEnd Time =  " + endTime);
+        file.println("Location = " + location.zoneNumber);
+        file.println();
+        file.println();
+
+        file.flush();
+
+    }
+
     //to write to a text file, csv format
     void printCSV(PrintWriter file) {
 
@@ -195,8 +235,8 @@ public class Activity implements Serializable{
         int tripModeType = 0;
         if (tripMode != null)
             tripModeType = tripMode.type;
-            
-            
+
+
         file.print(
             ActivityPurpose.getActivityPurposeChar(activityPurpose)
                 + ","
@@ -214,7 +254,7 @@ public class Activity implements Serializable{
                 + ",");
 
     }
-    //Returns a zero or one depending on  
+    //Returns a zero or one depending on
     public int startTimePeriodCheck(int startTime, String timePeriod){
         int timePeriodCheck=0;
         if(startTime>=300 && startTime<1000 && timePeriod=="AM")

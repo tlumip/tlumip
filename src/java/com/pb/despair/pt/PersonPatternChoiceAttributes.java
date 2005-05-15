@@ -15,8 +15,9 @@ public class PersonPatternChoiceAttributes{
      
      //for weekday model
      int worker; 
-     int student;
-     int unemployed;
+     int studentK12;
+     int studentPostSec;
+    int unemployed;
      int age00To05;
      int age05To15;
      int age00To21;
@@ -71,7 +72,8 @@ public class PersonPatternChoiceAttributes{
      public void setAttributes(PTHousehold thisHousehold, PTPerson thisPerson){
         
         worker = 0; 
-        student = 0;
+        studentK12 = 0;
+        studentPostSec = 0;
         unemployed = 0;
         age00To05 = 0;
         age05To15 = 0;
@@ -126,8 +128,11 @@ public class PersonPatternChoiceAttributes{
           if(thisPerson.worksTwoJobs)
                worksTwoJobs=1;
                
-          if(thisPerson.student)
-               student=1;
+          if(thisPerson.student && thisPerson.age<=18)      //(<=18 implies K-12 segment)
+               studentK12=1;
+
+         if(thisPerson.student && thisPerson.age>18)
+               studentPostSec=1;
 
           if(thisPerson.age<5)
                age00To05=1;
@@ -239,8 +244,9 @@ public class PersonPatternChoiceAttributes{
      void print(){
           //for weekday model
           logger.info("worker=                           "+worker);                   
-          logger.info("student=                          "+student);                 
-          logger.info("unemployed=                       "+unemployed);              
+          logger.info("studentK12=                          "+studentK12);
+          logger.info("studentPostSec=                    "+studentPostSec);
+          logger.info("unemployed=                       "+unemployed);
           logger.info("age00To05=                        "+age00To05);               
           logger.info("age05To15=                        "+age05To15);               
           logger.info("age00To21=                        "+age00To21);               

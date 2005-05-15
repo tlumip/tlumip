@@ -115,7 +115,11 @@ public abstract class Mode implements Serializable, Alternative{
          logger.info("");
           logger.info("Tour Mode: "+alternativeName+", travel time: "+time);
      }
- 
+
+    public String toString(){
+        return alternativeName;
+    }
+
 }
 
 

@@ -1,5 +1,7 @@
 package com.pb.despair.pt;
 
+import java.io.PrintWriter;
+
 
 /** 
  * A class that contains Trip Mode Parameters
@@ -47,9 +49,32 @@ public class TripModeParameters {
           driverSr3p=0;     
           passSr3p=0;       
         };
-   
 
-}                                                                  
+    public void print(PrintWriter file){
+        file.println("Trip Mode Parameters: " );
+        file.println("\tivt = " + ivt);
+        file.println("\topclow = " + opclow);
+        file.println("\topcmed = " + opcmed);
+        file.println("\topchi = " + opchi);
+        file.println("\tpkglow = " + pkglow);
+        file.println("\tpkgmed = " + pkgmed);
+        file.println("\tpkghi = " + pkghi);
+        file.println("\topcpas = " + opcpas);
+        file.println("\tsr2hh2 = " + sr2hh2);
+        file.println("\tsr2hh3p = " + sr2hh3p);
+        file.println("\tsr3hh3p = " + sr3hh3p);
+        file.println("\tdriverSr2 = " + driverSr2);
+        file.println("\tdriverSr3p = " + driverSr3p);
+        file.println("\tpassSr3p = " + passSr3p);
+        file.println();
+        file.println();
+
+        file.flush();
+
+    }
+
+
+}
                                                                    
                                                                    
                                                                    

@@ -694,7 +694,7 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                }
           }
           //school tours not available to non-students
-          if(persAttr.student==0){
+          if(persAttr.studentK12==0 && persAttr.studentPostSec==0){
                if(schDummy==1){
                     isAvailable=false;
                    return;
@@ -711,7 +711,8 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                utility=(
 
                   params.workWorker                              *  wrkDummy * persAttr.worker
-               + params.schoolStudent                           *  schDummy * persAttr.student
+               + params.schoolStudentK12                           *  schDummy * persAttr.studentK12
+               + params.schoolStudentPostSec                           *  schDummy * persAttr.studentPostSec
                + params.shopActivityDummyFemale                 *  shpDummy * persAttr.female
                + params.shopActivityDummyUnemployed             *  shpDummy * persAttr.unemployed
                + params.shopActivityDummySize1                  *  shpDummy * persAttr.householdSize1
@@ -823,8 +824,9 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
      public void printDebug(PatternChoiceParameters params, PersonPatternChoiceAttributes persAttr){
                                                                                                                             
           logger.info("params.workWorker  * wrkDummy * persAttr.worker                                                                       "+(params.workWorker                              *  wrkDummy * persAttr.worker                                                       ));         
-          logger.info("params.schoolStudent  * schDummy * persAttr.student                                                                   "+(params.schoolStudent                           *  schDummy * persAttr.student                                                      ));        
-          logger.info("params.shopActivityDummyFemale  * shpDummy * persAttr.female                                                          "+(params.shopActivityDummyFemale                 *  shpDummy * persAttr.female                                                       ));        
+          logger.info("params.schoolStudentK12  * schDummy * persAttr.studentK12                                                                   "+(params.schoolStudentK12                           *  schDummy * persAttr.studentK12                                                      ));
+          logger.info("params.schoolStudentPostSec  * schDummy * persAttr.studentPostSec                                                                   "+(params.schoolStudentPostSec                           *  schDummy * persAttr.studentPostSec                                                      ));
+          logger.info("params.shopActivityDummyFemale  * shpDummy * persAttr.female                                                          "+(params.shopActivityDummyFemale                 *  shpDummy * persAttr.female                                                       ));
           logger.info("params.shopActivityDummyUnemployed * shpDummy * persAttr.unemployed                                                   "+(params.shopActivityDummyUnemployed             *  shpDummy * persAttr.unemployed                                                   ));        
           logger.info("params.shopActivityDummySize1  * shpDummy * persAttr.householdSize1                                                   "+(params.shopActivityDummySize1                  *  shpDummy * persAttr.householdSize1                                               ));        
           logger.info("params.shopActivityDummySize2  * shpDummy * persAttr.householdSize2                                                   "+(params.shopActivityDummySize2                  *  shpDummy * persAttr.householdSize2                                               ));        

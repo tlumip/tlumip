@@ -241,6 +241,8 @@ public class DurationModel{
                    param.IStopsInPatternEquals1*thisPattern.IStopsEquals1           //One intermediate stop in pattern
                + param.IStopsInPatternEquals2Plus*thisPattern.IStopsEquals2Plus     //Two or more intermediate stops in pattern
                + param.toursEquals2Plus*thisPattern.toursEquals2Plus          //Two or more tours in pattern
+               + param.stp1tour2p*(thisPattern.IStopsEquals1*thisPattern.toursEquals2Plus)  //added in round 4 calibration
+               + param.stp2ptour2p*(thisPattern.IStopsEquals2Plus*thisPattern.toursEquals2Plus) //correclation between the number of tours in a pattern and the number of stops in a pattern.
                + param.industryEqualsRetail*thisPersonAttributes.industryEqualsRetail //Retail Employee
                + param.autos0*thisPersonAttributes.autos0     //0 Autos
                + param.constant;                                        //constant
@@ -265,6 +267,10 @@ public class DurationModel{
                + param.shopOnlyInPattern*thisPattern.shopOnly                //Only shop activities in pattern
                + param.otherOnlyInPattern*thisPattern.otherOnly           //Only other activities in pattern
                + param.wkDummy*thisPattern.wrkDummy          //work dummy
+               + param.stp1tour2*(thisPattern.IStopsEquals1*thisPattern.toursEquals2)
+               + param.stp1tour3p*(thisPattern.IStopsEquals1*thisPattern.toursEquals3Plus)
+               + param.stp2ptour2*(thisPattern.IStopsEquals2Plus*thisPattern.toursEquals2)
+               + param.stp2ptour3p*(thisPattern.IStopsEquals2Plus*thisPattern.toursEquals3Plus)
                + param.constant;                                        //constant
 
          double shape=(double) param.shape;

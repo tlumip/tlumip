@@ -1,14 +1,14 @@
 package com.pb.despair.reports;
 
-import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.ResourceUtil;
 import com.pb.despair.ed.EDSummarizer;
+import org.apache.log4j.Logger;
 
-import java.util.ResourceBundle;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-import org.apache.log4j.Logger;
-import java.io.File;
+import java.util.ResourceBundle;
 
 /**
  * Author: willison
@@ -25,7 +25,7 @@ public class CalibrationManager {
     String scenarioName;
     int timeInterval;
     int baseYear;
-
+    
     boolean calibrateED,
             calibrateALD,
             calibrateSPG1,      //the calibration.properties will specify which applications we

@@ -103,7 +103,8 @@ public class PatternAlternative implements Alternative{
 
                utility=(
                  params.workWorker                              *  thisPattern.wrkDummy * persAttr.worker
-               + params.schoolStudent                           *  thisPattern.schDummy * persAttr.student
+               + params.schoolStudentK12                           *  thisPattern.schDummy * persAttr.studentK12
+               + params.schoolStudentPostSec                           *  thisPattern.schDummy * persAttr.studentPostSec
                + params.shopActivityDummyFemale                 *  thisPattern.shpDummy * persAttr.female
                + params.shopActivityDummyUnemployed             *  thisPattern.shpDummy * persAttr.unemployed
                + params.shopActivityDummySize1                  *  thisPattern.shpDummy * persAttr.householdSize1
@@ -184,7 +185,7 @@ public class PatternAlternative implements Alternative{
                     isAvailable=false;
                     
           //school tours not available to non-students
-          if(persAttr.student==0)
+          if(persAttr.studentK12==0 && persAttr.studentPostSec==0)
                if(thisPattern.schDummy==1)
                     isAvailable=false;
                     
@@ -206,7 +207,8 @@ public class PatternAlternative implements Alternative{
      public void printDebug(PatternChoiceParameters params, PersonPatternChoiceAttributes persAttr){
                                                                                                                             
           System.out.println("params.workWorker  * thisPattern.wrkDummy * persAttr.worker                                                                       "+(params.workWorker                              *  thisPattern.wrkDummy * persAttr.worker                                                       ));         
-          System.out.println("params.schoolStudent  * thisPattern.schDummy * persAttr.student                                                                   "+(params.schoolStudent                           *  thisPattern.schDummy * persAttr.student                                                      ));        
+          System.out.println("params.schoolStudentK12  * schDummy * persAttr.studentK12                                                                   "+(params.schoolStudentK12                           *  thisPattern.schDummy * persAttr.studentK12                                                      ));
+          System.out.println("params.schoolStudentPostSec  * schDummy * persAttr.studentPostSec                                                                   "+(params.schoolStudentPostSec                           * thisPattern.schDummy * persAttr.studentPostSec                                                      ));
           System.out.println("params.shopActivityDummyFemale  * thisPattern.shpDummy * persAttr.female                                                          "+(params.shopActivityDummyFemale                 *  thisPattern.shpDummy * persAttr.female                                                       ));        
           System.out.println("params.shopActivityDummyUnemployed * thisPattern.shpDummy * persAttr.unemployed                                                   "+(params.shopActivityDummyUnemployed             *  thisPattern.shpDummy * persAttr.unemployed                                                   ));        
           System.out.println("params.shopActivityDummySize1  * thisPattern.shpDummy * persAttr.householdSize1                                                   "+(params.shopActivityDummySize1                  *  thisPattern.shpDummy * persAttr.householdSize1                                               ));        

@@ -8,14 +8,15 @@
 package com.pb.despair.ed;
 //import com.pb.common.util.Debug;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import org.apache.log4j.Logger;
-import java.util.Vector;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.Vector;
 
 public class CSVSplitter  {
 	private static Logger logger = Logger.getLogger("com.pb.despair.ed");
@@ -81,8 +82,7 @@ public class CSVSplitter  {
 		}else
 		{
 			ed = new EDControl(year, infile.getAbsolutePath(), 
-								dataSet.getStringValueAt(i, dataSet.getColumnCount()), 
-								false);
+								dataSet.getStringValueAt(i, dataSet.getColumnCount()));
 			ed.startModel();
 			eda = EDControl.getEDDataAccess();
 			tmpVal = (float)eda.getValue(dataSet.getStringValueAt(i,2));

@@ -58,6 +58,12 @@ public class DurationModelParametersData {
                 parameterObject.toursEquals3Plus                       = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals3Plus"));
                 parameterObject.toursEquals4                           = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals4"));
                 parameterObject.toursEquals5Plus                       = table.getValueAt(rowNumber,table.getColumnPosition("toursEquals5Plus"));
+                parameterObject.stp1tour2                                  = table.getValueAt(rowNumber,table.getColumnPosition("stp1tour2"));
+                parameterObject.stp1tour2p                                 = table.getValueAt(rowNumber,table.getColumnPosition("stp1tour2p"));
+                parameterObject.stp1tour3p                                = table.getValueAt(rowNumber,table.getColumnPosition("stp1tour3p"));
+                parameterObject.stp2ptour2                                = table.getValueAt(rowNumber,table.getColumnPosition("stp2ptour2"));
+                parameterObject.stp2ptour2p                               = table.getValueAt(rowNumber,table.getColumnPosition("stp2ptour2p"));
+                parameterObject.stp2ptour3p                                  = table.getValueAt(rowNumber,table.getColumnPosition("stp2ptour3p"));
                 parameterObject.singleAdultWithOnePlusChildren         = table.getValueAt(rowNumber,table.getColumnPosition("singleAdultWithOnePlusChildren"));
                 parameterObject.householdSize3Plus                     = table.getValueAt(rowNumber,table.getColumnPosition("householdSize3Plus"));
                 parameterObject.female                                 = table.getValueAt(rowNumber,table.getColumnPosition("female"));
@@ -117,9 +123,10 @@ public class DurationModelParametersData {
 
     public static void main (String[] args) throws Exception {
         ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
-//        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
-//         DurationModelParametersData tdpd = new DurationModelParametersData();
-//         tdpd.readData(rb, "tourDestinationParameters.file");
+        logger.info("Reading file: " + ResourceUtil.getProperty(rb,"durationModelParameters.file"));
+
+        DurationModelParametersData tdpd = new DurationModelParametersData();
+        tdpd.readData(rb, "durationModelParameters.file");
 //         for(int i=1;i<ActivityPurpose.ACTIVITY_PURPOSES.length;i++){
 //            int length = tdpd.tourDestinationParameters[i].length;
 //            System.out.println("purpose " + ActivityPurpose.getActivityPurposeChar((short)i));

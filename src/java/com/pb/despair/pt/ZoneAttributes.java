@@ -1,5 +1,7 @@
 package com.pb.despair.pt;
 
+import java.io.PrintWriter;
+
 /**  
  * Attributes of a TAZ - only parking cost right now
  * 
@@ -11,5 +13,14 @@ package com.pb.despair.pt;
 public class ZoneAttributes{
 
      public double parkingCost;
+
+    public void print(PrintWriter file){
+        file.println("Zone Attributes:" );
+        file.println("\tparkingCost = " + parkingCost);
+        file.println();
+        file.println();
+        
+        file.flush();
+    }
 
 }

@@ -1,35 +1,21 @@
 package com.pb.despair.ao;
 
-import org.apache.commons.digester.Digester;
-
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import com.pb.despair.model.ModelComponent;
-import com.pb.despair.ed.EDControl;
-import com.pb.despair.pi.PIModel;
-import com.pb.despair.ald.ALDModel;
-import com.pb.despair.spg.SPGnew;
-import com.pb.despair.ct.CTModel;
-import com.pb.despair.ts.TS;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import com.pb.despair.ald.ALDModel;
+import com.pb.despair.ct.CTModel;
+import com.pb.despair.ed.EDControl;
+import com.pb.despair.model.ModelComponent;
+import com.pb.despair.pi.PIModel;
+import com.pb.despair.spg.SPGnew;
+import com.pb.despair.ts.TS;
+import org.apache.commons.digester.Digester;
+import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 
@@ -76,6 +62,62 @@ public class ApplicationOrchestrator {
         return rb;
     }
     
+    private void createBaseYearPropFile(){
+        runLogPropFile = new File(rootDir + "/scenario_" + scenarioName + "/t0/runLog.properties");
+        logger.info("Creating the base year run log in " + rootDir + "/scenario_" + scenarioName + "/t0/");
+        try { //create the file and write the current year into it.
+	            runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, true));
+	            runLogWriter.write("# Filter values for properties files");
+	            runLogWriter.newLine();
+	            runLogWriter.write("BASEDIR=" + rootDir);
+	            runLogWriter.newLine();
+	            runLogWriter.write("SCENARIO_NAME=" + scenarioName);
+	            runLogWriter.newLine();
+	            runLogWriter.write("BASE_YEAR=0");
+                runLogWriter.newLine();
+                runLogWriter.write("CURRENT_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("GLOBAL_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("AO_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("ED_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("ALD_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("SPG_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("PI_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("CT_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("PT_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("TS_TEMPLATE_YEAR=0");
+	            runLogWriter.newLine();
+	            runLogWriter.write("ED_LAST_RUN=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("ALD_LAST_RUN=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("SPG1_LAST_RUN=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("PI_LAST_RUN=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("SPG2_LAST_RUN=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("CT_LAST_RUN=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("PT_LAST_RUN=0");
+	            runLogWriter.newLine();
+                runLogWriter.write("TS_LAST_RUN=0");
+	            runLogWriter.newLine();
+	            runLogWriter.flush();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+
+    }
+
     private void createRunLogPropFile(){
         runLogPropFile = new File(rootDir + "/scenario_" + scenarioName + "/t" + t + "/runLog.properties");
         logger.info("Looking for the run log in " + rootDir + "/scenario_" + scenarioName + "/t" + t + "/");
@@ -125,7 +167,7 @@ public class ApplicationOrchestrator {
             String propPath = rootDir + "/scenario_" + scenarioName + "/t" + i + "/runLog.properties";
             propFile = new File(propPath);
             if(propFile.exists()){
-                logger.info(" Reading in Run Log from year " + i + " and updating the RunLog HashMap: ");
+                logger.info("Reading in Run Log from year " + i + " and updating the RunLog HashMap: ");
                 runLogRb = ResourceUtil.getPropertyBundle(new File(propPath));
                 Enumeration rbEnum = runLogRb.getKeys();
                 while (rbEnum.hasMoreElements()) {
@@ -152,32 +194,29 @@ public class ApplicationOrchestrator {
        
     }
     
-    private void createAppRb(String appName){
+    private String createAppRb(String appName){
         //First read in the template properties file.  This will have default values and
         //tokens (surrounded by @ symbols).  The tokens will be replace with the values
         //in the runLogHashMap
-        File appPropertyTemplate = null;
-        File appPropertyFile = null;
-        String templatePath = rootDir + "/scenario_" + scenarioName + "/t0/";
+
+        //Get Template File
+        File appPropertyTemplate = findTemplateFileRecursively(appName);
+        String appPropertyTemplateName = appPropertyTemplate.getName();
+
+        //The property file will have the same name as the template file minus the 'Template' part.
+        //Keep in mind that the 'appName' passed in will be spg1 or pidaf but the template and properties
+        //files are spg.properties or pi.properties.  The 'findTemplateFileRecursively' method will strip off the
+        //extra characters (like '1' or 'daf') and so the appPropFileName != appName but the appPropFileName
+        //will be the one we want to use to locate and name the properties file.
+        String appPropFileName = appPropertyTemplateName.substring(0,appPropertyTemplateName.length()-19);  //subtract off the 'Template.properties'
         String outputPath = rootDir + "/scenario_" + scenarioName + "/t" + t + "/";
-        //Deal with SPG exception (appName=spg1 or spg2 but properties file is spg.properties for both)
-        if(appName.startsWith("spg")){
-            appPropertyTemplate = new File(templatePath + "spg/spgTemplate.properties");
-            appPropertyFile =  new File(outputPath + "spg/spg.properties");
-        //Deal with the PTDAF and PIDAF exceptions
-        }else if (appName.endsWith("daf")) {
-            appName = appName.substring(0,(appName.length()-3));
-            appPropertyTemplate = new File(templatePath + appName +
-                    "/" + appName + "Template.properties"); //subtract off the 'daf' part
-            appPropertyFile = new File(outputPath + appName +
-                    "/" + appName + ".properties");
-        } else if (appName.equalsIgnoreCase("global")) {
-            appPropertyTemplate = new File(templatePath + "globalTemplate.properties");
-            appPropertyFile = new File(outputPath + "global.properties");
-        } else{
-            appPropertyTemplate = new File(templatePath + appName + "/" + appName + "Template.properties");
-            appPropertyFile = new File(outputPath + appName + "/" + appName + ".properties");
-        }
+        File appPropertyFile = null;
+
+        if (appPropFileName.equalsIgnoreCase("global"))  appPropertyFile = new File(outputPath + "global.properties");
+        else appPropertyFile = new File(outputPath + appPropFileName + "/" + appPropFileName + ".properties");
+
+        logger.info("Creating " + appPropertyFile.getAbsolutePath());
+
         Properties appDefaultProps = new Properties();
         try {
             appDefaultProps.load(new FileInputStream(appPropertyTemplate));
@@ -208,52 +247,58 @@ public class ApplicationOrchestrator {
         }
 	    
 	    try {
-            appDefaultProps.store(new FileOutputStream(appPropertyFile), appName.toUpperCase() + " Properties File for Interval " + t);
+            appDefaultProps.store(new FileOutputStream(appPropertyFile), appPropFileName.toUpperCase() + " Properties File for Interval " + t);
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
         } catch (IOException e1) {
             e1.printStackTrace();
         }
+
+        return appPropertyFile.getAbsolutePath();
     }
 
-    /* PTDAF and PIDAF just need the path to the resource bundle
-    * while all other modules need the actual bundle
-    */
-    public String findPathToResourceBundle(String appName) {
-        String pathToRb = null;
 
-        int i = t;  // look thru all of the tn directories for a properties file
+
+    public File findTemplateFileRecursively(String appName) {
+        File templateFile = null;
+        String editedName = null;
+        int i = t;  // look thru all of the tn directories for a property template file
                     // starting with the most recent t.
-        File propFile = null;
         while(i >= 0){
-            String propPath = rootDir + "/scenario_" + scenarioName + "/t" + i + "/";
-            //Deal with SPG exception (appName=spg1 or spg2 but properties file is spg.properties for both)
+            String templatePath = rootDir + "/scenario_" + scenarioName + "/t" + i + "/";
+            //Deal with SPG exception (appName=spg1 or spg2 but template file is spgTemplate.properties for both)
             if(appName.startsWith("spg")){
-                propFile = new File(propPath + "spg/spg.properties");
+                editedName = "SPG";
+                templateFile = new File(templatePath + "spg/spgTemplate.properties");
             //Deal with the PTDAF and PIDAF exceptions
             }else if (appName.endsWith("daf")) {
-                propFile = new File(propPath + appName.substring(0,(appName.length()-3)) +
-                        "/" + appName.substring(0,(appName.length()-3)) + ".properties"); //subtract off the 'daf' part
+                editedName = appName.substring(0,(appName.length()-3)).toUpperCase();
+                templateFile = new File(templatePath + appName.substring(0,(appName.length()-3)) +
+                        "/" + appName.substring(0,(appName.length()-3)) + "Template.properties"); //subtract off the 'daf' part
             //Deal with the global exception
             } else if (appName.equalsIgnoreCase("global")) {
-                propFile = new File(propPath + "global.properties");
+                editedName="GLOBAL";
+                templateFile = new File(templatePath + "globalTemplate.properties");
             } else{
-                propFile = new File(propPath + appName + "/" + appName + ".properties");
+                editedName = appName.toUpperCase();
+                templateFile = new File(templatePath + appName + "/" + appName + "Template.properties");
             }
 
-            if(propFile.exists()){
-                pathToRb = propFile.getAbsolutePath();
-                logger.info(" Full Path to Properties File: " + pathToRb);
-                return pathToRb;
+            if(templateFile.exists()){
+                logger.info("Full Path to Template File: " + templateFile.getAbsolutePath());
+                runLogHashmap.put(editedName + "_TEMPLATE_YEAR", new Integer(i).toString());
+                return templateFile;
             }else {
                 i--;
             }
         }
-        // if you get to here it means a properties file couldn't be found in any of the tn directories
-        // so pathToRb = null
-        logger.fatal("Couldn't find Resource Bundle Path for " + appName + ".  Returning null");
-        return pathToRb;
+        // if you get to here it means a template file couldn't be found in any of the tn directories
+        // so templateFile = null
+        logger.fatal("Couldn't find Template File for " + appName + ".  Returning null");
+        return templateFile;
     }
+
+
 
     public ResourceBundle findResourceBundle(String pathToRb) {
         ResourceBundle rb = null;
@@ -264,21 +309,7 @@ public class ApplicationOrchestrator {
     }
 
 
-    public void writeRunParamsToFile(int timeInterval, String pathToAppRb, String pathToGlobalRb){
-        File runParams = new File(rootDir + "/daf/RunParams.txt");
-        logger.info("Writing 'timeInterval' and 'pathToRb' into " + runParams.getAbsolutePath());
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(new FileWriter(runParams));
-            writer.println(scenarioName);
-            writer.println(timeInterval);
-            writer.println(pathToAppRb);
-            writer.println(pathToGlobalRb);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        writer.close();
-    }
+
     
     public void writeRunParamsToPropertiesFile(int timeInterval, String pathToAppRb, String pathToGlobalRb){
         File runParams = new File(rootDir + "/daf/RunParams.properties");
@@ -474,9 +505,12 @@ public class ApplicationOrchestrator {
         //resource bundle for the appropriate app, retrieve that resource bundle and
         //start the application, passing along the property bundle
         ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,scenarioName,t);
-        
-        //AO needs to create the runLogProperty file and write in the current year.  This file will 
-        //then be updated by any application that runs.
+
+        //Before starting in year 1, AO needs to create the base year run log
+        if(t==1) ao.createBaseYearPropFile();
+
+        //For each year (starting in year 1) AO needs to create the runLogProperty file and write in the current year
+        // if the file does not already exist in that year.  This file will then be updated by any application that runs.
         ao.createRunLogPropFile();
         
         //We need to read in the runLog.properties files starting 
@@ -484,30 +518,40 @@ public class ApplicationOrchestrator {
         //up a hashmap with the appropriate values. 
         ao.updateRunLogPropertiesHashmap(t);
         
-        //Get the ao.properties file updated with values
-        ao.createAppRb("ao");
-        ao.createAppRb("global");
-        
-        //Read in the appNameTemplate.properties from the t0 directory and replace
-        //all patterns with values from the RunLogHashMap and write properties file
-        //to the appropriate directory.
-        ao.createAppRb(appName);
-        ResourceBundle aoRb = ao.findResourceBundle(ao.findPathToResourceBundle("ao"));
+        //Create an ao.properties file for the current 't' directory
+        // using the most recent aoTemplate.properties file
+        String pathToAoRb = ao.createAppRb("ao");
+
+        //Get the ao.properties file that was just created and read in the "base.year"
+        //value from the ao.properties so that you can pass it to the application that you are starting.
+        ResourceBundle aoRb = ao.findResourceBundle(pathToAoRb);
         ao.setRb(aoRb);
         int baseYear = Integer.parseInt(ResourceUtil.getProperty(ao.getRb(), "base.year"));
 
-        String pathToAppRb = ao.findPathToResourceBundle(appName);
-        ResourceBundle appRb = null;
-        if(! appName.endsWith("daf")){
-            appRb = ao.findResourceBundle(pathToAppRb);
-        }
+        //Create a global.properties file for the current 't' directory
+        // using the most recent globalTemplate.properties file
+        String pathToGlobalRb = ao.createAppRb("global");
 
-        String pathToGlobalRb = ao.findPathToResourceBundle("global");
+        //Get the global properties file that was just created so that you can pass it to the current application
         ResourceBundle globalRb = null;
         if(!appName.endsWith("daf")){
             globalRb = ao.findResourceBundle(pathToGlobalRb);
         }
 
+        //Read in the appNameTemplate.properties and replace
+        //all patterns with values from the RunLogHashMap and write properties file
+        //to the appropriate directory.
+        String pathToAppRb = ao.createAppRb(appName);
+
+
+        //Unless AO is being asked to start a daf-application, it should
+        //find the actual application resource bundle and pass it to the app
+        //on start-up.  Daf applications will be passed a path to a runProperties file
+        //instead of the actual file.
+        ResourceBundle appRb = null;
+        if(! appName.endsWith("daf")){
+            appRb = ao.findResourceBundle(pathToAppRb);
+        }
 
         if(appName.equalsIgnoreCase("ED")){
             logger.info("AO will now start ED for simulation year " + (baseYear+t));

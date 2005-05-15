@@ -25,7 +25,8 @@ public class PatternChoiceParameters {
 
     String version = new String();
     float workWorker;
-    float schoolStudent;
+    float schoolStudentK12;
+    float schoolStudentPostSec;
     float shopActivityDummyFemale;
     float shopActivityDummyUnemployed;
     float shopActivityDummySize1;
@@ -124,8 +125,9 @@ public class PatternChoiceParameters {
          
             version=                                table.getStringValueAt(rowNumber, table.getColumnPosition("version")); 
             workWorker=                             table.getValueAt(rowNumber, table.getColumnPosition("workWorker"));                                       
-            schoolStudent=                          table.getValueAt(rowNumber, table.getColumnPosition("schoolStudent"));                                    
-            shopActivityDummyFemale=                table.getValueAt(rowNumber, table.getColumnPosition("shopActivityDummyFemale"));                          
+            schoolStudentK12=                          table.getValueAt(rowNumber, table.getColumnPosition("schoolStudentK12"));
+            schoolStudentPostSec=                          table.getValueAt(rowNumber, table.getColumnPosition("schoolStudentPostSec"));
+            shopActivityDummyFemale=                table.getValueAt(rowNumber, table.getColumnPosition("shopActivityDummyFemale"));
             shopActivityDummyUnemployed=            table.getValueAt(rowNumber, table.getColumnPosition("shopActivityDummyUnemployed"));                      
             shopActivityDummySize1=                 table.getValueAt(rowNumber, table.getColumnPosition("shopActivityDummySize1"));                           
             shopActivityDummySize2=                 table.getValueAt(rowNumber, table.getColumnPosition("shopActivityDummySize2"));                           

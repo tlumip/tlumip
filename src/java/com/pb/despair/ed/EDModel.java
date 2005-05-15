@@ -119,7 +119,7 @@ public class EDModel extends ModelComponent {
                 String xmlLocation = ResourceUtil.getProperty(appRb,"home")+
                         ResourceUtil.getProperty(appRb,"xmlLocation");
 
-                EDControl e = new EDControl(currentYear,dataLocation,xmlLocation, true);
+                EDControl e = new EDControl(currentYear,dataLocation,xmlLocation);
                 e.startModel();
             } catch(Exception ex) {
                 ex.printStackTrace();

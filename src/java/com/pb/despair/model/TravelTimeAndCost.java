@@ -1,6 +1,8 @@
 
 package com.pb.despair.model;
 
+import java.io.PrintWriter;
+
 
 /** A class that represents LOS for a zone pair
  * 
@@ -90,5 +92,46 @@ public class TravelTimeAndCost {
 		System.out.println("driveTransitDriveCost           = "+driveTransitDriveCost);         
 		System.out.println("driveTransitFare                = "+driveTransitFare);                
   	};
+
+    public void print(PrintWriter file){
+        file.println("\tTravel Time and Cost Values: ");
+    	file.println("\tdriveAloneTime = "+driveAloneTime);
+		file.println("\tdriveAloneDistance = "+driveAloneDistance);
+		file.println("\tdriveAloneCost = "+driveAloneCost);
+		file.println("\tsharedRide2Time = "+sharedRide2Time);
+		file.println("\tsharedRide2Distance = "+sharedRide2Distance);
+		file.println("\tsharedRide2Cost = "+sharedRide2Cost);
+		file.println("\tsharedRide3Time = "+sharedRide3Time);
+		file.println("\tsharedRide3Distance = "+sharedRide3Distance);
+		file.println("\tsharedRide3Cost = "+sharedRide3Cost);
+		file.println("\twalkTime = "+walkTime);
+		file.println("\twalkDistance = "+walkDistance);
+		file.println("\tbikeTime = "+bikeTime);
+		file.println("\tbikeDistance = "+bikeDistance);
+		file.println("\twalkTransitInVehicleTime = "+walkTransitInVehicleTime);
+		file.println("\twalkTransitFirstWaitTime = "+walkTransitFirstWaitTime);
+		file.println("\talkTransitShortFirstWaitTime = "+walkTransitShortFirstWaitTime);
+		file.println("\twalkTransitLongFirstWaitTime = "+walkTransitLongFirstWaitTime);
+		file.println("\twalkTransitTransferWaitTime = "+walkTransitTransferWaitTime);
+		file.println("\twalkTransitTotalWaitTime = "+walkTransitTotalWaitTime);
+		file.println("\twalkTransitNumberBoardings = "+walkTransitNumberBoardings);
+		file.println("\twalkTransitWalkTime = "+walkTransitWalkTime);
+		file.println("\twalkTransitFare = "+walkTransitFare);
+		file.println("\tdriveTransitInVehicleTime = "+driveTransitInVehicleTime);
+		file.println("\tdriveTransitFirstWaitTime = "+driveTransitFirstWaitTime);
+		file.println("\tdriveTransitShortFirstWaitTime = "+driveTransitShortFirstWaitTime);
+		file.println("\tdriveTransitLongFirstWaitTime = "+driveTransitLongFirstWaitTime);
+		file.println("\tdriveTransitTotalWaitTime = "+driveTransitTotalWaitTime);
+		file.println("\tdriveTransitTransferWaitTime = "+driveTransitTransferWaitTime);
+		file.println("\tdriveTransitNumberBoardings = "+driveTransitNumberBoardings);
+		file.println("\tdriveTransitWalkTime = "+driveTransitWalkTime);
+		file.println("\tdriveTransitDriveTime = "+driveTransitDriveTime);
+		file.println("\tdriveTransitDriveCost = "+driveTransitDriveCost);
+		file.println("\tdriveTransitFare= "+driveTransitFare);
+        file.println();
+        file.println();
+
+        file.flush();
+  	}
 
  }

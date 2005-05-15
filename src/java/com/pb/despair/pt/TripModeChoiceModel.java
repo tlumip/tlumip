@@ -9,6 +9,8 @@ import com.pb.despair.model.TravelTimeAndCost;
 import com.pb.despair.model.ModeType;
 import org.apache.log4j.Logger;
 
+import java.io.PrintWriter;
+
 /** 
  * This class implements a logit model to choose a mode for a trip
  * 
@@ -19,7 +21,7 @@ import org.apache.log4j.Logger;
 
  
 public class TripModeChoiceModel{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger(TripModeChoiceModel.class);
 
      final static int debugID = -1;
     boolean wroteOutNullTripMode = false;
@@ -106,11 +108,11 @@ public class TripModeChoiceModel{
 
                //from begin activity -> intermediate Stop 1
                TravelTimeAndCost tc1 = skims.setTravelTimeAndCost(thisTour.begin.location.zoneNumber,
-                                                                  thisTour.intermediateStop1.location.zoneNumber,              
+                                                                  thisTour.intermediateStop1.location.zoneNumber,
                                                                   thisTour.begin.endTime
                                                                   );
                ZoneAttributes zone1 = new ZoneAttributes();
-               
+
                if(logger.isDebugEnabled()) {
                    logger.debug("thisTour.intermediateStop1.location.zoneNumber: "+thisTour.intermediateStop1.location.zoneNumber);
                }
@@ -120,7 +122,11 @@ public class TripModeChoiceModel{
                                 personAttributes,
                                 thisTour.primaryMode,
                                 zone1,
-                                thisTour.intermediateStop1
+                                thisTour.intermediateStop1,
+                                thisTour.begin.location.zoneNumber,                        //for debug purposes.
+                                thisTour.intermediateStop1.location.zoneNumber,     //for debug purposes.
+                                thisHousehold.ID,                                                      //for debug purposes.
+                                thisPerson.ID                                                             //for debug purposes.
                                 );
 
                //from intermediate Stop 1 -> primary destination
@@ -240,6 +246,68 @@ public class TripModeChoiceModel{
                  System.out.println(e);
                  logger.fatal("Error in trip mode choice: no modes available ");
                  System.exit(1);
+            }
+     }
+
+         void calculateUtility(TripModeParameters theseParameters,
+                           TravelTimeAndCost tc,
+                           PersonTripModeAttributes thisPerson,
+                           Mode tourMode,
+                           ZoneAttributes thisZone,
+                           Activity destActivity,
+                           int originZone,
+                           int destinationZone,
+                           int hhID,
+                           int pID){
+
+            // set availabilities and calculate utilities
+            driveAlone.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);
+            sharedRide2.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);
+            sharedRide3Plus.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);
+
+            autoNest.computeAvailabilities();
+            double logsum = autoNest.getUtility();
+            autoNest.calculateProbabilities();
+
+            if(logger.isDebugEnabled()) {
+                logger.debug("Logsum "+logsum);
+            }
+
+            try{
+                 destActivity.tripMode = (Mode)autoNest.chooseAlternative();
+
+            }catch(Exception e){
+                //A trip mode could not be found.  Create a debug file in the debug directory with
+                //pertinant information and then assign 'SharedRide2' as the trip mode so that the
+                //program can continue running.  The PTDafMaster will check for the existence of debug files at the end
+                //of the PT run and will write out a warning message and move the files into the t# directory.
+                logger.warn("A trip mode could not be found, see P" + pID + "ActivityType" + destActivity.activityType + "TripModeDebugFile.txt.  Location of file is specfied in pt.properties");
+                PrintWriter file = PTResults.createTripModeDebugFile("P" + pID + "ActivityType" + destActivity.activityType + "TripModeDebugFile.txt");  // will determine location of debug file and
+                                                                                                    // add a header to the file.
+                file.println("Summary:");
+                file.println();
+                file.println("HHID = " + hhID);
+                file.println("PersonID = " + pID);
+                file.println("ActivityType = " + destActivity.activityType);
+                file.println("ActivityPurpose = " + destActivity.activityPurpose);
+                file.println("Origin Zone = " + originZone);
+                file.println("Destination Zone = " + destinationZone);
+                file.println("TourMode = " + tourMode);   //toString() method returns alternative name.
+                file.println();
+                file.flush();
+
+                file.println("Details: ");
+                thisPerson.print(file);      //prints out the person trip mode attributes to the debug file
+                thisZone.print(file);        //prints out the parking cost in the destination zone
+                tc.print(file);                 //prints out the travel time and cost from origin zone to destination zone.
+                theseParameters.print(file);          //prints out the trip mode parameters that are based on the activty purpose (ivt, etc)
+                destActivity.print(file);    //prints out the dest activity atributes such as start time, end time, etc.
+
+                file.close();
+
+                //Now assign the trip mode to "SharedRide2" and return.
+                destActivity.tripMode=sharedRide2;
+
             }
 
 

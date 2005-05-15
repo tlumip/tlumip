@@ -26,6 +26,12 @@ public class DurationModelParameters {
                  toursEquals3Plus,                              /* pattern has 3+ tours total */
                  toursEquals4,                                  /* pattern has 4 tours total */
                  toursEquals5Plus,                              /* pattern has 5+ tours total */
+                 stp1tour2,                                        /* pattern has 1 intermediate stop and has 2 tours */
+                 stp1tour2p,                                      /* pattern has 1 intermediate stop and has 2+ tours */
+                 stp1tour3p,                                      /* pattern has 1 intermediate stop and has 3+ tours */
+                 stp2ptour2,                                      /* pattern has 2+ intermediate stop and has 2 tours */
+                 stp2ptour2p,                                    /* pattern has 2+ intermediate stop and has 2+ tours */
+                 stp2ptour3p,                                    /* pattern has 2+ intermediate stop and has 3+ tours */
                  singleAdultWithOnePlusChildren,                /* person is single adult with 1+ children */
                  householdSize3Plus,                            /* person lives in hh of size 3+ */
                  female,                                        /* person is female */
@@ -81,6 +87,12 @@ public class DurationModelParameters {
              +"\n"+ toursEquals3Plus
              +"\n"+ toursEquals4
              +"\n"+ toursEquals5Plus
+             +"\n"+ stp1tour2
+             +"\n"+ stp1tour2p
+             +"\n"+ stp1tour3p
+             +"\n"+ stp2ptour2
+             +"\n"+ stp2ptour2p
+             +"\n"+ stp2ptour3p
              +"\n"+ singleAdultWithOnePlusChildren
              +"\n"+ householdSize3Plus
              +"\n"+ female

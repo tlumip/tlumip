@@ -28,8 +28,7 @@ public class EDControl extends ModelComponent {
   /**
    * Make settings for database....new version to load from CSV file
    */
-  public EDControl(int y, String dl, String xmlf, boolean debug) {
-	Debug.setShowDebug(debug);
+  public EDControl(int y, String dl, String xmlf) {
 	currentYear = y;
 	defaultDataLocation = dl;
 	eda = new EDDataAccess();
@@ -38,22 +37,16 @@ public class EDControl extends ModelComponent {
 	splitFiles = new Vector();
   }
 
+    public EDControl(int y, int mYearIndex, String dataFile) {
+        this(y, mYearIndex, ResourceUtil.getPropertyBundle(new File(dataFile)));
+    }
+
     //  y = Base year (ex. 1990), modelYearIndex = model year index (ex. t=1), datafile = ed.properties
-    public EDControl(int y, int mYearIndex, ResourceBundle rb) {
-  	    this(y, mYearIndex, rb, false);
-    }
-
-    public EDControl(int y, int mYearIndex, String dataFile, boolean debug) {
-        this(y, mYearIndex, ResourceUtil.getPropertyBundle(new File(dataFile)), debug);
-    }
-
-    public EDControl(int y, int mYear, ResourceBundle rb, boolean debug) {
+     public EDControl(int y, int mYear, ResourceBundle rb) {
 		String absoluteLocation = new String();
 		String marginalLocation = new String();
-        //setApplicationResourceBundle(rb);
 
 		splitFiles = new Vector();
-        Debug.setShowDebug(debug);
         currentYear = y + mYear;
         modelYear = mYear;
         defaultDataLocation = ResourceUtil.getProperty(rb, "defaultDataLocation");

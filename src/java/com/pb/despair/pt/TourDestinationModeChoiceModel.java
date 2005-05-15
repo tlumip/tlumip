@@ -137,8 +137,7 @@ public class TourDestinationModeChoiceModel{
             if(chosenTaz == null){
                 logger.error("Work (or Work-based) tour has a primary destination of 0 - not right!!");
                 logger.error("HHID: " + thisHousehold.ID + " PersonID: " + thisPerson.ID);
-//              logger.error("TASK IS EXITING - FATAL ERROR");
-                chosenTaz = (Taz) tazs.tazData.get(new Integer(thisTour.begin.location.zoneNumber));;  //no sense in going on as we have a fundamental problem.
+                chosenTaz = (Taz) tazs.tazData.get(new Integer(thisTour.begin.location.zoneNumber));;  
             }
         }
 
