@@ -83,7 +83,7 @@ public class HighwayAssignTest {
 
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("generating trips with gravity model at: " + myDateString);
-		TripDataGenerator tdm = new TripDataGenerator ( highwaySkims.getSovDistSkims() );
+		TripDataGenerator tdm = new TripDataGenerator ( highwaySkims.getSovDistSkims(g.getValidLinkForClass(0)) );
 
 
 		//Compute Frank-Wolfe solution

@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.StringTokenizer;
+
 import org.apache.log4j.Logger;
 
 import com.pb.common.calculator.LinkCalculator;
@@ -28,11 +30,11 @@ import com.pb.common.matrix.AlphaToBeta;
 
 public class Network implements Serializable {
 
-	protected static transient Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
+	protected static transient Logger logger = Logger.getLogger("com.pb.despair.ts.assign.Network");
 
 	int minCentroidLabel;
 	int maxCentroidLabel;
-	int NUM_AUTO_CLASSES;
+	int numAutoClasses;
 	
 	String assignmentPeriod;
 
@@ -45,6 +47,8 @@ public class Network implements Serializable {
 	int numCentroids;
 	int maxNode;
 
+	char[] userClasses = null;
+	
 	boolean[] validLinks = null;
 	boolean[][] validLinksForClass = null;
     int[] indexNode = null;
@@ -120,12 +124,13 @@ public class Network implements Serializable {
 		// define the forward star index arrays, first by anode then by bnode
 		ia = linkTable.getColumnAsInt( "ia" );
 		ib = linkTable.getColumnAsInt( "ib" );
-		ipa = setForwardStarArrays ();
+		sortedLinkIndexA = IndexSort.indexSort( ia );
+		ipa = setForwardStarArrays ( ia, sortedLinkIndexA );
 		
 		// calculate the derived link attributes for the network
 		derivedLinkTable = deriveLinkAttributes( volumeFactor );
 
-
+		
 		// merge the derived link attributes into the linkTable TableDataSet,
 		// then we're done with the derived table.
 		linkTable.merge ( derivedLinkTable );
@@ -152,20 +157,11 @@ public class Network implements Serializable {
 
 		
 		ftLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "ft" ), "vdf" );
+
+		
 		
     }
 
-
-    
-    
-    public void setVolumeFactor (float factor) {
-		double[] capacity = getOriginalCapacity();
-
-		for (int i=0; i < capacity.length; i++)
-			capacity[i] /= factor;
-		
-		setCapacity(capacity);
-    }
     
 	public String getTimePeriod () {
 		return assignmentPeriod;
@@ -267,15 +263,19 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsString( "mode" );
 	}
 
+	public char[] getUserClasses () {
+		return userClasses;
+	}
+
 	public double getWalkSpeed () {
 		return WALK_SPEED;
 	}
 
     public double[][] getFlows () {
          
-        double[][] flows = new double[NUM_AUTO_CLASSES][];
+        double[][] flows = new double[numAutoClasses][];
          
-        for (int m=0; m < NUM_AUTO_CLASSES; m++)
+        for (int m=0; m < numAutoClasses; m++)
             flows[m] = linkTable.getColumnAsDouble( "flow_" + m );
         
         return flows;
@@ -295,11 +295,21 @@ public class Network implements Serializable {
     }
 
     public void setVolau ( double[] volau ) {
-        linkTable.setColumnAsDouble( linkTable.getColumnPosition("volau"), volau );
+		linkTable.setColumnAsDouble( linkTable.getColumnPosition("volau"), volau );
     }
 
-    public void setCapacity ( double[] capacity ) {
-        linkTable.setColumnAsDouble( linkTable.getColumnPosition("capacity"), capacity );
+    public void setVolCapRatios ( double[] volau ) {
+		
+    	double[] totalVolCapRatio = linkTable.getColumnAsDouble( "totalVolCapRatio" );
+    	double[] totalCapacity = linkTable.getColumnAsDouble( "totalCapacity" );
+    	double[] volad = linkTable.getColumnAsDouble( "volad" );
+
+		for (int i=0; i < linkTable.getRowCount(); i++) {
+			totalVolCapRatio[i] = (volau[i]+volad[i])/totalCapacity[i];
+		}
+
+		linkTable.setColumnAsDouble( linkTable.getColumnPosition("totalVolCapRatio"), totalVolCapRatio );
+		
     }
 
     public void setFlows (double[][] flow) {
@@ -342,7 +352,24 @@ public class Network implements Serializable {
 		this.minCentroidLabel = 1;
 		this.maxCentroidLabel = a2b.getMaxAlphaZone();
 		this.numAlphazones = a2b.alphaSize();
-		this.NUM_AUTO_CLASSES = Integer.parseInt ( (String)tsPropertyMap.get( "NUM_AUTO_CLASSES" ) );
+		
+		// get the mode codes that identify user classes
+		String userClassPropertyString = (String)tsPropertyMap.get("userClass.modes");
+		ArrayList userClassList = new ArrayList();
+		StringTokenizer st = new StringTokenizer(userClassPropertyString, ", |");
+		while (st.hasMoreTokens()) {
+			userClassList.add(st.nextElement());
+		}
+		this.userClasses = new char[userClassList.size()];
+		for (int i=0; i < userClasses.length; i++)
+			this.userClasses[i] = ((String)userClassList.get(i)).charAt(0);
+
+		this.numAutoClasses = this.userClasses.length;
+		
+		logger.info ( "Mode codes for user classes in multiclass assignment:" );
+		for (int i=0; i < userClasses.length; i++)
+			logger.info ( "     " + i + ": " + userClasses[i] );
+		
 
 		if ( (String)globalPropertyMap.get( "WALK_MPH" ) != null )
 		    this.WALK_SPEED = Double.parseDouble ( (String)globalPropertyMap.get( "WALK_MPH" ) );
@@ -384,6 +411,9 @@ public class Network implements Serializable {
 		int[] turnPenaltyIndex = new int[linkTable.getRowCount()];
 		int[] ttf = new int[linkTable.getRowCount()];
 		float[] length = new float[linkTable.getRowCount()];
+		double[] lanes = new double[linkTable.getRowCount()];
+		double[] totalVolCapRatio = new double[linkTable.getRowCount()];
+		double[] totalCapacity = new double[linkTable.getRowCount()];
 		double[] capacity = new double[linkTable.getRowCount()];
 		double[] originalCapacity = new double[linkTable.getRowCount()];
 		double[] freeFlowSpeed = new double[linkTable.getRowCount()];
@@ -393,12 +423,14 @@ public class Network implements Serializable {
 		double[] freeFlowTime = new double[linkTable.getRowCount()];
 		double[] oldTime = new double[linkTable.getRowCount()];
 		double[] volau = new double[linkTable.getRowCount()];
-		double[][] flow = new double[NUM_AUTO_CLASSES][linkTable.getRowCount()];
+		double[] volad = new double[linkTable.getRowCount()];
+		double[][] flow = new double[numAutoClasses][linkTable.getRowCount()];
 		boolean[] centroid = new boolean[linkTable.getRowCount()];
 		String[] centroidString = new String[linkTable.getRowCount()];
-		validLinksForClass = new boolean[NUM_AUTO_CLASSES][linkTable.getRowCount()];
+		validLinksForClass = new boolean[numAutoClasses][linkTable.getRowCount()];
 		validLinks = new boolean[linkTable.getRowCount()];
 
+		Arrays.fill (volad, 0.0);
 		Arrays.fill (validLinks, false);
 
 		for (int i=0; i < linkTable.getRowCount(); i++) {
@@ -441,11 +473,17 @@ public class Network implements Serializable {
 			else
 				capacity[i] = 600;
 
-			capacity[i] *= linkTable.getValueAt( i+1, "lanes" );
+			lanes[i] = linkTable.getValueAt( i+1, "lanes" );
+			
 			originalCapacity[i] = capacity[i];
 			capacity[i] /= volumeFactor;
-			
 
+			
+			// the following variables are needed for the VDF Integrals definitions
+			totalCapacity[i] = 0.75 * capacity[i] * lanes[i];
+			totalVolCapRatio[i] = 0.0;
+
+			
 			float dist = linkTable.getValueAt( i+1, "dist" );
 			if (dist == 0.0)
 			    dist = 0.001f;
@@ -453,15 +491,25 @@ public class Network implements Serializable {
 
 			
 			// initialize the flow by user class fields to zero
-			for (int j=0; j < NUM_AUTO_CLASSES; j++) {
+			for (int j=0; j < numAutoClasses; j++) {
 				flow[j][i] = 0.0f;
 			}
 	        
 			
+			// The following modes are valid for TLUMIP Statewide network and multiclass assignment (6 classes).
+			// Auto trips ares available on all highway links.
+			// Truck trips are classed by weight, d being lightest to h being heaviest.
+			// Lighter trucks are valid on all heavier class links 
+			// a	auto
+			// d	truck below 34k lbs.
+			// e	truck between 64k lbs. and 34k lbs.
+			// f	truck between 80k lbs. and 64k lbs.
+			// g	truck between 105.5k lbs. and 80k lbs.
+			// h	truck greater than 105.5k lbs.
 			
-			// initialize the valid links for shortest paths flags
-			for (int j=0; j < NUM_AUTO_CLASSES; j++) {
-			    if ( mode.indexOf('a') >= 0 ) {
+			// initialize the valid links for multiclass network used in determining shortest paths by class
+			for (int j=0; j < numAutoClasses; j++) {
+			    if ( mode.indexOf( userClasses[j] ) >= 0 ) {
 			    	validLinksForClass[j][i] = true;
 			    	validLinks[i] = true;
 			    }
@@ -473,21 +521,7 @@ public class Network implements Serializable {
 
 
 			
-			// redefine link vdf attributes - 1=non-centroid, 2=centroid
-			if ( centroid[i] )
-			    linkTable.setValueAt( i+1, linkTable.getColumnPosition("vdf"), 2);
-			else
-			    linkTable.setValueAt( i+1, linkTable.getColumnPosition("vdf"), 1);
 
-			
-			// define times and speeds as was done for PT calibration (see times.mac)
-//			if ( ul1 >= 0 && ul1 <= 6 )
-//			    ul1 = 30;
-//			
-//			if ( !centroid[i] && (ul2 >= 0.9 && ul2 <= 6) && mode.indexOf('a') >= 0 && (ul1 >= 5 && ul1 <= 99) )
-//			    ul1 -= 5;
-//			
-//			float ul3 = (float)((dist/ul1)*60.0);
 
 			
 			freeFlowSpeed[i] = ul1;
@@ -536,17 +570,20 @@ public class Network implements Serializable {
 		derivedTable.appendColumn(centroidString, "centroid");
 		derivedTable.appendColumn(turnPenaltyIndex, "turnPenaltyIndex");
 		derivedTable.appendColumn(ttf, "ttf");
+		derivedTable.appendColumn(totalVolCapRatio, "totalVolCapRatio");
+		derivedTable.appendColumn(totalCapacity, "totalCapacity");
 		derivedTable.appendColumn(capacity, "capacity");
 		derivedTable.appendColumn(originalCapacity, "originalCapacity");
 		derivedTable.appendColumn(freeFlowSpeed, "freeFlowSpeed");
 		derivedTable.appendColumn(congestedTime, "congestedTime");
 		derivedTable.appendColumn(congestedTime, "transitTime");
 		derivedTable.appendColumn(volau, "volau");
+		derivedTable.appendColumn(volad, "volad");
 		derivedTable.appendColumn(vdfIntegral, "vdfIntegral");
 		derivedTable.appendColumn(freeFlowTime, "freeFlowTime");
 		derivedTable.appendColumn(length, "length");
 		derivedTable.appendColumn(oldTime, "oldTime");
-		for (int j=0; j < NUM_AUTO_CLASSES; j++) {
+		for (int j=0; j < numAutoClasses; j++) {
 			derivedTable.appendColumn(flow[j], "flow" + "_" + j);
 		}
 
@@ -560,6 +597,15 @@ public class Network implements Serializable {
 	public void applyVdfs () {
 		
 			double[] results = fdLc.solve();
+			
+			for (int i=0 ; i < results.length; i++) {
+				if ( results[i] < 0 || results[i] == Double.NaN ) {
+					logger.error ( "invalid result in Network.applyVdfs().   results[i=" + i + "] = " + results[i] );
+					logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
+					System.exit(-1);
+				}
+			}
+				
 			linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
 
 		}
@@ -569,6 +615,15 @@ public class Network implements Serializable {
 	public void applyVdfs ( boolean[] validLinks ) {
 		
 			double[] results = fdLc.solve(validLinks);
+			
+			for (int i=0 ; i < results.length; i++) {
+				if ( results[i] < 0 || results[i] == Double.NaN ) {
+					logger.error ( "invalid result in Network.applyVdfs(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
+					logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
+					System.exit(-1);
+				}
+			}
+				
 			linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
 
 		}
@@ -578,6 +633,15 @@ public class Network implements Serializable {
 	public void applyVdfIntegrals ( boolean[] validLinks ) {
 	
 		double[] results = fdiLc.solve(validLinks);
+		
+		for (int i=0 ; i < results.length; i++) {
+			if ( results[i] == Double.NaN ) {
+				logger.error ( "invalid result in Network.applyVdfIntegrals(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
+				logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
+				System.exit(-1);
+			}
+		}
+			
 		linkTable.setColumnAsDouble( linkTable.getColumnPosition("vdfIntegral"), results );
 
 	}
@@ -587,6 +651,12 @@ public class Network implements Serializable {
 		
 		// calculate the link in-vehicle travel times based on the transit vdf index for the link passed in
 		double result = ftLc.solve(hwyLinkIndex, transitVdfIndex);
+		
+		if ( result < 0 || result == Double.NaN ) {
+			logger.error ( "invalid result in Network.applyLinkTransitVdf(int hwyLinkIndex, int transitVdfIndex).   hwyLinkIndex=" + hwyLinkIndex + ", transitVdfIndex = " + transitVdfIndex + ", result = "+ result );
+			System.exit(-1);
+		}
+			
 		return result;
 		
 	}
@@ -660,25 +730,24 @@ public class Network implements Serializable {
 	}
     
     
-	private int[] setForwardStarArrays () {
+	private int[] setForwardStarArrays ( int[] nodes, int[] indexArray ) {
 	    
 		int k;
 		int old;
 
 		int[] ip = new int[nodeTable.getRowCount()+1];
-		sortedLinkIndexA = IndexSort.indexSort( ia );
 		
-		old = ia[sortedLinkIndexA[0]];
+		old = nodes[indexArray[0]];
 		ip[old] = 0;
-		for (int i=0; i < ia.length; i++) {
-			k = sortedLinkIndexA[i];
+		for (int i=0; i < nodes.length; i++) {
+			k = indexArray[i];
 
-			if ( ia[k] != old ) {
-				ip[ia[k]] = i;
-				old = ia[k];
+			if ( nodes[k] != old ) {
+				ip[nodes[k]] = i;
+				old = nodes[k];
 			}
 		}
-		ip[old+1] = ia.length;
+		ip[old+1] = nodes.length;
 		
 		return ip;
 
@@ -686,6 +755,100 @@ public class Network implements Serializable {
 
 	
 	
+	public void checkForIsolatedLinks () {
+	    
+		int start;
+		int end;
+		int aExit;
+		int bExit;
+		boolean errorsFound = false;
+		
+		
+		for (int userClass = 0; userClass < userClasses.length; userClass++) {
+			
+			logger.info ( "checking network connectivity for userClass " + userClass + " (" + userClasses[userClass] + ") subnetwork.");
+			
+			// for each anode that has only one bnode, flag links where bnode only goes back to anode.
+			for (int i=0; i < ia.length; i++) {
+				
+				if ( !validLinksForClass[userClass][i] )
+					continue;
+				
+				aExit = -1;
+				bExit = -1;
+
+				start = ipa[ia[i]];
+				end = ipa[ia[i]+1];
+				
+				// if anode has only one exiting link
+				if (start == end - 1) {
+					
+					aExit = sortedLinkIndexA[start];
+					
+					start = ipa[ib[i]];
+					end = ipa[ib[i]+1];
+					
+					// if bnode has only one exiting link and 
+					if (start == end - 1) {
+						
+						bExit = sortedLinkIndexA[start];
+						
+						// if the node pair is same in each direction, this is an isolated link
+						if (ia[aExit] == ib[bExit] && ib[aExit] == ia[bExit]) {
+							logger.error ( "node pair [" + indexNode[ia[aExit]] + "," + indexNode[ib[aExit]] + "] is disconnected.");
+							errorsFound = true;
+						}
+					
+					}
+					
+				}
+				
+			}
+
+		}
+			
+		if (errorsFound) {
+			logger.error ( "errors identified above in constructing the internal network representations.");
+			logger.error ( "the node pairs identified above are only connected to each other for the specified subnetwork.");
+			logger.error ( "no subnetwork paths may therefore be built through these nodes and links.\n\n");
+		}
+
+	}
+
+	
+	
+	public void checkODConnectivity (double[][][] trips) {
+
+		for (int m=0; m < numAutoClasses; m++) {
+
+			double total = 0.0;
+			for (int i=0; i < trips[m].length; i++)
+				for (int j=0; j < trips[m][i].length; j++)
+					total += trips[m][i][j];
+			
+					
+	        // log the average sov trip travel distance and travel time for this assignment
+	        logger.info("Generating Time and Distance peak skims for subnetwork " + userClasses[m] + " (class " + m + ") ...");
+	        
+	        if (total > 0.0) {
+		        Skims skims = new Skims(this, tsPropertyMap, globalPropertyMap);
+		        double[] skimSummaries = skims.getAvgSovTripSkims(trips[m], validLinksForClass[m]);
+		        logger.info( "Total peak demand for subnetwork " + userClasses[m] + " (class " + m + ") = " + total + " trips."); 
+		        logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") peak trip travel distance = " + skimSummaries[0] + " miles."); 
+		        logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") peak trip travel time = " + skimSummaries[1] + " minutes."); 
+		        logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") = " + skimSummaries[2]);
+	        }
+	        else {
+		        logger.info("No demand for subnetwork " + userClasses[m] + " (class " + m + ") therefore, no average time or distance calculated.");
+	        }
+	        		
+		}
+
+    }
+
+
+
+
 	private void setTurnPenalties( 	float[][] turnDefs ) {
 
 		int k=0;
@@ -874,8 +1037,8 @@ public class Network implements Serializable {
 		double[] distance = (double[])linkTable.getColumnAsDouble( "length" );
 		double[] capacity = (double[])linkTable.getColumnAsDouble( "capacity" );
 
-		double[][] flow = new double[NUM_AUTO_CLASSES][];
-		for (int j=0; j < NUM_AUTO_CLASSES; j++) {
+		double[][] flow = new double[numAutoClasses][];
+		for (int j=0; j < numAutoClasses; j++) {
 			flow[j] = (double[])linkTable.getColumnAsDouble( "flow_" + j );
 		}
 		
@@ -889,10 +1052,10 @@ public class Network implements Serializable {
 
 			
 			outStream.print ("anode,bnode,distance,capacity,assignmentTime,");
-			for (int j=0; j < NUM_AUTO_CLASSES-1; j++)
+			for (int j=0; j < numAutoClasses-1; j++)
 				outStream.print( "assignmentFlow_" + j + "," );
 			
-			outStream.println( "assignmentFlow_" + (NUM_AUTO_CLASSES-1) );
+			outStream.println( "assignmentFlow_" + (numAutoClasses-1) );
 			
 
 			
@@ -908,10 +1071,10 @@ public class Network implements Serializable {
 								+ Format.print("%.4f", congestedTime[k]) + ","
 								);
 								
-				for (int j=0; j < NUM_AUTO_CLASSES-1; j++)
+				for (int j=0; j < numAutoClasses-1; j++)
 					outStream.print( Format.print("%.4f", flow[j][k]) + "," );
 	
-				outStream.println( Format.print("%.4f", flow[NUM_AUTO_CLASSES-1][k]) );
+				outStream.println( Format.print("%.4f", flow[numAutoClasses-1][k]) );
 
 			}
 		

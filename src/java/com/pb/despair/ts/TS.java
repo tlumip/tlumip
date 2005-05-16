@@ -68,7 +68,7 @@ public class TS {
 //		TS tsTest = new TS();
 
 		tsTest.assignPeakAuto();
-		tsTest.assignOffPeakAuto();
+//		tsTest.assignOffPeakAuto();
 
 		logger.info ("\ndone with TS run.");
     }
@@ -92,7 +92,9 @@ public class TS {
         
 		long startTime = System.currentTimeMillis();
 		
-		double[][][] multiclassTripTable = new double[2][][];
+		double[][][] multiclassTripTable = null;
+		double[][][] truckTripTables = null;
+		double[][] autoTripTable = null;
 		
 		Network g = null;
 		
@@ -114,21 +116,42 @@ public class TS {
 	    logger.info("Approximate size of " + g + " object :" + ((float)size/(1024.0*1024.0)) + " MB.");
 		
 	
+	
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
 		FW fw = new FW( tsPropertyMap, g );
 
-	
 		// read PT trip list into o/d trip matrix
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("reading PT trip list at: " + myDateString);
-		multiclassTripTable[0] = getAutoTripTableFromPTList ( g, ptFileName, peakStart, peakEnd );
+		autoTripTable = getAutoTripTableFromPTList ( g, ptFileName, peakStart, peakEnd );
 
+        
 		// read CT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("reading CT trip list at: " + myDateString);
-		multiclassTripTable[1] = getTruckTripTableFromCTList ( g, ctFileName, peakStart, peakEnd );
+		truckTripTables = getTruckTripTableFromCTList ( g, ctFileName, peakStart, peakEnd );
+
+		
+		multiclassTripTable = new double[g.getUserClasses().length][][];
+		multiclassTripTable[0] = autoTripTable;
+		for(int i=0; i < g.getUserClasses().length - 1; i++)
+			multiclassTripTable[i+1] = truckTripTables[i];
+
+		
+		// do some checks on network connectivity.
+//		g.checkForIsolatedLinks ();
+//        double[][][] dummyTripTable = new double[g.getUserClasses().length][g.getNumCentroids()+1][g.getNumCentroids()+1];
+//		for(int i=0; i < g.getUserClasses().length - 1; i++) {
+//			for(int j=0; j < g.getNumCentroids() + 1; j++) {
+//				Arrays.fill(dummyTripTable[i][j], 1.0);
+//			}
+//		}
+//		g.checkODConnectivity(dummyTripTable);
+//		g.checkODConnectivity(multiclassTripTable);
+		
+
 
 		//Compute Frank-Wolfe solution
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -143,20 +166,27 @@ public class TS {
         
 		logger.info("Writing network file with peak assignment results");
         writeAssignmentResults(g, peakOutputFileName);
-		
-		
-		logger.info("Writing Peak Time and Distance skims to disk");
-        startTime = System.currentTimeMillis();
-        writePeakSkims(g, tsPropertyMap, globalPropertyMap);
-        logger.info("wrote the peak skims in " +
-			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
+		
+		
+		logger.info("Writing Peak Auto (class 1) Time and Distance skims to disk");
+        startTime = System.currentTimeMillis();
+        writePeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinkForClass(1));
+        logger.info("wrote the (class 1) peak skims in " +
+    			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+		logger.info("Writing Peak Auto (class 2) Time and Distance skims to disk");
+        startTime = System.currentTimeMillis();
+        writePeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinkForClass(2));
+        logger.info("wrote the (class 2) peak skims in " +
+    			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+
+        
         // log the average sov trip travel distance and travel time for this assignment
         logger.info("Generating Time and Distance peak skims to use to calcluate average time and distance...");
         Skims skims = new Skims(g, tsPropertyMap, globalPropertyMap);
-        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0]);
-        logger.info( "Average Peak trip travel distance = " + skimSummaries[0] + " miles."); 
-        logger.info( "Average Peak trip travel time = " + skimSummaries[1] + " minutes."); 
+        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0], g.getValidLinkForClass(0));
+        logger.info( "Average Peak auto (class 0) trip travel distance = " + skimSummaries[0] + " miles."); 
+        logger.info( "Average Peak auto (class 0) trip travel time = " + skimSummaries[1] + " minutes."); 
 
         logger.info( "\ndone with peak assignment."); 
         
@@ -167,7 +197,9 @@ public class TS {
 
 		long startTime = System.currentTimeMillis();
 
-		double[][][] multiclassTripTable = new double[2][][];
+		double[][][] multiclassTripTable = null;
+		double[][][] truckTripTables = null;
+		double[][] autoTripTable = null;
 		
 		Network g = null;
 		
@@ -197,13 +229,19 @@ public class TS {
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("reading PT trip list at: " + myDateString);
-		multiclassTripTable[0] = getAutoTripTableFromPTList ( g, ptFileName, offPeakStart, offPeakEnd );
+		autoTripTable = getAutoTripTableFromPTList ( g, ptFileName, offPeakStart, offPeakEnd );
 
 		// read CT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("reading CT trip list at: " + myDateString);
-		multiclassTripTable[1] = getTruckTripTableFromCTList ( g, ctFileName, offPeakStart, offPeakEnd );
+		truckTripTables = getTruckTripTableFromCTList ( g, ctFileName, offPeakStart, offPeakEnd );
 
+		multiclassTripTable = new double[g.getUserClasses().length][][];
+		multiclassTripTable[0] = autoTripTable;
+		for(int i=0; i < g.getUserClasses().length - 1; i++)
+			multiclassTripTable[i+1] = truckTripTables[i];
+
+		
 		//Compute Frank-Wolfe solution
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("starting fw at: " + myDateString);
@@ -219,34 +257,34 @@ public class TS {
         writeAssignmentResults(g, offpeakOutputFileName);
 		
 		
-        logger.info("Writing Off-Peak Time and Distance skims to disk...");
+        logger.info("Writing Off-Peak Auto (class 0) Time and Distance skims to disk...");
         startTime = System.currentTimeMillis();
-        writeOffPeakSkims(g, tsPropertyMap, globalPropertyMap);
+        writeOffPeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinkForClass(0));
         logger.info("wrote the Off-Peak skims in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
         // log the average sov trip travel distance and travel time for this assignment
         logger.info("Generating Time and Distance off-peak skims to use to calcluate average time and distance...");
         Skims skims = new Skims(g, tsPropertyMap, globalPropertyMap);
-        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0]);
-        logger.info( "Average Off-Peak trip travel distance = " + skimSummaries[0] + " miles."); 
-        logger.info( "Average Off-Peak trip travel time = " + skimSummaries[1] + " minutes."); 
+        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0], g.getValidLinkForClass(0));
+        logger.info( "Average Off-Peak auto (class 0) trip travel distance = " + skimSummaries[0] + " miles."); 
+        logger.info( "Average Off-Peak auto (class 0) trip travel time = " + skimSummaries[1] + " minutes."); 
         
         logger.info( "\ndone with off-peak assignment."); 
     }
 
-    public void writePeakSkims(Network g, HashMap tsMap, HashMap globalMap){
+    public void writePeakSkims(Network g, HashMap tsMap, HashMap globalMap, boolean[] validLinks){
         Skims skims = new Skims(g, tsMap, globalMap);
         logger.info ("skimming network and creating pk time and distance matrices.");
-        skims.writePeakSovTimeSkimMatrices();  //writes the alpha and beta pktime skims
-        skims.writeSovDistSkimMatrices();     //writes alpha and beta pkdist  and
+        skims.writePeakSovTimeSkimMatrices(validLinks);  //writes the alpha and beta pktime skims
+        skims.writeSovDistSkimMatrices(validLinks);     //writes alpha and beta pkdist  and
                                                 // off-peak distance skims
     }
 
-    public void writeOffPeakSkims(Network g, HashMap map, HashMap globalMap){
+    public void writeOffPeakSkims(Network g, HashMap map, HashMap globalMap, boolean[] validLinks){
         Skims skims = new Skims(g, map, globalMap);
         logger.info ("skimming network and creating off-pk time matrices.");
-        skims.writeOffPeakSovTimeSkimMatrices();    //writes the alpha off-peak time skim
+        skims.writeOffPeakSovTimeSkimMatrices(validLinks);    //writes the alpha off-peak time skim
     }
 
 
@@ -377,7 +415,7 @@ public class TS {
     }
     
 
-    private double[][] getTruckTripTableFromCTList ( Network g, String fileName, int startPeriod, int endPeriod ) {
+    private double[][][] getTruckTripTableFromCTList ( Network g, String fileName, int startPeriod, int endPeriod ) {
 
         int orig;
         int dest;
@@ -385,12 +423,16 @@ public class TS {
         int mode;
         int o;
         int d;
-        int tripCount=0;
-        double tripFactor;
+        String truckType;
+        double tripFactor = 1.0;
 
         int[] nodeIndex = null;
 
-        double[][] tripTable = new double[g.getNumCentroids()+1][g.getNumCentroids()+1];
+        char[] userClasses = g.getUserClasses();
+        
+        // the first userclass is auto, and is not relevant for truck trips, so there are userClasses.length - 1 truck classes
+        double[] tripCount = new double[userClasses.length - 1];
+        double[][][] tripTable = new double[userClasses.length - 1][g.getNumCentroids()+1][g.getNumCentroids()+1];
 
 
 
@@ -398,6 +440,7 @@ public class TS {
 		CSVFileReader reader = new CSVFileReader();
 
 		TableDataSet table = null;
+		int tripRecord = 0;
 		try {
 			if ( fileName != null ) {
 
@@ -407,21 +450,23 @@ public class TS {
 
 				// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
 				for (int i=0; i < table.getRowCount(); i++) {
-	
+					tripRecord = i+1;
+					
 					orig = (int)table.getValueAt( i+1, "origin" );
 					dest = (int)table.getValueAt( i+1, "destination" );
 					startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-					mode = (int)table.getValueAt( i+1, "tripMode" );
+					truckType = (String)table.getStringValueAt( i+1, "truckType" );
 					tripFactor = (int)table.getValueAt( i+1, "tripFactor" );
 	
+					mode = Integer.parseInt( truckType.substring(3) );
 					o = nodeIndex[orig];
 					d = nodeIndex[dest];
 	
 					// accumulate all peak period highway mode trips
 					if ( startTime >= startPeriod && startTime <= endPeriod ) {
 	
-					    tripTable[o][d] += tripFactor;
-						tripCount += tripFactor;
+					    tripTable[mode-1][o][d] += tripFactor;
+						tripCount[mode-1] += tripFactor;
 	
 					}
 	
@@ -432,12 +477,16 @@ public class TS {
 
 			}
 			
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error ("exception caught reading CT truck trip record " + tripRecord, e);
+			System.exit(-1);
 		}
 
-		logger.info (tripCount + " truck network trips read from CT file from " +
-                startPeriod + " to " + endPeriod);
+		
+		logger.info ("truck network trips read from CT file from " + startPeriod + " to " + endPeriod + ":");
+		for (int i=0; i < tripCount.length; i++)
+			if (tripCount[i] > 0)
+				logger.info (tripCount[i] + " truck trips with user class " + userClasses[i+1] );
 
 		return tripTable;
 

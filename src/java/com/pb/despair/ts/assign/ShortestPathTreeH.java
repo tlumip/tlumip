@@ -12,7 +12,8 @@ import com.pb.common.util.*;
 
 public class ShortestPathTreeH {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
+	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.ShortestPathTreeH");
+	protected static Logger unconnectedLogger = Logger.getLogger("com.pb.despair.ts.assign.ShortestPathTreeH");
 
     static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -166,7 +167,7 @@ public class ShortestPathTreeH {
      * Load trips from the trip table row associated with the shortest
      * path tree origin
      */
-    public double[] loadTree ( double[] tripRow  ) {
+    public double[] loadTree ( double[] tripRow, int userClass  ) {
 
         long start = System.currentTimeMillis();
 
@@ -177,8 +178,8 @@ public class ShortestPathTreeH {
             if ( tripRow[j] > 0 && j != inOrigin ) {
                 k = predecessorLink[j];
                 if (k == -1) {
-                    logger.fatal ("inOrigin=" + inOrigin + ", j=" + j + ", k=" + k);
-                    System.exit(-1);
+                    logger.info ("no path from " + indexNode[inOrigin] + " to " + indexNode[j] + " for userClass " + userClass);
+                    continue;
                 }
                 aonFlow[k] += tripRow[j];
                 while (ia[k] != inOrigin) {
@@ -202,7 +203,6 @@ public class ShortestPathTreeH {
     public double[] getSkim () {
         
         int k;
-        double minSkim = 1.0e+99d;
 		double[] skim = new double [g.getNumCentroids()];
 
 
@@ -210,8 +210,9 @@ public class ShortestPathTreeH {
             if (j != inOrigin) {
                 k = predecessorLink[j];
                 if (k == -1) {
-                    logger.info ("invalid predecessorLink: inOrigin=" + inOrigin + ", j=" + j + ", k=" + k);
-                    System.exit(-1);
+                    //centroid is not connected
+                    skim[j] = Double.NEGATIVE_INFINITY;
+                    continue;
                 }
 				skim[j] += linkCost[k];
                 while (ia[k] != inOrigin) {
@@ -220,19 +221,13 @@ public class ShortestPathTreeH {
                         logger.info ("invalid predecessorLink: inOrigin=" + inOrigin + ", j=" + j + ", k=" + k);
                         System.exit(-1);
                     }
-					skim[j] += linkCost[k];
+                    
+                   	skim[j] += linkCost[k];
+
                 }
-                // keep track of minimum distance skim for use in setting intrazonal skim value.
-                if (skim[j] < minSkim)
-                    minSkim = skim[j];
             }
         }
 
-/*        
-        // intrazonal distance skim equals 1/2 the nearest neighbor skim.
-		skim[inOrigin] = 0.5*minSkim;
-*/
-        
         return skim;
         
     }

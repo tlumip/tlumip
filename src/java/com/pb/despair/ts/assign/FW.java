@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 public class FW {
 
-    Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
+    Logger logger = Logger.getLogger("com.pb.despair.ts.assign.FW");
 
     static Constants c = new Constants();
 
@@ -57,7 +57,7 @@ public class FW {
 		this.g = g;
         
         MAX_FW_ITERS = Integer.parseInt ( (String)propertyMap.get( "NUM_FW_ITERATIONS" ) );
-        numAutoClasses = Integer.parseInt ( (String)propertyMap.get( "NUM_AUTO_CLASSES" ) );
+        numAutoClasses = g.getUserClasses().length;
 		timePeriod = g.getTimePeriod();
 
         odTable = new double[numAutoClasses][][];
@@ -111,7 +111,7 @@ public class FW {
 		boolean[] validLinks = new boolean[g.getLinkCount()];
 	    Arrays.fill (validLinks, false);
 		for (int m=0; m < numAutoClasses; m++) {
-		validLinksForClass = g.getValidLinkForClass(m);
+			validLinksForClass = g.getValidLinkForClass(m);
 			for (int k=0; k < g.getLinkCount(); k++)
 				if (validLinksForClass[k])
 					validLinks[k] = true;
@@ -141,20 +141,29 @@ public class FW {
 			    
 				for (int m=0; m < numAutoClasses; m++) {
 
+					double tripTableRowSum = 0.0;
+					for (int j=0; j < tripTable[m][origin].length; j++)
+						tripTableRowSum += tripTable[m][origin][j];
+
 					validLinksForClass = g.getValidLinkForClass(m);
 
 					sp.setLinkCost( linkCost );
 					sp.setValidLinks( validLinksForClass );
 
 					if (origin % 500 == 0)
-						logger.info ("assigning origin " + origin);
-				    sp.buildTree ( origin );
-				    aon = sp.loadTree ( tripTable[m][origin] );
+						logger.info ("assigning origin zone index " + origin + ", user class index " + m);
+
+					if (tripTableRowSum > 0.0) {
+						
+						sp.buildTree ( origin );
+						aon = sp.loadTree ( tripTable[m][origin], m );
+
+					    for (int k=0; k < aon.length; k++)
+					        aonFlow[m][k] += aon[k];
+					    
+					}
 				    
-				    for (int k=0; k < aon.length; k++)
-				        aonFlow[m][k] += aon[k];
-				    
-				    
+					
 				    if ( fwPathsDoa != null ) {
 
 				        // calculate the index used for storing shortest path tree in DiskObjectArray
@@ -258,6 +267,9 @@ public class FW {
     //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
     boolean bisect ( int iter, boolean[] validLinks ) {
         
+        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("starting FW.bisect()" + myDateString);
+ 
         double x=0.0, xleft=0.0, xright=1.0, gap=0.0;
 
         int numBisectIterations = (int)(Math.log(1.0e-07)/Math.log(0.5) + 1.5);
@@ -313,6 +325,9 @@ public class FW {
 
     double ofValue (boolean[] validLinks)  {
 
+        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("starting FW.ofValue()" + myDateString);
+ 
 		// sum total flow over all user classes for each link 
         for (int k=0; k < volau.length; k++) {
             volau[k] = 0.0;
@@ -321,6 +336,7 @@ public class FW {
         }
         
 		g.setVolau(volau);
+		g.setVolCapRatios(volau);
         g.applyVdfIntegrals(validLinks);
 
         return( g.getSumOfVdfIntegrals(validLinks) );
@@ -330,6 +346,9 @@ public class FW {
 
     double ofGap ( boolean[] validLinks ) {
 
+        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("starting FW.ofGap()" + myDateString);
+ 
 		double[] totAonFlow = new double[g.getLinkCount()];
         
 		// sum total flow over all user classes for each link 
@@ -363,6 +382,9 @@ public class FW {
 
     double bisectGap (double x, boolean[] validLinks ) {
 
+        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("starting FW.bisectGap()" + myDateString);
+ 
 		double[] totAonFlow = new double[g.getLinkCount()];
 		double[] totalFlow = new double[g.getLinkCount()];
         

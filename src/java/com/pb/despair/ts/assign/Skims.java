@@ -116,7 +116,7 @@ public class Skims {
     /**
 	 * write out peak and off-peak, alpha and beta SOV distance skim matrices
 	 */
-	public void writeSovDistSkimMatrices () {
+	public void writeSovDistSkimMatrices ( boolean[] validLinks ) {
 
 		String fileName;
 		MatrixWriter mw;
@@ -126,7 +126,7 @@ public class Skims {
 		double[] linkCost = g.getDist();
 		
         // get the skims as a double[][] array 
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, validLinks );
 
         // copy the array to a ones-based float[][] for conversion to Matrix object
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
@@ -157,7 +157,7 @@ public class Skims {
     /**
 	 * write out peak alpha and beta SOV time skim matrices
 	 */
-	public void writePeakSovTimeSkimMatrices () {
+	public void writePeakSovTimeSkimMatrices ( boolean[] validLinks ) {
 
 		String fileName;
 		MatrixWriter mw;
@@ -167,7 +167,7 @@ public class Skims {
 		double[] linkCost = g.getCongestedTime();
 		
         // get the skims as a double[][] array dimensioned to number of centroids (2984)
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, validLinks );
 
         // convert to a float[][] dimensioned to number of alpha zones (2950)
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
@@ -191,7 +191,7 @@ public class Skims {
     /**
 	 * write out off-peak alpha and beta SOV time skim matrices
 	 */
-	public void writeOffPeakSovTimeSkimMatrices () {
+	public void writeOffPeakSovTimeSkimMatrices ( boolean[] validLinks ) {
 
 		String fileName;
 		MatrixWriter mw;
@@ -200,7 +200,7 @@ public class Skims {
 		double[] linkCost = g.getCongestedTime();
 		
         // get the skims as a double[][] array 
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, validLinks );
 
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
@@ -217,14 +217,14 @@ public class Skims {
     /**
 	 * get peak alpha zone SOV distance skim matrix
 	 */
-	public Matrix getSovDistSkimAsMatrix () {
+	public Matrix getSovDistSkimAsMatrix (int userClass) {
 
 		// set the highway network attribute on which to skim the network - distance in this case
 		double[] linkCost = g.getDist();
 		
         // get the skims as a double[][] array
 		// skims are generated between all centroids in entire network (2985 total centroids)
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, g.getValidLinkForClass(userClass) );
 
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
@@ -240,13 +240,13 @@ public class Skims {
     /**
 	 * get peak alpha zone SOV distance skim array
 	 */
-	public double[][] getSovDistSkims () {
+	public double[][] getSovDistSkims ( boolean[] validLinks ) {
 
 		// set the highway network attribute on which to skim the network - distance in this case
 		double[] linkCost = g.getDist();
 		
         // get the skims as a double[][] array 
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, validLinks );
 
 	    return zeroBasedDoubleArray;
 	    
@@ -257,43 +257,56 @@ public class Skims {
     /**
 	 * get average SOV trip travel skim values: (dist,time).
 	 */
-	public double[] getAvgSovTripSkims ( double[][] trips ) {
+	public double[] getAvgSovTripSkims ( double[][] trips, boolean[] validLinks ) {
 
-		double[] linkCost;
-		
 		// set the highway network attribute on which to skim the network - distance in this case
-		linkCost = g.getDist();
+		double[] linkCost = g.getDist();
+		
+		// get the external zone number correspondence array
+		int[] indexNode = g.getIndexNode();
+		
 		
         // get the skims as a double[][] array 
-        double[][] zeroBasedDistArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedDistArray = buildHwySkimMatrix( linkCost, validLinks );
 
+        double disconnected = 0;
+    	double tripMiles = 0.0;
+        double totalTrips = 0.0;
+        for (int i=0; i < zeroBasedDistArray.length; i++) {
+            for (int j=0; j < zeroBasedDistArray.length; j++) {
+            	if ( trips[i][j] > 0.0 ) {
+                	if ( zeroBasedDistArray[i][j] != Double.NEGATIVE_INFINITY ) {
+                		tripMiles += trips[i][j]*zeroBasedDistArray[i][j];
+                    	totalTrips += trips[i][j];
+                	}
+                	else {
+                		disconnected ++;
+                	}
+            	}
+            }
+        }
+
+
+        
+        
 		// set the highway network attribute on which to skim the network - distance in this case
 		linkCost = g.getCongestedTime();
 		
         // get the skims as a double[][] array 
-        double[][] zeroBasedTimeArray = buildHwySkimMatrix( linkCost );
+        double[][] zeroBasedTimeArray = buildHwySkimMatrix( linkCost, validLinks );
 
-        
-        double totalTrips = 0.0;
-        for (int i=1; i < trips.length; i++)
-            for (int j=1; j < trips.length; j++)
-            	totalTrips += trips[i][j];
-
-        
-    	double tripMiles = 0.0;
-        for (int i=0; i < zeroBasedDistArray.length; i++)
-            for (int j=0; j < zeroBasedDistArray.length; j++)
-            	tripMiles += trips[i+1][j+1]*zeroBasedDistArray[i][j];
-
-        
     	double tripMinutes = 0.0;
         for (int i=0; i < zeroBasedTimeArray.length; i++)
             for (int j=0; j < zeroBasedTimeArray.length; j++)
-            	tripMinutes += trips[i+1][j+1]*zeroBasedTimeArray[i][j];
-        
-        double[] results = new double[2];
+            	if ( zeroBasedTimeArray[i][j] != Double.NEGATIVE_INFINITY )
+            		tripMinutes += trips[i][j]*zeroBasedTimeArray[i][j];
+
+            	
+            	
+        double[] results = new double[3];
         results[0] = tripMiles/totalTrips;
         results[1] = tripMinutes/totalTrips;
+        results[2] = disconnected;
         
         return results;
 
@@ -338,17 +351,8 @@ public class Skims {
 	 * build network skim array, return as double[][].
 	 * the highway network attribute on which to skim the network is passed in.
 	 */
-	private double[][] buildHwySkimMatrix ( double[] linkCost ) {
+	private double[][] buildHwySkimMatrix ( double[] linkCost, boolean[] validLinks ) {
 		
-		
-		// specify which links are valid parts of paths for this skim matrix
-		boolean[] validLinks = new boolean[linkCost.length];
-		Arrays.fill (validLinks, false);
-		String[] mode = g.getMode();
-		for (int i=0; i < validLinks.length; i++) {
-			if ( mode[i].indexOf('a') >= 0 )
-				validLinks[i] = true;
-		}
 		
 		double[][] skimMatrix =  hwySkim ( linkCost, validLinks, alphaNumberArray );
 		int minI = 0;
@@ -358,12 +362,13 @@ public class Skims {
 			
 			// find minimum valued row element
 			double minValue = Double.MAX_VALUE;
-			for (int j=0; j < skimMatrix.length; j++)
-				if ( i != j && skimMatrix[i][j] < minValue ){
+			for (int j=0; j < skimMatrix.length; j++) {
+				if ( i != j && skimMatrix[i][j] != Double.NEGATIVE_INFINITY && skimMatrix[i][j] < minValue ){
 					minValue = skimMatrix[i][j];
                     minI = i;
                     minJ = j;
                 }
+			}
 
 			// set intrazonal value
             if(minValue <= 0) {
@@ -372,7 +377,11 @@ public class Skims {
                 System.exit(10);
             }
 
-            skimMatrix[i][i] = 0.5*minValue;
+			if ( minValue < Double.MAX_VALUE )
+				skimMatrix[i][i] = 0.5*minValue;
+			else
+				skimMatrix[i][i] = Double.NEGATIVE_INFINITY;
+
 			
 		}
 		
@@ -403,6 +412,10 @@ public class Skims {
 		
 		for (i=0; i < g.getNumCentroids(); i++) {
 			if (useMessageWindow) mw.setMessage2 ( "Skimming shortest paths from zone " + (i+1) + " of " + alphaNumberArray.length + " zones." );
+
+			if (i % 500 == 0)
+				logger.info ("shortest path tree for origin zone index " + i);
+
 			sp.buildTree( i );
 			skimMatrix[i] = sp.getSkim();
 		}
@@ -433,8 +446,8 @@ public class Skims {
     	logger.info ("creating Skims object.");
         Skims s = new Skims ( rb, globalRb, "peak", 0.5f );
 
-    	logger.info ("skimming network and creating Matrix object.");
-        Matrix m = s.getSovDistSkimAsMatrix();
+    	logger.info ("skimming network and creating Matrix object for userclass 0 ('a').");
+        Matrix m = s.getSovDistSkimAsMatrix(0);
 
     	logger.info ("squeezing the alpha matrix to a beta matrix.");
         Matrix mSqueezed = s.getSqueezedMatrix(m);
