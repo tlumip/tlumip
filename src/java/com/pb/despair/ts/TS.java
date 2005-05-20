@@ -65,10 +65,9 @@ public class TS {
     public static void main (String[] args) {
         
         TS tsTest = new TS( ResourceBundle.getBundle("ts"), ResourceBundle.getBundle ("global") );
-//		TS tsTest = new TS();
 
 		tsTest.assignPeakAuto();
-//		tsTest.assignOffPeakAuto();
+		tsTest.assignOffPeakAuto();
 
 		logger.info ("\ndone with TS run.");
     }

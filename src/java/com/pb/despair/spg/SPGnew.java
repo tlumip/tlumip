@@ -54,12 +54,15 @@ public class SPGnew {
 	static final int NUM_WORKERS_ATTRIB_INDEX = PUMSData.HHWRKRS_INDEX;
 	static final int PERSON_ARRAY_ATTRIB_INDEX = PUMSData.PERSON_ARRAY_INDEX;
 
+	static final int NUM_PERSON_ATTRIBUTES = 4;
+
 	static final double MAXIMUM_ALLOWED_CONTROL_DIFFERENCE = 1.0;
 	
 	// person attributes for person j:
-	// industry: PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0
-	// occup:    PERSON_ARRAY_ATTRIB_INDEX + j*3 + 1
-	// employed: PERSON_ARRAY_ATTRIB_INDEX + j*3 + 2
+	// industry: PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 0
+	// occup:    PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 1
+	// employed: PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 2
+	// employed: PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 3
 
 	
 	
@@ -385,9 +388,9 @@ public class SPGnew {
 				
 				for (int j=0; j < hhSize; j++) {
 
-				    pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0];
-					pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 1];
-			        employed = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 2];
+				    pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 0];
+					pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 1];
+			        employed = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 2];
 
 			        int personIndustry = edInd.getEdIndustry(pumsIndustryCode); 
 					int personOccupation = occ.getOccupation(pumsOccupationCode); 
@@ -553,7 +556,7 @@ public class SPGnew {
 				incomeSize = incSize.getIncomeSize(hhIncome, hhSize);
 				hhArrayHhsIncomeSize[incomeSize] += hhArray[i][k][HH_SELECTED_INDEX]; 
 				for (int j=0; j < hhSize; j++) {
-					pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 1];
+					pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 1];
 					personOccupation = occ.getOccupation(pumsOccupationCode); 
 					regionJobs[personOccupation][incomeSize] += hhArray[i][k][HH_SELECTED_INDEX];
 				}
@@ -621,7 +624,7 @@ public class SPGnew {
 				int[] personOccupations = new int[hhSize];
 				for (int i=0; i < hhSize; i++) {
 				    
-					pumsOccupationCode = hhAttribs[PERSON_ARRAY_ATTRIB_INDEX + i*3 + 1];
+					pumsOccupationCode = hhAttribs[PERSON_ARRAY_ATTRIB_INDEX + i*NUM_PERSON_ATTRIBUTES + 1];
 					personOccupations[i] = occ.getOccupation(pumsOccupationCode); 
 
 				}
@@ -1033,6 +1036,7 @@ public class SPGnew {
 		int edIndustryCode = 0;
 		int employmentStatusCode = 0;
 		int pumsHHWeight;
+		int pumsPersonWeight;
 		
 		int numWorkerCategories = workers.getNumberWorkerCategories();
 		int numEmploymentCategories = edInd.getNumberEdIndustries();
@@ -1079,12 +1083,14 @@ public class SPGnew {
 				// loop through person attributes for this household 
 				for (int j=0; j < numPersons; j++) {
 
+					pumsPersonWeight = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 3];
+					
 					// check employment status of person
-					employmentStatusCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 2];
+					employmentStatusCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 2];
 					if ( employmentStatusCode > 0 ) {
 						
 						// set the fixed observed employment value for employment category of this worker
-						pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0];
+						pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 0];
 						edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
 						observedEmployment[hhid][edIndustryCode] += pumsHHWeight;
 						employmentControls[hhid][edIndustryCode] += hhWeight*pumsHHWeight;
@@ -1692,11 +1698,11 @@ public class SPGnew {
 
 				for (int j=0; j < numPersons; j++) {
 
-					employmentStatusCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 2];
+					employmentStatusCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 2];
 					if ( employmentStatusCode > 0 ) {
 						
-						pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0];
-						pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 1];
+						pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 0];
+						pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 1];
 						edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
 						occupationCode = occ.getOccupation(pumsOccupationCode); 
 						
@@ -1789,11 +1795,11 @@ public class SPGnew {
 
 				for (int j=0; j < numPersons; j++) {
 
-					employmentStatusCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 2];
+					employmentStatusCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 2];
 					if ( employmentStatusCode > 0 ) {
 						
-					    pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0];
-						pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 1];
+					    pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 0];
+						pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 1];
 						edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
 						occupationCode = occ.getOccupation(pumsOccupationCode); 
 						
@@ -1979,11 +1985,11 @@ public class SPGnew {
 
 				for (int j=0; j < numPersons; j++) {
 
-					employmentStatusCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 2];
+					employmentStatusCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 2];
 					if ( employmentStatusCode > 0 ) {
 						
-						pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 0];
-						pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*3 + 1];
+						pumsIndustryCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 0];
+						pumsOccupationCode = hhArray[i][k][PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 1];
 						edIndustryCode = edInd.getEdIndustry(pumsIndustryCode);
 						occupationCode = occ.getOccupation(pumsOccupationCode);
 	

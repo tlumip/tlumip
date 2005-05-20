@@ -1059,14 +1059,10 @@ public class Network implements Serializable {
 			
 
 			
-			int k;
-			for (int i=0; i < indexNode.length; i++) {
-
-				k = sortedLinkIndexA[i];
+			for (int k=0; k < ia.length; k++) {
 			
 				outStream.print( indexNode[ia[k]] + ","
 								+ indexNode[ib[k]] + ","
-								+ Format.print("%.4f", distance[k]) + ","
 								+ Format.print("%.4f", capacity[k]) + ","
 								+ Format.print("%.4f", congestedTime[k]) + ","
 								);

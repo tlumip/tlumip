@@ -46,6 +46,7 @@ public class PUMSData {
 		int rlabor;
 		int workers;
 		int employed = 0;
+		int personWeight = 0;
 
 		ArrayList hhList = new ArrayList();
 		int[] hhAttribs = null;
@@ -67,7 +68,7 @@ public class PUMSData {
 					// read the household attributes from the household data record
 					if (getPUMSRecType(s).equals("H")) {
 
-						hhAttribs = new int[PERSON_ARRAY_INDEX + 3*numPersons];
+						hhAttribs = new int[PERSON_ARRAY_INDEX + SPGnew.NUM_PERSON_ATTRIBUTES*numPersons];
 						hhAttribs[HHID_INDEX] = hhid;
 						hhAttribs[STATE_INDEX] = getPUMSHHDataValue (s, "STATE");
 						hhAttribs[PUMA_INDEX] = getPUMSHHDataValue (s, "PUMA");
@@ -100,6 +101,7 @@ public class PUMSData {
 							industry = getPUMSPersDataValue (s, "INDUSTRY");
 							occup = getPUMSPersDataValue (s, "OCCUP");
 							rlabor = getPUMSPersDataValue (s, "RLABOR");
+							personWeight = getPUMSPersDataValue (s, "PWGT1");
 
 							switch (rlabor) {
 								case 0:
@@ -117,9 +119,10 @@ public class PUMSData {
 							}
 
 							// save industry for each person followed by occup for each person in hhAttrib array.
-							hhAttribs[PERSON_ARRAY_INDEX + i*3 + 0] = industry;
-							hhAttribs[PERSON_ARRAY_INDEX + i*3 + 1] = occup;
-							hhAttribs[PERSON_ARRAY_INDEX + i*3 + 2] = employed;
+							hhAttribs[PERSON_ARRAY_INDEX + i*SPGnew.NUM_PERSON_ATTRIBUTES + 0] = industry;
+							hhAttribs[PERSON_ARRAY_INDEX + i*SPGnew.NUM_PERSON_ATTRIBUTES + 1] = occup;
+							hhAttribs[PERSON_ARRAY_INDEX + i*SPGnew.NUM_PERSON_ATTRIBUTES + 2] = employed;
+							hhAttribs[PERSON_ARRAY_INDEX + i*SPGnew.NUM_PERSON_ATTRIBUTES + 3] = personWeight;
 						}
 						
 						if ( workers > hhWorkers.getNumberWorkerCategories()-1 )
