@@ -8,7 +8,7 @@ package com.pb.despair.model;
 
 import java.util.ArrayList;
 
-import com.pb.despair.model.SomeSkims;
+import com.pb.despair.pi.SomeSkims;
 import com.pb.despair.model.TravelAttributesInterface;
 import com.pb.despair.model.TravelUtilityCalculatorInterface;
 
