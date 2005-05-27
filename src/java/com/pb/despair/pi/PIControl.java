@@ -1,10 +1,10 @@
 package com.pb.despair.pi;
 
-import java.util.ResourceBundle;
-
 import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.OverflowException;
 import org.apache.log4j.Logger;
+
+import java.util.ResourceBundle;
 
 /**
  * This class runs PI.  It loads the data, instantiates the PIModel
@@ -20,6 +20,7 @@ public class PIControl {
     private ResourceBundle piRb;
     private ResourceBundle globalRb;
     private PIPProcessor piReaderWriter;
+    private int exitValue = 1;   //1=pi exited with errors iow didn't converge, 0=pi exited without errors iow. converged
 
     public PIControl(Class pProcessorClass, ResourceBundle piRb, ResourceBundle globalRb){
         this.timePeriod = 1;
@@ -225,8 +226,10 @@ public class PIControl {
         String logStmt=null;
         if(nIterations == maxIterations) {
             logStmt = "*   PI has reached maxIterations. Time in seconds: ";
+            exitValue=1;
         }else{
             logStmt = "*   PI has reached equilibrium in "+nIterations+". Time in seconds: ";
+            exitValue=0;
         }
 
         logger.info("*********************************************************************************************");
@@ -259,5 +262,6 @@ public class PIControl {
         pi.readData();
         pi.runPI();
         pi.writeData();
+        System.exit(pi.exitValue);
     }
 }

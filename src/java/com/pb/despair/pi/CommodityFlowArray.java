@@ -5,7 +5,6 @@ package com.pb.despair.pi;
 import com.pb.despair.model.AggregateAlternative;
 import com.pb.despair.model.ChoiceModelOverflowException;
 import com.pb.despair.model.OverflowException;
-import com.pb.despair.model.TransportKnowledge;
 import com.pb.despair.model.TravelUtilityCalculatorInterface;
 
 import java.util.Collection;

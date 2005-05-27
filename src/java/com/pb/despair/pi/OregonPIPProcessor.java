@@ -17,8 +17,6 @@ import com.pb.common.matrix.AlphaToBeta;
 import com.pb.despair.model.IncomeSize;
 import com.pb.despair.model.Industry;
 import com.pb.despair.model.LaborProductionAndConsumption;
-import com.pb.despair.model.SomeSkims;
-import com.pb.despair.model.TransportKnowledge;
 
 /**
  * @author John Abraham

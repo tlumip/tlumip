@@ -1,15 +1,16 @@
 package com.pb.despair.pi.daf;
 
 import com.pb.common.daf.*;
-import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.BooleanLock;
-import com.pb.despair.pi.*;
+import com.pb.common.util.ResourceUtil;
 import com.pb.despair.model.OverflowException;
+import com.pb.despair.pi.*;
+import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.ResourceBundle;
-import org.apache.log4j.Logger;
-import java.io.*;
 
 /**
  * @author Christi Willison
@@ -27,7 +28,9 @@ public class PIServerTask extends Task{
     ResourceBundle piRb = null;
     ResourceBundle globalRb = null;
     ResourceBundle pidafRb = null;
-    
+    private int exitValue=1; //1=pi exited with errors (iow: did not converge, reached max iterations)
+                                          //0=pi exited without errors (iow: pi converged)
+
     public void onStart(){
         logger.info( "***" + getName() + " started");
         logger.info("Reading data and setting up for PI run");
@@ -352,8 +355,10 @@ public class PIServerTask extends Task{
         String logStmt=null;
         if(nIterations == maxIterations) {
             logStmt = "*   PI has reached maxIterations. Time in seconds: ";
+            exitValue=1;
         }else{
             logStmt = "*   PI has reached equilibrium in "+nIterations+". Time in seconds: ";
+            exitValue=0;
         }
 
         logger.info("*********************************************************************************************");
