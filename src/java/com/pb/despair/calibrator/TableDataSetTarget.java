@@ -141,6 +141,21 @@ public class TableDataSetTarget extends TargetAdapter {
 	 * @return javax.swing.JPanel
 	 */
     public JPanel createUI() {
+        // just for setup
+        int newSize = 407*18;
+        boolean resize = false;
+        if (resize==true) {
+            String[][] temp = new String[newSize+1][1];
+            for (int i=0;i<newSize+1;i++) {
+                temp[i][0] = new String("");
+            }
+           indexedValue.setIntKeyNameValues(temp);
+           temp = new String[newSize+1][1];
+           for (int i=0;i<newSize+1;i++) {
+               temp[i][0] = new String("");
+           }
+           indexedValue.setStringKeyNameValues(temp);
+        }
         TargetPanel t = new TargetPanel();
         t.setTheTarget(this);
         JPanel thePanel = new JPanel();
