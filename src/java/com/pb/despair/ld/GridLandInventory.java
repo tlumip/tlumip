@@ -6,8 +6,8 @@ package com.pb.despair.ld;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.grid.GridManager;
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.model.DevelopmentTypeInterface;
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.DevelopmentTypeInterface;
 
 /**
  * @author jabraham

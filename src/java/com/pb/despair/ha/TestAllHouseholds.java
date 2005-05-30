@@ -6,8 +6,8 @@ import com.pb.despair.ld.DevelopmentType;
 import com.pb.despair.ld.DynamicPricesDevelopmentType;
 import com.pb.despair.ld.LDModel;
 import com.pb.despair.ld.ZoningScheme;
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.model.DevelopmentTypeInterface;
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.DevelopmentTypeInterface;
 
 
 import java.util.ArrayList;

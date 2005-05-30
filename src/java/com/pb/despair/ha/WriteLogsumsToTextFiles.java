@@ -2,8 +2,6 @@
 
 package com.pb.despair.ha;
 import com.pb.common.util.ResourceUtil;
-import com.borland.dx.dataset.TableDataSet;
-import com.pb.common.datastore.DataManager;
 
 import java.util.ResourceBundle;
 

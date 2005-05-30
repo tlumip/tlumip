@@ -2,7 +2,7 @@
 
 package com.pb.despair.ts.old;
 
-import com.pb.despair.model.TravelAttributesInterface;
+import com.pb.models.pecas.TravelAttributesInterface;
 public class ZPAttributeArray implements TravelAttributesInterface {
     public ZPAttribute[] theAttributes;
 

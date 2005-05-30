@@ -54,11 +54,7 @@ public class HouseholdPossibilities {
     }
 
     /**
-     * @associates <{com.pb.despair.ha.HouseholdCategory}>
-     * @supplierCardinality 1..*
-     * @associationAsClass Double
-     * @label weights
-     * @link aggregation
+     * 
      */
     private Hashtable individualPossibilities = new Hashtable(10);
 }

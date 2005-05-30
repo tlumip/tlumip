@@ -1,7 +1,6 @@
 package com.pb.despair.pt;
 
 import com.pb.despair.model.Mode;
-import com.pb.despair.model.UnitOfLand;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -55,7 +54,6 @@ public class Activity implements Serializable{
     
     * 
     */
-    protected UnitOfLand nominalLocation;
 
 
 

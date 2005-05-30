@@ -1,8 +1,8 @@
 package com.pb.despair.ha;
 
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.model.UnitOfLand;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.UnitOfLand;
 
 import java.util.ArrayList;
 import java.util.Iterator;

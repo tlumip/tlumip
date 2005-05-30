@@ -3,11 +3,11 @@
  */
 
 package com.pb.despair.ts.old;
-import com.pb.despair.model.TravelUtilityCalculatorInterface;
+import com.pb.models.pecas.TravelUtilityCalculatorInterface;
 
 /**
  * A class that represents the load on a link for a particular assignment period
- * @see OtherClasses
+ * see OtherClasses
  * @author your_name_here
  */
 public class LinkLoad implements LinkInterface
@@ -32,8 +32,8 @@ public class LinkLoad implements LinkInterface
 
         /**
          * The link that the load is on
-         * @clientCardinality 0..*
-         * @supplierCardinality 1
+         * clientCardinality 0..*
+         * supplierCardinality 1
          */
         private Link myLink;
 
@@ -43,14 +43,14 @@ public class LinkLoad implements LinkInterface
         private float periodVolume;
 
         /**
-         * @supplierCardinality 1
-         * @supplierRole to
+         * supplierCardinality 1
+         * supplierRole to
          */
         private NodeLoad to;
 
         /**
-         * @supplierCardinality 1
-         * @supplierRole from
+         * supplierCardinality 1
+         * supplierRole from
          */
         private NodeLoad from;
     public String toString() {return "loaded "+myLink;};

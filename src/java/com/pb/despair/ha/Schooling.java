@@ -1,6 +1,8 @@
 
 package com.pb.despair.ha;
-import com.pb.despair.pi.RegularActivity;
+
+import com.pb.models.pecas.RegularActivity;
+
 
 public class Schooling extends RegularActivity {
 

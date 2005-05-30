@@ -2,7 +2,7 @@
 
 package com.pb.despair.ld;
 
-import com.pb.despair.model.AbstractTAZ;
+import com.pb.models.pecas.AbstractTAZ;
 
 public class DynamicPricesDevelopmentType extends DevelopmentType {
     private double portionVacantMultiplier;

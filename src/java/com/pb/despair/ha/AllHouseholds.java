@@ -2,10 +2,10 @@ package com.pb.despair.ha;
 
 import com.pb.despair.ld.DevelopmentType;
 import com.pb.despair.ld.DynamicPricesDevelopmentType;
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.model.DevelopmentTypeInterface;
-import com.pb.despair.model.DisaggregateActivity;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.models.pecas.DisaggregateActivity;
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.DevelopmentTypeInterface;
 
 import java.util.*;
 

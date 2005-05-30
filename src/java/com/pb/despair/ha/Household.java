@@ -1,12 +1,9 @@
 package com.pb.despair.ha;
 
-import com.pb.despair.model.Alternative;
-import com.pb.despair.model.ChoiceModelOverflowException;
-import com.pb.despair.model.FixedUtilityAlternative;
-import com.pb.despair.model.LogitModel;
-import com.pb.despair.model.NoAlternativeAvailable;
 import com.pb.despair.ld.DevelopmentType;
-import com.pb.despair.model.*;
+import com.pb.despair.model.ModeChoiceLogsums;
+import com.pb.models.pecas.ChoiceModelOverflowException;
+import com.pb.models.pecas.*;
 
 import java.util.*;
 
@@ -21,7 +18,7 @@ import com.pb.despair.model.AbstractTAZ; */
 /**
  * This class is a subclass of Economic Unit, which means it makes decisions as a unit and has a number
  * of regular locations that it locates in.
- * @see EconomicUnit
+ * @see com.pb.models.pecas.EconomicUnit
  * @author John Abraham
  */
 public class Household extends EconomicUnit implements Cloneable {
@@ -146,8 +143,8 @@ public class Household extends EconomicUnit implements Cloneable {
      * A household is really just a group of people who are (perhaps temporarily) living together and working as a unit.
      * This is a Vector for now, but for performance reasons we might need to change it to be an int[] of indexes into a big
      * array of numbers that describe all the people.
-     * @associates <{com.pb.despair.ha.Person}>
-     * @supplierCardinality 1..*
+     * associates <{com.pb.despair.ha.Person}>
+     * supplierCardinality 1..*
      * @link aggregation
      */
     private ArrayList myPeople;
@@ -477,7 +474,7 @@ public class Household extends EconomicUnit implements Cloneable {
             VacationLocationLogit.VacationLocation vl = (VacationLocationLogit.VacationLocation) vll.monteCarloChoice();
             ourNewVacationCommunity = vl.z;
         } catch (NoAlternativeAvailable e) {
-            throw new com.pb.despair.model.AbstractTAZ.CantFindRoomException("no TAZ's available for " + this);
+            throw new com.pb.models.pecas.AbstractTAZ.CantFindRoomException("no TAZ's available for " + this);
         } catch (ChoiceModelOverflowException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -756,7 +753,7 @@ public class Household extends EconomicUnit implements Cloneable {
             try {
                 ourNewCommunity = ((HouseholdLocation)tazLocations.monteCarloChoice()).getTAZ();
             } catch (NoAlternativeAvailable e) {
-                throw new com.pb.despair.model.AbstractTAZ.CantFindRoomException("no TAZ's available for " + this);
+                throw new com.pb.models.pecas.AbstractTAZ.CantFindRoomException("no TAZ's available for " + this);
             } catch (ChoiceModelOverflowException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -779,7 +776,7 @@ public class Household extends EconomicUnit implements Cloneable {
                     throw new Error("Can't find new location --- why wasn't an exception thrown!");
                 }
                 allHouseholds.removeFromMovingPool(this);
-            } catch (com.pb.despair.model.AbstractTAZ.CantFindRoomException e) {
+            } catch (com.pb.models.pecas.AbstractTAZ.CantFindRoomException e) {
                 // System.out.println("Can't find home for "+this);
                 // oh well, just leave them in the movingPool for next time
             }
@@ -791,7 +788,7 @@ public class Household extends EconomicUnit implements Cloneable {
                 allHouseholds.removeFromSecondaryLocationMovingPool(this);
                 // oops this was (mistakenly?) :
                 // allHouseholds.addToSecondaryLocationMovingPool(this);
-            } catch (com.pb.despair.model.AbstractTAZ.CantFindRoomException e) {
+            } catch (com.pb.models.pecas.AbstractTAZ.CantFindRoomException e) {
                 //    System.out.println("Can't find vacation home for " + this);
                 // oh well, just leave them in the secondaryResidenceMovingPool for next time
             }
@@ -804,7 +801,7 @@ public class Household extends EconomicUnit implements Cloneable {
      * 
      */
     void findLocationInZone(AbstractTAZ z, int primaryOrSecondary)
-        throws com.pb.despair.model.AbstractTAZ.CantFindRoomException 
+        throws com.pb.models.pecas.AbstractTAZ.CantFindRoomException
     {
         HouseholdSpaceChoiceLogit scl = allHouseholds.spaceChoiceLogit;
         DevelopmentTypeInterface dt=null;
@@ -814,7 +811,7 @@ public class Household extends EconomicUnit implements Cloneable {
             try {
                 dt = scl.monteCarloSpaceChoice();
             } catch (NoAlternativeAvailable e) {
-                throw new com.pb.despair.model.AbstractTAZ.CantFindRoomException(this +
+                throw new com.pb.models.pecas.AbstractTAZ.CantFindRoomException(this +
                     " isn't allowed in any development types in zone " + z);
             } catch (ChoiceModelOverflowException e) {
                 // TODO Auto-generated catch block
@@ -828,7 +825,7 @@ public class Household extends EconomicUnit implements Cloneable {
     }
 
     void findLocationInZone(AbstractTAZ z, int primaryOrSecondary, DevelopmentTypeInterface dt)
-        throws com.pb.despair.model.AbstractTAZ.CantFindRoomException 
+        throws com.pb.models.pecas.AbstractTAZ.CantFindRoomException
     {
         if (primaryAndSecondaryLocation[primaryOrSecondary] != null) throw new Error("Forgot to move out of old location before moving in to new location:"+this);
         primaryAndSecondaryLocation[primaryOrSecondary] = z.assignAGridCell(this, dt);
@@ -896,7 +893,7 @@ public class Household extends EconomicUnit implements Cloneable {
      * This function returns a vector of the RegularActivities that the EconomicUnit has to do.  These RegularActivities have
      * locations associated with them.  Thus the EconomicUnit generally tends to locate within a reasonable distance of the
      * RegularActivity locations.
-     * @associates <{com.pb.despair.pi.RegularActivity}>
+     * associates <{com.pb.despair.pi.RegularActivity}>
      * @return a Vector of the regular activities
      */
     public Vector getRegularActivities() {

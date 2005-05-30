@@ -3,10 +3,11 @@
 package com.pb.despair.ha;
 
 
-import com.pb.despair.model.*;
 import com.pb.despair.ld.*;
 import com.pb.common.util.*;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.DevelopmentTypeInterface;
 
 import java.util.*;
 

@@ -2,8 +2,8 @@
 
 package com.pb.despair.ts.old;
 import com.pb.despair.model.Mode;
-import com.pb.despair.model.TravelUtilityCalculatorInterface;
-import com.pb.despair.model.UnitOfLand;
+import com.pb.models.pecas.TravelUtilityCalculatorInterface;
+import com.pb.models.pecas.UnitOfLand;
 
 import java.util.Vector;
 //import com.pb.despair.model.TravelUtilityCalculatorInterface;

@@ -1,10 +1,10 @@
 package com.pb.despair.ld;
 
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.model.DevelopmentTypeInterface;
-import com.pb.despair.model.GridCell;
 import com.pb.despair.model.ModelComponent;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.DevelopmentTypeInterface;
+import com.pb.models.pecas.GridCell;
 
 /**
  * LDModel implements...

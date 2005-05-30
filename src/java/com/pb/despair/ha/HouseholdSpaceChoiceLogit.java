@@ -2,12 +2,8 @@
 
 package com.pb.despair.ha;
 
-import com.pb.despair.model.Alternative;
-import com.pb.despair.model.ChoiceModelOverflowException;
-import com.pb.despair.model.LogitModel;
-import com.pb.despair.model.NoAlternativeAvailable;
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.model.DevelopmentTypeInterface;
+import com.pb.models.pecas.ChoiceModelOverflowException;
+import com.pb.models.pecas.*;
 
 import java.util.Iterator;
 

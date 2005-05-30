@@ -1,9 +1,9 @@
 package com.pb.despair.ts.old;
 
-import com.pb.despair.model.AbstractTAZ;
 import com.pb.despair.model.Mode;
-import com.pb.despair.model.TravelUtilityCalculatorInterface;
-import com.pb.despair.model.UnitOfLand;
+import com.pb.models.pecas.UnitOfLand;
+import com.pb.models.pecas.TravelUtilityCalculatorInterface;
+import com.pb.models.pecas.AbstractTAZ;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +39,7 @@ public class TravelCharacteristicMatrix  implements SummaryOfTravelConditions {
 
   /**
    * If the load has changed on the AssignmentPeriod, the TravelCharacteristicMatrix needs to update itself.  It does this by asking each of its ZPAttributes to update themselves.  Note that the zpattributes might be stored directly in float arrays in this class instead of in instances of ZPAttribute (to reduce the memory and performance overheads of object creation and deletion), so "asking the ZPAttributes to findMinimumPath" might be a call to a static method, or might involve working with an already constructed ZPAttribute.
-   * @stereotype update
+   * stereotype update
    */
   public void refreshTravelAttributes() {
   }
@@ -124,9 +124,9 @@ public class TravelCharacteristicMatrix  implements SummaryOfTravelConditions {
 
   /**
    * "What is theMatrix?"  theMatrix is the array of zpAttributes.
-   * @associates <{com.pb.despair.ts.ZPAttribute}>
+   * associates <{com.pb.despair.ts.ZPAttribute}>
    * @link aggregation
-   * @supplierCardinality n^2
+   * supplierCardinality n^2
    */
   protected ZPAttribute[][] theMatrix;
   protected Mode forMode;

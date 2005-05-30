@@ -2,7 +2,7 @@
 
 package com.pb.despair.ts.old;
 
-import com.pb.despair.model.TravelUtilityCalculatorInterface;
+import com.pb.models.pecas.TravelUtilityCalculatorInterface;
 
 import java.util.Vector;
 public class Trip {
@@ -28,7 +28,7 @@ public class Trip {
     private TravelUtilityCalculatorInterface travelPreferences;
 
     /**
-     * @associates <{LinkLoad}>
+     * associates <{LinkLoad}>
      */
     private Vector thePathIAmUsing;
     public String toString() {return "trip from ("+start+") to ("+stop+")";};

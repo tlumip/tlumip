@@ -1,13 +1,13 @@
 package com.pb.despair.ha;
 
-import com.pb.despair.model.LogitModel;
-import com.pb.despair.model.AbstractTAZ;
 import com.pb.despair.model.ModeChoiceLogsums;
 import com.pb.despair.model.PersonInterface;
 import com.pb.despair.model.SimulationDays;
-import com.pb.despair.pi.CommodityZUtility;
 import com.pb.despair.pt.Pattern;
 import com.pb.common.util.ResourceUtil;
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.CommodityZUtility;
+import com.pb.models.pecas.LogitModel;
 
 import java.util.*;
 
@@ -91,12 +91,12 @@ public class Person implements PersonInterface {
     /** Number of children ever born +1 (1 = no children ever, 2 = 1 child ... census codes ) */
     short fertil = 0;
 
-    /** @supplierCardinality 0..1  to be used to keep track of school location */
+    /** supplierCardinality 0..1  to be used to keep track of school location */
     int mySchoolingTAZ;
 
     /**
-     * @associates <{com.pb.despair.ha.Job}>
-     * @supplierCardinality 0..2
+     * associates <{com.pb.despair.ha.Job}>
+     * supplierCardinality 0..2
      */
     int myJobTAZ;
    // Pattern myActivityPattern = null;

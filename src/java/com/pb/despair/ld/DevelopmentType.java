@@ -1,14 +1,11 @@
 package com.pb.despair.ld;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.datastore.DataManager;
-import com.pb.despair.model.AbstractTAZ;
-import com.pb.despair.model.DevelopmentTypeInterface;
-import com.pb.despair.model.ProductionActivity;
+import com.pb.models.pecas.DevelopmentTypeInterface;
+import com.pb.models.pecas.ProductionActivity;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
 
 /**
  * A class that represents a type of land development
@@ -230,9 +227,7 @@ public class DevelopmentType implements DevelopmentTypeInterface{
 //    }
     /**
      * Method getTransitionCoefficient.
-     * @param existingDT
-     * @param dt
-     * @return double
+     *@return double
      */
     public double getTransitionCoefficient(DevelopmentType newDT) {
             
@@ -245,7 +240,6 @@ public class DevelopmentType implements DevelopmentTypeInterface{
 
     /**
      * Method getAddCoefficient.
-     * @param dt
      * @return double
      */
     public double getAddASC() {
@@ -254,7 +248,6 @@ public class DevelopmentType implements DevelopmentTypeInterface{
 
     /**
      * Method getKeepCoefficient.
-     * @param existingDT
      * @return double
      */
     public double getNewASC() {

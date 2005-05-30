@@ -6,9 +6,9 @@ import com.pb.despair.ald.ALDModel;
 import com.pb.despair.ct.CTModel;
 import com.pb.despair.ed.EDControl;
 import com.pb.despair.model.ModelComponent;
-import com.pb.despair.pi.PIModel;
 import com.pb.despair.spg.SPGnew;
 import com.pb.despair.ts.TS;
+import com.pb.models.pecas.PIModel;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
 
@@ -354,9 +354,9 @@ public class ApplicationOrchestrator {
     }
 
     public void runPIModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
-        ModelComponent comp = new PIModel();
-        comp.setResourceBundles(appRb, globalRb);
-        comp.startModel(timeInterval);
+        PIModel pi = new PIModel();
+        pi.setResourceBundles(appRb, globalRb);
+        pi.startModel(timeInterval);
     }
 
     public void runPIDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb, String nodeName){

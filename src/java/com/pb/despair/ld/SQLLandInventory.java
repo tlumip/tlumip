@@ -4,16 +4,12 @@
  */
 package com.pb.despair.ld;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import com.pb.common.datafile.JDBCTableReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.sql.JDBCConnection;
+
+import java.io.IOException;
+import java.sql.*;
 
 
 /**

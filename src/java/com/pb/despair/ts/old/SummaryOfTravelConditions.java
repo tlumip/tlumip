@@ -1,6 +1,6 @@
 package com.pb.despair.ts.old;
 
-import com.pb.despair.model.AbstractTAZ;
+import com.pb.models.pecas.AbstractTAZ;
 
 /**
  * A interface defining operations expected of different ways of summarizing travel conditions

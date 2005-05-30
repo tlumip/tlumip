@@ -2,9 +2,9 @@
 
 package com.pb.despair.ha;
 
-import com.pb.despair.model.Alternative;
-import com.pb.despair.model.LogitModel;
-import com.pb.despair.model.AbstractTAZ;
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.Alternative;
+import com.pb.models.pecas.LogitModel;
 
 import java.util.Iterator;
 
