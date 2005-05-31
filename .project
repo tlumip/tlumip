@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>tlumip</name>
 	<comment></comment>
 	<projects>
 		<project>calibrator</project>
-		<project>common-assign</project>
 		<project>common-base</project>
-		<project>common-base-old</project>
 		<project>common-daf-v2</project>
+		<project>pecas</project>
+		
 	</projects>
 	<buildSpec>
 		<buildCommand>
