@@ -15,6 +15,7 @@
         <pathelement location="${common-base.dir}/build/classes"/>
         <pathelement location="${common-daf-v2.dir}/build/classes"/>
         <pathelement location ="${calibrator.dir}/build/classes"/>
+		<pathelement location ="${pecas.dir}/build/classes"/>
         <pathelement path="${build.classes.dir};${basedir}/config"/>
         
         <fileset dir="${common-base.dir}">
@@ -38,6 +39,7 @@
         <ant dir="${common-base.dir}" target="build" inheritAll="false"/>
         <ant dir="${common-daf-v2.dir}" target="build" inheritAll="false"/>
         <ant dir="${calibrator.dir}" target="build" inheritAll="false"/>
+		<ant dir="${pecas.dir}" target="build" inheritAll="false"/>
     </target>
 
 
@@ -49,6 +51,7 @@
         <copy file="${common-base.dir}/release/common-base.jar" todir="${release.dir}"/>
         <copy file="${common-daf-v2.dir}/release/common-daf-v2.jar" todir="${release.dir}"/>
         <copy file="${calibrator.dir}/release/calibrator.jar" todir="${release.dir}"/>
+		<copy file="${pecas.dir}/release/pecas.jar" todir="${release.dir}"/>
     </target>
     
 </project>
