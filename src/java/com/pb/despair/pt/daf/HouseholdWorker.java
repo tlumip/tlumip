@@ -2,6 +2,7 @@ package com.pb.despair.pt.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
+import com.pb.common.daf.LocalMessageQueuePort;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.AlphaToBeta;
@@ -29,7 +30,7 @@ import java.util.ResourceBundle;
  *
  */
 public class HouseholdWorker extends MessageProcessingTask {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
+    Logger ptLogger = Logger.getLogger(HouseholdWorker.class);
     protected static Object lock = new Object();
     protected static boolean initialized = false;
     protected static boolean dcLoaded = false;
@@ -74,8 +75,9 @@ public class HouseholdWorker extends MessageProcessingTask {
      */
     public void onStart() {
         synchronized (lock) {
-            logger.info( "***" + getName() + " started");
+            ptLogger.info(getName() + ", Started");
             if (!initialized) {
+                ptLogger.info(getName() + ", Initializing PT Model on Node");
                 //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.properties file
                 //that was written by the Application Orchestrator
                 String scenarioName = null;
@@ -83,16 +85,16 @@ public class HouseholdWorker extends MessageProcessingTask {
                 String pathToPtRb = null;
                 String pathToGlobalRb = null;
                 
-                logger.info("Reading RunParams.properties file");
+                ptLogger.info(getName() + ", Reading RunParams.properties file");
                 ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File(Scenario.runParamsFileName));
                 scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
-                logger.info("\tScenario Name: " + scenarioName);
+                ptLogger.info(getName() + ", Scenario Name: " + scenarioName);
                 timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));
-                logger.info("\tTime Interval: " + timeInterval);
+                ptLogger.info(getName() + ", Time Interval: " + timeInterval);
                 pathToPtRb = ResourceUtil.getProperty(runParamsRb,"pathToAppRb");
-                logger.info("\tResourceBundle Path: " + pathToPtRb);
+                ptLogger.info(getName() + ", ResourceBundle Path: " + pathToPtRb);
                 pathToGlobalRb = ResourceUtil.getProperty(runParamsRb,"pathToGlobalRb");
-                logger.info("\tResourceBundle Path: " + pathToGlobalRb);
+                ptLogger.info(getName() + ", ResourceBundle Path: " + pathToGlobalRb);
                 
                 ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
                 globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
@@ -112,16 +114,13 @@ public class HouseholdWorker extends MessageProcessingTask {
                 matricesToCollapse = ResourceUtil.getList(ptRb,"matrices.for.pi");
 
                 PTModelInputs ptInputs = new PTModelInputs(ptRb,globalRb);
-                logger.info("Setting up the model");
-                logger.info("\tsetting seed");
+                ptLogger.info(getName() + ", Setting seed");
                 ptInputs.setSeed(2002);
-//                logger.info("\treading patterns files");   //not using the static copy at the moment 9/23/04
-//                ptInputs.getPatterns();
-                logger.info("\treading parameter files");
+                ptLogger.info(getName() + ", Reading parameter files");
                 ptInputs.getParameters();
-                logger.info("\treading skims into memory");
+                ptLogger.info(getName() + ", Reading skims into memory");
                 ptInputs.readSkims();
-                logger.info("\treading taz data into memory");
+                ptLogger.info(getName() + ", Reading taz data into memory");
                 ptInputs.readTazData();
 
                 LaborFlows lf = new LaborFlows(ptRb);
@@ -129,12 +128,13 @@ public class HouseholdWorker extends MessageProcessingTask {
                 a2b = new AlphaToBeta(alphaToBetaTable);
                 lf.setZoneMap(alphaToBetaTable);
 
-                logger.info("Reading Labor Flows");
+                ptLogger.info(getName() + ", Reading Labor Flows");
                 lf.readAlphaValues(loadTableDataSet(ptRb,"productionValues.file"),
                                    loadTableDataSet(ptRb,"consumptionValues.file"));
 
                 lf.readBetaLaborFlows();
                 initialized = true;
+                ptLogger.info(getName() + ", Finished initializing");
             }
 
             expUtilitiesManager = new DCExpUtilitiesManager(ptRb);
@@ -142,7 +142,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             ptModel = new PTModel(ptRb, globalRb);
             ptResults = new PTResults(ptRb);
 
-            logger.info( "***" + getName() + " finished onStart()");
+            ptLogger.info(getName() + ", Finished onStart()");
         }
     }
 
@@ -151,7 +151,7 @@ public class HouseholdWorker extends MessageProcessingTask {
      *
      */
     public void onMessage(Message msg) {
-        logger.info("********" + getName() + " received messageId=" + msg.getId() +
+        ptLogger.info(getName() + ", Received messageId=" + msg.getId() +
             " message from=" + msg.getSender() + " at " + new Date());
 
         if (msg.getId().equals(MessageID.CREATE_MC_LOGSUMS)) {
@@ -207,23 +207,24 @@ public class HouseholdWorker extends MessageProcessingTask {
 
 
         } else if (msg.getId().equals(MessageID.PROCESS_HOUSEHOLDS)) {
+            if(ptLogger.isDebugEnabled()) {
+                ptLogger.debug(getName() + ", Received HH Block " + (Integer)msg.getValue("blockNumber"));
+                if (defaultPort instanceof LocalMessageQueuePort){
+                    ptLogger.debug(getName()+ ", Msgs in Queue " + ((LocalMessageQueuePort)defaultPort).getSize());
+                }
+            }
             householdBlockWorker(msg);
         }
     }
 
     public void createMCLogsums(Message msg) {
-        if(logger.isDebugEnabled()) {
-            logger.debug("Free memory before creating MC logsum: " +
-            Runtime.getRuntime().freeMemory());
-        }
-
         String purpose = String.valueOf(msg.getValue("purpose"));
         Integer segment = (Integer) msg.getValue("segment");
 
         String purSeg = purpose + segment.toString();
 
         //Creating the ModeChoiceLogsum Matrix
-        logger.info("Creating ModeChoiceLogsumMatrix for purpose: " + purpose +
+        ptLogger.info(getName() + ", Creating ModeChoiceLogsumMatrix for purpose: " + purpose +
             " segment: " + segment);
 
         TourModeParameters theseParameters = (TourModeParameters) PTModelInputs.tmpd.getTourModeParameters(ActivityPurpose.getActivityPurposeValue(
@@ -232,15 +233,15 @@ public class HouseholdWorker extends MessageProcessingTask {
         Matrix m = mcLogsumCalculator.setModeChoiceLogsumMatrix(PTModelInputs.tazs,
                 theseParameters, purpose.charAt(0), segment.intValue(),
                 PTModelInputs.getSkims(), new TourModeChoiceModel());
-        if(logger.isDebugEnabled()) {
-            logger.debug("Created ModeChoiceLogsumMatrix in " +
-            ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
-        }
+//        if(ptLogger.isDebugEnabled()) {
+//            ptLogger.debug(getName() + ", Created ModeChoiceLogsumMatrix in " +
+//            ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
+//        }
 
         //Collapse the required matrices
 
         if (matricesToCollapse.contains(purSeg)) {
-            logger.info("Collapsing ModeChoiceLogsumMatrix for purpose: " + purpose +
+            ptLogger.info(getName() + ", Collapsing ModeChoiceLogsumMatrix for purpose: " + purpose +
                 " segment: " + segment);
             collapseMCLogsums(m,a2b,matrixWriterQueue);
         }
@@ -264,20 +265,22 @@ public class HouseholdWorker extends MessageProcessingTask {
      * @param a2b AlphaToBeta mapping
      */
     public void collapseMCLogsums(Matrix m, AlphaToBeta a2b, String queueName){
-            MatrixCompression mc = new MatrixCompression(a2b);
+        MatrixCompression mc = new MatrixCompression(a2b);
             
-            Matrix compressedMatrix = mc.getCompressedMatrix(m,"MEAN");
+        Matrix compressedMatrix = mc.getCompressedMatrix(m,"MEAN");
 
         //Need to do a little work to get only the purpose/segment part out of the name
-            String newName = m.getName();
-            newName = newName.replaceAll("ls","betals");
-        logger.info("Old name: " + m.getName() + " New name: " + newName);
-            compressedMatrix.setName(newName);
+        String newName = m.getName();
+        newName = newName.replaceAll("ls","betals");
+//        if(ptLogger.isDebugEnabled()) {
+//            ptLogger.debug(getName() + ", Old name: " + m.getName() + " New name: " + newName);
+//        }
+        compressedMatrix.setName(newName);
             
-            //Sending message to TaskMasterQueue
-            Message msg = createMessage();
-            msg.setId(MessageID.MC_LOGSUMS_COLLAPSED);
-            msg.setValue("matrix", compressedMatrix);
+        //Sending message to TaskMasterQueue
+        Message msg = createMessage();
+        msg.setId(MessageID.MC_LOGSUMS_COLLAPSED);
+        msg.setValue("matrix", compressedMatrix);
         try {
             sendTo(queueName, msg);
         } catch (Exception e) {
@@ -292,26 +295,30 @@ public class HouseholdWorker extends MessageProcessingTask {
      * @param msg
      */
     public void createLaborFlowMatrix(Message msg) {
+       
         //getting message information
-        if(logger.isDebugEnabled()) {
-            logger.debug("Free memory before creating labor flow matrix: " +
-            Runtime.getRuntime().freeMemory());
-        }
-
-
         Integer occupation = (Integer) msg.getValue("occupation");
         Integer segment = (Integer) msg.getValue("segment");
         PTPerson[] persons = (PTPerson[]) msg.getValue("persons");
+        
+        ptLogger.info(getName() + ", Creating Labor Flow Matrix");
+        if(ptLogger.isDebugEnabled()){
+            ptLogger.debug(getName() + ", segment " + segment);
+            ptLogger.debug(getName() + ", occupation " + occupation);
+            ptLogger.debug(getName() + ", num persons " + persons.length);
+//          ptLogger.debug(getName() + ", Free memory before creating labor flow matrix: " +
+//          Runtime.getRuntime().freeMemory());
+        }
 
         ModeChoiceLogsums mcl = new ModeChoiceLogsums(ptRb);
-//        logger.info("\t\t" + getName() + ": Reading logsum w"+ segment.intValue() + "ls.zip" );//BINARY-ZIP
+//        ptLogger.info(getName() + ", Reading logsum w"+ segment.intValue() + "ls.zip" );//BINARY-ZIP
 //        mcl.readLogsums('w',segment.intValue());        //BINARY-ZIP
-        logger.info("\t\t" + getName() + ": Reading logsum w"+ segment.intValue() + "ls.binary" );
+        if(ptLogger.isDebugEnabled()) {
+            ptLogger.debug(getName() + ", Reading logsum w"+ segment.intValue() + "ls.binary" );
+        }
         mcl.readBinaryLogsums('w',segment.intValue());
         Matrix modeChoiceLogsum = mcl.getMatrix();
         
-        logger.info("\t\t" + getName() + " is calculating AZ Labor flows.");
-
         Matrix m = LaborFlows.calculateAlphaLaborFlowsMatrix(modeChoiceLogsum,
                 segment.intValue(), occupation.intValue());
         persons = calculateWorkplaceLocation(persons, m);
@@ -320,10 +327,10 @@ public class HouseholdWorker extends MessageProcessingTask {
         laborFlowMessage.setId(MessageID.WORKPLACE_LOCATIONS_CALCULATED);
         laborFlowMessage.setValue("persons", persons);
         sendTo("TaskMasterQueue", laborFlowMessage);
-        if(logger.isDebugEnabled()) {
-            logger.debug("Free memory after creating labor flow matrix: " +
-            Runtime.getRuntime().freeMemory());
-        }
+//        if(ptLogger.isDebugEnabled()) {
+//            ptLogger.debug(getName() + ", Free memory after creating labor flow matrix: " +
+//            Runtime.getRuntime().freeMemory());
+//        }
         m = null;
     }
 
@@ -351,13 +358,16 @@ public class HouseholdWorker extends MessageProcessingTask {
     }
 
     public void updateTazData(Message msg){
-        logger.info("Updating TAZ info");
+        ptLogger.info(getName() + ", Updating TAZ info");
         householdsByTaz = (int[]) msg.getValue("householdsByTaz");
         postSecOccup = (int[])msg.getValue("postSecOccup");
         otherSchoolOccup = (int[])msg.getValue("otherSchoolOccup");
 
-        logger.info(getName() + " is setting population, school occupation and collapsing employment " +
-                    "in the PTModelInputs tazs");
+//        if(ptLogger.isDebugEnabled()) {
+//            ptLogger.debug(getName() + ", Setting population, school occupation and collapsing employment " 
+//                    + "in the PTModelInputs tazs");
+//        }
+                    
         PTModelInputs.tazs.setPopulation(householdsByTaz);
         PTModelInputs.tazs.setSchoolOccupation(otherSchoolOccup,postSecOccup);
         PTModelInputs.tazs.collapseEmployment(PTModelInputs.tdpd,PTModelInputs.sdpd);
@@ -373,7 +383,7 @@ public class HouseholdWorker extends MessageProcessingTask {
      */
     public void createDCLogsums(Message msg){
         if (firstDCLogsum) {
-            logger.info(getName() + " is setting population, school occupation and collapsing employment " +
+            ptLogger.info(getName() + ", Setting population, school occupation and collapsing employment " +
                     "in the ptModel tazs");
             dcLogsumCalculator.buildModel(PTModelInputs.tazs, PTModelInputs.getSkims());
             firstDCLogsum=false;
@@ -391,7 +401,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         try {
             if (purpose.equals("c")) {
                 for (int i = 1; i <= 3; i++) {
-                    logger.info(getName() + " is calculating the DC Logsums for purpose c, market segment " + segment + " subpurpose " + i);
+                    ptLogger.info(getName() + ", Calculating the DC Logsums for purpose c, market segment " + segment + " subpurpose " + i);
 
                     //create a message to store the dc logsum vector
                     Message dcLogsumMessage = createMessage();
@@ -414,7 +424,7 @@ public class HouseholdWorker extends MessageProcessingTask {
 
                 }
             } else if (!purpose.equals("w")) {
-                logger.info(getName() + " is calculating the DC Logsums for purpose " + purpose + ", market segment " + segment + " subpurpose 1");
+                ptLogger.info(getName() + ", Calculating the DC Logsums for purpose " + purpose + ", market segment " + segment + " subpurpose 1");
                 Message dcLogsumMessage = createMessage();
                 dcLogsumMessage.setId(MessageID.DC_LOGSUMS_CREATED);
 
@@ -455,27 +465,33 @@ public class HouseholdWorker extends MessageProcessingTask {
             firstHouseholdBlock = false;
         }
 
-        logger.debug(getName() + " free memory before running model: " +
-            Runtime.getRuntime().freeMemory());
+//        ptLogger.debug(getName() + ", Free memory before running model: " +
+//            Runtime.getRuntime().freeMemory());
 
         PTHousehold[] households = (PTHousehold[]) msg.getValue("households");
 
-        logger.info(getName() + " working on " + households.length + " households");
+        ptLogger.info(getName() + ", Working on " + households.length + " households");
 
         //Run models for weekdays
         long startTime = System.currentTimeMillis();
-        logger.info("\t"+ getName() + " running Weekday Pattern Model");
+        ptLogger.info(getName() + ", Running Weekday Pattern Model");
         households = ptModel.runWeekdayPatternModel(households);
         double patternTime = (System.currentTimeMillis() - startTime) / 1000.0;
-        logger.info("\t"+ getName() + " Time to run Weekday Pattern Model for " + households.length +
-            " households = " + patternTime + " seconds");
+//        if(ptLogger.isDebugEnabled()) {
+//            ptLogger.debug(getName() + ", Time to run Weekday Pattern Model for " + households.length +
+//                    " households = " + patternTime + " seconds");
+//        }
+            
 
         startTime = System.currentTimeMillis();
-        logger.info("\t"+ getName() + " generating Tours based on Weekday,Weekend Patterns");
+        ptLogger.info(getName() + ", Generating Tours based on Weekday,Weekend Patterns");
         households = ptModel.generateWeekdayTours(households);
         double tourTime = (System.currentTimeMillis() - startTime) / 1000.0;
-        logger.info("\t"+ getName() + " time to generate Weekday Tours for " + households.length +
-            " households = " + tourTime + " seconds");
+//        if(ptLogger.isDebugEnabled()) {
+//            ptLogger.debug(getName() + ", Time to generate Weekday Tours for " + households.length +
+//                    " households = " + tourTime + " seconds");
+//        }
+            
 
         startTime = System.currentTimeMillis();
         double readTime = 0.0;
@@ -487,15 +503,14 @@ public class HouseholdWorker extends MessageProcessingTask {
         tripModeTime = 0.0;
 
         List returnValues = new ArrayList();
-        logger.info("\t\t"+ getName() + " getting Logsums and Running WeekdayDurationDestinationModeChoiceModel for HH block");
-        int thisNonWorkSegment =-1; //need to initialize for logger statment
-        int thisWorkSegment = -1; //need to initialize for logger statement
+        ptLogger.info(getName() + ", Getting Logsums and Running WeekdayDurationDestinationModeChoiceModel for HH block");
+        int thisNonWorkSegment =-1; //need to initialize for ptLogger statment
+        int thisWorkSegment = -1; //need to initialize for ptLogger statement
 
         int wSegmentChange=0;
         int nwSegmentChange=0;
         int[] reads;
         for (int i = 0; i < households.length; i++) {
-            logger.debug("\t"+ getName() + " processing household: " + households[i].ID);
             thisNonWorkSegment = households[i].calcNonWorkLogsumSegment();
             thisWorkSegment = households[i].calcWorkLogsumSegment();
             long tempReadTime = System.currentTimeMillis();
@@ -504,7 +519,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             nwSegmentChange += reads[1];
             readTime += ((System.currentTimeMillis() - tempReadTime)/1000.0);
 
-            logger.debug("\t\t"+ getName() + " running WeekdayDurationDestinationModeChoiceModel");
+            //ptLogger.debug(getName() + ", Running WeekdayDurationDestinationModeChoiceModel");
             returnValues = ptModel.runWeekdayDurationDestinationModeChoiceModels(households[i],
                     expUtilitiesManager);
             households[i] = (PTHousehold) returnValues.get(0);
@@ -513,14 +528,16 @@ public class HouseholdWorker extends MessageProcessingTask {
 
         }
         double loopTime = ((System.currentTimeMillis() - startTime) / 1000.0);
-        logger.info("\t"+ getName() + ": Time to run duration destination mode choice model for " +
-            households.length + " households: \n\t\t\tLoop Time: " +
-            loopTime + " seconds" + "\n\t\t\tDurationModel: " + durationTime +
-			"\n\t\t\tPrimaryTime: " + primaryTime + "\n\t\t\tSecondaryTime: " + secondaryTime);
+//        if(ptLogger.isDebugEnabled()) {
+//            ptLogger.debug(getName() + ", Time to run duration destination mode choice model for " +
+//            households.length + " households: \n\t\tLoop Time: " +
+//            loopTime + " seconds" + "\n\t\tDurationModel: " + durationTime +
+//			"\n\t\tPrimaryTime: " + primaryTime + "\n\t\tSecondaryTime: " + secondaryTime);
+//        }
 
 
         if (PTModel.RUN_WEEKEND_MODEL) {
-            logger.info("\t"+ getName() + " running Weekend Models");
+            ptLogger.info(getName() + ", Running Weekend Models");
             //Run models for weekends
             households = ptModel.runWeekendPatternModel(households);
             households = ptModel.generateWeekendTours(households);
@@ -530,33 +547,32 @@ public class HouseholdWorker extends MessageProcessingTask {
                         expUtilitiesManager);
             }
         }
-        //Worker has processed all the households.  It will write out it's results to the local disk
-        logger.info(getName() + " writing out household results to the worker file");
-        startTime = System.currentTimeMillis();
-//        results.writeResults(households);
-        double writeTime = ((System.currentTimeMillis() - startTime)/1000.0);
-
-        double totalTime = patternTime + tourTime + loopTime + writeTime;
-        logger.info("TIMING," + getName() + "," + totalTime + "," + patternTime + "," + tourTime + "," + readTime + "," +
-                    + durationTime + "," + primaryTime + "," + destZoneTime + "," + stopZoneTime + "," + tripModeTime + ","
-                    + secondaryTime + "," + writeTime + "," + wSegmentChange + ","
-                    + nwSegmentChange + "," + new Date());
+        //Worker has processed all the households.  It will send to ResultsWriter for writing
+        double totalTime = patternTime + tourTime + loopTime;
+//        if(ptLogger.isDebugEnabled()) {
+//            ptLogger.debug(getName() + ", TIMING,"+ totalTime + "," + patternTime + "," + tourTime + "," + readTime + "," +
+//                    + durationTime + "," + primaryTime + "," + destZoneTime + "," + stopZoneTime + "," + tripModeTime + ","
+//                    + secondaryTime + "," + wSegmentChange + ","
+//                    + nwSegmentChange + "," + new Date());
+//        }
 
         //notify the master that the households have been processed.  The message might also
         //have a 'sendMore' request in it which the master will honor.
-        logger.info(getName() + " sending household count to results queue.");
+        if(ptLogger.isDebugEnabled()) {
+            ptLogger.debug(getName() + ", Sending household block " + msg.getValue("blockNumber") + " to results queue.");
+        }
         msg.setId(MessageID.HOUSEHOLDS_PROCESSED);
         msg.setValue("households",households);
         msg.setValue("nHHs", new Integer(households.length));
         sendTo("ResultsWriterQueue", msg);
-//        logger.debug("Free memory after running model: " +
+//        ptLogger.debug(getName() + ", Free memory after running model: " +
 //            Runtime.getRuntime().freeMemory());
     }
 
     private void loadDCLogsums() {
         synchronized (lock) {
             if (!dcLoaded) {
-                logger.info(getName() + " reading DC Logsums");
+                ptLogger.info(getName() + ", Reading DC Logsums");
                 PTModelInputs.readDCLogsums(ptRb);
             }
             dcLoaded = true;
@@ -572,7 +588,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             return table;
             
         } catch (IOException e) {
-            logger.fatal("Can't find input table "+path);
+            ptLogger.fatal(getName() + ", Can't find input table "+path);
             e.printStackTrace();
         }
         return null;

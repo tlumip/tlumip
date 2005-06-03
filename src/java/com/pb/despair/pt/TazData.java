@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
  */
 public class TazData implements Cloneable{
 
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger(TazData.class);
     String tazDataTableName = "TazData";
 
     //a hashtable of taz objects

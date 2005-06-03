@@ -140,7 +140,11 @@ public class TripModeChoiceModel{
                                 personAttributes,
                                 thisTour.primaryMode,
                                 zone2,
-                                thisTour.primaryDestination
+                                thisTour.primaryDestination,
+                                thisTour.begin.location.zoneNumber,
+                                thisTour.primaryDestination.location.zoneNumber,
+                                thisHousehold.ID,
+                                thisPerson.ID
                                 );
           }else{
                //from begin -> primary destination
@@ -158,7 +162,11 @@ public class TripModeChoiceModel{
                                 personAttributes,
                                 thisTour.primaryMode,
                                 zone,
-                                thisTour.primaryDestination
+                                thisTour.primaryDestination,
+                                thisTour.begin.location.zoneNumber,
+                                thisTour.primaryDestination.location.zoneNumber,
+                                thisHousehold.ID,
+                                thisPerson.ID
                                 );
           
           }
@@ -177,7 +185,11 @@ public class TripModeChoiceModel{
                                 personAttributes,
                                 thisTour.primaryMode,
                                 zone1,
-                                thisTour.intermediateStop2
+                                thisTour.intermediateStop2,
+                                thisTour.begin.location.zoneNumber,
+                                thisTour.intermediateStop2.location.zoneNumber,
+                                thisHousehold.ID,
+                                thisPerson.ID
                                 );
                                 
                //from intermediate Stop 2 -> end
@@ -193,7 +205,11 @@ public class TripModeChoiceModel{
                                 personAttributes,
                                 thisTour.primaryMode,
                                 zone2,
-                                thisTour.end
+                                thisTour.end,
+                                thisTour.begin.location.zoneNumber,
+                                thisTour.end.location.zoneNumber,
+                                thisHousehold.ID,
+                                thisPerson.ID
                                 );
           }else{
                //from primary destination -> end
@@ -209,7 +225,11 @@ public class TripModeChoiceModel{
                                 personAttributes,
                                 thisTour.primaryMode,
                                 zone,
-                                thisTour.end
+                                thisTour.end,
+                                thisTour.begin.location.zoneNumber,
+                                thisTour.end.location.zoneNumber,
+                                thisHousehold.ID,
+                                thisPerson.ID
                                 );        
           }
          if(logger.isDebugEnabled() && (thisTour.intermediateStop2!=null || thisTour.intermediateStop1!=null) && !wroteOutNullTripMode){
@@ -219,35 +239,35 @@ public class TripModeChoiceModel{
          }
      }
 
-     void calculateUtility(TripModeParameters theseParameters, 
-                           TravelTimeAndCost tc,
-                           PersonTripModeAttributes thisPerson, 
-                           Mode tourMode, 
-                           ZoneAttributes thisZone, 
-                           Activity destActivity){
-
-            // set availabilities and calculate utilities
-            driveAlone.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);                         
-            sharedRide2.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);             
-            sharedRide3Plus.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);
-             
-            autoNest.computeAvailabilities();
-            double logsum = autoNest.getUtility();
-            autoNest.calculateProbabilities();
-                               
-            if(logger.isDebugEnabled()) {
-                logger.debug("Logsum "+logsum);
-            }
-
-            try{
-                 destActivity.tripMode = (Mode)autoNest.chooseAlternative();
-
-            }catch(Exception e){
-                 System.out.println(e);
-                 logger.fatal("Error in trip mode choice: no modes available ");
-                 System.exit(1);
-            }
-     }
+//     void calculateUtility(TripModeParameters theseParameters, 
+//                           TravelTimeAndCost tc,
+//                           PersonTripModeAttributes thisPerson, 
+//                           Mode tourMode, 
+//                           ZoneAttributes thisZone, 
+//                           Activity destActivity){
+//
+//            // set availabilities and calculate utilities
+//            driveAlone.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);                         
+//            sharedRide2.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);             
+//            sharedRide3Plus.calcUtility( tc, thisZone, theseParameters, thisPerson, tourMode, destActivity);
+//             
+//            autoNest.computeAvailabilities();
+//            double logsum = autoNest.getUtility();
+//            autoNest.calculateProbabilities();
+//                               
+//            if(logger.isDebugEnabled()) {
+//                logger.debug("Logsum "+logsum);
+//            }
+//
+//            try{
+//                 destActivity.tripMode = (Mode)autoNest.chooseAlternative();
+//
+//            }catch(Exception e){
+//                 System.out.println(e);
+//                 logger.fatal("Error in trip mode choice: no modes available ");
+//                 System.exit(1);
+//            }
+//     }
 
          void calculateUtility(TripModeParameters theseParameters,
                            TravelTimeAndCost tc,

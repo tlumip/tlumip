@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public class PTModel extends ModelComponent implements Serializable{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger(PTModel.class);
     public static boolean RUN_WEEKEND_MODEL = false; //default is false but can be set in properties file to true
     public TazData tazs;
     Patterns wkdayPatterns;
@@ -603,7 +603,9 @@ public void buildLogitModels(){
       * @param args
       */
      public static void main(String[] args){
-         //can't be done right now, sorry.
+         ResourceBundle appRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/pt/pt.properties"));
+         ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/global.properties"));
+         PTModel pt = new PTModel(appRb, globalRb);
      }
 
 
