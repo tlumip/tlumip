@@ -129,10 +129,11 @@ public class DurationModel{
      }
 
     float solveForT(double shape,double expression, Activity thisActivity){
-          
+          double minRandom=0;
+          double maxRandom=0.9999;
          //constraint: the activity must be at least 5 minutes and at most x minutes left in day
-         double maxRandom=MathUtil.exp(-Math.pow(5,(1/shape))*MathUtil.exp(-1/shape*expression));
-         double minRandom=MathUtil.exp(-Math.pow((thisActivity.minutesLeftInDay()-30),(1/shape))*MathUtil.exp(-1/shape*expression));
+      //   double maxRandom=MathUtil.exp(-Math.pow(5,(1/shape))*MathUtil.exp(-1/shape*expression));
+      //   double minRandom=MathUtil.exp(-Math.pow((thisActivity.minutesLeftInDay()-30),(1/shape))*MathUtil.exp(-1/shape*expression));
           
          double totalRandom=0;
          double randomNumber=0;
