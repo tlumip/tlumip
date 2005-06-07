@@ -678,7 +678,7 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
      /** This method calculates the utility of a given pattern for a given person
 */
      public void calcUtility(PatternChoiceParameters params, PersonPatternChoiceAttributes persAttr){
-         utility=0;
+         utility=-999;
          hasUtility=true;
 
          if(homeActivities==1){
