@@ -21,7 +21,7 @@ public class DurationModel{
      PersonDurationAttributes thisPersonAttributes = new PersonDurationAttributes();
      private Tour thisTour;
      public static final int randomDraws=1;
-     final static boolean constrained=true;
+     final static boolean constrained=false;
      DurationModelParametersData dmpd;
     
     boolean firstHomeLogged = false,
