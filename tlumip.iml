@@ -14,6 +14,7 @@
     <orderEntry type="module" module-name="common-daf-v2" />
     <orderEntry type="module" module-name="jakarta-commons" />
     <orderEntry type="module" module-name="calibrator" />
+    <orderEntry type="module" module-name="pecas" />
     <orderEntryProperties />
   </component>
 </module>
