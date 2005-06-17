@@ -7,10 +7,8 @@
 package com.pb.despair.calibrator;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
@@ -30,8 +28,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 
 import com.hbaspecto.calibrator.TargetPanel;
-import com.hbaspecto.util.ColumnTitledStringArrayTableModel;
-import com.hbaspecto.util.FixedWidthNumberFormatter;
 import com.hbaspecto.util.StringArrayTableModel;
 import com.hbaspecto.util.TableTransferHandler;
 

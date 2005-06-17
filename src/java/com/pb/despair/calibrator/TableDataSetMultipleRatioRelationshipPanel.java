@@ -7,12 +7,10 @@
 package com.pb.despair.calibrator;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.NumberFormat;
 
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;

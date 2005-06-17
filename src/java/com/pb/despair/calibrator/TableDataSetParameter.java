@@ -24,7 +24,6 @@ import javax.swing.text.Document;
 import com.hbaspecto.calibrator.ModelInputsAndOutputs;
 import com.hbaspecto.calibrator.Parameter;
 import com.hbaspecto.util.StringArrayTableModel;
-import com.pb.common.datafile.TableDataSetCollection;
 import com.pb.common.datafile.TableDataSetIndexedValue;
 
 /**

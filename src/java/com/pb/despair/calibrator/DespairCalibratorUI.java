@@ -6,14 +6,11 @@
  */
 package com.pb.despair.calibrator;
 
-import java.awt.FileDialog;
 import java.io.File;
-import java.text.DecimalFormat;
 
 import javax.swing.JFileChooser;
 
 import com.hbaspecto.calibrator.BatchFileRunner;
-import com.hbaspecto.calibrator.BatchSemaphoreRunner;
 import com.hbaspecto.calibrator.CalibrationStrategyUI;
 import com.hbaspecto.calibrator.LeastSquaresLinearized;
 import com.hbaspecto.calibrator.ModelInputsAndOutputs;
