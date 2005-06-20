@@ -259,7 +259,8 @@ public class OregonPIPProcessor extends PIPProcessor {
                 fi = new FloorspaceQuantityStorage(commodityName,maxAlphaZone+1);
                 floorspaceInventory.put(commodityName,fi);
             }
-            fi.inventory[alphaZone]+= quantity;
+            fi.increaseInventoryForZone(alphaZone,quantity);
+            //fi.inventory[alphaZone]+= quantity;
         }
     }
     /* This method will read in the base year ActivitiesZonalValues file and
