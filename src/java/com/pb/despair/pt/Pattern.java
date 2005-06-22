@@ -173,6 +173,7 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
                if(thisChar=='b'){
                     ++workActivities;
                     ++nWorkBasedTours;
+                    wrkDummy=1;
                     wkbDummy=1;
                }
           }
