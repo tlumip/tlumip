@@ -1,7 +1,3 @@
-
-/**
-* EDControl makes calls to build the model and then run the model.
- */
 package com.pb.despair.ed;
 
 import com.pb.common.util.Debug;
