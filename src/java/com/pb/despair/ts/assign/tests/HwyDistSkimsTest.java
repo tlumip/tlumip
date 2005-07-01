@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign.tests;
+package com.pb.tlumip.ts.assign.tests;
 
 /**
  *
@@ -7,8 +7,8 @@ package com.pb.despair.ts.assign.tests;
  */
 
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.assign.Skims;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.assign.Skims;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 
 public class HwyDistSkimsTest {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.tests");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.tests");
 
 	static final String DATABANK = "c:\\jim\\tlumip\\TLUMIPEmme2\\emme2ban";
 	static final String CSVFILE = "c:\\jim\\tlumip\\TLUMIPEmme2\\sovDistSkimPk.csv";

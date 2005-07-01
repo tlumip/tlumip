@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.model.LogitModel;
 import com.pb.common.util.ResourceUtil;
@@ -18,7 +18,7 @@ import java.util.List;
 
 public class PatternModel{
 
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.PatternModel");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.PatternModel");
     final long debugID=1;
     LogitModel patternChoiceModel;
     PTTimer timer = new PTTimer();

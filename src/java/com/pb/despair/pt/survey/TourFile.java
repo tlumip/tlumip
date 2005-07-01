@@ -3,7 +3,7 @@
 //
 // This class writes a file with tour records 
 // 
-package com.pb.despair.pt.survey;
+package com.pb.tlumip.pt.survey;
 import java.util.*;
 import java.io.*;
 

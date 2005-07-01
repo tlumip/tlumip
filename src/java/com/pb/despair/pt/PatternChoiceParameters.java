@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -18,7 +18,7 @@ import java.util.ResourceBundle;
  * 
  */
 public class PatternChoiceParameters {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
     String patternChoiceParametersFileName;
     String patternChoiceParametersTableName;
 

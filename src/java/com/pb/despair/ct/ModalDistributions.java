@@ -1,11 +1,11 @@
-package com.pb.despair.ct;
+package com.pb.tlumip.ct;
 
 import org.apache.log4j.Logger;
 import java.io.*;
 import java.util.*;
 
 public class ModalDistributions {
-    final static Logger logger = Logger.getLogger("com.pb.despair.ct.ModelDistributions");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.ct.ModelDistributions");
   List modes;
   int modeSize;
   HashMap hm;

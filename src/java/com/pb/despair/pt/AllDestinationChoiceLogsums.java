@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCollection;
@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  */
 
 public class AllDestinationChoiceLogsums {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
     
     static final int TOTALSEGMENTS = PTHousehold.NUM_WORK_SEGMENTS;
 

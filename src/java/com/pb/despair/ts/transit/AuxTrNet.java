@@ -1,6 +1,6 @@
-package com.pb.despair.ts.transit;
+package com.pb.tlumip.ts.transit;
 
-import com.pb.despair.ts.assign.Network;
+import com.pb.tlumip.ts.assign.Network;
 
 import com.pb.common.util.IndexSort;
 import com.pb.common.util.Justify;
@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 public class AuxTrNet implements Serializable {
 
-	protected static transient Logger logger = Logger.getLogger("com.pb.despair.ts.transit");
+	protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.transit");
 
 	public static final double INFINITY = 1.0e+30;
 	

@@ -5,7 +5,7 @@
  * to be solved.
  */
 
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 import com.pb.common.util.Debug;
 
 import java.util.Vector;

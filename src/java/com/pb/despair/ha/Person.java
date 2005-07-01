@@ -1,9 +1,9 @@
-package com.pb.despair.ha;
+package com.pb.tlumip.ha;
 
-import com.pb.despair.model.ModeChoiceLogsums;
-import com.pb.despair.model.PersonInterface;
-import com.pb.despair.model.SimulationDays;
-import com.pb.despair.pt.Pattern;
+import com.pb.tlumip.model.ModeChoiceLogsums;
+import com.pb.tlumip.model.PersonInterface;
+import com.pb.tlumip.model.SimulationDays;
+import com.pb.tlumip.pt.Pattern;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pecas.AbstractTAZ;
 import com.pb.models.pecas.CommodityZUtility;
@@ -95,7 +95,7 @@ public class Person implements PersonInterface {
     int mySchoolingTAZ;
 
     /**
-     * associates <{com.pb.despair.ha.Job}>
+     * associates <{com.pb.tlumip.ha.Job}>
      * supplierCardinality 0..2
      */
     int myJobTAZ;
@@ -305,8 +305,8 @@ public class Person implements PersonInterface {
         if (schoolStatus >=2) yearsSchool++;
         boolean leavingHome = false;
         if (allHouseholds.theRandom.nextFloat() < this.getChanceOfDyingInPastYear() * elapsedTime) {
-            // message #1.2.1.2 to aHousehold:com.pb.despair.ha.Household
-            // aHousehold.removePerson(com.pb.despair.ha.Person);
+            // message #1.2.1.2 to aHousehold:com.pb.tlumip.ha.Household
+            // aHousehold.removePerson(com.pb.tlumip.ha.Person);
             leavingHome = true;
             age = -1;
         } else {
@@ -367,7 +367,7 @@ public class Person implements PersonInterface {
 
     void samplePreferences() {
         // to be used to track individual travel preferences -- utility function coefficients
-/*        if (age < 5) myTravelPreferences = new com.pb.despair.pt.CantTravelAtAll();
+/*        if (age < 5) myTravelPreferences = new com.pb.tlumip.pt.CantTravelAtAll();
         else
             myTravelPreferences = new TimeAndDistanceTravelUtilityCalculator(allHouseholds.theRandom.nextDouble() *
                 20, 0.06); */

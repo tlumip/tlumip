@@ -1,4 +1,4 @@
-package com.pb.despair.model;
+package com.pb.tlumip.model;
 
 //import com.pb.common.old.model.Alternative;
 import com.pb.common.model.Alternative;
@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * @author Joel Freedman
  */
 public abstract class Mode implements Serializable, Alternative{
-    private static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    private static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
     public Collection observers;
     public byte type;     
                

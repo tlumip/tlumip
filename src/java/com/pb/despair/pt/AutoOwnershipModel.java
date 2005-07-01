@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
  
 import com.pb.common.math.MathUtil;
 import com.pb.common.matrix.CollapsedMatrixCollection;
@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 public class AutoOwnershipModel {
      
      public static final long debugID = 1001;
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt.AutoOwnershipModel");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.AutoOwnershipModel");
      ResourceBundle rb;
      /* Constructor takes an array
      * of households and applies the model

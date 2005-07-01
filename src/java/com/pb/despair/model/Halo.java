@@ -1,4 +1,4 @@
-package com.pb.despair.model;
+package com.pb.tlumip.model;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -14,7 +14,7 @@ import java.io.IOException;
  */
 
 public class Halo {
-    private static Logger logger = Logger.getLogger("com.pb.despair.model.Halo");
+    private static Logger logger = Logger.getLogger("com.pb.tlumip.model.Halo");
 
 
 	int maxAlphaZone = 0;

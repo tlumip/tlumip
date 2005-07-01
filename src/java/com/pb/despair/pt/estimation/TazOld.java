@@ -1,17 +1,17 @@
-package com.pb.despair.pt.estimation;
+package com.pb.tlumip.pt.estimation;
 
 import com.pb.common.math.MathUtil;
 import com.pb.common.model.Alternative;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.ModeType;
-import com.pb.despair.pt.ActivityPurpose;
-import com.pb.despair.pt.PTModelInputs;
-import com.pb.despair.pt.StopDestinationParameters;
-import com.pb.despair.pt.StopDestinationParametersData;
-import com.pb.despair.pt.TazData;
-import com.pb.despair.pt.TourDestinationParameters;
-import com.pb.despair.pt.TourDestinationParametersData;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.ModeType;
+import com.pb.tlumip.pt.ActivityPurpose;
+import com.pb.tlumip.pt.PTModelInputs;
+import com.pb.tlumip.pt.StopDestinationParameters;
+import com.pb.tlumip.pt.StopDestinationParametersData;
+import com.pb.tlumip.pt.TazData;
+import com.pb.tlumip.pt.TourDestinationParameters;
+import com.pb.tlumip.pt.TourDestinationParametersData;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +28,7 @@ import java.io.PrintWriter;
  *
  */
 public class TazOld implements Alternative{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
     private boolean NEW_UTILITY_METHOD = true;
 
     //attributes

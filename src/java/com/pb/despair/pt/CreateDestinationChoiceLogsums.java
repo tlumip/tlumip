@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.matrix.ColumnVector;
 import com.pb.common.matrix.Matrix;
@@ -7,7 +7,7 @@ import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.model.LogitModel;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.SkimsInMemory;
+import com.pb.tlumip.model.SkimsInMemory;
 
 import org.apache.log4j.Logger;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class CreateDestinationChoiceLogsums {
 
 
 
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
     
     LogitModel tourDCModel;
     SkimsInMemory skims;
@@ -260,7 +260,7 @@ public class CreateDestinationChoiceLogsums {
               String thisPurpose=purposes[purpose];
                 
               for(int segment=0;segment<5/*TOTALSEGMENTS*/;segment++){
-                  ResourceBundle despairRb = ResourceUtil.getResourceBundle( "despair" );
+                  ResourceBundle despairRb = ResourceUtil.getResourceBundle( "tlumip" );
                   String path = ResourceUtil.getProperty(despairRb, "Model.skimPath");
                   String mName= new String(path+ thisPurpose.substring(0,1) + new Integer(segment).toString()
                            + new String("ls.zip"));

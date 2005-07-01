@@ -1,4 +1,4 @@
-package com.pb.despair.pt.estimation;
+package com.pb.tlumip.pt.estimation;
 import com.pb.common.matrix.CollapsedMatrixCollection;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class RandomSampleByDistance {
     //each district can contain a number of tazs from 1 to n where n is numberDistricts
     int numberDistricts = 1;
     ArrayList districts;
-    static Logger logger = Logger.getLogger("com.pb.despair.pt.RandomSampleByDistance");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.pt.RandomSampleByDistance");
 
 
 	/**

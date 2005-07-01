@@ -1,7 +1,7 @@
-package com.pb.despair.pc;
+package com.pb.tlumip.pc;
 
-import com.pb.despair.pc.beans.DashboardDataBean;
-import com.pb.despair.pc.beans.StatisticBean;
+import com.pb.tlumip.pc.beans.DashboardDataBean;
+import com.pb.tlumip.pc.beans.StatisticBean;
 
 import java.util.HashMap;
 import java.util.List;

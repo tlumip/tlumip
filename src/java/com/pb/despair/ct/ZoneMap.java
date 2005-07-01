@@ -1,4 +1,4 @@
-package com.pb.despair.ct;
+package com.pb.tlumip.ct;
 
 // ZoneMap.java provides storage for a matrix of beta-to-alpha zone equivalen-
 // cies. It is used in DiscreteShipments (and possibly other places) to syn-
@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 import java.io.*;
 
 public class ZoneMap {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.ct");
+    protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
     private static int HIGHEST_ALPHA_ZONENUMBER,
                        HIGHEST_BETA_ZONENUMBER ; //initialized after reading alphaToBeta.csv
     float[][] intensityMap;   // rows=beta zones, columns = alpha zones

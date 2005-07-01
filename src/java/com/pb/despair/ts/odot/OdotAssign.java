@@ -1,4 +1,4 @@
-package com.pb.despair.ts.odot;
+package com.pb.tlumip.ts.odot;
 
 /**
  *
@@ -12,8 +12,8 @@ package com.pb.despair.ts.odot;
 
 
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.assign.FW;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.assign.FW;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 
 public class OdotAssign {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.odot");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.odot");
 
 	protected static Network g = null;
 

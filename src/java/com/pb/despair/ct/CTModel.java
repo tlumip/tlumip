@@ -1,4 +1,4 @@
-package com.pb.despair.ct;
+package com.pb.tlumip.ct;
 
 import java.io.File;
 import java.util.Date;
@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.ModelComponent;
+import com.pb.tlumip.model.ModelComponent;
 
 /**
  * @author donnellyr
@@ -15,7 +15,7 @@ import com.pb.despair.model.ModelComponent;
  */
 public class CTModel extends ModelComponent {
 	
-	Logger logger = Logger.getLogger("com.pb.despair.ct");
+	Logger logger = Logger.getLogger("com.pb.tlumip.ct");
     long randomSeed;           //will be read from properties files and passed to
     String inputPath;    //other methods that
     String outputPath;   //run the CTModel.

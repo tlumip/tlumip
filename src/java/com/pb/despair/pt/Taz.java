@@ -1,11 +1,11 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.math.MathUtil;
 import com.pb.common.model.Alternative;
 import com.pb.common.util.ResourceUtil;
 //import com.pb.common.model.ConcreteAlternative;
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.ModeType;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.ModeType;
 
 import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
@@ -21,7 +21,7 @@ import java.lang.RuntimeException;
  * 
  */
 public class Taz implements Alternative, Cloneable{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
 
      //attributes
      public int zoneNumber;

@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import org.apache.log4j.Logger;
 
@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class PTTimer{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
     
     long startTime;
     long endTime;

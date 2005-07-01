@@ -3,7 +3,7 @@
 //
 // This class writes a file summarizing activities and tours for each person-day
 // 
-package com.pb.despair.pt.survey;
+package com.pb.tlumip.pt.survey;
 import java.util.*;
 import java.io.*;
 

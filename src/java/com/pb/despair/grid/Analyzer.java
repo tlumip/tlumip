@@ -1,4 +1,4 @@
-package com.pb.despair.grid;
+package com.pb.tlumip.grid;
 
 import com.pb.common.grid.GridFile;
 import com.pb.common.datafile.TableDataSet;
@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 public class Analyzer {
 
     private ArrayList aZones;
-    private static Logger log = Logger.getLogger("com.pb.despair.grid");
+    private static Logger log = Logger.getLogger("com.pb.tlumip.grid");
     String[] headingsForTotalCells = {"MH","MF","AT","SFD","RRMH","RRSFD","Accom","Depot","GovSppt","Gschool","HvyInd","Hospital",
                                        "Inst","LtInd","Office","Retail","Whse","Log","Ag","UNDEV","UNDEVFor","UNDEVAg","TP","WATER","NA"};
     String[] headingsForYrBuilt={"1999-2000","1995-98","1990-94","1980-89","1970-79","1960-69","1950-59","1940-49","1900-1939","NoInfo(0)","1859"};

@@ -1,8 +1,8 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.model.LogitModel;
-import com.pb.despair.model.SkimsInMemory;
-import com.pb.despair.model.ModeType;
+import com.pb.tlumip.model.SkimsInMemory;
+import com.pb.tlumip.model.ModeType;
 
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -19,7 +19,7 @@ import java.io.PrintWriter;
 
  
 public class StopDestinationChoiceModel{
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt.StopDestinationChoiceModel");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.StopDestinationChoiceModel");
      double utility;
      final static int debugID = 68313;
      LogitModel iStop1Model;

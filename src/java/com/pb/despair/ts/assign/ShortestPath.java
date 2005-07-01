@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign;
+package com.pb.tlumip.ts.assign;
 
 import java.util.Arrays;
 import org.apache.log4j.Logger;
@@ -12,7 +12,7 @@ import com.pb.common.util.Justify;
 
 public class ShortestPath {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign");
 
     static final int MAX_PATH_LENGTH = 300;
     static final double COMPARE_EPSILON = 1.0e-07;

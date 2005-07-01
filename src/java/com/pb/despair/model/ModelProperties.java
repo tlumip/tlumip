@@ -1,4 +1,4 @@
-package com.pb.despair.model;
+package com.pb.tlumip.model;
 
 import java.util.HashMap;
 

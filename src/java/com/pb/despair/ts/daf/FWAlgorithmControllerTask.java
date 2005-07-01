@@ -1,4 +1,4 @@
-package com.pb.despair.ts.daf;
+package com.pb.tlumip.ts.daf;
 
 
 import java.text.DateFormat;
@@ -13,8 +13,8 @@ import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 import com.pb.common.util.Justify;
-import com.pb.despair.ts.assign.FW;
-import com.pb.despair.ts.assign.Network;
+import com.pb.tlumip.ts.assign.FW;
+import com.pb.tlumip.ts.assign.Network;
 
 /**
  *   Distributed application server class used for implementing a
@@ -25,7 +25,7 @@ import com.pb.despair.ts.assign.Network;
 public class FWAlgorithmControllerTask extends MessageProcessingTask{
 
 	private static boolean LOGGING = true;
-    static Logger logger = Logger.getLogger("com.pb.despair.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
 
     Justify myFormat = new Justify();
 

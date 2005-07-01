@@ -1,9 +1,9 @@
-package com.pb.despair.grid.tests;
+package com.pb.tlumip.grid.tests;
 
-import com.pb.despair.grid.County;
-import com.pb.despair.grid.AlphaZone;
-import com.pb.despair.grid.GridSynthesizer;
-import com.pb.despair.grid.Ref;
+import com.pb.tlumip.grid.County;
+import com.pb.tlumip.grid.AlphaZone;
+import com.pb.tlumip.grid.GridSynthesizer;
+import com.pb.tlumip.grid.Ref;
 
 import org.apache.log4j.Logger;
 import java.util.Iterator;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
  */
 public class CheckInputAndInitializations {
 
-    private static Logger log = Logger.getLogger("com/pb/despair/grid/test");
+    private static Logger log = Logger.getLogger("com/pb/tlumip/grid/test");
 
     public static void checkInputDataAndInitializations(){
         new GridSynthesizer();

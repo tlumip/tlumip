@@ -1,14 +1,14 @@
-package com.pb.despair.pt.daf;
+package com.pb.tlumip.pt.daf;
 
 import com.pb.common.daf.*;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.BooleanLock;
 import com.pb.common.util.ObjectUtil;
 import com.pb.common.matrix.AlphaToBeta;
-import com.pb.despair.pt.PTDataReader;
-import com.pb.despair.pt.PTHousehold;
-import com.pb.despair.pt.PTPerson;
-import com.pb.despair.pt.OccupationCode;
+import com.pb.tlumip.pt.PTDataReader;
+import com.pb.tlumip.pt.PTHousehold;
+import com.pb.tlumip.pt.PTPerson;
+import com.pb.tlumip.pt.OccupationCode;
 
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -23,7 +23,7 @@ import java.io.*;
  */
 public class PTServerTask extends Task{
 
-    Logger logger = Logger.getLogger("com.pb.common.despair.pt.daf");
+    Logger logger = Logger.getLogger("com.pb.common.tlumip.pt.daf");
     protected static BooleanLock signal = new BooleanLock(false);
     boolean CREATE_MODE_CHOICE_LOGSUMS=true;
     ResourceBundle ptRb;

@@ -1,8 +1,8 @@
-package com.pb.despair.reports;
+package com.pb.tlumip.reports;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.ed.EDSummarizer;
+import com.pb.tlumip.ed.EDSummarizer;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
  * Created by IntelliJ IDEA.
  */
 public class CalibrationManager {
-    private static Logger logger = Logger.getLogger("com.pb.despair.CalibrationManager");
+    private static Logger logger = Logger.getLogger("com.pb.tlumip.CalibrationManager");
     boolean debug = false;
 
     ResourceBundle rb;          //calibration.properties which will have the names of all calibration

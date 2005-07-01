@@ -2,7 +2,7 @@
  * Created on Jul 22, 2004
  *
  */
-package com.pb.despair.ld;
+package com.pb.tlumip.ld;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.grid.GridManager;
@@ -81,14 +81,14 @@ public class GridLandInventory extends LandInventory {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#getSize(long, long)
+     * @see com.pb.tlumip.ld.LandInventory#getSize(long, long)
      */
     public float getSize(long row, long col) {
         return gridSize;
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#isDevelopable(long, long)
+     * @see com.pb.tlumip.ld.LandInventory#isDevelopable(long, long)
      */
     public boolean isDevelopable(long id1, long id2) {
         AbstractTAZ myTAZ = AbstractTAZ.findZoneByUserNumber(alphaZoneGrid.getCellValue((int) id1,(int) id2));
@@ -99,7 +99,7 @@ public class GridLandInventory extends LandInventory {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#getZoning(long, long)
+     * @see com.pb.tlumip.ld.LandInventory#getZoning(long, long)
      */
     public short getZoning(long id1, long id2) {
         return (short) zoningGrid.getCellValue((int) id1,(int) id2);
@@ -121,7 +121,7 @@ public class GridLandInventory extends LandInventory {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#summarizeInventory()
+     * @see com.pb.tlumip.ld.LandInventory#summarizeInventory()
      */
     public TableDataSet summarizeInventory(String commodityNameTable, String commodityNameColumn) {
         // TODO Auto-generated method stub
@@ -129,7 +129,7 @@ public class GridLandInventory extends LandInventory {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#getPrice(long, long, char)
+     * @see com.pb.tlumip.ld.LandInventory#getPrice(long, long, char)
      */
     public double getPrice(long id1, long id2, char coverageChar) {
         DevelopmentTypeInterface dt = DevelopmentType.getAlreadyCreatedDevelopmentByCode(coverageChar);
@@ -139,7 +139,7 @@ public class GridLandInventory extends LandInventory {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#getLocalVacancyRate(long, long, char, double)
+     * @see com.pb.tlumip.ld.LandInventory#getLocalVacancyRate(long, long, char, double)
      */
     public double getLocalVacancyRate(long id1, long id2, char coverageChar, double radius) {
         DevelopmentTypeInterface dt = DevelopmentType.getAlreadyCreatedDevelopmentByCode(coverageChar);
@@ -150,7 +150,7 @@ public class GridLandInventory extends LandInventory {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#elementToString(long, long)
+     * @see com.pb.tlumip.ld.LandInventory#elementToString(long, long)
      */
     public String elementToString(long id1, long id2) {
         return id1+","+id2+" in zone "+alphaZoneGrid.getCellValue((int) id1, (int)id2);

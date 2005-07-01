@@ -1,9 +1,9 @@
-package com.pb.despair.pc.tasks;
+package com.pb.tlumip.pc.tasks;
 
 
-import com.pb.despair.pc.beans.StatisticBean;
-import com.pb.despair.pc.beans.DashboardDataBean;
-import com.pb.despair.pc.*;
+import com.pb.tlumip.pc.beans.StatisticBean;
+import com.pb.tlumip.pc.beans.DashboardDataBean;
+import com.pb.tlumip.pc.*;
 import com.pb.common.daf.Task;
 
 import org.apache.log4j.Logger;

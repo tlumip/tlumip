@@ -1,4 +1,4 @@
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.CSVFileReader;
@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
  * Created by IntelliJ IDEA.
  */
 public class EDSummarizer {
-    static Logger logger = Logger.getLogger("com.pb.despair.ed");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ed");
     static String[] header = null;
     static float[][] outputValues = null;
 

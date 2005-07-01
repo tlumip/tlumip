@@ -1,4 +1,4 @@
-package com.pb.despair.pt.daf;
+package com.pb.tlumip.pt.daf;
 
 /**
  * WorkplaceLocationTask
@@ -20,16 +20,16 @@ import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.TableDataSetLoader;
-import com.pb.despair.model.ModeChoiceLogsums;
-import com.pb.despair.pt.LaborFlows;
-import com.pb.despair.pt.LogsumManager;
-import com.pb.despair.pt.PTModelInputs;
-import com.pb.despair.pt.PTPerson;
-import com.pb.despair.pt.WorkplaceLocationModel;
+import com.pb.tlumip.model.ModeChoiceLogsums;
+import com.pb.tlumip.pt.LaborFlows;
+import com.pb.tlumip.pt.LogsumManager;
+import com.pb.tlumip.pt.PTModelInputs;
+import com.pb.tlumip.pt.PTPerson;
+import com.pb.tlumip.pt.WorkplaceLocationModel;
 
 public class WorkplaceLocationTask  extends MessageProcessingTask{
 
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.daf");
     protected static Object lock = new Object();
     protected static ResourceBundle ptRb;
     protected static ResourceBundle globalRb;

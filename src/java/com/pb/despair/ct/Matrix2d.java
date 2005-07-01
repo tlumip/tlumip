@@ -1,4 +1,4 @@
-package com.pb.despair.ct;
+package com.pb.tlumip.ct;
 
 
 // A class to define two-dimensional matrices and common spatial interaction

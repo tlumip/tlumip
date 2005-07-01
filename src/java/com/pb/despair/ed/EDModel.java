@@ -1,6 +1,6 @@
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
-import com.pb.despair.model.ModelComponent;
+import com.pb.tlumip.model.ModelComponent;
 import com.pb.common.util.Debug;
 import com.pb.common.util.ResourceUtil;
 

@@ -1,4 +1,4 @@
-package com.pb.despair.ha;
+package com.pb.tlumip.ha;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.AbstractTAZ;
@@ -164,7 +164,7 @@ public class TAZ extends AbstractTAZ implements UnitOfLand {
      * @param selling if true, get the selling utility.  Otherwise get the buying utility
      */
   /*  public double calcZUtility(Commodity c, boolean selling) throws ChoiceModelOverflowException {
-        // message #1.2.3.1.3.1 to theZutilityOfACommodityInAZone:com.pb.despair.pi.CommodityZutility
+        // message #1.2.3.1.3.1 to theZutilityOfACommodityInAZone:com.pb.tlumip.pi.CommodityZutility
         // double unnamed = theZutilityOfACommodityInAZone.getUtility();
         if (selling) {
             return ((Alternative) sellingCommodityZUtilities.get(c)).getUtility(1);
@@ -180,7 +180,7 @@ public class TAZ extends AbstractTAZ implements UnitOfLand {
      */
 /*    public double calcZUtilityForPreferences(Commodity c, boolean selling, TravelUtilityCalculatorInterface tp,
         boolean withRouteChoice) {
-            // message #2.5.1 to zUtilityOfLabourOrConsumption:com.pb.despair.pi.CommodityZutility
+            // message #2.5.1 to zUtilityOfLabourOrConsumption:com.pb.tlumip.pi.CommodityZutility
             // double unnamed = zUtilityOfLabourOrConsumption.calcUtilityForPreferences(TravelPreferences);
             if (selling) {
                 return ((CommodityZUtility)sellingCommodityZUtilities.get(c)).calcUtilityForPreferences(tp, withRouteChoice);

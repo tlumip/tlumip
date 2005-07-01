@@ -1,4 +1,4 @@
-package com.pb.despair.pt.estimation;
+package com.pb.tlumip.pt.estimation;
 
 /** 
  * Imports emme2 matrices, Stores them in compressed matrix format.  
@@ -15,7 +15,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.MatrixType;
-import com.pb.despair.pt.AlphaToBetaData;
+import com.pb.tlumip.pt.AlphaToBetaData;
 
 import org.apache.log4j.Logger;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.util.ResourceBundle;
 
 public class ImportEmme2MatricesFromDatabank {
     
-     static Logger logger = Logger.getLogger("com.pb.despair.pt.default");    
+     static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      static final int MAXTAZ=4141;
      static final int MAX_SEQUENTIAL_TAZ=2986;
      static final boolean CREATE_BETA_ZONES = false;

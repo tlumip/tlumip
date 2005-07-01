@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.CSVFileReader;
@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
  */
 public class StopDestinationParametersData {
     
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      String stopDestinationParametersTableName="StopDestinationParameters";
      
      //a hashtable of taz objects

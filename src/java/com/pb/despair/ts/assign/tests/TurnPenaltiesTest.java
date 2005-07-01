@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign.tests;
+package com.pb.tlumip.ts.assign.tests;
 
 /**
  *
@@ -7,8 +7,8 @@ package com.pb.despair.ts.assign.tests;
  */
 
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.assign.ShortestPathTreeH;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.assign.ShortestPathTreeH;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.Arrays;
@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 public class TurnPenaltiesTest {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.tests");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.tests");
 
     
 	HashMap tsPropertyMap;

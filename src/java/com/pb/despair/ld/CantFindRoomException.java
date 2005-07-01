@@ -1,5 +1,5 @@
 
-package com.pb.despair.ld;
+package com.pb.tlumip.ld;
 
 
 public class CantFindRoomException extends Exception {

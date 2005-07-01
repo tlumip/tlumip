@@ -1,4 +1,4 @@
-package com.pb.despair.pt.daf;
+package com.pb.tlumip.pt.daf;
 
 /**
  * HouseholdProcessorTask
@@ -12,7 +12,7 @@ package com.pb.despair.pt.daf;
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.pt.*;
+import com.pb.tlumip.pt.*;
 
 import java.io.File;
 import java.io.BufferedReader;
@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 
 public class HouseholdProcessorTask extends MessageProcessingTask {
 
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.daf");
     protected static Object lock = new Object();
     protected static ResourceBundle ptRb;
     protected static ResourceBundle globalRb;

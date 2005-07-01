@@ -2,7 +2,7 @@
  * @(#) LinkInterface.java
  */
 
-package com.pb.despair.ts.old;
+package com.pb.tlumip.ts.old;
 
 /**
  * A interface defining operations expected of ...

@@ -1,12 +1,12 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import org.apache.log4j.Logger;
 
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.SkimsInMemory;
-import com.pb.despair.model.TravelTimeAndCost;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.SkimsInMemory;
+import com.pb.tlumip.model.TravelTimeAndCost;
 import com.pb.common.model.LogitModel;
-import com.pb.despair.pt.tourmodes.*;
+import com.pb.tlumip.pt.tourmodes.*;
 
 /** 
  * This model implements a logit model to choose a tour mode
@@ -18,7 +18,7 @@ import com.pb.despair.pt.tourmodes.*;
  
 public class TourModeChoiceModel{
     
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt.TourModeChoiceModel");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.TourModeChoiceModel");
     
      Mode chosenMode;
      double logsum;

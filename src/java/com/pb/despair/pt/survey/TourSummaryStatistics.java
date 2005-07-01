@@ -4,7 +4,7 @@
 // and writes them to a report file: part of the 
 // survey package
 //
-package com.pb.despair.pt.survey;
+package com.pb.tlumip.pt.survey;
 import java.util.*;
 import java.io.*;
 

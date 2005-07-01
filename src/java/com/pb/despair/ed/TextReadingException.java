@@ -7,7 +7,7 @@
  * @author
  * @version 1.0
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 public class TextReadingException extends Exception {
 

@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import java.io.File;
 import org.apache.log4j.Logger;
@@ -27,7 +27,7 @@ import com.pb.common.matrix.MatrixWriter;
 public class WorkplaceLocationModel{
 
     private int lastWorkLogsumSegment = -1;    
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
 
     public WorkplaceLocationModel(){}
 

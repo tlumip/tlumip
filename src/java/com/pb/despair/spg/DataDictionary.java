@@ -1,4 +1,4 @@
-package com.pb.despair.spg;
+package com.pb.tlumip.spg;
 
 import com.pb.common.util.Justify;
 
@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
  */
 public class DataDictionary {
 
-    protected Logger logger = Logger.getLogger("com.pb.despair.spg");
+    protected Logger logger = Logger.getLogger("com.pb.tlumip.spg");
 
 	private static final int HH_SHEET = 0;
 	private static final int PERSON_SHEET = 1;

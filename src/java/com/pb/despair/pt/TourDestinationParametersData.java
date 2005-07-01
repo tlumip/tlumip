@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.CSVFileReader;
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class TourDestinationParametersData {
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      String tourDestinationParametersTableName="TourDestinationParameters";
 
      private TourDestinationParameters tourDestinationParameters[][] = new TourDestinationParameters[ActivityPurpose.ACTIVITY_PURPOSES.length][];

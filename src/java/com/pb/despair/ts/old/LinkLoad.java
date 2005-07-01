@@ -2,7 +2,7 @@
  * @(#) LinkLoad.java
  */
 
-package com.pb.despair.ts.old;
+package com.pb.tlumip.ts.old;
 import com.pb.models.pecas.TravelUtilityCalculatorInterface;
 
 /**

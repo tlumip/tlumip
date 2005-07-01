@@ -1,12 +1,12 @@
-package com.pb.despair.pt.tripmodes;
+package com.pb.tlumip.pt.tripmodes;
 
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.ModeType;
-import com.pb.despair.model.TravelTimeAndCost;
-import com.pb.despair.pt.Activity;
-import com.pb.despair.pt.PersonTripModeAttributes;
-import com.pb.despair.pt.TripModeParameters;
-import com.pb.despair.pt.ZoneAttributes;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.ModeType;
+import com.pb.tlumip.model.TravelTimeAndCost;
+import com.pb.tlumip.pt.Activity;
+import com.pb.tlumip.pt.PersonTripModeAttributes;
+import com.pb.tlumip.pt.TripModeParameters;
+import com.pb.tlumip.pt.ZoneAttributes;
 
 import org.apache.log4j.Logger;
 /** 
@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class DriveAlone extends Mode {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      
 //     public boolean isAvailable=true;
 //     public boolean hasUtility=false;

@@ -1,4 +1,4 @@
-package com.pb.despair.pt.estimation;
+package com.pb.tlumip.pt.estimation;
 
 /** 
  * Renaming skims
@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 
 public class RenameSkims {
     
-     static Logger logger = Logger.getLogger("com.pb.despair.pt");    
+     static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
 
      //emme2 matrix names
     public static String[] mfName = {"mf01", /*Peak Drive Time (pktime.zip)*/
@@ -93,7 +93,7 @@ public class RenameSkims {
     
     public static void main (String[] args) throws FileNotFoundException, IOException {
         System.out.println("Importing matrices from databank.");
-        ResourceBundle rb = ResourceUtil.getResourceBundle( "despair" );
+        ResourceBundle rb = ResourceUtil.getResourceBundle( "tlumip" );
         String pathName = ResourceUtil.getProperty(rb, "Model.skimPath");
         String writePathName = ResourceUtil.getProperty(rb,"Model.writeSkimPath");
             

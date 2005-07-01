@@ -1,4 +1,4 @@
-package com.pb.despair.pt.daf;
+package com.pb.tlumip.pt.daf;
 
 /**
  * UpdateTazdataTask
@@ -19,10 +19,10 @@ import java.util.Date;
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.pt.PTModelInputs;
+import com.pb.tlumip.pt.PTModelInputs;
 
 public class UpdateTazdataTask extends MessageProcessingTask{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.daf");
     protected static Object lock = new Object();
     protected static ResourceBundle ptRb;
     protected static ResourceBundle globalRb;

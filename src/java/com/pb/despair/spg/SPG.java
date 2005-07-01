@@ -1,4 +1,4 @@
-package com.pb.despair.spg;
+package com.pb.tlumip.spg;
 
 import com.pb.common.util.IndexSort;
 import com.pb.common.util.Format;
@@ -7,9 +7,9 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.despair.model.Halo;
-import com.pb.despair.model.IncomeSize;
-import com.pb.despair.model.Occupation;
+import com.pb.tlumip.model.Halo;
+import com.pb.tlumip.model.IncomeSize;
+import com.pb.tlumip.model.Occupation;
 
 import java.util.*;
 import java.io.File;
@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 
 public class SPG {
 
-    protected static Logger logger = Logger.getLogger("com.pb.despair.spg");
+    protected static Logger logger = Logger.getLogger("com.pb.tlumip.spg");
 
 	static final int HH_SELECTED_INDEX = 0;
 	static final int HH_OVERFLOW_INDEX = 1;

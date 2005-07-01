@@ -1,4 +1,4 @@
-package com.pb.despair.ao;
+package com.pb.tlumip.ao;
 
 import com.pb.common.util.ResourceUtil;
 
@@ -20,7 +20,7 @@ import java.util.ResourceBundle;
  * @version Jun 7, 2004
  */
 public class StartDafApplication {
-    private static Logger logger = Logger.getLogger("com.pb.despair.ao");
+    private static Logger logger = Logger.getLogger("com.pb.tlumip.ao");
     private ResourceBundle rb; //this is ao.properties
     private long commandSleepTime = 45000;
     private long fileCheckSleepTime = 55;

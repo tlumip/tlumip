@@ -1,7 +1,7 @@
-package com.pb.despair.pt.tripmodes;
+package com.pb.tlumip.pt.tripmodes;
 
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.ModeType;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.ModeType;
 
 
 import org.apache.log4j.Logger;
@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class WalkTrip extends Mode {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      public WalkTrip(){
           alternativeName=new String("WalkTrip");
           type=ModeType.WALKTRIP;

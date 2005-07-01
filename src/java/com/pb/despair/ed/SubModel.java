@@ -3,7 +3,7 @@
  * Company:      ECONorthwest<p>
  * This is an abstract class for all SubModels.
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 abstract class SubModel {
 

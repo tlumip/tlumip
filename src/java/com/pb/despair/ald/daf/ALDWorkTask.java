@@ -1,8 +1,8 @@
-package com.pb.despair.ald.daf;
+package com.pb.tlumip.ald.daf;
 
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.pt.daf.Scenario;
+import com.pb.tlumip.pt.daf.Scenario;
 
 import java.io.*;
 import java.util.ResourceBundle;

@@ -4,7 +4,7 @@
  *
  */
 
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 
 public class Variable implements  DoubleInterface  {

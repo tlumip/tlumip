@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.model.Alternative;
 import org.apache.log4j.Logger;
@@ -15,7 +15,7 @@ import java.io.Serializable;
  * 
  */
 public class Pattern implements Alternative, Serializable, Cloneable {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      //To hold the pattern
      public StringBuffer dayPattern = new StringBuffer();
 

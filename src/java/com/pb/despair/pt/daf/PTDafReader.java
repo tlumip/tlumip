@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-package com.pb.despair.pt.daf;
+package com.pb.tlumip.pt.daf;
 
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -15,7 +15,7 @@ import java.io.File;
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.SkimsInMemory;
+import com.pb.tlumip.model.SkimsInMemory;
 
 /**
  * @author hansens

@@ -1,4 +1,4 @@
-package com.pb.despair.reports;
+package com.pb.tlumip.reports;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
@@ -25,7 +25,7 @@ import java.io.IOException;
  */
 public class CalibrationFileWriter {
 
-    protected static Logger logger = Logger.getLogger("com.pb.despair.ao");
+    protected static Logger logger = Logger.getLogger("com.pb.tlumip.ao");
     ResourceBundle rb;
     String calibrationOutputPath;
     String scenarioName;

@@ -1,4 +1,4 @@
-package com.pb.despair.pt.daf;
+package com.pb.tlumip.pt.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
@@ -9,8 +9,8 @@ import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.ModeChoiceLogsums;
-import com.pb.despair.pt.*;
+import com.pb.tlumip.model.ModeChoiceLogsums;
+import com.pb.tlumip.pt.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;

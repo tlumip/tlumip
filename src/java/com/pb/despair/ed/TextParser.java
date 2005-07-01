@@ -4,7 +4,7 @@
  * the ED model, and reads a text file and produces an xml file.
  * Company:      ECONorthwest<p>
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 import java.io.*;
 import java.util.StringTokenizer;

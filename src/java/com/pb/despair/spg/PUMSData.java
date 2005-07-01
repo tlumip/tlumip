@@ -1,6 +1,6 @@
-package com.pb.despair.spg;
+package com.pb.tlumip.spg;
 
-import com.pb.despair.model.Halo;
+import com.pb.tlumip.model.Halo;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 public class PUMSData {
 
-    protected static Logger logger = Logger.getLogger("com.pb.despair.spg");
+    protected static Logger logger = Logger.getLogger("com.pb.tlumip.spg");
 
 	public static final int HHID_INDEX = 4;
 	public static final int STATE_INDEX = 5;

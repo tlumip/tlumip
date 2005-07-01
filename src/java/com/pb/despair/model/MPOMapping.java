@@ -1,4 +1,4 @@
-package com.pb.despair.model;
+package com.pb.tlumip.model;
 
 
 import java.util.HashMap;
@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
  * Created by IntelliJ IDEA.
  */
 public class MPOMapping {
-    static Logger logger = Logger.getLogger("com.pb.despair.model");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.model");
 
     HashMap azonesByMPO;
     HashMap bzonesByMPO;

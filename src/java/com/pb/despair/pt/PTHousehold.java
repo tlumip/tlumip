@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 public class PTHousehold implements Comparable, Serializable{
 
 //     public static int numberOfCurrentHousehold;
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
 
     public static final int NUM_WORK_SEGMENTS = 9;
     public static final int NUM_NONWORK_SEGMENTS = 9;

@@ -3,7 +3,7 @@
 // A class library for travel survey data
 // jf 7/00
 
-package com.pb.despair.pt.survey;
+package com.pb.tlumip.pt.survey;
 import java.io.*;
 
 public class Trip implements Cloneable{

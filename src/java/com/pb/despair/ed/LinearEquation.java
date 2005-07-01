@@ -2,7 +2,7 @@
  * Company:      ECONorthwest<p>
  * LinearEquation is an equation that holds variables.
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 import java.util.Vector;
 
 public class LinearEquation extends Equation {

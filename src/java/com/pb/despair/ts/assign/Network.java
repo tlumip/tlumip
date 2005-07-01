@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign;
+package com.pb.tlumip.ts.assign;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,7 +36,7 @@ public class Network implements Serializable {
 	static final float OPERATING_COST = 0.0f;
 
 	
-	protected static transient Logger logger = Logger.getLogger("com.pb.despair.ts.assign.Network");
+	protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.Network");
 
 	int minCentroidLabel;
 	int maxCentroidLabel;

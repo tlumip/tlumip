@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign.tests;
+package com.pb.tlumip.ts.assign.tests;
 
 /**
  *
@@ -7,10 +7,10 @@ package com.pb.despair.ts.assign.tests;
  */
 
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.assign.Skims;
-import com.pb.despair.ts.assign.FW;
-import com.pb.despair.ts.assign.TripDataGenerator;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.assign.Skims;
+import com.pb.tlumip.ts.assign.FW;
+import com.pb.tlumip.ts.assign.TripDataGenerator;
 
 import com.pb.common.util.ResourceUtil;
 
@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 
 public class HighwayAssignTest {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.tests");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.tests");
 
 	HashMap tsPropertyMap;
     HashMap globalPropertyMap;

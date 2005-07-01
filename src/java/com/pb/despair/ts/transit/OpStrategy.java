@@ -1,7 +1,7 @@
-package com.pb.despair.ts.transit;
+package com.pb.tlumip.ts.transit;
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.assign.ShortestPath;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.assign.ShortestPath;
 
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.IndexSort;
@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 public class OpStrategy {
 
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.transit");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.transit");
 
 	public static final int IVT = 0;
 	public static final int FWT = 1;

@@ -1,6 +1,6 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
-import com.pb.despair.model.Mode;
+import com.pb.tlumip.model.Mode;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -14,7 +14,7 @@ import java.util.Vector;
  */
 
 public class Activity implements Serializable{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
     // Attributes  (they are ints because they are multiplied by params in the Duration Model!)
     public Location location = new Location();
 

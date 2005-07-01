@@ -1,10 +1,10 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.model.LogitModel;
 import com.pb.common.matrix.Matrix;
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.SkimsInMemory;
-import com.pb.despair.model.TravelTimeAndCost;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.SkimsInMemory;
+import com.pb.tlumip.model.TravelTimeAndCost;
 import com.pb.common.util.SeededRandom;
 import org.apache.log4j.Logger;
 import java.util.Enumeration;
@@ -21,7 +21,7 @@ import java.io.PrintWriter;
  
 public class TourDestinationModeChoiceModel{
     
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.TourDestinationModeChoiceModel");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.TourDestinationModeChoiceModel");
 
     LogitModel destinationModel;
     Taz chosenTaz;

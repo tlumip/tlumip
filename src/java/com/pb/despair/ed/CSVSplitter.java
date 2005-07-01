@@ -5,7 +5,7 @@
  * files.
  */
 
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 //import com.pb.common.util.Debug;
 
 import com.pb.common.datafile.CSVFileReader;
@@ -19,7 +19,7 @@ import java.text.DecimalFormat;
 import java.util.Vector;
 
 public class CSVSplitter  {
-	private static Logger logger = Logger.getLogger("com.pb.despair.ed");
+	private static Logger logger = Logger.getLogger("com.pb.tlumip.ed");
 
   public CSVSplitter() {}
 

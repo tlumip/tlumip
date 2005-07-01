@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 
 import org.apache.log4j.Logger;
@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 
 public class PTDataWriter {
 
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      public PTDataWriter(){
           
      }

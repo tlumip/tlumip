@@ -1,4 +1,4 @@
-package com.pb.despair.ts;
+package com.pb.tlumip.ts;
 
 /**
  *
@@ -7,10 +7,10 @@ package com.pb.despair.ts;
  */
 
 
-import com.pb.despair.model.ModeType;
-import com.pb.despair.ts.assign.FW;
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.assign.Skims;
+import com.pb.tlumip.model.ModeType;
+import com.pb.tlumip.ts.assign.FW;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.assign.Skims;
 
 
 import com.pb.common.datafile.CSVFileReader;
@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 
 public class TS {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts");
 
 
 	HashMap tsPropertyMap;

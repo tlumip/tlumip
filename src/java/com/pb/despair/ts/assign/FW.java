@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign;
+package com.pb.tlumip.ts.assign;
 
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.datafile.DiskObjectArray;
@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 
 public class FW {
 
-    Logger logger = Logger.getLogger("com.pb.despair.ts.assign.FW");
+    Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.FW");
 
     static Constants c = new Constants();
 

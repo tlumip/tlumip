@@ -2,7 +2,7 @@
 /**
  * The model class contains and starts all the submodels.
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 import com.pb.common.util.Debug;
 
 import java.util.Hashtable;

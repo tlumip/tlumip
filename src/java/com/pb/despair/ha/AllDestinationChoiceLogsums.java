@@ -1,4 +1,4 @@
-package com.pb.despair.ha;
+package com.pb.tlumip.ha;
 import org.apache.log4j.Logger;
 
 import com.borland.dx.dataset.TableDataSet;
@@ -13,7 +13,7 @@ import com.pb.common.datastore.DataManager;
 public class AllDestinationChoiceLogsums {
 
     protected static transient Logger logger =
-        Logger.getLogger("com.pb.despair.ha");
+        Logger.getLogger("com.pb.tlumip.ha");
     
     public final int maxZoneID=6000;
     static final int MAXPURPOSES1 = 9;

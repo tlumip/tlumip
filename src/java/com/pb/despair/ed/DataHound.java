@@ -3,7 +3,7 @@
  * Company:      ECONorthwest<p>
  * DataHound is used to interact with EDDataAccess to get and set data.
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 public class DataHound  {
 

@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign.tests;
+package com.pb.tlumip.ts.assign.tests;
 
 /**
  *
@@ -7,8 +7,8 @@ package com.pb.despair.ts.assign.tests;
  */
 
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.transit.TrRoute;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.transit.TrRoute;
 
 //import com.pb.common.util.ResourceUtil;
 
@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 public class TrRouteTest {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.tests");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.tests");
 
 	public static final String PK_TRANSIT_ROUTES_D221 = "c:\\jim\\tlumip\\TLUMIPEmme2\\pktran.in";
 	public static final String ROUTE_REPORT_FILE = "c:\\jim\\tlumip\\Tlumip_Routes.report";

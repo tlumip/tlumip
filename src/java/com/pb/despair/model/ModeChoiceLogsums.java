@@ -1,4 +1,4 @@
-package com.pb.despair.model;
+package com.pb.tlumip.model;
 
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
  */
 public class ModeChoiceLogsums implements Serializable{
      public Matrix logsums;
-     protected static Logger logger = Logger.getLogger("com.pb.despair.pt");
+     protected static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
     ResourceBundle rb;
 
 

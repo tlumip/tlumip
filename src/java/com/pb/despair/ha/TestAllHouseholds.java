@@ -1,11 +1,11 @@
-package com.pb.despair.ha;
+package com.pb.tlumip.ha;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.despair.ld.DevelopmentType;
-import com.pb.despair.ld.DynamicPricesDevelopmentType;
-import com.pb.despair.ld.LDModel;
-import com.pb.despair.ld.ZoningScheme;
+import com.pb.tlumip.ld.DevelopmentType;
+import com.pb.tlumip.ld.DynamicPricesDevelopmentType;
+import com.pb.tlumip.ld.LDModel;
+import com.pb.tlumip.ld.ZoningScheme;
 import com.pb.models.pecas.AbstractTAZ;
 import com.pb.models.pecas.DevelopmentTypeInterface;
 
@@ -34,7 +34,7 @@ public class TestAllHouseholds {
         spaceTypePath = ResourceUtil.getProperty(rb, "spaceType.path");
         householdCategoriesPath = ResourceUtil.getProperty(rb, "householdCategories.path");
   //      Household.useGridCells = (ResourceUtil.getProperty(rb, "useGridCells").equals("true"));
-//        AppProperties appProps = PropertiesManager.getAppProperties("despair.properties");
+//        AppProperties appProps = PropertiesManager.getAppProperties("tlumip.properties");
         //int numTestZones = Integer.valueOf(appProps.getProperty("Model.numZones")).intValue();
         DevelopmentTypeInterface dtypes[] = setUpDevelopmentTypes();
         //TAZ.createTazArray(numTestZones);
@@ -77,7 +77,7 @@ public class TestAllHouseholds {
             for (int p = 0; p < numberOfPeople; p++) {
                 Person someone = new Person();
                 someone.age = ahh.theRandom.nextInt(90) + 5; // no babies initially, 'cause they can't travel
-                someone.myTravelPreferences = new com.pb.despair.pt.TimeAndDistanceTravelUtilityCalculator(ahh.theRandom.nextDouble() * 20,0.06);
+                someone.myTravelPreferences = new com.pb.tlumip.pt.TimeAndDistanceTravelUtilityCalculator(ahh.theRandom.nextDouble() * 20,0.06);
                 // 0 to 20 dollars/hr value of time
                 someone.addToHousehold(testHH);
             }

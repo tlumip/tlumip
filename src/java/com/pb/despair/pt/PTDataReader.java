@@ -1,8 +1,8 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.util.ObjectUtil;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.spg.EdIndustry;
+import com.pb.tlumip.spg.EdIndustry;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -30,7 +30,7 @@ public class PTDataReader{
         this.globalRb = globalRb;
     }
 
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
 
     public BufferedReader openFile(String name){
         try {

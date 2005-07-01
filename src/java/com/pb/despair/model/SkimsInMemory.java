@@ -1,4 +1,4 @@
-package com.pb.despair.model;
+package com.pb.tlumip.model;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.matrix.MatrixReader;
@@ -20,7 +20,7 @@ import java.io.Serializable;
  */
 public class SkimsInMemory implements Serializable {
 	
-    protected static Logger logger = Logger.getLogger("com.pb.despair.pt");	
+    protected static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
     public MatrixCollection pkwlk,pkdrv,opwlk,opdrv;
     public Matrix pkTime,pkDist,opTime,opDist;
 	public static int AOC;

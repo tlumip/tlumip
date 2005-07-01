@@ -12,7 +12,7 @@
  * you entered into with ObjectSpace.
  */
 
-package com.pb.despair.ed.edmodelxml;
+package com.pb.tlumip.ed.edmodelxml;
 
 public class DocumentTypeInfo
   {

@@ -1,6 +1,6 @@
-package com.pb.despair.pc;
+package com.pb.tlumip.pc;
 
-import com.pb.despair.pc.beans.StatisticBean;
+import com.pb.tlumip.pc.beans.StatisticBean;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -7,11 +7,11 @@
  * @author
  * @version null
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 import com.objectspace.xml.IXml;
 import com.objectspace.xml.Xml;
-import com.pb.despair.ed.edmodelxml.*;
+import com.pb.tlumip.ed.edmodelxml.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,7 +39,7 @@ public class XMLModelSpecification {
 
   public XMLModelSpecification(String fn) throws FileNotFoundException, IOException  {
     fileName=fn;
-    xmlDocument = Xml.openDocument("com.pb.despair.ed.edmodelxml", new File(fileName));
+    xmlDocument = Xml.openDocument("com.pb.tlumip.ed.edmodelxml", new File(fileName));
     currentModel = (IEDModelXML) xmlDocument.getRoot();
     numSubModelXMLs = currentModel.getSubModelXMLCount();
     System.out.println("Number of submodels = " + numSubModelXMLs);

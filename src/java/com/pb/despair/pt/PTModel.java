@@ -7,13 +7,13 @@
  * 
  */
 
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.ModelComponent;
-import com.pb.despair.model.SkimsInMemory;
+import com.pb.tlumip.model.ModelComponent;
+import com.pb.tlumip.model.SkimsInMemory;
 
 import java.util.ResourceBundle;
 import java.util.ArrayList;

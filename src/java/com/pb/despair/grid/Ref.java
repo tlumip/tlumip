@@ -1,4 +1,4 @@
-package com.pb.despair.grid;
+package com.pb.tlumip.grid;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -12,7 +12,7 @@ import java.io.IOException;
  * Created by IntelliJ IDEA.
  */
 public class Ref {
-    //General references used in the com/pb/despair/grid package.
+    //General references used in the com/pb/tlumip/grid package.
     public static final float SQFT_PER_GRIDCELL = 9712.5f;   // assumes a 30-meter grid cell
     public static final float SQFT_PER_ACRE = 43560.0f;
     public static final int NUM_ALPHA_ZONES = 4142; //max alphazone number + 1

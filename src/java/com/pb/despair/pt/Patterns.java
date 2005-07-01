@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 //import com.borland.dx.dataset.TableDataSet;
 //import com.pb.common.datastore.DataManager;
 import com.pb.common.util.ResourceUtil;
@@ -21,7 +21,7 @@ public class Patterns implements Cloneable{
 
      String patternsFileName;
      String patternsTableName;
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
 
      //an ArrayList of weekdayPatterns
      //public ArrayList patterns = new ArrayList();

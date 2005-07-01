@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign;
+package com.pb.tlumip.ts.assign;
 
 import com.pb.common.util.*;
 
@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  */
 public class TripDataGenerator {
 
-    Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
+    Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign");
 
 	public static final double GRAVITY_BETA = -0.10;
 

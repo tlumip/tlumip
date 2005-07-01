@@ -1,4 +1,4 @@
-package com.pb.despair.ct;
+package com.pb.tlumip.ct;
 
 // FreightDemand3.java transforms PI's annual production-comsumption matrices
 // into weekly commodity flow demand by commodity group and mode. It doesn't
@@ -21,7 +21,7 @@ import com.pb.common.matrix.AlphaToBeta;
 
 
 public class FreightDemand3 {
-    private static Logger logger = Logger.getLogger("com.pb.despair.ct");
+    private static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
     static int HIGHEST_BETA_ZONE;  //
     static double SMALLEST_ALLOWABLE_TONNAGE;  // interzonal interchange threshold- read in from properties file
     String[] commodityList;

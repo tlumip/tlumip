@@ -4,7 +4,7 @@
 // part of the survey package: used to code tours
 //
 // jef 8/00
-package com.pb.despair.pt.survey;
+package com.pb.tlumip.pt.survey;
 
 import java.util.*;
 

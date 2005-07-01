@@ -1,9 +1,9 @@
-package com.pb.despair.grid.tests;
+package com.pb.tlumip.grid.tests;
 
-import com.pb.despair.grid.County;
-import com.pb.despair.grid.GridSynthesizer;
-import com.pb.despair.grid.AlphaZone;
-import com.pb.despair.grid.Ref;
+import com.pb.tlumip.grid.County;
+import com.pb.tlumip.grid.GridSynthesizer;
+import com.pb.tlumip.grid.AlphaZone;
+import com.pb.tlumip.grid.Ref;
 import com.pb.common.util.OutTextFile;
 
 import org.apache.log4j.Logger;
@@ -21,7 +21,7 @@ import java.io.IOException;
  */
 public class CheckSupplyandDemand {
 
-    private static Logger log = Logger.getLogger("com/pb/despair/grid/tests");
+    private static Logger log = Logger.getLogger("com/pb/tlumip/grid/tests");
 
 
     public static void checkSupplyandDemand(){

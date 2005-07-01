@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package com.pb.despair.ts.daf;
+package com.pb.tlumip.ts.daf;
 
 import java.util.HashMap;
 
@@ -23,7 +23,7 @@ final class SavedShortestPaths {
 	
     protected static Object objLock = new Object();
 
-    static Logger logger = Logger.getLogger("com.pb.despair.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
     protected HashMap storedPaths = new HashMap();
 	
 	private static SavedShortestPaths instance = new SavedShortestPaths();

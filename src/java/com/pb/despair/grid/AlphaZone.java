@@ -1,4 +1,4 @@
-package com.pb.despair.grid;
+package com.pb.tlumip.grid;
 
 import org.apache.log4j.Logger;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * Created by IntelliJ IDEA.
  */
 public class AlphaZone {
-    private Logger log = Logger.getLogger("com.pb.despair.grid");
+    private Logger log = Logger.getLogger("com.pb.tlumip.grid");
     private static String[] countyNameIndex = new String[Ref.NUM_ALPHA_ZONES];
     private int number;
     private String landUseIntensity;

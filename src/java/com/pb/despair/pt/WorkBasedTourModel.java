@@ -1,12 +1,12 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.model.LogitModel;
 import com.pb.common.util.SeededRandom;
 import com.pb.common.math.MathUtil;
 import com.pb.common.matrix.Matrix;
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.SkimsInMemory;
-import com.pb.despair.model.TravelTimeAndCost;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.SkimsInMemory;
+import com.pb.tlumip.model.TravelTimeAndCost;
 
 import java.util.Enumeration;
 import org.apache.log4j.Logger;
@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
  
 public class WorkBasedTourModel{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.WorkBasedTourModel");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.WorkBasedTourModel");
     boolean writtenOutTheUtilitiesAlready = false;
      final static int debugID = -1;
 

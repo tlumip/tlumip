@@ -1,13 +1,13 @@
-package com.pb.despair.ao;
+package com.pb.tlumip.ao;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.ald.ALDModel;
-import com.pb.despair.ct.CTModel;
-import com.pb.despair.ed.EDControl;
-import com.pb.despair.model.ModelComponent;
-import com.pb.despair.spg.SPGnew;
-import com.pb.despair.ts.TS;
+import com.pb.tlumip.ald.ALDModel;
+import com.pb.tlumip.ct.CTModel;
+import com.pb.tlumip.ed.EDControl;
+import com.pb.tlumip.model.ModelComponent;
+import com.pb.tlumip.spg.SPGnew;
+import com.pb.tlumip.ts.TS;
 import com.pb.models.pecas.PIModel;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
  */
 public class ApplicationOrchestrator {
 
-    private static Logger logger = Logger.getLogger("com.pb.despair.ao");
+    private static Logger logger = Logger.getLogger("com.pb.tlumip.ao");
     private String rootDir;
     private String scenarioName;
     private int t;
@@ -421,13 +421,13 @@ public class ApplicationOrchestrator {
         //first param is the tag pattern that we want to identify and set a rule for
         //second param is the default class name
         //third param will override the default class name if it is an attribute in the xml file.
-        digester.addObjectCreate("propertiesObject", "com.pb.despair.model.ModelProperties", "className");
+        digester.addObjectCreate("propertiesObject", "com.pb.tlumip.model.ModelProperties", "className");
 
         digester.addCallMethod("propertiesObject/property","setProperty",2);
         digester.addCallParam("propertiesObject/property/name",0);
         digester.addCallParam("propertiesObject/property/value",1);
 
-        digester.addObjectCreate("propertiesObject/resource","com.pb.despair.ao.Resource"); //create a Resource object
+        digester.addObjectCreate("propertiesObject/resource","com.pb.tlumip.ao.Resource"); //create a Resource object
         digester.addSetProperties("propertiesObject/resource");  //will set the "name" field in the resource object
         digester.addBeanPropertySetter("propertiesObject/resource/type"); //will set the "type" field in the resource object
         digester.addBeanPropertySetter("propertiesObject/resource/ip");//sets the "ip" field in resource object
@@ -435,13 +435,13 @@ public class ApplicationOrchestrator {
         digester.addSetNext("propertiesObject/resource","addResource"); //adds the resource to the AOProperties object and pops the
                                                                         //resource object off the stack
 
-        digester.addObjectCreate("propertiesObject/scenario","com.pb.despair.ao.Scenario"); //create a Scenario object
+        digester.addObjectCreate("propertiesObject/scenario","com.pb.tlumip.ao.Scenario"); //create a Scenario object
         digester.addSetProperties("propertiesObject/scenario"); //will set the "name" field in the scenario object
         digester.addBeanPropertySetter("propertiesObject/scenario/start"); //sets the value of "start"
         digester.addBeanPropertySetter("propertiesObject/scenario/end");  //sets the value of "end"
         digester.addSetNext("propertiesObject/scenario","addScenario"); //adds Scenario object to AOProperties object and pops off the stack
 
-        digester.addObjectCreate("propertiesObject/intervalUpdate","com.pb.despair.ao.IntervalUpdate");
+        digester.addObjectCreate("propertiesObject/intervalUpdate","com.pb.tlumip.ao.IntervalUpdate");
         digester.addSetProperties("propertiesObject/intervalUpdate"); //sets "year" field in IntervalUpdate object
         digester.addBeanPropertySetter("propertiesObject/intervalUpdate/fileUpdates/file"); //sets an array of file updates
         digester.addBeanPropertySetter("propertiesObject/intervalUpdate/policyFileUpdates/policyFile"); //sets an array of policy file updates

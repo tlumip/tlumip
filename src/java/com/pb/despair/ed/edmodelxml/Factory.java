@@ -12,33 +12,33 @@
  * you entered into with ObjectSpace.
  */
 
-package com.pb.despair.ed.edmodelxml;
+package com.pb.tlumip.ed.edmodelxml;
 
 public class Factory
   {
   public static ISubModelXML newSubModelXML()
     {
-    return new com.pb.despair.ed.edmodelxml.SubModelXML();
+    return new com.pb.tlumip.ed.edmodelxml.SubModelXML();
     }
 
   public static IVariableXML newVariableXML()
     {
-    return new com.pb.despair.ed.edmodelxml.VariableXML();
+    return new com.pb.tlumip.ed.edmodelxml.VariableXML();
     }
 
   public static IEDModelXML newEDModelXML()
     {
-    return new com.pb.despair.ed.edmodelxml.EDModelXML();
+    return new com.pb.tlumip.ed.edmodelxml.EDModelXML();
     }
 
   public static IEquationXML newEquationXML()
     {
-    return new com.pb.despair.ed.edmodelxml.EquationXML();
+    return new com.pb.tlumip.ed.edmodelxml.EquationXML();
     }
 
   public static IEquationElementXML newEquationElementXML()
     {
-    return new com.pb.despair.ed.edmodelxml.EquationElementXML();
+    return new com.pb.tlumip.ed.edmodelxml.EquationElementXML();
     }
 
   }

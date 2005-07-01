@@ -1,6 +1,6 @@
-package com.pb.despair.ao;
+package com.pb.tlumip.ao;
 
-import com.pb.despair.model.ModelProperties;
+import com.pb.tlumip.model.ModelProperties;
 import java.util.ArrayList;
 
 /**

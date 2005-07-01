@@ -1,11 +1,11 @@
-package com.pb.despair.pi;
+package com.pb.tlumip.pi;
 
 import com.pb.common.datafile.*;
 import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.IncomeSize;
-import com.pb.despair.model.Industry;
-import com.pb.despair.model.LaborProductionAndConsumption;
+import com.pb.tlumip.model.IncomeSize;
+import com.pb.tlumip.model.Industry;
+import com.pb.tlumip.model.LaborProductionAndConsumption;
 import com.pb.models.pecas.Commodity;
 import com.pb.models.pecas.PIPProcessor;
 import com.pb.models.pecas.SomeSkims;
@@ -35,7 +35,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.pi.PIPProcessor#setUpPi()
+     * @see com.pb.tlumip.pi.PIPProcessor#setUpPi()
      */
     public void setUpPi() {
 
@@ -525,7 +525,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.pi.PIPProcessor#setUpTransportConditions(java.lang.String[])
+     * @see com.pb.tlumip.pi.PIPProcessor#setUpTransportConditions(java.lang.String[])
      */
     protected void setUpTransportConditions(String[] skimNames) {
         logger.info("Setting up Transport Conditions");
@@ -540,7 +540,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.pi.PIPProcessor#writeOutputs()
+     * @see com.pb.tlumip.pi.PIPProcessor#writeOutputs()
      */
     public void writeOutputs() {
         super.writeOutputs();

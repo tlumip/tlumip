@@ -1,4 +1,4 @@
-package com.pb.despair.pt.survey;
+package com.pb.tlumip.pt.survey;
 
 public class TestPattern{
 	public static void main(String[] args){

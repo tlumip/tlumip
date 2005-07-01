@@ -1,4 +1,4 @@
-package com.pb.despair.ld;
+package com.pb.tlumip.ld;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.DevelopmentTypeInterface;
@@ -272,7 +272,7 @@ public class DevelopmentType implements DevelopmentTypeInterface{
 
 
     /* (non-Javadoc)
-     * @see com.pb.despair.model.DevelopmentTypeInterface#setRentDiscount(double)
+     * @see com.pb.tlumip.model.DevelopmentTypeInterface#setRentDiscount(double)
      */
     public void setRentDiscount(double d) {
         rentDiscount = d;
@@ -281,7 +281,7 @@ public class DevelopmentType implements DevelopmentTypeInterface{
 
 
     /* (non-Javadoc)
-     * @see com.pb.despair.model.DevelopmentTypeInterface#getRentDiscount(int)
+     * @see com.pb.tlumip.model.DevelopmentTypeInterface#getRentDiscount(int)
      */
     public double getRentDiscountFactor(int age) {
         return Math.pow(1-rentDiscount,age);

@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign;
+package com.pb.tlumip.ts.assign;
 
 /**
  *
@@ -7,10 +7,10 @@ package com.pb.despair.ts.assign;
  */
 
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.transit.AuxTrNet;
-import com.pb.despair.ts.transit.OpStrategy;
-import com.pb.despair.ts.transit.TrRoute;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.transit.AuxTrNet;
+import com.pb.tlumip.ts.transit.OpStrategy;
+import com.pb.tlumip.ts.transit.TrRoute;
 import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.matrix.Matrix;
@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 
 public class TransitSkimManager {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign");
 
 	
 	static final boolean CREATE_NEW_NETWORK = true;

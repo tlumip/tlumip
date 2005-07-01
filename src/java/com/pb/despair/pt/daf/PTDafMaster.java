@@ -1,16 +1,19 @@
-package com.pb.despair.pt.daf;
+package com.pb.tlumip.pt.daf;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
-import com.pb.common.util.ObjectUtil;
-import com.pb.common.util.ResourceUtil;
-import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.ResourceUtil;
+import com.pb.common.util.ObjectUtil;
 import com.pb.common.matrix.AlphaToBeta;
+import com.pb.tlumip.pt.*;
 import org.apache.log4j.Logger;
-import com.pb.despair.pt.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 
@@ -21,7 +24,7 @@ import java.util.*;
  * PTDafMaster sends messages to work queues.
  *
  *
- * @author    Steve Hansen
+ * @author    Christi Willison
  * @version   1.0, 5/5/2004
  *
  */
@@ -67,14 +70,17 @@ public class PTDafMaster extends MessageProcessingTask {
     // variable that keeps track of last work queue
     int lastWorkQueue;
 
+
+
+//    Read parameters
+//     * Send out mode choice logsums to workers
+//     * Read households
+//     * Run household auto ownership model
+//     * Read persons
+//     * Set person attributes (Home TAZ, householdWorkLogsum) from household attributes
+//     * Sort the person array by occupation (0->8) and householdWorkLogsumMarket (0->8)
     /**
-     * Read parameters
-     * Send out mode choice logsums to workers
-     * Read households
-     * Run household auto ownership model
-     * Read persons
-     * Set person attributes (Home TAZ, householdWorkLogsum) from household attributes
-     * Sort the person array by occupation (0->8) and householdWorkLogsumMarket (0->8)
+     *
      */
     public void onStart() {
         ptDafMasterLogger.info("***" + getName() + " started");
@@ -85,7 +91,7 @@ public class PTDafMaster extends MessageProcessingTask {
         int timeInterval = -1;
         String pathToPtRb = null;
         String pathToGlobalRb = null;
-        
+
         ptDafMasterLogger.info("Reading RunParams.properties file");
         ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File(Scenario.runParamsFileName));
         scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
@@ -96,7 +102,7 @@ public class PTDafMaster extends MessageProcessingTask {
         ptDafMasterLogger.info("\tResourceBundle Path: " + pathToPtRb);
         pathToGlobalRb = ResourceUtil.getProperty(runParamsRb,"pathToGlobalRb");
         ptDafMasterLogger.info("\tResourceBundle Path: " + pathToGlobalRb);
-        
+
         //Get the properties files.
         ptdafRb = ResourceUtil.getResourceBundle("ptdaf_"+scenarioName);
         ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
@@ -156,7 +162,7 @@ public class PTDafMaster extends MessageProcessingTask {
         //on the total "MCLogsumsCreated" messages coming back.
         ptDafMasterLogger.info("Starting the Mode Choice Logsum calculations");
         startMCLogsums();
-        
+
         //Read the SynPop data
         dataReader = new PTDataReader(ptRb, globalRb);
         ptDafMasterLogger.info("Adding synthetic population from database");
@@ -191,10 +197,10 @@ public class PTDafMaster extends MessageProcessingTask {
     }
 
     /**
-     * Wait for message.  
+     * Wait for message.
      * If message is MC_LOGSUMS_CREATED, startWorkplaceLocation
-     * If message is WORKPLACE_LOCATIONS_CALCULATED, add the 
-     *    workers to the persons array, and check if done with all segments.  
+     * If message is WORKPLACE_LOCATIONS_CALCULATED, add the
+     *    workers to the persons array, and check if done with all segments.
      *    If done,
      *       Set TazDataArrays, which will update the zone data in each
      *         node with the number of households and teachers in each TAZ.
@@ -208,8 +214,8 @@ public class PTDafMaster extends MessageProcessingTask {
      *    Send households to householdResults method, which will increment up householdsProcessedCount
      *       and send households for writing to results file.
      *    If households processed less than total households, sendMoreHouseholds()
-     *   
-     *    
+     *
+     *   @param msg
      */
     public void onMessage(Message msg) {
         ptDafMasterLogger.info(getName() + " received messageId=" + msg.getId() +
@@ -654,7 +660,7 @@ public class PTDafMaster extends MessageProcessingTask {
 
     public static void main(String[] args) {
 
-        Logger ptDafMasterLogger = Logger.getLogger("com.pb.despair.pt");
+        Logger ptDafMasterLogger = Logger.getLogger("com.pb.tlumip.pt");
         ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/pt/pt.properties"));
         ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/global.properties"));
         //Read the SynPop data

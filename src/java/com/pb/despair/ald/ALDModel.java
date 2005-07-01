@@ -1,10 +1,10 @@
-package com.pb.despair.ald;
+package com.pb.tlumip.ald;
 
-import com.pb.despair.model.ModelComponent;
 import com.pb.common.util.ResourceUtil;
+import com.pb.tlumip.model.ModelComponent;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import org.apache.log4j.Logger;
 
 /**
  * The ALD model component is actually a R program
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * @version Jun 2, 2004
  */
 public class ALDModel extends ModelComponent {
-    Logger logger = Logger.getLogger("pb.com.despair.ald");
+    Logger logger = Logger.getLogger("pb.com.tlumip.ald");
     Process process;
 
     public void startModel(int t){

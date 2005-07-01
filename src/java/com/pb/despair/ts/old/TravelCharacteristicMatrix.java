@@ -1,6 +1,6 @@
-package com.pb.despair.ts.old;
+package com.pb.tlumip.ts.old;
 
-import com.pb.despair.model.Mode;
+import com.pb.tlumip.model.Mode;
 import com.pb.models.pecas.UnitOfLand;
 import com.pb.models.pecas.TravelUtilityCalculatorInterface;
 import com.pb.models.pecas.AbstractTAZ;
@@ -8,7 +8,7 @@ import com.pb.models.pecas.AbstractTAZ;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-//import com.pb.despair.pt.Mode;
+//import com.pb.tlumip.pt.Mode;
 
 /**
  * This is the class that stores the information on the attributes of travel by a mode over a congested network.  Those attributes are stored in its array of ZPAttributes.
@@ -124,7 +124,7 @@ public class TravelCharacteristicMatrix  implements SummaryOfTravelConditions {
 
   /**
    * "What is theMatrix?"  theMatrix is the array of zpAttributes.
-   * associates <{com.pb.despair.ts.ZPAttribute}>
+   * associates <{com.pb.tlumip.ts.ZPAttribute}>
    * @link aggregation
    * supplierCardinality n^2
    */

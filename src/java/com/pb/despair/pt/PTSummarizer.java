@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import java.io.PrintWriter;
 import java.io.FileWriter;
@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  */
 public class PTSummarizer {
 
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.PTSummarizer");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.PTSummarizer");
 
     static int[][] purposeMode = new int[6][8]; //table of freq. of tours by purpose/mode
     static int purposeSum = 0;
@@ -287,7 +287,7 @@ public class PTSummarizer {
     *  4.  non-workers by age and gender (see categories above)
     *  5.  persons by occupation (0,1,2,3,4,5,6,7,8)
     *  6.  workers by occupation (0,1,2,3,4,5,6,7,8)  //first element of array should be 0
-    *  7.  persons by industry (0-26) //industry is more specific than occupation, see com.pb.despair.spg.EdIndustry.java
+    *  7.  persons by industry (0-26) //industry is more specific than occupation, see com.pb.tlumip.spg.EdIndustry.java
     *  8.  workers by industry (0-26) //for list of industries
     *  9.  students by age (<=18, 19+)
     * This method will be called after the SynPopP file

@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign;
+package com.pb.tlumip.ts.assign;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import com.pb.common.util.MessageWindow;
 
 public class Skims {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign");
 
 	MessageWindow mw;
 	HashMap tsPropertyMap;

@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 import com.borland.dx.dataset.TableDataSet;
 import com.pb.common.datastore.DataManager;
 
@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class DestinationChoiceLogsums {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
     public Hashtable logsums = new Hashtable();
 
     public DestinationChoiceLogsums(){

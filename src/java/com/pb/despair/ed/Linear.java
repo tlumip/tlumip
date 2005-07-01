@@ -5,7 +5,7 @@
  * LinearSolver and Linearizer are used to help solve this SubModel.
  */
 
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 import com.pb.common.util.Debug;
 

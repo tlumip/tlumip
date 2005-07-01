@@ -1,4 +1,4 @@
-package com.pb.despair.ts.assign;
+package com.pb.tlumip.ts.assign;
 
 import java.util.Arrays;
 import org.apache.log4j.Logger;
@@ -12,8 +12,8 @@ import com.pb.common.util.*;
 
 public class ShortestPathTreeH {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.ShortestPathTreeH");
-	protected static Logger unconnectedLogger = Logger.getLogger("com.pb.despair.ts.assign.ShortestPathTreeH");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.ShortestPathTreeH");
+	protected static Logger unconnectedLogger = Logger.getLogger("com.pb.tlumip.ts.assign.ShortestPathTreeH");
 
     static final double COMPARE_EPSILON = 1.0e-07;
 

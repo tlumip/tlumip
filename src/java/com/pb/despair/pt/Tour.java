@@ -1,7 +1,7 @@
 
-package com.pb.despair.pt;
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.ModeType;
+package com.pb.tlumip.pt;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.ModeType;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import org.apache.log4j.Logger;
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 public class Tour implements Serializable{
   
   // Attributes
-      final static Logger logger = Logger.getLogger("com.pb.despair.Tour");
+      final static Logger logger = Logger.getLogger("com.pb.tlumip.Tour");
       public Activity begin;
       public Activity primaryDestination;
       public Activity intermediateStop1;

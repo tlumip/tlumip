@@ -1,9 +1,9 @@
-package com.pb.despair.pt.tourmodes;
-import com.pb.despair.model.Mode;
-import com.pb.despair.model.ModeType;
-import com.pb.despair.model.TravelTimeAndCost;
-import com.pb.despair.pt.PersonTourModeAttributes;
-import com.pb.despair.pt.TourModeParameters;
+package com.pb.tlumip.pt.tourmodes;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.model.ModeType;
+import com.pb.tlumip.model.TravelTimeAndCost;
+import com.pb.tlumip.pt.PersonTourModeAttributes;
+import com.pb.tlumip.pt.TourModeParameters;
 
 import org.apache.log4j.Logger;
 /**  
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 
 
 public class TransitPassenger extends Mode {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
 //     public boolean isAvailable=true;
 //     public boolean hasUtility=false;
 //     double utility=0;

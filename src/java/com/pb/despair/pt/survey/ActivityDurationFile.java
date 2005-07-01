@@ -2,7 +2,7 @@
 //      jf 11/2/2000
 
 
-package com.pb.despair.pt.survey;
+package com.pb.tlumip.pt.survey;
 import java.util.*;
 import java.io.*;
 

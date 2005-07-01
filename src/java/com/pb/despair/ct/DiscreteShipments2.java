@@ -1,4 +1,4 @@
-package com.pb.despair.ct;
+package com.pb.tlumip.ct;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.matrix.ZipMatrixReader;
@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import java.io.*;
 
 public class DiscreteShipments2 {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.ct");
+    protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
     private final static int POUNDS_PER_TON = 2000,   // number of pounds in a short ton
                             INITIAL_ARRAYLIST_SIZE = 600000;
     private static Vector workspace = new Vector();

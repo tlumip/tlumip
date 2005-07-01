@@ -1,4 +1,4 @@
-package com.pb.despair.grid;
+package com.pb.tlumip.grid;
 
 import com.pb.common.grid.GridParameters;
 import com.pb.common.grid.GridFile;
@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
  * @version Dec 12, 2003
  */
 public class Initializer {
-    private static Logger logger = Logger.getLogger("com.pb.despair.grid");
+    private static Logger logger = Logger.getLogger("com.pb.tlumip.grid");
     private String[] glcForLandUseCode = new String[Ref.NUM_LUCS]; //initialized in the readTotalCellsByGLC method.
     private int[][] totalCellsByGLC = new int[Ref.NUM_ALPHA_ZONES][Ref.GLCS.length];//initialized by readTotalCellsByGLC method.
     private ArrayList aZones = new ArrayList();

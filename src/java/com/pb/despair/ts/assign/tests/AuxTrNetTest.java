@@ -1,5 +1,5 @@
 
-package com.pb.despair.ts.assign.tests;
+package com.pb.tlumip.ts.assign.tests;
 
 /**
  *
@@ -8,10 +8,10 @@ package com.pb.despair.ts.assign.tests;
  */
 
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.transit.AuxTrNet;
-import com.pb.despair.ts.transit.OpStrategy;
-import com.pb.despair.ts.transit.TrRoute;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.transit.AuxTrNet;
+import com.pb.tlumip.ts.transit.OpStrategy;
+import com.pb.tlumip.ts.transit.TrRoute;
 import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.matrix.Matrix;
@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 
 public class AuxTrNetTest {
 
-	protected static Logger logger = Logger.getLogger("com.pb.despair.ts.assign.tests");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.tests");
 
 	
 	static final boolean CREATE_NEW_NETWORK = true;

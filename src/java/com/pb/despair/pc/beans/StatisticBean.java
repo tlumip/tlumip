@@ -1,4 +1,4 @@
-package com.pb.despair.pc.beans;
+package com.pb.tlumip.pc.beans;
 
 import java.util.ArrayList;
 

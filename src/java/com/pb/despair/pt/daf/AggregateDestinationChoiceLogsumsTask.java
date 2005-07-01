@@ -1,20 +1,20 @@
-package com.pb.despair.pt.daf;
+package com.pb.tlumip.pt.daf;
 
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.ResourceBundle;
-import org.apache.log4j.Logger;
-import java.util.Date;
 
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.ModeChoiceLogsums;
-import com.pb.despair.pt.CreateDestinationChoiceLogsums;
-import com.pb.despair.pt.PTModelInputs;
+import com.pb.tlumip.model.ModeChoiceLogsums;
+import com.pb.tlumip.pt.CreateDestinationChoiceLogsums;
+import com.pb.tlumip.pt.PTModelInputs;
+import org.apache.log4j.Logger;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Date;
+import java.util.ResourceBundle;
 
 /**
  * AggregateDestinationChoiceLogsumsTask
@@ -24,7 +24,7 @@ import com.pb.despair.pt.PTModelInputs;
  * 
  */
 public class AggregateDestinationChoiceLogsumsTask  extends MessageProcessingTask {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.daf");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.daf");
     protected static Object lock = new Object();
     protected static ResourceBundle ptRb;
     protected static ResourceBundle globalRb;

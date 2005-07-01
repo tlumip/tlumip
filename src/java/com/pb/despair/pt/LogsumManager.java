@@ -1,7 +1,7 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.matrix.Matrix;
-import com.pb.despair.model.ModeChoiceLogsums;
+import com.pb.tlumip.model.ModeChoiceLogsums;
 
 import org.apache.log4j.Logger;
 import java.io.Serializable;
@@ -14,7 +14,7 @@ import java.util.ResourceBundle;
  */
 public class LogsumManager implements Serializable{
 
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
      ModeChoiceLogsums[] logsums; 
      ResourceBundle rb;
      int currentWorkSegment=-1;

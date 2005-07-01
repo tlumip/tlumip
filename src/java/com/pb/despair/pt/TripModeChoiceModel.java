@@ -1,12 +1,12 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.model.LogitModel;
 //import com.pb.common.util.SeededRandom;
-import com.pb.despair.model.Mode;
-import com.pb.despair.pt.tripmodes.*;
-import com.pb.despair.model.SkimsInMemory;
-import com.pb.despair.model.TravelTimeAndCost;
-import com.pb.despair.model.ModeType;
+import com.pb.tlumip.model.Mode;
+import com.pb.tlumip.pt.tripmodes.*;
+import com.pb.tlumip.model.SkimsInMemory;
+import com.pb.tlumip.model.TravelTimeAndCost;
+import com.pb.tlumip.model.ModeType;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;

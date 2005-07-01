@@ -1,4 +1,4 @@
-package com.pb.despair.grid;
+package com.pb.tlumip.grid;
 
 import java.util.*;
 import org.apache.log4j.Logger;
@@ -16,7 +16,7 @@ import com.pb.common.util.OutTextFile;
  * Created by IntelliJ IDEA.
  */
 public class GridSynthesizer {
-    private static Logger log = Logger.getLogger("com.pb.despair.grid");
+    private static Logger log = Logger.getLogger("com.pb.tlumip.grid");
     //used in Stage1, 1b and 2a
     public static int[][] totalSupplyByGLC = new int[Ref.NUM_ALPHA_ZONES][Ref.GLCS.length];//initialized by readTotalCellsByGLC method.
     public static HashMap countyMap = new HashMap();//initialized in the readCountyData and readAlphaZoneData methods.

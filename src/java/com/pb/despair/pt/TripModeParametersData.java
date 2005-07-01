@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  */
 
 public class TripModeParametersData {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      String tripModeParametersTableName="TripModeParameters";
      
      //a hashtable of taz objects

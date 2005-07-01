@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 import org.apache.log4j.Logger;
 import java.io.Serializable;
 /** 
@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 
  */
 public class Location implements Serializable{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.default");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
      //attributes
      public int zoneNumber;
      int gridCell;

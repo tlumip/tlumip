@@ -1,7 +1,7 @@
-package com.pb.despair.ha;
+package com.pb.tlumip.ha;
 
-import com.pb.despair.ld.DevelopmentType;
-import com.pb.despair.ld.DynamicPricesDevelopmentType;
+import com.pb.tlumip.ld.DevelopmentType;
+import com.pb.tlumip.ld.DynamicPricesDevelopmentType;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.DisaggregateActivity;
 import com.pb.models.pecas.AbstractTAZ;
@@ -154,7 +154,7 @@ public class AllHouseholds extends DisaggregateActivity {
     	        while (dTypes.hasNext()) {
     	            DevelopmentTypeInterface dt = (DevelopmentTypeInterface)dTypes.next();
     	            if (dt instanceof DynamicPricesDevelopmentType) {
-    	                // message #1.8.4 to eachTaz:com.pb.despair.pi.TAZ
+    	                // message #1.8.4 to eachTaz:com.pb.tlumip.pi.TAZ
     	                // eachTaz.updatePricesOfMicrosimDevelopment();
     	                ((DynamicPricesDevelopmentType)dt).updatePrices(housingMarketSubTimeStep);
     	            }
@@ -318,7 +318,7 @@ public class AllHouseholds extends DisaggregateActivity {
         Household[] movingHouseholds = new Household[movingPool.size()];
         movingHouseholds = (Household[]) movingPool.toArray(movingHouseholds);
         for (int i = 0; i < movingHouseholds.length; i++) {
-            // message #1.8.1 to aHousehold:com.pb.despair.ha.Household
+            // message #1.8.1 to aHousehold:com.pb.tlumip.ha.Household
             // aHousehold.findNewResidences();
             movingHouseholds[i].findNewLocations();
             if (movingHouseholds[i].getPrimaryLocation() == null) {
@@ -581,7 +581,7 @@ public class AllHouseholds extends DisaggregateActivity {
 //                	if (existingDt != null) {
 //                		hh.findLocationInZone(t, 0, existingDt);
 //                	} else  hh.findLocationInZone(t, 0);
-//                } catch (com.pb.despair.model.AbstractTAZ.CantFindRoomException e) {
+//                } catch (com.pb.tlumip.model.AbstractTAZ.CantFindRoomException e) {
 //                    allHouseholds.addToMovingPool(hh);
 //                }
 //            }

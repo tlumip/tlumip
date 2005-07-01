@@ -7,7 +7,7 @@
  * @author
  * @version null
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 import java.io.File;
 
@@ -64,14 +64,14 @@ static final String home= "C:\\eclipse\\workspace\\tlumip\\";
   }
 /*
   public static void test4() {
-    XMLModelCreator xml = new XMLModelCreator("/home/ftp/pub/project652Sandbox2/development/despair/javasrc/com/pb/despair/ed/EDModelXML.dtd", "/home/ftp/pub/project652Sandbox2/development/despair/javasrc/com/pb/despair/ed/jakjh.xml");
+    XMLModelCreator xml = new XMLModelCreator("/home/ftp/pub/project652Sandbox2/development/tlumip/javasrc/com/pb/tlumip/ed/EDModelXML.dtd", "/home/ftp/pub/project652Sandbox2/development/tlumip/javasrc/com/pb/tlumip/ed/jakjh.xml");
     xml.addSubModel();
     xml.subModelName("fred");
     xml.writeOutXML();
   }
 
   public static void test2() {
-    EDControl e = new EDControl(2000,"my house","/home/ftp/pub/project652Sandbox2/development/despair/javasrc/com/pb/despair/ed/EDModelXML.xml", true);
+    EDControl e = new EDControl(2000,"my house","/home/ftp/pub/project652Sandbox2/development/tlumip/javasrc/com/pb/tlumip/ed/EDModelXML.xml", true);
 
   }
 */

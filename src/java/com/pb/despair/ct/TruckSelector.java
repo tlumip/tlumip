@@ -1,4 +1,4 @@
-package com.pb.despair.ct;
+package com.pb.tlumip.ct;
 
 import java.io.*;
 import java.util.*;
@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 
 class TruckSelector {
   // Define default parameters
-    protected Logger logger = Logger.getLogger("com.pb.despair.ct");
+    protected Logger logger = Logger.getLogger("com.pb.tlumip.ct");
   private final static int HIGHEST_COMMODITY_NUMBER = 49,
     MAX_RANDOM_DRAWS = 99;
 

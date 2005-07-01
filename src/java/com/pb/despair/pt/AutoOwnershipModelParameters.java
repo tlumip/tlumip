@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * @author Joel Freedman
  */
 public class AutoOwnershipModelParameters {
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.AutoOwnershipModelParameters");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.AutoOwnershipModelParameters");
      String autoOwnershipParametersTableName="AutoOwnershipParameters";
 
     public double auto0Con;

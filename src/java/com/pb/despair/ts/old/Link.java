@@ -2,7 +2,7 @@
  * @(#) Link.java
  */
 
-package com.pb.despair.ts.old;
+package com.pb.tlumip.ts.old;
 
 /**
  * A class that represents ...

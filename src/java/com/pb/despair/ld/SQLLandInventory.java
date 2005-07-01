@@ -2,7 +2,7 @@
  * Created on Jul 22, 2004
  *
  */
-package com.pb.despair.ld;
+package com.pb.tlumip.ld;
 
 import com.pb.common.datafile.JDBCTableReader;
 import com.pb.common.datafile.TableDataSet;
@@ -213,7 +213,7 @@ public class SQLLandInventory extends LandInventory {
      * @return returns 'V' if coverage string is null or zero length
      *
      * 
-     * @see com.pb.despair.ld.LandInventory#getCoverage(long, long)
+     * @see com.pb.tlumip.ld.LandInventory#getCoverage(long, long)
      */
     public char getCoverage(long id1, long id2) {
         ResultSet r = getResultSet((int) id1);
@@ -305,7 +305,7 @@ public class SQLLandInventory extends LandInventory {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#getPrice(long, long, char)
+     * @see com.pb.tlumip.ld.LandInventory#getPrice(long, long, char)
      */
     public double getPrice(long id1, long id2, char coverageChar) {
         if (prices[coverageChar]==null) {
@@ -315,14 +315,14 @@ public class SQLLandInventory extends LandInventory {
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#getLocalVacancyRate(long, long, char, double)
+     * @see com.pb.tlumip.ld.LandInventory#getLocalVacancyRate(long, long, char, double)
      */
     public double getLocalVacancyRate(long id1, long id2, char coverageChar, double radius) {
         return 0;
     }
 
     /* (non-Javadoc)
-     * @see com.pb.despair.ld.LandInventory#elementToString(long, long)
+     * @see com.pb.tlumip.ld.LandInventory#elementToString(long, long)
      */
     public String elementToString(long id1, long id2) {
         return id1+","+id2;

@@ -1,4 +1,4 @@
-package com.pb.despair.controller;
+package com.pb.tlumip.controller;
 
 /**
  * This class runs the Despair model.

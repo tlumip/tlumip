@@ -12,7 +12,7 @@
  * you entered into with ObjectSpace.
  */
 
-package com.pb.despair.ed.edmodelxml;
+package com.pb.tlumip.ed.edmodelxml;
 
 import com.objectspace.xml.IClassDeclaration;
 import com.objectspace.xml.xgen.ClassDecl;
@@ -28,7 +28,7 @@ public class EDModelXML implements IEDModelXML
   
   public static IClassDeclaration getStaticDXMLInfo()
     {
-    return ClassDecl.find( "com.pb.despair.ed.edmodelxml.EDModelXML" );
+    return ClassDecl.find( "com.pb.tlumip.ed.edmodelxml.EDModelXML" );
     }
   
   public IClassDeclaration getDXMLInfo()

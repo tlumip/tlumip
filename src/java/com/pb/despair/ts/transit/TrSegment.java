@@ -1,4 +1,4 @@
-package com.pb.despair.ts.transit;
+package com.pb.tlumip.ts.transit;
 
 import java.io.Serializable;
 import java.util.ArrayList;

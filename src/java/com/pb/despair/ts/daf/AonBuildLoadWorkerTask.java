@@ -1,4 +1,4 @@
-package com.pb.despair.ts.daf;
+package com.pb.tlumip.ts.daf;
 
 
 import org.apache.log4j.Logger;
@@ -7,9 +7,9 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageFactory;
 import com.pb.common.daf.MessageProcessingTask;
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.assign.ShortestPathTreeH;
-import com.pb.despair.ts.daf.MessageID;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.assign.ShortestPathTreeH;
+import com.pb.tlumip.ts.daf.MessageID;
 
 /**
  *   Distributed application worker class used for implementing a
@@ -23,7 +23,7 @@ import com.pb.despair.ts.daf.MessageID;
 public class AonBuildLoadWorkerTask extends MessageProcessingTask {
 
 	private boolean LOGGING = true;
-    static Logger logger = Logger.getLogger("com.pb.despair.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
     
     
     AonLinkFlowResults flowResults = AonLinkFlowResults.getInstance();

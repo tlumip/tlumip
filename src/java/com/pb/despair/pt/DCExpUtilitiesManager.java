@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixReader;
@@ -17,7 +17,7 @@ import com.pb.common.util.ResourceUtil;
  */
 public class DCExpUtilitiesManager implements Serializable{
 
-     final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
      Matrix[] expUtilities; 
      ResourceBundle rb;
      int currentWorkSegment=-1;

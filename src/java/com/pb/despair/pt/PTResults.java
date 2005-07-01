@@ -1,4 +1,4 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
@@ -18,7 +18,7 @@ import java.util.Date;
  */
 public class PTResults {
     
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt.PTModel");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.PTModel");
     PTTimer timer = new PTTimer();
     PTDataWriter ptWriter = new PTDataWriter();
     static PrintWriter debug;

@@ -1,8 +1,8 @@
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 import com.pb.common.util.OutTextFile;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.SkimsInMemory;
-import com.pb.despair.model.TravelTimeAndCost;
+import com.pb.tlumip.model.SkimsInMemory;
+import com.pb.tlumip.model.TravelTimeAndCost;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
  */
 public class CreateModeChoiceLogsums {
     
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
 
     //  arrays with segments
     static final int[] auwk0segs={1,0,0,1,0,0,1,0,0};

@@ -1,4 +1,4 @@
-package com.pb.despair.ct;
+package com.pb.tlumip.ct;
 
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.ZipMatrixReader;
@@ -9,7 +9,7 @@ import java.util.*;
 import org.apache.log4j.Logger;
 
 class TruckTours4 {
-    protected static Logger logger = Logger.getLogger("com.pb.despair.ct");
+    protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
     ResourceBundle rb;
     String inputPath;
     ArrayList shipments;

@@ -1,4 +1,4 @@
-package com.pb.despair.grid;
+package com.pb.tlumip.grid;
 
 import org.apache.log4j.Logger;
 
@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
  * Created by IntelliJ IDEA.
  */
 public class GridCell {
-    static Logger log = Logger.getLogger("com/pb/despair/grid");
+    static Logger log = Logger.getLogger("com/pb/tlumip/grid");
 
     static void getAttributes(County currCounty, AlphaZone currAZ, Distribution3D d3d, int luc, String glc, float[] matchCoeffs,int[] result){
         float[] demandArray = new float[Ref.DEVTYPES.length];

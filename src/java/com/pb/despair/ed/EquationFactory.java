@@ -4,7 +4,7 @@
  *
  * ED test is used in place of EDModel.java for now.
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 import java.util.Vector;
 

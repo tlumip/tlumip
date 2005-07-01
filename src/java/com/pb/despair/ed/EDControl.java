@@ -1,8 +1,8 @@
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 import com.pb.common.util.Debug;
 import com.pb.common.util.ResourceUtil;
-import com.pb.despair.model.ModelComponent;
+import com.pb.tlumip.model.ModelComponent;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -13,7 +13,7 @@ import java.io.*;
 
 public class EDControl extends ModelComponent {
 
-  private static Logger logger = Logger.getLogger("com.pb.despair.ed");
+  private static Logger logger = Logger.getLogger("com.pb.tlumip.ed");
   private static int currentYear;
   private static int modelYear;
   private static String defaultDataLocation;

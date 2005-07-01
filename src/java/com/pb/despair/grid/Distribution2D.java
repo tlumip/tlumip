@@ -1,4 +1,4 @@
-package com.pb.despair.grid;
+package com.pb.tlumip.grid;
 // Distribution2D is a small class that reads a histogram (statistical distri-
 // bution) defined in comma-separated value file into a cumulative distribution.
 // This distribution can be repeatedly sampled with externally supplied random

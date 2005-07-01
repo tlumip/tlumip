@@ -4,7 +4,7 @@
  * Class to interface the database.  Will probably use Tim's code for this in
  * the future.
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 //import com.pb.common.dataBeans;
 //import com.pb.common.util.Debug;
@@ -24,7 +24,7 @@ Hashtable dataSet;
 Hashtable absoluteOverride;
 Hashtable marginalOverride;
 TableDataSet csvSet;
-private static Logger logger = Logger.getLogger("com.pb.despair.ed");
+private static Logger logger = Logger.getLogger("com.pb.tlumip.ed");
 
 EDDataAccess(int defaultYear, String defaultLocation, String absoluteLocation, String marginalLocation) {
 	int i, j;

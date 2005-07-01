@@ -1,4 +1,4 @@
-package com.pb.despair.model;
+package com.pb.tlumip.model;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
@@ -36,7 +36,7 @@ public class LaborProductionAndConsumption {
     HashMap consumption;
     MatrixCollection activityQuantity;
     
-    protected static Logger logger = Logger.getLogger("com.pb.despair.model");
+    protected static Logger logger = Logger.getLogger("com.pb.tlumip.model");
     ResourceBundle rb;
 
     
@@ -481,7 +481,7 @@ public class LaborProductionAndConsumption {
 
 
     public static void main(String[] args){
-        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(ResourceUtil.getResourceBundle("despair"));
+        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(ResourceUtil.getResourceBundle("tlumip"));
         logger.info("test");
         TableDataSet householdQuantity = labor.loadTableDataSet("ActivityLocations2.csv","tlumip.input.data");
         TableDataSet makeUse = labor.loadTableDataSet("ZonalMakeUse.csv","tlumip.input.data");

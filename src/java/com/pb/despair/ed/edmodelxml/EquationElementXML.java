@@ -12,7 +12,7 @@
  * you entered into with ObjectSpace.
  */
 
-package com.pb.despair.ed.edmodelxml;
+package com.pb.tlumip.ed.edmodelxml;
 
 import com.objectspace.xml.IClassDeclaration;
 import com.objectspace.xml.core.StringWrapper;
@@ -29,7 +29,7 @@ public class EquationElementXML implements IEquationElementXML
   
   public static IClassDeclaration getStaticDXMLInfo()
     {
-    return ClassDecl.find( "com.pb.despair.ed.edmodelxml.EquationElementXML" );
+    return ClassDecl.find( "com.pb.tlumip.ed.edmodelxml.EquationElementXML" );
     }
   
   public IClassDeclaration getDXMLInfo()

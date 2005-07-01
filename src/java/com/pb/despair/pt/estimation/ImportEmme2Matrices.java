@@ -1,4 +1,4 @@
-package com.pb.despair.pt.estimation;
+package com.pb.tlumip.pt.estimation;
 
 /** 
  * Imports emme2 matrices, Stores them in compressed matrix format.  
@@ -21,7 +21,7 @@ import java.util.StringTokenizer;
 
 public class ImportEmme2Matrices {
     
-     static Logger logger = Logger.getLogger("com.pb.despair.pt.ImportEmme2Matrices");    
+     static Logger logger = Logger.getLogger("com.pb.tlumip.pt.ImportEmme2Matrices");
      static int TOTALMATRICES=30;
      static int SIZE=5000;
      static final int MAXTAZ=4141;

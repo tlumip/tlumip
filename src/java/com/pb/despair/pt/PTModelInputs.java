@@ -7,13 +7,13 @@
  * 
  */
 
-package com.pb.despair.pt;
+package com.pb.tlumip.pt;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.despair.model.ModelComponent;
-import com.pb.despair.model.SkimsInMemory;
+import com.pb.tlumip.model.ModelComponent;
+import com.pb.tlumip.model.SkimsInMemory;
 
 import org.apache.log4j.Logger;
 import java.io.File;
@@ -23,7 +23,7 @@ import java.util.*;
 
 
 public class PTModelInputs extends ModelComponent implements Serializable{
-    final static Logger logger = Logger.getLogger("com.pb.despair.pt");
+    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
     public static final boolean RUN_WEEKEND_MODEL = false;
     Random thisRandom;
 

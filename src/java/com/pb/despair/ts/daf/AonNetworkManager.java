@@ -2,9 +2,9 @@
  * Created on Jun 22, 2005
  *
  */
-package com.pb.despair.ts.daf;
+package com.pb.tlumip.ts.daf;
 
-import com.pb.despair.ts.assign.Network;
+import com.pb.tlumip.ts.assign.Network;
 
 /**
  * @author Jim Hicks

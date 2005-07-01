@@ -7,7 +7,7 @@
  * @author
  * @version null
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 
 public class InvalidSubModelException extends Exception {
 

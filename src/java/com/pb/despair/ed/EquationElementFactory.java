@@ -4,7 +4,7 @@
  * Factory class that produces variables based on the values retrieved from
  * the model specification interface.
  */
-package com.pb.despair.ed;
+package com.pb.tlumip.ed;
 import com.pb.common.util.Debug;
 
 public class EquationElementFactory {

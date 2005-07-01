@@ -1,8 +1,8 @@
-package com.pb.despair.ts.transit;
+package com.pb.tlumip.ts.transit;
 
 
-import com.pb.despair.ts.assign.Network;
-import com.pb.despair.ts.assign.ShortestPath;
+import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.assign.ShortestPath;
 import com.pb.common.util.Justify;
 
 
@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 
 public class TrRoute implements Serializable {
 
-	protected static transient Logger logger = Logger.getLogger("com.pb.despair.ts.transit");
+	protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.transit");
 
 	int lineCount= -1, linkCount=0, totalLinkCount=0;
 	int an, bn;

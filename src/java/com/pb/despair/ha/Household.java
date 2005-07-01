@@ -1,19 +1,19 @@
-package com.pb.despair.ha;
+package com.pb.tlumip.ha;
 
-import com.pb.despair.ld.DevelopmentType;
-import com.pb.despair.model.ModeChoiceLogsums;
+import com.pb.tlumip.ld.DevelopmentType;
+import com.pb.tlumip.model.ModeChoiceLogsums;
 import com.pb.models.pecas.ChoiceModelOverflowException;
 import com.pb.models.pecas.*;
 
 import java.util.*;
 
 
-/* import com.pb.despair.model.TravelPreferencesInterface;
-import com.pb.despair.ld.DevelopmentType;
-import com.pb.despair.ts.SummaryOfTravelConditions;
-import com.pb.despair.model.*;
-import com.pb.despair.pi.TAZ;
-import com.pb.despair.model.AbstractTAZ; */
+/* import com.pb.tlumip.model.TravelPreferencesInterface;
+import com.pb.tlumip.ld.DevelopmentType;
+import com.pb.tlumip.ts.SummaryOfTravelConditions;
+import com.pb.tlumip.model.*;
+import com.pb.tlumip.pi.TAZ;
+import com.pb.tlumip.model.AbstractTAZ; */
 
 /**
  * This class is a subclass of Economic Unit, which means it makes decisions as a unit and has a number
@@ -143,7 +143,7 @@ public class Household extends EconomicUnit implements Cloneable {
      * A household is really just a group of people who are (perhaps temporarily) living together and working as a unit.
      * This is a Vector for now, but for performance reasons we might need to change it to be an int[] of indexes into a big
      * array of numbers that describe all the people.
-     * associates <{com.pb.despair.ha.Person}>
+     * associates <{com.pb.tlumip.ha.Person}>
      * supplierCardinality 1..*
      * @link aggregation
      */
@@ -168,7 +168,7 @@ public class Household extends EconomicUnit implements Cloneable {
      * @return returns true if the household disappears because of demographic changes (last person moves out or dies)
      */
     protected boolean demographicChanges(double elapsedTime) {
-        // message #1.2.1 to existingHHMember:com.pb.despair.ha.Person
+        // message #1.2.1 to existingHHMember:com.pb.tlumip.ha.Person
         // existingHHMember.demographicChanges(float);
         // need this to deal with people who die while we're iterating through
         // the people.
@@ -310,15 +310,15 @@ public class Household extends EconomicUnit implements Cloneable {
      * put the household into the AllHouseholds moving pool.
      */
     protected void decideActionsRegardingLocations(double elapsedTime) {
-        // message #1.7.1 to aHousehold:com.pb.despair.ha.Household
+        // message #1.7.1 to aHousehold:com.pb.tlumip.ha.Household
         this.decideWhetherToMove();
-        // message #1.7.2 to aHousehold:com.pb.despair.ha.Household
+        // message #1.7.2 to aHousehold:com.pb.tlumip.ha.Household
         this.secondaryLocationDecision();
     }
 
     /** Pick household preferences and preferences for each household member based on attributes */
     /*void sampleInitialCharacteristics() {
-        // message #1.2.4.1 to existingHHMember:com.pb.despair.ha.Person
+        // message #1.2.4.1 to existingHHMember:com.pb.tlumip.ha.Person
         // existingHHMember.samplePreferences();
         houseHoldPreferences.sample(this);
         Iterator it = myPeople.listIterator();
@@ -893,7 +893,7 @@ public class Household extends EconomicUnit implements Cloneable {
      * This function returns a vector of the RegularActivities that the EconomicUnit has to do.  These RegularActivities have
      * locations associated with them.  Thus the EconomicUnit generally tends to locate within a reasonable distance of the
      * RegularActivity locations.
-     * associates <{com.pb.despair.pi.RegularActivity}>
+     * associates <{com.pb.tlumip.pi.RegularActivity}>
      * @return a Vector of the regular activities
      */
     public Vector getRegularActivities() {
@@ -939,11 +939,11 @@ public class Household extends EconomicUnit implements Cloneable {
             testHH.myProductionFunction = new LinearProductionFunction(Commodity.createOrRetrieveCommodity(String.valueOf(1)), 1, 0, 0);
             Person p = new Person();
             p.age = allHouseholds.theRandom.nextInt(90) + 5;
-            p.myTravelPreferences = new com.pb.despair.pt.FixedVOTTravelPreferences(10.0);
+            p.myTravelPreferences = new com.pb.tlumip.pt.FixedVOTTravelPreferences(10.0);
             p.addToHousehold(testHH);
             p = new Person();
             p.age = allHouseholds.theRandom.nextInt(90) + 5;
-            p.myTravelPreferences = new com.pb.despair.pt.FixedVOTTravelPreferences(10.0);
+            p.myTravelPreferences = new com.pb.tlumip.pt.FixedVOTTravelPreferences(10.0);
             p.addToHousehold(testHH);
             testHH.sampleIncome();
             testHH.samplePreferences();
