@@ -225,6 +225,7 @@ public class ShortestPathTreeH {
                    	skim[j] += linkCost[k];
 
                 }
+                
             }
         }
 

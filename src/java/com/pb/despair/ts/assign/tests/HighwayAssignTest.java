@@ -73,7 +73,8 @@ public class HighwayAssignTest {
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW( tsPropertyMap, g );
+		FW fw = new FW();
+		fw.initialize( tsPropertyMap, g );
 
 
 		// create highway skims object
@@ -83,7 +84,7 @@ public class HighwayAssignTest {
 
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("generating trips with gravity model at: " + myDateString);
-		TripDataGenerator tdm = new TripDataGenerator ( highwaySkims.getSovDistSkims(g.getValidLinkForClass(0)) );
+		TripDataGenerator tdm = new TripDataGenerator ( highwaySkims.getSovDistSkims(g.getValidLinksForClass(0)) );
 
 
 		//Compute Frank-Wolfe solution

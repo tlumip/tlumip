@@ -94,7 +94,8 @@ public class OdotAssign {
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW( tsPropertyMap, g );
+		FW fw = new FW();
+		fw.initialize( tsPropertyMap, g );
 
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());

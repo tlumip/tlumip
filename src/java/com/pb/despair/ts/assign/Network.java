@@ -30,6 +30,12 @@ import com.pb.common.matrix.AlphaToBeta;
 
 public class Network implements Serializable {
 
+	//TODO these values should be set in a method from values determined in tour mode choice
+	static final float TIME_PARAMETER = 1.0f;
+	static final float COST_PARAMETER = 0.0f;
+	static final float OPERATING_COST = 0.0f;
+
+	
 	protected static transient Logger logger = Logger.getLogger("com.pb.despair.ts.assign.Network");
 
 	int minCentroidLabel;
@@ -251,6 +257,10 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsDouble( "freeFlowTime" );
 	}
 
+	public double[] getToll () {
+		return linkTable.getColumnAsDouble( "toll" );
+	}
+
 	public double[] getDist () {
 		return linkTable.getColumnAsDouble( "dist" );
 	}
@@ -265,6 +275,10 @@ public class Network implements Serializable {
 
 	public char[] getUserClasses () {
 		return userClasses;
+	}
+
+	public int getNumUserClasses () {
+		return userClasses.length;
 	}
 
 	public double getWalkSpeed () {
@@ -290,8 +304,23 @@ public class Network implements Serializable {
 	}
     
     
-    public boolean[] getValidLinkForClass ( int userClass ) {
+    public boolean[] getValidLinksForClass ( int userClass ) {
         return validLinksForClass[userClass];
+    }
+
+    public double[] setLinkGeneralizedCost () {
+    	double[] ctime = getCongestedTime();
+    	double[] toll = getToll();
+    	double[] dist = getDist();
+    	
+    	double[] gc = new double[ctime.length];
+    	
+    	for (int i=0; i < ctime.length; i++)
+    		gc[i] = TIME_PARAMETER*ctime[i] + COST_PARAMETER*(toll[i] + dist[i]*OPERATING_COST);
+    	
+		linkTable.setColumnAsDouble( linkTable.getColumnPosition("generalizedCost"), gc );
+		
+		return gc;
     }
 
     public void setVolau ( double[] volau ) {
@@ -424,6 +453,8 @@ public class Network implements Serializable {
 		double[] oldTime = new double[linkTable.getRowCount()];
 		double[] volau = new double[linkTable.getRowCount()];
 		double[] volad = new double[linkTable.getRowCount()];
+		double[] toll = new double[linkTable.getRowCount()];
+		double[] gc = new double[linkTable.getRowCount()];
 		double[][] flow = new double[numAutoClasses][linkTable.getRowCount()];
 		boolean[] centroid = new boolean[linkTable.getRowCount()];
 		String[] centroidString = new String[linkTable.getRowCount()];
@@ -579,6 +610,8 @@ public class Network implements Serializable {
 		derivedTable.appendColumn(congestedTime, "transitTime");
 		derivedTable.appendColumn(volau, "volau");
 		derivedTable.appendColumn(volad, "volad");
+		derivedTable.appendColumn(toll, "toll");
+		derivedTable.appendColumn(gc, "generalizedCost");
 		derivedTable.appendColumn(vdfIntegral, "vdfIntegral");
 		derivedTable.appendColumn(freeFlowTime, "freeFlowTime");
 		derivedTable.appendColumn(length, "length");
@@ -1051,7 +1084,7 @@ public class Network implements Serializable {
 			outStream = new PrintWriter (new BufferedWriter( new FileWriter(fileName) ) );
 
 			
-			outStream.print ("anode,bnode,distance,capacity,assignmentTime,");
+			outStream.print ("anode,bnode,capacity,assignmentTime,");
 			for (int j=0; j < numAutoClasses-1; j++)
 				outStream.print( "assignmentFlow_" + j + "," );
 			

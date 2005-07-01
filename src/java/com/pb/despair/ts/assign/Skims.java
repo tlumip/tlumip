@@ -137,12 +137,14 @@ public class Skims {
 	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
+        newSkimMatrix.logMatrixStatsToInfo();
 
 	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
 	    fileName = (String)tsPropertyMap.get( "pkHwyDistBetaSkim.fileName" );
         mSqueezed = getSqueezedMatrix(newSkimMatrix);
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(mSqueezed);
+        mSqueezed.logMatrixStatsToInfo();
         
 	    // create a Matrix from the off-peak alpha distance skims array and write to disk
 	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
@@ -178,12 +180,14 @@ public class Skims {
 	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(newSkimMatrix);
+        newSkimMatrix.logMatrixStatsToInfo();
 
 	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
 	    fileName = (String)tsPropertyMap.get( "pkHwyTimeBetaSkim.fileName" );
         mSqueezed = getSqueezedMatrix(newSkimMatrix);
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
         mw.writeMatrix(mSqueezed);
+        mSqueezed.logMatrixStatsToInfo();
         
 	}
 
@@ -224,7 +228,7 @@ public class Skims {
 		
         // get the skims as a double[][] array
 		// skims are generated between all centroids in entire network (2985 total centroids)
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, g.getValidLinkForClass(userClass) );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, g.getValidLinksForClass(userClass) );
 
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
@@ -340,7 +344,34 @@ public class Skims {
 	    		}
 	    	}
 	    }
-	    zeroBasedDoubleArray = null;
+
+		// set the skim value to NEG_INFINITY for the entire row for external zone 2594 (disconnected)
+    	exRow = 2594;
+		inRow = externalToAlphaInternal[exRow];
+        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
+        	exCol = skimsInternalToExternal[i];
+	    	if ( zonesToSkim[exCol] == 1 ) {
+	    		inCol = externalToAlphaInternal[exCol];
+	    		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
+	    	}
+		}
+		// set the skim value to NEG_INFINITY for the entire column for external zone 2594 (disconnected)
+    	exCol = 2594;
+		inCol = externalToAlphaInternal[exCol];
+        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
+        	exRow = skimsInternalToExternal[i];
+	    	if ( zonesToSkim[exRow] == 1 ) {
+	    		inRow = externalToAlphaInternal[exRow];
+	    		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
+	    	}
+		}
+		// set the skim value to NEG_INFINITY for the intrazonal cell for external zone 2594 (disconnected)
+		inRow = externalToAlphaInternal[2594];
+		inCol = externalToAlphaInternal[2594];
+   		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
+
+   		
+		zeroBasedDoubleArray = null;
 
 	    return zeroBasedFloatArray;
 

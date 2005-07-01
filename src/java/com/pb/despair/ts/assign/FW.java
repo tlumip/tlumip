@@ -25,57 +25,47 @@ public class FW {
 	
     Network g;
     Justify myFormat = new Justify();
-    TripData tl = new TripData();
-    BitHash[] odList;
-    int[][] odToList;
 
-    double[][][] odTable;
     double [] lambdas;
     double [] fwFlowProps;
     
-	double[][] aonFlow;
-	double[][] flow;
 	double[] volau;
 	int[] linkType;
     
-    int autoClass=0;
     int numAutoClasses;
-    int totalTrips=0, totalIJs=0;
-    static long totalTime=0;
     String timePeriod;
 
  
-    int START_ORIG, END_ORIG;
-	int MAX_FW_ITERS;
+    int startOriginTaz, lastOriginTaz;
+	int maxFwIters;
 
 	DiskObjectArray fwPathsDoa = null;	
 
    
-    public FW ( HashMap tsPropertyMap, Network g ) {
+    public FW () {
+    }
+
+
+    public void initialize ( HashMap tsPropertyMap, Network g ) {
 
 		this.propertyMap = tsPropertyMap;
 		this.g = g;
         
-        MAX_FW_ITERS = Integer.parseInt ( (String)propertyMap.get( "NUM_FW_ITERATIONS" ) );
+        maxFwIters = Integer.parseInt ( (String)propertyMap.get( "NUM_FW_ITERATIONS" ) );
         numAutoClasses = g.getUserClasses().length;
 		timePeriod = g.getTimePeriod();
 
-        odTable = new double[numAutoClasses][][];
+		lambdas = new double[maxFwIters];
+		fwFlowProps = new double[maxFwIters];
 
-		lambdas = new double[MAX_FW_ITERS];
-		fwFlowProps = new double[MAX_FW_ITERS];
-
-		START_ORIG = 0;
-        END_ORIG = g.getNumCentroids();
+		startOriginTaz = 0;
+        lastOriginTaz = g.getNumCentroids();
 
     
 		// initialize assignment arrays prior to iterating
-		flow = g.getFlows();
 		linkType = g.getLinkType();
-		for (int m=0; m < numAutoClasses; m++)
-			Arrays.fill(flow[m], 0.0);
 
-		aonFlow = new double[numAutoClasses][g.getLinkCount()];
+		
 		volau = new double[g.getLinkCount()];
 	
 		
@@ -90,28 +80,18 @@ public class FW {
      */
 	public void iterate ( double[][][] tripTable ) {
 
-	    int storedPathIndex = 0;
-	    
-	    double lub = 0.0;
+		
+		double lub = 0.0;
 	    double gap = 0.0;
 	    double glb = 0.0;
 
 
-		// build shortest path tree object and set cost and valid link attributes for this user class.
-		ShortestPathTreeH sp = new ShortestPathTreeH( g );
-
-		// set the highway network attribute on which to skim the network
-		double[] linkCost = g.getCongestedTime();
-		
-		
-		double[] aon;
-	
 		// determine which links are valid parts of paths for this skim
 		boolean[] validLinksForClass = null;
 		boolean[] validLinks = new boolean[g.getLinkCount()];
 	    Arrays.fill (validLinks, false);
 		for (int m=0; m < numAutoClasses; m++) {
-			validLinksForClass = g.getValidLinkForClass(m);
+			validLinksForClass = g.getValidLinksForClass(m);
 			for (int k=0; k < g.getLinkCount(); k++)
 				if (validLinksForClass[k])
 					validLinks[k] = true;
@@ -119,78 +99,29 @@ public class FW {
 
 			
 		
-		
+		double[][] flow = new double[numAutoClasses][g.getLinkCount()];
 
 		for (int m=0; m < numAutoClasses; m++)
 		    Arrays.fill (flow[m], 0.0);
 
         
-        // loop over FW iterations
-        for (int iter=0; iter < MAX_FW_ITERS; iter++) {
+        // loop thru FW iterations
+        for (int iter=0; iter < maxFwIters; iter++) {
+        	
             if(logger.isDebugEnabled()) {
                 logger.debug("Iteration = " + iter);
             }
             lambdas[iter] = 1.0;
+
             
-
-			for (int m=0; m < numAutoClasses; m++)
-			    Arrays.fill (aonFlow[m], 0.0);
-
-
-			for (int origin=START_ORIG; origin < END_ORIG; origin++) {
-			    
-				for (int m=0; m < numAutoClasses; m++) {
-
-					double tripTableRowSum = 0.0;
-					for (int j=0; j < tripTable[m][origin].length; j++)
-						tripTableRowSum += tripTable[m][origin][j];
-
-					validLinksForClass = g.getValidLinkForClass(m);
-
-					sp.setLinkCost( linkCost );
-					sp.setValidLinks( validLinksForClass );
-
-					if (origin % 500 == 0)
-						logger.info ("assigning origin zone index " + origin + ", user class index " + m);
-
-					if (tripTableRowSum > 0.0) {
-						
-						sp.buildTree ( origin );
-						aon = sp.loadTree ( tripTable[m][origin], m );
-
-					    for (int k=0; k < aon.length; k++)
-					        aonFlow[m][k] += aon[k];
-					    
-					}
-				    
-					
-				    if ( fwPathsDoa != null ) {
-
-				        // calculate the index used for storing shortest path tree in DiskObjectArray
-					    storedPathIndex = iter*END_ORIG*numAutoClasses + origin*numAutoClasses + m;
-					    
-					    // store the shortest path tree for this iteration, origin zone, and user class
-					    try {
-					        int[] tempArray = sp.getPredecessorLink();
-					        fwPathsDoa.add( storedPathIndex, tempArray );
-					    } catch (Exception e) {
-					        logger.fatal ("could not store index=" + storedPathIndex + ", for iter=" + iter + ", for origin=" + origin + ", and class=" + m);
-					        e.printStackTrace();
-					        System.exit(1);
-					    }
-				        
-				    }
-				    
-				}
-			    
-			}
-            
+        	double[][] aonFlow = getMulticlassAonLinkFlows ( tripTable, iter );
+			
 
             // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
             if (iter > 0) {
-                if ( bisect ( iter, validLinks ) ) {
+                if ( bisect ( iter, validLinks, aonFlow, flow ) ) {
                     logger.error ("Exact FW optimal solution found.  Unlikely, better check into this!");
-                    iter = MAX_FW_ITERS;
+                    iter = maxFwIters;
                 }
             }
             else {
@@ -201,8 +132,8 @@ public class FW {
 
 
             // print assignment iterations report
-            lub = ofValue(validLinks);
-			gap = Math.abs(ofGap( validLinks ));
+            lub = ofValue(validLinks, flow);
+			gap = Math.abs(ofGap( validLinks, aonFlow, flow ));
             if ( ( lub - gap ) > glb )
                 glb = lub - gap;
 
@@ -227,9 +158,7 @@ public class FW {
 			g.setVolau(volau);
             g.applyVdfs(validLinks);
 
-			linkCost = g.getCongestedTime();
-			sp.setLinkCost( linkCost );
-
+            
 			g.logLinkTimeFreqs (validLinks);
 			
         } // end of FW iter loop
@@ -237,7 +166,7 @@ public class FW {
 
 
 
-        linkSummaryReport();
+        linkSummaryReport( flow );
 
         fwFlowProps = getFWFlowProps();
         
@@ -252,7 +181,7 @@ public class FW {
 
         logger.info ("");
         logger.info (myFormat.right("iter", 5) + myFormat.right("lambdas", 12) + myFormat.right("Flow Props", 12));
-        for (int i=0; i < MAX_FW_ITERS; i++)
+        for (int i=0; i < maxFwIters; i++)
             logger.info (myFormat.right(i, 5) + myFormat.right(lambdas[i], 12, 6) + myFormat.right(100.0*fwFlowProps[i], 12, 4) + "%");
         logger.info ("");
 
@@ -262,10 +191,83 @@ public class FW {
     }
 
 
+	
+	double[][] getMulticlassAonLinkFlows ( double[][][] tripTable, int iter ) {
+
+	    int storedPathIndex = 0;
+	    
+		boolean[] validLinksForClass = null;
+
+		// build shortest path tree object and set cost and valid link attributes for this user class.
+		ShortestPathTreeH sp = new ShortestPathTreeH( g );
+
+		// set the highway network attribute on which to skim the network
+		double[] linkCost = g.setLinkGeneralizedCost();
+
+		double[][] aonFlow = new double[numAutoClasses][g.getLinkCount()];
+		double[] aon;
+	
+		
+		for (int m=0; m < numAutoClasses; m++)
+		    Arrays.fill (aonFlow[m], 0.0);
+
+
+		sp.setLinkCost( linkCost );
+
+		for (int origin=startOriginTaz; origin < lastOriginTaz; origin++) {
+		    
+			for (int m=0; m < numAutoClasses; m++) {
+
+				double tripTableRowSum = 0.0;
+				for (int j=0; j < tripTable[m][origin].length; j++)
+					tripTableRowSum += tripTable[m][origin][j];
+
+				validLinksForClass = g.getValidLinksForClass(m);
+				sp.setValidLinks( validLinksForClass );
+
+
+				if (origin % 500 == 0)
+					logger.info ("assigning origin zone index " + origin + ", user class index " + m);
+
+				if (tripTableRowSum > 0.0) {
+					
+					sp.buildTree ( origin );
+					aon = sp.loadTree ( tripTable[m][origin], m );
+
+				    for (int k=0; k < aon.length; k++)
+				        aonFlow[m][k] += aon[k];
+				    
+				}
+			    
+				
+			    if ( fwPathsDoa != null ) {
+
+			        // calculate the index used for storing shortest path tree in DiskObjectArray
+				    storedPathIndex = iter*lastOriginTaz*numAutoClasses + origin*numAutoClasses + m;
+				    
+				    // store the shortest path tree for this iteration, origin zone, and user class
+				    try {
+				        int[] tempArray = sp.getPredecessorLink();
+				        fwPathsDoa.add( storedPathIndex, tempArray );
+				    } catch (Exception e) {
+				        logger.fatal ("could not store index=" + storedPathIndex + ", for iter=" + iter + ", for origin=" + origin + ", and class=" + m);
+				        e.printStackTrace();
+				        System.exit(1);
+				    }
+			        
+			    }
+			    
+			}
+			
+		}
+		
+		return aonFlow;
+		
+	}
 
 
     //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
-    boolean bisect ( int iter, boolean[] validLinks ) {
+    public boolean bisect ( int iter, boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
         
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
         logger.info ("starting FW.bisect()" + myDateString);
@@ -274,7 +276,7 @@ public class FW {
 
         int numBisectIterations = (int)(Math.log(1.0e-07)/Math.log(0.5) + 1.5);
         
-        gap = ofGap( validLinks );
+        gap = ofGap( validLinks, aonFlow, flow );
         
         if (Math.abs(gap) <= 1.0e-07) {
             lambdas[iter] = 0.5;
@@ -291,7 +293,7 @@ public class FW {
             }
 
             for (int n=0; n < numBisectIterations; n++) {
-                gap = bisectGap(x, validLinks );
+                gap = bisectGap(x, validLinks, aonFlow, flow );
                 if (gap <= 0)
                     xleft = x;
                 else
@@ -311,11 +313,11 @@ public class FW {
     public double[] getFWFlowProps () {
         // Determine the proportions of O/D flow assigned during each FW iteration.
 
-        double[] Proportions = new double[MAX_FW_ITERS];
+        double[] Proportions = new double[maxFwIters];
 
-        for (int i=0; i < MAX_FW_ITERS; i++) {
+        for (int i=0; i < maxFwIters; i++) {
             Proportions[i] = lambdas[i];
-            for (int k=i+1; k < MAX_FW_ITERS; k++)
+            for (int k=i+1; k < maxFwIters; k++)
                 Proportions[i] *= (1.0-lambdas[k]);
         }
 
@@ -323,7 +325,7 @@ public class FW {
     }
 
 
-    double ofValue (boolean[] validLinks)  {
+    public double ofValue ( boolean[] validLinks, double[][] flow )  {
 
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
         logger.info ("starting FW.ofValue()" + myDateString);
@@ -344,7 +346,7 @@ public class FW {
 
 
 
-    double ofGap ( boolean[] validLinks ) {
+    public double ofGap ( boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
 
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
         logger.info ("starting FW.ofGap()" + myDateString);
@@ -380,7 +382,7 @@ public class FW {
     }
 
 
-    double bisectGap (double x, boolean[] validLinks ) {
+    public double bisectGap (double x, boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
 
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
         logger.info ("starting FW.bisectGap()" + myDateString);
@@ -414,7 +416,7 @@ public class FW {
     }
 
 
-    void linkSummaryReport () {
+    public void linkSummaryReport ( double[][] flow ) {
         double totalVol;
         double[][] volumeSum = new double[numAutoClasses][MAX_LINK_TYPE];
 
@@ -458,7 +460,7 @@ public class FW {
 
 			try{
 			    
-			    int numElements = MAX_FW_ITERS*END_ORIG*numAutoClasses;
+			    int numElements = maxFwIters*lastOriginTaz*numAutoClasses;
 			    int maxElementSize = SIZEOF_INT*(g.getNodeCount()+1) + 100;
 			    
 			    logger.info ("dimensions for paths DiskObjectArray: numElements=" + numElements + ", maxElementSize=" + maxElementSize );

@@ -67,7 +67,7 @@ public class TS {
         TS tsTest = new TS( ResourceBundle.getBundle("ts"), ResourceBundle.getBundle ("global") );
 
 		tsTest.assignPeakAuto();
-		tsTest.assignOffPeakAuto();
+//		tsTest.assignOffPeakAuto();
 
 		logger.info ("\ndone with TS run.");
     }
@@ -119,7 +119,8 @@ public class TS {
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW( tsPropertyMap, g );
+		FW fw = new FW();
+		fw.initialize( tsPropertyMap, g );
 
 		// read PT trip list into o/d trip matrix
         myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -128,9 +129,11 @@ public class TS {
 
         
 		// read CT trip list into o/d trip matrix
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("reading CT trip list at: " + myDateString);
-		truckTripTables = getTruckTripTableFromCTList ( g, ctFileName, peakStart, peakEnd );
+		if ( g.getUserClasses().length > 1 ) {
+			myDateString = DateFormat.getDateTimeInstance().format(new Date());
+			logger.info ("reading CT trip list at: " + myDateString);
+			truckTripTables = getTruckTripTableFromCTList ( g, ctFileName, peakStart, peakEnd );
+		}
 
 		
 		multiclassTripTable = new double[g.getUserClasses().length][][];
@@ -168,22 +171,18 @@ public class TS {
 
 		
 		
-		logger.info("Writing Peak Auto (class 1) Time and Distance skims to disk");
+		logger.info("Writing Peak Auto (class 0) Time and Distance skims to disk");
         startTime = System.currentTimeMillis();
-        writePeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinkForClass(1));
-        logger.info("wrote the (class 1) peak skims in " +
+        writePeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinksForClass(0));
+        logger.info("wrote the (class 0) peak skims in " +
     			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
-		logger.info("Writing Peak Auto (class 2) Time and Distance skims to disk");
-        startTime = System.currentTimeMillis();
-        writePeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinkForClass(2));
-        logger.info("wrote the (class 2) peak skims in " +
-    			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+
 
         
         // log the average sov trip travel distance and travel time for this assignment
         logger.info("Generating Time and Distance peak skims to use to calcluate average time and distance...");
         Skims skims = new Skims(g, tsPropertyMap, globalPropertyMap);
-        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0], g.getValidLinkForClass(0));
+        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0], g.getValidLinksForClass(0));
         logger.info( "Average Peak auto (class 0) trip travel distance = " + skimSummaries[0] + " miles."); 
         logger.info( "Average Peak auto (class 0) trip travel time = " + skimSummaries[1] + " minutes."); 
 
@@ -223,7 +222,8 @@ public class TS {
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW( tsPropertyMap, g );
+		FW fw = new FW();
+		fw.initialize( tsPropertyMap, g );
 
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -258,14 +258,14 @@ public class TS {
 		
         logger.info("Writing Off-Peak Auto (class 0) Time and Distance skims to disk...");
         startTime = System.currentTimeMillis();
-        writeOffPeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinkForClass(0));
+        writeOffPeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinksForClass(0));
         logger.info("wrote the Off-Peak skims in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
         // log the average sov trip travel distance and travel time for this assignment
         logger.info("Generating Time and Distance off-peak skims to use to calcluate average time and distance...");
         Skims skims = new Skims(g, tsPropertyMap, globalPropertyMap);
-        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0], g.getValidLinkForClass(0));
+        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0], g.getValidLinksForClass(0));
         logger.info( "Average Off-Peak auto (class 0) trip travel distance = " + skimSummaries[0] + " miles."); 
         logger.info( "Average Off-Peak auto (class 0) trip travel time = " + skimSummaries[1] + " minutes."); 
         
@@ -275,7 +275,7 @@ public class TS {
     public void writePeakSkims(Network g, HashMap tsMap, HashMap globalMap, boolean[] validLinks){
         Skims skims = new Skims(g, tsMap, globalMap);
         logger.info ("skimming network and creating pk time and distance matrices.");
-        skims.writePeakSovTimeSkimMatrices(validLinks);  //writes the alpha and beta pktime skims
+//        skims.writePeakSovTimeSkimMatrices(validLinks);  //writes the alpha and beta pktime skims
         skims.writeSovDistSkimMatrices(validLinks);     //writes alpha and beta pkdist  and
                                                 // off-peak distance skims
     }
