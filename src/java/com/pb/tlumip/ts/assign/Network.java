@@ -37,6 +37,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.Format;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
+import com.pb.common.matrix.Matrix;
 
 /**
  * This Network class contains the link and node data tables and
@@ -53,6 +54,11 @@ public class Network implements Serializable {
 
 	
 	protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.Network");
+
+	
+	HashMap userClassMap = new HashMap();
+	HashMap assignmentGroupMap = new HashMap();
+	
 
 	int minCentroidLabel;
 	int maxCentroidLabel;
@@ -296,6 +302,34 @@ public class Network implements Serializable {
 	public int getNumUserClasses () {
 		return userClasses.length;
 	}
+	
+	public boolean userClassesIncludeAuto () {
+		// return true if the auto class is included in the list of user classes to assign
+		
+		boolean autoIncluded = false;
+		for (int i=0; i < userClasses.length; i++) {
+			if ( userClasses[i] == 'a' ) {
+				autoIncluded = true;
+				break;
+			}
+		}
+			
+		return autoIncluded;
+	}
+
+	public boolean userClassesIncludeTruck () {
+		// return true if at least one truck class is included in the list of user classes to assign
+
+		boolean truckIncluded = false;
+		for (int i=0; i < userClasses.length; i++) {
+			if ( userClasses[i] == 'd' || userClasses[i] == 'e' || userClasses[i] == 'f' || userClasses[i] == 'g' || userClasses[i] == 'h' ) {
+				truckIncluded = true;
+				break;
+			}
+		}
+			
+		return truckIncluded;
+	}
 
 	public double getWalkSpeed () {
 		return WALK_SPEED;
@@ -318,10 +352,22 @@ public class Network implements Serializable {
 	public double[] getNodeY () {
 		return nodeTable.getColumnAsDouble( "y" );
 	}
-    
+    	
+	public HashMap getAssignmentGroupMap () {
+		return assignmentGroupMap;
+	}
+	
+	public int getUserClassIndex ( char modeChar ) {
+		return ((Integer)userClassMap.get( String.valueOf(modeChar) )).intValue();
+	}
     
     public boolean[] getValidLinksForClass ( int userClass ) {
         return validLinksForClass[userClass];
+    }
+
+    public boolean[] getValidLinksForClass ( char modeChar ) {
+		int userClassIndex = getUserClassIndex(modeChar);
+        return validLinksForClass[userClassIndex];
     }
 
     public double[] setLinkGeneralizedCost () {
@@ -366,6 +412,67 @@ public class Network implements Serializable {
         linkTable.setColumnAsInt( linkTable.getColumnPosition("ttf"), ttf );
     }
       
+    private char[] getUserClassesFromProperties () {
+
+		// get the mode codes that identify user classes
+		String userClassPropertyString = (String)tsPropertyMap.get("userClass.modes");
+		ArrayList userClassList = new ArrayList();
+		StringTokenizer st = new StringTokenizer(userClassPropertyString, ", |");
+		while (st.hasMoreTokens()) {
+			userClassList.add(st.nextElement());
+		}
+		
+		// copy the valid mode codes into an array
+		char tempUserClass;
+		char[] tempUserClasses = new char[userClassList.size()]; 
+		int j = 0;
+		for (int i=0; i < tempUserClasses.length; i++) {
+			tempUserClass = ((String)userClassList.get(i)).charAt(0);
+			if ( tempUserClass == 'a' || tempUserClass == 'd' || tempUserClass == 'e' || tempUserClass == 'f' || tempUserClass == 'g' || tempUserClass == 'h' )
+				tempUserClasses[j++] = tempUserClass;
+		}
+
+		// create an array of valid mode codes to return
+		char[] finalUserClasses = new char[j]; 
+		for (int i=0; i < finalUserClasses.length; i++) {
+			finalUserClasses[i] = tempUserClasses[i];
+			
+			userClassMap.put ( String.valueOf(finalUserClasses[i]), Integer.valueOf(i) );
+		}
+		
+		return finalUserClasses;
+		
+    }
+    
+    
+    
+    private void setAssignmentGroups () {
+    
+		// get the mode codes associated with each of the possible 5 truck groups and put into a HashMap
+		char tempUserClass;
+		String propertyKeyWordString = null;
+		String truckClassPropertyString = null;
+		ArrayList truckClassList = new ArrayList();
+    	for  (int i=1; i <= 5; i++ ) {
+    		propertyKeyWordString = "truckClass" + i + ".modes";
+    		truckClassPropertyString = (String)tsPropertyMap.get( propertyKeyWordString );
+    		StringTokenizer st = new StringTokenizer( truckClassPropertyString, ", |" );
+    		while (st.hasMoreTokens()) {
+    			tempUserClass = ((String)st.nextElement()).charAt(0);
+    			
+    			// if the mode code is a valid truck code, add it to the assignment group map.
+    			if ( tempUserClass == 'd' || tempUserClass == 'e' || tempUserClass == 'f' || tempUserClass == 'g' || tempUserClass == 'h' )
+    				assignmentGroupMap.put ( String.valueOf(tempUserClass), Integer.valueOf(1) );
+    		}
+    	}
+
+    	// if auto is in the list of user classes, add auto as assignment group 0.
+    	if ( userClassesIncludeAuto () )
+			assignmentGroupMap.put ( String.valueOf('a'), Integer.valueOf(0) );
+
+    }
+    
+    
 
     private void readPropertyFile ( String period ) {
         
@@ -398,18 +505,13 @@ public class Network implements Serializable {
 		this.maxCentroidLabel = a2b.getMaxAlphaZone();
 		this.numAlphazones = a2b.alphaSize();
 		
-		// get the mode codes that identify user classes
-		String userClassPropertyString = (String)tsPropertyMap.get("userClass.modes");
-		ArrayList userClassList = new ArrayList();
-		StringTokenizer st = new StringTokenizer(userClassPropertyString, ", |");
-		while (st.hasMoreTokens()) {
-			userClassList.add(st.nextElement());
-		}
-		this.userClasses = new char[userClassList.size()];
-		for (int i=0; i < userClasses.length; i++)
-			this.userClasses[i] = ((String)userClassList.get(i)).charAt(0);
+		
 
+		// get user classes to assign and assignment groups (which classes are combined together for assigning)
+		this.userClasses = getUserClassesFromProperties ();
 		this.numAutoClasses = this.userClasses.length;
+		setAssignmentGroups();
+		
 		
 		logger.info ( "Mode codes for user classes in multiclass assignment:" );
 		for (int i=0; i < userClasses.length; i++)
@@ -866,8 +968,17 @@ public class Network implements Serializable {
 
 	
 	
-	public void checkODConnectivity (double[][][] trips) {
+	public void checkODConnectivity ( double[][][] trips ) {
 
+		
+		double[][] linkAttributes = new double[2][];
+		linkAttributes[0] = getDist();
+		linkAttributes[1] = getCongestedTime();
+		
+
+        Skims skims = new Skims(this, tsPropertyMap, globalPropertyMap);
+
+        
 		for (int m=0; m < numAutoClasses; m++) {
 
 			double total = 0.0;
@@ -880,15 +991,26 @@ public class Network implements Serializable {
 	        logger.info("Generating Time and Distance peak skims for subnetwork " + userClasses[m] + " (class " + m + ") ...");
 	        
 	        if (total > 0.0) {
-		        Skims skims = new Skims(this, tsPropertyMap, globalPropertyMap);
-		        double[] skimSummaries = skims.getAvgSovTripSkims(trips[m], validLinksForClass[m]);
-		        logger.info( "Total peak demand for subnetwork " + userClasses[m] + " (class " + m + ") = " + total + " trips."); 
-		        logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") peak trip travel distance = " + skimSummaries[0] + " miles."); 
-		        logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") peak trip travel time = " + skimSummaries[1] + " minutes."); 
-		        logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") = " + skimSummaries[2]);
+
+		        Matrix[] skimMatrices = skims.getHwySkimMatrices( assignmentPeriod, linkAttributes, userClasses[m] );
+
+		        logger.info( "Total " + assignmentPeriod + " demand for subnetwork " + userClasses[m] + " (class " + m + ") = " + total + " trips."); 
+
+	            double[] distSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[0] );
+	            
+		        logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + assignmentPeriod + " trip travel distance = " + distSummaries[0] + " miles."); 
+		        logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on distance = " + distSummaries[1]);
+
+	            double[] timeSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[1] );
+	            
+		        logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + assignmentPeriod + " trip travel time = " + timeSummaries[1] + " minutes."); 
+		        logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on time = " + timeSummaries[1]);
+		        
 	        }
 	        else {
+	        	
 		        logger.info("No demand for subnetwork " + userClasses[m] + " (class " + m + ") therefore, no average time or distance calculated.");
+		        
 	        }
 	        		
 		}

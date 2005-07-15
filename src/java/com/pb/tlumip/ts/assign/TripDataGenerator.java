@@ -39,13 +39,26 @@ public class TripDataGenerator {
     int nZones;
     double[][] odTable;
 
+    
 
     public TripDataGenerator( double[][] hwyDistSkims ) {
 		nZones = hwyDistSkims.length;
     	buildODTable ( hwyDistSkims );
     }
 
+    public TripDataGenerator( float[][] hwyDistSkims ) {
+		nZones = hwyDistSkims.length;
+		
+		double[][] doubleArray = new double[nZones][nZones];
+		for (int i=0; i < nZones; i++)
+			for (int j=0; j < nZones; j++)
+				doubleArray[i][j] = hwyDistSkims[i][j];
+		
+    	buildODTable ( doubleArray );
+    }
 
+
+    
     
     public double[][] getOdTable() {
         return odTable;

@@ -407,8 +407,8 @@ public class ApplicationOrchestrator {
     public void runTSModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
 		TS ts = new TS(appRb, globalRb);
-        ts.assignPeakAuto();
-        ts.assignOffPeakAuto();
+		ts.runHighwayAssignment( "peak" );
+		ts.runHighwayAssignment( "offpeak" );
 
     }
     

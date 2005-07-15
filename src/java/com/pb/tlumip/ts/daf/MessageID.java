@@ -57,13 +57,19 @@ public final class MessageID implements Serializable {
 	public static final String RETURN_WORK_ELEMENTS_COMPLETED_ID = "ReturnNumberOfWorkElementsCompletedByWorkerTasksOnNode";
 	
 	
-	public static final String[] AON_BUILD_LOAD_QUEUES = { 
-			"BuildLoadCommonQueue_1", 
-			"BuildLoadCommonQueue_2", 
-			"BuildLoadCommonQueue_3", 
-			"BuildLoadCommonQueue_4", 
-			"BuildLoadCommonQueue_5"
-		};
+	public static final String FW_ALGORITHM_QUEUE = "FWAlgorithmQueue";
+	
+	public static final String AON_BUILD_LOAD_WORKER_QUEUE = "BuildLoadWorkerQueue"; 
+
+	public static final String AON_BUILD_LOAD_CONTROLLER_QUEUE = "BuildLoadControllerQueue"; 
+
+	public static final String[] AON_BUILD_LOAD_COMMON_QUEUES = { 
+		"BuildLoadCommonQueue_1", 
+		"BuildLoadCommonQueue_2", 
+		"BuildLoadCommonQueue_3", 
+		"BuildLoadCommonQueue_4", 
+		"BuildLoadCommonQueue_5"
+	};
 	
 	
 	

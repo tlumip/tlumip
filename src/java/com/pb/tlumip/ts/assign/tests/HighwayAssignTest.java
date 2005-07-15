@@ -28,6 +28,7 @@ import com.pb.tlumip.ts.assign.Skims;
 import com.pb.tlumip.ts.assign.FW;
 import com.pb.tlumip.ts.assign.TripDataGenerator;
 
+import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
@@ -100,7 +101,8 @@ public class HighwayAssignTest {
 
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("generating trips with gravity model at: " + myDateString);
-		TripDataGenerator tdm = new TripDataGenerator ( highwaySkims.getSovDistSkims(g.getValidLinksForClass(0)) );
+		Matrix m = highwaySkims.getHwySkimMatrix( period, "dist", 'a' );
+		TripDataGenerator tdm = new TripDataGenerator ( m.getValues() );
 
 
 		//Compute Frank-Wolfe solution

@@ -54,7 +54,7 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
     public FWAlgorithmControllerTask () {
     }
 
-    
+
     public void onStart() {
 
     	if (LOGGING)
@@ -62,18 +62,19 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
 
     }
 
-    
+
     public void onMessage(Message msg) {
-    	
+
     	Network g = null;
     	double[][][] tripTable = null;
 
-    	
+
     	if (LOGGING)
 		    logger.info( this.name +  " onMessage() id=" + msg.getId() + ", sent by " + msg.getSender() + "." );
 
 
 		if(msg.getId().equals(MessageID.TS_SOLVE_FW_ID)) {
+
     		g = getNetworkObjectFromMessage( msg );
     		tripTable = getTripTableFromMessage( msg );
 
@@ -81,9 +82,13 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
     		int lastOriginTaz = getLastAssignmentTazFromMessage (msg );
     		int maxFwIteration = getMaxFwIterationNumberFromMessage (msg );
 
+    		solveFrankWolfeAlgorithm ( g, tripTable, maxFwIteration, firstOriginTaz, lastOriginTaz );
+
 		}
 		else if(msg.getId().equals(MessageID.FINAL_AON_FLOW_RESULTS_ID)) {
+			
 			aonFlow = getMulticlassAonLinkFlows ( msg );
+
 		}
 
     }
@@ -227,7 +232,7 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
     	
     	// establish that this controller task sends the message to the BuildLoadControllerQueue
         PortManager pManager = PortManager.getInstance();
-        Port buildLoadInputPort = pManager.createPort( "BuildLoadControllerQueue" );
+        Port buildLoadInputPort = pManager.createPort( MessageID.AON_BUILD_LOAD_CONTROLLER_QUEUE );
         
     	// set the message id and trip table values needed by AonBuildLoadControllerTask to start Aon Build Load
     	Message startMsg = mFactory.createMessage();
@@ -246,7 +251,7 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
         PortManager pManager = PortManager.getInstance();
         
     	// send the assignment info message to the BuildLoadCommonQueues on each node
-    	for (int i=0; i < MessageID.AON_BUILD_LOAD_QUEUES.length; i++) {
+    	for (int i=0; i < MessageID.AON_BUILD_LOAD_COMMON_QUEUES.length; i++) {
 
         	// set the message id and values to be sent to AonBuildLoadCommonTasks
         	Message assignInfoMsg = mFactory.createMessage();
@@ -257,7 +262,7 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
         	assignInfoMsg.setValue( MessageID.FIRST_TAZ_NUMBER_KEY, Integer.valueOf(firstOriginTaz) );
         	assignInfoMsg.setValue( MessageID.LAST_TAZ_NUMBER_KEY, Integer.valueOf(lastOriginTaz) );
 
-    		Port buildLoadInputPort = pManager.createPort( MessageID.AON_BUILD_LOAD_QUEUES[i] );
+    		Port buildLoadInputPort = pManager.createPort( MessageID.AON_BUILD_LOAD_COMMON_QUEUES[i] );
         	buildLoadInputPort.send(assignInfoMsg);
         	
     	}

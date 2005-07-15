@@ -213,10 +213,55 @@ public class ShortestPathTreeH {
 
 
     /**
+     * Trace the shortest path tree to get all the skims for each attribute sent in to all
+     * destination zones from this origin.
+     */
+    public double[][] getSkims ( double[][] linkAttributesToSkim ) {
+        
+        int p;
+		double[][] skimTables = new double [linkAttributesToSkim.length][g.getNumCentroids()];
+
+
+        for (int k=0; k < linkAttributesToSkim.length; k++) {
+
+	        for (int j=0; j < g.getNumCentroids(); j++) {
+	        	
+	            if (j != inOrigin) {
+	                p = predecessorLink[j];
+	                if (p == -1) {
+	                    //centroid is not connected
+	                	skimTables[k][j] = Double.NEGATIVE_INFINITY;
+	                    continue;
+	                }
+	                skimTables[k][j] += linkAttributesToSkim[k][p];
+	                while (ia[p] != inOrigin) {
+	                    p = predecessorLink[ia[p]];
+	                    if (p == -1) {
+	                        logger.error ("invalid predecessorLink: inOrigin=" + inOrigin + ", j=" + j + ", p=" + p);
+	                        logger.error ("skimming attributes for table " + k);
+	                        System.exit(-1);
+	                    }
+	                    
+	                    skimTables[k][j] += linkAttributesToSkim[k][p];
+	
+	                }
+	                
+	            }
+	            
+	        }
+        
+        }
+
+        return skimTables;
+        
+    }
+
+
+    /**
      * Trace the shortest path tree to get distance skims to all
      * destination zones from this origin.
      */
-    public double[] getSkim () {
+    public double[] getSkim ( double[] linkAttributeToSkim ) {
         
         int k;
 		double[] skim = new double [g.getNumCentroids()];
@@ -230,7 +275,7 @@ public class ShortestPathTreeH {
                     skim[j] = Double.NEGATIVE_INFINITY;
                     continue;
                 }
-				skim[j] += linkCost[k];
+				skim[j] += linkAttributeToSkim[k];
                 while (ia[k] != inOrigin) {
                     k = predecessorLink[ia[k]];
                     if (k == -1) {
@@ -238,7 +283,7 @@ public class ShortestPathTreeH {
                         System.exit(-1);
                     }
                     
-                   	skim[j] += linkCost[k];
+                   	skim[j] += linkAttributeToSkim[k];
 
                 }
                 

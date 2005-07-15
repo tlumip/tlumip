@@ -122,14 +122,14 @@ public class AonBuildLoadCommonTask extends MessageProcessingTask {
     	aonFlowMsg.setValue( MessageID.NODE_KEY, Integer.valueOf(nodeId) );
     	aonFlowMsg.setValue( MessageID.AON_FLOW_RESULT_VALUES_KEY, flowResults.getCombinedLinkFlows() );
     	
-        Port resultsPort = pManager.createPort( "BuildLoadControllerQueue" );
+        Port resultsPort = pManager.createPort( MessageID.AON_BUILD_LOAD_CONTROLLER_QUEUE );
         resultsPort.send( aonFlowMsg );
     	
     }
     
     private void sendNumberOfWorkElementsCompletedMessage () {
     	
-		// create the message to be used to return aon flow results
+		// create the message used to return number of work elements completed by all the worker tasks on this node
     	Message workCompletedMsg = mFactory.createMessage();
 
     	// return the total aon link flows accummulated by all the worker tasks on this node
@@ -137,7 +137,7 @@ public class AonBuildLoadCommonTask extends MessageProcessingTask {
     	workCompletedMsg.setValue( MessageID.NODE_KEY, Integer.valueOf(nodeId) );
     	workCompletedMsg.setValue( MessageID.NUMBER_OF_WORK_ELEMENTS_COMPLETED_KEY, Integer.valueOf(flowResults.getWorkElementsCompleted()) );
     	
-        Port resultsPort = pManager.createPort( "BuildLoadControllerQueue" );
+        Port resultsPort = pManager.createPort( MessageID.AON_BUILD_LOAD_CONTROLLER_QUEUE );
         resultsPort.send( workCompletedMsg );
     	
     }

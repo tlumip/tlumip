@@ -33,9 +33,9 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.util.ResourceUtil;
-import com.pb.common.util.ObjectUtil;
 
 import java.util.HashMap;
+import java.util.Arrays;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -50,21 +50,28 @@ public class TS {
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts");
 
 
+	final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
+
 	HashMap tsPropertyMap;
     HashMap globalPropertyMap;
 
 	String ptFileName = null;
 	String ctFileName = null;
-	String peakOutputFileName = null;
-	String offpeakOutputFileName = null;
+	String assignmentResultsFileName = null;
+	
+	double[][][] multiclassTripTable = new double[highwayModeCharacters.length][][];
+	Network g = null;
+	int startHour;
+	int endHour;
+	float volumeFactor;
+	
+
 	
 	
 	
 	public TS() {
 
         tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
-
-		initTS();
 		
 	}
 
@@ -72,240 +79,187 @@ public class TS {
 
         tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
         globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-		initTS();
 
 	}
 
 
+    public void runHighwayAssignment( String assignmentPeriod ) {
+    	
+    	// define assignment related variables dependent on the assignment period
+    	initializeHighwayAssignment ( assignmentPeriod );
 
-    public static void main (String[] args) {
-        
-        TS tsTest = new TS( ResourceBundle.getBundle("ts"), ResourceBundle.getBundle ("global") );
-
-		tsTest.assignPeakAuto();
-//		tsTest.assignOffPeakAuto();
-
-		logger.info ("\ndone with TS run.");
+    	// load the trips from PT and CT trip lists into multiclass o/d demand matrices for assignment
+		createMulticlassDemandMatrices ( assignmentPeriod );
+		
+		// run the multiclass assignment for the time period
+    	multiclassEquilibriumHighwayAssignment ( assignmentPeriod );
+		
     }
-
-
     
-
-
-	private void initTS() {
-
+    
+    
+    private void initializeHighwayAssignment ( String assignmentPeriod ) {
+        
+    	String myDateString = null;
+		long startTime = System.currentTimeMillis();
+		
 	    // get trip list filenames from property file
 		ptFileName = (String)tsPropertyMap.get("pt.fileName");
 		ctFileName = (String)tsPropertyMap.get("ct.fileName");
 
-		peakOutputFileName = (String)tsPropertyMap.get("peakOutput.fileName");
-		offpeakOutputFileName = (String)tsPropertyMap.get("offpeakOutput.fileName");
-	}
+		
 
+		if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+			// get peak period definitions from property files
+			startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
+			endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+			volumeFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
+			assignmentResultsFileName = (String)tsPropertyMap.get("peakOutput.fileName");
+		}
+		else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+			// get off-peak period definitions from property files
+			startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
+			endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+			volumeFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
+			assignmentResultsFileName = (String)tsPropertyMap.get("offpeakOutput.fileName");
+		}
+
+		
+        myDateString = DateFormat.getDateTimeInstance().format(new Date());
+		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
+		g = new Network( tsPropertyMap, globalPropertyMap, assignmentPeriod, volumeFactor );
+
+    }
 	
-    public void assignPeakAuto () {
+	
+    private void createMulticlassDemandMatrices ( String assignmentPeriod ) {
         
 		long startTime = System.currentTimeMillis();
 		
-		double[][][] multiclassTripTable = null;
-		double[][][] truckTripTables = null;
-		double[][] autoTripTable = null;
-		
-		Network g = null;
-		
-
 		int totalTrips;
 		int linkCount;
 		String myDateString;
 
-		// get peak period definitions from global property file
-		int peakStart = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-		int peakEnd = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
-		float peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
+		// check that at least one valid user class has been defined
+		if ( g.getNumUserClasses() == 0 ) {
+			logger.error ( "No valid user classes defined in ts.properties file.", new RuntimeException() );
+		}
 		
-        myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
-		g = new Network( tsPropertyMap, globalPropertyMap, "peak", peakFactor );
-
-	    long size = ObjectUtil.sizeOf( g );
-	    logger.info("Approximate size of " + g + " object :" + ((float)size/(1024.0*1024.0)) + " MB.");
+		HashMap assignmentGroupMap = g.getAssignmentGroupMap();
 		
-	
-	
-		// create Frank-Wolfe Algortihm Object
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW();
-		fw.initialize( tsPropertyMap, g );
-
-		// read PT trip list into o/d trip matrix
-        myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("reading PT trip list at: " + myDateString);
-		autoTripTable = getAutoTripTableFromPTList ( g, ptFileName, peakStart, peakEnd );
-
-        
-		// read CT trip list into o/d trip matrix
-		if ( g.getUserClasses().length > 1 ) {
+		// read PT trip list into o/d trip matrix if auto user class was defined
+		if ( assignmentGroupMap.containsKey( String.valueOf('a') ) ) {
+			int assignmentGroupIndex = ((Integer)assignmentGroupMap.get( String.valueOf('a') )).intValue(); 
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
-			logger.info ("reading CT trip list at: " + myDateString);
-			truckTripTables = getTruckTripTableFromCTList ( g, ctFileName, peakStart, peakEnd );
+			logger.info ("reading " + assignmentPeriod + " PT trip list at: " + myDateString);
+			multiclassTripTable[0] = getAutoTripTableFromPTList ( g, ptFileName, startHour, endHour );
+		}
+		else {
+			logger.info ("no auto class defined, so " + assignmentPeriod + " PT trip list was not read." );
 		}
 
-		
-		multiclassTripTable = new double[g.getUserClasses().length][][];
-		multiclassTripTable[0] = autoTripTable;
-		for(int i=0; i < g.getUserClasses().length - 1; i++)
-			multiclassTripTable[i+1] = truckTripTables[i];
-
-		
-		// do some checks on network connectivity.
-//		g.checkForIsolatedLinks ();
-//        double[][][] dummyTripTable = new double[g.getUserClasses().length][g.getNumCentroids()+1][g.getNumCentroids()+1];
-//		for(int i=0; i < g.getUserClasses().length - 1; i++) {
-//			for(int j=0; j < g.getNumCentroids() + 1; j++) {
-//				Arrays.fill(dummyTripTable[i][j], 1.0);
-//			}
-//		}
-//		g.checkODConnectivity(dummyTripTable);
-//		g.checkODConnectivity(multiclassTripTable);
-		
-
-
-		//Compute Frank-Wolfe solution
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("starting fw at: " + myDateString);
-		fw.iterate ( multiclassTripTable );
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("done with fw at: " + myDateString);
-
-        logger.info("assignPeakAuto() finished in " +
-			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
-
         
-		logger.info("Writing network file with peak assignment results");
-        writeAssignmentResults(g, peakOutputFileName);
+		// read CT trip list into o/d trip matrix if at least one truck class was defined
+		if ( g.userClassesIncludeTruck() ) {
+			myDateString = DateFormat.getDateTimeInstance().format(new Date());
+			logger.info ("reading " + assignmentPeriod + " CT trip list at: " + myDateString);
+			double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ( g, ctFileName, startHour, endHour );
+
+			for(int i=0; i < truckTripTables.length - 1; i++)
+				multiclassTripTable[i+1] = truckTripTables[i];
+		}
+
 
 		
-		
-		logger.info("Writing Peak Auto (class 0) Time and Distance skims to disk");
-        startTime = System.currentTimeMillis();
-        writePeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinksForClass(0));
-        logger.info("wrote the (class 0) peak skims in " +
-    			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
-
-
-        
-        // log the average sov trip travel distance and travel time for this assignment
-        logger.info("Generating Time and Distance peak skims to use to calcluate average time and distance...");
-        Skims skims = new Skims(g, tsPropertyMap, globalPropertyMap);
-        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0], g.getValidLinksForClass(0));
-        logger.info( "Average Peak auto (class 0) trip travel distance = " + skimSummaries[0] + " miles."); 
-        logger.info( "Average Peak auto (class 0) trip travel time = " + skimSummaries[1] + " minutes."); 
-
-        logger.info( "\ndone with peak assignment."); 
-        
     }
 	
 	
-    public void assignOffPeakAuto () {
-
+    private void multiclassEquilibriumHighwayAssignment ( String assignmentPeriod ) {
+        
 		long startTime = System.currentTimeMillis();
-
-		double[][][] multiclassTripTable = null;
-		double[][][] truckTripTables = null;
-		double[][] autoTripTable = null;
 		
-		Network g = null;
-		
-        int totalTrips;
+		int totalTrips;
 		int linkCount;
 		String myDateString;
 
 		
 		
-        // get off-peak period definitions from property file
-		int offPeakStart = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
-		int offPeakEnd = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
-		float offPeakFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
-
-        myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("creating peak Highway Network object for assignment at: " + myDateString);
-		g = new Network( tsPropertyMap, globalPropertyMap, "offpeak", offPeakFactor );
-
-	    long size = ObjectUtil.sizeOf( g );
-	    logger.info("Approximate size of " + g + " object :" + ((float)size/(1024.0*1024.0)) + " MB.");
-		
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("creating FW object at: " + myDateString);
+		logger.info ("creating + " + assignmentPeriod + " FW object at: " + myDateString);
 		FW fw = new FW();
 		fw.initialize( tsPropertyMap, g );
 
-		// read PT trip list into o/d trip matrix
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("reading PT trip list at: " + myDateString);
-		autoTripTable = getAutoTripTableFromPTList ( g, ptFileName, offPeakStart, offPeakEnd );
 
-		// read CT trip list into o/d trip matrix
+		// Compute Frank-Wolfe solution
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("reading CT trip list at: " + myDateString);
-		truckTripTables = getTruckTripTableFromCTList ( g, ctFileName, offPeakStart, offPeakEnd );
-
-		multiclassTripTable = new double[g.getUserClasses().length][][];
-		multiclassTripTable[0] = autoTripTable;
-		for(int i=0; i < g.getUserClasses().length - 1; i++)
-			multiclassTripTable[i+1] = truckTripTables[i];
-
-		
-		//Compute Frank-Wolfe solution
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("starting fw at: " + myDateString);
+		logger.info ("starting + " + assignmentPeriod + " fw at: " + myDateString);
 		fw.iterate ( multiclassTripTable );
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("done with fw at: " + myDateString);
+		logger.info ("done with + " + assignmentPeriod + " fw at: " + myDateString);
 
-        logger.info("assignOffPeakAuto() finished in " +
-			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
+        logger.info( assignmentPeriod + " highway assignment finished in " +
+			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes.");
 
-
-		logger.info("Writing network file with off-peak assignment results");
-        writeAssignmentResults(g, offpeakOutputFileName);
-		
-		
-        logger.info("Writing Off-Peak Auto (class 0) Time and Distance skims to disk...");
-        startTime = System.currentTimeMillis();
-        writeOffPeakSkims(g, tsPropertyMap, globalPropertyMap, g.getValidLinksForClass(0));
-        logger.info("wrote the Off-Peak skims in " +
-			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
-
-        // log the average sov trip travel distance and travel time for this assignment
-        logger.info("Generating Time and Distance off-peak skims to use to calcluate average time and distance...");
-        Skims skims = new Skims(g, tsPropertyMap, globalPropertyMap);
-        double[] skimSummaries = skims.getAvgSovTripSkims(multiclassTripTable[0], g.getValidLinksForClass(0));
-        logger.info( "Average Off-Peak auto (class 0) trip travel distance = " + skimSummaries[0] + " miles."); 
-        logger.info( "Average Off-Peak auto (class 0) trip travel time = " + skimSummaries[1] + " minutes."); 
         
-        logger.info( "\ndone with off-peak assignment."); 
+		logger.info("Writing results file with " + assignmentPeriod + " assignment results.");
+        writeAssignmentResults(g, assignmentResultsFileName);
+
+		
+        
+        logger.info( "\ndone with " + assignmentPeriod + " period assignment."); 
+        
+    }
+	
+
+    
+    public void checkNetworkForIsolatedLinks () {
+    	    	
+		g.checkForIsolatedLinks ();
+
+    }
+    
+    
+    
+    public void checkAllODPairsForNetworkConnectivity () {
+    	
+        double[][][] dummyTripTable = new double[g.getUserClasses().length][g.getNumCentroids()+1][g.getNumCentroids()+1];
+		for(int i=0; i < g.getUserClasses().length - 1; i++) {
+			for(int j=0; j < g.getNumCentroids() + 1; j++) {
+				Arrays.fill(dummyTripTable[i][j], 1.0);
+			}
+		}
+		g.checkODConnectivity(dummyTripTable);
+
+    }
+    
+    
+    
+    public void checkODPairsWithTripsForNetworkConnectivity () {
+    	
+		g.checkODConnectivity(multiclassTripTable);
+
     }
 
-    public void writePeakSkims(Network g, HashMap tsMap, HashMap globalMap, boolean[] validLinks){
-        Skims skims = new Skims(g, tsMap, globalMap);
-        logger.info ("skimming network and creating pk time and distance matrices.");
-//        skims.writePeakSovTimeSkimMatrices(validLinks);  //writes the alpha and beta pktime skims
-        skims.writeSovDistSkimMatrices(validLinks);     //writes alpha and beta pkdist  and
-                                                // off-peak distance skims
+    
+    
+    
+    public void writeHighwaySkimMatrix ( String assignmentPeriod, String skimType, char modeChar ) {
+
+		logger.info("Writing " + assignmentPeriod + " time skim matrix for highway mode " + modeChar + " to disk...");
+        long startTime = System.currentTimeMillis();
+        
+    	Skims skims = new Skims(g, tsPropertyMap, globalPropertyMap);
+    	
+        skims.writeHwySkimMatrix ( assignmentPeriod, skimType, modeChar);
+
+        logger.info("wrote the " + assignmentPeriod + " " + skimType + " skims for mode " + modeChar + " in " +
+    			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+
     }
 
-    public void writeOffPeakSkims(Network g, HashMap map, HashMap globalMap, boolean[] validLinks){
-        Skims skims = new Skims(g, map, globalMap);
-        logger.info ("skimming network and creating off-pk time matrices.");
-        skims.writeOffPeakSovTimeSkimMatrices(validLinks);    //writes the alpha off-peak time skim
-    }
 
-
-
-
-
+    
     private double[][] getAggregateTripTableFromCsvFile ( Network g, String fileName, int numCentroids ) {
         
         int orig;
@@ -430,7 +384,7 @@ public class TS {
     }
     
 
-    private double[][][] getTruckTripTableFromCTList ( Network g, String fileName, int startPeriod, int endPeriod ) {
+    private double[][][] getTruckAssignmentGroupTripTableFromCTList ( Network g, String fileName, int startPeriod, int endPeriod ) {
 
         int orig;
         int dest;
@@ -438,16 +392,23 @@ public class TS {
         int mode;
         int o;
         int d;
+        int group;
+        char modeChar;
         String truckType;
         double tripFactor = 1.0;
+        
 
+        HashMap assignmentGroupMap = g.getAssignmentGroupMap();
+        int numAssignmentGroups = assignmentGroupMap.keySet().size();
+		if ( assignmentGroupMap.containsKey( String.valueOf('a') ) )
+			numAssignmentGroups--;
+        
         int[] nodeIndex = null;
 
-        char[] userClasses = g.getUserClasses();
         
-        // the first userclass is auto, and is not relevant for truck trips, so there are userClasses.length - 1 truck classes
-        double[] tripCount = new double[userClasses.length - 1];
-        double[][][] tripTable = new double[userClasses.length - 1][g.getNumCentroids()+1][g.getNumCentroids()+1];
+        double[] tripsByUserClass = new double[highwayModeCharacters.length];
+        double[] tripsByAssignmentGroup = new double[numAssignmentGroups];
+        double[][][] tripTable = new double[numAssignmentGroups][g.getNumCentroids()+1][g.getNumCentroids()+1];
 
 
 
@@ -474,14 +435,18 @@ public class TS {
 					tripFactor = (int)table.getValueAt( i+1, "tripFactor" );
 	
 					mode = Integer.parseInt( truckType.substring(3) );
+					modeChar = highwayModeCharacters[mode];
+					group = ((Integer)assignmentGroupMap.get( String.valueOf( modeChar ) )).intValue();
+					
 					o = nodeIndex[orig];
 					d = nodeIndex[dest];
 	
 					// accumulate all peak period highway mode trips
 					if ( startTime >= startPeriod && startTime <= endPeriod ) {
 	
-					    tripTable[mode-1][o][d] += tripFactor;
-						tripCount[mode-1] += tripFactor;
+					    tripTable[group-1][o][d] += tripFactor;
+					    tripsByUserClass[mode-1] += tripFactor;
+					    tripsByAssignmentGroup[group-1] += tripFactor;
 	
 					}
 	
@@ -498,10 +463,15 @@ public class TS {
 		}
 
 		
-		logger.info ("truck network trips read from CT file from " + startPeriod + " to " + endPeriod + ":");
-		for (int i=0; i < tripCount.length; i++)
-			if (tripCount[i] > 0)
-				logger.info (tripCount[i] + " truck trips with user class " + userClasses[i+1] );
+		logger.info ("trips by truck user class read from CT file from " + startPeriod + " to " + endPeriod + ":");
+		for (int i=0; i < tripsByUserClass.length; i++)
+			if (tripsByUserClass[i] > 0)
+				logger.info ( tripsByUserClass[i] + " truck trips with user class " + highwayModeCharacters[i+1] );
+
+		logger.info ("trips by truck assignment groups read from CT file from " + startPeriod + " to " + endPeriod + ":");
+		for (int i=0; i < tripsByAssignmentGroup.length; i++)
+			if (tripsByAssignmentGroup[i] > 0)
+				logger.info ( tripsByAssignmentGroup[i] + " truck trips in assignment group " + (i+1) );
 
 		return tripTable;
 
@@ -514,4 +484,19 @@ public class TS {
     	g.writeNetworkAttributes(fileName);
     	
     }
+
+
+
+
+    public static void main (String[] args) {
+        
+        TS tsTest = new TS( ResourceBundle.getBundle("ts"), ResourceBundle.getBundle ("global") );
+
+		tsTest.runHighwayAssignment( "peak" );
+//		tsTest.runHighwayAssignment( "offpeak" );
+		
+		logger.info ("\ndone with TS run.");
+		
+    }
+
 }

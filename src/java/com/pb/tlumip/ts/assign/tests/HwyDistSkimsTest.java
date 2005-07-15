@@ -82,7 +82,7 @@ public class HwyDistSkimsTest {
 		logger.info ("done building Skims object.");
 
 
-		Matrix distSkimMatrix = sk.getSovDistSkimAsMatrix(0);
+		Matrix distSkimMatrix = sk.getHwySkimMatrix( period, "dist", 'a' );
 		logger.info ("done computing peak sov distance skims.");
 
 		

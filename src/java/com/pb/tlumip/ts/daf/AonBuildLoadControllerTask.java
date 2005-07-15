@@ -53,10 +53,10 @@ public class AonBuildLoadControllerTask extends MessageProcessingTask {
 	PortManager pManager = PortManager.getInstance();
 	
 	
-	int[] buildLoadRequestsHandled = new int[MessageID.AON_BUILD_LOAD_QUEUES.length];
+	int[] buildLoadRequestsHandled = new int[MessageID.AON_BUILD_LOAD_COMMON_QUEUES.length];
 	int totalBuildLoadRequestsHandled = 0;
     
-	double[][][] aonLinkFlowWorkerResults = new double[MessageID.AON_BUILD_LOAD_QUEUES.length][][];
+	double[][][] aonLinkFlowWorkerResults = new double[MessageID.AON_BUILD_LOAD_COMMON_QUEUES.length][][];
     int numberOfWorkerNodesThatReturnedResults = 0;
 	
 	
@@ -176,7 +176,7 @@ public class AonBuildLoadControllerTask extends MessageProcessingTask {
 		
 		// wait here until each of the worker nodes has returned messages with their loaded
 		// multiclass aon flow vectors.
-		while ( numberOfWorkerNodesThatReturnedResults != MessageID.AON_BUILD_LOAD_QUEUES.length ) {
+		while ( numberOfWorkerNodesThatReturnedResults != MessageID.AON_BUILD_LOAD_COMMON_QUEUES.length ) {
 		}
 
 		
@@ -202,7 +202,7 @@ public class AonBuildLoadControllerTask extends MessageProcessingTask {
     private void sendBuildLoadWorkMessage ( int origin, int userClass, double[] tripTableRow ) {
     	
     	// establish that this controller task places work to be done on the BuildLoadWorkerQueue
-        Port workerPort = pManager.createPort( "BuildLoadWorkerQueue" );
+        Port workerPort = pManager.createPort( MessageID.AON_BUILD_LOAD_WORKER_QUEUE );
         
     	// set the message id and values for the work to be done
     	Message workMsg = mFactory.createMessage();
@@ -227,8 +227,8 @@ public class AonBuildLoadControllerTask extends MessageProcessingTask {
     	workCompletedMsg.setId( MessageID.RETURN_WORK_ELEMENTS_COMPLETED_ID );
 
     	// send the assignment info message to the BuildLoadCommonQueues on each node
-    	for (int i=0; i < MessageID.AON_BUILD_LOAD_QUEUES.length; i++) {
-            Port buildLoadInputPort = pManager.createPort( MessageID.AON_BUILD_LOAD_QUEUES[i] );
+    	for (int i=0; i < MessageID.AON_BUILD_LOAD_COMMON_QUEUES.length; i++) {
+            Port buildLoadInputPort = pManager.createPort( MessageID.AON_BUILD_LOAD_COMMON_QUEUES[i] );
         	buildLoadInputPort.send(workCompletedMsg);
     	}
     	
@@ -245,8 +245,8 @@ public class AonBuildLoadControllerTask extends MessageProcessingTask {
     	resultsMsg.setId( MessageID.RETURN_AON_LINK_FLOWS_ID );
 
     	// send the assignment info message to the BuildLoadCommonQueues on each node
-    	for (int i=0; i < MessageID.AON_BUILD_LOAD_QUEUES.length; i++) {
-            Port buildLoadInputPort = pManager.createPort( MessageID.AON_BUILD_LOAD_QUEUES[i] );
+    	for (int i=0; i < MessageID.AON_BUILD_LOAD_COMMON_QUEUES.length; i++) {
+            Port buildLoadInputPort = pManager.createPort( MessageID.AON_BUILD_LOAD_COMMON_QUEUES[i] );
         	buildLoadInputPort.send(resultsMsg);
     	}
     	
@@ -264,7 +264,7 @@ public class AonBuildLoadControllerTask extends MessageProcessingTask {
     	resultsMsg.setValue( MessageID.FINAL_AON_FLOW_RESULT_VALUES_KEY, finalFlowResults );
 
     	// send the final results info message to the FWAlgorithmQueue
-        Port buildLoadResultsPort = pManager.createPort( "FWAlgorithmQueue" );
+        Port buildLoadResultsPort = pManager.createPort( MessageID.FW_ALGORITHM_QUEUE );
         buildLoadResultsPort.send(resultsMsg);
     	
     }

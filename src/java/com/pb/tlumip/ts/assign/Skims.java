@@ -58,7 +58,6 @@ public class Skims {
     int[] externalToAlphaInternal = null;
     int[] alphaExternalNumbers = null;
 	
-	Matrix newSkimMatrix;
 
     public Skims ( ResourceBundle tsRb, ResourceBundle globalRb, String timePeriod, float volumeFactor ) {
 
@@ -130,211 +129,190 @@ public class Skims {
 
 
     /**
-	 * write out peak and off-peak, alpha and beta SOV distance skim matrices
+	 * calculate the alpha zone skim matrices based on the set of lin attributes passed in and return the Matrix object array
 	 */
-	public void writeSovDistSkimMatrices ( boolean[] validLinks ) {
+	public Matrix[] getHwySkimMatrices ( String assignmentPeriod, double[][] linkAttribs, char modeChar ) {
 
-		String fileName;
-		MatrixWriter mw;
-		Matrix mSqueezed;
+		String matrixName = null;
+		String matrixDescription = null;
+
+		Matrix[] newSkimMatrices = new Matrix[linkAttribs.length];
 		
-		// set the highway network attribute on which to skim the network - distance in this case
-		double[] linkCost = g.getDist();
 		
-        // get the skims as a double[][] array 
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, validLinks );
+		// set generalized cost as the link attribute by which to build shortest paths trees
+		double[] linkCost = g.setLinkGeneralizedCost ();
 
-        // copy the array to a ones-based float[][] for conversion to Matrix object
-        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
+		// set the highway network attribute on which to skim the network - congested time in this case
+		boolean[] validLinks = g.getValidLinksForClass( modeChar );
+		
 
-	    // create a Matrix from the peak alpha distance skims array and write to disk
-	    fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
-        newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", zeroBasedFloatArray );
-	    newSkimMatrix.setExternalNumbersZeroBased( alphaNumberArray );
-        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
-        mw.writeMatrix(newSkimMatrix);
-        newSkimMatrix.logMatrixStatsToInfo();
+		// get the skims as a double[][] array dimensioned to number of centroids (2984)
+        double[][][] zeroBasedDoubleArrays = buildHwySkimMatrices( linkCost, linkAttribs, validLinks );
 
-	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
-	    fileName = (String)tsPropertyMap.get( "pkHwyDistBetaSkim.fileName" );
-        mSqueezed = getSqueezedMatrix(newSkimMatrix);
-        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
-        mw.writeMatrix(mSqueezed);
-        mSqueezed.logMatrixStatsToInfo();
+		for ( int i=0; i < linkAttribs.length; i++ ) {
+
+	        // convert to a float[][] dimensioned to number of alpha zones (2950)
+	        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArrays[i] );
+
+	        // define default names for matrices.  They can be set later if necessary
+			matrixName = "table" + i;
+			matrixDescription = "table" + i + ", mode " + modeChar;
+			newSkimMatrices[i] = new Matrix( matrixName, matrixDescription, zeroBasedFloatArray );
+			newSkimMatrices[i].setExternalNumbers( alphaExternalNumbers );
+			
+		}
+		
         
-	    // create a Matrix from the off-peak alpha distance skims array and write to disk
-	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
-        newSkimMatrix = new Matrix( "opdist", "Off-peak SOV Distance Skims", zeroBasedFloatArray );
-	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
-        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
-        mw.writeMatrix(newSkimMatrix);
-
+        
+        return newSkimMatrices;
+        
 	}
 
 
-    /**
-	 * write out peak alpha and beta SOV time skim matrices
-	 */
-	public void writePeakSovTimeSkimMatrices ( boolean[] validLinks ) {
+	public Matrix getHwySkimMatrix ( String assignmentPeriod, String skimType, char modeChar ) {
 
-		String fileName;
-		MatrixWriter mw;
-		Matrix mSqueezed;
-		
+		String matrixName = null;
+		String matrixDescription = null;
+
+		// set generalized cost as the link attribute by which to build shortest paths trees
+		double[] linkCost = g.setLinkGeneralizedCost ();
+
+		// define a variable to hold the link attribute to be skimmed (e.g. time, dist, toll, genCost, ...)
+		double[] linkAttrib = null;
+
 		// set the highway network attribute on which to skim the network - congested time in this case
-		double[] linkCost = g.getCongestedTime();
+		boolean[] validLinks = g.getValidLinksForClass( modeChar );
 		
+
+		// initialize the necessary values based on the assignmet period and type of skim to produce
+        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") ) {
+        	    matrixName = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixName" );
+        	    matrixDescription = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixDescription" );
+
+        		linkAttrib = g.getCongestedTime();
+        	}
+        	else if ( skimType.equalsIgnoreCase("dist") ) {
+        	    matrixName = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixName" );
+        	    matrixDescription = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixDescription" );
+
+        		linkAttrib = g.getDist();
+        	}
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") ) {
+        	    matrixName = (String)tsPropertyMap.get( "opHwyTimeSkim.matrixName" );
+        	    matrixDescription = (String)tsPropertyMap.get( "opHwyTimeSkim.matrixDescription" );
+
+        		linkAttrib = g.getCongestedTime();
+        	}
+        	else if ( skimType.equalsIgnoreCase("dist") ) {
+        	    matrixName = (String)tsPropertyMap.get( "opHwyTimeSkim.matrixName" );
+        	    matrixDescription = (String)tsPropertyMap.get( "opHwyTimeSkim.matrixDescription" );
+
+        		linkAttrib = g.getDist();
+        	}
+        }
+        
+
+        
         // get the skims as a double[][] array dimensioned to number of centroids (2984)
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, validLinks );
+        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, linkAttrib, validLinks );
 
         // convert to a float[][] dimensioned to number of alpha zones (2950)
         float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
 
-	    // create a Matrix from the peak alpha congested time skims array and write to disk
-	    fileName = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
-        newSkimMatrix = new Matrix( "pktime", "Peak SOV Time Skims", zeroBasedFloatArray );
+        Matrix newSkimMatrix = new Matrix( matrixName, matrixDescription, zeroBasedFloatArray );
 	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
-        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
-        mw.writeMatrix(newSkimMatrix);
-        newSkimMatrix.logMatrixStatsToInfo();
-
-	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
-	    fileName = (String)tsPropertyMap.get( "pkHwyTimeBetaSkim.fileName" );
-        mSqueezed = getSqueezedMatrix(newSkimMatrix);
-        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
-        mw.writeMatrix(mSqueezed);
-        mSqueezed.logMatrixStatsToInfo();
+        
+        
+        return newSkimMatrix;
         
 	}
 
 
     /**
-	 * write out off-peak alpha and beta SOV time skim matrices
+	 * write out an alpha zone skim matrix
 	 */
-	public void writeOffPeakSovTimeSkimMatrices ( boolean[] validLinks ) {
+	public void writeHwySkimMatrix ( String assignmentPeriod, String skimType, char modeChar ) {
 
-		String fileName;
-		MatrixWriter mw;
-
-		// set the highway network attribute on which to skim the network - free flow time in this case
-		double[] linkCost = g.getCongestedTime();
+		String fileName = null;
 		
-        // get the skims as a double[][] array 
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, validLinks );
-
-        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
-
-	    // create a Matrix from the off-peak alpha congested time skims array and write to disk
-	    fileName = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
-        newSkimMatrix = new Matrix( "optime", "Off-peak SOV Time Skims", zeroBasedFloatArray );
-	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
-        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
-        mw.writeMatrix(newSkimMatrix);
-
-	}
-
-
-    /**
-	 * get peak alpha zone SOV distance skim matrix
-	 */
-	public Matrix getSovDistSkimAsMatrix (int userClass) {
-
-		// set the highway network attribute on which to skim the network - distance in this case
-		double[] linkCost = g.getDist();
-		
-        // get the skims as a double[][] array
-		// skims are generated between all centroids in entire network (2985 total centroids)
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, g.getValidLinksForClass(userClass) );
-
-        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArray );
-
-	    // create a Matrix from the peak alpha distance skims array and return
-        newSkimMatrix = new Matrix( "pkdist", "Peak SOV Distance Skims", zeroBasedFloatArray );
-	    newSkimMatrix.setExternalNumbers( alphaExternalNumbers );
-
-	    return newSkimMatrix;
-	    
-	}
-
-
-    /**
-	 * get peak alpha zone SOV distance skim array
-	 */
-	public double[][] getSovDistSkims ( boolean[] validLinks ) {
-
-		// set the highway network attribute on which to skim the network - distance in this case
-		double[] linkCost = g.getDist();
-		
-        // get the skims as a double[][] array 
-        double[][] zeroBasedDoubleArray = buildHwySkimMatrix( linkCost, validLinks );
-
-	    return zeroBasedDoubleArray;
-	    
-	}
-
-
-    
-    /**
-	 * get average SOV trip travel skim values: (dist,time).
-	 */
-	public double[] getAvgSovTripSkims ( double[][] trips, boolean[] validLinks ) {
-
-		// set the highway network attribute on which to skim the network - distance in this case
-		double[] linkCost = g.getDist();
-		
-		// get the external zone number correspondence array
-		int[] indexNode = g.getIndexNode();
+		Matrix newSkimMatrix = getHwySkimMatrix ( assignmentPeriod, skimType, modeChar );
 		
 		
-        // get the skims as a double[][] array 
-        double[][] zeroBasedDistArray = buildHwySkimMatrix( linkCost, validLinks );
-
-        double disconnected = 0;
-    	double tripMiles = 0.0;
-        double totalTrips = 0.0;
-        for (int i=0; i < zeroBasedDistArray.length; i++) {
-            for (int j=0; j < zeroBasedDistArray.length; j++) {
-            	if ( trips[i][j] > 0.0 ) {
-                	if ( zeroBasedDistArray[i][j] != Double.NEGATIVE_INFINITY ) {
-                		tripMiles += trips[i][j]*zeroBasedDistArray[i][j];
-                    	totalTrips += trips[i][j];
-                	}
-                	else {
-                		disconnected ++;
-                	}
-            	}
-            }
+		// initialize the necessary values based on the assignmet period and type of skim to produce
+        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") ) {
+        	    fileName = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
+        	}
+        	else if ( skimType.equalsIgnoreCase("dist") ) {
+        	    fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
+        	}
         }
-
-
+        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") ) {
+        	    fileName = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
+        	}
+        	else if ( skimType.equalsIgnoreCase("dist") ) {
+        	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
+        	}
+        }
         
+        MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(newSkimMatrix);
         
-		// set the highway network attribute on which to skim the network - distance in this case
-		linkCost = g.getCongestedTime();
-		
-        // get the skims as a double[][] array 
-        double[][] zeroBasedTimeArray = buildHwySkimMatrix( linkCost, validLinks );
+	}
 
-    	double tripMinutes = 0.0;
-        for (int i=0; i < zeroBasedTimeArray.length; i++)
-            for (int j=0; j < zeroBasedTimeArray.length; j++)
-            	if ( zeroBasedTimeArray[i][j] != Double.NEGATIVE_INFINITY )
-            		tripMinutes += trips[i][j]*zeroBasedTimeArray[i][j];
 
-            	
-            	
-        double[] results = new double[3];
-        results[0] = tripMiles/totalTrips;
-        results[1] = tripMinutes/totalTrips;
-        results[2] = disconnected;
+    /**
+	 * calculate the beta zone skim matrix and return the beta zone Matrix object
+	 */
+	public Matrix getBetaSkimMatrix ( Matrix alphaZoneMatrix ) {
+
+        // alphaNumberArray and betaNumberArray were read in from correspondence file and are zero-based
+        AlphaToBeta a2b = new AlphaToBeta (alphaNumberArray, betaNumberArray);
+
+        // create a MatrixCompression object and return the squeezed matrix
+        MatrixCompression squeeze = new MatrixCompression(a2b);
+        return squeeze.getCompressedMatrix( alphaZoneMatrix, "MEAN" );
         
-        return results;
-
 	}
 
 
     
+    /**
+	 * write out beta zone time skim matrices and return the beta zone Matrix object
+	 */
+	public void writeBetaSkimMatrix ( String assignmentPeriod, String skimType, Matrix alphaZoneMatrix ) {
 
+		String fileName = null;
+		
+		Matrix mSqueezed = getBetaSkimMatrix ( alphaZoneMatrix );
+
+		
+	    // create a Matrix from the peak alpha congested time skims array and write to disk
+        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") )
+        	    fileName = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
+        	else if ( skimType.equalsIgnoreCase("dist") )
+        	    fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") )
+        	    fileName = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
+        	else if ( skimType.equalsIgnoreCase("dist") )
+        	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
+        }
+        
+	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
+        MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(mSqueezed);
+        
+	}
+
+
+    
     private float[][] getZeroBasedFloatArray ( double[][] zeroBasedDoubleArray ) {
 
     	int[] skimsInternalToExternal = g.getIndexNode();
@@ -395,13 +373,58 @@ public class Skims {
 
 
     /**
+	 * build network skim arrays, return as double[][][].
+	 * the highway network attributes on which to skim the network to produce multipe skim tables is passed in.
+	 */
+	private double[][][] buildHwySkimMatrices ( double[] linkCost, double[][] linkAttributes, boolean[] validLinks ) {
+		
+		
+		double[][][] skimMatrices =  hwySkims ( linkCost, linkAttributes, validLinks, alphaNumberArray );
+		int minI = 0;
+        int minJ = 0;
+		// set intrazonal values to 0.5*nearest neighbor
+		for (int k=0; k < skimMatrices.length; k++) {
+			
+			for (int i=0; i < skimMatrices[k].length; i++) {
+			
+				// find minimum valued row element
+				double minValue = Double.MAX_VALUE;
+				for (int j=0; j < skimMatrices[k].length; j++) {
+					if ( i != j && skimMatrices[k][i][j] != Double.NEGATIVE_INFINITY && skimMatrices[k][i][j] < minValue ){
+						minValue = skimMatrices[k][i][j];
+	                    minI = i;
+	                    minJ = j;
+	                }
+				}
+	
+				// set intrazonal value
+	            if(minValue <= 0) {
+	                logger.fatal("Hwy skim min value is " + minValue + "@ rowIndex " + minI + ", colIndex " + minJ);
+	                logger.fatal("System will exit, no hwy skims have been written");
+	                System.exit(10);
+	            }
+	
+				if ( minValue < Double.MAX_VALUE )
+					skimMatrices[k][i][i] = 0.5*minValue;
+				else
+					skimMatrices[k][i][i] = Double.NEGATIVE_INFINITY;
+
+			}
+		}
+		
+		return skimMatrices;
+       
+	}
+
+
+    /**
 	 * build network skim array, return as double[][].
 	 * the highway network attribute on which to skim the network is passed in.
 	 */
-	private double[][] buildHwySkimMatrix ( double[] linkCost, boolean[] validLinks ) {
+	private double[][] buildHwySkimMatrix ( double[] linkCost, double[] linkAttribute, boolean[] validLinks ) {
 		
 		
-		double[][] skimMatrix =  hwySkim ( linkCost, validLinks, alphaNumberArray );
+		double[][] skimMatrix =  hwySkim ( linkCost, linkAttribute, validLinks, alphaNumberArray );
 		int minI = 0;
         int minJ = 0;
 		// set intrazonal values to 0.5*nearest neighbor
@@ -438,9 +461,51 @@ public class Skims {
 
 
 	/**
+	 * highway network skimming procedure for generating multiple skim tables
+	 */
+	private double[][][] hwySkims ( double[] linkCost, double[][] linkAttributes, boolean[] validLinks, int[] alphaNumberArray ) {
+
+	    int i;
+	    
+		double[][][] skimMatrices = new double[linkAttributes.length][g.getNumCentroids()][];
+
+		
+		// create a ShortestPathTreeH object
+		ShortestPathTreeH sp = new ShortestPathTreeH( g );
+
+
+		// build shortest path trees and get distance skims for each origin zone.
+		sp.setLinkCost( linkCost );
+		sp.setValidLinks( validLinks );
+		
+		
+		// loop through the arrays of link attributes, on link attribute for each skim table
+		for (int k=0; k < linkAttributes.length; k++) {
+			
+			// loop through the origin zones
+			for (i=0; i < g.getNumCentroids(); i++) {
+				
+				if (useMessageWindow) mw.setMessage2 ( "Skimming shortest paths for table " + (k+1) + " from zone " + (i+1) + " of " + alphaNumberArray.length + " zones." );
+	
+				// build the shortest path tree
+				sp.buildTree( i );
+				
+				// skim the shortest path tree for all the link attributes required
+				skimMatrices[k] = sp.getSkims( linkAttributes );
+				
+			}
+		
+		}
+
+		return skimMatrices;
+        
+	}
+
+
+	/**
 	 * highway network skimming procedure
 	 */
-	private double[][] hwySkim ( double[] linkCost, boolean[] validLinks, int[] alphaNumberArray ) {
+	private double[][] hwySkim ( double[] linkCost, double[] linkAttribute, boolean[] validLinks, int[] alphaNumberArray ) {
 
 	    int i;
 	    
@@ -464,7 +529,7 @@ public class Skims {
 				logger.info ("shortest path tree for origin zone index " + i);
 
 			sp.buildTree( i );
-			skimMatrix[i] = sp.getSkim();
+			skimMatrix[i] = sp.getSkim( linkAttribute );
 		}
 
 		return skimMatrix;
@@ -485,6 +550,46 @@ public class Skims {
 	
 	
 
+	/**
+	 * get average SOV trip skim values
+	 *   returns average skimm value weighted by trips and the number of o/d pairs with trips but disconnected skim value
+	 */
+	public double[] getAvgTripSkims ( double[][] trips, Matrix skimMatrix ) {
+
+		double disconnected = 0;
+		double tripSkim = 0.0;
+		double totalTrips = 0.0;
+		float matrixValue;
+		
+		for (int r=1; r <= skimMatrix.getRowCount(); r++) {
+			for (int c=1; c <= skimMatrix.getColumnCount(); c++) {
+				matrixValue = skimMatrix.getValueAt(r,c);
+				int i = r - 1;
+				int j = c - 1;
+				if ( trips[i][j] > 0.0 ) {
+					if ( matrixValue != Double.NEGATIVE_INFINITY ) {
+						tripSkim += trips[i][j]*matrixValue;
+						totalTrips += trips[i][j];
+					}
+					else {
+						disconnected ++;
+					}
+				}
+			}
+		}
+
+           	
+		double[] results = new double[2];
+		results[0] = tripSkim/totalTrips;
+		results[1] = disconnected;
+       
+		return results;
+
+	}
+
+
+   
+
 	public static void main(String[] args) {
 
     	
@@ -493,11 +598,11 @@ public class Skims {
     	logger.info ("creating Skims object.");
         Skims s = new Skims ( rb, globalRb, "peak", 0.5f );
 
-    	logger.info ("skimming network and creating Matrix object for userclass 0 ('a').");
-        Matrix m = s.getSovDistSkimAsMatrix(0);
+    	logger.info ("skimming network and creating Matrix object for peak auto time.");
+        Matrix m = s.getHwySkimMatrix ( "peak", "time", 'a' );
 
     	logger.info ("squeezing the alpha matrix to a beta matrix.");
-        Matrix mSqueezed = s.getSqueezedMatrix(m);
+        Matrix mSqueezed = s.getBetaSkimMatrix ( m );
 
         
     }
