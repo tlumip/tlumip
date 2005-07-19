@@ -17,11 +17,12 @@
 package com.pb.tlumip.ed;
 
 import com.pb.tlumip.model.ModelComponent;
-import com.pb.common.util.Debug;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.Vector;
 import java.util.Hashtable;
+
+import org.apache.log4j.Logger;
 
 /**
  * EDModel implements...
@@ -33,7 +34,7 @@ import java.util.Hashtable;
  */
 
 public class EDModel extends ModelComponent {
-
+    protected static Logger logger = Logger.getLogger(EDModel.class);
     private Vector submodels;
       private Hashtable errors;
       private boolean hasErrors;
@@ -85,15 +86,15 @@ public class EDModel extends ModelComponent {
         for(int i=0 ; i<max; i++) {
           try {
             s =(SubModel)submodels.get(i);
-            Debug.println("Model: Reading in data for " + s.getType() + " submodel: " + s.getName());
+            if(logger.isDebugEnabled()) logger.debug("Model: Reading in data for " + s.getType() + " submodel: " + s.getName());
             s.getData();
-            Debug.println("Model: Solving " + s.getType() + " submodel: " + s.getName());
+            if(logger.isDebugEnabled()) logger.debug("Model: Solving " + s.getType() + " submodel: " + s.getName());
             s.solve();
-            Debug.println("Model: Setting data for " + s.getType() + " submodel: " + s.getName());
+            if(logger.isDebugEnabled()) logger.debug("Model: Setting data for " + s.getType() + " submodel: " + s.getName());
             s.setData();
           } catch(Exception e) {
             hasErrors = true;
-            Debug.println(e.toString());
+            logger.error(e.toString());
             SubModel errorSubModel = (SubModel) submodels.get(i);
             if(errorSubModel.getName() ==null){
               errors.put(String.valueOf(errorSubModel.getOrder()), e);

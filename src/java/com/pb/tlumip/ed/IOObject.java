@@ -25,15 +25,18 @@
  */
 
 package com.pb.tlumip.ed;
-import com.pb.common.util.Debug;
+import org.apache.log4j.Logger;
+
 
 public class IOObject {
+    
+    protected static Logger logger = Logger.getLogger(IOObject.class);
 
   static void PrintSingleArray(double[] x) {
     for(int i = 0; i < x.length; i++) {
-      Debug.println(String.valueOf(x[i]));
+       if(logger.isDebugEnabled()) logger.debug(String.valueOf(x[i]));
     }
-    Debug.println("");
+    if(logger.isDebugEnabled()) logger.debug("");
   }
 
   static void PrintDoubleArray(double[][] y) {
@@ -42,10 +45,10 @@ public class IOObject {
       for(int j=0; j<y.length; j++) {
         s = s + ""+ y[i][j] + "  ";
       }
-      Debug.println(s);
+      if(logger.isDebugEnabled()) logger.debug(s);
       s =  "";
     }
-    Debug.println("");
+    if(logger.isDebugEnabled()) logger.debug("");
   }
 
 }

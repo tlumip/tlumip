@@ -27,8 +27,10 @@ import com.pb.common.util.Debug;
 
 import java.util.Vector;
 
-public class Linear extends SubModel {
+import org.apache.log4j.Logger;
 
+public class Linear extends SubModel {
+  protected static Logger logger = Logger.getLogger(Linear.class);
   private Vector equations;
   private LinearSolver ls;
 
@@ -52,14 +54,14 @@ public class Linear extends SubModel {
    * object and the linear solver to do this.
    */
   protected void solve() throws Exception {
-    Debug.println("  Linearizing...");
+    if(logger.isDebugEnabled()) logger.debug("  Linearizing...");
     Linearizer lin = new Linearizer(equations, super.getVariableStore());
     double [][] m = lin.getMArray();
     double [] y = lin.getBArray();
-    Debug.println("  Finding solution...");
+    if(logger.isDebugEnabled()) logger.debug("  Finding solution...");
     ls = new LinearSolver(m, y);
     double[] solution = ls.solve();
-    Debug.println("  Filling solution...");
+    if(logger.isDebugEnabled()) logger.debug("  Filling solution...");
     lin.fillSolution(solution);
   }
 

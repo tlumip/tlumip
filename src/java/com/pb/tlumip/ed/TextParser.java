@@ -25,10 +25,14 @@ package com.pb.tlumip.ed;
 import java.io.*;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 
 
 public class TextParser {
 
+  protected static Logger logger = Logger.getLogger(TextParser.class);
+  
   public static final String VARIABLE = "v";
   public static final String VARIABLETYPE = "vt";
   public static final String OPERATOR = "o";
@@ -128,7 +132,7 @@ public class TextParser {
       count++;
 
     }//while
-    System.out.println("writing output...");
+    logger.info("Writing output.");
     xmlc.writeOutXML();
   }
 

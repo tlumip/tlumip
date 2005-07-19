@@ -24,8 +24,11 @@ package com.pb.tlumip.ed;
 
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 public class EquationFactory {
 
+  protected static Logger logger = Logger.getLogger(EquationFactory.class);
   private static String name;
   private static String equationtype;
   private static String description;
@@ -40,7 +43,7 @@ public class EquationFactory {
     m = msi;
     name = m.getEquationName();
     equationtype = m.getEquationType();
-    System.err.println(equationtype);
+    if(logger.isDebugEnabled()) logger.debug("Equation type is: " + equationtype);
     if(equationtype.equals(TextParser.LINEAR)) {
       return new LinearEquation(name, buildEquation());
     }

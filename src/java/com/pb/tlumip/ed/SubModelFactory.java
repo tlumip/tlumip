@@ -25,12 +25,14 @@
  */
 
 package com.pb.tlumip.ed;
-import com.pb.common.util.Debug;
 
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 public class SubModelFactory {
 
+  protected static Logger logger = Logger.getLogger(SubModelFactory.class);
   private static String name;
   private static int order;
   private static String description;
@@ -46,7 +48,7 @@ public class SubModelFactory {
       order = Integer.parseInt(m.getSubModelOrder());
     }
     submodel= m.getSubModelType();
-    Debug.println("  Building " + submodel + " submodel: " + name);
+    if(logger.isDebugEnabled()) logger.debug("  Building " + submodel + " submodel: " + name);
     if (submodel != null)
   	{
     	if(submodel.equals(TextParser.LINEAR)) {

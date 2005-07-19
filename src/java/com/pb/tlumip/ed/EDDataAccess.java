@@ -103,7 +103,6 @@ EDDataAccess(int defaultYear, String defaultLocation, String absoluteLocation, S
     this.defaultLocation = defaultLocation;
     this.defaultYear = defaultYear;
     logger.info("Default location:  " + defaultLocation + "  default year:  " + defaultYear);
-    //Debug.println("Default location:  " + defaultLocation + "    default year:   " + defaultYear);
   } catch(Exception e) {
     e.printStackTrace();
   }
@@ -116,7 +115,6 @@ EDDataAccess() {
 double getValue(String name, String location, int year) throws Exception {
 	String r;
 	//logger.info("EDDataAccess:  getting data");
-	//Debug.println("EDDataAccess:  getting data");
 	
 	if (name.equals("one"))
 		return 1.;
@@ -130,14 +128,12 @@ double getValue(String name, String location, int year) throws Exception {
 				return new Double(r).doubleValue();
 			}else {
 				logger.warn("Data does not exist:  Looking for " + name + " in " + year);
-				//Debug.println("Data does not exist:  Looking for " + name + " in " + year);
 				throw new Exception("Data does not exist:  Looking for " + name + " in " + year);
 			}
 		}catch (Exception e)
 		{
 			logger.fatal("Big problem accessing hash table.  " + name);
 			e.printStackTrace();
-			//Debug.println("Danger Will Robinson, Danger!  " + name);
 		}
 	}else
 	{
@@ -179,8 +175,7 @@ void insertValue(String name, double d, int year, String location) {
   int i;
   
   //logger.info("EDDataAccess: setting data");
-  //Debug.println("EDDataAccess: setting data");
-
+  
   if (marginalOverride.get(name) != null && ((Hashtable)marginalOverride.get(name)).get(Integer.toString(year)) != null)
 	d += new Double((String)((Hashtable)marginalOverride.get(name)).get(Integer.toString(year))).doubleValue();
   
@@ -220,14 +215,7 @@ void insertValue(String name, double d, int year, String location) {
 	}
   }
   
-  try {
-	CSVFileWriter csvw = new CSVFileWriter();
-	csvw.writeFile(csvSet, new File(defaultLocation), new java.text.DecimalFormat("0.#########"));
-	logger.info("Writing final CSV file...");
-	//Debug.println("Writing final CSV file...");
-  }catch (Exception e) {
-  	e.printStackTrace();
-  }
+  
 }
 
 void insertValue(String name, double d, int year) {
@@ -236,6 +224,17 @@ void insertValue(String name, double d, int year) {
 
 void insertValue(String name, double d) {
   insertValue(name,d,defaultYear,defaultLocation);
+}
+
+void writeData(){
+    try {
+    	CSVFileWriter csvw = new CSVFileWriter();
+    	csvw.writeFile(csvSet, new File(defaultLocation), new java.text.DecimalFormat("0.#########"));
+    	logger.info("Writing values to CSV file.");
+    	}catch (Exception e) {
+      	e.printStackTrace();
+      }
+    
 }
 
 

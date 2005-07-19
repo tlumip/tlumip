@@ -21,8 +21,12 @@
  */
 package com.pb.tlumip.ed;
 
-public class DataHound  {
+import org.apache.log4j.Logger;
 
+
+
+public class DataHound  {
+  protected static Logger logger = Logger.getLogger(DataHound.class);
   EDDataAccess eda;
 
   public DataHound(EDDataAccess e) {
@@ -52,14 +56,16 @@ public class DataHound  {
   public void setData(Variable v) {
     try {
     if(v.isDependant()) {
-    	//Need to actually set data at some point... Oh, and get rid of the println (= debug)
+    	//Need to actually set data at some point... 
         eda.insertValue(v.getName(),v.getValue(),v.getYear());
-        System.out.println("name:  " + v.getName() + "\nvalue:  "+ v.getValue() + "\nyear:  " + v.getYear());
+        logger.info("\t\tvariable: " + v.getName() + " value: "+ v.getValue());
     }
- /*   } catch (SQLException e) {
-      e.printStackTrace();*/
     } catch (UnknownValueException e) {
       e.printStackTrace();
     }
+  }
+  
+  public void writeData() {
+      eda.writeData();
   }
 }

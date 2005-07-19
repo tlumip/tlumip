@@ -21,10 +21,11 @@
  * the model specification interface.
  */
 package com.pb.tlumip.ed;
-import com.pb.common.util.Debug;
+import org.apache.log4j.Logger;
+
 
 public class EquationElementFactory {
-
+  protected static Logger logger = Logger.getLogger(EquationElementFactory.class);
   private static XMLModelSpecification m;
   private static VariableStore vs;
   /**
@@ -43,7 +44,7 @@ public class EquationElementFactory {
         o = new Parameter(Double.parseDouble(m.getParameterXML()));
       	}catch (Exception e)
       	{
-      		Debug.println("Error on value:" + m.getParameterXML());
+      		logger.error("Error on value:" + m.getParameterXML());
       	}
       } else if(m.isOperatorXML()) {
       //Normally would catch and rethrow error. However, in this case,

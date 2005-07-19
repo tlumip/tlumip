@@ -58,11 +58,10 @@ public class XMLModelSpecification {
 
   public XMLModelSpecification(String fn) throws FileNotFoundException, IOException  {
     fileName=fn;
-    logger.info("Opening file " + fileName + " with com.pb.tlumip.ed.edmodelxml");
     xmlDocument = Xml.openDocument("com.pb.tlumip.ed.edmodelxml", new File(fileName));
     currentModel = (IEDModelXML) xmlDocument.getRoot();
     numSubModelXMLs = currentModel.getSubModelXMLCount();
-    logger.info("Number of submodels = " + numSubModelXMLs);
+    if(logger.isDebugEnabled()) logger.debug("Number of submodels = " + numSubModelXMLs);
     countSubModelXML = 0;
     countEquationXML = 0;
     countEquationElementXML = 0;

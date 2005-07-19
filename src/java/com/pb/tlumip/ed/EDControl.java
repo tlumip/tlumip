@@ -16,7 +16,6 @@
  */
 package com.pb.tlumip.ed;
 
-import com.pb.common.util.Debug;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.ModelComponent;
 
@@ -53,7 +52,7 @@ public class EDControl extends ModelComponent {
         this(y, mYearIndex, ResourceUtil.getPropertyBundle(new File(dataFile)));
     }
 
-    //  y = Base year (ex. 1990), modelYearIndex = model year index (ex. t=1), datafile = ed.properties
+    //  y = Base year (ex. 1990), mYear = model year index (ex. t=1), ResourceBundle = ed.properties
      public EDControl(int y, int mYear, ResourceBundle rb) {
 		String absoluteLocation = new String();
 		String marginalLocation = new String();
@@ -68,13 +67,13 @@ public class EDControl extends ModelComponent {
         ModelDescriptionGetter mdg = new ModelDescriptionGetter(ResourceUtil.getProperty(rb,"modelDescriptionFile"));
         model = mdg.makeModel();
         String constructionData = ResourceUtil.getProperty(rb,"constructionData");
-        logger.info("construction data file: "+ constructionData);
+        if(logger.isDebugEnabled()) logger.debug("construction data file: "+ constructionData);
         String activityData = ResourceUtil.getProperty(rb, "activityData");
-        logger.info("activity data file: "+ activityData);
+        if(logger.isDebugEnabled()) logger.debug("activity data file: "+ activityData);
         String jobData = ResourceUtil.getProperty(rb, "jobData");
-        logger.info("job data file: "+ jobData);
+        if(logger.isDebugEnabled()) logger.debug("job data file: "+ jobData);
         splitFiles.add(ResourceUtil.getProperty(rb,"piMini"));
-        logger.info("PI Intermediate File: "+ ResourceUtil.getProperty(rb,"piMini"));
+        if(logger.isDebugEnabled()) logger.debug("PI Intermediate File: "+ ResourceUtil.getProperty(rb,"piMini"));
         splitFiles.add(constructionData);
         splitFiles.add(activityData);
         splitFiles.add(jobData);
@@ -106,6 +105,7 @@ public class EDControl extends ModelComponent {
    * Begins running the model and prints the errors and the names of the errors.
    */
   public void startModel() {
+      logger.info("Starting ED model in year " + currentYear);
     model.start();
     if(model.hasErrors()) {
       Hashtable e = model.getErrors();
@@ -114,11 +114,12 @@ public class EDControl extends ModelComponent {
       while(names.hasMoreElements()) {
         String s = (String)names.nextElement();
         Exception error = (Exception)errors.nextElement();
-        Debug.println("Error in SubModel: " + s);
-        Debug.println(error.getMessage());
+        logger.error("Error in SubModel: " + s);
+        logger.error(error.getMessage());
       }
     }else if (splitFiles.size() != 0)
     {
+        logger.info("Splitting data for application specific outputs");
     	String outFile = new String();
     	String dataFile = new String();
     	int i, lastIndex;
@@ -126,16 +127,15 @@ public class EDControl extends ModelComponent {
     	for (i=0; i < splitFiles.size(); i++)
     	{
     		dataFile = (String)splitFiles.get(i);
-            logger.info("datafile: "+ dataFile);
-			lastIndex = dataFile.indexOf(".csv") + 4;
+            lastIndex = dataFile.indexOf(".csv") + 4;
     		dataFile = dataFile.substring(0, lastIndex);
-  
-			outFile = (String)splitFiles.get(i);
-            logger.info("outfile: " + outFile);
-			outFile = outFile.substring(lastIndex+1, outFile.indexOf(".csv", lastIndex) + 4);
+    		logger.info("Input File: "+ dataFile);
+			
+    		outFile = (String)splitFiles.get(i);
+            outFile = outFile.substring(lastIndex+1, outFile.indexOf(".csv", lastIndex) + 4);
 			outFile = outFile.substring(0, outFile.indexOf("tMY")) + "t" + (modelYear)
 						+ outFile.substring(outFile.indexOf("tMY")+3);
-			logger.info("outfile: " + outFile);
+			logger.info("Output File: " + outFile);
 			try
 			{
 				CSVSplitter.split(new File(defaultDataLocation), new File(outFile), new File(dataFile), currentYear);

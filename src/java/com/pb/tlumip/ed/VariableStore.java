@@ -23,7 +23,10 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 public class VariableStore {
+  protected static Logger logger = Logger.getLogger(VariableStore.class);
   Hashtable allVariables;
   Vector independantVariables;
   Vector dependantVariables;
@@ -90,9 +93,9 @@ public class VariableStore {
       Enumeration e = allVariables.elements();
       while (e.hasMoreElements()) {
         Variable v = (Variable) e.nextElement();
-        System.out.println("Variable Name: " + v.getName());
+        if(logger.isDebugEnabled()) logger.debug("Variable Name: " + v.getName());
       }
-      System.out.println("Variable store size: " + allVariables.size());
+      if(logger.isDebugEnabled()) logger.debug("Variable store size: " + allVariables.size());
   }
 
   void setData() {
@@ -100,6 +103,7 @@ public class VariableStore {
     while (e.hasMoreElements()) {
       dh.setData((Variable) e.nextElement());
     }
+    dh.writeData();
   }
 
 

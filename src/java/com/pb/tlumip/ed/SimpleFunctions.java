@@ -28,8 +28,10 @@ import com.pb.common.util.Debug;
 
 import java.util.Vector;
 
-public class SimpleFunctions extends SubModel {
+import org.apache.log4j.Logger;
 
+public class SimpleFunctions extends SubModel {
+  protected static Logger logger = Logger.getLogger(SimpleFunctions.class);
   Vector equations;
 
   /**
@@ -45,7 +47,7 @@ public class SimpleFunctions extends SubModel {
     Equation e;
     for(int i = 0; i < equations.size(); i++) {
       e = (Equation)equations.get(i);
-      Debug.println("  Solving for " + e.getName());
+      if(logger.isDebugEnabled()) logger.debug("  Solving for " + e.getName());
       SimpleSolver.solve(e);
     }
   }

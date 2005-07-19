@@ -62,7 +62,6 @@ public class CSVSplitter  {
 	}catch (IOException e)
 	{
 		logger.fatal("Could not read data file!");
-		//Debug.println("Could not read data file!");
 		e.printStackTrace();
 		return;
 	}

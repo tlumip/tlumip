@@ -1,21 +1,5 @@
-/*
- * Copyright  2005 PB Consult Inc.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- */
 /**
- * ISubModelXML.java	Java 1.2.2 Mon Jul 31 13:34:34 PDT 2000
+ * ISubModelXML.java	Java 1.4.2_07 Tue Jul 19 13:08:04 MDT 2005
  *
  * Copyright 1999 by ObjectSpace, Inc.,
  * 14850 Quorum Dr., Dallas, TX, 75240 U.S.A.
@@ -30,8 +14,9 @@
 
 package com.pb.tlumip.ed.edmodelxml;
 
-import java.util.Enumeration;
 import java.util.Vector;
+import java.util.Hashtable;
+import java.util.Enumeration;
 
 public interface ISubModelXML extends com.objectspace.xml.IDXMLInterface ,com.objectspace.xml.IAttributeContainer
   {
@@ -40,12 +25,12 @@ public interface ISubModelXML extends com.objectspace.xml.IDXMLInterface ,com.ob
   public String getOrderAttribute();
   public void setOrderAttribute( String value );
   public String removeOrderAttribute();
-  public String getTypeAttribute();
-  public void setTypeAttribute( String value );
-  public String removeTypeAttribute();
   public String getNameAttribute();
   public void setNameAttribute( String value );
   public String removeNameAttribute();
+  public String getTypeAttribute();
+  public void setTypeAttribute( String value );
+  public String removeTypeAttribute();
 
   // element EquationXML
   public void addEquationXML( IEquationXML arg0  );

@@ -19,14 +19,15 @@
  * The model class contains and starts all the submodels.
  */
 package com.pb.tlumip.ed;
-import com.pb.common.util.Debug;
 
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 
 public class Model {
-
+  protected static Logger logger = Logger.getLogger(Model.class); 
   private Vector submodels;
   private Hashtable errors;
   private boolean hasErrors;
@@ -78,15 +79,16 @@ public class Model {
     for(int i=0 ; i<max; i++) {
       try {
         s =(SubModel)submodels.get(i);
-        Debug.println("Model: Reading in data for " + s.getType() + " submodel: " + s.getName());
+        logger.info("Beginning submodel '" + s.getName()+ "' of type '" + s.getType() + "'");
+        logger.info("\tReading data");
         s.getData();
-        Debug.println("Model: Solving " + s.getType() + " submodel: " + s.getName());
+        logger.info("\tSolving model");
         s.solve();
-        Debug.println("Model: Setting data for " + s.getType() + " submodel: " + s.getName());
+        logger.info("\tWriting data");
         s.setData();
       } catch(Exception e) {
         hasErrors = true;
-        Debug.println(e.toString());
+        logger.error(e.toString());
         SubModel errorSubModel = (SubModel) submodels.get(i);
         if(errorSubModel.getName() ==null){
           errors.put(String.valueOf(errorSubModel.getOrder()), e);

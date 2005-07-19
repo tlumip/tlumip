@@ -26,8 +26,10 @@ import com.pb.common.util.Debug;
 
 import java.util.Vector;
 
-public class Linearizer {
+import org.apache.log4j.Logger;
 
+public class Linearizer {
+  protected static Logger logger = Logger.getLogger(Linearizer.class);
   private Vector LinearEquations;
   private Vector VarNames;
   private double[] b;
@@ -90,7 +92,7 @@ public class Linearizer {
    * Calls the method simplify on each linear equation in this submodel.
    */
   private void simplify() throws InvalidEquationException {
-    Debug.println("    Simplifying equations...");
+    if(logger.isDebugEnabled()) logger.debug("Simplifying equations.");
     int maxEquations = LinearEquations.size();
     for(int i= 0; i< maxEquations; i++) {
       ((LinearEquation)(LinearEquations.get(i))).simplify();
@@ -102,7 +104,7 @@ public class Linearizer {
    * a constant array used in solving the system of linear equations.
    */
   private void insertConstantValues()  {
-    Debug.println("    Setting constant values...");
+    if(logger.isDebugEnabled()) logger.debug("Setting constant values.");
     LinearTerm lt;
     for(int i=0; i<LinearEquations.size(); i++) {
        LinearEquation l = (LinearEquation)LinearEquations.get(i);
@@ -125,7 +127,7 @@ public class Linearizer {
  * in a matrix to be solved.
  */
   private void insertParameterValues() {
-    Debug.println("    Setting parameter values...");
+    if(logger.isDebugEnabled()) logger.debug("Setting parameter values.");
     LinearTerm lt;
     Variable v;
     for(int i=0; i<LinearEquations.size(); i++) {
@@ -149,7 +151,7 @@ public class Linearizer {
    * the same.
    */
   private void setVarNames() throws InvalidSubModelException {
-    Debug.println("    Setting variable names for matrix...");
+    if(logger.isDebugEnabled()) logger.debug("Setting variable names for matrix.");
     int size = dependants.size();
     for(int i=0; i< size; i++) {
       Variable v = (Variable)dependants.get(i);

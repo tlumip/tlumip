@@ -25,14 +25,16 @@
  */
 package com.pb.tlumip.ed;
 
-import com.pb.common.util.Debug;
 
 import java.util.Stack;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 
 public class SimpleSolver {
 
+    protected static Logger logger = Logger.getLogger(SimpleSolver.class);
 private static Vector equation;
 private static Stack stack;
 private static Object currentElement;
@@ -44,7 +46,7 @@ private static DoubleInterface value;
     value = new Parameter(0);
     Variable dependant = (Variable) equation.get(0);
     compute();
-    Debug.println("Size = " + String.valueOf(stack.size()));
+    if(logger.isDebugEnabled()) logger.debug("Size = " + String.valueOf(stack.size()));
     if (stack.size() == 1){
       dependant.setValue(((DoubleInterface)stack.pop()).getValue());
     } else {

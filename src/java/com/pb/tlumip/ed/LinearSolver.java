@@ -24,6 +24,8 @@
  * @version null
  */
 package com.pb.tlumip.ed;
+import org.apache.log4j.Logger;
+
 import com.pb.common.util.Debug;
 import drasys.or.linear.SingularException;
 import drasys.or.linear.algebra.Algebra;
@@ -32,12 +34,13 @@ import drasys.or.linear.algebra.CroutPivot;
 import drasys.or.matrix.*;
 public class LinearSolver {
 
-private double[] B;
-private double[][] A;
-private VectorI solution;
-private double[]solutionArray;
-private double[] CheckB;
-private double det;
+    protected static Logger logger = Logger.getLogger(LinearSolver.class);
+    private double[] B;
+    private double[][] A;
+    private VectorI solution;
+    private double[]solutionArray;
+    private double[] CheckB;
+    private double det;
 
   public LinearSolver(double[][] M, double[] Y) {
     B = Y;
@@ -49,10 +52,10 @@ private double det;
   }
 
   public double[] solve(boolean c) throws AlgebraException, SingularException {
-    Debug.println("LinearSolver: solving...");
-    Debug.println("B vector:");
+    if(logger.isDebugEnabled()) logger.debug("LinearSolver: solving...");
+    if(logger.isDebugEnabled()) logger.debug("B vector:");
     IOObject.PrintSingleArray(B);
-    Debug.println("A matrix:");
+    if(logger.isDebugEnabled()) logger.debug("A matrix:");
     IOObject.PrintDoubleArray(A);
     VectorI v = new ContiguousVector(B);
     MatrixI m = new ColumnArrayMatrix(A);

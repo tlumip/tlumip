@@ -32,8 +32,10 @@ import com.pb.tlumip.ed.edmodelxml.*;
 import java.io.File;
 import java.io.IOException;
 
-public class XMLModelCreator {
+import org.apache.log4j.Logger;
 
+public class XMLModelCreator {
+  protected static Logger logger = Logger.getLogger(XMLModelCreator.class);
   String xmlFileName;
   IXml xmlDocument;
   IEDModelXML currentEDModel;
@@ -66,7 +68,7 @@ public class XMLModelCreator {
       fout.createNewFile();
       fout.canRead();
       fout.canWrite();
-      System.out.println("saving document...");
+      logger.info("Saving document " + xmlFileName);
       xmlDocument.saveDocument(fout);
     } catch (IOException e) {
       e.printStackTrace();
