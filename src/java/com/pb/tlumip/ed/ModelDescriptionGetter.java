@@ -24,19 +24,21 @@
  * @version null
  */
 package com.pb.tlumip.ed;
-import com.pb.common.util.Debug;
 
 import java.util.Vector;
+
+import org.apache.log4j.Logger;
 
 public class ModelDescriptionGetter {
 
   XMLModelSpecification ms;
+  protected static Logger logger = Logger.getLogger(ModelDescriptionGetter.class);
 
   /**
    * Takes in xml files value name to read xml file.
    */
   public ModelDescriptionGetter(String filename) {
-    Debug.println("Reading in xml file " + filename + "...");
+      if(logger.isDebugEnabled()) logger.debug("Reading in xml file " + filename + "...");
     try {
       ms = new XMLModelSpecification(filename);
     } catch(Exception e) {
@@ -48,7 +50,7 @@ public class ModelDescriptionGetter {
    * Reads and builds the model based on the xml read in this program.
    */
   Model makeModel() {
-    Debug.println("Building model...");
+    if(logger.isDebugEnabled()) logger.debug("Building model...");
     Vector v = new Vector();
     SubModel s;
     s = this.makeSubModel();
@@ -56,7 +58,7 @@ public class ModelDescriptionGetter {
       v.add(s);
       s = this.makeSubModel();
     }
-    Debug.println("Completed building model.");
+    if(logger.isDebugEnabled()) logger.debug("Completed building model.");
     return new Model(v);
   }
 

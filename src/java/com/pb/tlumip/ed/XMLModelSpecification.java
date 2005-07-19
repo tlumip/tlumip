@@ -32,9 +32,12 @@ import com.pb.tlumip.ed.edmodelxml.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import org.apache.log4j.Logger;
 //implements ModelSpecificationInterface
 public class XMLModelSpecification {
-
+  protected static Logger logger = Logger.getLogger(XMLModelSpecification.class);
+  
   private IEDModelXML currentModel;
   private ISubModelXML currentSubModelXML;
   private IEquationXML currentEquationXML;
@@ -55,10 +58,11 @@ public class XMLModelSpecification {
 
   public XMLModelSpecification(String fn) throws FileNotFoundException, IOException  {
     fileName=fn;
+    logger.info("Opening file " + fileName + " with com.pb.tlumip.ed.edmodelxml");
     xmlDocument = Xml.openDocument("com.pb.tlumip.ed.edmodelxml", new File(fileName));
     currentModel = (IEDModelXML) xmlDocument.getRoot();
     numSubModelXMLs = currentModel.getSubModelXMLCount();
-    System.out.println("Number of submodels = " + numSubModelXMLs);
+    logger.info("Number of submodels = " + numSubModelXMLs);
     countSubModelXML = 0;
     countEquationXML = 0;
     countEquationElementXML = 0;
