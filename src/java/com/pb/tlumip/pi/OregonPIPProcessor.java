@@ -424,6 +424,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             "HH15to20k1to2",
             "HH20to30k1to2",
             "HH30to40k1to2",
+            "HH40to50k1to2",
             "HH50to70k1to2",
             "HH70kUp1to2"};
         String[] largeHouseholds = {
@@ -433,6 +434,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             "HH15to20k3plus",
             "HH20to30k3plus",
             "HH30to40k3plus",
+            "HH40to50k3plus",
             "HH50to70k3plus",
             "HH70kUp3plus"};
 
@@ -495,10 +497,10 @@ public class OregonPIPProcessor extends PIPProcessor {
             makeUseKeys[0] = smallHouseholds[incomeCat];
             makeUseKeys[1] = "FLR RRMH";
             rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
-            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mhConstant+incomeCat*(mhIncome+ruralIncome)+ruralConstant));
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mhConstant+ruralConstant+incomeCat*(mhIncome+ruralIncome)));
             makeUseKeys[0] = largeHouseholds[incomeCat];
             rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
-            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mhConstant+incomeCat*(mhIncome+ruralIncome)+ruralConstant));
+            makeUseTable.setValueAt(rows[0],constantColumn,(float) (mhConstant+ruralConstant+incomeCat*(mhIncome+ruralIncome)));
 
             // multi family constants
             makeUseKeys[0] = smallHouseholds[incomeCat];
@@ -528,8 +530,8 @@ public class OregonPIPProcessor extends PIPProcessor {
             makeUseTable.setValueAt(rows[0],constantColumn,(float) (ruralConstant+sfdLargeHHConstant+incomeCat*(ruralIncome+sfdLargeHHIncome)));
 
             // sfd constants
-            makeUseKeys[1] = "FLR SFD";
             makeUseKeys[0] = largeHouseholds[incomeCat];
+            makeUseKeys[1] = "FLR SFD";
             rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
             makeUseTable.setValueAt(rows[0],constantColumn,(float) (sfdLargeHHConstant+incomeCat*sfdLargeHHIncome));
 
