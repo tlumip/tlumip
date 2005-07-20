@@ -81,8 +81,8 @@ public class ApplicationOrchestrator {
     private void createBaseYearPropFile(){
         runLogPropFile = new File(rootDir + "/scenario_" + scenarioName + "/t0/runLog.properties");
         logger.info("Creating the base year run log in " + rootDir + "/scenario_" + scenarioName + "/t0/");
-        try { //create the file and write the current year into it.
-	            runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, true));
+        try { 
+	            runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, false));
 	            runLogWriter.write("# Filter values for properties files");
 	            runLogWriter.newLine();
 	            runLogWriter.write("BASEDIR=" + rootDir);
@@ -140,7 +140,7 @@ public class ApplicationOrchestrator {
         if(!runLogPropFile.exists()){ 
 	        try { //create the file and write the current year into it.
 	            logger.info("Writing the current year into the run log");
-	            runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, true));
+	            runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, false));
 	            runLogWriter.write("# Filter values for properties files");
 	            runLogWriter.newLine();
 	            runLogWriter.write("BASEDIR=" + rootDir);
@@ -261,7 +261,8 @@ public class ApplicationOrchestrator {
 	            appDefaultProps.setProperty(propName, tempStr);
 	        }
         }
-	    
+	    //write the properties file to the output stream in a format suitable for loading into a 
+	    //properties table using the "load" method.
 	    try {
             appDefaultProps.store(new FileOutputStream(appPropertyFile), appPropFileName.toUpperCase() + " Properties File for Interval " + t);
         } catch (FileNotFoundException e1) {
@@ -303,6 +304,14 @@ public class ApplicationOrchestrator {
             if(templateFile.exists()){
                 logger.info("Full Path to Template File: " + templateFile.getAbsolutePath());
                 runLogHashmap.put(editedName + "_TEMPLATE_YEAR", new Integer(i).toString());
+                try {
+                    logger.info("Writing the new template location for this app into the run log");
+                    runLogWriter.write(editedName + "_TEMPLATE_YEAR=" + new Integer(i).toString());
+                    runLogWriter.newLine();
+                    runLogWriter.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return templateFile;
             }else {
                 i--;
@@ -425,7 +434,8 @@ public class ApplicationOrchestrator {
             e.printStackTrace();
         }
     }
-
+    
+    
     public void addPropertiesObject(AOProperties properties){
         this.aoProps = properties;
     }
