@@ -60,19 +60,19 @@ public class PTServerTask extends Task{
         String pathToPtRb = null;
         String pathToGlobalRb = null;
         try {
-                    logger.info("Reading RunParams.txt file");
-                    reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
-                    scenarioName = reader.readLine();
-                    logger.info("\tScenario Name: " + scenarioName);
-                    timeInterval = Integer.parseInt(reader.readLine());
-                    logger.info("\tTime Interval: " + timeInterval);
-                    pathToPtRb = reader.readLine();
-                    logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
-                    pathToGlobalRb = reader.readLine();
-                    logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            logger.info("Reading RunParams.txt file");
+            reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
+            scenarioName = reader.readLine();
+            logger.info("\tScenario Name: " + scenarioName);
+            timeInterval = Integer.parseInt(reader.readLine());
+            logger.info("\tTime Interval: " + timeInterval);
+            pathToPtRb = reader.readLine();
+            logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
+            pathToGlobalRb = reader.readLine();
+            logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
+        } catch (Exception e) {
+               e.printStackTrace();
+        }
         ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
         globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 
@@ -160,7 +160,7 @@ public class PTServerTask extends Task{
         //Else, send messages to the workers to calculate the Workplace Locations.
         if(CREATE_MODE_CHOICE_LOGSUMS){
             Message startMCLogsumsMsg = mFactory.createMessage();
-            startMCLogsumsMsg.setId(MessageID.NUM_OF_WORK_QUEUES);
+            startMCLogsumsMsg.setId(MessageID.CREATE_MC_LOGSUMS);
             startMCLogsumsMsg.setValue("appRb",ptRb);
             startMCLogsumsMsg.setValue("nWorkQueues",new Integer(nWorkQueues));
             startMCLogsumsMsg.setValue("alphaToBetaMap", a2b);
@@ -174,7 +174,6 @@ public class PTServerTask extends Task{
             //we go on to the workplace location model.  We will, therefore, check the signal
             //value after the AutoOwnershipModel is run before moving on to the
             //Workplace Location model.
-            //are complete and saved in the local node's memory (ie. node 0's memory)
             signal.setValue(false);  //not yet done
         }
 
@@ -185,6 +184,7 @@ public class PTServerTask extends Task{
 
         logger.info("Adding synthetic population from database");
         households = dataReader.readHouseholds("households.file");
+        
         //send the number of households to the SignalQueue so that the SignalTask can initialize
         //the number of households. (it will be used to determine when all HHs are processed)
         Message nHHMsg = mFactory.createMessage();

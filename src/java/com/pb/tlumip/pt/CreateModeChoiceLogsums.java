@@ -90,6 +90,9 @@ public class CreateModeChoiceLogsums {
 
         Matrix m = new Matrix(mName, "Created with CreateModeChoiceLogsums", taz.tazData.size(), taz.tazData.size());
         m.setExternalNumbers(taz.getExternalNumberArray());
+        
+        departCost = new TravelTimeAndCost();
+        returnCost = new TravelTimeAndCost();
 
         Enumeration originEnum=taz.tazData.elements();
         while(originEnum.hasMoreElements()){
@@ -98,11 +101,9 @@ public class CreateModeChoiceLogsums {
             while(destinationEnum.hasMoreElements()){
 
                 Taz destinationTaz = (Taz) destinationEnum.nextElement();
-//                thisPerson = setPersonTourModeAttributes(originTaz, destinationTaz, thisPurpose, segment);
                 setPersonTourModeAttributes(originTaz, destinationTaz, thisPurpose, segment);
 
-//                float logsum = getModeChoiceLogsum(skims,theseParameters,thisPerson,thisPurpose,segment,originTaz, destinationTaz, tmcm);
-                float logsum = getModeChoiceLogsum(skims,theseParameters,ptma,thisPurpose,segment,originTaz, destinationTaz, tmcm);
+                float logsum = getModeChoiceLogsum(skims,theseParameters,ptma,thisPurpose,departCost,returnCost,originTaz, destinationTaz, tmcm);
 
                 m.setValueAt(originTaz.zoneNumber,destinationTaz.zoneNumber,logsum);
 
@@ -113,6 +114,39 @@ public class CreateModeChoiceLogsums {
 
     /**
      * Gets a mode choice logsum
+     * @param skims
+     * @param theseParameters
+     * @param thisPurpose
+     * @param departCost
+     * @param returnCost
+     * @param originTaz
+     * @param destinationTaz
+     * @return
+     */
+    public float getModeChoiceLogsum(SkimsInMemory skims,
+                                      TourModeParameters theseParameters,
+                                      PersonTourModeAttributes thisPerson,
+                                      char thisPurpose,
+                                      TravelTimeAndCost departCost,
+                                      TravelTimeAndCost returnCost,
+                                      Taz originTaz,
+                                      Taz destinationTaz,
+                                      TourModeChoiceModel tmcm){
+
+        departCost = setDepartCost(thisPurpose, skims, originTaz, destinationTaz);
+        //If drivetime > 300, then set logsum to -32
+        if(departCost.driveAloneTime > 300)
+            return -32;
+        else{
+            returnCost = setReturnCost(thisPurpose, skims, originTaz, destinationTaz);
+            //ZoneAttributes thisZone = new ZoneAttributes();
+            thisZone.parkingCost = destinationTaz.getParkingCost(thisPurpose);
+            float logsum = calcTourModeChoiceUtility(departCost, returnCost, tmcm, thisZone, theseParameters, thisPerson, thisPurpose);
+            return logsum;
+        }
+    }
+    /**
+     * Gets a mode choice logsum -OLD VERSION AS OF 7/25/05
      * @param skims
      * @param theseParameters
      * @param thisPerson
@@ -145,6 +179,72 @@ public class CreateModeChoiceLogsums {
     }
 
     /** calcTourModeChoiceUtility
+    *
+    * @param tmcm - TourModeChoiceModel
+    * @param thisZone - Parking cost at the destination zone
+    * @param theseParameters - TourModeParameters
+    * @param thisPerson - PersonTourModeAttributes
+    * @param thisPurpose - char
+    * @return logsum for the origin-destination pair
+    */
+   public float calcTourModeChoiceUtility(TravelTimeAndCost departCost,
+           								  TravelTimeAndCost returnCost,
+           								  TourModeChoiceModel tmcm,
+                                          ZoneAttributes thisZone,
+                                          TourModeParameters theseParameters,
+                                          PersonTourModeAttributes thisPerson,
+                                          char thisPurpose){
+
+       //Set availabilities of all modes to true
+       tmcm.thisDriver.setAvailability(true);
+       tmcm.thisPassenger.setAvailability(true);
+       tmcm.thisWalk.setAvailability(true);
+       tmcm.thisBike.setAvailability(true);
+       tmcm.thisWalkTransit.setAvailability(true);
+       tmcm.thisTransitPassenger.setAvailability(true);
+       tmcm.thisDriveTransit.setAvailability(true);
+
+       //calculate utilites of all modes
+       tmcm.thisDriver.calcUtility( departCost, returnCost,
+               thisZone, theseParameters, thisPerson);
+
+       tmcm.thisPassenger.calcUtility( departCost, returnCost,
+               thisZone, theseParameters, thisPerson);
+
+       tmcm.thisWalk.calcUtility( departCost, returnCost,
+               thisZone, theseParameters, thisPerson);
+
+       tmcm.thisBike.calcUtility( departCost, returnCost,
+               theseParameters, thisPerson);
+
+       tmcm.thisWalkTransit.calcUtility( departCost, returnCost,
+               theseParameters, thisPerson);
+
+       tmcm.thisTransitPassenger.calcUtility( departCost, returnCost,
+               theseParameters, thisPerson);
+
+       tmcm.thisPassengerTransit.calcUtility( departCost, returnCost,
+               thisZone, theseParameters, thisPerson);
+
+       if(thisPurpose=='w')
+              tmcm.thisDriveTransit.calcUtility( departCost, returnCost,
+                    theseParameters, thisPerson);
+       else tmcm.thisDriveTransit.setAvailability(false);
+
+       //set dispersion parameters
+       tmcm.autoNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+       tmcm.nonMotorizedNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+       tmcm.transitNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+       tmcm.passengerNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+
+
+       //add alternatives, if they are available, to nesting structure
+       tmcm.root.computeAvailabilities();
+       float logsum =(float)tmcm.root.getUtility();
+       return logsum;
+    }
+   
+   /** calcTourModeChoiceUtility - OLD VERSION AS OF 7/25/05
      *
      * @param tmcm - TourModeChoiceModel
      * @param thisZone - Parking cost at the destination zone

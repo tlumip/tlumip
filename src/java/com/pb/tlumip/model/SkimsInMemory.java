@@ -119,50 +119,50 @@ public class SkimsInMemory implements Serializable {
     }
     public void readSkims(ResourceBundle rb){
 		
-          String hwyPath = ResourceUtil.getProperty(rb, "hwySkims.path");
-          String transitPath = ResourceUtil.getProperty(rb, "transitSkims.path");
-          logger.info("Hwy Skim Path = "+hwyPath);
-          logger.info("Transit Skim Path = " + transitPath);
+        String hwyPath = ResourceUtil.getProperty(rb, "hwySkims.path");
+        String transitPath = ResourceUtil.getProperty(rb, "transitSkims.path");
+        logger.info("Hwy Skim Path = "+hwyPath);
+        logger.info("Transit Skim Path = " + transitPath);
           
 		//read skims (this part should eventually be changed to read the data from jds)
         String[] mName = {hwyPath+"pktime.zip", //0
-           hwyPath+ "pkdist.zip",     //1
-           hwyPath+ "optime.zip",     //2
-           hwyPath+ "opdist.zip",     //3
-           transitPath+ "pwtivt.zip",     //4
-           transitPath+ "pwtfwt.zip",     //5
-           transitPath+ "pwttwt.zip",     //6
-           transitPath+ "pwtaux.zip",     //7
-           transitPath+ "pwtbrd.zip",     //8
-           transitPath+ "pwtfar.zip",     //9
-           transitPath+ "owtivt.zip",     //10
-           transitPath+ "owtfwt.zip",     //11
-           transitPath+ "owttwt.zip",     //12
-           transitPath+ "owtaux.zip",     //13
-           transitPath+ "owtbrd.zip",     //14
-           transitPath+ "owtfar.zip",     //15
-           transitPath+ "pdtivt.zip",     //16
-           transitPath+ "pdtfwt.zip",     //17
-           transitPath+ "pdttwt.zip",     //18
-           transitPath+ "pdtwlk.zip",     //19
-           transitPath+ "pdtbrd.zip",     //20
-           transitPath+ "pdtdrv.zip",     //21
-           transitPath+ "pdtfar.zip",     //22
-           transitPath+ "odtivt.zip",     //23
-           transitPath+ "odtfwt.zip",     //24
-           transitPath+ "odttwt.zip",     //25
-           transitPath+ "odtwlk.zip",     //26
-           transitPath+ "odtbrd.zip",     //27
-           transitPath+ "odtdrv.zip",     //28
-           transitPath+ "odtfar.zip"};    //29
+                          hwyPath+ "pkdist.zip",     //1
+                          hwyPath+ "optime.zip",     //2
+                          hwyPath+ "opdist.zip",     //3
+                          transitPath+ "pwtivt.zip",     //4
+                          transitPath+ "pwtfwt.zip",     //5
+                          transitPath+ "pwttwt.zip",     //6
+                          transitPath+ "pwtaux.zip",     //7
+                          transitPath+ "pwtbrd.zip",     //8
+                          transitPath+ "pwtfar.zip",     //9
+                          transitPath+ "owtivt.zip",     //10
+                          transitPath+ "owtfwt.zip",     //11
+                          transitPath+ "owttwt.zip",     //12
+                          transitPath+ "owtaux.zip",     //13
+                          transitPath+ "owtbrd.zip",     //14
+                          transitPath+ "owtfar.zip",     //15
+                          transitPath+ "pdtivt.zip",     //16
+                          transitPath+ "pdtfwt.zip",     //17
+                          transitPath+ "pdttwt.zip",     //18
+                          transitPath+ "pdtwlk.zip",     //19
+                          transitPath+ "pdtbrd.zip",     //20
+                          transitPath+ "pdtdrv.zip",     //21
+                          transitPath+ "pdtfar.zip",     //22
+                          transitPath+ "odtivt.zip",     //23
+                          transitPath+ "odtfwt.zip",     //24
+                          transitPath+ "odttwt.zip",     //25
+                          transitPath+ "odtwlk.zip",     //26
+                          transitPath+ "odtbrd.zip",     //27
+                          transitPath+ "odtdrv.zip",     //28
+                          transitPath+ "odtfar.zip"};    //29
            
            mNameGlobal=mName;
                                            
 
 //Steve Test here 
 //Highway skims to array here 
-  try{
-      //highway matrices stored as Matrix
+           try{
+                 //highway matrices stored as Matrix
             
     
       if(logger.isDebugEnabled()) {
@@ -205,12 +205,8 @@ public class SkimsInMemory implements Serializable {
         if(logger.isDebugEnabled()) {
             logger.debug("\tReading Peak Walk-Transit into memory");
         }
-        pkwlk = createSkimsMatrices(new File(mName[4]),
-                                                       new File(mName[5]),
-                                                       new File(mName[6]),
-                                                       new File(mName[7]),
-                                                       new File(mName[8]),
-                                                       new File(mName[9]));
+        pkwlk = createSkimsMatrices(new File(mName[4]), new File(mName[5]), new File(mName[6]),
+                                    new File(mName[7]), new File(mName[8]), new File(mName[9]));
 
         if(logger.isDebugEnabled()) {
             logger.debug("\t\tTime to read pkwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
@@ -219,12 +215,8 @@ public class SkimsInMemory implements Serializable {
         if(logger.isDebugEnabled()) {
             logger.debug("\tReading off Peak Walk-Transit into memory");
         }
-        opwlk = createSkimsMatrices(new File(mName[10]),
-                                                       new File(mName[11]),
-                                                       new File(mName[12]),
-                                                       new File(mName[13]),
-                                                       new File(mName[14]),
-                                                       new File(mName[15]));
+        opwlk = createSkimsMatrices(new File(mName[10]), new File(mName[11]), new File(mName[12]),
+                                    new File(mName[13]), new File(mName[14]), new File(mName[15]));
         if(logger.isDebugEnabled()) {
             logger.debug("\t\tTime to read opwlk : "+(System.currentTimeMillis()-startTime)/1000+" seconds");
         }
