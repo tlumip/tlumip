@@ -159,6 +159,10 @@ public class HouseholdWorker extends MessageProcessingTask {
             ptResults = new PTResults(ptRb);
 
             ptLogger.info(getName() + ", Finished onStart()");
+//            Message initMsg = mFactory.createMessage();
+//            initMsg.setId(MessageID.NODE_INITIALIZED);
+//            initMsg.setValue("task", getName());
+//            sendTo("TaskMasterQueue",initMsg);
         }
     }
 
@@ -565,12 +569,12 @@ public class HouseholdWorker extends MessageProcessingTask {
         }
         //Worker has processed all the households.  It will send to ResultsWriter for writing
         double totalTime = patternTime + tourTime + loopTime;
-//        if(ptLogger.isDebugEnabled()) {
-//            ptLogger.debug(getName() + ", TIMING,"+ totalTime + "," + patternTime + "," + tourTime + "," + readTime + "," +
-//                    + durationTime + "," + primaryTime + "," + destZoneTime + "," + stopZoneTime + "," + tripModeTime + ","
-//                    + secondaryTime + "," + wSegmentChange + ","
-//                    + nwSegmentChange + "," + new Date());
-//        }
+        if(ptLogger.isDebugEnabled()) {
+            ptLogger.debug(getName() + ", TIMING,"+ totalTime + "," + patternTime + "," + tourTime + "," + readTime + "," +
+                    + durationTime + "," + primaryTime + "," + destZoneTime + "," + stopZoneTime + "," + tripModeTime + ","
+                    + secondaryTime + "," + wSegmentChange + ","
+                    + nwSegmentChange);
+        }
 
         //notify the master that the households have been processed.  The message might also
         //have a 'sendMore' request in it which the master will honor.

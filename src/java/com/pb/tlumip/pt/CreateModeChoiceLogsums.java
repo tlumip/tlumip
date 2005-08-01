@@ -103,7 +103,7 @@ public class CreateModeChoiceLogsums {
                 Taz destinationTaz = (Taz) destinationEnum.nextElement();
                 setPersonTourModeAttributes(originTaz, destinationTaz, thisPurpose, segment);
 
-                float logsum = getModeChoiceLogsum(skims,theseParameters,ptma,thisPurpose,departCost,returnCost,originTaz, destinationTaz, tmcm);
+                float logsum = getModeChoiceLogsum(skims,theseParameters,ptma,thisPurpose,originTaz, destinationTaz, tmcm);
 
                 m.setValueAt(originTaz.zoneNumber,destinationTaz.zoneNumber,logsum);
 
@@ -127,8 +127,6 @@ public class CreateModeChoiceLogsums {
                                       TourModeParameters theseParameters,
                                       PersonTourModeAttributes thisPerson,
                                       char thisPurpose,
-                                      TravelTimeAndCost departCost,
-                                      TravelTimeAndCost returnCost,
                                       Taz originTaz,
                                       Taz destinationTaz,
                                       TourModeChoiceModel tmcm){
@@ -156,27 +154,27 @@ public class CreateModeChoiceLogsums {
      * @param destinationTaz
      * @return
      */
-    public float getModeChoiceLogsum(SkimsInMemory skims,
-                                      TourModeParameters theseParameters,
-                                      PersonTourModeAttributes thisPerson,
-                                      char thisPurpose,
-                                      int segment,
-                                      Taz originTaz,
-                                      Taz destinationTaz,
-                                      TourModeChoiceModel tmcm){
-
-        departCost = setDepartCost(thisPurpose, skims, originTaz, destinationTaz);
-        //If drivetime > 300, then set logsum to -32
-        if(departCost.driveAloneTime > 300)
-            return -32;
-        else{
-            returnCost = setReturnCost(thisPurpose, skims, originTaz, destinationTaz);
-            //ZoneAttributes thisZone = new ZoneAttributes();
-            thisZone.parkingCost = destinationTaz.getParkingCost(thisPurpose);
-            float logsum = calcTourModeChoiceUtility(tmcm, thisZone, theseParameters, thisPerson, thisPurpose);
-            return logsum;
-        }
-    }
+//    public float getModeChoiceLogsum(SkimsInMemory skims,
+//                                      TourModeParameters theseParameters,
+//                                      PersonTourModeAttributes thisPerson,
+//                                      char thisPurpose,
+//                                      int segment,
+//                                      Taz originTaz,
+//                                      Taz destinationTaz,
+//                                      TourModeChoiceModel tmcm){
+//
+//        departCost = setDepartCost(thisPurpose, skims, originTaz, destinationTaz);
+//        //If drivetime > 300, then set logsum to -32
+//        if(departCost.driveAloneTime > 300)
+//            return -32;
+//        else{
+//            returnCost = setReturnCost(thisPurpose, skims, originTaz, destinationTaz);
+//            //ZoneAttributes thisZone = new ZoneAttributes();
+//            thisZone.parkingCost = destinationTaz.getParkingCost(thisPurpose);
+//            float logsum = calcTourModeChoiceUtility(tmcm, thisZone, theseParameters, thisPerson, thisPurpose);
+//            return logsum;
+//        }
+//    }
 
     /** calcTourModeChoiceUtility
     *
@@ -253,60 +251,60 @@ public class CreateModeChoiceLogsums {
      * @param thisPurpose - char
      * @return logsum for the origin-destination pair
      */
-    public float calcTourModeChoiceUtility(TourModeChoiceModel tmcm,
-                                            ZoneAttributes thisZone,
-                                            TourModeParameters theseParameters,
-                                            PersonTourModeAttributes thisPerson,
-                                            char thisPurpose){
-
-        //Set availabilities of all modes to true
-        tmcm.thisDriver.setAvailability(true);
-        tmcm.thisPassenger.setAvailability(true);
-        tmcm.thisWalk.setAvailability(true);
-        tmcm.thisBike.setAvailability(true);
-        tmcm.thisWalkTransit.setAvailability(true);
-        tmcm.thisTransitPassenger.setAvailability(true);
-        tmcm.thisDriveTransit.setAvailability(true);
-
-        //calculate utilites of all modes
-        tmcm.thisDriver.calcUtility( departCost, returnCost,
-                thisZone, theseParameters, thisPerson);
-
-        tmcm.thisPassenger.calcUtility( departCost, returnCost,
-                thisZone, theseParameters, thisPerson);
-
-        tmcm.thisWalk.calcUtility( departCost, returnCost,
-                thisZone, theseParameters, thisPerson);
-
-        tmcm.thisBike.calcUtility( departCost, returnCost,
-                theseParameters, thisPerson);
-
-        tmcm.thisWalkTransit.calcUtility( departCost, returnCost,
-                theseParameters, thisPerson);
-
-        tmcm.thisTransitPassenger.calcUtility( departCost, returnCost,
-                theseParameters, thisPerson);
-
-        tmcm.thisPassengerTransit.calcUtility( departCost, returnCost,
-                thisZone, theseParameters, thisPerson);
-
-        if(thisPurpose=='w')
-               tmcm.thisDriveTransit.calcUtility( departCost, returnCost,
-                     theseParameters, thisPerson);
-        else tmcm.thisDriveTransit.setAvailability(false);
-
-        //set dispersion parameters
-        tmcm.autoNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
-        tmcm.nonMotorizedNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
-        tmcm.transitNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
-        tmcm.passengerNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
-
-
-        //add alternatives, if they are available, to nesting structure
-        tmcm.root.computeAvailabilities();
-        float logsum =(float)tmcm.root.getUtility();
-        return logsum;
-     }
+//    public float calcTourModeChoiceUtility(TourModeChoiceModel tmcm,
+//                                            ZoneAttributes thisZone,
+//                                            TourModeParameters theseParameters,
+//                                            PersonTourModeAttributes thisPerson,
+//                                            char thisPurpose){
+//
+//        //Set availabilities of all modes to true
+//        tmcm.thisDriver.setAvailability(true);
+//        tmcm.thisPassenger.setAvailability(true);
+//        tmcm.thisWalk.setAvailability(true);
+//        tmcm.thisBike.setAvailability(true);
+//        tmcm.thisWalkTransit.setAvailability(true);
+//        tmcm.thisTransitPassenger.setAvailability(true);
+//        tmcm.thisDriveTransit.setAvailability(true);
+//
+//        //calculate utilites of all modes
+//        tmcm.thisDriver.calcUtility( departCost, returnCost,
+//                thisZone, theseParameters, thisPerson);
+//
+//        tmcm.thisPassenger.calcUtility( departCost, returnCost,
+//                thisZone, theseParameters, thisPerson);
+//
+//        tmcm.thisWalk.calcUtility( departCost, returnCost,
+//                thisZone, theseParameters, thisPerson);
+//
+//        tmcm.thisBike.calcUtility( departCost, returnCost,
+//                theseParameters, thisPerson);
+//
+//        tmcm.thisWalkTransit.calcUtility( departCost, returnCost,
+//                theseParameters, thisPerson);
+//
+//        tmcm.thisTransitPassenger.calcUtility( departCost, returnCost,
+//                theseParameters, thisPerson);
+//
+//        tmcm.thisPassengerTransit.calcUtility( departCost, returnCost,
+//                thisZone, theseParameters, thisPerson);
+//
+//        if(thisPurpose=='w')
+//               tmcm.thisDriveTransit.calcUtility( departCost, returnCost,
+//                     theseParameters, thisPerson);
+//        else tmcm.thisDriveTransit.setAvailability(false);
+//
+//        //set dispersion parameters
+//        tmcm.autoNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+//        tmcm.nonMotorizedNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+//        tmcm.transitNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+//        tmcm.passengerNest.setDispersionParameter(theseParameters.nestlow/tmcm.root.getDispersionParameter());
+//
+//
+//        //add alternatives, if they are available, to nesting structure
+//        tmcm.root.computeAvailabilities();
+//        float logsum =(float)tmcm.root.getUtility();
+//        return logsum;
+//     }
 
     /**
      * setPersonTourModeAttributes
@@ -375,16 +373,14 @@ public class CreateModeChoiceLogsums {
      * @return
      */
     public TravelTimeAndCost setDepartCost(char thisPurpose,
-                                 SkimsInMemory skims,
-                                 Taz originTaz,
-                                 Taz destinationTaz){
+                                           SkimsInMemory skims, Taz originTaz,Taz destinationTaz){
        
         if(thisPurpose=='w'||thisPurpose=='c')                        
-            return skims.setTravelTimeAndCost(originTaz.zoneNumber, 
+            return skims.setTravelTimeAndCost(departCost, originTaz.zoneNumber, 
                                               destinationTaz.zoneNumber, 
                                               800);                         
         else 
-            return skims.setTravelTimeAndCost(originTaz.zoneNumber, 
+            return skims.setTravelTimeAndCost(departCost, originTaz.zoneNumber, 
                                               destinationTaz.zoneNumber, 
                                               1200);
      }// end setDepartCost
@@ -402,11 +398,11 @@ public class CreateModeChoiceLogsums {
                                             Taz originTaz,
                                             Taz destinationTaz){
         if(thisPurpose=='w'||thisPurpose=='c') 
-            return skims.setTravelTimeAndCost(destinationTaz.zoneNumber, 
+            return skims.setTravelTimeAndCost(returnCost, destinationTaz.zoneNumber, 
                                                                     originTaz.zoneNumber, 
                                                                     1800);
         else
-        return skims.setTravelTimeAndCost(destinationTaz.zoneNumber, 
+        return skims.setTravelTimeAndCost(returnCost, destinationTaz.zoneNumber, 
                                                                     originTaz.zoneNumber, 
                                                                     1300);
     }//end setReturnCost 

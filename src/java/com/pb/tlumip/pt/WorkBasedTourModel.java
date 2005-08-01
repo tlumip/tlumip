@@ -177,9 +177,11 @@ public class WorkBasedTourModel{
 
           //choose mode
           //set time and cost parameters for mode choice
-          TravelTimeAndCost departCost = skims.setTravelTimeAndCost(thisTour.begin.location.zoneNumber, 
+          TravelTimeAndCost departCost =new TravelTimeAndCost();
+          departCost = skims.setTravelTimeAndCost(departCost, thisTour.begin.location.zoneNumber, 
                chosenTaz.zoneNumber, thisTour.begin.endTime);
-          TravelTimeAndCost returnCost = skims.setTravelTimeAndCost(chosenTaz.zoneNumber, 
+          TravelTimeAndCost returnCost = new TravelTimeAndCost();
+          returnCost = skims.setTravelTimeAndCost(returnCost, chosenTaz.zoneNumber, 
                thisTour.end.location.zoneNumber, thisTour.primaryDestination.endTime);
 
          //Sets tour lengths

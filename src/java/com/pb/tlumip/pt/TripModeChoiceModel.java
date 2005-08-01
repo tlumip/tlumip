@@ -117,13 +117,15 @@ public class TripModeChoiceModel{
           TripModeParameters params = new TripModeParameters();
           //char actPurpose = ActivityPurpose.ACTIVITY_PURPOSES[thisTour.primaryDestination.activityPurpose];
           params = (TripModeParameters) allParams.getTripModeParameters(thisTour.primaryDestination.activityPurpose);
-               
+          
+          TravelTimeAndCost tc1 = new TravelTimeAndCost();
+          TravelTimeAndCost tc2 = new TravelTimeAndCost();
 
           //check if intermediate stop 1, set attributes accordingly 
           if(thisTour.intermediateStop1!=null){
 
                //from begin activity -> intermediate Stop 1
-               TravelTimeAndCost tc1 = skims.setTravelTimeAndCost(thisTour.begin.location.zoneNumber,
+              tc1 = skims.setTravelTimeAndCost(tc1, thisTour.begin.location.zoneNumber,
                                                                   thisTour.intermediateStop1.location.zoneNumber,
                                                                   thisTour.begin.endTime
                                                                   );
@@ -146,7 +148,7 @@ public class TripModeChoiceModel{
                                 );
 
                //from intermediate Stop 1 -> primary destination
-               TravelTimeAndCost tc2 = skims.setTravelTimeAndCost(thisTour.intermediateStop1.location.zoneNumber,
+               tc2 = skims.setTravelTimeAndCost(tc2, thisTour.intermediateStop1.location.zoneNumber,
                                                                   thisTour.primaryDestination.location.zoneNumber,
                                                                   thisTour.intermediateStop1.endTime);
                ZoneAttributes zone2 = new ZoneAttributes();
@@ -164,7 +166,7 @@ public class TripModeChoiceModel{
                                 );
           }else{
                //from begin -> primary destination
-               TravelTimeAndCost tc = skims.setTravelTimeAndCost(thisTour.begin.location.zoneNumber,
+               tc1 = skims.setTravelTimeAndCost(tc1, thisTour.begin.location.zoneNumber,
                                                                  thisTour.primaryDestination.location.zoneNumber,
                                                                  thisTour.begin.endTime);
                ZoneAttributes zone = new ZoneAttributes();
@@ -173,8 +175,8 @@ public class TripModeChoiceModel{
                   logger.debug("thisTour.primaryDestination.location.zoneNumber"+thisTour.primaryDestination.location.zoneNumber);
               }
               zone.parkingCost=((Taz)tazs.tazData.get(new Integer(thisTour.primaryDestination.location.zoneNumber))).nonWorkParkingCost;
-               calculateUtility(params,
-                                tc,
+              calculateUtility(params,
+                                tc1,
                                 personAttributes,
                                 thisTour.primaryMode,
                                 zone,
@@ -191,7 +193,7 @@ public class TripModeChoiceModel{
           //check if intermediate stop 2, set attributes accordingly 
           if(thisTour.intermediateStop2!=null){
                //from primaryDestination activity -> intermediate Stop 2
-               TravelTimeAndCost tc1 = skims.setTravelTimeAndCost(thisTour.primaryDestination.location.zoneNumber,
+               tc1 = skims.setTravelTimeAndCost(tc1, thisTour.primaryDestination.location.zoneNumber,
                                                                   thisTour.intermediateStop2.location.zoneNumber,
                                                                   thisTour.primaryDestination.endTime);
                ZoneAttributes zone1 = new ZoneAttributes();
@@ -209,7 +211,7 @@ public class TripModeChoiceModel{
                                 );
                                 
                //from intermediate Stop 2 -> end
-               TravelTimeAndCost tc2 = skims.setTravelTimeAndCost(thisTour.intermediateStop2.location.zoneNumber,
+               tc2 = skims.setTravelTimeAndCost(tc2, thisTour.intermediateStop2.location.zoneNumber,
                                                                   thisTour.end.location.zoneNumber,
                                                                   thisTour.intermediateStop2.endTime
                                                                   );
@@ -229,7 +231,7 @@ public class TripModeChoiceModel{
                                 );
           }else{
                //from primary destination -> end
-               TravelTimeAndCost tc = skims.setTravelTimeAndCost(thisTour.primaryDestination.location.zoneNumber,
+               tc1 = skims.setTravelTimeAndCost(tc1, thisTour.primaryDestination.location.zoneNumber,
                                                                  thisTour.end.location.zoneNumber,
                                                                  thisTour.begin.endTime
                                                                  );
@@ -237,7 +239,7 @@ public class TripModeChoiceModel{
                //assume no parking cost at end of tour
 //               zone.parkingCost=((Taz)tazs.tazData.get(new Integer(thisTour.primaryDestination.location.zoneNumber))).nonWorkParkingCost;
                calculateUtility(params,
-                                tc,
+                                tc1,
                                 personAttributes,
                                 thisTour.primaryMode,
                                 zone,

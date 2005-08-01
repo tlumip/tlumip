@@ -162,9 +162,11 @@ public class TourDestinationModeChoiceModel{
         chosenMode=null;
 
         //set time and cost parameters for mode choice
-        TravelTimeAndCost departCost = skims.setTravelTimeAndCost(thisTour.begin.location.zoneNumber,
+        TravelTimeAndCost departCost = new TravelTimeAndCost();
+        departCost = skims.setTravelTimeAndCost(departCost, thisTour.begin.location.zoneNumber,
         thisTour.primaryDestination.location.zoneNumber, thisTour.begin.endTime);
-        TravelTimeAndCost returnCost = skims.setTravelTimeAndCost(thisTour.primaryDestination.location.zoneNumber,
+        TravelTimeAndCost returnCost = new TravelTimeAndCost();
+        returnCost = skims.setTravelTimeAndCost(returnCost, thisTour.primaryDestination.location.zoneNumber,
                thisTour.end.location.zoneNumber, thisTour.primaryDestination.endTime);
         TourModeParameters modeParams = tmpd.getTourModeParameters(activityPurpose);
 

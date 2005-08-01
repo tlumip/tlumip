@@ -46,7 +46,7 @@ import java.util.*;
  */
 public class PTDafMaster extends MessageProcessingTask {
     Logger ptDafMasterLogger = Logger.getLogger(PTDafMaster.class);
-    static int NUMBER_OF_WORK_QUEUES;  //specified in the ptdaf_$SCENARIO_NAME.properties file
+    static int NUMBER_OF_WORK_NODES;  //specified in the ptdaf_$SCENARIO_NAME.properties file
     static int MAXBLOCKSIZE;  //will be initialized through pt resource bundle as it may change depending
                                 //on the scenario (ex. 5000 for pleaseWork, 8 for smallPop)
     static int TOTAL_COLLAPSED_MCLOGSUMS; // is set in the properties file, will be read in during onStart method
@@ -85,7 +85,11 @@ public class PTDafMaster extends MessageProcessingTask {
 
     // variable that keeps track of last work queue
     int lastWorkQueue;
-
+    ArrayList mcWorkQueues = new ArrayList();
+    ArrayList dcWorkQueues = new ArrayList();
+    ArrayList hhWorkQueues = new ArrayList();
+    
+    int nNodesInitialized = 0;
 
 
 //    Read parameters
@@ -127,10 +131,34 @@ public class PTDafMaster extends MessageProcessingTask {
 
         //Set class attributes based on those properties.
         // daf related properties
-        NUMBER_OF_WORK_QUEUES = Integer.parseInt(ResourceUtil.getProperty(ptdafRb, "workQueues"));
-        lastWorkQueue = NUMBER_OF_WORK_QUEUES;
+        NUMBER_OF_WORK_NODES = Integer.parseInt(ResourceUtil.getProperty(ptdafRb, "nWorkNodes"));
+        lastWorkQueue = NUMBER_OF_WORK_NODES;
         if(ptDafMasterLogger.isDebugEnabled()) {
-            ptDafMasterLogger.debug("Number of Work Queues: " + NUMBER_OF_WORK_QUEUES);
+            ptDafMasterLogger.debug("Number of Worker Nodes: " + NUMBER_OF_WORK_NODES);
+        }
+        ArrayList queues = ResourceUtil.getList(ptdafRb, "queueList");
+        if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug("Total queues " + queues.size());
+        Iterator iter = queues.iterator();
+        while(iter.hasNext()){
+            String queueName = (String) iter.next();
+            if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug("Queue Name : " + queueName);
+            if(queueName.indexOf("MC")>=0) {
+                mcWorkQueues.add(queueName);
+                if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug(queueName + " added to mcWorkQueues");
+            }
+            if(queueName.indexOf("DC")>=0) {
+                dcWorkQueues.add(queueName);
+                if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug(queueName + " added to dcWorkQueues");
+            }
+            if(queueName.indexOf("HH")>=0) {
+                hhWorkQueues.add(queueName);
+                if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug(queueName + " added to hhWorkQueues");
+            }
+        }
+        if(ptDafMasterLogger.isDebugEnabled()) {
+            ptDafMasterLogger.debug("number of mcWorkQueues " + mcWorkQueues.size());
+            ptDafMasterLogger.debug("number of dcWorkQueues " + dcWorkQueues.size());
+            ptDafMasterLogger.debug("number of hhWorkQueues " + hhWorkQueues.size());
         }
 
         // pt related properties
@@ -176,7 +204,7 @@ public class PTDafMaster extends MessageProcessingTask {
         //don't need to be calculated the workers will send back an empty message.
         //Either way, the Master will be able to go to the next model based
         //on the total "MCLogsumsCreated" messages coming back.
-        ptDafMasterLogger.info("Starting the Mode Choice Logsum calculations");
+//        ptDafMasterLogger.info("Starting the Mode Choice Logsum calculations");
         startMCLogsums();
 
         //Read the SynPop data
@@ -184,17 +212,17 @@ public class PTDafMaster extends MessageProcessingTask {
         ptDafMasterLogger.info("Adding synthetic population from database");
         households = dataReader.readHouseholds("households.file");
         ptDafMasterLogger.info("Total Number of HHs: " + households.length);
-        if(ptDafMasterLogger.isDebugEnabled()) {
-            ptDafMasterLogger.debug("Size of households: " + ObjectUtil.sizeOf(households));
-        }
+//        if(ptDafMasterLogger.isDebugEnabled()) {
+//            ptDafMasterLogger.debug("Size of households: " + ObjectUtil.sizeOf(households));
+//        }
 
 
         ptDafMasterLogger.info("Reading the Persons file");
         persons = dataReader.readPersons("persons.file");
         ptDafMasterLogger.info("Total Number of Persons: " + persons.length);
-        if(ptDafMasterLogger.isDebugEnabled()) {
-            ptDafMasterLogger.debug("Size of persons: " + ObjectUtil.sizeOf(persons));
-        }
+//        if(ptDafMasterLogger.isDebugEnabled()) {
+//            ptDafMasterLogger.debug("Size of persons: " + ObjectUtil.sizeOf(persons));
+//        }
 
         //add worker info to Households and add homeTAZ and hh work segment to persons
         //This method sorts households and persons by ID.  Leaves arrays in sorted positions.
@@ -237,9 +265,13 @@ public class PTDafMaster extends MessageProcessingTask {
         ptDafMasterLogger.info(getName() + " received messageId=" + msg.getId() +
             " message from=" + msg.getSender() + " @time=" + new Date());
 
-        if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED) ||
-                msg.getId().equals(MessageID.MC_LOGSUMS_COLLAPSED)) {
-
+        if(msg.getId().equals(MessageID.NODE_INITIALIZED)){
+            nNodesInitialized++;
+            if(nNodesInitialized == NUMBER_OF_WORK_NODES){
+                readInPersonAndHouseholdData();   //this will also start the MCLogsum calcs
+            }
+        }else if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED) ||
+                    msg.getId().equals(MessageID.MC_LOGSUMS_COLLAPSED)) {
             if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED)) {
                 mcLogsumCount++;
                 ptDafMasterLogger.info("mcLogsumCount: " + mcLogsumCount);
@@ -271,7 +303,7 @@ public class PTDafMaster extends MessageProcessingTask {
                 ptDafMasterLogger.debug("tazUpdateCount: " + tazUpdateCount);
             }
 
-            if (tazUpdateCount == NUMBER_OF_WORK_QUEUES) {
+            if (tazUpdateCount == NUMBER_OF_WORK_NODES) {
                 ptDafMasterLogger.info("Taz data has been updated on all workers.");
                 startDCLogsums();
             }
@@ -343,7 +375,7 @@ public class PTDafMaster extends MessageProcessingTask {
      */
     private void startMCLogsums() {
         ptDafMasterLogger.info("Creating tour mode choice logsums");
-
+        int msgCounter = 0;
         //enter loop on purposes (skip home purpose)
         for (int purpose = 1; purpose < ActivityPurpose.ACTIVITY_PURPOSES.length; ++purpose) {
             char thisPurpose = ActivityPurpose.ACTIVITY_PURPOSES[purpose];
@@ -351,12 +383,14 @@ public class PTDafMaster extends MessageProcessingTask {
             //enter loop on segments
             for (int segment = 0; segment < TOTALSEGMENTS; ++segment) {
                 Message mcLogsumMessage = createMessage();
+                msgCounter++;
                 mcLogsumMessage.setId(MessageID.CREATE_MC_LOGSUMS);
                 mcLogsumMessage.setValue("purpose",
                     new Character(ActivityPurpose.ACTIVITY_PURPOSES[purpose]));
                 mcLogsumMessage.setValue("segment", new Integer(segment));
 
-                String queueName = getQueueName();
+//                String queueName = getQueueName();
+                String queueName = getMCQueueName(msgCounter);
                 mcLogsumMessage.setValue("queue", queueName);
                 ptDafMasterLogger.info("Sending MC logsums to " + queueName + " : " +
                     thisPurpose + segment);
@@ -375,6 +409,7 @@ public class PTDafMaster extends MessageProcessingTask {
      * Finally, add the unemployed persons to the person array.
      */
     private void createWorkplaceLocationMessages(){
+        int msgCounter = 0;
         //Sort the person array by segment, occupation code so the first person will
         //have segment code 0, occupation code 0 followed by segment code 0, occupation code 1, etc.
         Arrays.sort(persons); //sorts persons by workSegment (0-8) and then by occupation code (0-8)
@@ -409,11 +444,13 @@ public class PTDafMaster extends MessageProcessingTask {
                 personList.toArray(personsSubset);
                 //create a message, set the occupation and segment
                 Message laborFlowMessage = createMessage();
+                msgCounter++;
                 laborFlowMessage.setId(MessageID.CALCULATE_WORKPLACE_LOCATIONS);
                 laborFlowMessage.setValue("segment", new Integer(segment));
                 laborFlowMessage.setValue("occupation", new Integer(occupation));
                 laborFlowMessage.setValue("persons", personsSubset);
-                String queueName = getQueueName();
+//                String queueName = getQueueName();
+                String queueName = getHHQueueName(msgCounter);
                 ptDafMasterLogger.info("Sending Person Message to " + queueName + ": segment "
                         + segment + " - occupation " + occupation + ": total persons: " + nPersons);
                 sendTo(queueName, laborFlowMessage);
@@ -478,13 +515,14 @@ public class PTDafMaster extends MessageProcessingTask {
 
 
 
-        for (int q = 2; q <= NUMBER_OF_WORK_QUEUES+1; q++) {
+        for (int q = 2; q <= NUMBER_OF_WORK_NODES+1; q++) {
             Message tazInfo = createMessage();
             tazInfo.setId(MessageID.UPDATE_TAZDATA);
             tazInfo.setValue("householdsByTaz",householdsByTaz);
             tazInfo.setValue("postSecOccup",postSecOccup);
             tazInfo.setValue("otherSchoolOccup",otherSchoolOccup);
-            String queueName = new String("WorkQueue" + q);
+//            String queueName = new String("WorkQueue" + q);
+            String queueName = new String("HH_node"+ q + "WorkQueue");
             ptDafMasterLogger.info("Sending Message to" + queueName +
                         " to update TAZ info");
 
@@ -500,7 +538,7 @@ public class PTDafMaster extends MessageProcessingTask {
      */
     private void startDCLogsums() {
         ptDafMasterLogger.info("Creating tour destination choice logsums");
-
+        int msgCounter = 0;
         //enter loop on purposes - start at 2 because you don't need to create DC logsums for home or work purposes
         for (int purpose = 2; purpose < ActivityPurpose.ACTIVITY_PURPOSES.length; ++purpose) {
             char thisPurpose = ActivityPurpose.ACTIVITY_PURPOSES[purpose];
@@ -508,12 +546,14 @@ public class PTDafMaster extends MessageProcessingTask {
             //enter loop on segments
             for (int segment = 0; segment < TOTALSEGMENTS; ++segment) {
                 Message dcLogsumMessage = createMessage();
+                msgCounter++;
                 dcLogsumMessage.setId(MessageID.CREATE_DC_LOGSUMS);
                 dcLogsumMessage.setValue("purpose",
                     new Character(thisPurpose));
                 dcLogsumMessage.setValue("segment", new Integer(segment));
 
-                String queueName = getQueueName();
+//                String queueName = getQueueName();
+                String queueName = getDCQueueName(msgCounter);
                 dcLogsumMessage.setValue("queue", queueName);
                 ptDafMasterLogger.info("Sending DC logsums to " + queueName + " : " +
                     thisPurpose + segment);
@@ -529,6 +569,7 @@ public class PTDafMaster extends MessageProcessingTask {
      *
      */
     private void startProcessHouseholds() {
+        int msgCounter = 0;
         if(ptDafMasterLogger.isDebugEnabled()) {
             ptDafMasterLogger.debug("Processing households.");
         }
@@ -539,7 +580,7 @@ public class PTDafMaster extends MessageProcessingTask {
         
 
         //iterate through number of workers, 20 household blocks
-        for (int q = 1; q <= NUMBER_OF_WORK_QUEUES; q++) {
+        for (int q = 1; q <= hhWorkQueues.size(); q++) {
             for (int j = 0;j < numHHBlocksPerQueue; j++){ //consider: *Math.ceil(households.length / NUMBER_OF_WORK_QUEUES / MAXBLOCKSIZE)
                 blockCounter++;
                 //create an array of households
@@ -554,6 +595,7 @@ public class PTDafMaster extends MessageProcessingTask {
                 }
 
                 Message processHouseholds = createMessage();
+                msgCounter++;
                 processHouseholds.setId(MessageID.PROCESS_HOUSEHOLDS);
                 processHouseholds.setValue("blockNumber" , new Integer(blockCounter));
                 processHouseholds.setValue("households", householdBlock);
@@ -571,9 +613,10 @@ public class PTDafMaster extends MessageProcessingTask {
                                     (Integer) processHouseholds.getValue("sendMore"));
                 }
 
-                String queueName = new String("WorkQueue" + (q+1)); //queue numbering starts at 2 in ptdaf.properties
+//                String queueName = new String("WorkQueue" + (q+1)); //queue numbering starts at 2 in ptdaf.properties
+                String queueName = getHHQueueName(q);
                 processHouseholds.setValue("WorkQueue", queueName);
-                ptDafMasterLogger.debug("Sending HH Block "+ blockCounter + " to"  + queueName);
+                ptDafMasterLogger.debug("Sending HH Block "+ blockCounter + " to "  + queueName);
                 sendTo(queueName, processHouseholds);
                 if(ptDafMasterLogger.isDebugEnabled()) {
                     ptDafMasterLogger.debug("householdCounter = " + householdCounter);
@@ -598,7 +641,7 @@ public class PTDafMaster extends MessageProcessingTask {
         }
         //Send every worker who needs more work, either 20 new messages with households OR
         //divide up the number of blocks that are left and send an even number to all workers.
-        int numOfHHBlocksPerQueue = Math.min(20, (int)Math.ceil(numHHBlocksLeftToProcess/(double)NUMBER_OF_WORK_QUEUES));
+        int numOfHHBlocksPerQueue = Math.min(20, (int)Math.ceil(numHHBlocksLeftToProcess/(double)hhWorkQueues.size()));
         if(ptDafMasterLogger.isDebugEnabled()){
             ptDafMasterLogger.debug("num of HHBlocks per queue: " + numOfHHBlocksPerQueue);
         }
@@ -643,20 +686,74 @@ public class PTDafMaster extends MessageProcessingTask {
     /**
      * getQueueName() is used when spraying an equal number of messages accross all WorkQueues.
      */
-    private String getQueueName() {
-        String queue = null;
-
-        if (lastWorkQueue == NUMBER_OF_WORK_QUEUES+1) {
-            int thisWorkQueue = 2;
-            queue = new String("WorkQueue" + thisWorkQueue);
-            lastWorkQueue = thisWorkQueue;
-        } else {
-            int thisWorkQueue = lastWorkQueue + 1;
-            queue = new String("WorkQueue" + thisWorkQueue);
-            lastWorkQueue = thisWorkQueue;
+//    private String getQueueName() {
+//        String queue = null;
+//
+//        if (lastWorkQueue == NUMBER_OF_WORK_QUEUES+1) {
+//            int thisWorkQueue = 2;
+//            queue = new String("WorkQueue" + thisWorkQueue);
+//            lastWorkQueue = thisWorkQueue;
+//        } else {
+//            int thisWorkQueue = lastWorkQueue + 1;
+//            queue = new String("WorkQueue" + thisWorkQueue);
+//            lastWorkQueue = thisWorkQueue;
+//        }
+//
+//        return queue;
+//    }
+    
+    private String getMCQueueName(int msgCount){
+        String queueName = null;
+        queueName = (String) mcWorkQueues.get((msgCount % mcWorkQueues.size()));
+        ptDafMasterLogger.debug("Message " + msgCount + " being sent to " + queueName);
+        return queueName;
+    }
+    
+    private String getDCQueueName(int msgCount){
+        String queueName = null;
+        queueName = (String) dcWorkQueues.get((msgCount % dcWorkQueues.size()));
+        ptDafMasterLogger.debug("Message " + msgCount + " being sent to " + queueName);
+        return queueName;
+    }
+    
+    private String getHHQueueName(int msgCount){
+        String queueName = null;
+        queueName = (String) hhWorkQueues.get((msgCount % hhWorkQueues.size()));
+        return queueName;
+    }
+    
+    private void readInPersonAndHouseholdData(){
+//      Read the SynPop data
+        dataReader = new PTDataReader(ptRb, globalRb);
+        ptDafMasterLogger.info("Adding synthetic population from database");
+        households = dataReader.readHouseholds("households.file");
+        ptDafMasterLogger.info("Total Number of HHs: " + households.length);
+        if(ptDafMasterLogger.isDebugEnabled()) {
+            ptDafMasterLogger.debug("Size of households: " + ObjectUtil.sizeOf(households));
         }
 
-        return queue;
+
+        ptDafMasterLogger.info("Reading the Persons file");
+        persons = dataReader.readPersons("persons.file");
+        ptDafMasterLogger.info("Total Number of Persons: " + persons.length);
+        if(ptDafMasterLogger.isDebugEnabled()) {
+            ptDafMasterLogger.debug("Size of persons: " + ObjectUtil.sizeOf(persons));
+        }
+
+        //add worker info to Households and add homeTAZ and hh work segment to persons
+        //This method sorts households and persons by ID.  Leaves arrays in sorted positions.
+        dataReader.addPersonInfoToHouseholdsAndHouseholdInfoToPersons(households, persons);
+
+        //Persons must be read in and .addPersonInfo... must be called before running
+        //auto ownership, otherwise PTHousehold.workers will be 0 and
+        //the work segment will be calculated incorrectly.
+        ptDafMasterLogger.info("Starting the AutoOwnershipModel");
+        households = dataReader.runAutoOwnershipModel(households);
+
+        PTSummarizer.summarizeHouseholds(households,ResourceUtil.getProperty(ptRb,"hhSummary.file"));
+        PTSummarizer.summarizePersons(persons,ResourceUtil.getProperty(ptRb,"personSummary.file"));
+        
+        startMCLogsums();
     }
 
     private TableDataSet loadTableDataSet(ResourceBundle rb,String pathName) {

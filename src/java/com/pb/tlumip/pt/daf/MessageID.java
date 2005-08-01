@@ -27,7 +27,7 @@ package com.pb.tlumip.pt.daf;
 public final class MessageID{
     
     //Messages sent from IntializerTask
-    public static final String INITIALIZED = "Initialized";
+    public static final String NODE_INITIALIZED = "Node Initialized";
 	
     //Messages sent from PTDafMaster
     public static final String CREATE_MC_LOGSUMS = "CreateMCLogsums";
