@@ -699,6 +699,8 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
          hasUtility=true;
 
          if(homeActivities==1){
+           utility=0;
+           isAvailable=true;
            return;
          }
 
