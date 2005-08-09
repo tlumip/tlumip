@@ -36,7 +36,7 @@ import java.io.Serializable;
  */
 public class SkimsInMemory implements Serializable {
 	
-    protected static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
+    protected static Logger logger = Logger.getLogger(SkimsInMemory.class);
     public MatrixCollection pkwlk,pkdrv,opwlk,opdrv;
     public Matrix pkTime,pkDist,opTime,opDist;
 	public static int AOC;
@@ -49,7 +49,6 @@ public class SkimsInMemory implements Serializable {
     public static int PMPEAKSTART;
     public static int PMPEAKEND;
     public static String[] mNameGlobal;
-    TravelTimeAndCost tc = new TravelTimeAndCost();
     
 
     private SkimsInMemory() {
@@ -281,11 +280,9 @@ public class SkimsInMemory implements Serializable {
 
 	//to set the travel time and cost, based on the origin taz, the destination taz, and the time of day.
 	//time of day is in military time from 0 -> 2359
-	public TravelTimeAndCost setTravelTimeAndCost(int originTaz, int destinationTaz, int time){
+	public TravelTimeAndCost setTravelTimeAndCost(TravelTimeAndCost tc, int originTaz, int destinationTaz, int time){
 		
-		//TravelTimeAndCost tc = new TravelTimeAndCost();
-	
-   		if((time>=AMPEAKSTART && time<=AMPEAKEND)||(time>=PMPEAKSTART && time<=PMPEAKEND)){  //peak
+		if((time>=AMPEAKSTART && time<=AMPEAKEND)||(time>=PMPEAKSTART && time<=PMPEAKEND)){  //peak
             //if PM Peak, then reverse origin and destination to get peak skims 
 			if (time>=PMPEAKSTART && time<=PMPEAKEND){
 			
@@ -619,6 +616,15 @@ public class SkimsInMemory implements Serializable {
 		return autoDists;
 
 	}
+    
+    public void freeTimeMatrices(){
+        pkwlk = null;
+        pkdrv= null;
+        opwlk=null;
+        opdrv=null;
+        pkTime=null;
+        opTime=null;
+     }
 
     public void checkSkims(SkimsInMemory skims) {
 
