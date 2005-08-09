@@ -129,6 +129,109 @@ public class Skims {
 
 
     /**
+	 * write out an alpha zone skim matrix
+	 */
+	public void writeHwySkimMatrix ( String assignmentPeriod, String skimType, char modeChar ) {
+
+		String fileName = null;
+		
+		Matrix newSkimMatrix = getHwySkimMatrix ( assignmentPeriod, skimType, modeChar );
+		
+		
+		// initialize the necessary values based on the assignmet period and type of skim to produce
+        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") ) {
+        	    fileName = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
+        	}
+        	else if ( skimType.equalsIgnoreCase("dist") ) {
+        	    fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
+        	}
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") ) {
+        	    fileName = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
+        	}
+        	else if ( skimType.equalsIgnoreCase("dist") ) {
+        	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
+        	}
+        }
+        
+        MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+        mw.writeMatrix(newSkimMatrix);
+        
+	}
+
+
+    /**
+	 * write out a set of alpha zone skim matrices
+	 */
+	public void writeHwySkimMatrices ( String assignmentPeriod, String[] skimType, char modeChar ) {
+
+		String[] fileName = null;
+		String[] matrixName = null;
+		String[] matrixDescription = null;
+		double[][] linkAttrib = null;
+
+		linkAttrib = new double[skimType.length][];
+		fileName = new String[skimType.length];
+		matrixName = new String[skimType.length];
+		matrixDescription = new String[skimType.length];
+		
+		for (int i=0; i < skimType.length; i++) {
+
+			// initialize the necessary values based on the assignmet period and type of skim to produce
+	        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+	        	if ( skimType[i].equalsIgnoreCase("time") ) {
+	        	    fileName[i] = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
+	        	    matrixName[i] = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixName" );
+	        	    matrixDescription[i] = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixDescription" );
+
+	        		linkAttrib[i] = g.getCongestedTime();
+	        	}
+	        	else if ( skimType[i].equalsIgnoreCase("dist") ) {
+	        	    fileName[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
+	        	    matrixName[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.matrixName" );
+	        	    matrixDescription[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.matrixDescription" );
+
+	        		linkAttrib[i] = g.getDist();
+	        	}
+	        }
+	        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+	        	if ( skimType[i].equalsIgnoreCase("time") ) {
+	        	    fileName[i] = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
+	        	    matrixName[i] = (String)tsPropertyMap.get( "opHwyTimeSkim.matrixName" );
+	        	    matrixDescription[i] = (String)tsPropertyMap.get( "opHwyTimeSkim.matrixDescription" );
+
+	        		linkAttrib[i] = g.getCongestedTime();
+	        	}
+	        	else if ( skimType[i].equalsIgnoreCase("dist") ) {
+	        	    fileName[i] = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
+	        	    matrixName[i] = (String)tsPropertyMap.get( "opHwyDistSkim.matrixName" );
+	        	    matrixDescription[i] = (String)tsPropertyMap.get( "opHwyDistSkim.matrixDescription" );
+
+	        		linkAttrib[i] = g.getDist();
+	        	}
+	        }
+			
+		}
+        
+		Matrix[] newSkimMatrices = getHwySkimMatrices ( assignmentPeriod, linkAttrib, modeChar );
+		
+		for (int i=0; i < skimType.length; i++) {
+			
+			// write alpha zone skim matrix
+	        MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName[i]) );
+	        mw.writeMatrix(newSkimMatrices[i]);
+	        
+	        // write beta zone skim matrix
+	        writeBetaSkimMatrix ( assignmentPeriod, skimType[i], newSkimMatrices[i] );
+	        	
+		}
+        
+	}
+
+
+    /**
 	 * calculate the alpha zone skim matrices based on the set of lin attributes passed in and return the Matrix object array
 	 */
 	public Matrix[] getHwySkimMatrices ( String assignmentPeriod, double[][] linkAttribs, char modeChar ) {
@@ -227,40 +330,6 @@ public class Skims {
         
         
         return newSkimMatrix;
-        
-	}
-
-
-    /**
-	 * write out an alpha zone skim matrix
-	 */
-	public void writeHwySkimMatrix ( String assignmentPeriod, String skimType, char modeChar ) {
-
-		String fileName = null;
-		
-		Matrix newSkimMatrix = getHwySkimMatrix ( assignmentPeriod, skimType, modeChar );
-		
-		
-		// initialize the necessary values based on the assignmet period and type of skim to produce
-        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
-        	if ( skimType.equalsIgnoreCase("time") ) {
-        	    fileName = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
-        	}
-        	else if ( skimType.equalsIgnoreCase("dist") ) {
-        	    fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
-        	}
-        }
-        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
-        	if ( skimType.equalsIgnoreCase("time") ) {
-        	    fileName = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
-        	}
-        	else if ( skimType.equalsIgnoreCase("dist") ) {
-        	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
-        	}
-        }
-        
-        MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
-        mw.writeMatrix(newSkimMatrix);
         
 	}
 

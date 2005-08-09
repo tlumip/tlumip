@@ -94,6 +94,16 @@ public class TS {
 		// run the multiclass assignment for the time period
     	multiclassEquilibriumHighwayAssignment ( assignmentPeriod );
 		
+    	// write the auto time and distance highway skim matrices to disk
+    	writeHighwaySkimMatrices ( assignmentPeriod, 'a' );
+		
+    	// if at some point in time we want to have truck specific highway skims,
+    	// we'd ceate them here and would modify the the properties file to include
+    	// class specific naming in skims file properties file keynames.  We'd also
+    	// modify the method above to distinguish the class id in addition to period
+    	// and skim types.
+    	
+		
     }
     
     
@@ -254,6 +264,25 @@ public class TS {
         skims.writeHwySkimMatrix ( assignmentPeriod, skimType, modeChar);
 
         logger.info("wrote the " + assignmentPeriod + " " + skimType + " skims for mode " + modeChar + " in " +
+    			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+
+    }
+
+
+    
+    public void writeHighwaySkimMatrices ( String assignmentPeriod, char modeChar ) {
+
+    	String[] skimTypeArray = { "time", "dist" };
+    	
+    	
+		logger.info("Writing " + assignmentPeriod + " time and dist skim matrices for highway mode " + modeChar + " to disk...");
+        long startTime = System.currentTimeMillis();
+        
+    	Skims skims = new Skims(g, tsPropertyMap, globalPropertyMap);
+    	
+        skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, modeChar);
+
+        logger.info("wrote the " + assignmentPeriod + " time and dist skims for mode " + modeChar + " in " +
     			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
 
     }
