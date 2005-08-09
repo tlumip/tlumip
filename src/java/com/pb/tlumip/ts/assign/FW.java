@@ -54,6 +54,7 @@ public class FW {
  
     int startOriginTaz, lastOriginTaz;
 	int maxFwIters;
+	double fwGap;
 
 	DiskObjectArray fwPathsDoa = null;	
 
@@ -68,6 +69,8 @@ public class FW {
 		this.g = g;
         
         maxFwIters = Integer.parseInt ( (String)propertyMap.get( "NUM_FW_ITERATIONS" ) );
+        fwGap = Double.parseDouble ( (String)propertyMap.get( "FW_RELATIVE_GAP" ) );
+        
         numAutoClasses = g.getUserClasses().length;
 		timePeriod = g.getTimePeriod();
 
@@ -176,6 +179,10 @@ public class FW {
 
             
 			g.logLinkTimeFreqs (validLinks);
+			
+			
+			if ( Math.abs( (lub - glb)/glb ) < fwGap )
+				break;
 			
         } // end of FW iter loop
 
