@@ -408,30 +408,30 @@ public class Skims {
 	    	}
 	    }
 
-		// set the skim value to NEG_INFINITY for the entire row for external zone 2594 (disconnected)
-    	exRow = 2594;
-		inRow = externalToAlphaInternal[exRow];
-        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
-        	exCol = skimsInternalToExternal[i];
-	    	if ( zonesToSkim[exCol] == 1 ) {
-	    		inCol = externalToAlphaInternal[exCol];
-	    		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
-	    	}
-		}
-		// set the skim value to NEG_INFINITY for the entire column for external zone 2594 (disconnected)
-    	exCol = 2594;
-		inCol = externalToAlphaInternal[exCol];
-        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
-        	exRow = skimsInternalToExternal[i];
-	    	if ( zonesToSkim[exRow] == 1 ) {
-	    		inRow = externalToAlphaInternal[exRow];
-	    		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
-	    	}
-		}
-		// set the skim value to NEG_INFINITY for the intrazonal cell for external zone 2594 (disconnected)
-		inRow = externalToAlphaInternal[2594];
-		inCol = externalToAlphaInternal[2594];
-   		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
+//		// set the skim value to NEG_INFINITY for the entire row for external zone 2594 (disconnected)
+//    	exRow = 2594;
+//		inRow = externalToAlphaInternal[exRow];
+//        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
+//        	exCol = skimsInternalToExternal[i];
+//	    	if ( zonesToSkim[exCol] == 1 ) {
+//	    		inCol = externalToAlphaInternal[exCol];
+//	    		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
+//	    	}
+//		}
+//		// set the skim value to NEG_INFINITY for the entire column for external zone 2594 (disconnected)
+//    	exCol = 2594;
+//		inCol = externalToAlphaInternal[exCol];
+//        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
+//        	exRow = skimsInternalToExternal[i];
+//	    	if ( zonesToSkim[exRow] == 1 ) {
+//	    		inRow = externalToAlphaInternal[exRow];
+//	    		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
+//	    	}
+//		}
+//		// set the skim value to NEG_INFINITY for the intrazonal cell for external zone 2594 (disconnected)
+//		inRow = externalToAlphaInternal[2594];
+//		inCol = externalToAlphaInternal[2594];
+//   		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
 
    		
 		zeroBasedDoubleArray = null;
