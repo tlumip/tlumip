@@ -212,8 +212,9 @@ public class PTPerson implements Serializable, Comparable{
      //to write to a text file, csv format
      public void printCSV(PrintWriter file){
 
-          file.print(
-               ID+","
+          file.println(
+               hhID + "," 
+               +ID+","
                +booleanToInt(employed)+","
                +booleanToInt(student)+","
                +booleanToInt(worksTwoJobs)+","
@@ -229,12 +230,12 @@ public class PTPerson implements Serializable, Comparable{
                +workTaz+","
                +workTaz2+","
                +schoolTaz+","
-//               +weekdayPattern+","
+               +weekdayPattern+","
 //               +weekendPattern+","
                +weekdayTours.length+","
-               +weekendTours.length+","
-               +weekdayWorkBasedTours.length+","
-               +weekendWorkBasedTours.length+","
+//               +weekendTours.length+","
+               +weekdayWorkBasedTours.length
+//               +weekendWorkBasedTours.length+","
           );
      }
      

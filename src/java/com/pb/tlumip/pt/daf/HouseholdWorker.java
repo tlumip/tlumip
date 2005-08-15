@@ -157,12 +157,21 @@ public class HouseholdWorker extends MessageProcessingTask {
 
             ptModel = new PTModel(ptRb, globalRb);
             ptResults = new PTResults(ptRb);
-
+            
+            //establish a connection between the workers
+            //and the server and the file writer.
+            Message masterInitMsg = mFactory.createMessage();
+            masterInitMsg.setId("init");
+            sendTo("TaskMasterQueue",masterInitMsg);
+            Message mWriterInitMsg = mFactory.createMessage();
+            mWriterInitMsg.setId("init");
+            sendTo(matrixWriterQueue, mWriterInitMsg);
+            Message rWriterInitMsg = mFactory.createMessage();
+            rWriterInitMsg.setId("init");
+            sendTo(matrixWriterQueue, rWriterInitMsg);
+            
             ptLogger.info(getName() + ", Finished onStart()");
-//            Message initMsg = mFactory.createMessage();
-//            initMsg.setId(MessageID.NODE_INITIALIZED);
-//            initMsg.setValue("task", getName());
-//            sendTo("TaskMasterQueue",initMsg);
+//            
         }
     }
 
@@ -234,6 +243,8 @@ public class HouseholdWorker extends MessageProcessingTask {
                 }
             }
             householdBlockWorker(msg);
+        } else{
+            //do nothing - it was just an init message to establish the connection.
         }
     }
 
@@ -351,7 +362,7 @@ public class HouseholdWorker extends MessageProcessingTask {
 //            ptLogger.debug(getName() + ", Free memory after creating labor flow matrix: " +
 //            Runtime.getRuntime().freeMemory());
 //        }
-        m = null;
+//        m = null; //NULL
     }
 
     /**
@@ -439,7 +450,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                     dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
                     Matrix expUtilities = dcLogsumCalculator.getExpUtilities(dcPurpose, segment.intValue());
                     dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-                    Thread.sleep((long)(Math.random() * 10));
+//                    Thread.sleep((long)(Math.random() * 10));
                     sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
 
                 }
@@ -459,7 +470,7 @@ public class HouseholdWorker extends MessageProcessingTask {
                 dcExpUtilitiesMessage.setId(MessageID.DC_EXPUTILITIES_CREATED);
                 Matrix expUtilities = dcLogsumCalculator.getExpUtilities(purpose, segment.intValue());
                 dcExpUtilitiesMessage.setValue("matrix", expUtilities);
-                Thread.sleep((long)(Math.random() * 10));
+//                Thread.sleep((long)(Math.random() * 10));
                 sendTo(matrixWriterQueue, dcExpUtilitiesMessage);
 //             dcLogsumCalculator.writeDestinationChoiceExpUtilitiesMatrix(rb);     //BINARY-ZIP
 //            dcLogsumCalculator.writeDestinationChoiceExpUtilitiesBinaryMatrix(rb);
@@ -468,7 +479,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             e.printStackTrace();
             System.exit(1);
         }
-        modeChoiceLogsum = null;
+//        modeChoiceLogsum = null; //NULL
      }
 
     /**
@@ -585,8 +596,6 @@ public class HouseholdWorker extends MessageProcessingTask {
         msg.setValue("households",households);
         msg.setValue("nHHs", new Integer(households.length));
         sendTo("ResultsWriterQueue", msg);
-//        ptLogger.debug(getName() + ", Free memory after running model: " +
-//            Runtime.getRuntime().freeMemory());
     }
 
     private void loadDCLogsums() {

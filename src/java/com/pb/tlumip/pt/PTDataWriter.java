@@ -469,7 +469,7 @@ public class PTDataWriter {
                
                 oFile.print(thisHousehold.ID+","+
                             thisPerson.ID+","+
-                            thisPerson.age+"," +
+                            thisPerson.age+","+
                             "1," + //weekdayTour=1 (TRUE)
                             thisPerson.weekdayPatternLogsum+",");
                 thisWeekdayPattern.printCSV(oFile);
@@ -487,7 +487,7 @@ public class PTDataWriter {
                 Pattern thisWeekendPattern = households[hhNumber].persons[personNumber].weekendPattern;
                 oFile.print(thisHousehold.ID+","+
                             thisPerson.ID+","+
-                            thisPerson.age+"," +
+                            thisPerson.age+","+
                             thisPerson.weekendPatternLogsum+",");
                 thisWeekendPattern.printCSV(oFile);
                 oFile.println();

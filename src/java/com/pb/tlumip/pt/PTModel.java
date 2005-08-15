@@ -121,30 +121,34 @@ public void buildLogitModels(){
      */
     public PTHousehold[] runWeekdayPatternModel(PTHousehold[] households){    
         long startTime = System.currentTimeMillis();
-
+        boolean debug = false;
+        boolean loggedAWorker = false;
           
         for(int hhNumber=0;hhNumber<households.length;++hhNumber){
             PTHousehold thisHousehold = (PTHousehold)households[hhNumber];
                
-            if(hhNumber==0||hhNumber==households.length-1||hhNumber % 10000==0){                                     
-                if(logger.isDebugEnabled()) {
-                    logger.debug("Creating Pattern for hhNumber: "+hhNumber);
-                }
-            }         
-                
             //set dc Logsums for all persons in hh
             //Set the household logsum attributes with logsum values stored in the PTModelInputs.dcLogsums
             //data member.
             PTModelInputs.dcLogsums.setDCLogsums(thisHousehold);
             for(int persNumber=0;persNumber<thisHousehold.persons.length;++persNumber){
                 PTPerson thisPerson = thisHousehold.persons[persNumber];
-                    
+                //debug stuff - we only want to log a few workers to see if 
+                //utility is being calculated correctly.
+                if((hhNumber==0||hhNumber % 500==0||hhNumber==households.length-1)
+                        && thisPerson.employed && logger.isDebugEnabled() && !loggedAWorker){
+                    logger.debug("Choosing Patterns for Persons in HH: "+thisHousehold.ID);
+                    logger.debug("  Here are the pattern utilities for Person " + thisPerson.ID);
+                    debug = true;
+                    loggedAWorker = true;
+                }
                 thisPerson.weekdayPattern=weekdayPatternModel.choosePattern(thisHousehold,
                                                                      thisPerson,
                                                                      wkdayPatterns,
-                                                /*weekday boolean*/   true);
+                                                /*weekday boolean*/   true,
+                                                					  debug);
                                                                                 
-
+                debug=false;
             }
         }
         if(logger.isDebugEnabled()) {
@@ -180,7 +184,8 @@ public void buildLogitModels(){
                 thisPerson.weekendPattern=weekendPatternModel.choosePattern(thisHousehold,
                                                                      thisPerson,
                                                                      wkendPatterns,
-                                                /*weekday boolean*/   false);
+                                                /*weekday boolean*/   false,
+                                                                      false);
                                                                                 
 
             }

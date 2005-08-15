@@ -45,6 +45,7 @@ public class PTResults {
     PrintWriter weekendPattern;
     PrintWriter weekendTrip;
     PrintWriter householdData;
+    PrintWriter personData;
 
     static ResourceBundle rb;
 
@@ -79,6 +80,7 @@ public class PTResults {
         weekdayPattern.close();
         weekdayTrip.close();
         householdData.close();
+        personData.close();
         if(PTModel.RUN_WEEKEND_MODEL){   
             weekendTour.close();
             weekendPattern.close();
@@ -105,7 +107,13 @@ public class PTResults {
         weekdayTrip.println("hhID,personID,weekdayTour(yes/no),tour#,tourPurpose,tourSegment,tourMode,origin,destination,distance,time,tripStartTime,tripPurpose,tripMode");
 
         householdData = open(ResourceUtil.getProperty(rb, "householdData.file"));
-        householdData.println("ID,size,autos,workers,income,singleFamily,multiFamily,homeTaz");        
+        householdData.println("hhID,size,autos,workers,income,singleFamily,multiFamily,homeTaz");        
+        
+        personData = open(ResourceUtil.getProperty(rb, "personData.file"));
+        personData.println("hhID,personID,employed,student,works2jobs,age,female,occupation,schoolDCLogsum," +
+        		"shopDCLogsum,recreateDCLogsum,otherDCLogsum,workBasedDCLogsum,workTaz," +
+        		"workTaz2,schoolTaz,weekdayPattern,nWeekdayTours,nWeekdayWorkBasedTours");
+        
         
         if(PTModel.RUN_WEEKEND_MODEL){
             weekendTour = open(ResourceUtil.getProperty(rb, "weekendTour.file"));
@@ -137,8 +145,12 @@ public class PTResults {
           ptWriter.writeWeekdayPatternsToFile(households, weekdayPattern);
           ptWriter.writeWeekdayTripsToFile(households, weekdayTrip);
           
-          for(int i=0;i<households.length;++i)
+          for(int i=0;i<households.length;++i){
              households[i].printCSV(householdData);
+             for(int p=0; p<households[i].persons.length; p++){
+                 households[i].persons[p].printCSV(personData);
+             }
+          }
           
           if(PTModel.RUN_WEEKEND_MODEL){     
               ptWriter.writeToursToTextFile(households, weekendTour, false);      

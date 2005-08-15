@@ -57,25 +57,21 @@ public class PatternModel{
      public Pattern choosePattern(PTHousehold thisHousehold,
                            PTPerson thisPerson,
                            Patterns patterns,
-                           boolean weekday){
+                           boolean weekday,
+                           boolean debug){
           
           //set hh pattern model attributes
           personAttributes.setAttributes(thisHousehold,thisPerson);
-                                   
+          if(debug) personAttributes.print();
+          
           //compute utility for alternatives
-          if(!writtenOutTheUtilitiesAlready && logger.isDebugEnabled()) {
-                  logger.debug("Here are the utilities for the patterns passed into the 'choosePattern' method:");
-          }
           for(int p=0;p<patterns.patterns.length;p++){
                Pattern thisPattern = patterns.patterns[p];//(Pattern)patternIterator.next();
 
                thisPattern.setAvailability(true);
 
-               thisPattern.calcUtility(params,personAttributes);
-              if(!writtenOutTheUtilitiesAlready && logger.isDebugEnabled()) {
-                  logger.debug("\tPattern " + p + ": " + thisPattern.getUtility());
-
-              }
+               thisPattern.calcUtility(params,personAttributes,debug);
+              
           }
 
 

@@ -31,8 +31,9 @@ import java.io.Serializable;
  * 
  */
 public class Pattern implements Alternative, Serializable, Cloneable {
-    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
-     //To hold the pattern
+    final static Logger logger = Logger.getLogger(Pattern.class);
+    
+    //To hold the pattern
      public StringBuffer dayPattern = new StringBuffer();
 
      //Simple number of activities by type in pattern variables
@@ -680,7 +681,17 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
     }
     
 
-
+    public void calcUtility(PatternChoiceParameters params, PersonPatternChoiceAttributes persAttr, boolean debug){
+        
+        calcUtility(params,persAttr);
+        if(debug){
+            logger.debug("\tPattern " + this);
+            logger.debug("\t\tUtility = " + utility);
+            logger.debug("\t\tIsAvailable = " + Boolean.toString(isAvailable));
+            if(utility == 0 || utility == -999) return;
+            else printDebug(params,persAttr);
+        }
+    }
 
      /**
      *
@@ -697,6 +708,7 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
      public void calcUtility(PatternChoiceParameters params, PersonPatternChoiceAttributes persAttr){
          utility=-999;
          hasUtility=true;
+         isAvailable=true;
 
          if(homeActivities==1){
            utility=0;
@@ -842,54 +854,55 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
      
      public void printDebug(PatternChoiceParameters params, PersonPatternChoiceAttributes persAttr){
                                                                                                                             
-          logger.info("params.workWorker  * wrkDummy * persAttr.worker                                                                       "+(params.workWorker                              *  wrkDummy * persAttr.worker                                                       ));         
-          logger.info("params.schoolStudentK12  * schDummy * persAttr.studentK12                                                                   "+(params.schoolStudentK12                           *  schDummy * persAttr.studentK12                                                      ));
-          logger.info("params.schoolStudentPostSec  * schDummy * persAttr.studentPostSec                                                                   "+(params.schoolStudentPostSec                           *  schDummy * persAttr.studentPostSec                                                      ));
-          logger.info("params.shopActivityDummyFemale  * shpDummy * persAttr.female                                                          "+(params.shopActivityDummyFemale                 *  shpDummy * persAttr.female                                                       ));
-          logger.info("params.shopActivityDummyUnemployed * shpDummy * persAttr.unemployed                                                   "+(params.shopActivityDummyUnemployed             *  shpDummy * persAttr.unemployed                                                   ));        
-          logger.info("params.shopActivityDummySize1  * shpDummy * persAttr.householdSize1                                                   "+(params.shopActivityDummySize1                  *  shpDummy * persAttr.householdSize1                                               ));        
-          logger.info("params.shopActivityDummySize2  * shpDummy * persAttr.householdSize2                                                   "+(params.shopActivityDummySize2                  *  shpDummy * persAttr.householdSize2                                               ));        
-          logger.info("params.shopActivityDummySize3p  * shpDummy * persAttr.householdSize3Plus                                              "+(params.shopActivityDummySize3p                 *  shpDummy * persAttr.householdSize3Plus                                           ));        
-          logger.info("params.shopActivitiesSingleParentWithChild0_5 * shopActivities * persAttr.singleWithChild0_5                          "+(params.shopActivitiesSingleParentWithChild0_5  *  shopActivities * persAttr.singleWithChild0_5                                     ));        
-          logger.info("params.recreateActivityDummyAge0_21 * recDummy * persAttr.age00To21                                                   "+(params.recreateActivityDummyAge0_21            *  recDummy * persAttr.age00To21                                                    ));        
-          logger.info("params.recreateActivityDummyAge21_25 * recDummy * persAttr.age21To25                                                  "+(params.recreateActivityDummyAge21_25           *  recDummy * persAttr.age21To25                                                    ));        
-          logger.info("params.recreateActivityDummyAge25_60 * recDummy * persAttr.age25To60                                                  "+(params.recreateActivityDummyAge25_60           *  recDummy * persAttr.age25To60                                                    ));        
-          logger.info("params.recreateActivityDummyWorker * recDummy * persAttr.worker                                                       "+(params.recreateActivityDummyWorker             *  recDummy * persAttr.worker                                                       ));        
-          logger.info("params.recreateActivityDummyUnemployed * recDummy * persAttr.unemployed                                               "+(params.recreateActivityDummyUnemployed         *  recDummy * persAttr.unemployed                                                   ));        
-          logger.info("params.numberToursAge0_5  * (homeActivities-1) * persAttr.age00To05                                                   "+(params.numberToursAge0_5                       *  (homeActivities-1) * persAttr.age00To05                                          ));        
-          logger.info("params.numberToursAge5_15  * (homeActivities-1) * persAttr.age05To15                                                  "+(params.numberToursAge5_15                      *  (homeActivities-1) * persAttr.age05To15                                          ));        
-          logger.info("params.numberToursAge15_25  * (homeActivities-1) * persAttr.age15To25                                                 "+(params.numberToursAge15_25                     *  (homeActivities-1) * persAttr.age15To25                                          ));        
-          logger.info("params.numberToursAge25_50  * (homeActivities-1) * persAttr.age25To50                                                 "+(params.numberToursAge25_50                     *  (homeActivities-1) * persAttr.age25To50                                          ));        
-          logger.info("params.numberToursAge50_70  * (homeActivities-1) * persAttr.age50To70                                                 "+(params.numberToursAge50_70                     * (homeActivities-1) * persAttr.age50To70                                           ));        
-          logger.info("params.numberToursAge70_80  * (homeActivities-1) * persAttr.age70To80                                                 "+(params.numberToursAge70_80                     * (homeActivities-1) * persAttr.age70To80                                           ));        
-          logger.info("params.numberToursAge80p  * (homeActivities-1) * persAttr.age80Plus                                                   "+(params.numberToursAge80p                       * (homeActivities-1) * persAttr.age80Plus                                           ));        
-          logger.info("params.workStopsChildrenAge0_15 * workTourIStops * persAttr.age00To15                                                 "+(params.workStopsChildrenAge0_15                * workTourIStops * persAttr.age00To15                                               ));        
-          logger.info("params.workStopsIncome0_15k  * workTourIStops * persAttr.householdIncome00To15k                                       "+(params.workStopsIncome0_15k                    * workTourIStops * persAttr.householdIncome00To15k                                  ));        
-          logger.info("params.workStopsIncome50kp  * workTourIStops * persAttr.householdIncome50kPlus                                        "+(params.workStopsIncome50kp                     * workTourIStops * persAttr.householdIncome50kPlus                                  ));        
-          logger.info("params.workStopsAutos0  * workTourIStops * persAttr.autos0                                                            "+(params.workStopsAutos0                         * workTourIStops * persAttr.autos0                                                  ));        
-          logger.info("params.workStops_by_NWKTours  * workTourIStops * ((homeActivities-1)-workActivities)          "+(params.workStops_by_NWKTours                   * workTourIStops * ((homeActivities-1)-workActivities)      ));        
-          logger.info("params.workTourNotFirst  * workTourNotFirst                                                                           "+(params.workTourNotFirst                        * workTourNotFirst                                                                  ));        
-          logger.info("params.schoolToursNotFirst  * schoolTourNotFirst                                                                      "+(params.schoolToursNotFirst                     * schoolTourNotFirst                                                                ));        
-          logger.info("params.workStops  * stopsOnWorkTours                                                                                  "+(params.workStops                               * stopsOnWorkTours                                                                  ));        
-          logger.info("params.schoolStops  * stopsOnSchoolTours                                                                              "+(params.schoolStops                             * stopsOnSchoolTours                                                                ));        
-          logger.info("params.shopStops  * stopsOnShopTours                                                                                  "+(params.shopStops                               * stopsOnShopTours                                                                  ));        
-          logger.info("params.nonWorkStopsChildrenAge0_15 * nonWorkTourIStops * persAttr.childlt15                                           "+(params.nonWorkStopsChildrenAge0_15             * nonWorkTourIStops * persAttr.childlt15                                            ));        
-          logger.info("params.nonWorkStopsIncome50kp  * nonWorkTourIStops * persAttr.householdIncome50kPlus                                  "+(params.nonWorkStopsIncome50kp                  * nonWorkTourIStops * persAttr.householdIncome50kPlus                               ));        
-          logger.info("params.nonWorkStopsAutos0  * nonWorkTourIStops * persAttr.autos0                                                      "+(params.nonWorkStopsAutos0                      * nonWorkTourIStops * persAttr.autos0                                               ));        
-          logger.info("params.shopActivities  * shopActivities                                                                               "+(params.shopActivities                          * shopActivities                                                                    ));        
-          logger.info("params.recreateActivities  * recreateActivities                                                                       "+(params.recreateActivities                      * recreateActivities                                                                ));        
-          logger.info("params.otherActivities  * otherActivities                                                                             "+(params.otherActivities                         * otherActivities                                                                   ));        
-          logger.info("params.workBasedWorker  * nWorkBasedTours * persAttr.worker                                                            "+(params.workBasedWorker                         * nWorkBasedTours * persAttr.worker                                                  ));
-//          logger.info("params.nShopTours  * nShopTours                                                                                         "+(params.nShopTours                               * nShopTours                                                                         ));
-//          logger.info("params.nOtherTours  * nOtherTours                                                                                       "+(params.nOtherTours                              * nOtherTours                                                                        ));
-          logger.info("params.nWorkBasedTours  * nWorkBasedTours                                                                               "+(params.nWorkBasedTours                          * nWorkBasedTours                                                                    ));
-          logger.info("params.shopToursByShopDCLogsum  * nShopTours * persAttr.shopDCLogsum                                                   "+(params.shopToursByShopDCLogsum                 * nShopTours * persAttr.shopDCLogsum                                                 ));
-          logger.info("params.otherToursByOtherDCLogsum * nOtherTours * persAttr.otherDCLogsum                                                "+(params.otherToursByOtherDCLogsum               * nOtherTours * persAttr.otherDCLogsum                                               ));
-          logger.info("params.workBasedToursByWorkBasedDCLogsum * nWorkBasedTours * persAttr.workBasedDCLogsum                                "+(params.workBasedToursByWorkBasedDCLogsum       * nWorkBasedTours * persAttr.workBasedDCLogsum                                       ));
-          logger.info("params.homeBasedToursGT2ByWorkBasedTours * numberOfToursGT2*nWorkBasedTours                                "+(params.homeBasedToursGT2ByWorkBasedTours       * numberOfToursGT2*nWorkBasedTours                                       ));
-          logger.info("params.shopToursAutos0  * nShopTours * persAttr.autos0                                                                 "+(params.shopToursAutos0                         * nShopTours * persAttr.autos0                                                       ));
-          logger.info("params.otherToursAutos0  * nOtherTours * persAttr.autos0                                                               "+(params.otherToursAutos0                        * nOtherTours * persAttr.autos0                                                      ));
-          logger.info("params.workBasedToursAutos0  * nWorkBasedTours * persAttr.autos0                                                       "+(params.workBasedToursAutos0                    * nWorkBasedTours * persAttr.autos0                                                  ));
+          logger.debug("\t\tparams.workWorker  * wrkDummy * persAttr.worker = "+(params.workWorker *  wrkDummy * persAttr.worker));         
+          logger.debug("\t\tparams.schoolStudentK12  * schDummy * persAttr.studentK12 = "+(params.schoolStudentK12*  schDummy * persAttr.studentK12));
+          logger.debug("\t\tparams.schoolStudentPostSec  * schDummy * persAttr.studentPostSec = "+(params.schoolStudentPostSec *  schDummy * persAttr.studentPostSec));
+          logger.debug("\t\tparams.shopActivityDummyFemale  * shpDummy * persAttr.female = "+(params.shopActivityDummyFemale *  shpDummy * persAttr.female ));
+          logger.debug("\t\tparams.shopActivityDummyUnemployed * shpDummy * persAttr.unemployed = "+(params.shopActivityDummyUnemployed *  shpDummy * persAttr.unemployed));        
+          logger.debug("\t\tparams.shopActivityDummySize1  * shpDummy * persAttr.householdSize1 = "+(params.shopActivityDummySize1 *  shpDummy * persAttr.householdSize1));        
+          logger.debug("\t\tparams.shopActivityDummySize2  * shpDummy * persAttr.householdSize2 = "+(params.shopActivityDummySize2 *  shpDummy * persAttr.householdSize2));        
+          logger.debug("\t\tparams.shopActivityDummySize3p  * shpDummy * persAttr.householdSize3Plus = "+(params.shopActivityDummySize3p *  shpDummy * persAttr.householdSize3Plus));        
+          logger.debug("\t\tparams.shopActivitiesSingleParentWithChild0_5 * shopActivities * persAttr.singleWithChild0_5 = "+(params.shopActivitiesSingleParentWithChild0_5  *  shopActivities * persAttr.singleWithChild0_5));        
+          logger.debug("\t\tparams.recreateActivityDummyAge0_21 * recDummy * persAttr.age00To21 = "+(params.recreateActivityDummyAge0_21 *  recDummy * persAttr.age00To21));        
+          logger.debug("\t\tparams.recreateActivityDummyAge21_25 * recDummy * persAttr.age21To25 = "+(params.recreateActivityDummyAge21_25 *  recDummy * persAttr.age21To25));        
+          logger.debug("\t\tparams.recreateActivityDummyAge25_60 * recDummy * persAttr.age25To60 = "+(params.recreateActivityDummyAge25_60 *  recDummy * persAttr.age25To60));        
+          logger.debug("\t\tparams.recreateActivityDummyWorker * recDummy * persAttr.worker = "+(params.recreateActivityDummyWorker *  recDummy * persAttr.worker ));        
+          logger.debug("\t\tparams.recreateActivityDummyUnemployed * recDummy * persAttr.unemployed = "+(params.recreateActivityDummyUnemployed *  recDummy * persAttr.unemployed));        
+          logger.debug("\t\tparams.numberToursAge0_5  * (homeActivities-1) * persAttr.age00To05 = "+(params.numberToursAge0_5 * (homeActivities-1) * persAttr.age00To05));        
+          logger.debug("\t\tparams.numberToursAge5_15  * (homeActivities-1) * persAttr.age05To15 = "+(params.numberToursAge5_15 * (homeActivities-1) * persAttr.age05To15));        
+          logger.debug("\t\tparams.numberToursAge15_25  * (homeActivities-1) * persAttr.age15To25 = "+(params.numberToursAge15_25 * (homeActivities-1) * persAttr.age15To25));        
+          logger.debug("\t\tparams.numberToursAge25_50  * (homeActivities-1) * persAttr.age25To50 = "+(params.numberToursAge25_50 * (homeActivities-1) * persAttr.age25To50));        
+          logger.debug("\t\tparams.numberToursAge50_70  * (homeActivities-1) * persAttr.age50To70 = "+(params.numberToursAge50_70 * (homeActivities-1) * persAttr.age50To70));        
+          logger.debug("\t\tparams.numberToursAge70_80  * (homeActivities-1) * persAttr.age70To80 = "+(params.numberToursAge70_80 * (homeActivities-1) * persAttr.age70To80));        
+          logger.debug("\t\tparams.numberToursAge80p  * (homeActivities-1) * persAttr.age80Plus = "+(params.numberToursAge80p * (homeActivities-1) * persAttr.age80Plus));        
+          logger.debug("\t\tparams.workStopsChildrenAge0_15 * workTourIStops * persAttr.age00To15 = "+(params.workStopsChildrenAge0_15 * workTourIStops * persAttr.age00To15));        
+          logger.debug("\t\tparams.workStopsIncome0_15k  * workTourIStops * persAttr.householdIncome00To15k = "+(params.workStopsIncome0_15k * workTourIStops * persAttr.householdIncome00To15k));        
+          logger.debug("\t\tparams.workStopsIncome50kp  * workTourIStops * persAttr.householdIncome50kPlus = "+(params.workStopsIncome50kp * workTourIStops * persAttr.householdIncome50kPlus));        
+          logger.debug("\t\tparams.workStopsAutos0  * workTourIStops * persAttr.autos0 = "+(params.workStopsAutos0 * workTourIStops * persAttr.autos0));        
+          logger.debug("\t\tparams.workStops_by_NWKTours  * workTourIStops * ((homeActivities-1)-workActivities) = "+(params.workStops_by_NWKTours * workTourIStops * ((homeActivities-1)-workActivities)));        
+          logger.debug("\t\tparams.workTourNotFirst  * workTourNotFirst = "+(params.workTourNotFirst * workTourNotFirst));        
+          logger.debug("\t\tparams.schoolToursNotFirst  * schoolTourNotFirst = "+(params.schoolToursNotFirst * schoolTourNotFirst));        
+          logger.debug("\t\tparams.workStops  * stopsOnWorkTours = "+(params.workStops * stopsOnWorkTours));        
+          logger.debug("\t\tparams.schoolStops  * stopsOnSchoolTours = "+(params.schoolStops * stopsOnSchoolTours));        
+          logger.debug("\t\tparams.shopStops  * stopsOnShopTours = "+(params.shopStops * stopsOnShopTours));        
+          logger.debug("\t\tparams.nonWorkStopsChildrenAge0_15 * nonWorkTourIStops * persAttr.childlt15 = "+(params.nonWorkStopsChildrenAge0_15 * nonWorkTourIStops * persAttr.childlt15));        
+          logger.debug("\t\tparams.nonWorkStopsIncome50kp  * nonWorkTourIStops * persAttr.householdIncome50kPlus = "+(params.nonWorkStopsIncome50kp * nonWorkTourIStops * persAttr.householdIncome50kPlus));        
+          logger.debug("\t\tparams.nonWorkStopsAutos0  * nonWorkTourIStops * persAttr.autos0 = "+(params.nonWorkStopsAutos0 * nonWorkTourIStops * persAttr.autos0));        
+          logger.debug("\t\tparams.shopActivities  * shopActivities = "+(params.shopActivities * shopActivities));        
+          logger.debug("\t\tparams.recreateActivities  * recreateActivities = "+(params.recreateActivities * recreateActivities));        
+          logger.debug("\t\tparams.otherActivities  * otherActivities = "+(params.otherActivities * otherActivities));        
+          logger.debug("\t\tparams.workBasedWorker  * nWorkBasedTours * persAttr.worker = "+(params.workBasedWorker * nWorkBasedTours * persAttr.worker));
+//          logger.debug("\t\tparams.nShopTours  * nShopTours                                                                                         "+(params.nShopTours                               * nShopTours ));
+//          logger.debug("\t\tparams.nOtherTours  * nOtherTours                                                                                       "+(params.nOtherTours                              * nOtherTours));
+          logger.debug("\t\tparams.nWorkBasedTours  * nWorkBasedTours = "+(params.nWorkBasedTours * nWorkBasedTours));
+          logger.debug("\t\tparams.shopToursByShopDCLogsum  * nShopTours * persAttr.shopDCLogsum = "+(params.shopToursByShopDCLogsum * nShopTours * persAttr.shopDCLogsum));
+          logger.debug("\t\tparams.otherToursByOtherDCLogsum * nOtherTours * persAttr.otherDCLogsum = "+(params.otherToursByOtherDCLogsum * nOtherTours * persAttr.otherDCLogsum));
+          logger.debug("\t\tparams.workBasedToursByWorkBasedDCLogsum * nWorkBasedTours * persAttr.workBasedDCLogsum = "+(params.workBasedToursByWorkBasedDCLogsum * nWorkBasedTours * persAttr.workBasedDCLogsum));
+          logger.debug("\t\tparams.homeBasedToursGT2ByWorkBasedTours * numberOfToursGT2*nWorkBasedTours = "+(params.homeBasedToursGT2ByWorkBasedTours * numberOfToursGT2*nWorkBasedTours));
+          logger.debug("\t\tparams.shopToursAutos0  * nShopTours * persAttr.autos0 = "+(params.shopToursAutos0 * nShopTours * persAttr.autos0));
+          logger.debug("\t\tparams.otherToursAutos0  * nOtherTours * persAttr.autos0 = "+(params.otherToursAutos0 * nOtherTours * persAttr.autos0));
+          logger.debug("\t\tparams.workBasedToursAutos0  * nWorkBasedTours * persAttr.autos0 = "+(params.workBasedToursAutos0 * nWorkBasedTours * persAttr.autos0));
+          logger.debug("");
      }
 
     public Object clone(){
@@ -996,6 +1009,10 @@ b=work(work-based tour),c=school,s=shop,r=social/recreation,o=other.
              }
                return newPattern;
             }
+    
+    public String toString(){
+        return dayPattern.toString();
+    }
 
     public static void main(String[] args) {
         Pattern testPattern = new Pattern("hsssh");

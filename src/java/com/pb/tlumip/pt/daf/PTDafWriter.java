@@ -106,7 +106,7 @@ public class PTDafWriter extends MessageProcessingTask{
             summarizeTours(hhs);
             writeResults(hhs);
             
-            hhs = null;
+//            hhs = null; //NULL
         }
         else if(msg.getId().equals(MessageID.ALL_HOUSEHOLDS_PROCESSED)){
             PTSummarizer.writeTourSummaryToFile(ResourceUtil.getProperty(rb,"tourSummary.file"));
@@ -139,7 +139,7 @@ public class PTDafWriter extends MessageProcessingTask{
             msg.setValue("matrix",null);
         }
         sendTo("TaskMasterQueue",msg);
-        m=null;
+//        m=null; //NULL
     }
 
     private void writeBinaryMatrix(Message msg, String pathName){
@@ -155,7 +155,7 @@ public class PTDafWriter extends MessageProcessingTask{
             msg.setValue("matrix",null);
         }
         sendTo("TaskMasterQueue",msg);
-        m=null;
+//        m=null;//NULL
     }
 
     /**

@@ -75,7 +75,11 @@ public class PTMatrixWriter extends MessageProcessingTask{
             modeChoiceLogsumsWritePath = ResourceUtil.getProperty(rb, "modeChoiceLogsumsWrite.path");
             dcLogsumsWritePath = ResourceUtil.getProperty(rb, "dcLogsumsWrite.path");
             dcExpUtilitesWritePath = ResourceUtil.getProperty(rb, "dcExpUtilitesWrite.path");
-
+            
+            //Send a message to the task master to establish a connection.
+            Message initMsg = createMessage();
+            initMsg.setId("init");
+            sendTo("TaskMasterQueue", initMsg);
         }
         
     }
@@ -83,7 +87,6 @@ public class PTMatrixWriter extends MessageProcessingTask{
     public void onMessage(Message msg) {
         logger.info( getName() + " received messageId=" + msg.getId() + " message from=" + msg.getSender() +
                 " @time="+ new Date());
-        logger.info("Free memory before writing logsum to disk: "+Runtime.getRuntime().freeMemory());
         if(msg.getId().equals(MessageID.MC_LOGSUMS_CREATED))
 //            writeMatrix(msg, modeChoiceLogsumsWritePath);         //BINARY-ZIP
             writeBinaryMatrix(msg,modeChoiceLogsumsWritePath);
@@ -100,6 +103,8 @@ public class PTMatrixWriter extends MessageProcessingTask{
         else if(msg.getId().equals(MessageID.DC_EXPUTILITIES_CREATED)){
 //            writeMatrix(msg, dcExpUtilitesWritePath);          //BINARY-ZIP
             writeBinaryMatrix(msg,dcExpUtilitesWritePath);
+        }else {
+            //do nothing just an init message.
         }
 
     }
@@ -113,7 +118,6 @@ public class PTMatrixWriter extends MessageProcessingTask{
             mw.writeMatrix(m);
 
             logger.info("Wrote Matrix "+m.getName()+".zip to "+ path + " in "+(System.currentTimeMillis()-startTime)/1000.0 +" seconds");
-            logger.info("Free memory after writing Matrix : "+m.getName()+" memory: "+Runtime.getRuntime().freeMemory());
             msg.setValue("matrix",null);
         }
         sendTo("TaskMasterQueue",msg);
@@ -129,7 +133,6 @@ public class PTMatrixWriter extends MessageProcessingTask{
             mw.writeMatrix(m);
 
             logger.info("Wrote Matrix "+m.getName()+".binary to "+ path + " in "+(System.currentTimeMillis()-startTime)/1000.0 +" seconds");
-            logger.info("Free memory after writing Matrix : "+m.getName()+" memory: "+Runtime.getRuntime().freeMemory());
             msg.setValue("matrix",null);
         }
         sendTo("TaskMasterQueue",msg);

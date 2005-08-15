@@ -38,6 +38,9 @@ public class PTResultsWriter extends MessageProcessingTask{
 
     public void onStart() {
         logger.info( "***" + getName() + " started");
+        Message initMsg = createMessage();
+        initMsg.setId("init");
+        sendTo("TaskMasterQueue", initMsg);
     }
 
     
@@ -82,6 +85,9 @@ public class PTResultsWriter extends MessageProcessingTask{
             Message filesWritten = createMessage();
             filesWritten.setId(MessageID.ALL_FILES_WRITTEN);
             sendTo("TaskMasterQueue",filesWritten);
+        }
+        else {
+            //do nothing, just establish a connection.
         }
 
     }

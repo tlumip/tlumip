@@ -144,14 +144,23 @@ public class PTDafMaster extends MessageProcessingTask {
             if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug("Queue Name : " + queueName);
             if(queueName.indexOf("MC")>=0) {
                 mcWorkQueues.add(queueName);
+                Message mcInitMsg = createMessage();
+                mcInitMsg.setId("init");
+                sendTo(queueName,mcInitMsg);
                 if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug(queueName + " added to mcWorkQueues");
             }
             if(queueName.indexOf("DC")>=0) {
                 dcWorkQueues.add(queueName);
+                Message dcInitMsg = createMessage();
+                dcInitMsg.setId("init");
+                sendTo(queueName,dcInitMsg);
                 if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug(queueName + " added to dcWorkQueues");
             }
             if(queueName.indexOf("HH")>=0) {
                 hhWorkQueues.add(queueName);
+                Message hhInitMsg = createMessage();
+                hhInitMsg.setId("init");
+                sendTo(queueName,hhInitMsg);
                 if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug(queueName + " added to hhWorkQueues");
             }
         }
@@ -265,12 +274,7 @@ public class PTDafMaster extends MessageProcessingTask {
         ptDafMasterLogger.info(getName() + " received messageId=" + msg.getId() +
             " message from=" + msg.getSender() + " @time=" + new Date());
 
-        if(msg.getId().equals(MessageID.NODE_INITIALIZED)){
-            nNodesInitialized++;
-            if(nNodesInitialized == NUMBER_OF_WORK_NODES){
-                readInPersonAndHouseholdData();   //this will also start the MCLogsum calcs
-            }
-        }else if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED) ||
+        if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED) ||
                     msg.getId().equals(MessageID.MC_LOGSUMS_COLLAPSED)) {
             if (msg.getId().equals(MessageID.MC_LOGSUMS_CREATED)) {
                 mcLogsumCount++;
@@ -366,6 +370,8 @@ public class PTDafMaster extends MessageProcessingTask {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else{
+            //init message, don't do anything.
         }
     }
 
@@ -420,8 +426,8 @@ public class PTDafMaster extends MessageProcessingTask {
         int nUnemployed = 0;
         int totalWorkers = 0;
         ArrayList unemployedPersonList = new ArrayList();
-        ArrayList personList = new ArrayList();
         while(index < persons.length){
+            ArrayList personList = new ArrayList();
             int segment = persons[index].householdWorkSegment;
             int occupation = persons[index].occupation;
             int nPersons = 0;  //number of people in subgroup for the seg/occ pair.
@@ -449,15 +455,10 @@ public class PTDafMaster extends MessageProcessingTask {
                 laborFlowMessage.setValue("segment", new Integer(segment));
                 laborFlowMessage.setValue("occupation", new Integer(occupation));
                 laborFlowMessage.setValue("persons", personsSubset);
-//                String queueName = getQueueName();
                 String queueName = getHHQueueName(msgCounter);
                 ptDafMasterLogger.info("Sending Person Message to " + queueName + ": segment "
                         + segment + " - occupation " + occupation + ": total persons: " + nPersons);
                 sendTo(queueName, laborFlowMessage);
-
-
-                personList.clear(); //empty the array list so that we can put the
-                                    //next group of persons in it.
             }
         }
         ptDafMasterLogger.info("Total persons: " + persons.length);
@@ -477,7 +478,6 @@ public class PTDafMaster extends MessageProcessingTask {
         }                                                 //and work backward.
 
         unemployedPersonList =  null;
-        personList = null;
     }
 
     /**
@@ -621,8 +621,7 @@ public class PTDafMaster extends MessageProcessingTask {
                 if(ptDafMasterLogger.isDebugEnabled()) {
                     ptDafMasterLogger.debug("householdCounter = " + householdCounter);
                 }
-                householdBlock = null;
-            }
+             }
         }
         
     }
@@ -679,7 +678,6 @@ public class PTDafMaster extends MessageProcessingTask {
             }
             sendTo(queueName, processHouseholds);
             ptDafMasterLogger.info("householdCounter = " + householdCounter);
-            householdBlock = null;
         }
     }
 

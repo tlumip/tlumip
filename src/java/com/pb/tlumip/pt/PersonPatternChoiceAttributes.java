@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
  */
 
 public class PersonPatternChoiceAttributes{
-    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.default");
+    final static Logger logger = Logger.getLogger(PersonPatternChoiceAttributes.class);
      //following are boolean (0,1) integers
      
      //for weekday model
@@ -259,32 +259,33 @@ public class PersonPatternChoiceAttributes{
      
      void print(){
           //for weekday model
-          logger.info("worker=                           "+worker);                   
-          logger.info("studentK12=                          "+studentK12);
-          logger.info("studentPostSec=                    "+studentPostSec);
-          logger.info("unemployed=                       "+unemployed);
-          logger.info("age00To05=                        "+age00To05);               
-          logger.info("age05To15=                        "+age05To15);               
-          logger.info("age00To21=                        "+age00To21);               
-          logger.info("age21To25=                        "+age21To25);               
-          logger.info("age15To25=                        "+age15To25);               
-          logger.info("age25To50=                        "+age25To50);               
-          logger.info("age25To60=                        "+age25To60);               
-          logger.info("age50To70=                        "+age50To70);               
-          logger.info("age70To80=                        "+age70To80);               
-          logger.info("age80Plus=                        "+age80Plus);               
-          logger.info("childlt15=                        "+childlt15);               
-          logger.info("householdIncome00To15k=           "+householdIncome00To15k);  
-          logger.info("householdIncome50kPlus=           "+householdIncome50kPlus);  
-          logger.info("autos0=                           "+autos0);                  
-          logger.info("householdSize1=                   "+householdSize1);          
-          logger.info("householdSize2=                   "+householdSize2);          
-          logger.info("householdSize3Plus=               "+householdSize3Plus);      
-          logger.info("double shopDCLogsum=              "+shopDCLogsum);         
-          logger.info("double otherDCLogsum=             "+otherDCLogsum);        
-          logger.info("double workBasedDCLogsum=         "+workBasedDCLogsum);    
-          logger.info("int singleWithChild0_5=           "+singleWithChild0_5);      
-          logger.info("int worksTwoJobs=                 "+worksTwoJobs);            
+          logger.debug("\tworker=                           "+worker);                   
+          logger.debug("\tstudentK12=                          "+studentK12);
+          logger.debug("\tstudentPostSec=                    "+studentPostSec);
+          logger.debug("\tunemployed=                       "+unemployed);
+          logger.debug("\tage00To05=                        "+age00To05);               
+          logger.debug("\tage05To15=                        "+age05To15);               
+          logger.debug("\tage00To21=                        "+age00To21);               
+          logger.debug("\tage21To25=                        "+age21To25);               
+          logger.debug("\tage15To25=                        "+age15To25);               
+          logger.debug("\tage25To50=                        "+age25To50);               
+          logger.debug("\tage25To60=                        "+age25To60);               
+          logger.debug("\tage50To70=                        "+age50To70);               
+          logger.debug("\tage70To80=                        "+age70To80);               
+          logger.debug("\tage80Plus=                        "+age80Plus);               
+          logger.debug("\tchildlt15=                        "+childlt15);               
+          logger.debug("\thouseholdIncome00To15k=           "+householdIncome00To15k);  
+          logger.debug("\thouseholdIncome50kPlus=           "+householdIncome50kPlus);  
+          logger.debug("\tautos0=                           "+autos0);                  
+          logger.debug("\thouseholdSize1=                   "+householdSize1);          
+          logger.debug("\thouseholdSize2=                   "+householdSize2);          
+          logger.debug("\thouseholdSize3Plus=               "+householdSize3Plus);      
+          logger.debug("\tdouble shopDCLogsum=              "+shopDCLogsum);         
+          logger.debug("\tdouble otherDCLogsum=             "+otherDCLogsum);        
+          logger.debug("\tdouble workBasedDCLogsum=         "+workBasedDCLogsum);    
+          logger.debug("\tint singleWithChild0_5=           "+singleWithChild0_5);      
+          logger.debug("\tint worksTwoJobs=                 "+worksTwoJobs);
+          logger.debug("");
          
          
           //int for weekend model (but not already included above)
