@@ -363,20 +363,23 @@ public class Skims {
 	    // create a Matrix from the peak alpha congested time skims array and write to disk
         if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
         	if ( skimType.equalsIgnoreCase("time") )
-        	    fileName = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
+        	    fileName = (String)tsPropertyMap.get( "pkHwyTimeBetaSkim.fileName" );
         	else if ( skimType.equalsIgnoreCase("dist") )
-        	    fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
+        	    fileName = (String)tsPropertyMap.get( "pkHwyDistBetaSkim.fileName" );
         }
         else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
         	if ( skimType.equalsIgnoreCase("time") )
-        	    fileName = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
+        	    fileName = (String)tsPropertyMap.get( "opHwyTimeBetaSkim.fileName" );
         	else if ( skimType.equalsIgnoreCase("dist") )
-        	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
+        	    fileName = (String)tsPropertyMap.get( "opHwyDistBetaSkim.fileName" );
         }
         
 	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
-        MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
-        mw.writeMatrix(mSqueezed);
+        if(fileName != null) {
+            MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
+            mw.writeMatrix(mSqueezed);
+        }
+        
         
 	}
 
