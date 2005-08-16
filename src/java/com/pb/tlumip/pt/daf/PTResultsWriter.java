@@ -18,6 +18,9 @@ package com.pb.tlumip.pt.daf;
 
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+
+import com.pb.common.daf.LocalMessageQueuePort;
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.util.ResourceUtil;
@@ -32,12 +35,12 @@ import com.pb.tlumip.pt.PTHousehold;
  */
 
 public class PTResultsWriter extends MessageProcessingTask{
-
+    protected Logger resultsWriterLogger = Logger.getLogger(PTResultsWriter.class);
 	boolean firstMessage = true;
     PTResults results;
 
     public void onStart() {
-        logger.info( "***" + getName() + " started");
+        resultsWriterLogger.info( "***" + getName() + " started");
         Message initMsg = createMessage();
         initMsg.setId("init");
         sendTo("TaskMasterQueue", initMsg);
@@ -45,14 +48,21 @@ public class PTResultsWriter extends MessageProcessingTask{
 
     
     public void onMessage(Message msg) {
-        logger.info( getName() + " received messageId=" + msg.getId() + " message from=" + msg.getSender() +
+        resultsWriterLogger.info( getName() + " received messageId=" + msg.getId() + " message from=" + msg.getSender() +
                 " @time="+ new Date());
         
+        if(resultsWriterLogger.isDebugEnabled()) {
+            resultsWriterLogger.debug("Received HH block, " + msg.getValue("blockNumber") + 
+                    				", sent originally to queue " + msg.getValue("WorkQueue"));
+            if (defaultPort instanceof LocalMessageQueuePort){
+                resultsWriterLogger.debug(getName()+ ", Msgs in Queue " + ((LocalMessageQueuePort)defaultPort).getSize());
+            }
+        }
         
         if ( firstMessage ) {
 
             results = new PTResults(PTMatrixWriter.rb);
-            logger.info("Creating output files");  // files will be written to after block of households
+            resultsWriterLogger.info("Creating output files");  // files will be written to after block of households
             results.createFiles();                 // is complete.  The files will be closed once all households
             									   // have been processed.
             firstMessage = false;
@@ -67,6 +77,7 @@ public class PTResultsWriter extends MessageProcessingTask{
             //households to the workers.
             Message masterMsg = createMessage();
             masterMsg.setId(MessageID.HOUSEHOLDS_PROCESSED);
+            masterMsg.setValue("blockNumber", (Integer)msg.getValue("blockNumber"));
             masterMsg.setValue("nHHs", (Integer)msg.getValue("nHHs"));
             masterMsg.setValue("sendMore",(Integer)msg.getValue("sendMore"));
             masterMsg.setValue("WorkQueue",(String)msg.getValue("WorkQueue"));
@@ -77,7 +88,7 @@ public class PTResultsWriter extends MessageProcessingTask{
             summarizeTours(hhs);
             writeResults(hhs);
             
-            hhs = null;
+//            hhs = null; //NULL
         }
         else if(msg.getId().equals(MessageID.ALL_HOUSEHOLDS_PROCESSED)){
             PTSummarizer.writeTourSummaryToFile(ResourceUtil.getProperty(PTMatrixWriter.rb,"tourSummary.file"));

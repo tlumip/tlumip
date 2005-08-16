@@ -168,7 +168,7 @@ public class HouseholdWorker extends MessageProcessingTask {
             sendTo(matrixWriterQueue, mWriterInitMsg);
             Message rWriterInitMsg = mFactory.createMessage();
             rWriterInitMsg.setId("init");
-            sendTo(matrixWriterQueue, rWriterInitMsg);
+            sendTo("ResultsWriterQueue", rWriterInitMsg);
             
             ptLogger.info(getName() + ", Finished onStart()");
 //            
@@ -237,7 +237,7 @@ public class HouseholdWorker extends MessageProcessingTask {
 
         } else if (msg.getId().equals(MessageID.PROCESS_HOUSEHOLDS)) {
             if(ptLogger.isDebugEnabled()) {
-                ptLogger.debug(getName() + ", Received HH Block " + (Integer)msg.getValue("blockNumber"));
+                ptLogger.debug(getName() + ", Received HH Block, " + (Integer)msg.getValue("blockNumber"));
                 if (defaultPort instanceof LocalMessageQueuePort){
                     ptLogger.debug(getName()+ ", Msgs in Queue " + ((LocalMessageQueuePort)defaultPort).getSize());
                 }
@@ -534,7 +534,7 @@ public class HouseholdWorker extends MessageProcessingTask {
         tripModeTime = 0.0;
 
         List returnValues = new ArrayList();
-        ptLogger.info(getName() + ", Getting Logsums and Running WeekdayDurationDestinationModeChoiceModel for HH block");
+        ptLogger.info(getName() + ", Getting Logsums and Running WeekdayDurationDestinationModeChoiceModel");
         int thisNonWorkSegment =-1; //need to initialize for ptLogger statment
         int thisWorkSegment = -1; //need to initialize for ptLogger statement
 
@@ -589,13 +589,20 @@ public class HouseholdWorker extends MessageProcessingTask {
 
         //notify the master that the households have been processed.  The message might also
         //have a 'sendMore' request in it which the master will honor.
+        
+        Message returnMsg = createMessage();
+        returnMsg.setId(MessageID.HOUSEHOLDS_PROCESSED);
+        returnMsg.setValue("blockNumber", (Integer)msg.getValue("blockNumber"));
+        returnMsg.setValue("nHHs", new Integer(households.length));
+        returnMsg.setValue("sendMore",(Integer)msg.getValue("sendMore"));
+        returnMsg.setValue("WorkQueue", (String)msg.getValue("WorkQueue"));
+        returnMsg.setValue("households", households);
+        
         if(ptLogger.isDebugEnabled()) {
-            ptLogger.debug(getName() + ", Sending household block " + msg.getValue("blockNumber") + " to results queue.");
+            ptLogger.debug(getName() + ", Sending household block " + returnMsg.getValue("blockNumber") + " to results queue.");
         }
-        msg.setId(MessageID.HOUSEHOLDS_PROCESSED);
-        msg.setValue("households",households);
-        msg.setValue("nHHs", new Integer(households.length));
-        sendTo("ResultsWriterQueue", msg);
+        
+        sendTo("ResultsWriterQueue", returnMsg);
     }
 
     private void loadDCLogsums() {

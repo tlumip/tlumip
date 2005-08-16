@@ -335,7 +335,10 @@ public class PTDafMaster extends MessageProcessingTask {
         } else if (msg.getId().equals(MessageID.HOUSEHOLDS_PROCESSED)) {
             householdsProcessedCount = householdsProcessedCount + ((Integer)msg.getValue("nHHs")).intValue();
             ptDafMasterLogger.info("Households processed so far: " + householdsProcessedCount);
-
+            
+            if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug("Received HH block, " + msg.getValue("blockNumber") + 
+                    ", sent originally to queue " + msg.getValue("WorkQueue"));
+            
             if ((((Integer) msg.getValue("sendMore")).intValue() == 1) &&
                     (householdCounter < households.length)) {
                 sendMoreHouseholds(msg);
@@ -616,7 +619,7 @@ public class PTDafMaster extends MessageProcessingTask {
 //                String queueName = new String("WorkQueue" + (q+1)); //queue numbering starts at 2 in ptdaf.properties
                 String queueName = getHHQueueName(q);
                 processHouseholds.setValue("WorkQueue", queueName);
-                ptDafMasterLogger.debug("Sending HH Block "+ blockCounter + " to "  + queueName);
+                ptDafMasterLogger.debug("Sending HH Block, "+ blockCounter + ", to "  + queueName);
                 sendTo(queueName, processHouseholds);
                 if(ptDafMasterLogger.isDebugEnabled()) {
                     ptDafMasterLogger.debug("householdCounter = " + householdCounter);
@@ -636,13 +639,12 @@ public class PTDafMaster extends MessageProcessingTask {
         int numHHBlocksLeftToProcess = (int) Math.ceil((households.length - householdCounter) / (double) MAXBLOCKSIZE);
         if(ptDafMasterLogger.isDebugEnabled()) {
             ptDafMasterLogger.debug("HHs left to process = " + (households.length - householdCounter));
-            ptDafMasterLogger.debug("numHHBlocksLeft to process = " + (int) Math.ceil((households.length - householdCounter) / (double)MAXBLOCKSIZE));
         }
         //Send every worker who needs more work, either 20 new messages with households OR
         //divide up the number of blocks that are left and send an even number to all workers.
         int numOfHHBlocksPerQueue = Math.min(20, (int)Math.ceil(numHHBlocksLeftToProcess/(double)hhWorkQueues.size()));
         if(ptDafMasterLogger.isDebugEnabled()){
-            ptDafMasterLogger.debug("num of HHBlocks per queue: " + numOfHHBlocksPerQueue);
+            ptDafMasterLogger.debug("num of HHChunks per queue: " + numOfHHBlocksPerQueue);
         }
         for (int j = 0; j <numOfHHBlocksPerQueue; j++) {
             blockCounter++;
@@ -672,8 +674,8 @@ public class PTDafMaster extends MessageProcessingTask {
             processHouseholds.setValue("WorkQueue", queueName);
             
             if(ptDafMasterLogger.isDebugEnabled()) {
-                ptDafMasterLogger.debug("Sending HH Block "+ blockCounter + " to"  + queueName);
-                ptDafMasterLogger.debug("Num of HHs in Block: " + numOfHHsPerBlock);
+                ptDafMasterLogger.debug("Sending HH Block, "+ blockCounter + ", to "  + queueName);
+                ptDafMasterLogger.debug("Num of HHs sent: " + numOfHHsPerBlock);
                 ptDafMasterLogger.debug("Send more: " + processHouseholds.getValue("sendMore"));
             }
             sendTo(queueName, processHouseholds);
