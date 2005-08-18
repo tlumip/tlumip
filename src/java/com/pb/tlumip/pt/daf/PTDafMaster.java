@@ -526,7 +526,7 @@ public class PTDafMaster extends MessageProcessingTask {
             tazInfo.setValue("otherSchoolOccup",otherSchoolOccup);
 //            String queueName = new String("WorkQueue" + q);
             String queueName = new String("HH_node"+ q + "WorkQueue");
-            ptDafMasterLogger.info("Sending Message to" + queueName +
+            ptDafMasterLogger.info("Sending Message to " + queueName +
                         " to update TAZ info");
 
             sendTo(queueName, tazInfo);
