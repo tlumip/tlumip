@@ -137,6 +137,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -157,6 +158,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -178,6 +180,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -200,6 +203,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -220,6 +224,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -241,6 +246,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("1,"); //weekdayTour=1 (TRUE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -267,6 +273,7 @@ public class PTDataWriter {
                           oFile.print(thisPerson.ID + ",");
                           oFile.print("1,"); //weekdayTour=1 (TRUE)
                           oFile.print(thisTour.tourNumber+",");  //unique tour number
+                          oFile.print("1,"); //denotes that this is a sub-tour and is necessary for accounting.
                           oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                           oFile.print(thisPerson.occupation+",");
                           oFile.print(thisTour.primaryMode.type+",");
@@ -286,6 +293,7 @@ public class PTDataWriter {
                           oFile.print(thisPerson.ID + ",");
                           oFile.print("1,"); //weekdayTour=1 (TRUE)
                           oFile.print(thisTour.tourNumber+",");
+                          oFile.print("1,"); //denotes that this is a sub-tour and is necessary for accounting.
                           oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                           oFile.print(thisPerson.occupation+",");
                           oFile.print(thisTour.primaryMode.type+",");
@@ -332,6 +340,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("0,"); //weekdayTour=0 (FALSE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -352,6 +361,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("0,"); //weekdayTour=0 (FALSE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -373,6 +383,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("0,"); //weekdayTour=0 (FALSE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -395,6 +406,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("0,"); //weekdayTour=0 (FALSE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -415,6 +427,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("0,"); //weekdayTour=0 (FALSE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
@@ -436,6 +449,7 @@ public class PTDataWriter {
                             oFile.print(thisPerson.ID + ",");
                             oFile.print("0,"); //weekdayTour=0 (FALSE)
                             oFile.print(thisTour.tourNumber+",");
+                            oFile.print("0,"); //denotes that this is a sub-tour taken as the work-based tour.
                             oFile.print(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose)+",");
                             if(ActivityPurpose.getActivityPurposeChar(thisTour.primaryDestination.activityPurpose) == 'c'){
                                 if(thisPerson.age <= 18) oFile.print("1,");  //indicates a K-12 school tour
