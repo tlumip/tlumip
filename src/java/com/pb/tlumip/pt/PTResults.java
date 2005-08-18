@@ -104,7 +104,7 @@ public class PTResults {
                 "nShopActivities,nRecreateActivities,nOtherActivities");
 
         weekdayTrip = open(ResourceUtil.getProperty(rb, "weekdayTrip.file"));
-        weekdayTrip.println("hhID,personID,weekdayTour(yes/no),tour#,tourPurpose,tourSegment,tourMode,origin,destination,distance,time,tripStartTime,tripPurpose,tripMode");
+        weekdayTrip.println("hhID,personID,weekdayTour(yes/no),tour#,subTour(yes/no),tourPurpose,tourSegment,tourMode,origin,destination,distance,time,tripStartTime,tripPurpose,tripMode");
 
         householdData = open(ResourceUtil.getProperty(rb, "householdData.file"));
         householdData.println("hhID,size,autos,workers,income,singleFamily,multiFamily,homeTaz");        
