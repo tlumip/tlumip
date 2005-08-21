@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="module_tlumip" default="compile.module.tlumip">
+  <dirname property="module.tlumip.basedir" file="${ant.file.module_tlumip}"/>
+  
+  <property name="module.jdk.home.tlumip" value="${project.jdk.home}"/>
+  <property name="module.jdk.classpath.tlumip" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.tlumip" value="${compiler.args}"/>
+  
+  <property name="tlumip.output.dir" value="${module.tlumip.basedir}/build/classes"/>
+  <property name="tlumip.testoutput.dir" value="${module.tlumip.basedir}/build/classes"/>
+  
+  <path id="tlumip.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="tlumip.module.classpath">
+    <path refid="${module.jdk.classpath.tlumip}"/>
+    <pathelement location="${common-base.output.dir}"/>
+    <pathelement location="${logging-log4j-1.2.9.output.dir}"/>
+    <pathelement location="${module.tlumip.basedir}/../../third-party/logging-log4j-1.2.9/log4j-1.2.9.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/junit.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/or124.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/jxl.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/xml4j.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/mysql-connector-java-3.0.10-stable-bin.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/dx.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/jds.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/dxml.jar"/>
+    <pathelement location="${common-daf-v2.output.dir}"/>
+    <pathelement location="${jakarta-commons.output.dir}"/>
+    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-beanutils-1.6.1/commons-beanutils.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-collections-2.1/commons-collections.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-digester-1.5/commons-digester.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-logging-1.0.3/commons-logging-api.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-logging-1.0.3/commons-logging.jar"/>
+    <pathelement location="${calibrator.output.dir}"/>
+    <pathelement location="${pecas.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.tlumip"/>
+  
+  <patternset id="excluded.from.compilation.tlumip">
+    <patternset refid="excluded.from.module.tlumip"/>
+    <patternset refid="compiler.excluded"/>
+  </patternset>
+  
+  <path id="tlumip.module.sourcepath">
+    <dirset dir="${module.tlumip.basedir}">
+      <include name="src/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.tlumip" depends="compile.module.tlumip.production,compile.module.tlumip.tests" description="compile module tlumip"/>
+  
+  <target name="compile.module.tlumip.production" depends="compile.module.common-base,compile.module.common-daf-v2,compile.module.jakarta-commons,compile.module.calibrator,compile.module.pecas" description="compile module tlumip production classes">
+    <mkdir dir="${tlumip.output.dir}"/>
+    <javac destdir="${tlumip.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memoryMaximumSize="${compiler.max.memory}" fork="true" executable="${module.jdk.home.tlumip}/bin/javac">
+      <compilerarg line="${compiler.args.tlumip}"/>
+      <bootclasspath refid="tlumip.module.bootclasspath"/>
+      <classpath refid="tlumip.module.classpath"/>
+      <src refid="tlumip.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.tlumip"/>
+    </javac>
+    <copy todir="${tlumip.output.dir}">
+      <fileset dir="${module.tlumip.basedir}/src/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+        <patternset refid="excluded.from.compilation.tlumip"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.tlumip.tests" depends="compile.module.tlumip.production" description="compile module tlumip test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.tlumip" description="cleanup module">
+    <delete dir="${tlumip.output.dir}"/>
+    <delete dir="${tlumip.testoutput.dir}"/>
+  </target>
+</project>
