@@ -521,6 +521,7 @@ public class TS {
         
         TS tsTest = new TS( ResourceBundle.getBundle("ts"), ResourceBundle.getBundle ("global") );
 
+        // run peak highway assignment
 		tsTest.runHighwayAssignment( "peak" );
 //		tsTest.runHighwayAssignment( "offpeak" );
 		
