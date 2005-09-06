@@ -29,7 +29,7 @@ import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.assign.Skims;
 
 
-import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.util.ResourceUtil;
@@ -304,7 +304,7 @@ public class TS {
 
         
 		// read the aggregate trip table into a TableDataSet
-		CSVFileReader reader = new CSVFileReader();
+		OLD_CSVFileReader reader = new OLD_CSVFileReader();
         
 		TableDataSet table = null;
 		try {
@@ -363,7 +363,7 @@ public class TS {
 
         
 		// read the PT output person trip list file into a TableDataSet
-		CSVFileReader reader = new CSVFileReader();
+		OLD_CSVFileReader reader = new OLD_CSVFileReader();
 
 		String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
 		TableDataSet table = null;
@@ -441,8 +441,8 @@ public class TS {
 
 
 
-		// read the PT output person trip list file into a TableDataSet
-		CSVFileReader reader = new CSVFileReader();
+		// read the CT output file into a TableDataSet
+		OLD_CSVFileReader reader = new OLD_CSVFileReader();
 
 		TableDataSet table = null;
 		int tripRecord = 0;
