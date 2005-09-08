@@ -270,12 +270,12 @@ public class OregonPIPProcessor extends PIPProcessor {
             String commodityName = floorspaceTable.getStringValueAt(row,floorspaceTypeColumn);
             Commodity c = Commodity.retrieveCommodity(commodityName);
             if (c==null) throw new Error("Bad commodity name "+commodityName+" in floorspace inventory table");
-            FloorspaceQuantityStorage fi = (FloorspaceQuantityStorage) floorspaceInventory.get(commodityName);
+            ZoneQuantityStorage fi = (ZoneQuantityStorage) floorspaceInventory.get(commodityName);
             if (fi==null) {
-                fi = new FloorspaceQuantityStorage(commodityName,maxAlphaZone+1);
+                fi = new ZoneQuantityStorage(commodityName,maxAlphaZone+1);
                 floorspaceInventory.put(commodityName,fi);
             }
-            fi.increaseInventoryForZone(alphaZone,quantity);
+            fi.increaseQuantityForZone(alphaZone,quantity);
             //fi.inventory[alphaZone]+= quantity;
         }
     }
