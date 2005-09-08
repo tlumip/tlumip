@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.osmp.ld;
+package com.pb.tlumip.ld;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.DevelopmentTypeInterface;

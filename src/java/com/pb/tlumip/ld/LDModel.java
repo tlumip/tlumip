@@ -14,8 +14,9 @@
  *  limitations under the License.
  *
  */
-package com.pb.osmp.ld;
+package com.pb.tlumip.ld;
 
+import com.pb.tlumip.model.ModelComponent;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.AbstractTAZ;
 import com.pb.models.pecas.DevelopmentTypeInterface;
@@ -26,7 +27,7 @@ import com.pb.models.pecas.GridCell;
  * @author    John Abraham
  * @version   1.0, 3/31/2000
  */
-public class LDModel {
+public class LDModel extends ModelComponent {
     public static void setUpGridCells(TableDataSet gtab) {
         for(int r=1;r<=gtab.getRowCount();r++) {
             int zoneNumber = (int)gtab.getValueAt(r,"TAZ");

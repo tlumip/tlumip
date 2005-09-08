@@ -15,7 +15,7 @@
  *
  */
 
-package com.pb.osmp.ld;
+package com.pb.tlumip.ld;
 
 
 public class CantFindRoomException extends Exception {

@@ -18,7 +18,7 @@
  * Created on Jul 22, 2004
  *
  */
-package com.pb.osmp.ld;
+package com.pb.tlumip.ld;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.grid.GridManager;
