@@ -18,7 +18,7 @@
  * Created on Jul 22, 2004
  *
  */
-package com.pb.tlumip.ld;
+package com.pb.osmp.ld;
 
 import com.pb.common.datafile.JDBCTableReader;
 import com.pb.common.datafile.TableDataSet;

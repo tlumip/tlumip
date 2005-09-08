@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ld;
+package com.pb.osmp.ld;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.AbstractTAZ;
