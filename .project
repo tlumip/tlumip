@@ -6,8 +6,9 @@
 		<project>calibrator</project>
 		<project>common-base</project>
 		<project>common-daf-v2</project>
-		<project>pecas</project>
+		<project>jakarta-commons</project>
 		<project>logging-log4j-1.2.9</project>
+		<project>pecas</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
