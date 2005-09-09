@@ -272,7 +272,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             if (c==null) throw new Error("Bad commodity name "+commodityName+" in floorspace inventory table");
             ZoneQuantityStorage fi = (ZoneQuantityStorage) floorspaceInventory.get(commodityName);
             if (fi==null) {
-                fi = new ZoneQuantityStorage(commodityName,maxAlphaZone+1);
+                fi = new ZoneQuantityStorage(commodityName);
                 floorspaceInventory.put(commodityName,fi);
             }
             fi.increaseQuantityForZone(alphaZone,quantity);
