@@ -35,7 +35,7 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import com.pb.common.util.TableDataSetLoader;
+import com.pb.common.datafile.TableDataSetLoader;
 import com.pb.tlumip.model.ModeChoiceLogsums;
 import com.pb.tlumip.pt.LaborFlows;
 import com.pb.tlumip.pt.LogsumManager;

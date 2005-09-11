@@ -22,6 +22,7 @@ import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.datafile.TableDataSetLoader;
 import com.pb.common.math.MathUtil;
 import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
@@ -31,7 +32,6 @@ import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
-import com.pb.common.util.TableDataSetLoader;
 
 
 /**
@@ -48,15 +48,15 @@ import com.pb.common.util.TableDataSetLoader;
  */
 
 public class LaborFlows implements Serializable{
-    
+
     public static AlphaToBeta a2b;
-    
+
     public static MatrixCollection betaLaborFlows = new MatrixCollection();
     public static MatrixCollection alphaProduction;
     public static MatrixCollection alphaConsumption;
-    
+
     static double dispersionParameter = 0.54; //this is the default value but it is also set in the properties file
-    
+
     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
     ResourceBundle rb;
 
@@ -83,21 +83,21 @@ public class LaborFlows implements Serializable{
                     logger.debug("alpha zone: "+aZone[counter]);
                 }
                 counter++;
-                
-            }           
+
+            }
          }
         if(logger.isDebugEnabled()) {
             logger.debug("counter"+counter);
         }
-        
-    	a2b = new AlphaToBeta(table.getColumnAsInt(table.getColumnPosition("AZone")),
-				   			  table.getColumnAsInt(table.getColumnPosition("BZone")));
-    	//a2b = new AlphaToBeta(table);
-    	//me = new MatrixExpansion(a2b);
+
+        a2b = new AlphaToBeta(table.getColumnAsInt(table.getColumnPosition("AZone")),
+                                 table.getColumnAsInt(table.getColumnPosition("BZone")));
+        //a2b = new AlphaToBeta(table);
+        //me = new MatrixExpansion(a2b);
 
     }
-    
-      
+
+
     public static Matrix calculatePropensityMatrix(Matrix m){
 
         if(logger.isDebugEnabled()) {
@@ -109,20 +109,20 @@ public class LaborFlows implements Serializable{
         name = name.substring(0,lsIndex) + "propensity";
         alphaPropensityMatrix.setName(name);
         alphaPropensityMatrix.setExternalNumbers(m.getExternalNumbers());
-    	int origin;
-    	int destination;
-    	float propensity;
-    	for(int i=0;i<m.getRowCount();i++){
-    		for(int j=0;j<m.getColumnCount();j++){
-    			origin = m.getExternalNumber(i);
-    			destination = m.getExternalNumber(j);
-    			propensity = (float)MathUtil.exp(dispersionParameter*m.getValueAt(origin,destination));              
-    			alphaPropensityMatrix.setValueAt(origin,destination,propensity);
-    		}
-    	}
+        int origin;
+        int destination;
+        float propensity;
+        for(int i=0;i<m.getRowCount();i++){
+            for(int j=0;j<m.getColumnCount();j++){
+                origin = m.getExternalNumber(i);
+                destination = m.getExternalNumber(j);
+                propensity = (float)MathUtil.exp(dispersionParameter*m.getValueAt(origin,destination));
+                alphaPropensityMatrix.setValueAt(origin,destination,propensity);
+            }
+        }
         return alphaPropensityMatrix;
     }
-    
+
     /*public void readBetaLaborFlows(TableDataSet table){
     	int origin;
     	int destination;
@@ -176,7 +176,7 @@ public class LaborFlows implements Serializable{
     }*/
 
     public void readBetaLaborFlows(){
-    	String[] fileNames = {"not employed",
+        String[] fileNames = {"not employed",
                               "selling_1_ManPro.zipMatrix",
                               "selling_1a_Health.zipMatrix",
                               "selling_2_PstSec.zipMatrix",
@@ -186,18 +186,18 @@ public class LaborFlows implements Serializable{
                               "selling_6_OthR&C.zipMatrix",
                               "selling_7_NonOfc.zipMatrix"
                               };
-        
+
         String path = ResourceUtil.getProperty(rb, "betaFlows.path");
-    	
+
         for(int occupation=1;occupation<fileNames.length;occupation++){
-            MatrixReader mr= MatrixReader.createReader(MatrixType.ZIP,new File(path+fileNames[occupation]));                   
+            MatrixReader mr= MatrixReader.createReader(MatrixType.ZIP,new File(path+fileNames[occupation]));
             Matrix m = mr.readMatrix(path+fileNames[occupation]);
             Matrix newMatrix = new Matrix(a2b.getBetaExternals().length-1,a2b.getBetaExternals().length-1);
             newMatrix.setExternalNumbers(a2b.getBetaExternals());
             for(int origin=0;origin<m.getColumnCount();origin++){
                 for(int destination=0;destination<m.getColumnCount();destination++){
-                	newMatrix.setValueAt(m.getExternalNumber(origin),
-                                         m.getExternalNumber(destination), 
+                    newMatrix.setValueAt(m.getExternalNumber(origin),
+                                         m.getExternalNumber(destination),
                                          m.getValueAt(m.getExternalNumber(origin),m.getExternalNumber(destination)));
                 }
             }
@@ -205,61 +205,61 @@ public class LaborFlows implements Serializable{
             betaLaborFlows.addMatrix(newMatrix);
         }
     }
-    
+
     public void readAlphaValues(TableDataSet production, TableDataSet consumption){
-    	int taz;
+        int taz;
 
         String[] occupationString = {"1_ManPro",
                                      "1a_Health",
-									 "2_PstSec",
-									 "3_OthTchr",
-									 "4_OthP&T",
-									 "5_RetSls",
-									 "6_OthR&C",
-									 "7_NonOfc",};
-        
+                                     "2_PstSec",
+                                     "3_OthTchr",
+                                     "4_OthP&T",
+                                     "5_RetSls",
+                                     "6_OthR&C",
+                                     "7_NonOfc",};
 
-        
+
+
         alphaProduction = setMatrixCollection(a2b.alphaSize(),1,a2b.getAlphaExternals());
-        
+
         int tazColumn = production.getColumnPosition("zoneNumber");
-        
+
         for(int rowNumber=1;rowNumber<=production.getRowCount();rowNumber++) {
             taz = (int)production.getValueAt(rowNumber, tazColumn);
             for(int o=0;o<occupationString.length;o++){
                 byte occupationCode = OccupationCode.getOccupationCode(occupationString[o]);
-                alphaProduction.setValue(taz,0,(new Byte(occupationCode)).toString(),production.getValueAt(rowNumber,occupationString[o]));   
+                alphaProduction.setValue(taz,0,(new Byte(occupationCode)).toString(),production.getValueAt(rowNumber,occupationString[o]));
             }
         }
-        
+
         alphaConsumption = setMatrixCollection(a2b.alphaSize(),1,a2b.getAlphaExternals());
-        
+
         tazColumn = production.getColumnPosition("zoneNumber");
-        
+
         for(int rowNumber=1;rowNumber<=consumption.getRowCount();rowNumber++) {
             taz = (int)consumption.getValueAt(rowNumber, tazColumn);
             for(int o=0;o<occupationString.length;o++){
                 byte occupationCode = OccupationCode.getOccupationCode(occupationString[o]);
-                alphaConsumption.setValue(taz,0,(new Byte(occupationCode)).toString(),consumption.getValueAt(rowNumber,occupationString[o]));   
+                alphaConsumption.setValue(taz,0,(new Byte(occupationCode)).toString(),consumption.getValueAt(rowNumber,occupationString[o]));
             }
         }
-        
+
     }
-    
+
     private static MatrixCollection setMatrixCollection(int rows, int columns, int[] externalNumbers){
         MatrixCollection mc = new MatrixCollection();
-        
+
         for(int i=1;i<=8;i++){
-            String occupationCode = Integer.toString(i);                        
+            String occupationCode = Integer.toString(i);
             mc.addMatrix(occupationCode,rows,columns);
-            mc.getMatrix(occupationCode).setExternalNumbers(externalNumbers);      
+            mc.getMatrix(occupationCode).setExternalNumbers(externalNumbers);
         }
         return mc;
     }
-    
+
     public static Matrix calculateAlphaLaborFlowsMatrix(Matrix mcLogsum, int segment, int occupation){
-    	MatrixExpansion me = new MatrixExpansion(a2b);
-    	me.setPropensityMatrix(calculatePropensityMatrix(mcLogsum));
+        MatrixExpansion me = new MatrixExpansion(a2b);
+        me.setPropensityMatrix(calculatePropensityMatrix(mcLogsum));
 
         String occupationCode = Integer.toString(occupation);
         if(logger.isDebugEnabled()) {
@@ -281,34 +281,34 @@ public class LaborFlows implements Serializable{
         me.setProbabilityMatrix(me.getAlphaFlowMatrix());
         Matrix m = me.getAlphaFlowProbabilityMatrix();
         m.setName("lf"+occupation+segment+".zip");
-        me=null;        
+        me=null;
         return m;
     }
-    
+
     public void debugMatrix(Matrix m){
-    	//for(int i=1;i<=8;i++){            
+        //for(int i=1;i<=8;i++){
 
             for(int r=0;r<m.getRowCount();r++){
-            	float rowSum = m.getRowSum(m.getExternalNumber(r));
-            	if(rowSum<1)
-            		logger.info("rowsum for occupation "+m.getName()+" taz "+m.getExternalNumber(r)+" = "+rowSum);
+                float rowSum = m.getRowSum(m.getExternalNumber(r));
+                if(rowSum<1)
+                    logger.info("rowsum for occupation "+m.getName()+" taz "+m.getExternalNumber(r)+" = "+rowSum);
             }
-    	//}
-    	
+        //}
+
     }
-    
-    public void writeLaborFlowProbabilities(Matrix lfProbability){       
+
+    public void writeLaborFlowProbabilities(Matrix lfProbability){
         logger.info("Calculate labor flow probabilities.");
         long startTime = System.currentTimeMillis();
         if(logger.isDebugEnabled()) {
             logger.debug("Time to calculate labor flow matrix: "+(System.currentTimeMillis()-startTime)/1000+" seconds.");
         }
         String mName = lfProbability.getName();
-		if(logger.isDebugEnabled()) {
+        if(logger.isDebugEnabled()) {
             logger.debug("Writing probability Matrix : "+mName);
         }
-		//get path
-		String outputPath = ResourceUtil.getProperty(rb, "betaFlows.path");
+        //get path
+        String outputPath = ResourceUtil.getProperty(rb, "betaFlows.path");
         MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(outputPath+mName+".zip"));  //Open for writing
         startTime = System.currentTimeMillis();
         mw.writeMatrix(lfProbability);
@@ -316,7 +316,7 @@ public class LaborFlows implements Serializable{
             logger.debug("Time to write labor flow matrix: "+(System.currentTimeMillis()-startTime)/1000+" seconds.");
         }
     }
-    
+
     public static void main(String args[]){
         ResourceBundle rb =ResourceUtil.getResourceBundle("pt");
         ResourceBundle globalRb =ResourceUtil.getResourceBundle("global");
@@ -326,7 +326,7 @@ public class LaborFlows implements Serializable{
         TableDataSet alphaToBeta = TableDataSetLoader.loadTableDataSet(globalRb,"alpha2beta.file");
         logger.info("Creating alphaZone to betaZone mapping based on the TableDataSet alphaToBeta");
         lf.setZoneMap(alphaToBeta);
-        
+
         logger.info("Reading alpha production and consumption numbers.");
         TableDataSet productionValues = TableDataSetLoader.loadTableDataSet(rb,"productionValues.file");
         TableDataSet consumptionValues = TableDataSetLoader.loadTableDataSet(rb,"consumptionValues.file");
@@ -339,20 +339,20 @@ public class LaborFlows implements Serializable{
         lf.readBetaLaborFlows();
 
         String path = ResourceUtil.getProperty(rb, "mcLogsum.path");
-        
+
         //Loop through each work market segment
         for(int segment=1;segment<2;segment++){
 
             logger.info("Reading work MC logsums for segment "+segment);
-            MatrixReader mr= MatrixReader.createReader(MatrixType.ZIP,new File(path+"w"+segment+"ls.zip"));                   
+            MatrixReader mr= MatrixReader.createReader(MatrixType.ZIP,new File(path+"w"+segment+"ls.zip"));
             Matrix m = mr.readMatrix(path+"w"+segment+"ls.zip");
             LaborFlows.calculatePropensityMatrix(m);
-        	//Loop through each occupation type
-        	for(int occupation=1;occupation<=5;occupation++){
-        		Matrix lfMatrix = LaborFlows.calculateAlphaLaborFlowsMatrix(m, segment, occupation);
-        		//lf.writeLaborFlowProbabilities(lfMatrix);
-        	}
-        }       
+            //Loop through each occupation type
+            for(int occupation=1;occupation<=5;occupation++){
+                Matrix lfMatrix = LaborFlows.calculateAlphaLaborFlowsMatrix(m, segment, occupation);
+                //lf.writeLaborFlowProbabilities(lfMatrix);
+            }
+        }
         //logger.info("SizeOf(laborFlowProbabilities) = " + ObjectUtil.sizeOf( laborFlowProbabilities ) + " bytes"); 
     }
 }
