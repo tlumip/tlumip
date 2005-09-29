@@ -290,7 +290,7 @@ public class DevelopmentType implements DevelopmentTypeInterface{
     /* (non-Javadoc)
      * @see com.pb.tlumip.model.DevelopmentTypeInterface#setRentDiscount(double)
      */
-    public void setRentDiscount(double d) {
+    public void setAgeRentDiscount(double d) {
         rentDiscount = d;
         
     }
