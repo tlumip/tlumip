@@ -303,5 +303,41 @@ public class DevelopmentType implements DevelopmentTypeInterface{
         return Math.pow(1-rentDiscount,age);
     }
 
+
+    public void setRegPriceEffect(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void setRegPriceReference(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void setLandRent(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void setTypicalFar(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void setAgeMaintenanceCost(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void setDemolitionCost(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
 }
 
