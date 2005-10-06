@@ -29,8 +29,8 @@ import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 import com.pb.common.util.Justify;
-import com.pb.tlumip.ts.assign.FW;
 import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.dafv3.FW;
 
 /**
  *   Distributed application server class used for implementing a

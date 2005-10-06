@@ -29,12 +29,11 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
-import com.pb.common.util.ResourceUtil;
 
 import com.pb.common.datafile.CSVFileReader;
-import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.MessageWindow;
+import com.pb.tlumip.ts.NetworkHandler;
 
 
 
@@ -46,11 +45,11 @@ public class Skims {
 	HashMap tsPropertyMap;
     HashMap globalPropertyMap;
 
-    Network g;
-    
 	boolean useMessageWindow = false;
 	
 
+    NetworkHandler g;
+    
 	int[] alphaNumberArray = null;
 	int[] betaNumberArray = null;
 	int[] zonesToSkim = null;
@@ -58,33 +57,21 @@ public class Skims {
     int[] externalToAlphaInternal = null;
     int[] alphaExternalNumbers = null;
 	
+    int numCentroids = 0;
 
-    public Skims ( ResourceBundle tsRb, ResourceBundle globalRb, String timePeriod, float volumeFactor ) {
+    
+    
+    public Skims ( ResourceBundle tsRb, ResourceBundle globalRb, String timePeriod ) {
 
-        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(tsRb);
-        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-
-		String networkDiskObjectFile = (String)tsPropertyMap.get("NetworkDiskObject.file");
-		
-		// if no network DiskObject file exists, no previous assignments
-		// have been done, so build a new Network object which initialize 
-		// the congested time field for computing time related skims.
-		if ( networkDiskObjectFile == null ) {
-			g = new Network( tsPropertyMap, globalPropertyMap, timePeriod, volumeFactor );
-		}
-		// otherwise, read the DiskObject file and use the congested time field
-		// for computing time related skims.
-		else {
-			g = (Network) DataReader.readDiskObject ( networkDiskObjectFile, "highwayNetwork_" + timePeriod );
-		}
-		
+        g = new NetworkHandler();
+        g.setup( tsRb, globalRb, timePeriod );
 
         initSkims ();
 
     }
 
 
-    public Skims ( Network g, HashMap tsMap, HashMap globalMap ) {
+    public Skims ( NetworkHandler g, HashMap tsMap, HashMap globalMap ) {
 
         this.g = g;
         this.tsPropertyMap = tsMap;
@@ -98,6 +85,8 @@ public class Skims {
 
     private void initSkims () {
 
+        numCentroids = g.getNumCentroids();
+        
 		// take a column of alpha zone numbers from a TableDataSet and puts them into an array for
 	    // purposes of setting external numbers.	     */
 		String zoneCorrespondenceFile = (String)globalPropertyMap.get("alpha2beta.file");
@@ -539,7 +528,7 @@ public class Skims {
 
 	    int i;
 	    
-		double[][][] skimMatrices = new double[linkAttributes.length][g.getNumCentroids()][];
+		double[][][] skimMatrices = new double[linkAttributes.length][numCentroids][];
 
 		
 		// create a ShortestPathTreeH object
@@ -555,7 +544,7 @@ public class Skims {
 		for (int k=0; k < linkAttributes.length; k++) {
 			
 			// loop through the origin zones
-			for (i=0; i < g.getNumCentroids(); i++) {
+			for (i=0; i < numCentroids; i++) {
 				
 				if (useMessageWindow) mw.setMessage2 ( "Skimming shortest paths for table " + (k+1) + " from zone " + (i+1) + " of " + alphaNumberArray.length + " zones." );
 	
@@ -583,7 +572,7 @@ public class Skims {
 	    
 	    
 	    
-		double[][] skimMatrix = new double[g.getNumCentroids()][];
+		double[][] skimMatrix = new double[numCentroids][];
 
 		// create a ShortestPathTreeH object
 		ShortestPathTreeH sp = new ShortestPathTreeH( g );
@@ -594,7 +583,7 @@ public class Skims {
 		sp.setValidLinks( validLinks );
 		
 		
-		for (i=0; i < g.getNumCentroids(); i++) {
+		for (i=0; i < numCentroids; i++) {
 			if (useMessageWindow) mw.setMessage2 ( "Skimming shortest paths from zone " + (i+1) + " of " + alphaNumberArray.length + " zones." );
 
 			if (i % 500 == 0)
@@ -665,17 +654,16 @@ public class Skims {
 	public static void main(String[] args) {
 
     	
-    	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
-        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties"));
     	logger.info ("creating Skims object.");
-        Skims s = new Skims ( rb, globalRb, "peak", 0.5f );
+        Skims s = new Skims ( ResourceBundle.getBundle("ts"), ResourceBundle.getBundle ("global"), "peak" );
 
     	logger.info ("skimming network and creating Matrix object for peak auto time.");
         Matrix m = s.getHwySkimMatrix ( "peak", "time", 'a' );
+        m.logMatrixStatsToInfo();
 
     	logger.info ("squeezing the alpha matrix to a beta matrix.");
-        Matrix mSqueezed = s.getBetaSkimMatrix ( m );
-
+    	Matrix mSqueezed = s.getBetaSkimMatrix ( m );
+        mSqueezed.logMatrixStatsToInfo();
         
     }
 }

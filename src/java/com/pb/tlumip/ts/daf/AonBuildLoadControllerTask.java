@@ -25,6 +25,7 @@ import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 
+import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.daf.MessageID;
 
@@ -86,7 +87,7 @@ public class AonBuildLoadControllerTask extends MessageProcessingTask {
     	    AonNetworkManager gManager = AonNetworkManager.getInstance(); 
 
     		// get the assignment information needed from the AonNetworkManager
-    	    Network g = gManager.getNetwork();
+    	    NetworkHandler g = gManager.getNetworkHandler();
     		int firstOriginTaz = gManager.getFirstTaz();
     		int lastOriginTaz = gManager.getLastTaz();
     		int fwIteration = gManager.getFwIteration();
@@ -127,7 +128,7 @@ public class AonBuildLoadControllerTask extends MessageProcessingTask {
     }
 
     
-	private void calculateMulticlassAonLinkFlows ( Network g, double[][][] tripTable, int firstOriginTaz, int lastOriginTaz, int fwIteration ) {
+	private void calculateMulticlassAonLinkFlows ( NetworkHandler g, double[][][] tripTable, int firstOriginTaz, int lastOriginTaz, int fwIteration ) {
 
 		int buildLoadRequestsSent = 0;
 		

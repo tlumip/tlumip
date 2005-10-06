@@ -37,7 +37,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.Format;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
-import com.pb.common.matrix.Matrix;
 
 /**
  * This Network class contains the link and node data tables and
@@ -62,11 +61,11 @@ public class Network implements Serializable {
 
 	int minCentroidLabel;
 	int maxCentroidLabel;
-	int numAutoClasses;
 	
 	String assignmentPeriod;
 
-	
+    float volumeFactor;
+    
 	double WALK_SPEED;
 
 	
@@ -105,13 +104,16 @@ public class Network implements Serializable {
 	LinkCalculator fpiLc = null;
 	LinkCalculator ftLc = null;
 
+    int[][] turnPenaltyIndices = null;
+    float[][] turnPenaltyArray = null;
 	float[][][] turnTable = null;
 
+    
 	HashMap tsPropertyMap = null;
     HashMap globalPropertyMap = null;
 
 
-    public Network ( HashMap tsPropertyMap, HashMap globalPropertyMap, String period, float volumeFactor ) {
+    public Network ( HashMap tsPropertyMap, HashMap globalPropertyMap, String period ) {
 
 		float[][] turnDefs = null;
 
@@ -337,9 +339,9 @@ public class Network implements Serializable {
 
     public double[][] getFlows () {
          
-        double[][] flows = new double[numAutoClasses][];
+        double[][] flows = new double[userClasses.length][];
          
-        for (int m=0; m < numAutoClasses; m++)
+        for (int m=0; m < userClasses.length; m++)
             flows[m] = linkTable.getColumnAsDouble( "flow_" + m );
         
         return flows;
@@ -360,6 +362,14 @@ public class Network implements Serializable {
 	public int getUserClassIndex ( char modeChar ) {
 		return ((Integer)userClassMap.get( String.valueOf(modeChar) )).intValue();
 	}
+    
+    public int[][] getTurnPenaltyIndices () {
+        return turnPenaltyIndices;
+    }
+    
+    public float[][] getTurnPenaltyArray () {
+        return turnPenaltyArray;
+    }
     
     public boolean[] getValidLinksForClass ( int userClass ) {
         return validLinksForClass[userClass];
@@ -478,6 +488,15 @@ public class Network implements Serializable {
         
     	this.assignmentPeriod = period;
     	
+        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+            // get peak period definitions from property files
+            volumeFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+            // get off-peak period definitions from property files
+            volumeFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
+        }
+        
 
     	// get the filename for the alpha/beta zone correspomdence file
 		String zoneIndexFile = (String) globalPropertyMap.get( "alpha2beta.file" );
@@ -509,7 +528,6 @@ public class Network implements Serializable {
 
 		// get user classes to assign and assignment groups (which classes are combined together for assigning)
 		this.userClasses = getUserClassesFromProperties ();
-		this.numAutoClasses = this.userClasses.length;
 		setAssignmentGroups();
 		
 		
@@ -573,10 +591,10 @@ public class Network implements Serializable {
 		double[] volad = new double[linkTable.getRowCount()];
 		double[] toll = new double[linkTable.getRowCount()];
 		double[] gc = new double[linkTable.getRowCount()];
-		double[][] flow = new double[numAutoClasses][linkTable.getRowCount()];
+		double[][] flow = new double[userClasses.length][linkTable.getRowCount()];
 		boolean[] centroid = new boolean[linkTable.getRowCount()];
 		String[] centroidString = new String[linkTable.getRowCount()];
-		validLinksForClass = new boolean[numAutoClasses][linkTable.getRowCount()];
+		validLinksForClass = new boolean[userClasses.length][linkTable.getRowCount()];
 		validLinks = new boolean[linkTable.getRowCount()];
 
 		Arrays.fill (volad, 0.0);
@@ -640,7 +658,7 @@ public class Network implements Serializable {
 
 			
 			// initialize the flow by user class fields to zero
-			for (int j=0; j < numAutoClasses; j++) {
+			for (int j=0; j < userClasses.length; j++) {
 				flow[j][i] = 0.0f;
 			}
 	        
@@ -657,7 +675,7 @@ public class Network implements Serializable {
 			// h	truck greater than 105.5k lbs.
 			
 			// initialize the valid links for multiclass network used in determining shortest paths by class
-			for (int j=0; j < numAutoClasses; j++) {
+			for (int j=0; j < userClasses.length; j++) {
 			    if ( mode.indexOf( userClasses[j] ) >= 0 ) {
 			    	validLinksForClass[j][i] = true;
 			    	validLinks[i] = true;
@@ -734,7 +752,7 @@ public class Network implements Serializable {
 		derivedTable.appendColumn(freeFlowTime, "freeFlowTime");
 		derivedTable.appendColumn(length, "length");
 		derivedTable.appendColumn(oldTime, "oldTime");
-		for (int j=0; j < numAutoClasses; j++) {
+		for (int j=0; j < userClasses.length; j++) {
 			derivedTable.appendColumn(flow[j], "flow" + "_" + j);
 		}
 
@@ -968,54 +986,6 @@ public class Network implements Serializable {
 
 	
 	
-	public void checkODConnectivity ( double[][][] trips ) {
-
-		
-		double[][] linkAttributes = new double[2][];
-		linkAttributes[0] = getDist();
-		linkAttributes[1] = getCongestedTime();
-		
-
-        Skims skims = new Skims(this, tsPropertyMap, globalPropertyMap);
-
-        
-		for (int m=0; m < numAutoClasses; m++) {
-
-			double total = 0.0;
-			for (int i=0; i < trips[m].length; i++)
-				for (int j=0; j < trips[m][i].length; j++)
-					total += trips[m][i][j];
-			
-					
-	        // log the average sov trip travel distance and travel time for this assignment
-	        logger.info("Generating Time and Distance peak skims for subnetwork " + userClasses[m] + " (class " + m + ") ...");
-	        
-	        if (total > 0.0) {
-
-		        Matrix[] skimMatrices = skims.getHwySkimMatrices( assignmentPeriod, linkAttributes, userClasses[m] );
-
-		        logger.info( "Total " + assignmentPeriod + " demand for subnetwork " + userClasses[m] + " (class " + m + ") = " + total + " trips."); 
-
-	            double[] distSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[0] );
-	            
-		        logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + assignmentPeriod + " trip travel distance = " + distSummaries[0] + " miles."); 
-		        logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on distance = " + distSummaries[1]);
-
-	            double[] timeSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[1] );
-	            
-		        logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + assignmentPeriod + " trip travel time = " + timeSummaries[1] + " minutes."); 
-		        logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on time = " + timeSummaries[1]);
-		        
-	        }
-	        else {
-	        	
-		        logger.info("No demand for subnetwork " + userClasses[m] + " (class " + m + ") therefore, no average time or distance calculated.");
-		        
-	        }
-	        		
-		}
-
-    }
 
 
 
@@ -1025,7 +995,9 @@ public class Network implements Serializable {
 		int k=0;
 
 		ArrayList[] turnLists = new ArrayList[linkTable.getRowCount()];
-		turnTable = new float[linkTable.getRowCount()][][];
+        turnTable = new float[linkTable.getRowCount()][][];
+        turnPenaltyIndices = new int[linkTable.getRowCount()][];
+        turnPenaltyArray = new float[linkTable.getRowCount()][];
 		
 
 		// set the turn penalty index record for each link that is downstream in the turning movement.
@@ -1042,13 +1014,29 @@ public class Network implements Serializable {
 			
 		}
 
-
+        
+        // turnLists[k] is an ArrayList of the turn penalty file records with link k as the downstream link
+        // the elements in the ArrayList are arrays of node sequence and penalty for a turn into link k
+        // the node sequence is: j, i, k for a turn defined as i->j->k.
+        // therfore, turnLists[k][n][0] = the j node for the nth turn record going into link k
+        //           turnLists[k][n][1] = the i node for the nth turn record going into link k
+        //           turnLists[k][n][2] = the k node for the nth turn record going into link k
+        //           turnLists[k][n][3] = the penalty for turn i->j->k.
 		for (k=0; k < linkTable.getRowCount(); k++) {
 
 			if (turnLists[k] != null) {
+                
 				turnTable[k] = new float[turnLists[k].size()][((float[])turnLists[k].get(0)).length];
-				for (int j=0; j < turnLists[k].size(); j++) 
-					turnTable[k][j] = (float[])turnLists[k].get(j);
+                turnPenaltyIndices[k] = new int[turnLists[k].size()];
+                turnPenaltyArray[k] = new float[turnLists[k].size()];
+                for (int j=0; j < turnLists[k].size(); j++) {
+                    
+                    turnTable[k][j] = (float[])turnLists[k].get(j);
+//                    int link2Index = getLinkIndex ( (int)turnTable[k][j][0], (int)turnTable[k][j][2] );
+                    turnPenaltyIndices[k][j] = getLinkIndex ( (int)turnTable[k][j][1], (int)turnTable[k][j][0] );
+                    turnPenaltyArray[k][j] = turnTable[k][j][3];
+                                                       
+                }
 			}
 		}
 
@@ -1208,8 +1196,8 @@ public class Network implements Serializable {
 		double[] distance = (double[])linkTable.getColumnAsDouble( "length" );
 		double[] capacity = (double[])linkTable.getColumnAsDouble( "capacity" );
 
-		double[][] flow = new double[numAutoClasses][];
-		for (int j=0; j < numAutoClasses; j++) {
+		double[][] flow = new double[userClasses.length][];
+		for (int j=0; j < userClasses.length; j++) {
 			flow[j] = (double[])linkTable.getColumnAsDouble( "flow_" + j );
 		}
 		
@@ -1223,10 +1211,10 @@ public class Network implements Serializable {
 
 			
 			outStream.print ("anode,bnode,capacity,assignmentTime,");
-			for (int j=0; j < numAutoClasses-1; j++)
+			for (int j=0; j < userClasses.length-1; j++)
 				outStream.print( "assignmentFlow_" + j + "," );
 			
-			outStream.println( "assignmentFlow_" + (numAutoClasses-1) );
+			outStream.println( "assignmentFlow_" + (userClasses.length-1) );
 			
 
 			
@@ -1238,10 +1226,10 @@ public class Network implements Serializable {
 								+ Format.print("%.4f", congestedTime[k]) + ","
 								);
 								
-				for (int j=0; j < numAutoClasses-1; j++)
+				for (int j=0; j < userClasses.length-1; j++)
 					outStream.print( Format.print("%.4f", flow[j][k]) + "," );
 	
-				outStream.println( Format.print("%.4f", flow[numAutoClasses-1][k]) );
+				outStream.println( Format.print("%.4f", flow[userClasses.length-1][k]) );
 
 			}
 		

@@ -23,7 +23,7 @@ package com.pb.tlumip.ts.assign.tests;
  */
 
 
-import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.Skims;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixReader;
@@ -50,17 +50,20 @@ public class HwyDistSkimsTest {
     
 	static HashMap tsPropertyMap;
     static HashMap globalPropertyMap;
-	static Network g = null;
+	static NetworkHandler g = null;
 	
+    static ResourceBundle rb;
+    static ResourceBundle globalRb;
+    
 	PrintWriter outStream = null;
 	
 	
 	public HwyDistSkimsTest() {
 
-    	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
+    	rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
 		tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
 
-        ResourceBundle globalRb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties") );
+        globalRb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties") );
 		globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
 	}
@@ -71,11 +74,11 @@ public class HwyDistSkimsTest {
 		long startTime = System.currentTimeMillis();
 		
     	String period = "peak";
-		float peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
         
 		HwyDistSkimsTest test = new HwyDistSkimsTest();
 		
-        g = new Network( tsPropertyMap, globalPropertyMap, period, peakFactor );
+        g = new NetworkHandler();
+        g.setup( rb, globalRb, period );
 		logger.info ("done building Network object.");
         
         Skims sk = new Skims( g, tsPropertyMap, globalPropertyMap );

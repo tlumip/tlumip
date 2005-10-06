@@ -23,12 +23,14 @@ package com.pb.tlumip.ts.assign.tests;
  */
 
 
-import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.ShortestPathTreeH;
 import com.pb.common.util.ResourceUtil;
 
+import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.ResourceBundle;
+
 import org.apache.log4j.Logger;
 
 
@@ -38,23 +40,23 @@ public class TurnPenaltiesTest {
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.tests");
 
     
-	HashMap tsPropertyMap;
-    HashMap globalPropertyMap;
-	Network g = null;
+    ResourceBundle rb;
+    ResourceBundle globalRb;
 	
 	
 	
 	public TurnPenaltiesTest() {
 
-		tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("tpTest");
-        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap("global");
+        rb = ResourceUtil.getPropertyBundle( new File("/jim/tlumip/data/test/tpTest.properties") );
+        globalRb = ResourceUtil.getPropertyBundle(new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties"));
 
 	}
     
 	
-	private void runTest (String period, float volumeFactor) {
+	private void runTest (String period) {
         
-		g = new Network( tsPropertyMap, globalPropertyMap, period, volumeFactor );
+        NetworkHandler g = new NetworkHandler();
+        g.setup( rb, globalRb, period );
 		logger.info ("done building Network object.");
 
 		
@@ -84,7 +86,7 @@ public class TurnPenaltiesTest {
 		long startTime = System.currentTimeMillis();
 		
 		TurnPenaltiesTest test = new TurnPenaltiesTest();
-		test.runTest("peak", 0.5f);
+		test.runTest("peak");
         
 		logger.info("TurnPenaltiesTest() finished in " +
 			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");

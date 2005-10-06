@@ -19,6 +19,7 @@ package com.pb.tlumip.ts.assign;
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.datafile.DiskObjectArray;
 import com.pb.common.util.*;
+import com.pb.tlumip.ts.NetworkHandler;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -39,7 +40,7 @@ public class FW {
 
 	HashMap propertyMap;
 	
-    Network g;
+    NetworkHandler g;
     Justify myFormat = new Justify();
 
     double [] lambdas;
@@ -63,7 +64,7 @@ public class FW {
     }
 
 
-    public void initialize ( HashMap tsPropertyMap, Network g ) {
+    public void initialize ( HashMap tsPropertyMap, NetworkHandler g ) {
 
 		this.propertyMap = tsPropertyMap;
 		this.g = g;
@@ -391,12 +392,12 @@ public class FW {
 		double[] cTime = g.getCongestedTime();
 		
 		double gap = 0.0;
-		int dummy = 0;
+//		int dummy = 0;
 		for (int k=0; k < volau.length; k++) {
             if ( validLinks[k] ) {
-            	if ( !( isValidDoubleValue(cTime[k]) && isValidDoubleValue(totAonFlow[k]) && isValidDoubleValue(volau[k]) ) ) {
-            		dummy = 1;
-            	}
+//            	if ( !( isValidDoubleValue(cTime[k]) && isValidDoubleValue(totAonFlow[k]) && isValidDoubleValue(volau[k]) ) ) {
+//            		dummy = 1;
+//            	}
             	gap += cTime[k]*(totAonFlow[k] - volau[k]);
             }
 		}
@@ -520,15 +521,16 @@ public class FW {
 
 	
 	
-	private boolean isValidNonPositiveDoubleValue( double value ) {
-		return ( value >= -Double.MAX_VALUE && value <= 0.0 );
-	}
+//	private boolean isValidNonPositiveDoubleValue( double value ) {
+//		return ( value >= -Double.MAX_VALUE && value <= 0.0 );
+//	}
+//
+//	private boolean isValidNonNegativeDoubleValue( double value ) {
+//		return ( value >= 0.0 && value <= Double.MAX_VALUE );
+//	}
+//
+//	private boolean isValidDoubleValue( double value ) {
+//		return ( value >= -Double.MAX_VALUE && value <= Double.MAX_VALUE );
+//	}
 
-	private boolean isValidNonNegativeDoubleValue( double value ) {
-		return ( value >= 0.0 && value <= Double.MAX_VALUE );
-	}
-
-	private boolean isValidDoubleValue( double value ) {
-		return ( value >= -Double.MAX_VALUE && value <= Double.MAX_VALUE );
-	}
 }

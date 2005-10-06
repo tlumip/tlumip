@@ -23,6 +23,7 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageFactory;
 import com.pb.common.daf.MessageProcessingTask;
 
+import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.assign.ShortestPathTreeH;
 import com.pb.tlumip.ts.daf.MessageID;
@@ -45,7 +46,7 @@ public class AonBuildLoadWorkerTask extends MessageProcessingTask {
     AonLinkFlowResults flowResults = AonLinkFlowResults.getInstance();
     AonNetworkManager gManager = AonNetworkManager.getInstance();
     
-    Network g = gManager.getNetwork();
+    NetworkHandler g = gManager.getNetworkHandler();
     ShortestPathTreeH sp = createShortestPathTreeHObject( g );
     double[][] cummulativeAon = flowResults.getCombinedLinkFlows();
 
@@ -93,7 +94,7 @@ public class AonBuildLoadWorkerTask extends MessageProcessingTask {
     		// build the shortest path tree for the origin specified over the valid set
     		// of links for the userclass, and load the trip table row onto the shortest path links,
     		// returning the AON link flow vector for this origin zone.
-        	aon = buildAndLoadShortestPathTree( g, sp, rootOrig, userClass, rootOrigTrips );
+        	aon = buildAndLoadShortestPathTree( rootOrig, userClass, rootOrigTrips );
         	
         	// add the aon flows for this origin zone to the others being accummulated by this worker task
         	for (int i=0; i < aon.length; i++)
@@ -107,7 +108,7 @@ public class AonBuildLoadWorkerTask extends MessageProcessingTask {
     }
 
     
-	private double[] buildAndLoadShortestPathTree( Network g, ShortestPathTreeH sp, int rootOrig, int userClass, double[] rootOrigTrips ){
+	private double[] buildAndLoadShortestPathTree( int rootOrig, int userClass, double[] rootOrigTrips ){
     
 		sp.buildTree ( rootOrig );
 		return sp.loadTree ( rootOrigTrips, userClass );
@@ -115,7 +116,7 @@ public class AonBuildLoadWorkerTask extends MessageProcessingTask {
 	}
 
 	
-	private ShortestPathTreeH createShortestPathTreeHObject( Network g ) {
+	private ShortestPathTreeH createShortestPathTreeHObject( NetworkHandler g ) {
 	
 		return new ShortestPathTreeH( g );
 

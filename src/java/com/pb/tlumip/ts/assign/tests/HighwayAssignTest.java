@@ -23,15 +23,17 @@ package com.pb.tlumip.ts.assign.tests;
  */
 
 
-import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.Skims;
-import com.pb.tlumip.ts.assign.FW;
 import com.pb.tlumip.ts.assign.TripDataGenerator;
+import com.pb.tlumip.ts.assign.FW;
 
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
+import java.util.ResourceBundle;
+import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import org.apache.log4j.Logger;
@@ -42,19 +44,20 @@ public class HighwayAssignTest {
 
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.tests");
 
-	HashMap tsPropertyMap;
+    ResourceBundle rb;
+    ResourceBundle globalRb;
+    HashMap tsPropertyMap;
     HashMap globalPropertyMap;
 
-	double[][][] multiclassTripTable = new double[2][][];
-	
-	Network g = null;
-	
 	
 	
 	public HighwayAssignTest() {
 
-	    tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
-        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap("global");
+        rb = ResourceUtil.getPropertyBundle( new File("/jim/tlumip/data/test/tpTest.properties") );
+        globalRb = ResourceUtil.getPropertyBundle(new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties"));
+        
+        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
 	}
     
@@ -76,15 +79,18 @@ public class HighwayAssignTest {
 		long startTime = System.currentTimeMillis();
 		
 
-		int totalTrips;
-		int linkCount;
 		String myDateString;
 
-		float peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
-		
+        double[][][] multiclassTripTable = new double[2][][];
+        
+
+        
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Network object at: " + myDateString);
-		g = new Network( tsPropertyMap, globalPropertyMap, period, peakFactor );
+		NetworkHandler g = new NetworkHandler();
+        g.setup( rb, globalRb, period );
+        logger.info ("done building Network object.");
+
 		
 		
 		// create Frank-Wolfe Algortihm Object
@@ -97,7 +103,7 @@ public class HighwayAssignTest {
 		// create highway skims object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating hwy skims object at: " + myDateString);
-		Skims highwaySkims = new Skims(g, tsPropertyMap, globalPropertyMap);
+		Skims highwaySkims = new Skims( g, tsPropertyMap, globalPropertyMap );
 
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("generating trips with gravity model at: " + myDateString);

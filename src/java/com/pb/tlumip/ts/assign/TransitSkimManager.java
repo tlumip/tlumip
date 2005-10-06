@@ -319,7 +319,7 @@ public class TransitSkimManager {
 			volumeFactor = offPeakFactor;
 
 		// create a highway network oject
-		Network g = new Network( tsPropertyMap, globalPropertyMap, period, volumeFactor );
+		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
 		logger.info (g.getLinkCount() + " highway links");
 		logger.info (g.getNodeCount() + " highway nodes");
 

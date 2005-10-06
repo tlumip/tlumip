@@ -65,20 +65,19 @@ public class TrRouteTest {
         
 		TrRouteTest test = new TrRouteTest();
 
-		test.runTest("peak", 0.5f);
+		test.runTest("peak");
 		
     }
 
     
     
-    private void runTest (String period, float volumeFactor) {
+    private void runTest (String period) {
         
-		long totalTime = 0;
 		long startTime = System.currentTimeMillis();
 		String myDateString;
 		
 		// create a highway network oject
-		Network g = new Network( tsPropertyMap, globalPropertyMap, period, volumeFactor );
+		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
 
 		// create transit routes object with max 50 routes
 		TrRoute tr = new TrRoute (500);

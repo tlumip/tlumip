@@ -20,6 +20,7 @@
  */
 package com.pb.tlumip.ts.daf;
 
+import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.Network;
 
 /**
@@ -32,7 +33,7 @@ import com.pb.tlumip.ts.assign.Network;
  */
 final class AonNetworkManager {
 	
-    protected Network g = null;
+    protected NetworkHandler g = null;
     protected int firstTaz = 0;
     protected int lastTaz = 0;
     protected int fwIteration = 0;
@@ -53,11 +54,11 @@ final class AonNetworkManager {
 	}
 
 	
-	public void setNetwork ( Network g ) {
+	public void setNetworkHandler ( NetworkHandler g ) {
 		this.g = g;
 	}
 	
-	public Network getNetwork () {
+	public NetworkHandler getNetworkHandler () {
 		return this.g;
 	}
 	

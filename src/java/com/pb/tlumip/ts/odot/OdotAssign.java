@@ -28,7 +28,7 @@ package com.pb.tlumip.ts.odot;
 
 
 
-import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.FW;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -48,7 +48,7 @@ public class OdotAssign {
 
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.odot");
 
-	protected static Network g = null;
+	protected static NetworkHandler g = null;
 
 	
 	
@@ -72,39 +72,36 @@ public class OdotAssign {
 		String period = "peak";
 		
 		HashMap tsPropertyMap;
-        HashMap globalPropertyMap;
 		String tripFileName = null;
 		double[][][] multiclassTripTable = new double[2][][];
 		
 		String loggerMessage=null;
 		
-		int totalTrips;
-		int linkCount;
 		String myDateString;
 
 		// create a HashMap of ts properties values
 	    int dotIndex = tsPropertyFileName.indexOf(".");
 	    String subString = tsPropertyFileName.substring( 0, dotIndex );
-	    String propertyName = subString;
-        tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap( propertyName );
+	    String appPropertyName = subString;
+        tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap( appPropertyName );
 
         // create a HashMap of global properties values
 	    dotIndex = globalPropertyFileName.indexOf(".");
 	    subString = globalPropertyFileName.substring( 0, dotIndex );
-	    propertyName = subString;
-        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap( propertyName );
+        String globalPropertyName = subString;
+        globalPropertyName = subString;
 
 
 	    // get trip list filenames from property file
 		tripFileName = (String)tsPropertyMap.get("pt.fileName");
 
 
-		float peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
-		
 		
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Highway Network object at: " + myDateString);
-		g = new Network( tsPropertyMap, globalPropertyMap, period, peakFactor );
+        g = new NetworkHandler();
+        g.setup( appPropertyName, globalPropertyName, period );
+        logger.info ("done building Network object.");
 		
 		
 		// create Frank-Wolfe Algortihm Object

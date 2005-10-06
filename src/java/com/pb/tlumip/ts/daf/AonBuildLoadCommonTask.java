@@ -25,6 +25,7 @@ import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 
+import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.daf.MessageID;
 
@@ -94,18 +95,18 @@ public class AonBuildLoadCommonTask extends MessageProcessingTask {
 
         	// get the Network object and information about the assignment procedure from the message and store in gManager
         	nodeId = getNodeIdFromMessage( msg );
-        	Network g = getNetworkObjectFromMessage( msg );
+        	NetworkHandler g = getNetworkHandlerObjectFromMessage( msg );
     		int firstOriginTaz = getFirstAssignmentTazFromMessage (msg );
     		int lastOriginTaz = getLastAssignmentTazFromMessage (msg );
     		int fwIteration = getFwIterationNumberFromMessage (msg );
     		
-        	gManager.setNetwork( g );
+        	gManager.setNetworkHandler( g );
         	gManager.setFirstTaz( firstOriginTaz );
         	gManager.setLastTaz( lastOriginTaz );
         	gManager.setFwIteration( fwIteration );
         	
         	// initialize the combined AON Flows array to zero
-        	flowResults.initializeFlowArray( gManager.getNetwork().getLinkCount(), gManager.getNetwork().getNumUserClasses() );
+        	flowResults.initializeFlowArray( gManager.getNetworkHandler().getLinkCount(), gManager.getNetworkHandler().getNumUserClasses() );
         	
         }
 
@@ -146,8 +147,8 @@ public class AonBuildLoadCommonTask extends MessageProcessingTask {
 		return ((Integer)msg.getValue( MessageID.NODE_KEY )).intValue();
 	}
     
-	private Network getNetworkObjectFromMessage( Message msg ){
-		return (Network)msg.getValue( MessageID.NETWORK_KEY );
+	private NetworkHandler getNetworkHandlerObjectFromMessage( Message msg ){
+		return (NetworkHandler)msg.getValue( MessageID.NETWORK_KEY );
 	}
 
 	private int getFwIterationNumberFromMessage( Message msg ){

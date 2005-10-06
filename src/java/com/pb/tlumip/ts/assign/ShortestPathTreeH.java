@@ -20,6 +20,7 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 
 import com.pb.common.util.*;
+import com.pb.tlumip.ts.NetworkHandler;
 
 /**
  * Class for shortest path trees.
@@ -34,7 +35,7 @@ public class ShortestPathTreeH {
     static final double COMPARE_EPSILON = 1.0e-07;
 
     Justify myFormat = new Justify();
-    Network g;
+//    Network g;
 
     int inOrigin;
 
@@ -44,6 +45,8 @@ public class ShortestPathTreeH {
 	int[] sortedLinkIndex;
 	int[] indexNode;
 	int[] nodeIndex;
+    int[][] turnPenaltyIndices;
+    float[][] turnPenaltyArray;
 	boolean[] centroid;
 	boolean[] validLink;
 	double[] linkCost;
@@ -54,6 +57,8 @@ public class ShortestPathTreeH {
     double[] nodeLabels;
     int[] predecessorLink;
 
+    int numNodes;
+    int numZones;
 
     long initTime = 0;
     long buildTime = 0;
@@ -63,10 +68,11 @@ public class ShortestPathTreeH {
     int[] heapContents;
 
 
-    public ShortestPathTreeH ( Network g ) {
-        this.g = g;
+    public ShortestPathTreeH ( NetworkHandler g ) {
 
-
+        numNodes = g.getNodeCount();
+        numZones = g.getNumCentroids();
+        
 		// store network fields in local arrays
 		ia = g.getIa();
 		ib = g.getIb();
@@ -78,12 +84,12 @@ public class ShortestPathTreeH {
 		
 		aonFlow = new double[g.getLinkCount()];
         
-        nodeLabeled = new int[g.getNodeCount()+1];
-        nodeLabels = new double[g.getNodeCount()+1];
+        nodeLabeled = new int[numNodes+1];
+        nodeLabels = new double[numNodes+1];
 
         //Create a new heap structure to sort candidate node labels
-        candidateHeap = new Heap(g.getNodeCount()+1);
-		heapContents = new int[g.getNodeCount()];
+        candidateHeap = new Heap(numNodes+1);
+		heapContents = new int[numNodes];
 
     }
 
@@ -96,7 +102,7 @@ public class ShortestPathTreeH {
 		nodeLabels[inOrigin] = 0.0;
 		nodeLabeled[inOrigin] = 1;
 
-		predecessorLink = new int[g.getNodeCount()+1];
+		predecessorLink = new int[numNodes+1];
         Arrays.fill(predecessorLink, -1);
 
         candidateHeap.clear();
@@ -115,13 +121,13 @@ public class ShortestPathTreeH {
         initData();
 
         // set labels for links eminating from the origin node
-        setRootLabels (g, inOrigin);
+        setRootLabels ( inOrigin );
 
         // continue labeling until candidateHeap is empty
 		int k;
         while ((k = candidateHeap.remove()) >= 0) {
 
-            setRootLabels (g, ib[k]);
+            setRootLabels ( ib[k] );
 			nodeLabeled[ib[k]] = 1;
 			if(logger.isDebugEnabled()) {
                 candidateHeap.dataPrint();
@@ -132,7 +138,7 @@ public class ShortestPathTreeH {
     }
 
 
-    private void setRootLabels (Network g, int rootNode) {
+    private void setRootLabels ( int rootNode ) {
 
         int k;
         double label;
@@ -149,8 +155,8 @@ public class ShortestPathTreeH {
             
             
             turnPenalty = 0.0;
-            if ( predecessorLink[ia[k]] >= 0)
-                turnPenalty = g.getTurnPenalty( indexNode[ia[k]], indexNode[ia[predecessorLink[ia[k]]]], indexNode[ib[k]] );
+            if ( turnPenaltyIndices != null && predecessorLink[ia[k]] >= 0 )
+                turnPenalty = getTurnPenalty( k, predecessorLink[ia[k]] );
 
 			if(logger.isDebugEnabled()) {
 				logger.debug ("i=" + i + ", k=" + k + ", ia[k=" + k + "]=" + ia[k] + ", ib[k=" + k + "]=" + ib[k] + ", an[k=" + k + "]=" + indexNode[ia[k]] + ", bn[k=" + k + "]=" + indexNode[ib[k]] + ", linkCost[k=" + k + "]=" + linkCost[k] +  ", nodeLabeled[ib[k]=" + ib[k] + "]=" +  nodeLabeled[ib[k]] +  ", nodeLabels[ib[k]=" + ib[k] + "]=" + nodeLabels[ib[k]] + ", validLink[k=" + k + "]=" + validLink[k] + ", turnPenalty=" + turnPenalty);
@@ -190,7 +196,7 @@ public class ShortestPathTreeH {
         Arrays.fill (aonFlow, 0.0);
         
 		int k;
-        for (int j=0; j < g.getNumCentroids(); j++) {
+        for (int j=0; j < numZones; j++) {
             if ( tripRow[j] > 0 && j != inOrigin ) {
                 k = predecessorLink[j];
                 if (k == -1) {
@@ -219,12 +225,12 @@ public class ShortestPathTreeH {
     public double[][] getSkims ( double[][] linkAttributesToSkim ) {
         
         int p;
-		double[][] skimTables = new double [linkAttributesToSkim.length][g.getNumCentroids()];
+		double[][] skimTables = new double [linkAttributesToSkim.length][numZones];
 
 
         for (int k=0; k < linkAttributesToSkim.length; k++) {
 
-	        for (int j=0; j < g.getNumCentroids(); j++) {
+	        for (int j=0; j < numZones; j++) {
 	        	
 	            if (j != inOrigin) {
 	                p = predecessorLink[j];
@@ -264,10 +270,10 @@ public class ShortestPathTreeH {
     public double[] getSkim ( double[] linkAttributeToSkim ) {
         
         int k;
-		double[] skim = new double [g.getNumCentroids()];
+		double[] skim = new double [numZones];
 
 
-        for (int j=0; j < g.getNumCentroids(); j++) {
+        for (int j=0; j < numZones; j++) {
             if (j != inOrigin) {
                 k = predecessorLink[j];
                 if (k == -1) {
@@ -344,6 +350,28 @@ public class ShortestPathTreeH {
         return predecessorLink;
     }
 
+    
+    
+    private float getTurnPenalty( int k, int predecessorLink ) {
+        
+        float penalty = 0.0f;
+        
+        if ( turnPenaltyIndices[predecessorLink] != null ) {
+            
+            for (int i=0; i < turnPenaltyIndices[predecessorLink].length; i++) {
+                
+                if ( turnPenaltyIndices[predecessorLink][i] == k ) {
+                    penalty = turnPenaltyArray[predecessorLink][i];
+                    break;
+                }
+                
+            }
+
+        }
+        
+        return penalty;
+        
+    }
 
 
     /*-------------------- Inner class --------------------*/
