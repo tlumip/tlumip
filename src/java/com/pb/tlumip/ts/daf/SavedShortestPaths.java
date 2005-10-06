@@ -20,7 +20,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.dafv3;
 
 import java.util.HashMap;
 
