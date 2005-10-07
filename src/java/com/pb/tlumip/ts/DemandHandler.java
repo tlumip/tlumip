@@ -29,6 +29,9 @@ import com.pb.tlumip.model.ModeType;
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
+import com.pb.common.rpc.NodeConfig;
+import com.pb.common.rpc.RPC;
+import com.pb.common.util.Convert;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
@@ -37,15 +40,27 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.Vector;
+
 import org.apache.log4j.Logger;
+import org.apache.xmlrpc.Echo;
+import org.apache.xmlrpc.SystemHandler;
+import org.apache.xmlrpc.WebServer;
 
 
 
 public class DemandHandler {
 
+    public static String remoteHandlerAddress = "http://localhost:7001";
+    
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.DemandHandler");
 
+    public static String nodeName;
+    public static int webPort = 7001;
+    public static int tcpPort = 7002;
 
+    
+    
 	final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
 
     String componentPropertyName;
@@ -57,7 +72,6 @@ public class DemandHandler {
     ResourceBundle appRb;
     ResourceBundle globalRb;
     
-//    NetworkHandler g = null;
     int networkNumCentroids;
     int networkNumUserClasses;
     int[] networkNodeIndexArray;
@@ -69,24 +83,46 @@ public class DemandHandler {
 
 	
 
-	
-	
-	
+
 	public DemandHandler() {
 	}
 
 
+    
+    public Object execute (String methodName, Vector params) throws Exception {
+                  
+        if ( methodName.equalsIgnoreCase( "setup" ) ) {
+            HashMap componentPropertyMap = (HashMap)params.get(0);
+            HashMap globalPropertyMap = (HashMap)params.get(1);
+            String timePeriod = (String)params.get(2);
+            return setup( componentPropertyMap, globalPropertyMap, timePeriod );
+        }
+        else if ( methodName.equalsIgnoreCase( "setNetworkAttributes" ) ) {
+            int numCentroids = (Integer)params.get(0);
+            int numUserClasses = (Integer)params.get(1);
+            int[] nodeIndexArray = (int[])params.get(2);
+            HashMap assignmentGroupMap = (HashMap)params.get(3);
+            boolean userClassesIncludeTruck = (Boolean)params.get(4);
+            setNetworkAttributes( numCentroids, numUserClasses, nodeIndexArray, assignmentGroupMap, userClassesIncludeTruck );
+            return null;
+        }
+        else if ( methodName.equalsIgnoreCase( "getMulticlassTripTables" ) ) {
+            return Convert.toBytes( getMulticlassTripTables() );
+        }
+        else {
+            logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
+            return null;
+        }
+        
+    }
+    
 
-    public boolean setup( String componentPropertyName, String globalPropertyName, String timePeriod ) {
+    
+    
+    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod ) {
         
-        this.componentPropertyName = componentPropertyName; 
-        this.globalPropertyName = globalPropertyName; 
-        
-        this.appRb = ResourceUtil.getPropertyBundle( new File( componentPropertyName ) );
-        this.globalRb = ResourceUtil.getPropertyBundle(new File( globalPropertyName ));
-        
-        this.componentPropertyMap = ResourceUtil.getResourceBundleAsHashMap( componentPropertyName );
-        this.globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap( globalPropertyName );
+        this.componentPropertyMap = componentPropertyMap;
+        this.globalPropertyMap = globalPropertyMap; 
         
         return buildDemandObject( timePeriod );
         
@@ -270,7 +306,7 @@ public class DemandHandler {
 			}
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error ( "", e );
 		}
 
 
@@ -375,4 +411,57 @@ public class DemandHandler {
 
     }
 
+
+    public static void main(String[] args) {
+
+        if (args.length < 2) {
+            logger.error ("usage: java " + DemandHandler.class.getName() + " <node-name> <config-file>");
+            return;
+        }
+
+        nodeName = args[0];
+
+        RPC.init();
+        //RPC.setDebug(true);
+
+        try {
+            
+            //Read config file
+            logger.info ("reading config file: " + args[1]);
+            NodeConfig nodeConfig = new NodeConfig();
+            nodeConfig.readConfig(new File(args[1]));
+
+            //Create webserver - register default handlers
+            WebServer webserver = new WebServer(webPort);
+            webserver.addHandler("math", Math.class);
+            webserver.addHandler("$default", new Echo());
+
+            //Add SystemHandler, for multicall
+            SystemHandler system = new SystemHandler();
+            system.addDefaultSystemHandlers();
+            webserver.addHandler("system", system);
+
+            //Register handlers only for this node
+            for (int i=0; i < nodeConfig.nHandlers; i++) {
+                String name = nodeConfig._handlers[i].name;
+                String node = nodeConfig._handlers[i].node;
+
+                if (nodeName.equalsIgnoreCase(node)) {
+                    Class clazz = Class.forName(nodeConfig._handlers[i].className);
+
+                    logger.info ( "handler["+i+"]: " + name + "::" + clazz.getName() );
+                    webserver.addHandler(name, clazz.newInstance());
+                }
+            }
+
+            //Create webserver
+            webserver.start();
+            logger.info ( "Web server listening on " + webPort + "..." );
+            
+        }
+        catch (Exception e) {
+            logger.error ( "Exception caught in DemandHandler.main().", e );
+        }
+    }
+    
 }

@@ -89,28 +89,28 @@ public class NetworkHandler implements RpcHandler {
             return userClassesIncludeTruck();
         }
         else if ( methodName.equalsIgnoreCase( "getValidLinksForClassInt" ) ) {
-            return getValidLinksForClass( (Integer)params.get(0) );
+            return Convert.toBytes( getValidLinksForClass( (Integer)params.get(0) ) );
         }
         else if ( methodName.equalsIgnoreCase( "getValidLinksForClassChar" ) ) {
-            return getValidLinksForClass( (Character)params.get(0) );
+            return Convert.toBytes( getValidLinksForClass( (Character)params.get(0) ) );
         }
         else if ( methodName.equalsIgnoreCase( "getNodeIndex" ) ) {
-            return getNodeIndex();
+            return Convert.toBytes( getNodeIndex() );
         }
         else if ( methodName.equalsIgnoreCase( "getLinkType" ) ) {
-            return getLinkType();
+            return Convert.toBytes( getLinkType() );
         }
         else if ( methodName.equalsIgnoreCase( "getAssignmentGroupMap" ) ) {
-            return getAssignmentGroupMap();
+            return Convert.toBytes( getAssignmentGroupMap() );
         }
         else if ( methodName.equalsIgnoreCase( "getCongestedTime" ) ) {
-            return getCongestedTime();
+            return Convert.toBytes( getCongestedTime() );
         }
         else if ( methodName.equalsIgnoreCase( "getDist" ) ) {
-            return getDist();
+            return Convert.toBytes( getDist() );
         }
         else if ( methodName.equalsIgnoreCase( "setLinkGeneralizedCost" ) ) {
-            return setLinkGeneralizedCost();
+            return Convert.toBytes( setLinkGeneralizedCost() );
         }
         else if ( methodName.equalsIgnoreCase( "setFlows" ) ) {
             double[][] flows = (double[][])params.get(0);
@@ -139,7 +139,7 @@ public class NetworkHandler implements RpcHandler {
         }
         else if ( methodName.equalsIgnoreCase( "getSumOfVdfIntegrals" ) ) {
             boolean[] validLinks = (boolean[])params.get(0);
-            return getSumOfVdfIntegrals( validLinks );
+            return Convert.toBytes( getSumOfVdfIntegrals( validLinks ) );
         }
         else if ( methodName.equalsIgnoreCase( "logLinkTimeFreqs" ) ) {
             boolean[] validLinks = (boolean[])params.get(0);
@@ -451,12 +451,11 @@ public class NetworkHandler implements RpcHandler {
     public static void main(String[] args) {
 
         if (args.length < 2) {
-            System.out.println("usage: java " + NetworkHandler.class.getName() + " <node-name> <config-file>");
+            logger.error ("usage: java " + NetworkHandler.class.getName() + " <node-name> <config-file>");
             return;
         }
 
         nodeName = args[0];
-        System.out.println("starting: " + nodeName);
 
         RPC.init();
         //RPC.setDebug(true);
@@ -464,7 +463,7 @@ public class NetworkHandler implements RpcHandler {
         try {
             
             //Read config file
-            System.out.println("reading config file: " + args[1]);
+            logger.info ("reading config file: " + args[1]);
             NodeConfig nodeConfig = new NodeConfig();
             nodeConfig.readConfig(new File(args[1]));
 
