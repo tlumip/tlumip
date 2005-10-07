@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.dafv3;
+package com.pb.tlumip.ts.daf;
 
 import com.pb.common.datafile.DiskObjectArray;
 import com.pb.common.rpc.RpcClient;
