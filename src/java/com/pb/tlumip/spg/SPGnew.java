@@ -72,7 +72,7 @@ public class SPGnew {
 
 	static final int NUM_PERSON_ATTRIBUTES = 4;
 
-	static final double MAXIMUM_ALLOWED_CONTROL_DIFFERENCE = 1.0;
+	static final double MAXIMUM_ALLOWED_CONTROL_DIFFERENCE = 0.1;
 	
 	// person attributes for person j:
 	// industry: PERSON_ARRAY_ATTRIB_INDEX + j*NUM_PERSON_ATTRIBUTES + 0
@@ -141,7 +141,10 @@ public class SPGnew {
     	
 		SeededRandom.setSeed( 0 );
 
-		halo = new Halo( (String)globalPropertyMap.get("alpha2beta.file") );
+		halo = new Halo();
+		halo.setPumaFieldName( "PUMA5pct" );
+        // halo.setPumaFieldName( "00PUMA5pct" );
+        halo.readZoneIndices ( (String)globalPropertyMap.get("alpha2beta.file") );      
 		
 		edInd = new EdIndustry();
 		workers = new Workers();
@@ -1413,7 +1416,7 @@ public class SPGnew {
 
 		hhArray = new int[halo.getNumberOfStates()][][];
 
-		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName") );
+		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName"), (String)spgPropertyMap.get("year") );
   		
 		String propertyName;
 		String[] PUMSFILE = new String[halo.getNumberOfStates()];
@@ -1492,7 +1495,7 @@ public class SPGnew {
 			PUMSFILE[i] = (String)spgPropertyMap.get( propertyName );
 		}
 		
-		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName") );
+		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName"), (String)spgPropertyMap.get("year") );
 
 
 		
@@ -2284,7 +2287,7 @@ public class SPGnew {
         
 		long startTime = System.currentTimeMillis();
 		String which = args[0];
-        SPGnew testSPG = new SPGnew( "spg_full", "global" );
+        SPGnew testSPG = new SPGnew( "spg", "global" );
 
         if(which.equals("spg1"))
 		{

@@ -102,7 +102,10 @@ public class SPG {
 
 		SeededRandom.setSeed( 0 );
 		
-		halo = new Halo( (String)globalPropertyMap.get("alpha2beta.file") );
+        halo = new Halo();
+        halo.setPumaFieldName( "PUMA5pct" );
+        // halo.setPumaFieldName( "00PUMA5pct" );
+        halo.readZoneIndices ( (String)globalPropertyMap.get("alpha2beta.file") );      
 
     }
 
@@ -113,7 +116,10 @@ public class SPG {
 
 		SeededRandom.setSeed( 0 );
 		
-		halo = new Halo( (String)globalPropertyMap.get("alpha2beta.file") );
+        halo = new Halo();
+        halo.setPumaFieldName( "PUMA5pct" );
+        // halo.setPumaFieldName( "00PUMA5pct" );
+        halo.readZoneIndices ( (String)globalPropertyMap.get("alpha2beta.file") );      
 
     }
 
@@ -124,7 +130,10 @@ public class SPG {
 
 		SeededRandom.setSeed( 0 );
 
-		halo = new Halo( (String)globalPropertyMap.get("alpha2beta.file") );
+        halo = new Halo();
+        halo.setPumaFieldName( "PUMA5pct" );
+        // halo.setPumaFieldName( "00PUMA5pct" );
+        halo.readZoneIndices ( (String)globalPropertyMap.get("alpha2beta.file") );      
 
     }
 
@@ -1232,7 +1241,7 @@ public class SPG {
 
 		Workers workers = new Workers();
 
-		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName") );
+		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName"), (String)spgPropertyMap.get("1990") );
   		
 		String[] PUMSFILE = new String[halo.getNumberOfStates()];
 		PUMSFILE[0] = (String)spgPropertyMap.get("pumsCA.fileName");
@@ -1310,7 +1319,7 @@ public class SPG {
 		PUMSFILE[3] = (String)spgPropertyMap.get("pumsOR.fileName");
 		PUMSFILE[4] = (String)spgPropertyMap.get("pumsWA.fileName");
 		
-		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName") );
+		PUMSData pums = new PUMSData ( (String)spgPropertyMap.get("pumsDictionary.fileName"), (String)spgPropertyMap.get("1990") );
 
 
 		

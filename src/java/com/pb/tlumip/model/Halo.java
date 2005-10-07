@@ -19,6 +19,8 @@ package com.pb.tlumip.model;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import java.util.Arrays;
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
@@ -47,17 +49,23 @@ public class Halo {
 	int[] zoneIndex = null;
 		
 	int[][] pumas = null;
-    String[] stateLabels = null;;
+    String[] stateLabels = null;
+    String[] zoneLabels = null;
 
+    // default field name is for 1990 pumas
+    String pumaFieldName = "PUMA5pct";
+    
+    HashMap zoneCorrespondence = new HashMap();
     
     
-    public Halo ( String zoneIndexFile ) {
-
-		readZoneIndices ( zoneIndexFile );		
-
+    public Halo () {
     }
 
     
+    
+    public void setPumaFieldName ( String pumaFieldName ) {
+        this.pumaFieldName = pumaFieldName;
+    }
     
     
 	public int getNumberOfStates() {
@@ -70,14 +78,39 @@ public class Halo {
 	}
     
     
-	public int getNumberOfZones() {
-		return numAlphaZones;
-	}
+    public int getNumberOfZones() {
+        return numAlphaZones;
+    }
     
     
-	public String getStateLabel( int i ) {
-		return stateLabels[i];
-	}
+    public int getNumberOfPumas(int stateIndex) {
+        return pumas[stateIndex].length;
+    }
+    
+    
+    public String getStateLabel( int i ) {
+        return stateLabels[i];
+    }
+    
+    
+    public int getStateIndex( int i ) {
+        return fipsIndex[i];
+    }
+    
+    
+    public int[] getStatePumaIndicesFromZoneIndex ( int i ) {
+        
+        int[] returnValues = new int[2];
+        
+        int zone = getIndexZone(i);
+        int[] zoneCorrespondenceArray = (int[])zoneCorrespondence.get( Integer.valueOf(zone) );
+
+        returnValues[0] =  getStateIndex( zoneCorrespondenceArray[0] );
+        returnValues[1] =  getPumaIndex( returnValues[0], zoneCorrespondenceArray[1] );
+
+        return returnValues;
+        
+    }
     
     
 	public int[][] getPumas() {
@@ -122,9 +155,14 @@ public class Halo {
     }
 
 
-	public int[] getZoneIndex () {
-		return zoneIndex;
-	}
+    public String[] getZoneLabels () {
+        return zoneLabels;
+    }
+    
+
+    public int[] getZoneIndex () {
+        return zoneIndex;
+    }
     
 
 	public int getZoneIndex (int zone) {
@@ -141,21 +179,30 @@ public class Halo {
 		return indexZone[index];
 	}
     
+    
+    public HashMap getZoneCorrespondenceMap () {
+        return zoneCorrespondence;
+    }
+    
+    
 
-	private void readZoneIndices ( String fileName ) {
+	public void readZoneIndices ( String fileName ) {
 	    
 		int zone;
 		int puma5pct;
 		int puma;
+        int fips;
+        int fipsId = 0;
 		int stateFips;
 		int statePuma;
-		String puma5pctString;
+        String puma5pctString;
+        String fipsString;
 		
 		
 		CSVFileReader reader = new CSVFileReader();
         
 		TableDataSet table = null;
-		String[] columnFormats = { "NUMBER", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "STRING", "NUMBER", "STRING" };
+		String[] columnFormats = { "NUMBER", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "NUMBER", "STRING", "STRING", "STRING", "NUMBER", "STRING", "NUMBER" };
 		try {
 			table = reader.readFileWithFormats( new File(fileName), columnFormats );
 		} catch (IOException e) {
@@ -188,15 +235,19 @@ public class Halo {
 
 		zoneIndex = new int[maxAlphaZone+1];
 		indexZone = new int[numAlphaZones];
+        zoneLabels = new String[numAlphaZones];
 		Arrays.fill (zoneIndex, -1);
 		Arrays.fill (indexZone, -1);
 
 
+        int[] correspondence = new int[3];
+        
+        
 		int stateIndex = -1;
 		int tazIndex = -1;
 		for (int r=0; r < numAlphaZones; r++) {
 		    
-            puma5pctString = (String)table.getStringValueAt(r+1, "PUMA5pct");
+            puma5pctString = (String)table.getStringValueAt(r+1, pumaFieldName );
             puma5pct = Integer.parseInt(puma5pctString);
             
             statePuma = puma5pct - ((int)(puma5pct/10000000))*10000000;
@@ -212,7 +263,9 @@ public class Halo {
             
            	tazIndex++;
            	zoneIndex[zone] = tazIndex;
-           	indexZone[tazIndex] = zone;
+            indexZone[tazIndex] = zone;
+            zoneLabels[tazIndex] = Integer.toString( zone );
+            
             
 		}
 
@@ -238,7 +291,7 @@ public class Halo {
 		for (int r=0; r < numAlphaZones; r++) {
 		    
 			zone = (int)table.getValueAt(r+1, "Azone");
-            puma5pctString = (String)table.getStringValueAt(r+1, "PUMA5pct");
+            puma5pctString = (String)table.getStringValueAt(r+1, pumaFieldName );
             puma5pct = Integer.parseInt(puma5pctString);
             
             statePuma = puma5pct - ((int)(puma5pct/10000000))*10000000;
@@ -247,6 +300,14 @@ public class Halo {
 
 			stateLabels[fipsIndex[stateFips]] = table.getStringValueAt(r+1, "State");
 			
+            fipsString = (String)table.getStringValueAt(r+1, "FIPS");
+            
+            correspondence[0] = stateFips;
+            correspondence[1] = puma;
+            correspondence[2] = Integer.parseInt( fipsString );
+            
+            zoneCorrespondence.put( Integer.valueOf(zone), correspondence );
+
             
             if ( pumaIndex[fipsIndex[stateFips]][puma] < 0 ) {
             	pumaIndices[fipsIndex[stateFips]]++;

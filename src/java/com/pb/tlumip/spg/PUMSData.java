@@ -16,11 +16,14 @@
  */
 package com.pb.tlumip.spg;
 
+import com.pb.common.util.DataDictionary;
 import com.pb.tlumip.model.Halo;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -45,8 +48,8 @@ public class PUMSData {
 
     
     
-    public PUMSData (String PUMSDataDictionary) {
-        this.dd = new DataDictionary(PUMSDataDictionary);
+    public PUMSData (String PUMSDataDictionary, String year) {
+        this.dd = new DataDictionary(PUMSDataDictionary, year);
     }
 
 
@@ -84,7 +87,7 @@ public class PUMSData {
 					// read the household attributes from the household data record
 					if (getPUMSRecType(s).equals("H")) {
 
-						hhAttribs = new int[PERSON_ARRAY_INDEX + SPGnew.NUM_PERSON_ATTRIBUTES*numPersons];
+						hhAttribs = new int[PERSON_ARRAY_INDEX + SPGnew.NUM_PERSON_ATTRIBUTES*numPersons + SPGnew.NUM_PERSON_ATTRIBUTES];
 						hhAttribs[HHID_INDEX] = hhid;
 						hhAttribs[STATE_INDEX] = getPUMSHHDataValue (s, "STATE");
 						hhAttribs[PUMA_INDEX] = getPUMSHHDataValue (s, "PUMA");
@@ -164,8 +167,8 @@ public class PUMSData {
 
 		} catch (Exception e) {
 
-			logger.fatal ("IO Exception caught reading pums data file: " + fileName);
-			e.printStackTrace();
+			logger.fatal ("IO Exception caught reading pums data file: " + fileName, e);
+			System.exit(1);
 			
 		}
 
@@ -258,14 +261,128 @@ public class PUMSData {
 
 		} catch (Exception e) {
 
-			logger.fatal ("IO Exception caught reading pums data file: " + fileName);
-			e.printStackTrace();
+			logger.fatal ("IO Exception caught reading pums data file: " + fileName, e);
+			System.exit(1);
 			
 		}
 
 		
 		return (hhList);
 	}
+    
+    
+    public double[][][] readWeightedHHAttributesByPuma (String fileName, int stateIndex, Halo halo, HashMap fieldMap ) {
+
+        String pumaFieldName = (String)fieldMap.get( "pumaName" );
+        String stateFieldName = (String)fieldMap.get( "stateName" );
+        String personsFieldName = (String)fieldMap.get( "personsName" );
+        String hhWeightFieldName = (String)fieldMap.get( "hhWeightName" );
+        String variable1FieldName = (String)fieldMap.get( "variable1Name" );
+        String variable2FieldName = (String)fieldMap.get( "variable2Name" );
+        int[] field1Ranges = (int[])fieldMap.get( "variable1Ranges" );
+        int[] field2Ranges = (int[])fieldMap.get( "variable2Ranges" );
+
+        
+        int recCount=0;
+        int hhCount = 0;
+        int numPersons = 0;
+
+        int pumaIndex = 0;
+        int state = 0;
+        int puma = 0;
+        int field1Value = 0;
+        int field2Value = 0;
+        int range1 = 0;
+        int range2 = 0;
+        int hhWeight = 0;
+
+        int numPumas = halo.getNumberOfPumas(stateIndex);
+        double[][][] freqTable = new double[numPumas][field1Ranges.length-1][field2Ranges.length-1]; 
+
+        
+        
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(fileName));
+            String s = new String();
+            
+            while ((s = in.readLine()) != null) {
+                recCount++;
+        
+                numPersons = getPUMSHHDataValue (s, personsFieldName );
+                
+                
+                // skip HH records where persons field is zero
+                if ( numPersons > 0 ) {
+
+                    // read the household attributes from the household data record
+                    if (getPUMSRecType(s).equals("H")) {
+
+                        state = getPUMSHHDataValue ( s, stateFieldName );
+                        puma = getPUMSHHDataValue ( s, pumaFieldName );
+
+
+                        // include these weighted hhs only if hh record is in the halo.
+                        if ( halo.isFipsPumaInHalo ( state, puma ) ) {
+                            
+                            hhCount++;
+
+                            field1Value = getPUMSHHDataValue ( s, variable1FieldName );
+                            field2Value = getPUMSHHDataValue ( s, variable2FieldName );
+                            hhWeight = getPUMSHHDataValue ( s, hhWeightFieldName );
+
+                            // fieldRanges should include one more element than the number of ranges,
+                            // the first element is the absolute min, and the min for the first range
+                            // the second element is the min for the second range
+                            // the last is the absolute max, and does not correspond to a range, thus the extra element
+
+                            for ( int i=0; i < field1Ranges.length-1; i++ ) {
+                                if ( field1Value >= field1Ranges[i] && field1Value < field1Ranges[i+1] ) {
+                                    range1 = i;
+                                    break;
+                                }
+                            }
+                            
+                            for ( int i=0; i < field2Ranges.length-1; i++ ) {
+                                if ( field2Value >= field2Ranges[i] && field2Value < field2Ranges[i+1] ) {
+                                    range2 = i;
+                                    break;
+                                }
+                            }
+                            
+                            pumaIndex = halo.getPumaIndex( stateIndex, puma );
+                            
+                            freqTable[pumaIndex][range1][range2] += hhWeight;
+                            
+                        }
+
+                        
+                        // read the person records for the number of persons in the household.
+                        for (int i=0; i < numPersons; i++)
+                            s = in.readLine();
+                    
+                    }
+                    else {
+                        logger.fatal("Expected H record type on record: " + recCount + " but got: " + getPUMSRecType(s) + " in " + fileName + ".");
+                        logger.fatal("exiting PUMSData.readWeightedHHAttributesByPuma().");
+                        logger.fatal("", new Exception());
+                        System.exit (1);
+                    }
+                
+                }
+                
+            }
+
+        } catch (Exception e) {
+
+            logger.fatal ("IO Exception caught reading pums data file: " + fileName, e);
+            System.exit(1);
+            
+        }
+
+        logger.info( hhCount + " household records read from " + fileName + " that were inside halo.");
+        
+        return (freqTable);
+    }
     
     
     private String getPUMSRecType (String s) {
