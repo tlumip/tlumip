@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.dafv3;
 
 
 import org.apache.log4j.Logger;
@@ -26,9 +26,7 @@ import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 
 import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.daf.MessageID;
-
 /**
  *   Distributed application server class used for implementing a
  *   distributed version of the Frank-Wolfe Algorithm for highway
