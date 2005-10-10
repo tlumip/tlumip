@@ -92,16 +92,16 @@ public class DemandHandler {
     public Object execute (String methodName, Vector params) throws Exception {
                   
         if ( methodName.equalsIgnoreCase( "setup" ) ) {
-            HashMap componentPropertyMap = (HashMap)params.get(0);
-            HashMap globalPropertyMap = (HashMap)params.get(1);
+            HashMap componentPropertyMap = (HashMap)Convert.toObject((byte[])params.get(0));
+            HashMap globalPropertyMap = (HashMap)Convert.toObject((byte[])params.get(1));
             String timePeriod = (String)params.get(2);
             return setup( componentPropertyMap, globalPropertyMap, timePeriod );
         }
         else if ( methodName.equalsIgnoreCase( "setNetworkAttributes" ) ) {
             int numCentroids = (Integer)params.get(0);
             int numUserClasses = (Integer)params.get(1);
-            int[] nodeIndexArray = (int[])params.get(2);
-            HashMap assignmentGroupMap = (HashMap)params.get(3);
+            int[] nodeIndexArray = (int[])Convert.toObject((byte[])params.get(2));
+            HashMap assignmentGroupMap = (HashMap)Convert.toObject((byte[])params.get(3));
             boolean userClassesIncludeTruck = (Boolean)params.get(4);
             setNetworkAttributes( numCentroids, numUserClasses, nodeIndexArray, assignmentGroupMap, userClassesIncludeTruck );
             return null;
