@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf3;
 
 /**
  *
@@ -25,7 +25,7 @@ package com.pb.tlumip.ts.daf;
 
 import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.dafv3.Skims;
+import com.pb.tlumip.ts.daf3.Skims;
 
 
 import com.pb.common.rpc.RpcClient;
@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 
 public class TS {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.dafv3");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3");
 
 
 	final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
@@ -63,8 +63,15 @@ public class TS {
     String assignmentPeriod;
     
     RpcClient networkHandlerClient;    
+    RpcClient demandHandlerClient;    
     
-	double[][][] multiclassTripTable = new double[highwayModeCharacters.length][][];
+    int numCentroids = 0;
+    int numUserClasses = 0;
+    int[] nodeIndexArray = null;
+    HashMap assignmentGroupMap = null;
+    boolean userClassesIncludeTruck = false;
+
+    double[][][] multiclassTripTable = new double[highwayModeCharacters.length][][];
 
 
 	
@@ -177,17 +184,20 @@ public class TS {
 	
     private void createMulticlassDemandMatrices ( String assignmentPeriod ) {
         
-		DemandHandler d = new DemandHandler();
-        
         try {
-            int numCentroids = networkHandlerGetNumCentroidsRpcCall();
-            int numUserClasses = networkHandlerGetNumUserClassesRpcCall();
-            int[] nodeIndexArray = networkHandlerGetNodeIndexRpcCall();
-            HashMap assignmentGroupMap = networkHandlerGetAssignmentGroupMapRpcCall();
-            boolean userClassesIncludeTruck = networkHandlerUserClassesIncludeTruckRpcCall();
             
-            d.setNetworkAttributes( numCentroids, numUserClasses, nodeIndexArray, assignmentGroupMap, userClassesIncludeTruck );
-            d.setup( appRb, globalRb, assignmentPeriod );
+            numCentroids = networkHandlerGetNumCentroidsRpcCall();
+            numUserClasses = networkHandlerGetNumUserClassesRpcCall();
+            nodeIndexArray = networkHandlerGetNodeIndexRpcCall();
+            assignmentGroupMap = networkHandlerGetAssignmentGroupMapRpcCall();
+            userClassesIncludeTruck = networkHandlerUserClassesIncludeTruckRpcCall();
+            
+            demandHandlerSetNetworkAttributesRpcCall();
+            demandHandlerSetupRpcCall();
+
+            
+            multiclassTripTable = demandHandlerGetMulticlassTripTablesRpcCall();
+            
         }
         catch ( RpcException e ) {
             logger.error ( "RpcException caught.", e );
@@ -201,8 +211,6 @@ public class TS {
             logger.error ( "Exception caught.", e );
             System.exit(1);
         }
-        
-        multiclassTripTable = d.getMulticlassTripTables();
         
     }
 
@@ -314,16 +322,20 @@ public class TS {
     private void setupRpcClients () throws RpcException, IOException {
 
         try {
+            
             networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerAddress );
+            demandHandlerClient = new RpcClient( DemandHandler.remoteHandlerAddress );
+            
         } catch (MalformedURLException e) {
+            
             logger.error ( "MalformedURLException caught in TS.setupRpcClients().", e );
+            
         }
         
     }
 
     
     private void networkHandlerSetupRpcCall () throws Exception {
-        // non distributed local method call:
         // g.buildNetworkObject();
         
         Vector params = new Vector();
@@ -355,16 +367,14 @@ public class TS {
 
     private HashMap networkHandlerGetAssignmentGroupMapRpcCall() throws Exception {
         // g.getAssignmentGroupMap()
-        return (HashMap)networkHandlerClient.execute("networkHandler.getAssignmentGroupMap", new Vector() );
+        return (HashMap)Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getAssignmentGroupMap", new Vector() ) );
     }
 
 
     private int[] networkHandlerGetNodeIndexRpcCall() throws Exception {
         // g.getNodeIndex()
         
-        int[] intArray = (int[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector() );
-        
-        return intArray;
+        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector() ) );
     }
 
     
@@ -374,6 +384,45 @@ public class TS {
         params.addElement( assignmentResultsFileName );
         networkHandlerClient.execute("networkHandler.writeNetworkAttributes", params );
     }
+
+
+    
+    
+    
+    
+    private void demandHandlerSetupRpcCall() throws Exception {
+        // d.setup();
+        
+        Vector params = new Vector();
+        params.addElement( Convert.toBytes(tsPropertyMap) );
+        params.addElement( Convert.toBytes(globalPropertyMap) );
+        params.addElement( assignmentPeriod );
+
+        demandHandlerClient.execute("networkHandler.setup", params);
+    }
+
+
+    private void demandHandlerSetNetworkAttributesRpcCall() throws Exception {
+        // d.setup();
+        
+        Vector params = new Vector();
+        params.addElement( numCentroids );
+        params.addElement( numUserClasses );
+        params.addElement( Convert.toBytes(nodeIndexArray) );
+        params.addElement( Convert.toBytes(assignmentGroupMap) );
+        params.addElement( userClassesIncludeTruck );
+
+        demandHandlerClient.execute("networkHandler.setNetworkAttributes", params);
+    }
+
+
+    private double[][][] demandHandlerGetMulticlassTripTablesRpcCall() throws Exception {
+        // d.getMulticlassTripTables();
+        
+        Vector params = new Vector();
+        return (double[][][])Convert.toObject( (byte[])demandHandlerClient.execute("networkHandler.getMulticlassTripTables", params ) );
+    }
+
 
     
     

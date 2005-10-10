@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf2;
 
 
 import org.apache.log4j.Logger;
@@ -26,7 +26,7 @@ import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 
 import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.dafv3.MessageID;
+import com.pb.tlumip.ts.daf2.MessageID;
 
 /**
  *   Distributed application server class used for implementing a
@@ -40,7 +40,7 @@ import com.pb.tlumip.ts.dafv3.MessageID;
 public class AonBuildLoadController extends MessageProcessingTask {
 
 	private boolean LOGGING = true;
-    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf2");
     
     // define the time interval (in milliseconds) for polling worker nodes
     // for the number of work elements completed so far.

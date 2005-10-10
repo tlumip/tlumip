@@ -14,13 +14,13 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf3;
 
 import com.pb.common.datafile.DiskObjectArray;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
-import com.pb.common.util.*;
-import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.common.util.Justify;
+import com.pb.common.util.Convert;
 import com.pb.tlumip.ts.assign.Constants;
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 
 public class FW {
 
-    Logger logger = Logger.getLogger("com.pb.tlumip.ts.dafv3.FW");
+    Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3.FW");
 
     static Constants c = new Constants();
 
@@ -672,19 +672,19 @@ public class FW {
 
     private int[] networkHandlerGetLinkTypeRpcCall() throws Exception {
         // g.getTimePeriod()
-        return (int[])networkHandlerClient.execute("networkHandler.getLinkType", new Vector());
+        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getLinkType", new Vector() ) );
     }
 
     private boolean[] networkHandlerGetValidLinksForClassRpcCall( int userClass ) throws Exception {
         // g.getValidLinksForClass( int i )
         Vector params = new Vector();
         params.add( userClass );
-        return (boolean[])networkHandlerClient.execute("networkHandler.getValidLinksForClassInt", params);
+        return (boolean[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getValidLinksForClassInt", params ) );
     }
 
     private double[] networkHandlerGetCongestedTimeRpcCall() throws Exception {
         // g.getCongestedTime()
-        return (double[])networkHandlerClient.execute("networkHandler.getCongestedTime", new Vector());
+        return (double[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getCongestedTime", new Vector() ) );
     }
     
     private void networkHandlerSetFlowsRpcCall( double[][] flows ) throws Exception {
@@ -710,7 +710,7 @@ public class FW {
 
     private double[] networkHandlerSetLinkGeneralizedCostRpcCall() throws Exception {
         // g.setLinkGeneralizedCost()
-        return (double[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector());
+        return (double[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector() ) );
     }
 
     private void networkHandlerApplyVdfsRpcCall( boolean[] validLinks ) throws Exception {

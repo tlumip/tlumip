@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf2;
 
 
 import java.text.DateFormat;
@@ -30,7 +30,7 @@ import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 import com.pb.common.util.Justify;
 import com.pb.tlumip.ts.assign.Network;
-import com.pb.tlumip.ts.dafv3.FW;
+import com.pb.tlumip.ts.assign.FW;
 
 /**
  *   Distributed application server class used for implementing a
@@ -41,7 +41,7 @@ import com.pb.tlumip.ts.dafv3.FW;
 public class FWAlgorithmControllerTask extends MessageProcessingTask{
 
 	private static boolean LOGGING = true;
-    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf2");
 
     Justify myFormat = new Justify();
 

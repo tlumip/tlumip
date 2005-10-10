@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf2;
 
 
 import org.apache.log4j.Logger;
@@ -26,7 +26,7 @@ import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
 
 import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.daf.MessageID;
+import com.pb.tlumip.ts.daf2.MessageID;
 
 /**
  *   This task manages information that is common to all tasks running on the node.
@@ -39,7 +39,7 @@ import com.pb.tlumip.ts.daf.MessageID;
 public class AonBuildLoadCommonTask extends MessageProcessingTask {
 
 	private boolean LOGGING = true;
-    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf2");
     
     // get instances of the classes used to hold worker results
     private AonLinkFlowResults flowResults = AonLinkFlowResults.getInstance();

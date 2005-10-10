@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf2;
 
 
 import java.text.DateFormat;
@@ -40,7 +40,7 @@ import com.pb.tlumip.ts.assign.Network;
 public class TSControllerTask extends MessageProcessingTask{
 
 	private static boolean LOGGING = true;
-    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf2");
 
     public TSControllerTask () {
     }

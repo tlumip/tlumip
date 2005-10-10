@@ -20,7 +20,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf2;
 
 import java.util.HashMap;
 
@@ -39,7 +39,7 @@ final class SavedShortestPaths {
 	
     protected static Object objLock = new Object();
 
-    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf2");
     protected HashMap storedPaths = new HashMap();
 	
 	private static SavedShortestPaths instance = new SavedShortestPaths();

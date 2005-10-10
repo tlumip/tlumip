@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf2;
 
 
 import org.apache.log4j.Logger;
@@ -26,7 +26,7 @@ import com.pb.common.daf.MessageProcessingTask;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.assign.ShortestPathTreeH;
-import com.pb.tlumip.ts.daf.MessageID;
+import com.pb.tlumip.ts.daf2.MessageID;
 
 /**
  *   Distributed application worker class used for implementing a
@@ -40,7 +40,7 @@ import com.pb.tlumip.ts.daf.MessageID;
 public class AonBuildLoadWorkerTask extends MessageProcessingTask {
 
 	private boolean LOGGING = true;
-    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf");
+    static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf2");
     
     
     AonLinkFlowResults flowResults = AonLinkFlowResults.getInstance();

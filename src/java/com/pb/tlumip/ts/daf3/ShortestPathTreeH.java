@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf3;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,8 +24,8 @@ import org.apache.log4j.Logger;
 
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
-import com.pb.common.util.*;
-import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.common.util.Convert;
+import com.pb.common.util.Justify;
 
 /**
  * Class for shortest path trees.
@@ -34,8 +34,8 @@ import com.pb.tlumip.ts.NetworkHandler;
 
 public class ShortestPathTreeH {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.dafv3.ShortestPathTreeH");
-	protected static Logger unconnectedLogger = Logger.getLogger("com.pb.tlumip.ts.dafv3.ShortestPathTreeH");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3.ShortestPathTreeH");
+	protected static Logger unconnectedLogger = Logger.getLogger("com.pb.tlumip.ts.daf3.ShortestPathTreeH");
 
     static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -418,37 +418,37 @@ public class ShortestPathTreeH {
 
     private int[] networkHandlerGetIaRpcCall() throws Exception {
         // g.getIa()
-        return (int[])networkHandlerClient.execute("networkHandler.getIa", new Vector());
+        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getIa", new Vector() ) );
     }
 
     private int[] networkHandlerGetIbRpcCall() throws Exception {
         // g.getIb()
-        return (int[])networkHandlerClient.execute("networkHandler.getIb", new Vector());
+        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getIb", new Vector() ) );
     }
 
     private int[] networkHandlerGetIpaRpcCall() throws Exception {
         // g.getIpa()
-        return (int[])networkHandlerClient.execute("networkHandler.getIpa", new Vector());
+        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getIpa", new Vector() ) );
     }
 
     private int[] networkHandlerGetSortedLinkIndexARpcCall() throws Exception {
         // g.getSortedLinkIndexA()
-        return (int[])networkHandlerClient.execute("networkHandler.getSortedLinkIndexA", new Vector());
+        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getSortedLinkIndexA", new Vector() ) );
     }
 
     private int[] networkHandlerGetIndexNodeRpcCall() throws Exception {
         // g.getIndexNode()
-        return (int[])networkHandlerClient.execute("networkHandler.getIndexNode", new Vector());
+        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getIndexNode", new Vector() ) );
     }
 
     private int[] networkHandlerGetNodeIndexRpcCall() throws Exception {
         // g.getNodeIndex()
-        return (int[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector());
+        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector() ) );
     }
 
     private boolean[] networkHandlerGetCentroidRpcCall() throws Exception {
         // g.getCentroid()
-        return (boolean[])networkHandlerClient.execute("networkHandler.getCentroid", new Vector());
+        return (boolean[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getCentroid", new Vector() ) );
     }
 
     

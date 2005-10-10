@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.pb.tlumip.ts.daf;
+package com.pb.tlumip.ts.daf3;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import com.pb.tlumip.ts.NetworkHandler;
 
 public class Skims {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.dafv3.Skims");
+	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3.Skims");
 
 	MessageWindow mw;
 	HashMap propertyMap;
