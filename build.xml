@@ -14,6 +14,7 @@
     <path id="compile.classpath">
         <pathelement location="${common-base.dir}/build/classes"/>
         <pathelement location="${common-daf-v2.dir}/build/classes"/>
+    	<pathelement location="${common-daf-v3.dir}/build/classes"/>
         <pathelement location ="${pecas.dir}/build/classes"/>
         <pathelement path="${build.classes.dir};${basedir}/config"/>
         
@@ -21,6 +22,11 @@
             <include name="**/lib/*.jar"/>
             <include name="**/lib/*.zip"/>
         </fileset>
+    	
+    	<fileset dir="${common-daf-v3.dir}">
+    	    <include name="**/lib/*.jar"/>
+    	    <include name="**/lib/*.zip"/>
+    	</fileset>
 
         <fileset dir="${thirdParty.dir}">
             <include name="**/logging-log4j-1.2.9/*.jar"/>
