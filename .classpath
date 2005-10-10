@@ -8,5 +8,6 @@
 	<classpathentry kind="src" path="/pecas"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jakarta-commons"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/common-daf-v3"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
