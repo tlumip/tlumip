@@ -64,6 +64,7 @@ public class FW {
     DiskObjectArray fwPathsDoa = null;	
 
     RpcClient networkHandlerClient;    
+    RpcClient shortestPathTreeHandlerClient;    
     
 
    
@@ -159,7 +160,7 @@ public class FW {
                 lambdas[iter] = 1.0;
     
                 
-            	double[][] aonFlow = getMulticlassAonLinkFlows ( tripTable, iter );
+            	double[][] aonFlow = shortestPathTreeHandlerGetMulticlassAonLinkFlowsRpcCall();
     			
     
                 // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
@@ -255,94 +256,6 @@ public class FW {
 
 
 	
-	double[][] getMulticlassAonLinkFlows ( double[][][] tripTable, int iter ) {
-
-        int storedPathIndex = 0;
-        
-        boolean[] validLinksForClass = null;
-
-        double[][] aonFlow = new double[numAutoClasses][numLinks];
-        
-        for (int m=0; m < numAutoClasses; m++)
-            Arrays.fill (aonFlow[m], 0.0);
-
-        
-        try {
-            
-    		// build shortest path tree object and set cost and valid link attributes for this user class.
-    		ShortestPathTreeH sp = new ShortestPathTreeH( networkHandlerClient );
-    
-    		// set the highway network attribute on which to skim the network
-    		double[] linkCost = networkHandlerSetLinkGeneralizedCostRpcCall();
-    		double[] aon;
-    	
-    		sp.setLinkCost( linkCost );
-    
-    		for (int origin=startOriginTaz; origin < lastOriginTaz; origin++) {
-    		    
-    			for (int m=0; m < numAutoClasses; m++) {
-    
-    				double tripTableRowSum = 0.0;
-    				for (int j=0; j < tripTable[m][origin].length; j++)
-    					tripTableRowSum += tripTable[m][origin][j];
-    
-    				validLinksForClass = networkHandlerGetValidLinksForClassRpcCall( m );
-    				sp.setValidLinks( validLinksForClass );
-    
-    
-    				if (origin % 500 == 0)
-    					logger.info ("assigning origin zone index " + origin + ", user class index " + m);
-    
-    				if (tripTableRowSum > 0.0) {
-    					
-    					sp.buildTree ( origin );
-    					aon = sp.loadTree ( tripTable[m][origin], m );
-    
-    				    for (int k=0; k < aon.length; k++)
-    				        aonFlow[m][k] += aon[k];
-    				    
-    				}
-    			    
-    				
-    			    if ( fwPathsDoa != null ) {
-    
-    			        // calculate the index used for storing shortest path tree in DiskObjectArray
-    				    storedPathIndex = iter*lastOriginTaz*numAutoClasses + origin*numAutoClasses + m;
-    				    
-    				    // store the shortest path tree for this iteration, origin zone, and user class
-    				    try {
-    				        int[] tempArray = sp.getPredecessorLink();
-    				        fwPathsDoa.add( storedPathIndex, tempArray );
-    				    } catch (Exception e) {
-    				        logger.fatal ("could not store index=" + storedPathIndex + ", for iter=" + iter + ", for origin=" + origin + ", and class=" + m, e);
-    				        System.exit(1);
-    				    }
-    			        
-    			    }
-    			    
-    			}
-    			
-    		}
-    		
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-        
-        return aonFlow;
-        
-    }
-
-
     //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
     public boolean bisect ( int iter, boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
         
@@ -708,11 +621,6 @@ public class FW {
         networkHandlerClient.execute("networkHandler.setVolau", params);
     }
 
-    private double[] networkHandlerSetLinkGeneralizedCostRpcCall() throws Exception {
-        // g.setLinkGeneralizedCost()
-        return (double[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector() ) );
-    }
-
     private void networkHandlerApplyVdfsRpcCall( boolean[] validLinks ) throws Exception {
         // g.applyVdfs( boolean[] validLinks )
         Vector params = new Vector();
@@ -746,6 +654,14 @@ public class FW {
         Vector params = new Vector();
         params.add( fwFlowProps );
         networkHandlerClient.execute("networkHandler.createSelectLinkAnalysisDiskObject", params);
+    }
+
+    
+    
+    
+    
+    private double[][] shortestPathTreeHandlerGetMulticlassAonLinkFlowsRpcCall() throws Exception {
+        return (double[][])shortestPathTreeHandlerClient.execute("shortestPathTreeHandler.getMulticlassAonLinkFlows", new Vector() );
     }
         
 }

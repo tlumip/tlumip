@@ -115,27 +115,27 @@ public class NetworkHandler implements RpcHandler {
         else if ( methodName.equalsIgnoreCase( "setFlows" ) ) {
             double[][] flows = (double[][])params.get(0);
             setFlows( flows );
-            return null;
+            return 0;
         }
         else if ( methodName.equalsIgnoreCase( "setVolau" ) ) {
             double[] volau = (double[])params.get(0);
             setVolau( volau );
-            return null;
+            return 0;
         }
         else if ( methodName.equalsIgnoreCase( "setVolCapRatios" ) ) {
             double[] volau = (double[])params.get(0);
             setVolCapRatios( volau );
-            return null;
+            return 0;
         }
         else if ( methodName.equalsIgnoreCase( "applyVdfs" ) ) {
             boolean[] validLinks = (boolean[])params.get(0);
             applyVdfs( validLinks );
-            return null;
+            return 0;
         }
         else if ( methodName.equalsIgnoreCase( "applyVdfIntegrals" ) ) {
             boolean[] validLinks = (boolean[])params.get(0);
             applyVdfIntegrals( validLinks );
-            return null;
+            return 0;
         }
         else if ( methodName.equalsIgnoreCase( "getSumOfVdfIntegrals" ) ) {
             boolean[] validLinks = (boolean[])params.get(0);
@@ -144,12 +144,12 @@ public class NetworkHandler implements RpcHandler {
         else if ( methodName.equalsIgnoreCase( "logLinkTimeFreqs" ) ) {
             boolean[] validLinks = (boolean[])params.get(0);
             logLinkTimeFreqs( validLinks );
-            return null;
+            return 0;
         }
         else if ( methodName.equalsIgnoreCase( "createSelectLinkAnalysisDiskObject" ) ) {
             double[] fwFlowProps = (double[])params.get(0);
             createSelectLinkAnalysisDiskObject( fwFlowProps );
-            return null;
+            return 0;
         }
         else if ( methodName.equalsIgnoreCase( "buildNetworkObject" ) ) {
             
@@ -161,7 +161,7 @@ public class NetworkHandler implements RpcHandler {
         }
         else {
             logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
-            return null;
+            return 0;
         }
         
     }

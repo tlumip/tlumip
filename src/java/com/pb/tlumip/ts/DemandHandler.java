@@ -31,6 +31,7 @@ import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.rpc.NodeConfig;
 import com.pb.common.rpc.RPC;
+import com.pb.common.rpc.RpcHandler;
 import com.pb.common.util.Convert;
 import com.pb.common.util.ResourceUtil;
 
@@ -49,7 +50,7 @@ import org.apache.xmlrpc.WebServer;
 
 
 
-public class DemandHandler {
+public class DemandHandler implements RpcHandler {
 
     public static String remoteHandlerAddress = "http://localhost:7001";
     
@@ -104,14 +105,33 @@ public class DemandHandler {
             HashMap assignmentGroupMap = (HashMap)Convert.toObject((byte[])params.get(3));
             boolean userClassesIncludeTruck = (Boolean)params.get(4);
             setNetworkAttributes( numCentroids, numUserClasses, nodeIndexArray, assignmentGroupMap, userClassesIncludeTruck );
-            return null;
+            return 0;
         }
         else if ( methodName.equalsIgnoreCase( "getMulticlassTripTables" ) ) {
+            
+//            int n=0;
+//            
+//            double[][][] tripArray = getMulticlassTripTables();
+//            double[] tripVector = new double[tripArray.length*tripArray[0].length*tripArray[0][0].length];
+//            
+//            for (int i=0; i < tripArray.length; i++) {
+//                for (int j=0; j < tripArray[0].length; j++) {
+//                    for (int k=0; k < tripArray[0][0].length; k++) {
+//                        n = i*tripArray[0].length*tripArray[0][0].length + j*tripArray[0][0].length + k;
+//                        tripVector[n] = tripArray[i][j][k];
+//                    }
+//                }
+//            }
+//            
+//          return Convert.toBytes( tripVector );
+
+            
             return Convert.toBytes( getMulticlassTripTables() );
+            
         }
         else {
             logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
-            return null;
+            return 0;
         }
         
     }

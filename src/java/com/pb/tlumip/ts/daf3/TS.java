@@ -398,7 +398,7 @@ public class TS {
         params.addElement( Convert.toBytes(globalPropertyMap) );
         params.addElement( assignmentPeriod );
 
-        demandHandlerClient.execute("networkHandler.setup", params);
+        demandHandlerClient.execute("demandHandler.setup", params);
     }
 
 
@@ -412,15 +412,43 @@ public class TS {
         params.addElement( Convert.toBytes(assignmentGroupMap) );
         params.addElement( userClassesIncludeTruck );
 
-        demandHandlerClient.execute("networkHandler.setNetworkAttributes", params);
+        demandHandlerClient.execute("demandHandler.setNetworkAttributes", params);
     }
 
 
     private double[][][] demandHandlerGetMulticlassTripTablesRpcCall() throws Exception {
         // d.getMulticlassTripTables();
         
-        Vector params = new Vector();
-        return (double[][][])Convert.toObject( (byte[])demandHandlerClient.execute("networkHandler.getMulticlassTripTables", params ) );
+//        int i=0;
+//        int j=0;
+//        int k=0;
+//        double[] tripsByClass = new double[numUserClasses];
+//        
+//        double[] tripVector = (double[])Convert.toObject( (byte[])demandHandlerClient.execute("demandHandler.getMulticlassTripTables", new Vector() ) );
+//        double[][][] tripArray = new double[numUserClasses][numCentroids][numCentroids];
+//        
+//        for (int n=0; n < tripVector.length; n++) {
+//
+//            i = n / (numCentroids*numCentroids);
+//            j = (n - i*numCentroids*numCentroids) / numCentroids;
+//            k = (n - i*numCentroids*numCentroids - j*numCentroids);
+//            
+//            tripArray[i][j][k] = tripVector[n];
+//            
+//            tripsByClass[i] += tripArray[i][j][k];
+//
+//        }
+//        
+//        for (i=0; i < numUserClasses; i++)
+//            logger.info( "class index " + i + " has " + tripsByClass[i] + " trips in the trip table returned by DemandHandler." );
+//        
+//        
+//        return tripArray;
+        
+
+      double[][][] tripArray = (double[][][])Convert.toObject( (byte[])demandHandlerClient.execute("demandHandler.getMulticlassTripTables", new Vector() ) );
+      return tripArray;
+    
     }
 
 
