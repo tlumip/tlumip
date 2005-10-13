@@ -322,7 +322,7 @@ public class DevelopmentType implements DevelopmentTypeInterface{
     }
 
 
-    public void setTypicalFar(double d) {
+    public void setTypicalFAR(double d) {
         // TODO Auto-generated method stub
         
     }
