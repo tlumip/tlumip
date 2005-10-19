@@ -38,7 +38,8 @@ import java.util.ResourceBundle;
 public class StartDafApplication {
     private static Logger logger = Logger.getLogger("com.pb.tlumip.ao");
     private ResourceBundle rb; //this is ao.properties
-    private long commandSleepTime = 45000;
+    private long startNodeSleepTime = 75000;
+    private long startClusterApplicationSleepTime = 15000;
     private long fileCheckSleepTime = 55;
     private int t;
     String pathPrefix;
@@ -95,13 +96,13 @@ public class StartDafApplication {
     private void writeCommands(){
         writeCommandToCmdFile(Entry.START_NODE);
         try {
-            Thread.sleep(commandSleepTime);
+            Thread.sleep(startNodeSleepTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         writeCommandToCmdFile(Entry.START_CLUSTER);
         try {
-            Thread.sleep(commandSleepTime);
+            Thread.sleep(startClusterApplicationSleepTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -180,7 +181,7 @@ public class StartDafApplication {
 
         //begin the daf application by writing the correct
         //commands to the command file
-        logger.info("Starting nodes, cluster and application.  Time between commands is " + commandSleepTime + " ms");
+        logger.info("Starting nodes, cluster and application.  Waiting " + startNodeSleepTime + " ms for nodes to start");
         writeCommands();
 
         logger.info("Ending application");
@@ -196,7 +197,7 @@ public class StartDafApplication {
         String appName = args[0];
         String nodeName = args[1];
         int t = Integer.parseInt(args[2]);
-        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("c:/code/JavaModules/tlumip/config/ao/ao.properties"));
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_msgCrazy/ao.properties"));
         logger.info("appName: "+ appName);
         logger.info("nodeName: "+ nodeName);
         logger.info("timeInterval " + t);
