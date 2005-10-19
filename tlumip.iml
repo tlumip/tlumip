@@ -13,8 +13,9 @@
     <orderEntry type="module" module-name="common-base" />
     <orderEntry type="module" module-name="common-daf-v2" />
     <orderEntry type="module" module-name="jakarta-commons" />
-    <orderEntry type="module" module-name="calibrator" />
     <orderEntry type="module" module-name="pecas" />
+    <orderEntry type="module" module-name="logging-log4j-1.2.9" />
+    <orderEntry type="module" module-name="common-daf-v3" />
     <orderEntryProperties />
   </component>
 </module>
