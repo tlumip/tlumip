@@ -14,7 +14,7 @@
     <orderEntry type="module" module-name="common-daf-v2" />
     <orderEntry type="module" module-name="pecas" />
     <orderEntry type="module" module-name="common-daf-v3" />
-    <orderEntry type="library" name="log4j-1.2.9" level="project" />
+    <orderEntry type="library" name="log4j-1.2.9" level="application" />
     <orderEntryProperties />
   </component>
 </module>
