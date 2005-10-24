@@ -24,7 +24,7 @@ public class Occupation {
     String[] occupationLabels = {
 		"0_Unemployed",
 		"1_ManPro",
-		"1A_Health",
+		"1a_Health",
 		"2_PstSec",
 		"3_OthTchr",
 		"4_OthP&T",
