@@ -35,6 +35,7 @@ import com.pb.common.matrix.MatrixWriter;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.MessageWindow;
@@ -68,12 +69,45 @@ public class Skims {
 
     
     
-    public Skims ( HashMap tsMap, HashMap globalMap, RpcClient networkHandlerClient ) {
+    public Skims ( HashMap tsMap, HashMap globalMap ) {
 
         this.propertyMap = tsMap;
         this.globalPropertyMap = globalMap;
 
-        this.networkHandlerClient = networkHandlerClient;
+
+        String nodeName = null;
+        String handlerName = null;
+        
+        try {
+            
+            //Need a config file to initialize a Daf node
+            DafNode.getInstance().init("skims-client", TS.tsRpcConfigFileName);
+
+            //Create RpcClients this class connects to
+            try {
+                nodeName = NetworkHandler.remoteHandlerNodeName;
+                handlerName = "NetworkHandler";
+                networkHandlerClient = new RpcClient( nodeName );
+            }
+            catch (MalformedURLException e) {
+            
+                logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
+            
+            }
+
+        }
+        catch ( RpcException e ) {
+            logger.error ( "RpcException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
+            System.exit(1);
+        }
+        catch ( IOException e ) {
+            logger.error ( "IOException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
+            System.exit(1);
+        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught in ShortestPathTreeH().", e );
+            System.exit(1);
+        }
         
         
         initSkims ();
@@ -615,7 +649,7 @@ public class Skims {
 
 		
 		// create a ShortestPathTreeH object
-		ShortestPathTreeH sp = new ShortestPathTreeH( networkHandlerClient );
+		ShortestPathTreeH sp = new ShortestPathTreeH();
 
 
 		// build shortest path trees and get distance skims for each origin zone.
@@ -658,7 +692,7 @@ public class Skims {
 		double[][] skimMatrix = new double[numCentroids][];
 
 		// create a ShortestPathTreeH object
-		ShortestPathTreeH sp = new ShortestPathTreeH( networkHandlerClient );
+		ShortestPathTreeH sp = new ShortestPathTreeH();
 
 
 		// build shortest path trees and get distance skims for each origin zone.
@@ -781,16 +815,15 @@ public class Skims {
 	public static void main(String[] args) {
 
         try {
-            networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerAddress );
+            networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerNodeName );
         } catch (MalformedURLException e) {
             logger.error ( "MalformedURLException caught in TS.setupRpcClients().", e );
         }
 
 
-    	logger.info ("creating Skims object.");
+        logger.info ("creating Skims object.");
         Skims s = new Skims ( ResourceUtil.changeResourceBundleIntoHashMap( ResourceBundle.getBundle("ts") ),
-                ResourceUtil.changeResourceBundleIntoHashMap( ResourceBundle.getBundle("global") ),
-                networkHandlerClient );
+                ResourceUtil.changeResourceBundleIntoHashMap( ResourceBundle.getBundle("global") ) );
 
     	logger.info ("skimming network and creating Matrix object for peak auto time.");
         Matrix m = s.getHwySkimMatrix ( "peak", "time", 'a' );
@@ -799,6 +832,6 @@ public class Skims {
     	logger.info ("squeezing the alpha matrix to a beta matrix.");
     	Matrix mSqueezed = s.getBetaSkimMatrix ( m );
         mSqueezed.logMatrixStatsToInfo();
-        
+
     }
 }

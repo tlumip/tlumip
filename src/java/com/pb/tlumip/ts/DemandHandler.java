@@ -52,13 +52,13 @@ import org.apache.xmlrpc.WebServer;
 
 public class DemandHandler implements RpcHandler {
 
-    public static String remoteHandlerAddress = "http://localhost:7001";
+    public static String remoteHandlerNode = "tcp://192.168.1.214:6001";
     
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.DemandHandler");
 
-    public static String nodeName;
-    public static int webPort = 7001;
-    public static int tcpPort = 7002;
+//    public static String nodeName;
+//    public static int webPort = 7001;
+//    public static int tcpPort = 7002;
 
     
     
@@ -432,56 +432,56 @@ public class DemandHandler implements RpcHandler {
     }
 
 
-    public static void main(String[] args) {
-
-        if (args.length < 2) {
-            logger.error ("usage: java " + DemandHandler.class.getName() + " <node-name> <config-file>");
-            return;
-        }
-
-        nodeName = args[0];
-
-        RPC.init();
-        //RPC.setDebug(true);
-
-        try {
-            
-            //Read config file
-            logger.info ("reading config file: " + args[1]);
-            NodeConfig nodeConfig = new NodeConfig();
-            nodeConfig.readConfig(new File(args[1]));
-
-            //Create webserver - register default handlers
-            WebServer webserver = new WebServer(webPort);
-            webserver.addHandler("math", Math.class);
-            webserver.addHandler("$default", new Echo());
-
-            //Add SystemHandler, for multicall
-            SystemHandler system = new SystemHandler();
-            system.addDefaultSystemHandlers();
-            webserver.addHandler("system", system);
-
-            //Register handlers only for this node
-            for (int i=0; i < nodeConfig.nHandlers; i++) {
-                String name = nodeConfig._handlers[i].name;
-                String node = nodeConfig._handlers[i].node;
-
-                if (nodeName.equalsIgnoreCase(node)) {
-                    Class clazz = Class.forName(nodeConfig._handlers[i].className);
-
-                    logger.info ( "handler["+i+"]: " + name + "::" + clazz.getName() );
-                    webserver.addHandler(name, clazz.newInstance());
-                }
-            }
-
-            //Create webserver
-            webserver.start();
-            logger.info ( "Web server listening on " + webPort + "..." );
-            
-        }
-        catch (Exception e) {
-            logger.error ( "Exception caught in DemandHandler.main().", e );
-        }
-    }
+//    public static void main(String[] args) {
+//
+//        if (args.length < 2) {
+//            logger.error ("usage: java " + DemandHandler.class.getName() + " <node-name> <config-file>");
+//            return;
+//        }
+//
+//        nodeName = args[0];
+//
+//        RPC.init();
+//        //RPC.setDebug(true);
+//
+//        try {
+//            
+//            //Read config file
+//            logger.info ("reading config file: " + args[1]);
+//            NodeConfig nodeConfig = new NodeConfig();
+//            nodeConfig.readConfig(new File(args[1]));
+//
+//            //Create webserver - register default handlers
+//            WebServer webserver = new WebServer(webPort);
+//            webserver.addHandler("math", Math.class);
+//            webserver.addHandler("$default", new Echo());
+//
+//            //Add SystemHandler, for multicall
+//            SystemHandler system = new SystemHandler();
+//            system.addDefaultSystemHandlers();
+//            webserver.addHandler("system", system);
+//
+//            //Register handlers only for this node
+//            for (int i=0; i < nodeConfig.nHandlers; i++) {
+//                String name = nodeConfig._handlers[i].name;
+//                String node = nodeConfig._handlers[i].node;
+//
+//                if (nodeName.equalsIgnoreCase(node)) {
+//                    Class clazz = Class.forName(nodeConfig._handlers[i].className);
+//
+//                    logger.info ( "handler["+i+"]: " + name + "::" + clazz.getName() );
+//                    webserver.addHandler(name, clazz.newInstance());
+//                }
+//            }
+//
+//            //Create webserver
+//            webserver.start();
+//            logger.info ( "Web server listening on " + webPort + "..." );
+//            
+//        }
+//        catch (Exception e) {
+//            logger.error ( "Exception caught in DemandHandler.main().", e );
+//        }
+//    }
     
 }

@@ -17,15 +17,19 @@
 package com.pb.tlumip.ts.daf3;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.Convert;
 import com.pb.common.util.Justify;
+import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.ShortestPathTreeHandler;
 
 /**
  * Class for shortest path trees.
@@ -74,9 +78,41 @@ public class ShortestPathTreeH {
     int[] heapContents;
 
 
-    public ShortestPathTreeH ( RpcClient networkHandlerClient ) {
+    public ShortestPathTreeH () {
 
-        this.networkHandlerClient = networkHandlerClient;
+        String nodeName = null;
+        String handlerName = null;
+        
+        try {
+        
+            //Need a config file to initialize a Daf node
+            DafNode.getInstance().init("sp-client", TS.tsRpcConfigFileName);
+
+            //Create RpcClients this class connects to
+            try {
+                nodeName = NetworkHandler.remoteHandlerNodeName;
+                handlerName = "NetworkHandler";
+                networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerNodeAddress );
+            }
+            catch (MalformedURLException e) {
+            
+                logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
+            
+            }
+
+        }
+        catch ( RpcException e ) {
+            logger.error ( "RpcException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
+            System.exit(1);
+        }
+        catch ( IOException e ) {
+            logger.error ( "IOException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
+            System.exit(1);
+        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught in ShortestPathTreeH().", e );
+            System.exit(1);
+        }
         
 
         try {
@@ -118,6 +154,7 @@ public class ShortestPathTreeH {
         
     }
 
+    
     private void initData() {
 
         long start = System.currentTimeMillis();

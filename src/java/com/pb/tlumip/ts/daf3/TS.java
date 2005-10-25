@@ -28,6 +28,7 @@ import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.daf3.Skims;
 
 
+import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.Convert;
@@ -57,6 +58,9 @@ public class TS {
     ResourceBundle appRb;
     ResourceBundle globalRb;
 
+    public static String tsRpcConfigFileName;
+    public static String urlPathToRemoteNode;
+
     String tsPropertyName;
     String globalPropertyName;
     
@@ -64,6 +68,7 @@ public class TS {
     
     RpcClient networkHandlerClient;    
     RpcClient demandHandlerClient;    
+    
     
     int numCentroids = 0;
     int numUserClasses = 0;
@@ -85,15 +90,37 @@ public class TS {
         tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap( appPropertyName );
         globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap( globalPropertyName );
 		
+        String nodeName = null;
+        String handlerName = null;
+        
         try {
-            setupRpcClients();
+        
+            //Need a config file to initialize a Daf node
+            DafNode.getInstance().init("ts-client", tsRpcConfigFileName);
+
+            //Create RpcClients this class connects to
+            try {
+                nodeName = NetworkHandler.remoteHandlerNodeName;
+                handlerName = "NetworkHandler";
+                networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerNodeName );
+                
+                nodeName = DemandHandler.remoteHandlerNode;
+                handlerName = "DemandHandler";
+                demandHandlerClient = new RpcClient( nodeName );
+            }
+            catch (MalformedURLException e) {
+            
+                logger.error ( "MalformedURLException caught in TS() while defining RpcClients.", e );
+            
+            }
+
         }
         catch ( RpcException e ) {
-            logger.error ( "RpcException caught in TS() establishing " + NetworkHandler.remoteHandlerAddress + " as the remote machine for running the NetworkHandler object.", e );
+            logger.error ( "RpcException caught in TS() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
             System.exit(1);
         }
         catch ( IOException e ) {
-            logger.error ( "IOException caught in TS() establishing " + NetworkHandler.remoteHandlerAddress + " as the remote machine for running the NetworkHandler object.", e );
+            logger.error ( "IOException caught in TS() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
             System.exit(1);
         }
         catch ( Exception e ) {
@@ -111,15 +138,37 @@ public class TS {
         tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
         globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
+        String nodeName = null;
+        String handlerName = null;
+        
         try {
-            setupRpcClients();
+        
+            //Need a config file to initialize a Daf node
+            DafNode.getInstance().init("ts-client", tsRpcConfigFileName);
+
+            //Create RpcClients this class connects to
+            try {
+                nodeName = NetworkHandler.remoteHandlerNodeName;
+                handlerName = "NetworkHandler";
+                networkHandlerClient = new RpcClient( nodeName );
+                
+                nodeName = DemandHandler.remoteHandlerNode;
+                handlerName = "DemandHandler";
+                demandHandlerClient = new RpcClient( nodeName );
+            }
+            catch (MalformedURLException e) {
+            
+                logger.error ( "MalformedURLException caught in TS() while defining RpcClients.", e );
+            
+            }
+
         }
         catch ( RpcException e ) {
-            logger.error ( "RpcException caught in TS() establishing " + NetworkHandler.remoteHandlerAddress + " as the remote machine for running the NetworkHandler object.", e );
+            logger.error ( "RpcException caught in TS() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
             System.exit(1);
         }
         catch ( IOException e ) {
-            logger.error ( "IOException caught in TS() establishing " + NetworkHandler.remoteHandlerAddress + " as the remote machine for running the NetworkHandler object.", e );
+            logger.error ( "IOException caught in TS() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
             System.exit(1);
         }
         catch ( Exception e ) {
@@ -228,7 +277,7 @@ public class TS {
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating + " + assignmentPeriod + " FW object at: " + myDateString);
 		FW fw = new FW();
-		fw.initialize( tsPropertyMap, networkHandlerClient );
+		fw.initialize( tsPropertyMap );
 
 
 		// Compute Frank-Wolfe solution
@@ -287,7 +336,7 @@ public class TS {
 		logger.info("Writing " + assignmentPeriod + " time skim matrix for highway mode " + modeChar + " to disk...");
         long startTime = System.currentTimeMillis();
         
-    	Skims skims = new Skims( tsPropertyMap, globalPropertyMap, networkHandlerClient );
+    	Skims skims = new Skims( tsPropertyMap, globalPropertyMap );
     	
         skims.writeHwySkimMatrix ( assignmentPeriod, skimType, modeChar);
 
@@ -306,7 +355,7 @@ public class TS {
 		logger.info("Writing " + assignmentPeriod + " time and dist skim matrices for highway mode " + modeChar + " to disk...");
         long startTime = System.currentTimeMillis();
         
-    	Skims skims = new Skims( tsPropertyMap, globalPropertyMap, networkHandlerClient );
+    	Skims skims = new Skims( tsPropertyMap, globalPropertyMap );
     	
         skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, modeChar);
 
@@ -317,22 +366,6 @@ public class TS {
 
 
     
-
-    
-    private void setupRpcClients () throws RpcException, IOException {
-
-        try {
-            
-            networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerAddress );
-            demandHandlerClient = new RpcClient( DemandHandler.remoteHandlerAddress );
-            
-        } catch (MalformedURLException e) {
-            
-            logger.error ( "MalformedURLException caught in TS.setupRpcClients().", e );
-            
-        }
-        
-    }
 
     
     private void networkHandlerSetupRpcCall () throws Exception {
@@ -457,6 +490,23 @@ public class TS {
     
 
     public static void main (String[] args) {
+        
+        switch ( args.length ) {
+        
+        case 0:
+            System.out.println("usage: java " + TS.class.getName() + " <config-file> [connect url]");
+            return;
+            
+        case 1:
+            tsRpcConfigFileName = args[0];
+            break;
+
+        case 2:
+            urlPathToRemoteNode = args[1];
+            break;
+
+        }
+        
         
         TS tsTest = new TS( "ts", "global" );
 

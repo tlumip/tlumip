@@ -43,13 +43,14 @@ import com.pb.tlumip.ts.assign.Skims;
  */
 public class NetworkHandler implements RpcHandler {
 
-    public static String remoteHandlerAddress = "http://localhost:6001";
+    public static String remoteHandlerNodeName = "isis";
+    public static String remoteHandlerNodeAddress = "tcp://192.168.1.214:6001";
     
     protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.NetworkHandler");
 
-    public static String nodeName;
-    public static int webPort = 6001;
-    public static int tcpPort = 6002;
+//    public static String nodeName;
+//    public static int webPort = 6001;
+//    public static int tcpPort = 6002;
 
 
     HashMap componentPropertyMap;
@@ -448,56 +449,56 @@ public class NetworkHandler implements RpcHandler {
 
 
 
-    public static void main(String[] args) {
-
-        if (args.length < 2) {
-            logger.error ("usage: java " + NetworkHandler.class.getName() + " <node-name> <config-file>");
-            return;
-        }
-
-        nodeName = args[0];
-
-        RPC.init();
-        //RPC.setDebug(true);
-
-        try {
-            
-            //Read config file
-            logger.info ("reading config file: " + args[1]);
-            NodeConfig nodeConfig = new NodeConfig();
-            nodeConfig.readConfig(new File(args[1]));
-
-            //Create webserver - register default handlers
-            WebServer webserver = new WebServer(webPort);
-            webserver.addHandler("math", Math.class);
-            webserver.addHandler("$default", new Echo());
-
-            //Add SystemHandler, for multicall
-            SystemHandler system = new SystemHandler();
-            system.addDefaultSystemHandlers();
-            webserver.addHandler("system", system);
-
-            //Register handlers only for this node
-            for (int i=0; i < nodeConfig.nHandlers; i++) {
-                String name = nodeConfig._handlers[i].name;
-                String node = nodeConfig._handlers[i].node;
-
-                if (nodeName.equalsIgnoreCase(node)) {
-                    Class clazz = Class.forName(nodeConfig._handlers[i].className);
-
-                    logger.info ( "handler["+i+"]: " + name + "::" + clazz.getName() );
-                    webserver.addHandler(name, clazz.newInstance());
-                }
-            }
-
-            //Create webserver
-            webserver.start();
-            logger.info ( "Web server listening on " + webPort + "..." );
-            
-        }
-        catch (Exception e) {
-            logger.error ( "Exception caught in NetworkHandler.main().", e );
-        }
-    }
+//    public static void main(String[] args) {
+//
+//        if (args.length < 2) {
+//            logger.error ("usage: java " + NetworkHandler.class.getName() + " <node-name> <config-file>");
+//            return;
+//        }
+//
+//        nodeName = args[0];
+//
+//        RPC.init();
+//        //RPC.setDebug(true);
+//
+//        try {
+//            
+//            //Read config file
+//            logger.info ("reading config file: " + args[1]);
+//            NodeConfig nodeConfig = new NodeConfig();
+//            nodeConfig.readConfig(new File(args[1]));
+//
+//            //Create webserver - register default handlers
+//            WebServer webserver = new WebServer(webPort);
+//            webserver.addHandler("math", Math.class);
+//            webserver.addHandler("$default", new Echo());
+//
+//            //Add SystemHandler, for multicall
+//            SystemHandler system = new SystemHandler();
+//            system.addDefaultSystemHandlers();
+//            webserver.addHandler("system", system);
+//
+//            //Register handlers only for this node
+//            for (int i=0; i < nodeConfig.nHandlers; i++) {
+//                String name = nodeConfig._handlers[i].name;
+//                String node = nodeConfig._handlers[i].node;
+//
+//                if (nodeName.equalsIgnoreCase(node)) {
+//                    Class clazz = Class.forName(nodeConfig._handlers[i].className);
+//
+//                    logger.info ( "handler["+i+"]: " + name + "::" + clazz.getName() );
+//                    webserver.addHandler(name, clazz.newInstance());
+//                }
+//            }
+//
+//            //Create webserver
+//            webserver.start();
+//            logger.info ( "Web server listening on " + webPort + "..." );
+//            
+//        }
+//        catch (Exception e) {
+//            logger.error ( "Exception caught in NetworkHandler.main().", e );
+//        }
+//    }
     
 }
