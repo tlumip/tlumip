@@ -346,7 +346,7 @@ public class PTDafMaster extends MessageProcessingTask {
             if(ptDafMasterLogger.isDebugEnabled()) ptDafMasterLogger.debug("Received HH block, " + msg.getValue("blockNumber") + 
                     ", sent originally to queue " + msg.getValue("WorkQueue"));
             
-            if ((msg.getValue("sendMore") == Integer.valueOf(1)) &&
+            if ((((Integer) msg.getValue("sendMore")).intValue() == 1) &&
                     (householdCounter < households.length)) {
                 sendMoreHouseholds(msg);
             }
@@ -479,7 +479,7 @@ public class PTDafMaster extends MessageProcessingTask {
                                                    //starting at this number.
 
         //Once the entire list of persons has been processed, we need to put the unemployed
-        // persons back into the persons array 
+        // persons back into the persons array
         for (PTPerson aUnemployedPersonList : unemployedPersonList) {
             persons[nUnemployed - 1] = aUnemployedPersonList;  //the order doesn't matter so just start at
             nUnemployed--;                                //the array position corresponding to the nUnemployed-1
@@ -574,7 +574,7 @@ public class PTDafMaster extends MessageProcessingTask {
             }
         }
     }
-    
+
     /**
      * Starts the household processing by sending a specified number of household blocks to each work queue.
      * The second to last block will contain a message telling the worker node to send
@@ -589,7 +589,7 @@ public class PTDafMaster extends MessageProcessingTask {
          Arrays.sort(households);
 
         int numHHBlocksPerQueue = 20;
-        
+
 
         //iterate through number of workers, 20 household blocks
         for (int q = 1; q <= hhWorkQueues.size(); q++) {
@@ -614,16 +614,16 @@ public class PTDafMaster extends MessageProcessingTask {
                 //The "sendMore" key in the hashtable will be set to 1 for the second
                 //to last block, else 0.
                 if (j == (numHHBlocksPerQueue - 2)) {
-                    processHouseholds.setValue("sendMore", 1);
+                    processHouseholds.setValue("sendMore", new Integer(1));
                 } else {
-                    processHouseholds.setValue("sendMore", 0);
+                    processHouseholds.setValue("sendMore", new Integer(0));
                 }
 
                 if(ptDafMasterLogger.isDebugEnabled()) {
                     ptDafMasterLogger.debug("sendMore: " + processHouseholds.getValue("sendMore"));
                 }
 
-                String queueName = hhWorkQueues.get(q);
+                String queueName = hhWorkQueues.get(q-1);
                 processHouseholds.setValue("WorkQueue", queueName);
                 ptDafMasterLogger.debug("Sending HH Block, "+ blockCounter + ", to "  + queueName);
                 sendTo(queueName, processHouseholds);
@@ -632,16 +632,16 @@ public class PTDafMaster extends MessageProcessingTask {
                 }
              }
         }
-        
+
     }
 
     /**
      * Send more households to workers
-     * 
+     *
      * @param msg
      */
     private void sendMoreHouseholds(Message msg) {
-        
+
         int numHHBlocksLeftToProcess = (int) Math.ceil((households.length - householdCounter) / (double) MAXBLOCKSIZE);
         if(ptDafMasterLogger.isDebugEnabled()) {
             ptDafMasterLogger.debug("HHs left to process = " + (households.length - householdCounter));
@@ -655,7 +655,7 @@ public class PTDafMaster extends MessageProcessingTask {
         for (int j = 0; j <numOfHHBlocksPerQueue; j++) {
             blockCounter++;
             int numOfHHsPerBlock = Math.min(MAXBLOCKSIZE, households.length - householdCounter);
-            
+
             PTHousehold[] householdBlock = new PTHousehold[numOfHHsPerBlock];
 
             for (int k = 0; k < numOfHHsPerBlock; k++) {
@@ -671,9 +671,9 @@ public class PTDafMaster extends MessageProcessingTask {
             processHouseholds.setValue("households", householdBlock);
 
             if (j == (numOfHHBlocksPerQueue - 2) || (numOfHHBlocksPerQueue == 1)) {
-                processHouseholds.setValue("sendMore", 1);
+                processHouseholds.setValue("sendMore", new Integer(1));
             } else {
-                processHouseholds.setValue("sendMore", 0);
+                processHouseholds.setValue("sendMore", new Integer(0));
             }
 
             String queueName = (String) msg.getValue("WorkQueue");
