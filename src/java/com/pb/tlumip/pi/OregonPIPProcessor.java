@@ -21,7 +21,8 @@ import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.Industry;
-import com.pb.tlumip.model.LaborProductionAndConsumption;
+import com.pb.models.pecas.LaborProductionAndConsumption;
+import com.pb.tlumip.model.Occupation;
 import com.pb.models.pecas.Commodity;
 import com.pb.models.pecas.PIPProcessor;
 import com.pb.models.pecas.SomeSkims;
@@ -29,8 +30,10 @@ import com.pb.models.pecas.TransportKnowledge;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -577,50 +580,38 @@ public class OregonPIPProcessor extends PIPProcessor {
             logger.info("Not writing Oregon-Specific Outputs (labour consumption and production)");
             return;
         }
-        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(piRb);
-        TableDataSet householdQuantity = labor.loadTableDataSet("ActivityLocations2.csv","output.data");
-        if(logger.isDebugEnabled()) {
-            logger.debug("loaded ActivityLocations2.csv");
+        //Need several things to pass to the LaborProductionAndConsumption method
+        //in order for it to write the output files:
+        //1.  a2b table
+        //2.  activityLocations2 table
+        //3.  String[] occupations
+        //4.  String[] hhCategories
+        //5.  String[] activities (not including the households)
+        TableDataSet alphaToBeta = loadTableDataSet("alpha2beta","reference.data");
+        
+        TableDataSet householdQuantity = loadTableDataSet("ActivityLocations2","pi.current.data");
+        
+        String[] occupations = new Occupation().getOccupationLabels();
+        List<String> tempList = new ArrayList<String>();
+        for (String occupation : occupations){
+            if(occupation.indexOf("Unemployed")>=0) continue;
+            tempList.add(occupation);
         }
-        TableDataSet alphaToBeta = labor.loadTableDataSet("alpha2beta.csv","reference.data");
-        if(logger.isDebugEnabled()) {
-            logger.debug("loaded alpha2beta.csv");
-        }
-        labor.setZoneMap(alphaToBeta);
-        if(logger.isDebugEnabled()) {
-            logger.debug("created zone map");
-        }
-
-        labor.createOccupationSet();
-        if(logger.isDebugEnabled()) {
-            logger.debug("created occupation set");
-        }
-        labor.createActivitySet();
-        if(logger.isDebugEnabled()) {
-            logger.debug("created activity set");
-        }
-        labor.createHouseholdSegmentSet();
-        if(logger.isDebugEnabled()) {
-            logger.debug("created household segment set");
-        }
-
-        labor.setPopulation(householdQuantity);
-        if(logger.isDebugEnabled()) {
-            logger.debug("set population");
-        }
-
-        labor.setProductionAndConsumption();
-        if(logger.isDebugEnabled()) {
-            logger.debug("set production and consumption");
-        }
-        labor.writeToCSV();
-    
-        labor.sumProductionActivities();
-        labor.sumConsumptionActivities();
-        if(logger.isDebugEnabled()) {
-            logger.debug("Finished setProductionAndConsumption()");
-        }
+        occupations = new String[tempList.size()];
+        tempList.toArray(occupations);
+        
+        
+        String[] hhCategories = new IncomeSize().getIncomeSizeLabels();
+        
+        
+        String[] activities = new Industry().getIndustryLabels();
+        
+        
+        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,householdQuantity,occupations,hhCategories,activities);
+        labor.writeAllFiles(getOutputPath());
     }
+    
+    
 
     public static void main(String[] args) {
         ResourceBundle piRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/pi/pi.properties"));
