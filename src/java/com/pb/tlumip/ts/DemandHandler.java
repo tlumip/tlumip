@@ -29,10 +29,7 @@ import com.pb.tlumip.model.ModeType;
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
-import com.pb.common.rpc.NodeConfig;
-import com.pb.common.rpc.RPC;
 import com.pb.common.rpc.RpcHandler;
-import com.pb.common.util.Convert;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
@@ -44,23 +41,16 @@ import java.util.ResourceBundle;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlrpc.Echo;
-import org.apache.xmlrpc.SystemHandler;
-import org.apache.xmlrpc.WebServer;
 
 
 
 public class DemandHandler implements RpcHandler {
 
+    public static String remoteHandlerName = "demandHandler";
     public static String remoteHandlerNode = "tcp://192.168.1.214:6001";
     
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.DemandHandler");
 
-//    public static String nodeName;
-//    public static int webPort = 7001;
-//    public static int tcpPort = 7002;
-
-    
     
 	final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
 
@@ -93,41 +83,19 @@ public class DemandHandler implements RpcHandler {
     public Object execute (String methodName, Vector params) throws Exception {
                   
         if ( methodName.equalsIgnoreCase( "setup" ) ) {
-            HashMap componentPropertyMap = (HashMap)Convert.toObject((byte[])params.get(0));
-            HashMap globalPropertyMap = (HashMap)Convert.toObject((byte[])params.get(1));
+            HashMap componentPropertyMap = (HashMap)params.get(0);
+            HashMap globalPropertyMap = (HashMap)params.get(1);
             String timePeriod = (String)params.get(2);
             return setup( componentPropertyMap, globalPropertyMap, timePeriod );
         }
         else if ( methodName.equalsIgnoreCase( "setNetworkAttributes" ) ) {
             int numCentroids = (Integer)params.get(0);
             int numUserClasses = (Integer)params.get(1);
-            int[] nodeIndexArray = (int[])Convert.toObject((byte[])params.get(2));
-            HashMap assignmentGroupMap = (HashMap)Convert.toObject((byte[])params.get(3));
+            int[] nodeIndexArray = (int[])params.get(2);
+            HashMap assignmentGroupMap = (HashMap)params.get(3);
             boolean userClassesIncludeTruck = (Boolean)params.get(4);
             setNetworkAttributes( numCentroids, numUserClasses, nodeIndexArray, assignmentGroupMap, userClassesIncludeTruck );
             return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "getMulticlassTripTables" ) ) {
-            
-//            int n=0;
-//            
-//            double[][][] tripArray = getMulticlassTripTables();
-//            double[] tripVector = new double[tripArray.length*tripArray[0].length*tripArray[0][0].length];
-//            
-//            for (int i=0; i < tripArray.length; i++) {
-//                for (int j=0; j < tripArray[0].length; j++) {
-//                    for (int k=0; k < tripArray[0][0].length; k++) {
-//                        n = i*tripArray[0].length*tripArray[0][0].length + j*tripArray[0][0].length + k;
-//                        tripVector[n] = tripArray[i][j][k];
-//                    }
-//                }
-//            }
-//            
-//          return Convert.toBytes( tripVector );
-
-            
-            return Convert.toBytes( getMulticlassTripTables() );
-            
         }
         else {
             logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
@@ -430,58 +398,5 @@ public class DemandHandler implements RpcHandler {
 		return tripTable;
 
     }
-
-
-//    public static void main(String[] args) {
-//
-//        if (args.length < 2) {
-//            logger.error ("usage: java " + DemandHandler.class.getName() + " <node-name> <config-file>");
-//            return;
-//        }
-//
-//        nodeName = args[0];
-//
-//        RPC.init();
-//        //RPC.setDebug(true);
-//
-//        try {
-//            
-//            //Read config file
-//            logger.info ("reading config file: " + args[1]);
-//            NodeConfig nodeConfig = new NodeConfig();
-//            nodeConfig.readConfig(new File(args[1]));
-//
-//            //Create webserver - register default handlers
-//            WebServer webserver = new WebServer(webPort);
-//            webserver.addHandler("math", Math.class);
-//            webserver.addHandler("$default", new Echo());
-//
-//            //Add SystemHandler, for multicall
-//            SystemHandler system = new SystemHandler();
-//            system.addDefaultSystemHandlers();
-//            webserver.addHandler("system", system);
-//
-//            //Register handlers only for this node
-//            for (int i=0; i < nodeConfig.nHandlers; i++) {
-//                String name = nodeConfig._handlers[i].name;
-//                String node = nodeConfig._handlers[i].node;
-//
-//                if (nodeName.equalsIgnoreCase(node)) {
-//                    Class clazz = Class.forName(nodeConfig._handlers[i].className);
-//
-//                    logger.info ( "handler["+i+"]: " + name + "::" + clazz.getName() );
-//                    webserver.addHandler(name, clazz.newInstance());
-//                }
-//            }
-//
-//            //Create webserver
-//            webserver.start();
-//            logger.info ( "Web server listening on " + webPort + "..." );
-//            
-//        }
-//        catch (Exception e) {
-//            logger.error ( "Exception caught in DemandHandler.main().", e );
-//        }
-//    }
-    
+   
 }

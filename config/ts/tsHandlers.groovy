@@ -5,7 +5,7 @@ listenPort = 6001
 
 //Define node URLs
 nodes[0].name = "isis"
-nodes[0].url = "tcp://localhost:6001"
+nodes[0].url = "tcp://192.168.1.214:6001"
 
 //Define handler classes, these are the rpc-end points on this node
 handlers[0].name = "networkHandler"

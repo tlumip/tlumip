@@ -85,9 +85,9 @@ public class Skims {
 
             //Create RpcClients this class connects to
             try {
-                nodeName = NetworkHandler.remoteHandlerNodeName;
-                handlerName = "NetworkHandler";
-                networkHandlerClient = new RpcClient( nodeName );
+                nodeName = NetworkHandler.remoteHandlerNode;
+                handlerName = NetworkHandler.remoteHandlerName;
+                networkHandlerClient = new RpcClient( handlerName );
             }
             catch (MalformedURLException e) {
             
@@ -814,8 +814,11 @@ public class Skims {
     
 	public static void main(String[] args) {
 
+        String handlerName = null;
+        
         try {
-            networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerNodeName );
+            handlerName = NetworkHandler.remoteHandlerName;
+            networkHandlerClient = new RpcClient( handlerName );
         } catch (MalformedURLException e) {
             logger.error ( "MalformedURLException caught in TS.setupRpcClients().", e );
         }

@@ -21,8 +21,6 @@ import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.Justify;
-import com.pb.common.util.Convert;
-import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.ShortestPathTreeHandler;
 import com.pb.tlumip.ts.assign.Constants;
@@ -47,7 +45,8 @@ public class FW {
 	static final int SIZEOF_INT = 4;
 	static final int MAX_LINK_TYPE = 1000;
 
-	HashMap propertyMap;
+    HashMap appPropertyMap;
+    HashMap globalPropertyMap;
 	
     Justify myFormat = new Justify();
 
@@ -85,13 +84,13 @@ public class FW {
 
             //Create RpcClients this class connects to
             try {
-                nodeName = NetworkHandler.remoteHandlerNodeName;
-                handlerName = "NetworkHandler";
-                networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerNodeName );
+                nodeName = NetworkHandler.remoteHandlerNode;
+                handlerName = NetworkHandler.remoteHandlerName;
+                networkHandlerClient = new RpcClient( handlerName );
                 
                 nodeName = ShortestPathTreeHandler.remoteHandlerNode;
-                handlerName = "ShortestPathTreeHandler";
-                shortestPathTreeHandlerClient = new RpcClient( nodeName );
+                handlerName = ShortestPathTreeHandler.remoteHandlerName;
+                shortestPathTreeHandlerClient = new RpcClient( handlerName );
             }
             catch (MalformedURLException e) {
             
@@ -116,20 +115,21 @@ public class FW {
     }
 
 
-    public void initialize ( HashMap tsPropertyMap ) {
+    public void initialize ( HashMap tsPropertyMap, HashMap globalPropertyMap ) {
 
-		this.propertyMap = tsPropertyMap;
+        this.appPropertyMap = tsPropertyMap;
+        this.globalPropertyMap = globalPropertyMap;
 
         
-        
-        
-        maxFwIters = Integer.parseInt ( (String)propertyMap.get( "NUM_FW_ITERATIONS" ) );
-        fwGap = Double.parseDouble ( (String)propertyMap.get( "FW_RELATIVE_GAP" ) );
+        maxFwIters = Integer.parseInt ( (String)appPropertyMap.get( "NUM_FW_ITERATIONS" ) );
+        fwGap = Double.parseDouble ( (String)appPropertyMap.get( "FW_RELATIVE_GAP" ) );
 
         lambdas = new double[maxFwIters];
         fwFlowProps = new double[maxFwIters];
 
         try {
+            shortestPathTreeHandlerSetupRpcCall();
+            
             startOriginTaz = 0;
             numLinks = networkHandlerGetLinkCountRpcCall();
             lastOriginTaz = networkHandlerGetNumCentroidsRpcCall();
@@ -165,7 +165,7 @@ public class FW {
     /**
      * Frank-Wolfe assignment procedure.
      */
-	public void iterate ( double[][][] tripTable ) {
+	public void iterate () {
 
 		
         try {
@@ -554,7 +554,7 @@ public class FW {
         try {
 	    
     	    // get the location of the file for storing paths
-    		String diskObjectArrayFile = (String)propertyMap.get("PathsDiskObjectArray.file");
+    		String diskObjectArrayFile = (String)appPropertyMap.get("PathsDiskObjectArray.file");
     
     		// create the object
     		if ( diskObjectArrayFile != null ) {
@@ -628,19 +628,19 @@ public class FW {
 
     private int[] networkHandlerGetLinkTypeRpcCall() throws Exception {
         // g.getTimePeriod()
-        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getLinkType", new Vector() ) );
+        return (int[])networkHandlerClient.execute("networkHandler.getLinkType", new Vector() );
     }
 
     private boolean[] networkHandlerGetValidLinksForClassRpcCall( int userClass ) throws Exception {
         // g.getValidLinksForClass( int i )
         Vector params = new Vector();
         params.add( userClass );
-        return (boolean[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getValidLinksForClassInt", params ) );
+        return (boolean[])networkHandlerClient.execute("networkHandler.getValidLinksForClassInt", params );
     }
 
     private double[] networkHandlerGetCongestedTimeRpcCall() throws Exception {
         // g.getCongestedTime()
-        return (double[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getCongestedTime", new Vector() ) );
+        return (double[])networkHandlerClient.execute("networkHandler.getCongestedTime", new Vector() );
     }
     
     private void networkHandlerSetFlowsRpcCall( double[][] flows ) throws Exception {
@@ -703,6 +703,14 @@ public class FW {
     
     
     
+    private void shortestPathTreeHandlerSetupRpcCall() throws Exception {
+        
+        Vector params = new Vector();
+        params.addElement( appPropertyMap);
+        params.addElement( globalPropertyMap);
+        shortestPathTreeHandlerClient.execute("shortestPathTreeHandler.setup", params );
+    }
+        
     private double[][] shortestPathTreeHandlerGetMulticlassAonLinkFlowsRpcCall() throws Exception {
         return (double[][])shortestPathTreeHandlerClient.execute("shortestPathTreeHandler.getMulticlassAonLinkFlows", new Vector() );
     }

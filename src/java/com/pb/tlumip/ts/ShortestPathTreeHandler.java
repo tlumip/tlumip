@@ -23,31 +23,26 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.common.rpc.NodeConfig;
-import com.pb.common.rpc.RPC;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.rpc.RpcHandler;
-import com.pb.common.util.Convert;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.daf3.ShortestPathTreeH;
 
 import java.util.HashMap;
-import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlrpc.Echo;
-import org.apache.xmlrpc.SystemHandler;
-import org.apache.xmlrpc.WebServer;
 
 
 
 public class ShortestPathTreeHandler implements RpcHandler {
 
+    public static String remoteHandlerName = "shortestPathTreeHandler";
     public static String remoteHandlerNode = "tcp://192.168.1.214:6001";
     
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.ShortestPathTreeHandler");
@@ -77,22 +72,61 @@ public class ShortestPathTreeHandler implements RpcHandler {
 
 
 	public ShortestPathTreeHandler() {
-	}
+
+        String nodeName = null;
+        String handlerName = null;
+        
+        try {
+            
+            //Need a config file to initialize a Daf node
+//            DafNode.getInstance().init("sp-client", TS.tsRpcConfigFileName);
+
+            //Create RpcClients this class connects to
+            try {
+                nodeName = NetworkHandler.remoteHandlerNode;
+                handlerName = NetworkHandler.remoteHandlerName;
+                networkHandlerClient = new RpcClient( handlerName );
+
+                nodeName = DemandHandler.remoteHandlerNode;
+                handlerName = DemandHandler.remoteHandlerName;
+                demandHandlerClient = new RpcClient( handlerName );
+            }
+            catch (MalformedURLException e) {
+            
+                logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
+            
+            }
+
+        }
+//        catch ( RpcException e ) {
+//            logger.error ( "RpcException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
+//            System.exit(1);
+//        }
+//        catch ( IOException e ) {
+//            logger.error ( "IOException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
+//            System.exit(1);
+//        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught in ShortestPathTreeH().", e );
+            System.exit(1);
+        }
+
+    }
+    
 
 
     
     public Object execute (String methodName, Vector params) throws Exception {
                   
         if ( methodName.equalsIgnoreCase( "setup" ) ) {
-            HashMap componentPropertyMap = (HashMap)Convert.toObject((byte[])params.get(0));
-            HashMap globalPropertyMap = (HashMap)Convert.toObject((byte[])params.get(1));
-            String timePeriod = (String)params.get(2);
+            HashMap componentPropertyMap = (HashMap)params.get(0);
+            HashMap globalPropertyMap = (HashMap)params.get(1);
             setup( componentPropertyMap, globalPropertyMap );
             return 0;
         }
         else if ( methodName.equalsIgnoreCase( "getMulticlassAonLinkFlows" ) ) {
             
-            return Convert.toBytes( getMulticlassAonLinkFlows() );
+            return getMulticlassAonLinkFlows();
             
         }
         else {
@@ -243,14 +277,14 @@ public class ShortestPathTreeHandler implements RpcHandler {
 
     private double[] networkHandlerSetLinkGeneralizedCostRpcCall() throws Exception {
         // g.setLinkGeneralizedCost()
-        return (double[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector() ) );
+        return (double[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector() );
     }
 
     private boolean[] networkHandlerGetValidLinksForClassRpcCall( int userClass ) throws Exception {
         // g.getValidLinksForClass( int i )
         Vector params = new Vector();
         params.add( userClass );
-        return (boolean[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getValidLinksForClassInt", params ) );
+        return (boolean[])networkHandlerClient.execute("networkHandler.getValidLinksForClassInt", params );
     }
 
 
@@ -259,61 +293,8 @@ public class ShortestPathTreeHandler implements RpcHandler {
         Vector params = new Vector();
         params.add(userClass);
         params.add(row);
-        return (double[])Convert.toObject( (byte[])demandHandlerClient.execute("demandHandler.getTripTableRow", params ) );
+        return (double[])demandHandlerClient.execute("demandHandler.getTripTableRow", params );
     }
     
-    
-    
-//    public static void main(String[] args) {
-//
-//        if (args.length < 2) {
-//            logger.error ("usage: java " + ShortestPathTreeHandler.class.getName() + " <node-name> <config-file>");
-//            return;
-//        }
-//
-//        nodeName = args[0];
-//
-//        RPC.init();
-//        //RPC.setDebug(true);
-//
-//        try {
-//            
-//            //Read config file
-//            logger.info ("reading config file: " + args[1]);
-//            NodeConfig nodeConfig = new NodeConfig();
-//            nodeConfig.readConfig(new File(args[1]));
-//
-//            //Create webserver - register default handlers
-//            WebServer webserver = new WebServer(webPort);
-//            webserver.addHandler("math", Math.class);
-//            webserver.addHandler("$default", new Echo());
-//
-//            //Add SystemHandler, for multicall
-//            SystemHandler system = new SystemHandler();
-//            system.addDefaultSystemHandlers();
-//            webserver.addHandler("system", system);
-//
-//            //Register handlers only for this node
-//            for (int i=0; i < nodeConfig.nHandlers; i++) {
-//                String name = nodeConfig._handlers[i].name;
-//                String node = nodeConfig._handlers[i].node;
-//
-//                if (nodeName.equalsIgnoreCase(node)) {
-//                    Class clazz = Class.forName(nodeConfig._handlers[i].className);
-//
-//                    logger.info ( "handler["+i+"]: " + name + "::" + clazz.getName() );
-//                    webserver.addHandler(name, clazz.newInstance());
-//                }
-//            }
-//
-//            //Create webserver
-//            webserver.start();
-//            logger.info ( "Web server listening on " + webPort + "..." );
-//            
-//        }
-//        catch (Exception e) {
-//            logger.error ( "Exception caught in ShortestPathTreeHandler.main().", e );
-//        }
-//    }
     
 }

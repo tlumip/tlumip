@@ -23,16 +23,10 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
-import org.apache.xmlrpc.*;
-import java.io.File;
-
 import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.matrix.Matrix;
-import com.pb.common.rpc.NodeConfig;
-import com.pb.common.rpc.RPC;
 import com.pb.common.rpc.RpcHandler;
-import com.pb.common.util.Convert;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.assign.Skims;
@@ -43,15 +37,10 @@ import com.pb.tlumip.ts.assign.Skims;
  */
 public class NetworkHandler implements RpcHandler {
 
-    public static String remoteHandlerNodeName = "isis";
-    public static String remoteHandlerNodeAddress = "tcp://192.168.1.214:6001";
+    public static String remoteHandlerName = "networkHandler";
+    public static String remoteHandlerNode = "tcp://192.168.1.214:6001";
     
     protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.NetworkHandler");
-
-//    public static String nodeName;
-//    public static int webPort = 6001;
-//    public static int tcpPort = 6002;
-
 
     HashMap componentPropertyMap;
     HashMap globalPropertyMap;
@@ -74,6 +63,9 @@ public class NetworkHandler implements RpcHandler {
         else if ( methodName.equalsIgnoreCase( "getMaxCentroid" ) ) {
             return getMaxCentroid();
         }
+        else if ( methodName.equalsIgnoreCase( "getCentroid" ) ) {
+            return getCentroid();
+        }
         else if ( methodName.equalsIgnoreCase( "getNodeCount" ) ) {
             return getNodeCount();
         }
@@ -90,28 +82,43 @@ public class NetworkHandler implements RpcHandler {
             return userClassesIncludeTruck();
         }
         else if ( methodName.equalsIgnoreCase( "getValidLinksForClassInt" ) ) {
-            return Convert.toBytes( getValidLinksForClass( (Integer)params.get(0) ) );
+            return getValidLinksForClass( (Integer)params.get(0) );
         }
         else if ( methodName.equalsIgnoreCase( "getValidLinksForClassChar" ) ) {
-            return Convert.toBytes( getValidLinksForClass( (Character)params.get(0) ) );
+            return getValidLinksForClass( (Character)params.get(0) );
         }
         else if ( methodName.equalsIgnoreCase( "getNodeIndex" ) ) {
-            return Convert.toBytes( getNodeIndex() );
+            return getNodeIndex();
+        }
+        else if ( methodName.equalsIgnoreCase( "getIndexNode" ) ) {
+            return getIndexNode();
+        }
+        else if ( methodName.equalsIgnoreCase( "getSortedLinkIndexA" ) ) {
+            return getSortedLinkIndexA();
         }
         else if ( methodName.equalsIgnoreCase( "getLinkType" ) ) {
-            return Convert.toBytes( getLinkType() );
+            return getLinkType();
+        }
+        else if ( methodName.equalsIgnoreCase( "getIa" ) ) {
+            return getIa();
+        }
+        else if ( methodName.equalsIgnoreCase( "getIb" ) ) {
+            return getIb();
+        }
+        else if ( methodName.equalsIgnoreCase( "getIpa" ) ) {
+            return getIpa();
         }
         else if ( methodName.equalsIgnoreCase( "getAssignmentGroupMap" ) ) {
-            return Convert.toBytes( getAssignmentGroupMap() );
+            return getAssignmentGroupMap();
         }
         else if ( methodName.equalsIgnoreCase( "getCongestedTime" ) ) {
-            return Convert.toBytes( getCongestedTime() );
+            return getCongestedTime();
         }
         else if ( methodName.equalsIgnoreCase( "getDist" ) ) {
-            return Convert.toBytes( getDist() );
+            return getDist();
         }
         else if ( methodName.equalsIgnoreCase( "setLinkGeneralizedCost" ) ) {
-            return Convert.toBytes( setLinkGeneralizedCost() );
+            return setLinkGeneralizedCost();
         }
         else if ( methodName.equalsIgnoreCase( "setFlows" ) ) {
             double[][] flows = (double[][])params.get(0);
@@ -140,7 +147,7 @@ public class NetworkHandler implements RpcHandler {
         }
         else if ( methodName.equalsIgnoreCase( "getSumOfVdfIntegrals" ) ) {
             boolean[] validLinks = (boolean[])params.get(0);
-            return Convert.toBytes( getSumOfVdfIntegrals( validLinks ) );
+            return getSumOfVdfIntegrals( validLinks );
         }
         else if ( methodName.equalsIgnoreCase( "logLinkTimeFreqs" ) ) {
             boolean[] validLinks = (boolean[])params.get(0);
@@ -154,11 +161,20 @@ public class NetworkHandler implements RpcHandler {
         }
         else if ( methodName.equalsIgnoreCase( "buildNetworkObject" ) ) {
             
-            componentPropertyMap = (HashMap)Convert.toObject((byte[])params.get(0));
-            globalPropertyMap = (HashMap)Convert.toObject((byte[])params.get(1));
+            componentPropertyMap = (HashMap)params.get(0);
+            globalPropertyMap = (HashMap)params.get(1);
             timePeriod = (String)params.get(2);
             return (Boolean)buildNetworkObject();
             
+        }
+        else if ( methodName.equalsIgnoreCase( "writeNetworkAttributes" ) ) {
+            String fileName = (String)params.get(0);
+            writeNetworkAttributes( fileName );
+            return 0;
+        }
+        else if ( methodName.equalsIgnoreCase( "checkForIsolatedLinks" ) ) {
+            checkForIsolatedLinks();
+            return 0;
         }
         else {
             logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
@@ -168,14 +184,6 @@ public class NetworkHandler implements RpcHandler {
     }
     
     
-    
-    public int getLinkCount() {
-        return g.getLinkCount();
-    }
-    
-    public int getNodeCount() {
-        return g.getNodeCount();
-    }
     
     public int getNumCentroids() {
         return g.getNumCentroids();
@@ -189,30 +197,90 @@ public class NetworkHandler implements RpcHandler {
         return g.getCentroid();
     }
     
+    public int getNodeCount() {
+        return g.getNodeCount();
+    }
+    
+    public int getLinkCount() {
+        return g.getLinkCount();
+    }
+    
     public int getNumUserClasses() {
         return g.getNumUserClasses();
+    }
+    
+    public String getTimePeriod () {
+        return g.getTimePeriod();
+    }
+
+    public boolean userClassesIncludeTruck() {
+        return g.userClassesIncludeTruck();
+    }
+    
+    public boolean[] getValidLinksForClass ( int userClass ) {
+        return g.getValidLinksForClass ( userClass );
+    }
+
+    public boolean[] getValidLinksForClass ( char modeChar ) {
+        return g.getValidLinksForClass ( modeChar );
+    }
+    
+    public int[] getNodeIndex () {
+        return g.getNodeIndex();
+    }
+
+    public int[] getLinkType () {
+        return g.getLinkType();
+    }
+
+    public HashMap getAssignmentGroupMap() {
+        return g.getAssignmentGroupMap();
+    }
+
+    public double[] getCongestedTime () {
+        return g.getCongestedTime();
+    }
+
+    public double[] getDist () {
+        return g.getDist();
+    }
+
+    public double[] setLinkGeneralizedCost () {
+        return g.setLinkGeneralizedCost ();
+    }
+
+    public void setFlows (double[][] flow) {
+        g.setFlows( flow );
+    }
+    
+    public void setVolau (double[] volau) {
+        g.setVolau( volau );
+    }
+    
+    public void setVolCapRatios ( double[] volau ) {
+        g.setVolCapRatios ( volau );
+    }
+    
+    public void applyVdfs ( boolean[] validLinks ) {
+        g.applyVdfs( validLinks );
+    }
+    
+    public void applyVdfIntegrals ( boolean[] validLinks ) {
+        g.applyVdfIntegrals( validLinks );
+    }
+    
+    public double getSumOfVdfIntegrals ( boolean[] validLinks ) {
+        return g.getSumOfVdfIntegrals( validLinks );
+    }
+    
+    public void logLinkTimeFreqs ( boolean[] validLinks ) {
+        g.logLinkTimeFreqs( validLinks );
     }
     
     public char[] getUserClasses () {
         return g.getUserClasses();
     }
     
-    public boolean userClassesIncludeTruck() {
-        return g.userClassesIncludeTruck();
-    }
-    
-    public HashMap getAssignmentGroupMap() {
-        return g.getAssignmentGroupMap();
-    }
-
-    public String getTimePeriod () {
-        return g.getTimePeriod();
-    }
-
-    public int[] getNodeIndex () {
-        return g.getNodeIndex();
-    }
-
     public int[] getIndexNode () {
         return g.getIndexNode();
     }
@@ -233,58 +301,6 @@ public class NetworkHandler implements RpcHandler {
         return g.getSortedLinkIndexA();
     }
 
-    public double[] getCongestedTime () {
-        return g.getCongestedTime();
-    }
-
-    public double[] getDist () {
-        return g.getDist();
-    }
-
-    public int[] getLinkType () {
-        return g.getLinkType();
-    }
-
-    public boolean[] getValidLinksForClass ( int userClass ) {
-        return g.getValidLinksForClass ( userClass );
-    }
-
-    public boolean[] getValidLinksForClass ( char modeChar ) {
-        return g.getValidLinksForClass ( modeChar );
-    }
-    
-    public double[] setLinkGeneralizedCost () {
-        return g.setLinkGeneralizedCost ();
-    }
-
-    public void setFlows (double[][] flow) {
-        g.setFlows( flow );
-    }
-    
-    public void setVolau (double[] volau) {
-        g.setVolau( volau );
-    }
-    
-    public void logLinkTimeFreqs ( boolean[] validLinks ) {
-        g.logLinkTimeFreqs( validLinks );
-    }
-    
-    public void applyVdfs ( boolean[] validLinks ) {
-        g.applyVdfs( validLinks );
-    }
-    
-    public void applyVdfIntegrals ( boolean[] validLinks ) {
-        g.applyVdfIntegrals( validLinks );
-    }
-    
-    public double getSumOfVdfIntegrals ( boolean[] validLinks ) {
-        return g.getSumOfVdfIntegrals( validLinks );
-    }
-    
-    public void setVolCapRatios ( double[] volau ) {
-        g.setVolCapRatios ( volau );
-    }
-    
     public void writeNetworkAttributes ( String fileName ) {
         g.writeNetworkAttributes(fileName);
     }
@@ -342,11 +358,6 @@ public class NetworkHandler implements RpcHandler {
 
     }
     
-    
-    
-    public void checkNetworkForIsolatedLinks () {
-        g.checkForIsolatedLinks ();
-    }
     
     
     

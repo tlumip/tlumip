@@ -26,10 +26,8 @@ import org.apache.log4j.Logger;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
-import com.pb.common.util.Convert;
 import com.pb.common.util.Justify;
 import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.ShortestPathTreeHandler;
 
 /**
  * Class for shortest path trees.
@@ -86,13 +84,13 @@ public class ShortestPathTreeH {
         try {
         
             //Need a config file to initialize a Daf node
-            DafNode.getInstance().init("sp-client", TS.tsRpcConfigFileName);
+//            DafNode.getInstance().init("sp-client", TS.tsRpcConfigFileName);
 
             //Create RpcClients this class connects to
             try {
-                nodeName = NetworkHandler.remoteHandlerNodeName;
-                handlerName = "NetworkHandler";
-                networkHandlerClient = new RpcClient( NetworkHandler.remoteHandlerNodeAddress );
+                nodeName = NetworkHandler.remoteHandlerNode;
+                handlerName = NetworkHandler.remoteHandlerName;
+                networkHandlerClient = new RpcClient( handlerName );
             }
             catch (MalformedURLException e) {
             
@@ -101,14 +99,14 @@ public class ShortestPathTreeH {
             }
 
         }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-            System.exit(1);
-        }
+//        catch ( RpcException e ) {
+//            logger.error ( "RpcException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
+//            System.exit(1);
+//        }
+//        catch ( IOException e ) {
+//            logger.error ( "IOException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
+//            System.exit(1);
+//        }
         catch ( Exception e ) {
             logger.error ( "Exception caught in ShortestPathTreeH().", e );
             System.exit(1);
@@ -455,37 +453,37 @@ public class ShortestPathTreeH {
 
     private int[] networkHandlerGetIaRpcCall() throws Exception {
         // g.getIa()
-        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getIa", new Vector() ) );
+        return (int[])networkHandlerClient.execute("networkHandler.getIa", new Vector() );
     }
 
     private int[] networkHandlerGetIbRpcCall() throws Exception {
         // g.getIb()
-        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getIb", new Vector() ) );
+        return (int[])networkHandlerClient.execute("networkHandler.getIb", new Vector() );
     }
 
     private int[] networkHandlerGetIpaRpcCall() throws Exception {
         // g.getIpa()
-        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getIpa", new Vector() ) );
+        return (int[])networkHandlerClient.execute("networkHandler.getIpa", new Vector() );
     }
 
     private int[] networkHandlerGetSortedLinkIndexARpcCall() throws Exception {
         // g.getSortedLinkIndexA()
-        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getSortedLinkIndexA", new Vector() ) );
+        return (int[])networkHandlerClient.execute("networkHandler.getSortedLinkIndexA", new Vector() );
     }
 
     private int[] networkHandlerGetIndexNodeRpcCall() throws Exception {
         // g.getIndexNode()
-        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getIndexNode", new Vector() ) );
+        return (int[])networkHandlerClient.execute("networkHandler.getIndexNode", new Vector() );
     }
 
     private int[] networkHandlerGetNodeIndexRpcCall() throws Exception {
         // g.getNodeIndex()
-        return (int[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector() ) );
+        return (int[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector() );
     }
 
     private boolean[] networkHandlerGetCentroidRpcCall() throws Exception {
         // g.getCentroid()
-        return (boolean[])Convert.toObject( (byte[])networkHandlerClient.execute("networkHandler.getCentroid", new Vector() ) );
+        return (boolean[])networkHandlerClient.execute("networkHandler.getCentroid", new Vector() );
     }
 
     
