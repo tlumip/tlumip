@@ -339,5 +339,17 @@ public class DevelopmentType implements DevelopmentTypeInterface{
         
     }
 
+
+    public void setRenovationCost(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void setServicingRequirement(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
 }
 
