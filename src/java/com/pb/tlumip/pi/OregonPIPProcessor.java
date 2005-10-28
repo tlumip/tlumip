@@ -607,7 +607,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         String[] activities = new Industry().getIndustryLabels();
         
         
-        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,householdQuantity,occupations,hhCategories,activities);
+        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AZone","BZone",householdQuantity,occupations,hhCategories,activities);
         labor.writeAllFiles(getOutputPath());
     }
     
