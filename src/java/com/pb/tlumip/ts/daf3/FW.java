@@ -17,11 +17,12 @@
 package com.pb.tlumip.ts.daf3;
 
 import com.pb.common.datafile.DiskObjectArray;
-import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.Justify;
+import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.AonFlowHandler;
 import com.pb.tlumip.ts.ShortestPathTreeHandler;
 import com.pb.tlumip.ts.assign.Constants;
 
@@ -68,29 +69,34 @@ public class FW {
     DiskObjectArray fwPathsDoa = null;	
 
     RpcClient networkHandlerClient;    
-    RpcClient shortestPathTreeHandlerClient;    
+    RpcClient demandHandlerClient;    
+    RpcClient aonFlowHandlerClient;    
+    RpcClient shortestPathHandlerClient;    
     
 
    
     public FW () {
     
-        String nodeName = null;
         String handlerName = null;
         
         try {
         
             //Need a config file to initialize a Daf node
-            DafNode.getInstance().init("fw-client", TS.tsRpcConfigFileName);
+//            DafNode.getInstance().init("fw-client", TS.tsRpcConfigFileName);
 
             //Create RpcClients this class connects to
             try {
-                nodeName = NetworkHandler.remoteHandlerNode;
                 handlerName = NetworkHandler.remoteHandlerName;
                 networkHandlerClient = new RpcClient( handlerName );
+
+                handlerName = DemandHandler.remoteHandlerName;
+                demandHandlerClient = new RpcClient( handlerName );
                 
-                nodeName = ShortestPathTreeHandler.remoteHandlerNode;
+                handlerName = AonFlowHandler.remoteHandlerName;
+                aonFlowHandlerClient = new RpcClient( handlerName );
+                
                 handlerName = ShortestPathTreeHandler.remoteHandlerName;
-                shortestPathTreeHandlerClient = new RpcClient( handlerName );
+                shortestPathHandlerClient = new RpcClient( handlerName );
             }
             catch (MalformedURLException e) {
             
@@ -98,14 +104,6 @@ public class FW {
             
             }
 
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught in FW() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught in FW() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-            System.exit(1);
         }
         catch ( Exception e ) {
             logger.error ( "Exception caught in FW().", e );
@@ -128,16 +126,30 @@ public class FW {
         fwFlowProps = new double[maxFwIters];
 
         try {
-            shortestPathTreeHandlerSetupRpcCall();
             
+            // get network related variables needed in FW object
             startOriginTaz = 0;
             numLinks = networkHandlerGetLinkCountRpcCall();
             lastOriginTaz = networkHandlerGetNumCentroidsRpcCall();
             numAutoClasses = networkHandlerGetNumUserClassesRpcCall();
-    		timePeriod = networkHandlerGetTimePeriodRpcCall();
+            timePeriod = networkHandlerGetTimePeriodRpcCall();
 
+            // setup the demandHandler object 
+            demandHandlerSetupRpcCall();
+            
+            // setup the ShortestPathTreeHandler that aonFlowHandler uses
+            shortestPathHandlerSetupRpcCall();
+
+            // setup the aonFlowHandlerClient object
+            aonFlowHandlerSetupRpcCall();
+            
             // initialize assignment arrays prior to iterating
             linkType = networkHandlerGetLinkTypeRpcCall();
+            volau = new double[numLinks];
+            
+            // create a DiskObjectArray for storing shortest path trees
+            createDiskObjectArray();
+        
         }
         catch ( RpcException e ) {
             logger.error ( "RpcException caught.", e );
@@ -152,15 +164,9 @@ public class FW {
             System.exit(1);
         }
 
-        
-        
-		volau = new double[numLinks];
-		
-		// create a DiskObjectArray for storing shortest path trees
-		createDiskObjectArray();
-    
     }
 
+    
 
     /**
      * Frank-Wolfe assignment procedure.
@@ -176,17 +182,16 @@ public class FW {
     
     
     		// determine which links are valid parts of paths for this skim
-    		boolean[] validLinksForClass = null;
+    		boolean[][] validLinksForClasses = networkHandlerGetValidLinksForAllClassesRpcCall();
     		boolean[] validLinks = new boolean[numLinks];
     	    Arrays.fill (validLinks, false);
     		for (int m=0; m < numAutoClasses; m++) {
-    			validLinksForClass = networkHandlerGetValidLinksForClassRpcCall( m );
     			for (int k=0; k < numLinks; k++)
-    				if (validLinksForClass[k])
+    				if (validLinksForClasses[m][k])
     					validLinks[k] = true;
     		}
-    
-    			
+
+            
     		
     		double[][] flow = new double[numAutoClasses][numLinks];
     
@@ -202,10 +207,14 @@ public class FW {
                 }
                 lambdas[iter] = 1.0;
     
-                
-            	double[][] aonFlow = shortestPathTreeHandlerGetMulticlassAonLinkFlowsRpcCall();
+
+                double[] linkCost = networkHandlerSetLinkGeneralizedCostRpcCall();
+                shortestPathHandlerSetLinkCostRpcCall( linkCost );
+                    
+            	double[][] aonFlow = aonFlowHandlerGetMulticlassAonLinkFlowsRpcCall();
     			
-    
+
+                
                 // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
                 if (iter > 0) {
                     if ( bisect ( iter, validLinks, aonFlow, flow ) ) {
@@ -631,11 +640,9 @@ public class FW {
         return (int[])networkHandlerClient.execute("networkHandler.getLinkType", new Vector() );
     }
 
-    private boolean[] networkHandlerGetValidLinksForClassRpcCall( int userClass ) throws Exception {
-        // g.getValidLinksForClass( int i )
-        Vector params = new Vector();
-        params.add( userClass );
-        return (boolean[])networkHandlerClient.execute("networkHandler.getValidLinksForClassInt", params );
+    private boolean[][] networkHandlerGetValidLinksForAllClassesRpcCall() throws Exception {
+        // g.getValidLinksForAllClasses()
+        return (boolean[][])networkHandlerClient.execute("networkHandler.getValidLinksForAllClasses", new Vector() );
     }
 
     private double[] networkHandlerGetCongestedTimeRpcCall() throws Exception {
@@ -699,20 +706,60 @@ public class FW {
         networkHandlerClient.execute("networkHandler.createSelectLinkAnalysisDiskObject", params);
     }
 
+    private double[] networkHandlerSetLinkGeneralizedCostRpcCall() throws Exception {
+        // g.setLinkGeneralizedCost()
+        return (double[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector() );
+    }
+
     
     
     
     
-    private void shortestPathTreeHandlerSetupRpcCall() throws Exception {
+    
+    private boolean demandHandlerSetupRpcCall() throws Exception {
+        Vector params = new Vector();
+        params.add( appPropertyMap );
+        params.add( globalPropertyMap );
+        params.add( timePeriod );
+        return (Boolean)demandHandlerClient.execute("demandHandler.setup", params );
+    }
+    
+    
+
+    
+    
+    private void aonFlowHandlerSetupRpcCall() throws Exception {
         
         Vector params = new Vector();
-        params.addElement( appPropertyMap);
-        params.addElement( globalPropertyMap);
-        shortestPathTreeHandlerClient.execute("shortestPathTreeHandler.setup", params );
+        params.addElement( appPropertyMap );
+        params.addElement( globalPropertyMap );
+        aonFlowHandlerClient.execute("aonFlowHandler.setup", params );
     }
         
-    private double[][] shortestPathTreeHandlerGetMulticlassAonLinkFlowsRpcCall() throws Exception {
-        return (double[][])shortestPathTreeHandlerClient.execute("shortestPathTreeHandler.getMulticlassAonLinkFlows", new Vector() );
+    private double[][] aonFlowHandlerGetMulticlassAonLinkFlowsRpcCall() throws Exception {
+        return (double[][])aonFlowHandlerClient.execute("aonFlowHandler.getMulticlassAonLinkFlows", new Vector() );
     }
+
+    
+    
+    
+    private void shortestPathHandlerSetupRpcCall() throws Exception {
+        Vector params = new Vector();
+        params.addElement( appPropertyMap );
+        params.addElement( globalPropertyMap );
         
+        boolean[][] validLinksForClasses = networkHandlerGetValidLinksForAllClassesRpcCall();
+        params.addElement( validLinksForClasses );
+
+        shortestPathHandlerClient.execute("shortestPathTreeHandler.setup", params );
+    }
+    
+    private void shortestPathHandlerSetLinkCostRpcCall( double[] linkCost ) throws Exception {
+        Vector params = new Vector();
+        params.addElement( linkCost );
+        shortestPathHandlerClient.execute("shortestPathTreeHandler.setLinkCostArray", params );
+    }
+    
+
+    
 }

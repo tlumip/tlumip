@@ -29,12 +29,14 @@ import com.pb.tlumip.model.ModeType;
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
+import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcHandler;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -47,12 +49,13 @@ import org.apache.log4j.Logger;
 public class DemandHandler implements RpcHandler {
 
     public static String remoteHandlerName = "demandHandler";
-    public static String remoteHandlerNode = "tcp://192.168.1.214:6001";
     
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.DemandHandler");
 
     
-	final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
+    RpcClient networkHandlerClient;    
+
+    final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
 
     String componentPropertyName;
     String globalPropertyName;
@@ -71,11 +74,35 @@ public class DemandHandler implements RpcHandler {
 
     
 	double[][][] multiclassTripTable = null;
+    
+    double[][] multiclassTripTableRowSums = null;
 
 	
 
 
 	public DemandHandler() {
+
+        String handlerName = null;
+        
+        try {
+            
+            //Create RpcClients this class connects to
+            try {
+
+                handlerName = NetworkHandler.remoteHandlerName;
+                networkHandlerClient = new RpcClient( handlerName );
+                
+            }
+            catch (MalformedURLException e) {
+                logger.error ( "MalformedURLException caught in DemandHandler() while defining RpcClients.", e );
+            }
+
+        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught in DemandHandler().", e );
+            System.exit(1);
+        }
+
 	}
 
 
@@ -83,23 +110,34 @@ public class DemandHandler implements RpcHandler {
     public Object execute (String methodName, Vector params) throws Exception {
                   
         if ( methodName.equalsIgnoreCase( "setup" ) ) {
+            
+            // get the network attributes needed by demandHandler from the networkHandler
+            int numCentroids = networkHandlerGetNumCentroidsRpcCall();
+            int numUserClasses = networkHandlerGetNumUserClassesRpcCall();
+            int[] nodeIndex = networkHandlerGetNodeIndexRpcCall();
+            HashMap assignmentGroupMap = networkHandlerGetAssignmentGroupMapRpcCall();
+            boolean userClassesIncludeTruck = networkHandlerUserClassesIncludeTruckRpcCall();
+            setNetworkAttributes( numCentroids, numUserClasses, nodeIndex, assignmentGroupMap, userClassesIncludeTruck );
+            
+            // set the property objects from client that initialized this object and build the demand matrices
             HashMap componentPropertyMap = (HashMap)params.get(0);
             HashMap globalPropertyMap = (HashMap)params.get(1);
             String timePeriod = (String)params.get(2);
             return setup( componentPropertyMap, globalPropertyMap, timePeriod );
+
         }
-        else if ( methodName.equalsIgnoreCase( "setNetworkAttributes" ) ) {
-            int numCentroids = (Integer)params.get(0);
-            int numUserClasses = (Integer)params.get(1);
-            int[] nodeIndexArray = (int[])params.get(2);
-            HashMap assignmentGroupMap = (HashMap)params.get(3);
-            boolean userClassesIncludeTruck = (Boolean)params.get(4);
-            setNetworkAttributes( numCentroids, numUserClasses, nodeIndexArray, assignmentGroupMap, userClassesIncludeTruck );
-            return 0;
+        else if ( methodName.equalsIgnoreCase( "getTripTableRowSums" ) ) {
+            return multiclassTripTableRowSums;
+        }
+        else if ( methodName.equalsIgnoreCase( "getTripTableRow" ) ) {
+            int userClass = (Integer)params.get(0);
+            int row = (Integer)params.get(1);
+            double[] tripTableRow = getTripTableRow( userClass, row );
+            return tripTableRow;
         }
         else {
             logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
-            return 0;
+            return null;
         }
         
     }
@@ -143,6 +181,12 @@ public class DemandHandler implements RpcHandler {
     }
     
     
+    public double[] getTripTableRow ( int userClass, int row ) {
+        
+        return multiclassTripTable[userClass][row];
+        
+    }
+    
     
     public double[][][] getMulticlassTripTables () {
         
@@ -154,15 +198,38 @@ public class DemandHandler implements RpcHandler {
     
     private boolean buildDemandObject( String timePeriod ) {
     	
+        int i=0;
+        int j=0;
+        int k=0;
+        
     	// load the trips from PT and CT trip lists into multiclass o/d demand matrices for assignment
         try {
 
+            // read in the trip lists
             multiclassTripTable = createMulticlassDemandMatrices ( timePeriod );
+            
+            
+            multiclassTripTableRowSums = new double[multiclassTripTable.length][multiclassTripTable[0].length];
+            
+            // summarize the trip table rows for each user class
+            for (i=0; i < multiclassTripTable.length; i++)
+                for (j=0; j < multiclassTripTable[i].length; j++)
+                    for (k=0; k < multiclassTripTable[i][j].length; k++)
+                        multiclassTripTableRowSums[i][j] += multiclassTripTable[i][j][k];
+            
+            
             return true;
+            
         }
         catch (Exception e) {
             
-            logger.error ("error building multiclass od demand matrices for " + timePeriod + " period.", e);
+            logger.error ("error building multiclass od demand matrices for " + timePeriod + " period.");
+            logger.error ("multiclassTripTable.length=" + multiclassTripTable.length);
+            logger.error ("multiclassTripTable[0].length=" + multiclassTripTable[0].length);
+            logger.error ("multiclassTripTable[0][0].length=" + multiclassTripTable[0][0].length);
+            logger.error ("multiclassTripTableRowSums.length=" + multiclassTripTableRowSums.length);
+            logger.error ("multiclassTripTableRowSums[0].length=" + multiclassTripTableRowSums[0].length);
+            logger.error ("i=" + i + ", j=" + j + ", k=" + k, e);
             return false;
             
         }
@@ -175,7 +242,7 @@ public class DemandHandler implements RpcHandler {
         
 		String myDateString;
 		
-    	double[][][] multiclassTripTable = new double[highwayModeCharacters.length][][];
+    	double[][][] multiclassTripTable = new double[networkNumUserClasses][][];
 		
 
     	int startHour = 0;
@@ -211,7 +278,7 @@ public class DemandHandler implements RpcHandler {
 		if ( assignmentGroupMap.containsKey( String.valueOf('a') ) ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
 			logger.info ("reading " + timePeriod + " PT trip list at: " + myDateString);
-			multiclassTripTable[0] = getAutoTripTableFromPTList ( networkNumCentroids, networkNodeIndexArray, ptFileName, startHour, endHour );
+			multiclassTripTable[0] = getAutoTripTableFromPTList ( networkNodeIndexArray, ptFileName, startHour, endHour );
 		}
 		else {
 			logger.info ("no auto class defined, so " + timePeriod + " PT trip list was not read." );
@@ -222,7 +289,7 @@ public class DemandHandler implements RpcHandler {
 		if ( networkUserClassesIncludeTruck ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
 			logger.info ("reading " + timePeriod + " CT trip list at: " + myDateString);
-			double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ( assignmentGroupMap, networkNumCentroids, networkNodeIndexArray, ctFileName, startHour, endHour );
+			double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ( assignmentGroupMap, networkNodeIndexArray, ctFileName, startHour, endHour );
 
 			for(int i=0; i < truckTripTables.length - 1; i++)
 				multiclassTripTable[i+1] = truckTripTables[i];
@@ -236,7 +303,7 @@ public class DemandHandler implements RpcHandler {
 	
 
     
-    private double[][] getAutoTripTableFromPTList ( int numCentroids, int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
+    private double[][] getAutoTripTableFromPTList ( int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
         
         int orig;
         int dest;
@@ -248,7 +315,7 @@ public class DemandHandler implements RpcHandler {
         int tripCount=0;
         
         
-        double[][] tripTable = new double[numCentroids+1][numCentroids+1];
+        double[][] tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
         
 
         
@@ -307,7 +374,7 @@ public class DemandHandler implements RpcHandler {
     }
     
 
-    private double[][][] getTruckAssignmentGroupTripTableFromCTList ( HashMap assignmentGroupMap, int numCentroids, int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
+    private double[][][] getTruckAssignmentGroupTripTableFromCTList ( HashMap assignmentGroupMap, int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
 
         int orig;
         int dest;
@@ -322,14 +389,9 @@ public class DemandHandler implements RpcHandler {
         int allTruckTripCount=0;
         
 
-        int numAssignmentGroups = assignmentGroupMap.keySet().size();
-		if ( assignmentGroupMap.containsKey( String.valueOf('a') ) )
-			numAssignmentGroups--;
-        
-        
         double[] tripsByUserClass = new double[highwayModeCharacters.length];
-        double[] tripsByAssignmentGroup = new double[numAssignmentGroups];
-        double[][][] tripTable = new double[numAssignmentGroups][numCentroids+1][numCentroids+1];
+        double[] tripsByAssignmentGroup = new double[networkNumUserClasses];
+        double[][][] tripTable = new double[networkNumUserClasses][networkNumCentroids+1][networkNumCentroids+1];
 
 
 
@@ -399,4 +461,31 @@ public class DemandHandler implements RpcHandler {
 
     }
    
+
+
+    private int networkHandlerGetNumUserClassesRpcCall() throws Exception {
+        // g.getNumUserClasses()
+        return (Integer)networkHandlerClient.execute("networkHandler.getNumUserClasses", new Vector() );
+    }
+
+    private int networkHandlerGetNumCentroidsRpcCall() throws Exception {
+        // g.getNumCentroids()
+        return (Integer)networkHandlerClient.execute("networkHandler.getNumCentroids", new Vector());
+    }
+
+    private int[] networkHandlerGetNodeIndexRpcCall() throws Exception {
+        // g.getNodeIndex()
+        return (int[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector() );
+    }
+
+    private HashMap networkHandlerGetAssignmentGroupMapRpcCall() throws Exception {
+        // g.getAssignmentGroupMap()
+        return (HashMap)networkHandlerClient.execute("networkHandler.getAssignmentGroupMap", new Vector() );
+    }
+
+    private boolean networkHandlerUserClassesIncludeTruckRpcCall() throws Exception {
+        // g.userClassesIncludeTruck()
+        return (Boolean)networkHandlerClient.execute("networkHandler.userClassesIncludeTruck", new Vector() );
+    }
+    
 }

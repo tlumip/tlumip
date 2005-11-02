@@ -371,6 +371,10 @@ public class Network implements Serializable {
         return turnPenaltyArray;
     }
     
+    public boolean[][] getValidLinksForAllClasses () {
+        return validLinksForClass;
+    }
+
     public boolean[] getValidLinksForClass ( int userClass ) {
         return validLinksForClass[userClass];
     }

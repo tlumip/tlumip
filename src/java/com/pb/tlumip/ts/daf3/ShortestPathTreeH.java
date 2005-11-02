@@ -23,7 +23,6 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
-import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.Justify;
@@ -78,35 +77,19 @@ public class ShortestPathTreeH {
 
     public ShortestPathTreeH () {
 
-        String nodeName = null;
         String handlerName = null;
         
         try {
         
-            //Need a config file to initialize a Daf node
-//            DafNode.getInstance().init("sp-client", TS.tsRpcConfigFileName);
-
-            //Create RpcClients this class connects to
             try {
-                nodeName = NetworkHandler.remoteHandlerNode;
                 handlerName = NetworkHandler.remoteHandlerName;
                 networkHandlerClient = new RpcClient( handlerName );
             }
             catch (MalformedURLException e) {
-            
                 logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
-            
             }
 
         }
-//        catch ( RpcException e ) {
-//            logger.error ( "RpcException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-//            System.exit(1);
-//        }
-//        catch ( IOException e ) {
-//            logger.error ( "IOException caught in ShortestPathTreeH() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-//            System.exit(1);
-//        }
         catch ( Exception e ) {
             logger.error ( "Exception caught in ShortestPathTreeH().", e );
             System.exit(1);

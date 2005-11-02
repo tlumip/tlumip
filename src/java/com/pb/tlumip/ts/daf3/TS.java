@@ -23,6 +23,7 @@ package com.pb.tlumip.ts.daf3;
  */
 
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.ShortestPathTreeHandler;
 
 
 import com.pb.common.rpc.DafNode;
@@ -51,8 +52,7 @@ public class TS {
     ResourceBundle appRb;
     ResourceBundle globalRb;
 
-    public static String tsRpcConfigFileName = "tsHandlers.groovy";
-    public static String urlPathToRemoteNode;
+    public static String tsRpcConfigFileName;
 
     String tsPropertyName;
     String globalPropertyName;
@@ -60,7 +60,7 @@ public class TS {
     String assignmentPeriod;
     
     RpcClient networkHandlerClient;    
-    
+    RpcClient shortestPathHandlerClient;
 	
 	
 	
@@ -72,7 +72,6 @@ public class TS {
         tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap( appPropertyName );
         globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap( globalPropertyName );
 		
-        String nodeName = null;
         String handlerName = null;
         
         try {
@@ -82,9 +81,11 @@ public class TS {
 
             //Create RpcClients this class connects to
             try {
-                nodeName = NetworkHandler.remoteHandlerNode;
                 handlerName = NetworkHandler.remoteHandlerName;
                 networkHandlerClient = new RpcClient( handlerName );
+                
+                handlerName = ShortestPathTreeHandler.remoteHandlerName;
+                shortestPathHandlerClient = new RpcClient( handlerName );
             }
             catch (MalformedURLException e) {
             
@@ -92,14 +93,6 @@ public class TS {
             
             }
 
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught in TS() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught in TS() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-            System.exit(1);
         }
         catch ( Exception e ) {
             logger.error ( "Exception caught in TS().", e );
@@ -116,7 +109,6 @@ public class TS {
         tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
         globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
-        String nodeName = null;
         String handlerName = null;
         
         try {
@@ -126,9 +118,11 @@ public class TS {
 
             //Create RpcClients this class connects to
             try {
-                nodeName = NetworkHandler.remoteHandlerNode;
                 handlerName = NetworkHandler.remoteHandlerName;
                 networkHandlerClient = new RpcClient( handlerName );
+                
+                handlerName = ShortestPathTreeHandler.remoteHandlerName;
+                shortestPathHandlerClient = new RpcClient( handlerName );
             }
             catch (MalformedURLException e) {
             
@@ -136,14 +130,6 @@ public class TS {
             
             }
 
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught in TS() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught in TS() establishing " + nodeName + " as the remote machine for running the " + handlerName + " object.", e );
-            System.exit(1);
         }
         catch ( Exception e ) {
             logger.error ( "Exception caught in TS().", e );
@@ -164,7 +150,7 @@ public class TS {
     	multiclassEquilibriumHighwayAssignment ( assignmentPeriod );
 		
     	// write the auto time and distance highway skim matrices to disk
-    	writeHighwaySkimMatrices ( assignmentPeriod, 'a' );
+//    	writeHighwaySkimMatrices ( assignmentPeriod, 'a' );
 		
     	// if at some point in time we want to have truck specific highway skims,
     	// we'd create them here and would modify the the properties file to include
@@ -179,9 +165,9 @@ public class TS {
     
     private void initializeHighwayAssignment ( String assignmentPeriod ) {
         
-        logger.info ( "creating " + assignmentPeriod + " period NetworkHandler object for highway assignment at: " + DateFormat.getDateTimeInstance().format(new Date()) );
 
         try {
+            logger.info ( "creating " + assignmentPeriod + " period NetworkHandler object for highway assignment at: " + DateFormat.getDateTimeInstance().format(new Date()) );
             networkHandlerSetupRpcCall();
         }
         catch ( RpcException e ) {
@@ -325,8 +311,12 @@ public class TS {
         networkHandlerClient.execute("networkHandler.writeNetworkAttributes", params );
     }
 
+    private boolean[][] networkHandlerGetValidLinksForAllClassesRpcCall() throws Exception {
+        // g.getValidLinksForAllClasses()
+        return (boolean[][])networkHandlerClient.execute("networkHandler.getValidLinksForAllClasses", new Vector() );
+    }
 
-    
+
     
     
     public static void main (String[] args) {
@@ -342,7 +332,7 @@ public class TS {
             break;
 
         case 2:
-            urlPathToRemoteNode = args[1];
+            String urlPathToRemoteNode = args[1];
             break;
 
         }
