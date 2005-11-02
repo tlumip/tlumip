@@ -4,8 +4,11 @@
 listenPort = 6001
 
 //Define node URLs
-nodes[0].name = "isis"
-nodes[0].url = "tcp://192.168.1.214:6001"
+nodes[0].name = "thinkPad"
+nodes[0].url = "tcp://192.168.1.103:6001"
+
+nodes[1].name = "isis"
+nodes[1].url = "tcp://192.168.1.214:6001"
 
 //Define handler classes, these are the rpc-end points on this node
 handlers[0].name = "networkHandler"
@@ -19,3 +22,7 @@ handlers[1].node = "isis"
 handlers[2].name = "shortestPathTreeHandler"
 handlers[2].className = "com.pb.tlumip.ts.ShortestPathTreeHandler"
 handlers[2].node = "isis"
+
+handlers[3].name = "aonFlowHandler"
+handlers[3].className = "com.pb.tlumip.ts.AonFlowHandler"
+handlers[3].node = "isis"
