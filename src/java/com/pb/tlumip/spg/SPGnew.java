@@ -20,11 +20,11 @@ import com.pb.common.util.IndexSort;
 import com.pb.common.util.Format;
 import com.pb.common.util.SeededRandom;
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.util.Halo;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.GeneralDecimalFormat;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.tlumip.model.Halo;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.Occupation;
 
@@ -142,9 +142,13 @@ public class SPGnew {
 		SeededRandom.setSeed( 0 );
 
 		halo = new Halo();
-		halo.setPumaFieldName( "PUMA5pct" );
-        // halo.setPumaFieldName( "00PUMA5pct" );
-        halo.readZoneIndices ( (String)globalPropertyMap.get("alpha2beta.file") );      
+        halo.setPumaFieldName( (String)globalPropertyMap.get("pumaField.name") );
+        halo.setStateFipsFieldName( (String)globalPropertyMap.get("stateFipsField.name") );
+        halo.setStateLabelFieldName( (String)globalPropertyMap.get("stateLabelField.name") );
+        halo.setTazFieldName( (String)globalPropertyMap.get("tazField.name") );
+        
+        String[] columnFormats = { "NUMBER", "NUMBER", "STRING", "STRING", "NUMBER", "NUMBER", "NUMBER", "NUMBER", "STRING", "STRING", "STRING", "NUMBER", "STRING", "NUMBER", "NUMBER", "NUMBER", "NUMBER", "NUMBER" };
+        halo.readZoneIndices ( (String)globalPropertyMap.get("alpha2beta.file"), columnFormats );      
 		
 		edInd = new EdIndustry();
 		workers = new Workers();
@@ -1425,10 +1429,22 @@ public class SPGnew {
 			PUMSFILE[i] = (String)spgPropertyMap.get( propertyName );
 		}
 
+        // create a HashMap of field names to use based on those specified in properties file
+        HashMap fieldNameMap = new HashMap();
+        fieldNameMap.put( "pumaName", (String)spgPropertyMap.get( "pums.pumaField.name" ) );
+        fieldNameMap.put( "stateName", (String)spgPropertyMap.get( "pums.stateField.name" ) );
+        fieldNameMap.put( "personsName", (String)spgPropertyMap.get( "pums.personsField.name" ) );
+        fieldNameMap.put( "hhWeightName", (String)spgPropertyMap.get( "pums.hhWeightField.name" ) );
+        fieldNameMap.put( "hhIncName", (String)spgPropertyMap.get( "pums.hhIncomeField.name" ) );
+        fieldNameMap.put( "industryName", (String)spgPropertyMap.get( "pums.industryField.name" ) );
+        fieldNameMap.put( "occupationName", (String)spgPropertyMap.get( "pums.occupationField.name" ) );
+        fieldNameMap.put( "empStatName", (String)spgPropertyMap.get( "pums.empStatField.name" ) );
+        fieldNameMap.put( "personWeightName", (String)spgPropertyMap.get( "pums.personWeightField.name" ) );
+        
 		
 		for (int i=0; i < halo.getNumberOfStates(); i++) {
             
-			hhList = pums.readSpg1Attributes ( PUMSFILE[i], halo, workers );
+			hhList = pums.readSpg1Attributes ( PUMSFILE[i], halo, workers, edInd, occ, fieldNameMap );
 
 			logger.info ( hhList.size() + " household records found in " + halo.getStateLabel(i) + " PUMS data file." ); 
 
@@ -2025,64 +2041,75 @@ public class SPGnew {
 
 
     	
-		String incomeSizeFileName = (String)spgPropertyMap.get("incomeSizeCalibration.fileName");
-		String industryOccupationFileName = (String)spgPropertyMap.get("industryOccupationCalibration.fileName");
-    	
-    	
 		PrintWriter outStream = null;
 
         // open output stream for writing SPG1 calibration results file
 		try {
 			
-			// write csv file header record
-			outStream = new PrintWriter (new BufferedWriter( new FileWriter(incomeSizeFileName) ) );
-			outStream.println ( "State,PUMA,IncomeSize,Workers,HH_Frequency");
+            String incomeSizeFileName = (String)spgPropertyMap.get("incomeSizeCalibration.fileName");
 
-			// write hh size/income category descriptions and frequencies by state and puma
-			for (int i=0; i < hhsByStatePumaCategory.length; i++) {
-				for (int j=0; j < hhsByStatePumaCategory[i].length; j++) {
-					for (int k=0; k < hhsByStatePumaCategory[i][j].length; k++) {
-						for (int m=0; m < hhsByStatePumaCategory[i][j][k].length; m++) {
-						
-							state = halo.getStateLabel(i);
-							puma = halo.getPumaLabel(i, j);
-							incomeSizeLabel = incSize.getIncomeSizeLabel(k);
-							value = hhsByStatePumaCategory[i][j][k][m];
-						
-							if (value > 0)
-								outStream.println( state + "," + puma + "," + incomeSizeLabel + "," + (m < workers.getNumberWorkerCategories()-1 ? Integer.toString(m) : (workers.getNumberWorkerCategories()-1 + "+")) + "," + value );
-						}
-					}
-				}
-			}
-			outStream.close();
+            if ( incomeSizeFileName != null ) {
+                
+                // write csv file header record
+                outStream = new PrintWriter (new BufferedWriter( new FileWriter(incomeSizeFileName) ) );
+                outStream.println ( "State,PUMA,IncomeSize,Workers,HH_Frequency");
+
+                // write hh size/income category descriptions and frequencies by state and puma
+                for (int i=0; i < hhsByStatePumaCategory.length; i++) {
+                    for (int j=0; j < hhsByStatePumaCategory[i].length; j++) {
+                        for (int k=0; k < hhsByStatePumaCategory[i][j].length; k++) {
+                            for (int m=0; m < hhsByStatePumaCategory[i][j][k].length; m++) {
+                            
+                                state = halo.getStateLabel(i);
+                                puma = halo.getPumaLabel(i, j);
+                                incomeSizeLabel = incSize.getIncomeSizeLabel(k);
+                                value = hhsByStatePumaCategory[i][j][k][m];
+                            
+                                if (value > 0)
+                                    outStream.println( state + "," + puma + "," + incomeSizeLabel + "," + (m < workers.getNumberWorkerCategories()-1 ? Integer.toString(m) : (workers.getNumberWorkerCategories()-1 + "+")) + "," + value );
+                            }
+                        }
+                    }
+                }
+                
+                outStream.close();
+
+            }
 
 
 		
 		
-			// write csv file header record
-			outStream = new PrintWriter (new BufferedWriter( new FileWriter(industryOccupationFileName) ) );
-			outStream.println ( "State,PUMA,Industry,Occupation,Worker_Frequency");
+            String industryOccupationFileName = (String)spgPropertyMap.get("industryOccupationCalibration.fileName");
+            
+            if ( industryOccupationFileName != null ) {
+                
+                // write csv file header record
+                outStream = new PrintWriter (new BufferedWriter( new FileWriter(industryOccupationFileName) ) );
+                outStream.println ( "State,PUMA,Industry,Occupation,Worker_Frequency");
 
-			// write hh size/income category descriptions and frequencies by state and puma
-			for (int i=0; i < personsByStatePumaIndOcc.length; i++) {
-				for (int j=0; j < personsByStatePumaIndOcc[i].length; j++) {
-					for (int k=0; k < personsByStatePumaIndOcc[i][j].length; k++) {
-						for (int m=0; m < personsByStatePumaIndOcc[i][j][k].length; m++) {
-							state = halo.getStateLabel(i);
-							puma = halo.getPumaLabel(i, j);
-							industryLabel = edInd.getEdIndustryLabel(k);
-							occupationLabel = occ.getOccupationLabel(m);
-							value = personsByStatePumaIndOcc[i][j][k][m];
-							
-							if (value > 0)
-								outStream.println( state + "," + puma + "," + industryLabel + "," + occupationLabel + "," + value );
-						}
-					}
-				}
-			}
-			outStream.close();
+                // write hh size/income category descriptions and frequencies by state and puma
+                for (int i=0; i < personsByStatePumaIndOcc.length; i++) {
+                    for (int j=0; j < personsByStatePumaIndOcc[i].length; j++) {
+                        for (int k=0; k < personsByStatePumaIndOcc[i][j].length; k++) {
+                            for (int m=0; m < personsByStatePumaIndOcc[i][j][k].length; m++) {
+                                state = halo.getStateLabel(i);
+                                puma = halo.getPumaLabel(i, j);
+                                industryLabel = edInd.getEdIndustryLabel(k);
+                                occupationLabel = occ.getOccupationLabel(m);
+                                value = personsByStatePumaIndOcc[i][j][k][m];
+                                
+                                if (value > 0)
+                                    outStream.println( state + "," + puma + "," + industryLabel + "," + occupationLabel + "," + value );
+                            }
+                        }
+                    }
+                }
+                
+                outStream.close();
 
+            }
+
+            
 		}
 		catch (IOException e) {
 			logger.fatal ("I/O exception writing SPG calibration results file.");

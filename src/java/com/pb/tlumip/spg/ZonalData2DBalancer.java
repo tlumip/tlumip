@@ -2,12 +2,12 @@ package com.pb.tlumip.spg;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
+import com.pb.common.util.Halo;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrixBalancerDouble;
 import com.pb.common.matrix.NDimensionalMatrixDouble;
 import com.pb.common.matrix.Vector;
-import com.pb.tlumip.model.Halo;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
  */
 public class ZonalData2DBalancer {
     
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.spg");
+	protected static Logger logger = Logger.getLogger("com.pb.common.util");
     
     // the Halo object defines such things as the states and pumas in the model area,
     // the zonal correspondence file, etc...
@@ -190,10 +190,13 @@ public class ZonalData2DBalancer {
         SeededRandom.setSeed( 0 );
     
         halo = new Halo();
-        // halo.setPumaFieldName( "PUMA5pct" );
-        halo.setPumaFieldName( "00PUMA5pct" );
-        halo.readZoneIndices ( (String)globalPropertyMap.get("alpha2beta.file") );      
+        halo.setPumaFieldName( (String)globalPropertyMap.get("pumaField.name") );
+        halo.setStateFipsFieldName( (String)globalPropertyMap.get("stateFipsField.name") );
+        halo.setStateLabelFieldName( (String)globalPropertyMap.get("stateLabelField.name") );
+        halo.setTazFieldName( (String)globalPropertyMap.get("tazField.name") );
         
+        String[] columnFormats = { "NUMBER", "NUMBER", "STRING", "STRING", "NUMBER", "NUMBER", "NUMBER", "NUMBER", "STRING", "STRING", "STRING", "NUMBER", "STRING", "NUMBER", "NUMBER", "NUMBER", "NUMBER", "NUMBER" };
+        halo.readZoneIndices ( (String)globalPropertyMap.get("alpha2beta.file"), columnFormats );      
         
         // read the targets files
         targets = new float[2][][];

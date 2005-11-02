@@ -17,7 +17,9 @@
 package com.pb.tlumip.spg;
 
 import com.pb.common.util.DataDictionary;
-import com.pb.tlumip.model.Halo;
+import com.pb.common.util.Halo;
+import com.pb.tlumip.model.Industry;
+import com.pb.tlumip.model.Occupation;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -45,18 +47,22 @@ public class PUMSData {
 	public static final int PERSON_ARRAY_INDEX = HHWRKRS_INDEX + 1;
 	
     DataDictionary dd;
+    String year;
 
     
     
     public PUMSData (String PUMSDataDictionary, String year) {
         this.dd = new DataDictionary(PUMSDataDictionary, year);
+        this.year = year;
     }
 
 
     
-	public ArrayList readSpg1Attributes (String fileName, Halo halo, Workers hhWorkers ) {
+	public ArrayList readSpg1Attributes (String fileName, Halo halo, Workers hhWorkers, EdIndustry ind, Occupation occ, HashMap fieldMap ) {
 
-		int recCount=0;
+
+        
+        int recCount=0;
 		
 		int hhid = 0;
 		int numPersons = 0;
@@ -78,7 +84,7 @@ public class PUMSData {
 			while ((s = in.readLine()) != null) {
 				recCount++;
         
-				numPersons = getPUMSHHDataValue (s, "PERSONS");
+				numPersons = getPUMSHHDataValue (s, (String)fieldMap.get( "personsName" ) );
 				
 				
 				// skip HH records where persons field is zero
@@ -89,11 +95,11 @@ public class PUMSData {
 
 						hhAttribs = new int[PERSON_ARRAY_INDEX + SPGnew.NUM_PERSON_ATTRIBUTES*numPersons + SPGnew.NUM_PERSON_ATTRIBUTES];
 						hhAttribs[HHID_INDEX] = hhid;
-						hhAttribs[STATE_INDEX] = getPUMSHHDataValue (s, "STATE");
-						hhAttribs[PUMA_INDEX] = getPUMSHHDataValue (s, "PUMA");
+						hhAttribs[STATE_INDEX] = getPUMSHHDataValue (s, (String)fieldMap.get( "stateName" ) );
+						hhAttribs[PUMA_INDEX] = getPUMSHHDataValue (s, (String)fieldMap.get( "pumaName" ) );
 						hhAttribs[HHSIZE_INDEX] = numPersons;
-						hhAttribs[HHINC_INDEX] = getPUMSHHDataValue (s, "RHHINC");
-						hhAttribs[HHWT_INDEX] = getPUMSHHDataValue (s, "HOUSWGT");
+						hhAttribs[HHINC_INDEX] = getPUMSHHDataValue (s, (String)fieldMap.get( "hhWeightName" ) );
+						hhAttribs[HHWT_INDEX] = getPUMSHHDataValue (s, (String)fieldMap.get( "hhWeightName" ) );
 
 
 						// don't save info if hh is not in halo.  read person records then skip to nex hh record.
@@ -117,11 +123,25 @@ public class PUMSData {
 								System.exit (21);
 							}
 							
-							industry = getPUMSPersDataValue (s, "INDUSTRY");
-							occup = getPUMSPersDataValue (s, "OCCUP");
-							rlabor = getPUMSPersDataValue (s, "RLABOR");
-							personWeight = getPUMSPersDataValue (s, "PWGT1");
+                            rlabor = getPUMSPersDataValue (s, (String)fieldMap.get( "empStatName" ) );
+                            personWeight = getPUMSPersDataValue (s, (String)fieldMap.get( "personWeightName" ) );
 
+                            if ( year.compareToIgnoreCase("2000") == 0 ){
+                                
+                                industry = getPUMSPersDataValue (s, (String)fieldMap.get( "industryName" ) );
+                                occup = getPUMSPersDataValue (s, (String)fieldMap.get( "occupName" ) );
+                                
+                            }
+                            else {
+                                
+                                industry = getPUMSPersDataValue (s, (String)fieldMap.get( "industryName" ) );
+                                occup = getPUMSPersDataValue (s, (String)fieldMap.get( "occupName" ) );
+                                
+                            }
+
+                            
+                            
+                            
 							switch (rlabor) {
 								case 0:
 								case 3:
@@ -397,6 +417,10 @@ public class PUMSData {
 
     private int getPUMSPersDataValue (String s, String PUMSVariable) {
         return Integer.parseInt ( s.substring(dd.getStartCol(dd.PersAttribs, PUMSVariable), dd.getLastCol(dd.PersAttribs, PUMSVariable)) );        
+    }
+
+    private String getPUMSPersStringValue (String s, String PUMSVariable) {
+        return s.substring(dd.getStartCol(dd.PersAttribs, PUMSVariable), dd.getLastCol(dd.PersAttribs, PUMSVariable) );        
     }
 
 
