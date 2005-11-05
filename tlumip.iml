@@ -16,6 +16,7 @@
     <orderEntry type="module" module-name="common-daf-v3" />
     <orderEntry type="library" name="Groovy from GroovyJ 0.1.4 (Irida)" level="application" />
     <orderEntry type="module" module-name="logging-log4j-1.2.9" />
+    <orderEntry type="module" module-name="jakarta-commons" />
     <orderEntryProperties />
   </component>
 </module>
