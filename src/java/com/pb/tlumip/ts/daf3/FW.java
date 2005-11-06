@@ -173,6 +173,8 @@ public class FW {
      */
 	public void iterate () {
 
+        
+        int iterationsCompleted = 0;
 		
         try {
 
@@ -258,7 +260,8 @@ public class FW {
     
                 networkHandlerLogLinkTimeFreqsRpcCall (validLinks);
     			
-    			
+                iterationsCompleted++;
+                
     			if ( Math.abs( (lub - glb)/glb ) < fwGap )
     				break;
     			
@@ -282,7 +285,7 @@ public class FW {
     
             logger.info ("");
             logger.info (myFormat.right("iter", 5) + myFormat.right("lambdas", 12) + myFormat.right("Flow Props", 12));
-            for (int i=0; i < maxFwIters; i++)
+            for (int i=0; i < iterationsCompleted; i++)
                 logger.info (myFormat.right(i, 5) + myFormat.right(lambdas[i], 12, 6) + myFormat.right(100.0*fwFlowProps[i], 12, 4) + "%");
             logger.info ("");
     
