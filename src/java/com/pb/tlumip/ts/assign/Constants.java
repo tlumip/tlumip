@@ -24,6 +24,7 @@ public class Constants {
     public static final int MAX_AUTO_CLASSES = 1;
     public static final int MAX_TIME_PERIODS = 1;
 	public static final int TIME_PERIOD = 0;
+    static final int MAX_LINK_TYPE = 1000;
 
 	public static final int MAX_INTERNAL_ZONES = 2849;
 

@@ -176,10 +176,10 @@ public class FW {
 			}
 			g.setFlows(flow);
 			g.setVolau(volau);
-            g.applyVdfs(validLinks);
+            g.applyVdfs();
 
             
-			g.logLinkTimeFreqs (validLinks);
+			g.logLinkTimeFreqs ();
 			
 			
 			if ( Math.abs( (lub - glb)/glb ) < fwGap )
@@ -362,10 +362,10 @@ public class FW {
         }
         
 		g.setVolau(volau);
-		g.setVolCapRatios(volau);
-        g.applyVdfIntegrals(validLinks);
+		g.setVolCapRatios();
+        g.applyVdfIntegrals();
 
-        return( g.getSumOfVdfIntegrals(validLinks) );
+        return( g.getSumOfVdfIntegrals() );
     }
 
 
@@ -388,7 +388,7 @@ public class FW {
 		}
         
 		g.setVolau(volau);
-		g.applyVdfs(validLinks);
+		g.applyVdfs();
 		double[] cTime = g.getCongestedTime();
 		
 		double gap = 0.0;
@@ -427,7 +427,7 @@ public class FW {
 		}
         
 		g.setVolau(volau);
-		g.applyVdfs(validLinks);
+		g.applyVdfs();
 		double[] cTime = g.getCongestedTime();
 
         double gap = 0.0;

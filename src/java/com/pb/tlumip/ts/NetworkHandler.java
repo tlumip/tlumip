@@ -133,27 +133,42 @@ public class NetworkHandler implements RpcHandler {
             return 0;
         }
         else if ( methodName.equalsIgnoreCase( "setVolCapRatios" ) ) {
-            double[] volau = (double[])params.get(0);
-            setVolCapRatios( volau );
+            setVolCapRatios();
             return 0;
         }
         else if ( methodName.equalsIgnoreCase( "applyVdfs" ) ) {
-            boolean[] validLinks = (boolean[])params.get(0);
-            applyVdfs( validLinks );
+            applyVdfs();
             return 0;
         }
         else if ( methodName.equalsIgnoreCase( "applyVdfIntegrals" ) ) {
-            boolean[] validLinks = (boolean[])params.get(0);
-            applyVdfIntegrals( validLinks );
+            applyVdfIntegrals();
             return 0;
         }
         else if ( methodName.equalsIgnoreCase( "getSumOfVdfIntegrals" ) ) {
-            boolean[] validLinks = (boolean[])params.get(0);
-            return getSumOfVdfIntegrals( validLinks );
+            return getSumOfVdfIntegrals();
         }
         else if ( methodName.equalsIgnoreCase( "logLinkTimeFreqs" ) ) {
-            boolean[] validLinks = (boolean[])params.get(0);
-            logLinkTimeFreqs( validLinks );
+            logLinkTimeFreqs();
+            return 0;
+        }
+        else if ( methodName.equalsIgnoreCase( "fwBisect" ) ) {
+            int iter = (Integer)params.get(0);
+            double[][] aonFlow = (double[][])params.get(1);
+            double[][] flow = (double[][])params.get(2);
+            return g.bisect (iter, aonFlow, flow );
+        }
+        else if ( methodName.equalsIgnoreCase( "getFwOfValue" ) ) {
+            double[][] flow = (double[][])params.get(0);
+            return g.ofValue ( flow );
+        }
+        else if ( methodName.equalsIgnoreCase( "getFwGapValue" ) ) {
+            double[][] aonFlow = (double[][])params.get(0);
+            double[][] flow = (double[][])params.get(1);
+            return g.ofGap ( aonFlow, flow );
+        }
+        else if ( methodName.equalsIgnoreCase( "linkSummaryReport" ) ) {
+            double[][] flow = (double[][])params.get(0);
+            g.linkSummaryReport ( flow );
             return 0;
         }
         else if ( methodName.equalsIgnoreCase( "createSelectLinkAnalysisDiskObject" ) ) {
@@ -263,24 +278,24 @@ public class NetworkHandler implements RpcHandler {
         g.setVolau( volau );
     }
     
-    public void setVolCapRatios ( double[] volau ) {
-        g.setVolCapRatios ( volau );
+    public void setVolCapRatios () {
+        g.setVolCapRatios ();
     }
     
-    public void applyVdfs ( boolean[] validLinks ) {
-        g.applyVdfs( validLinks );
+    public void applyVdfs () {
+        g.applyVdfs();
     }
     
-    public void applyVdfIntegrals ( boolean[] validLinks ) {
-        g.applyVdfIntegrals( validLinks );
+    public void applyVdfIntegrals () {
+        g.applyVdfIntegrals();
     }
     
-    public double getSumOfVdfIntegrals ( boolean[] validLinks ) {
-        return g.getSumOfVdfIntegrals( validLinks );
+    public double getSumOfVdfIntegrals () {
+        return g.getSumOfVdfIntegrals();
     }
     
-    public void logLinkTimeFreqs ( boolean[] validLinks ) {
-        g.logLinkTimeFreqs( validLinks );
+    public void logLinkTimeFreqs () {
+        g.logLinkTimeFreqs();
     }
     
     public char[] getUserClasses () {

@@ -24,7 +24,6 @@ import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.AonFlowHandler;
 import com.pb.tlumip.ts.ShortestPathTreeHandler;
-import com.pb.tlumip.ts.assign.Constants;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -41,10 +40,7 @@ public class FW {
 
     Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3.FW");
 
-    static Constants c = new Constants();
-
 	static final int SIZEOF_INT = 4;
-	static final int MAX_LINK_TYPE = 1000;
 
     HashMap appPropertyMap;
     HashMap globalPropertyMap;
@@ -53,9 +49,6 @@ public class FW {
 
     double [] lambdas;
     double [] fwFlowProps;
-    
-	double[] volau;
-	int[] linkType;
     
     int numAutoClasses;
     int numLinks;
@@ -143,10 +136,6 @@ public class FW {
             // setup the aonFlowHandlerClient object
             aonFlowHandlerSetupRpcCall();
             
-            // initialize assignment arrays prior to iterating
-            linkType = networkHandlerGetLinkTypeRpcCall();
-            volau = new double[numLinks];
-            
             // create a DiskObjectArray for storing shortest path trees
             createDiskObjectArray();
         
@@ -175,34 +164,21 @@ public class FW {
 
         
         int iterationsCompleted = 0;
+        boolean converged = false;
 		
         try {
 
+            
             double lub = 0.0;
     	    double gap = 0.0;
     	    double glb = 0.0;
     
-    
-    		// determine which links are valid parts of paths for this skim
-    		boolean[][] validLinksForClasses = networkHandlerGetValidLinksForAllClassesRpcCall();
-    		boolean[] validLinks = new boolean[numLinks];
-    	    Arrays.fill (validLinks, false);
-    		for (int m=0; m < numAutoClasses; m++) {
-    			for (int k=0; k < numLinks; k++)
-    				if (validLinksForClasses[m][k])
-    					validLinks[k] = true;
-    		}
+    		double[][] flow = new double[numAutoClasses][numLinks];
 
             
-    		
-    		double[][] flow = new double[numAutoClasses][numLinks];
-    
-    		for (int m=0; m < numAutoClasses; m++)
-    		    Arrays.fill (flow[m], 0.0);
-    
             
             // loop thru FW iterations
-            for (int iter=0; iter < maxFwIters; iter++) {
+            for (int iter=0; iter < maxFwIters && !converged; iter++) {
             	
                 if(logger.isDebugEnabled()) {
                     logger.debug("Iteration = " + iter);
@@ -215,28 +191,24 @@ public class FW {
                     
             	double[][] aonFlow = aonFlowHandlerGetMulticlassAonLinkFlowsRpcCall();
     			
-
                 
-                // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
                 if (iter > 0) {
-                    if ( bisect ( iter, validLinks, aonFlow, flow ) ) {
-                        logger.error ("Exact FW optimal solution found.  Unlikely, better check into this!");
-                        iter = maxFwIters;
-                    }
+                    // print assignment iterations report
+                    lub = networkHandlerGetFwOfValueRpcCall ( flow );
+                    gap = Math.abs( networkHandlerGetFwGapValueRpcCall( aonFlow, flow ));
+                    if ( ( lub - gap ) > glb )
+                        glb = lub - gap;
+
+                    if ( Math.abs( (lub - glb)/glb ) < fwGap )
+                        converged = true;
+                    
                 }
                 else {
-    				glb = Double.NEGATIVE_INFINITY;
-    				lub = 0.0;
-    				gap = 0.0;
+                    glb = Double.NEGATIVE_INFINITY;
+                    lub = 0.0;
+                    gap = 0.0;
                 }
-    
-    
-                // print assignment iterations report
-                lub = ofValue(validLinks, flow);
-    			gap = Math.abs(ofGap( validLinks, aonFlow, flow ));
-                if ( ( lub - gap ) > glb )
-                    glb = lub - gap;
-    
+
                 logger.info ("Iteration " + myFormat.right(iter, 3)
                                     + "    Lambda= " + myFormat.right(lambdas[iter], 8, 4)
                                     + "    LUB= "    + myFormat.right(lub, 16, 4)
@@ -246,31 +218,36 @@ public class FW {
                                     + "    RelGap= " + myFormat.right(100.0*(lub - glb)/glb, 7, 4) + "%");
     
     
-                // update link flows and times
-    			for (int k=0; k < volau.length; k++) {
-    				volau[k] = 0;
-    				for (int m=0; m < numAutoClasses; m++) {
-    					flow[m][k] = flow[m][k] + lambdas[iter]*(aonFlow[m][k] - flow[m][k]);
-    					volau[k] += flow[m][k];
-    				}
-    			}
-                networkHandlerSetFlowsRpcCall(flow);
-                networkHandlerSetVolauRpcCall(volau);
-                networkHandlerApplyVdfsRpcCall(validLinks);
-    
-                networkHandlerLogLinkTimeFreqsRpcCall (validLinks);
+                
+                // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
+                lambdas[iter] = networkHandlerFwBisectRpcCall( iter, aonFlow, flow);
+                if ( lambdas[iter] == -1.0 ) {
+                    logger.error ("Exact FW optimal solution found.  Unlikely, better check into this!");
+                    lambdas[iter] = 0.5;
+                    iter = maxFwIters;
+                }
+
+                
+                // sum total flow over all user classes for each link 
+                for (int m=0; m < numAutoClasses; m++) {
+                    for (int k=0; k < numLinks; k++) {
+                        flow[m][k] = flow[m][k] + lambdas[iter]*( aonFlow[m][k] - flow[m][k] );
+                    }
+                }
+
+                
+                
+                
+//                networkHandlerLogLinkTimeFreqsRpcCall ();
     			
                 iterationsCompleted++;
                 
-    			if ( Math.abs( (lub - glb)/glb ) < fwGap )
-    				break;
-    			
             } // end of FW iter loop
     
     
     
     
-            linkSummaryReport( flow );
+            networkHandlerLinkSummaryReportRpcCall( flow );
     
             fwFlowProps = getFWFlowProps();
             
@@ -311,50 +288,6 @@ public class FW {
 
 
 	
-    //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
-    public boolean bisect ( int iter, boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
-        
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info ("starting FW.bisect()" + myDateString);
- 
-        double x=0.0, xleft=0.0, xright=1.0, gap=0.0;
-
-        int numBisectIterations = (int)(Math.log(1.0e-07)/Math.log(0.5) + 1.5);
-        
-        gap = ofGap( validLinks, aonFlow, flow );
-        
-        if (Math.abs(gap) <= 1.0e-07) {
-            lambdas[iter] = 0.5;
-            return(true);
-        }
-        else {
-            if (gap <= 0)
-                xleft = x;
-            else
-                xright = x;
-            x = (xleft + xright)/2.0;
-			if(logger.isDebugEnabled()) {
-                logger.debug ("iter=" + iter + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
-            }
-
-            for (int n=0; n < numBisectIterations; n++) {
-                gap = bisectGap(x, validLinks, aonFlow, flow );
-                if (gap <= 0)
-                    xleft = x;
-                else
-                    xright = x;
-                x = (xleft + xright)/2.0;
-				if(logger.isDebugEnabled()) {
-                    logger.debug ("iter=" + iter + ", n=" + n + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
-                }
-            }
-            lambdas[iter] = x;
-            return(false);
-        }
-    }
-
-
-
     public double[] getFWFlowProps () {
         // Determine the proportions of O/D flow assigned during each FW iteration.
 
@@ -370,191 +303,6 @@ public class FW {
     }
 
 
-    public double ofValue ( boolean[] validLinks, double[][] flow )  {
-
-        double returnValue = -1;
-        
-        try {
-            
-            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-            logger.info ("starting FW.ofValue()" + myDateString);
-     
-    		// sum total flow over all user classes for each link 
-            for (int k=0; k < volau.length; k++) {
-                volau[k] = 0.0;
-                for (int m=0; m < numAutoClasses; m++)
-                    volau[k] += flow[m][k];
-            }
-            
-            networkHandlerSetVolauRpcCall(volau);
-            networkHandlerSetVolCapRatiosRpcCall(volau);
-            networkHandlerApplyVdfIntegralsRpcCall(validLinks);
-    
-            returnValue = networkHandlerGetSumOfVdfIntegralsRpcCall(validLinks);
-        
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-
-        return returnValue;
-        
-    }
-
-
-
-    public double ofGap ( boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
-
-        double returnValue = -1;
-        
-        try {
-            
-            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-            logger.info ("starting FW.ofGap()" + myDateString);
-     
-    		double[] totAonFlow = new double[numLinks];
-            
-    		// sum total flow over all user classes for each link 
-    		for (int k=0; k < volau.length; k++) {
-    			volau[k] = 0.0;
-    			totAonFlow[k] = 0.0;
-    			for (int m=0; m < numAutoClasses; m++) {
-    				volau[k] += flow[m][k];
-    				totAonFlow[k] += aonFlow[m][k];
-    			}
-    		}
-            
-            networkHandlerSetVolauRpcCall(volau);
-            networkHandlerApplyVdfsRpcCall(validLinks);
-    		double[] cTime = networkHandlerGetCongestedTimeRpcCall();
-    		
-    		double gap = 0.0;
-    		for (int k=0; k < volau.length; k++) {
-                if ( validLinks[k] ) {
-                    
-                    if ( ! isValidDoubleValue(cTime[k]) )
-                        logger.error( "invalid value for loaded link travel time on link " + k );
-                    else if ( ! isValidDoubleValue(totAonFlow[k]) )
-                        logger.error( "invalid value for all-or-nothing link flow on link " + k );
-                    else if ( ! isValidDoubleValue(volau[k]) )
-                        logger.error( "invalid value for loaded link flow on link " + k );
-                
-                	gap += cTime[k]*(totAonFlow[k] - volau[k]);
-                }
-    		}
-    
-            returnValue = gap;
-        
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-
-        return returnValue;
-        
-    }
-
-
-    public double bisectGap (double x, boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
-
-        double returnValue = -1;
-        
-        try {
-            
-            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-            logger.info ("starting FW.bisectGap()" + myDateString);
-     
-    		double[] totAonFlow = new double[numLinks];
-    		double[] totalFlow = new double[numLinks];
-            
-    		// sum total flow over all user classes for each link 
-    		for (int k=0; k < totalFlow.length; k++) {
-    			volau[k] = 0.0;
-    			totAonFlow[k] = 0.0;
-    			totalFlow[k] = 0.0;
-    			for (int m=0; m < numAutoClasses; m++) {
-    				totalFlow[k] += flow[m][k];
-    				totAonFlow[k] += aonFlow[m][k];
-    			}
-    			volau[k] = totalFlow[k] + x*(totAonFlow[k] - totalFlow[k]);
-    		}
-            
-            networkHandlerSetVolauRpcCall(volau);
-            networkHandlerApplyVdfsRpcCall(validLinks);
-            double[] cTime = networkHandlerGetCongestedTimeRpcCall();
-    
-            double gap = 0.0;
-    		for (int k=0; k < cTime.length; k++)
-                if ( validLinks[k] )
-                	gap += cTime[k]*(totAonFlow[k] - volau[k]);
-    
-    
-            returnValue = gap;
-        
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-
-        return returnValue;
-        
-    }
-
-
-    public void linkSummaryReport ( double[][] flow ) {
-        double totalVol;
-        double[][] volumeSum = new double[numAutoClasses][MAX_LINK_TYPE];
-
-        for (int k=0; k < numLinks; k++)
-            for (int m=0; m < numAutoClasses; m++)
-                volumeSum[m][linkType[k]] += flow[m][k];
-
-        logger.info("");
-        logger.info("");
-        logger.info("");
-        logger.info("Link Type");
-        for (int m=0; m < numAutoClasses; m++)
-            logger.info(myFormat.right("Class " + Integer.toString(m) + " Volume", 24));
-        logger.info("");
-        for (int i=0; i < MAX_LINK_TYPE; i++) {
-            totalVol = 0.0;
-            for (int m=0; m < numAutoClasses; m++)
-                totalVol += volumeSum[m][i];
-            if (totalVol > 0.0) {
-                logger.info (myFormat.left(i, 9));
-                for (int m=0; m < numAutoClasses; m++)
-                    logger.info (myFormat.right(volumeSum[m][i], 24, 4));
-                logger.info("");
-            }
-        }
-    }
 
 
 	private void createDiskObjectArray() {
@@ -605,9 +353,6 @@ public class FW {
 
     }
 	
-	private boolean isValidDoubleValue( double value ) {
-		return ( value >= -Double.MAX_VALUE && value <= Double.MAX_VALUE );
-	}
 
 
     
@@ -638,9 +383,35 @@ public class FW {
         return (String)networkHandlerClient.execute("networkHandler.getTimePeriod", new Vector());
     }
 
-    private int[] networkHandlerGetLinkTypeRpcCall() throws Exception {
-        // g.getTimePeriod()
-        return (int[])networkHandlerClient.execute("networkHandler.getLinkType", new Vector() );
+    private double networkHandlerFwBisectRpcCall( int iter, double[][] aonFlow, double[][] flow) throws Exception {
+        // g.getFwOfValue(boolean[] validLinks, double[][] flow)
+        Vector params = new Vector();
+        params.add( iter );
+        params.add( aonFlow );
+        params.add( flow );
+        return (Double)networkHandlerClient.execute("networkHandler.fwBisect", params );
+    }
+
+    private double networkHandlerGetFwOfValueRpcCall( double[][] flow ) throws Exception {
+        // g.getFwOfValue( double[][] flow )
+        Vector params = new Vector();
+        params.add( flow );
+        return (Double)networkHandlerClient.execute("networkHandler.getFwOfValue", params );
+    }
+
+    private double networkHandlerGetFwGapValueRpcCall( double[][] aonFlow, double[][] flow ) throws Exception {
+        // g.getFwGapValue( double[][] flow )
+        Vector params = new Vector();
+        params.add( aonFlow );
+        params.add( flow );
+        return (Double)networkHandlerClient.execute("networkHandler.getFwGapValue", params );
+    }
+
+    private void networkHandlerLinkSummaryReportRpcCall( double[][] flow ) throws Exception {
+        // g.getFwGapValue( double[][] flow )
+        Vector params = new Vector();
+        params.add( flow );
+        networkHandlerClient.execute("networkHandler.linkSummaryReport", params );
     }
 
     private boolean[][] networkHandlerGetValidLinksForAllClassesRpcCall() throws Exception {
@@ -648,58 +419,9 @@ public class FW {
         return (boolean[][])networkHandlerClient.execute("networkHandler.getValidLinksForAllClasses", new Vector() );
     }
 
-    private double[] networkHandlerGetCongestedTimeRpcCall() throws Exception {
-        // g.getCongestedTime()
-        return (double[])networkHandlerClient.execute("networkHandler.getCongestedTime", new Vector() );
-    }
-    
-    private void networkHandlerSetFlowsRpcCall( double[][] flows ) throws Exception {
-        // g.setFlows( double[][] flows )
-        Vector params = new Vector();
-        params.add( flows );
-        networkHandlerClient.execute("networkHandler.setFlows", params);
-    }
-
-    private void networkHandlerSetVolCapRatiosRpcCall( double[] volau ) throws Exception {
-        // g.setVolCapRatios( double[] volau )
-        Vector params = new Vector();
-        params.add( volau );
-        networkHandlerClient.execute("networkHandler.setVolCapRatios", params);
-    }
-
-    private void networkHandlerSetVolauRpcCall( double[] volau ) throws Exception {
-        // g.setVolau( double[] volau )
-        Vector params = new Vector();
-        params.add( volau );
-        networkHandlerClient.execute("networkHandler.setVolau", params);
-    }
-
-    private void networkHandlerApplyVdfsRpcCall( boolean[] validLinks ) throws Exception {
-        // g.applyVdfs( boolean[] validLinks )
-        Vector params = new Vector();
-        params.add( validLinks );
-        networkHandlerClient.execute("networkHandler.applyVdfs", params);
-    }
-
-    private void networkHandlerApplyVdfIntegralsRpcCall( boolean[] validLinks ) throws Exception {
-        // g.applyVdfIntegrals( boolean[] validLinks )
-        Vector params = new Vector();
-        params.add( validLinks );
-        networkHandlerClient.execute("networkHandler.applyVdfIntegrals", params);
-    }
-
-    private double networkHandlerGetSumOfVdfIntegralsRpcCall( boolean[] validLinks ) throws Exception {
-        // g.getSumOfVdfIntegrals( boolean[] validLinks )
-        Vector params = new Vector();
-        params.add( validLinks );
-        return (Double)networkHandlerClient.execute("networkHandler.getSumOfVdfIntegrals", params);
-    }
-        
-    private void networkHandlerLogLinkTimeFreqsRpcCall( boolean[] validLinks ) throws Exception {
+    private void networkHandlerLogLinkTimeFreqsRpcCall() throws Exception {
         // g.logLinkTimeFreqs( boolean[] validLinks )
-        Vector params = new Vector();
-        params.add( validLinks );
-        networkHandlerClient.execute("networkHandler.logLinkTimeFreqs", params);
+        networkHandlerClient.execute("networkHandler.logLinkTimeFreqs", new Vector() );
     }
 
     private void networkHandlerCreateSelectLinkAnalysisDiskObjectRpcCall( double[] fwFlowProps ) throws Exception {

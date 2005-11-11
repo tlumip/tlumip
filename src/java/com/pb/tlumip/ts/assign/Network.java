@@ -22,9 +22,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -34,7 +38,9 @@ import com.pb.common.calculator.LinkFunction;
 import com.pb.common.datafile.D211FileReader;
 import com.pb.common.datafile.D231FileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.rpc.RpcException;
 import com.pb.common.util.Format;
+import com.pb.common.util.Justify;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
 
@@ -73,10 +79,15 @@ public class Network implements Serializable {
 	int maxCentroid;
 	int numCentroids;
 	int maxNode;
+    int numLinks;
+    int numUserClasses;
 
 	char[] userClasses = null;
 	
-	boolean[] validLinks = null;
+    double[] volau;
+    double[] totAonFlow;
+
+    boolean[] validLinks = null;
 	boolean[][] validLinksForClass = null;
     int[] indexNode = null;
     int[] nodeIndex = null;
@@ -166,11 +177,12 @@ public class Network implements Serializable {
 		linkTable.merge ( derivedLinkTable );
 		derivedLinkTable = null;
 		
+        numLinks = linkTable.getRowCount();
 		
 		// calculate the congested link travel times based on the vdf functions defined
 		fdLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "fd" ), "vdf" );
-		applyVdfs(validLinks);
-		logLinkTimeFreqs(validLinks);
+		applyVdfs();
+		logLinkTimeFreqs();
 		
 
 
@@ -206,7 +218,7 @@ public class Network implements Serializable {
 	}
 
     public int getLinkCount () {
-        return linkTable.getRowCount();
+        return numLinks;
     }
 
     public int getNodeCount () {
@@ -258,24 +270,42 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsDouble( "originalCapacity" );
 	}
 
-	public double[] getCongestedTime () {
-		return linkTable.getColumnAsDouble( "congestedTime" );
-	}
+    public double[] getCongestedTime () {
+        return linkTable.getColumnAsDouble( "congestedTime" );
+    }
+
+    public double[] getLinkGeneralizedCost () {
+        return linkTable.getColumnAsDouble( "generalizedCost" );
+    }
 
 	public double[] getTransitTime () {
 		return linkTable.getColumnAsDouble( "transitTime" );
 	}
 
-	public double getSumOfVdfIntegrals (boolean[] validLinks) {
-		double[] integrals = linkTable.getColumnAsDouble("vdfIntegral");
-		
-		double sum = 0.0;
-		for (int k=0; k < integrals.length; k++)
-			if ( validLinks[k] )
-				sum += integrals[k];
-			
-		return sum;
-	}
+    public double getSumOfVdfIntegrals () {
+        double[] integrals = linkTable.getColumnAsDouble("vdfIntegral");
+        
+        double sum = 0.0;
+        for (int k=0; k < integrals.length; k++)
+            if ( validLinks[k] )
+                sum += integrals[k];
+            
+        return sum;
+    }
+
+    public double getSumOfGcIntegrals () {
+        
+        double[] integrals = linkTable.getColumnAsDouble("vdfIntegral");
+        double[] toll = getToll();
+        double[] dist = getDist();
+        
+        double sum = 0.0;
+        for (int k=0; k < integrals.length; k++)
+            if ( validLinks[k] )
+                sum += TIME_PARAMETER*integrals[k] + volau[k]*COST_PARAMETER*(toll[k] + dist[k]*OPERATING_COST);
+            
+        return sum;
+    }
 
 	public double[] getFreeFlowTime () {
 		return linkTable.getColumnAsDouble( "freeFlowTime" );
@@ -302,7 +332,7 @@ public class Network implements Serializable {
 	}
 
 	public int getNumUserClasses () {
-		return userClasses.length;
+		return numUserClasses;
 	}
 	
 	public boolean userClassesIncludeAuto () {
@@ -400,10 +430,11 @@ public class Network implements Serializable {
     }
 
     public void setVolau ( double[] volau ) {
+        this.volau = volau;
 		linkTable.setColumnAsDouble( linkTable.getColumnPosition("volau"), volau );
     }
 
-    public void setVolCapRatios ( double[] volau ) {
+    public void setVolCapRatios () {
 		
     	double[] totalVolCapRatio = linkTable.getColumnAsDouble( "totalVolCapRatio" );
     	double[] totalCapacity = linkTable.getColumnAsDouble( "totalCapacity" );
@@ -532,6 +563,7 @@ public class Network implements Serializable {
 
 		// get user classes to assign and assignment groups (which classes are combined together for assigning)
 		this.userClasses = getUserClassesFromProperties ();
+        this.numUserClasses = this.userClasses.length;
 		setAssignmentGroups();
 		
 		
@@ -591,7 +623,6 @@ public class Network implements Serializable {
 		double[] vdfIntegral = new double[linkTable.getRowCount()];
 		double[] freeFlowTime = new double[linkTable.getRowCount()];
 		double[] oldTime = new double[linkTable.getRowCount()];
-		double[] volau = new double[linkTable.getRowCount()];
 		double[] volad = new double[linkTable.getRowCount()];
 		double[] toll = new double[linkTable.getRowCount()];
 		double[] gc = new double[linkTable.getRowCount()];
@@ -600,6 +631,8 @@ public class Network implements Serializable {
 		String[] centroidString = new String[linkTable.getRowCount()];
 		validLinksForClass = new boolean[userClasses.length][linkTable.getRowCount()];
 		validLinks = new boolean[linkTable.getRowCount()];
+        volau = new double[linkTable.getRowCount()];
+        totAonFlow = new double[linkTable.getRowCount()];
 
 		Arrays.fill (volad, 0.0);
 		Arrays.fill (validLinks, false);
@@ -767,25 +800,25 @@ public class Network implements Serializable {
 
 	
 	
+//	public void applyVdfs () {
+//		
+//			double[] results = fdLc.solve();
+//			
+//			for (int i=0 ; i < results.length; i++) {
+//				if ( results[i] < 0 || results[i] == Double.NaN ) {
+//					logger.error ( "invalid result in Network.applyVdfs().   results[i=" + i + "] = " + results[i] );
+//					logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
+//					System.exit(-1);
+//				}
+//			}
+//				
+//			linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
+//
+//		}
+		
+		
+		
 	public void applyVdfs () {
-		
-			double[] results = fdLc.solve();
-			
-			for (int i=0 ; i < results.length; i++) {
-				if ( results[i] < 0 || results[i] == Double.NaN ) {
-					logger.error ( "invalid result in Network.applyVdfs().   results[i=" + i + "] = " + results[i] );
-					logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
-					System.exit(-1);
-				}
-			}
-				
-			linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
-
-		}
-		
-		
-		
-	public void applyVdfs ( boolean[] validLinks ) {
 		
 			double[] results = fdLc.solve(validLinks);
 			
@@ -803,7 +836,7 @@ public class Network implements Serializable {
 		
 		
 		
-	public void applyVdfIntegrals ( boolean[] validLinks ) {
+	public void applyVdfIntegrals () {
 	
 		double[] results = fdiLc.solve(validLinks);
 		
@@ -1139,7 +1172,217 @@ public class Network implements Serializable {
 
 	
 	
-	public void logLinkTimeFreqs ( boolean[] validLinks ) {
+    //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
+    public double bisect ( int iter, double[][] aonFlow, double[][] flow ) {
+        
+        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("starting FW.bisect()" + myDateString);
+ 
+        double x=0.0, xleft=0.0, xright=1.0, gap=0.0;
+
+        int numBisectIterations = (int)(Math.log(1.0e-07)/Math.log(0.5) + 1.5);
+        
+        gap = ofGap( aonFlow, flow );
+        
+        if (Math.abs(gap) <= 1.0e-07) {
+            x = -1.0;
+            return( x );
+        }
+        else {
+            if (gap <= 0)
+                xleft = x;
+            else
+                xright = x;
+            x = (xleft + xright)/2.0;
+            if(logger.isDebugEnabled()) {
+                logger.debug ("iter=" + iter + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
+            }
+
+            for (int n=0; n < numBisectIterations; n++) {
+                gap = bisectGap(x, aonFlow, flow );
+                if (gap <= 0)
+                    xleft = x;
+                else
+                    xright = x;
+                x = (xleft + xright)/2.0;
+                if(logger.isDebugEnabled()) {
+                    logger.debug ("iter=" + iter + ", n=" + n + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
+                }
+            }
+
+            return( x );
+            
+        }
+    }
+
+
+
+    public double ofValue ( double[][] flow )  {
+
+        double returnValue = -1;
+        
+        try {
+        
+            double[] volau = new double[numLinks];
+            
+            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+            logger.info ("starting FW.ofValue()" + myDateString);
+     
+            // sum total flow over all user classes for each link 
+            for (int k=0; k < volau.length; k++) {
+                volau[k] = 0.0;
+                for (int m=0; m < numUserClasses; m++)
+                    volau[k] += flow[m][k];
+            }
+            
+            setVolau(volau);
+            setVolCapRatios();
+            applyVdfIntegrals();
+    
+            returnValue = getSumOfGcIntegrals();
+        
+        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught.", e );
+            System.exit(1);
+        }
+
+        return returnValue;
+        
+    }
+
+
+
+    public double ofGap ( double[][] aonFlow, double[][] flow ) {
+
+        double returnValue = -1;
+        
+        try {
+            
+            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+            logger.info ("starting FW.ofGap()" + myDateString);
+     
+            // sum total flow over all user classes for each link 
+            for (int k=0; k < volau.length; k++) {
+                volau[k] = 0.0;
+                totAonFlow[k] = 0.0;
+                for (int m=0; m < numUserClasses; m++) {
+                    volau[k] += flow[m][k];
+                    totAonFlow[k] += aonFlow[m][k];
+                }
+            }
+            
+            setVolau(volau);
+            applyVdfs();
+            double[] cTime = setLinkGeneralizedCost();
+            
+            
+            double gap = 0.0;
+            for (int k=0; k < volau.length; k++) {
+                if ( validLinks[k] ) {
+                    
+                    if ( ! isValidDoubleValue(cTime[k]) )
+                        logger.error( "invalid value for loaded link travel time on link " + k );
+                    else if ( ! isValidDoubleValue(totAonFlow[k]) )
+                        logger.error( "invalid value for all-or-nothing link flow on link " + k );
+                    else if ( ! isValidDoubleValue(volau[k]) )
+                        logger.error( "invalid value for loaded link flow on link " + k );
+                
+                    gap += cTime[k]*(totAonFlow[k] - volau[k]);
+                }
+            }
+    
+            returnValue = gap;
+        
+        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught.", e );
+            System.exit(1);
+        }
+
+        return returnValue;
+        
+    }
+
+
+    public double bisectGap (double x, double[][] aonFlow, double[][] flow ) {
+
+        double returnValue = -1;
+        
+        try {
+            
+            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+            logger.info ("starting FW.bisectGap()" + myDateString);
+     
+            // sum total flow over all user classes for each link 
+            for (int k=0; k < volau.length; k++) {
+                volau[k] = 0.0;
+                totAonFlow[k] = 0.0;
+                for (int m=0; m < numUserClasses; m++) {
+                    volau[k] += flow[m][k];
+                    totAonFlow[k] += aonFlow[m][k];
+                }
+                volau[k] = volau[k] + x*(totAonFlow[k] - volau[k]);
+            }
+            
+            setVolau(volau);
+            applyVdfs();
+            double[] cTime = setLinkGeneralizedCost();
+    
+            double gap = 0.0;
+            for (int k=0; k < cTime.length; k++)
+                if ( validLinks[k] )
+                    gap += cTime[k]*(totAonFlow[k] - volau[k]);
+    
+    
+            returnValue = gap;
+        
+        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught.", e );
+            System.exit(1);
+        }
+
+        return returnValue;
+        
+    }
+
+
+    public void linkSummaryReport ( double[][] flow ) {
+        
+        Justify myFormat = new Justify();
+        
+        double totalVol;
+        double[][] volumeSum = new double[numUserClasses][Constants.MAX_LINK_TYPE];
+        int[] linkType = getLinkType();
+
+        for (int k=0; k < numLinks; k++)
+            for (int m=0; m < numUserClasses; m++)
+                volumeSum[m][linkType[k]] += flow[m][k];
+
+        logger.info("");
+        logger.info("");
+        logger.info("");
+        logger.info("Link Type");
+        for (int m=0; m < numUserClasses; m++)
+            logger.info(myFormat.right("Class " + Integer.toString(m) + " Volume", 24));
+        logger.info("");
+        for (int i=0; i < Constants.MAX_LINK_TYPE; i++) {
+            totalVol = 0.0;
+            for (int m=0; m < numUserClasses; m++)
+                totalVol += volumeSum[m][i];
+            if (totalVol > 0.0) {
+                logger.info (myFormat.left(i, 9));
+                for (int m=0; m < numUserClasses; m++)
+                    logger.info (myFormat.right(volumeSum[m][i], 24, 4));
+                logger.info("");
+            }
+        }
+    }
+
+    
+    
+    public void logLinkTimeFreqs () {
 	    
 		int[] ia = getIa();
 		int[] ib = getIb();
@@ -1246,7 +1489,11 @@ public class Network implements Serializable {
 			e.printStackTrace();
 		}
 
-
 	}
 	
+
+    private boolean isValidDoubleValue( double value ) {
+        return ( value >= -Double.MAX_VALUE && value <= Double.MAX_VALUE );
+    }
+
 }

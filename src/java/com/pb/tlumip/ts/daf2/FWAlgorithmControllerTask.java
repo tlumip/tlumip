@@ -192,10 +192,10 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
 			}
 			g.setFlows(flow);
 			g.setVolau(volau);
-            g.applyVdfs(validLinks);
+            g.applyVdfs();
 
             
-			g.logLinkTimeFreqs (validLinks);
+			g.logLinkTimeFreqs ();
 			
         } // end of FW iter loop
 
