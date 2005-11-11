@@ -20,7 +20,7 @@ import com.pb.common.util.IndexSort;
 import com.pb.common.util.Format;
 import com.pb.common.util.SeededRandom;
 import com.pb.common.util.ResourceUtil;
-import com.pb.common.util.Halo;
+import com.pb.models.censusdata.Halo;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;

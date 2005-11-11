@@ -16,8 +16,8 @@
  */
 package com.pb.tlumip.spg;
 
-import com.pb.common.util.DataDictionary;
-import com.pb.common.util.Halo;
+import com.pb.models.censusdata.DataDictionary;
+import com.pb.models.censusdata.Halo;
 import com.pb.tlumip.model.Industry;
 import com.pb.tlumip.model.Occupation;
 
