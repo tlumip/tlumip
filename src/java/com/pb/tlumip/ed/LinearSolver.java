@@ -26,7 +26,6 @@
 package com.pb.tlumip.ed;
 import org.apache.log4j.Logger;
 
-import com.pb.common.util.Debug;
 import drasys.or.linear.SingularException;
 import drasys.or.linear.algebra.Algebra;
 import drasys.or.linear.algebra.AlgebraException;

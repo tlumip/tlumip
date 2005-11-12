@@ -24,8 +24,6 @@ package com.pb.tlumip.controller;
  *
  */
 
-import com.pb.common.util.Debug;
-
 public class ModelRunner {
 
     public static void main (String[] args) {
@@ -40,11 +38,11 @@ public class ModelRunner {
 
 
     public void loadProps() {
-        Debug.println(this, "Loading application properties");
+        System.out.println("Loading application properties");
     }
 
 
     public void runModel() {
-        Debug.println(this, "Running Despair Model");
+        System.out.println("Running Despair Model");
     }
 }
