@@ -38,7 +38,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
-import com.pb.common.util.MessageWindow;
+import com.pb.common.ui.swing.MessageWindow;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.NetworkHandler;
 

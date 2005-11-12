@@ -32,7 +32,7 @@ import com.pb.common.matrix.MatrixWriter;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.MessageWindow;
+import com.pb.common.ui.swing.MessageWindow;
 import com.pb.tlumip.ts.NetworkHandler;
 
 
