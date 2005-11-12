@@ -17,7 +17,6 @@
 package com.pb.tlumip.spg;
 
 import com.pb.common.util.IndexSort;
-import com.pb.common.util.Format;
 import com.pb.common.util.SeededRandom;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.censusdata.Halo;
@@ -1720,18 +1719,18 @@ public class SPG {
 		// print a simple summary table
 		logger.info( "Frequency Report table: " + tableTitle );
 		logger.info( "Frequency for field " + fieldName );
-		logger.info(Format.print("%8s", "Value") + Format.print("%13s", "Description") + Format.print("%45s", "Frequency"));
+		logger.info(String.format("%8s", "Value") + String.format("%13s", "Description") + String.format("%45s", "Frequency"));
 		
 		int total = 0;
 		for (int i = 0; i < freqs.length; i++) {
 			if (freqs[i] > 0) {
 				String description = freqDescriptions[i];
-				logger.info( Format.print("%8d", i) + "  " + Format.print("%-45s", description) + Format.print("%11d", freqs[i] ) );
+				logger.info( String.format("%8d", i) + "  " + String.format("%-45s", description) + String.format("%11d", freqs[i] ) );
 				total += freqs[i];
 			}
 		}
 		
-		logger.info(Format.print("%15s", "Total") +	Format.print("%51d\n\n\n", total));
+		logger.info(String.format("%15s", "Total") +	String.format("%51d\n\n\n", total));
 	}
     
     

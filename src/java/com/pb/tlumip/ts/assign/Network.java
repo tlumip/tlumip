@@ -24,11 +24,9 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -38,8 +36,6 @@ import com.pb.common.calculator.LinkFunction;
 import com.pb.common.datafile.D211FileReader;
 import com.pb.common.datafile.D231FileReader;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.rpc.RpcException;
-import com.pb.common.util.Format;
 import com.pb.common.util.Justify;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
@@ -1469,14 +1465,14 @@ public class Network implements Serializable {
 			
 				outStream.print( indexNode[ia[k]] + ","
 								+ indexNode[ib[k]] + ","
-								+ Format.print("%.4f", capacity[k]) + ","
-								+ Format.print("%.4f", congestedTime[k]) + ","
+								+ String.format("%.4f", capacity[k]) + ","
+								+ String.format("%.4f", congestedTime[k]) + ","
 								);
 								
 				for (int j=0; j < userClasses.length-1; j++)
-					outStream.print( Format.print("%.4f", flow[j][k]) + "," );
+					outStream.print( String.format("%.4f", flow[j][k]) + "," );
 	
-				outStream.println( Format.print("%.4f", flow[userClasses.length-1][k]) );
+				outStream.println( String.format("%.4f", flow[userClasses.length-1][k]) );
 
 			}
 		

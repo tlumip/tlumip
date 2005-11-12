@@ -18,7 +18,6 @@ package com.pb.tlumip.grid;
 
 import com.pb.common.grid.GridParameters;
 import com.pb.common.grid.GridFile;
-import com.pb.common.util.Format;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -150,7 +149,7 @@ public class Initializer {
                 outStream.print((String)aZones.get(r));
                 for (int c=0; c < nCols; c++) {
                     outStream.print(",");
-                    outStream.print( Format.print("%i", totalCellsByGLC[Integer.parseInt((String)aZones.get(r))][c]) );
+                    outStream.print( String.format("%i", totalCellsByGLC[Integer.parseInt((String)aZones.get(r))][c]) );
                 }
                 outStream.println();
             }

@@ -17,7 +17,6 @@
 package com.pb.tlumip.spg;
 
 import com.pb.common.util.IndexSort;
-import com.pb.common.util.Format;
 import com.pb.common.util.SeededRandom;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.censusdata.Halo;
@@ -267,7 +266,7 @@ public class SPGnew {
 			totalWorkers += i*hhWorkerTargets[i];
 		
 		
-		logger.info ( "total workers in final hh workers targets = " + Format.print(" %-10.0f", totalWorkers ) );
+		logger.info ( "total workers in final hh workers targets = " + String.format(" %-10.0f", totalWorkers ) );
 
 
 		
@@ -294,28 +293,28 @@ public class SPGnew {
 		float targetsTotal = 0.0f;
 		float modelTotal = 0.0f;
 		String[] categoryLabels = edInd.getEdIndustryLabels();
-		logger.info(Format.print("%-45s", "Employment Categories") + "  " +	Format.print("%12s", "Index") + "  " + Format.print("%18s", "Targets") + "  " + Format.print("%18s", "Workers" ) );
+		logger.info(String.format("%-45s", "Employment Categories") + "  " +	String.format("%12s", "Index") + "  " + String.format("%18s", "Targets") + "  " + String.format("%18s", "Workers" ) );
 		for (int i=0; i < employmentTargets.length; i++) {
 			String label = categoryLabels[i];
-			logger.info( Format.print("%-45s", label) + "  " + Format.print("%12d", i) + "  " + Format.print("%18d", employmentTargets[i] ) + "  " + Format.print("%18.1f", employmentControlTotals[i] ) );
+			logger.info( String.format("%-45s", label) + "  " + String.format("%12d", i) + "  " + String.format("%18d", employmentTargets[i] ) + "  " + String.format("%18.1f", employmentControlTotals[i] ) );
 			targetsTotal += employmentTargets[i];
 			modelTotal += employmentControlTotals[i];
 		}
-		logger.info(Format.print("%-45s", "Total") + "  " +	Format.print("%12s", " ") + "  " + Format.print("%18.0f", targetsTotal ) + "  " + Format.print("%18.1f\n\n\n", modelTotal ) );
+		logger.info(String.format("%-45s", "Total") + "  " +	String.format("%12s", " ") + "  " + String.format("%18.0f", targetsTotal ) + "  " + String.format("%18.1f\n\n\n", modelTotal ) );
 
 		
 		// write comparison of final hh worker control totals vs control targets to logger
 		targetsTotal = 0.0f;
 		modelTotal = 0.0f;
 		categoryLabels = workers.getWorkersLabels();
-		logger.info(Format.print("%-45s", "HH Worker Categories") + "  " +	Format.print("%12s", "Index") + "  " + Format.print("%18s", "Targets") + "  " + Format.print("%18s", "Households" ) );
+		logger.info(String.format("%-45s", "HH Worker Categories") + "  " +	String.format("%12s", "Index") + "  " + String.format("%18s", "Targets") + "  " + String.format("%18s", "Households" ) );
 		for (int i=0; i < hhWorkerTargets.length; i++) {
 			String label = categoryLabels[i];
-			logger.info( Format.print("%-45s", label) + "  " + Format.print("%12d", i) + "  " + Format.print("%18d", hhWorkerTargets[i] ) + "  " + Format.print("%18.1f", hhWorkerControlTotals[i] ) );
+			logger.info( String.format("%-45s", label) + "  " + String.format("%12d", i) + "  " + String.format("%18d", hhWorkerTargets[i] ) + "  " + String.format("%18.1f", hhWorkerControlTotals[i] ) );
 			targetsTotal += hhWorkerTargets[i];
 			modelTotal += hhWorkerControlTotals[i];
 		}
-		logger.info(Format.print("%-45s", "Total") + "  " +	Format.print("%12s", " ") + "  " + Format.print("%18.0f", targetsTotal ) + "  " + Format.print("%18.1f\n\n\n", modelTotal ) );
+		logger.info(String.format("%-45s", "Total") + "  " +	String.format("%12s", " ") + "  " + String.format("%18.0f", targetsTotal ) + "  " + String.format("%18.1f\n\n\n", modelTotal ) );
 
 		
 		
@@ -1196,7 +1195,7 @@ public class SPGnew {
 		
 		
 		
-		logger.info( "Balancing Factor Difference for iteration " + balancingCount + " =  " + Format.print("%18.8f", Math.abs( 1.0 - balancingFactor ) ) );
+		logger.info( "Balancing Factor Difference for iteration " + balancingCount + " =  " + String.format("%18.8f", Math.abs( 1.0 - balancingFactor ) ) );
 		
 		
 		
@@ -1932,18 +1931,18 @@ public class SPGnew {
     		// print a simple summary table
     		logger.info( "Frequency Report table: " + tableTitle );
     		logger.info( "Frequency for field " + fieldName );
-    		logger.info(Format.print("%8s", "Value") + Format.print("%13s", "Description") + Format.print("%45s", "Frequency"));
+    		logger.info(String.format("%8s", "Value") + String.format("%13s", "Description") + String.format("%45s", "Frequency"));
     		
     		int total = 0;
     		for (int i = 0; i < freqs.length; i++) {
     			if (freqs[i] > 0) {
     				String description = freqDescriptions[i];
-    				logger.info( Format.print("%8d", i) + "  " + Format.print("%-45s", description) + Format.print("%11d", freqs[i] ) );
+    				logger.info( String.format("%8d", i) + "  " + String.format("%-45s", description) + String.format("%11d", freqs[i] ) );
     				total += freqs[i];
     			}
     		}
     		
-    		logger.info(Format.print("%15s", "Total") +	Format.print("%51d\n\n\n", total));
+    		logger.info(String.format("%15s", "Total") +	String.format("%51d\n\n\n", total));
     	}
         
         
