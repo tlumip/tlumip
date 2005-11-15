@@ -19,7 +19,6 @@ package com.pb.tlumip.ts.transit;
 
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.assign.ShortestPath;
-import com.pb.common.util.Justify;
 
 
 import java.io.BufferedReader;
@@ -97,23 +96,20 @@ public class TrRoute implements Serializable {
 
 	public void readTransitRoutes (String fileName) {
 		int recNumber = 0;
-		TrSegment ts;
 
-    try {
-      BufferedReader in =
-        new BufferedReader(
-            new FileReader(fileName));
-      String s = new String();
-      while ((s = in.readLine()) != null) {
-      	recNumber++;
+		try {
+		    BufferedReader in = new BufferedReader( new FileReader(fileName) );
+		    String s = new String();
+		    while ((s = in.readLine()) != null) {
+		        recNumber++;
 
-      	// skip empty records
-      	if (s.length() > 0) {
-    	   	// skip comment records and the data type record
-  	    	if (s.charAt(0) == 'c' || s.charAt(0) == 't') {
-    	  	}
-      		// process transit line header records
-      		else if (s.charAt(0) == 'a') {
+		        // skip empty records
+		        if (s.length() > 0) {
+		            // skip comment records and the data type record
+		            if (s.charAt(0) == 'c' || s.charAt(0) == 't') {
+		            }
+		            // process transit line header records
+		            else if (s.charAt(0) == 'a') {
 //						if (linkCount > 0 && ((Double)tdefaults.get(0)).doubleValue() >= 0.0) {  // lay > 0 at end of route description
 //							ts = (TrSegment)transitPath[lineCount].get(0);
 //							if (ts.an == bn) {
@@ -123,31 +119,31 @@ public class TrRoute implements Serializable {
 //							}
 //						}
 
-						initDefaults();
-						initTempDefaults();
+		                initDefaults();
+		                initTempDefaults();
 
-	 	        lineCount++;
-	 	        totalLinkCount += linkCount;
-	          parseHeader(s);
-  	        linkCount = 0;
-						an = -1;
-						bn = -1;
-    	    }
-      		// process transit line sequence records
-      		else if (s.charAt(0) == ' ') {
-          	parseSegments(s);
-	        }
-  	    	// any other record type is invalid, so exit.
-    	  	else {
-      			System.out.println ("Transit line file record number " + recNumber + " has an invalid " + s.charAt(0) + " first character.");
-      			if (s.charAt(0) == 'd' || s.charAt(0) == 'm')
-      				System.out.println (s.charAt(0) + " is not a supported update code.");
-	      		System.out.println ("Records may only begin with c, t, a, or blank.");
-  	    		System.out.println ("Program exiting while reading transit line file");
-    	  		System.exit(-1);
-      		}
-      	}
-      }
+		                lineCount++;
+		                totalLinkCount += linkCount;
+		                parseHeader(s);
+		                linkCount = 0;
+		                an = -1;
+		                bn = -1;
+		            }
+		            // process transit line sequence records
+		            else if (s.charAt(0) == ' ') {
+		                parseSegments(s);
+		            }
+		            //  any other record type is invalid, so exit.
+		            else {
+		                System.out.println ("Transit line file record number " + recNumber + " has an invalid " + s.charAt(0) + " first character.");
+		                if (s.charAt(0) == 'd' || s.charAt(0) == 'm')
+		                    System.out.println (s.charAt(0) + " is not a supported update code.");
+		                System.out.println ("Records may only begin with c, t, a, or blank.");
+		                System.out.println ("Program exiting while reading transit line file");
+		                System.exit(-1);
+		            }
+		        }
+		    }
       // done reading route records.  Add layover link at end of last route.
 //			if (linkCount > 0 && ((Double)tdefaults.get(0)).doubleValue() >= 0.0) {  // lay > 0 at end of route description
 //				ts = (TrSegment)transitPath[lineCount].get(0);
@@ -158,16 +154,17 @@ public class TrRoute implements Serializable {
 //					totalLinkCount += linkCount;
 //				}
 //			}
-    } catch (Exception e) {
-        System.out.println ("IO Exception caught reading transit route file: " + fileName + ", record number=" + recNumber);
-        e.printStackTrace();
-    }
+		} catch (Exception e) {
+		    System.out.println ("IO Exception caught reading transit route file: " + fileName + ", record number=" + recNumber);
+		    e.printStackTrace();
+		}
 
 		lineCount++;
  		System.out.println (recNumber + " transit line file records read.");
  		System.out.println (lineCount + " transit lines found.");
  		System.out.println (totalLinkCount + " total transit links found in all transit routes.");
-  }
+  
+    }
 
 
 	// parse the transit line data
@@ -573,17 +570,14 @@ public class TrRoute implements Serializable {
 	// print a table of transit route information
 	public void printTransitRoutes (String fileName) {
    	
-	    Justify myFormat = new Justify();
-
 		try {
-			PrintWriter out = new PrintWriter (
-													new BufferedWriter (
-														new FileWriter (fileName)));
+            
+		    PrintWriter out = new PrintWriter (	new BufferedWriter ( new FileWriter (fileName) ) );
 
-		  for (int i=0; i < lineCount; i++) {
+		    for (int i=0; i < lineCount; i++) {
 				printLineHeader(out, i);
 				printLineSegments(out, i);
-		  }
+		    }
 			out.close();
 
 		} catch (IOException e) {
@@ -596,19 +590,7 @@ public class TrRoute implements Serializable {
 	// print a table of transit line header information
 	public void printLineHeader (PrintWriter out, int rte) {
 	    
-	    Justify myFormat = new Justify();
-
-	    String outputRecord = myFormat.left("seq", 6) +
-	   	myFormat.left("line", 6) +
-	   	myFormat.right("mode", 6) +
-	   	myFormat.right("vehicle", 9) +
-	   	myFormat.right("headway", 9) +
-	   	myFormat.right("speed", 7) +
-	   	myFormat.right("  ", 2) +
-	   	myFormat.left("description", 22) +
-	   	myFormat.right("ut1", 6) +
-	   	myFormat.right("ut2", 6) +
-	   	myFormat.right("ut3", 6);
+	    String outputRecord = String.format( "%6s%6s%6s%9s%9s%7s%2s%22s%6s%6s%6s", "seq", "line", "mode", "vehicle", "headway", "speed", "  ", "description", "ut1", "ut2", "ut3" ); 
 
 	    String underLine = "-";
 		for (int i=0; i < outputRecord.length() - 1; i++)
@@ -617,47 +599,17 @@ public class TrRoute implements Serializable {
 		out.println (underLine);
 		out.println (outputRecord);
 
-		out.println (myFormat.left(rte+1, 6) +
-		 	myFormat.left(line[rte], 6) +
-		 	myFormat.right(String.valueOf(mode[rte]), 6) +
-		    myFormat.right(vehType[rte], 9) +
-		    myFormat.right(myFormat.df2.format(headway[rte]), 9) +
-		    myFormat.right(myFormat.df2.format(speed[rte]), 7) +
-		 	myFormat.right("  ", 2) +
-		 	myFormat.left(description[rte], 22) +
-		 	myFormat.right(myFormat.df2.format(ut1[rte]), 6) +
-	  	    myFormat.right(myFormat.df2.format(ut2[rte]), 6) +
-	  	    myFormat.right(myFormat.df2.format(ut3[rte]), 6));
+		out.printf ( "%6d%6d%6s%9d%9d%7d%2s%22s%6.2f%6.2f%6.2f", rte+1, line[rte], String.valueOf(mode[rte]), vehType[rte], headway[rte], speed[rte], "  ", description[rte], ut1[rte], ut2[rte], ut3[rte] );
 	}
 
 
 	// print a table of transit line segments information
 	public void printLineSegments (PrintWriter out, int rte) {
    	
-	    Justify myFormat = new Justify();
 
 		TrSegment ts;
 
-		String outputRecord = myFormat.left("seq", 4) +
-	   	myFormat.right("link", 6) +
-	   	myFormat.right("an", 6) +
-	   	myFormat.right("bn", 6) +
-	   	myFormat.right("dwf", 6) +
-	   	myFormat.right("dwt", 6) +
-	   	myFormat.right("path", 6) +
-	   	myFormat.right("ttf", 6) +
-	   	myFormat.right("ttf1", 6) +
-	   	myFormat.right("ttft", 6) +
-	   	myFormat.right("us1", 6) +
-	   	myFormat.right("us2", 6) +
-	   	myFormat.right("us3", 6) +
-	   	myFormat.right("brd", 6) +
-	   	myFormat.right("alt", 6) +
-	   	myFormat.right("lay", 6) +
-	   	myFormat.right("tdwt", 6) +
-	   	myFormat.right("tus1", 6) +
-	   	myFormat.right("tus2", 6) +
-	   	myFormat.right("tus3", 6);
+		String outputRecord = String.format ( "%4s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s", "seq", "link", "an", "bn", "dwf", "dwt", "path", "ttf", "ttf1", "ttft", "us1", "us2", "us3", "brd", "alt", "lay", "tdwt", "tus1", "tus2", "tus3" );
 
 		String underLine = "-";
 		for (int i=0; i < outputRecord.length() - 1; i++)
@@ -669,26 +621,7 @@ public class TrRoute implements Serializable {
 
 	  for (int i=0; i < transitPath[rte].size(); i++) {
 			ts = (TrSegment)transitPath[rte].get(i);
-			out.println (myFormat.left(i+1, 4) +
-		   	myFormat.right(ts.link, 6) +
-		   	myFormat.right(ts.an, 6) +
-	  	 	myFormat.right(ts.bn, 6) +
-	    	myFormat.right(myFormat.df2.format(ts.dwf), 6) +
-	    	myFormat.right(myFormat.df2.format(ts.dwt), 6) +
-		   	myFormat.right(String.valueOf(ts.path), 6) +
-		   	myFormat.right(ts.ttf, 6) +
-		   	myFormat.right(ts.ttf1, 6) +
-	  	 	myFormat.right(ts.ttft, 6) +
-	  	 	myFormat.right(myFormat.df2.format(ts.us1), 6) +
-	  	 	myFormat.right(myFormat.df2.format(ts.us2), 6) +
-	    	myFormat.right(myFormat.df2.format(ts.us3), 6) +
-		   	myFormat.right(String.valueOf(ts.board), 6) +
-		   	myFormat.right(String.valueOf(ts.alight), 6) +
-	    	myFormat.right(myFormat.df2.format(ts.lay), 6) +
-	    	myFormat.right(myFormat.df2.format(ts.tdwt), 6) +
-	    	myFormat.right(myFormat.df2.format(ts.tus1), 6) +
-	    	myFormat.right(myFormat.df2.format(ts.tus2), 6) +
-	    	myFormat.right(myFormat.df2.format(ts.tus3), 6));
+			out.printf( "%4d%6d%6d%6d%6.2f%6.2f%6s%6d%6d%6d%6.2f%6.2f%6.2f%6s%6s%6.2f%6.2f%6.2f%6.2f%6.2f", i+1, ts.link, ts.an, ts.bn, ts.dwf, ts.dwt, String.valueOf(ts.path), ts.ttf, ts.ttf1, ts.ttft, ts.us1, ts.us2, ts.us3, String.valueOf(ts.board), String.valueOf(ts.alight), ts.lay, ts.tdwt, ts.tus1, ts.tus2, ts.tus3 );
 	  }
 
 		out.println (underLine);

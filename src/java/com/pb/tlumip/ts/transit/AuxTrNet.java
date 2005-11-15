@@ -19,7 +19,6 @@ package com.pb.tlumip.ts.transit;
 import com.pb.tlumip.ts.assign.Network;
 
 import com.pb.common.util.IndexSort;
-import com.pb.common.util.Justify;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -83,7 +82,6 @@ public class AuxTrNet implements Serializable {
 
 	Network g;
 	TrRoute tr;
-	Justify myFormat = new Justify();
 
 	private int auxLinks, auxNodes;
 
@@ -163,7 +161,6 @@ public class AuxTrNet implements Serializable {
 
 	    this.accessMode = accessMode;
 	    
-		double headway;
 		TrSegment ts;
 		TrSegment tsNext;
 		boolean debug = false;
@@ -410,10 +407,6 @@ public class AuxTrNet implements Serializable {
 				        continue;
 				    }
 				    
-				    int dummy=0;
-				    if (aux == 4130) {
-				        dummy = 1;
-				    }
 				    
 					hwyLink[aux] = i;
 					trRoute[aux] = -1;
@@ -494,33 +487,13 @@ public class AuxTrNet implements Serializable {
 
 		// print report of all auxilliary links associated with this route
 		logger.info ("Transit route " + tr.getLine(rte) + ", " + tr.getDescription(rte));
-		logger.info (
-			myFormat.right("i", 6) +
-			myFormat.right("link", 6) +
-			myFormat.right("an", 6) +
-			myFormat.right("bn", 6) +
-			myFormat.right("ia", 6) +
-			myFormat.right("ib", 6) +
-			myFormat.right("freq", 8) +
-			myFormat.right("cost", 8) +
-			myFormat.right("invT", 8) +
-			myFormat.right("walkT", 8) +
-			myFormat.right("layT", 8));
+		logger.info ( String.format( "%6s%6s%6s%6s%6s%6s%8s%8s%8s%8s%8s", "i", "link", "an", "bn", "ia", "ib", "freq", "cost", "invT", "walkT", "layT" ) );
 		for (i=start; i < end; i++) {
 			k = hwyLink[i];
-			logger.info (
-				myFormat.right(i, 6) +
-				myFormat.right(k, 6) +
-				myFormat.right(indexNode[gia[k]], 6) +
-				myFormat.right(indexNode[gib[k]], 6) +
-				myFormat.right(ia[i], 6) +
-				myFormat.right(ib[i], 6) + 
-				(freq[i] == INFINITY ? myFormat.right ("Inf",8) : myFormat.right(myFormat.df2.format(freq[i]), 8)) +
-				myFormat.right(myFormat.df2.format(cost[i]), 8) +
-				myFormat.right(myFormat.df2.format(invTime[i]), 8) +
-				myFormat.right(myFormat.df2.format(walkTime[i]), 8) +
-				myFormat.right(myFormat.df2.format(layoverTime[i]), 8));
-	  }
+            logger.info ( String.format( "%6d%6d%6d%6d%6d%6d%8s%8.2f%8.2f%8.2f%8.2f",
+				i, k, indexNode[gia[k]], indexNode[gib[k]],ia[i],ib[i], (freq[i] == INFINITY ? String.format("%8s", "Inf") : String.format("%8.2f", freq[i])), cost[i], invTime[i], walkTime[i], layoverTime[i] ) );
+		}
+        
 	}
 
 
@@ -533,28 +506,11 @@ public class AuxTrNet implements Serializable {
 				new BufferedWriter (
 					new FileWriter (fileName)));
 
-		  	out.println ("");
-			out.println ("--------------------------");
+		  	out.printf ("--------------------------");
 			out.println ("Auxilliary Transit Network");
 		  	out.println ("--------------------------");
-			out.println (
-				myFormat.right("i", 8) +
-			 	myFormat.right("ia", 8) +
-				myFormat.right("ib", 8) +
-				myFormat.right("type", 8) +
-				myFormat.right("link", 8) +
-		  		myFormat.right("an", 8) +
-				myFormat.right("bn", 8) +
-				myFormat.right("inB", 8) +
-				myFormat.right("outB", 8) +
-				myFormat.right("outI", 8) +
-				myFormat.right("rte", 8) +
-				myFormat.right("freq", 10) +
-		  		myFormat.right("cost", 10) +
-				myFormat.right("invT", 10) +
-				myFormat.right("walkT", 10) +
-				myFormat.right("layT", 10) +
-			  	myFormat.right("hwyT", 10));
+            out.format( "%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%10s%10s%10s%10s%10s%10s", "i", "ia", "ib", "type", "link", "an", "bn", "inB", "outB", "outI", "rte", "freq", "cost", "invT", "walkT", "layT", "hwyT" );
+
 		  	for (i=0; i < auxLinks; i++) {
 				k = hwyLink[i];
 				
@@ -583,24 +539,8 @@ public class AuxTrNet implements Serializable {
 					outI = -1;
 				
 				
-				out.println (
-					myFormat.right(i, 8) +
-					myFormat.right(ia[i], 8) +
-					myFormat.right(ib[i], 8) +
-					myFormat.right(linkType[i], 8) +
-					myFormat.right(k, 8) +
-			  		myFormat.right(indexNode[gia[k]], 8) +
-					myFormat.right(indexNode[gib[k]], 8) +
-			  		myFormat.right(inB, 8) +
-			  		myFormat.right(outB, 8) +
-			  		myFormat.right(outI, 8) +
-					myFormat.right(trRoute[i], 8) +
-					(freq[i] == INFINITY ? myFormat.right ("Inf", 10) : myFormat.right(freq[i], 10, 2)) +
-					myFormat.right(cost[i], 10, 2) +
-			  		myFormat.right(invTime[i], 10, 2) +
-					myFormat.right(walkTime[i], 10, 2) +
-					myFormat.right(layoverTime[i], 10, 2) +
-					myFormat.right(gCongestedTime[k], 10, 2));
+                out.format( "%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d%10s%10.2f%10.2f%10.2f%10.2f%10.2f",
+                        i, ia[i], ib[i], linkType[i], k, indexNode[gia[k]], indexNode[gib[k]], inB, outB, outI, trRoute[i], (freq[i] == INFINITY ? String.format("%10s", "Inf") : String.format("%10.2f", freq[i])), cost[i], invTime[i], walkTime[i], layoverTime[i], gCongestedTime[k] );
 	  		}
 
 			out.close();
@@ -659,7 +599,6 @@ public class AuxTrNet implements Serializable {
 
 	void addAuxInVehicleLink (int aux, int nextNode, TrSegment ts, TrSegment tsNext, double headway, double speed, int rte) {
 		// add in-vehicle link to auxilliary link table
-		int k;
 		
 		hwyLink[aux] = ts.link;
 		trRoute[aux] = rte;
@@ -731,14 +670,7 @@ public class AuxTrNet implements Serializable {
 		logger.info ("------------------------------------");
 		logger.info ("Transit Network Bnode Pointer Arrays");
 		logger.info ("------------------------------------");
-		logger.info (
-			myFormat.right("i", 10) +
-			myFormat.right("start", 10) +
-			myFormat.right("end", 10) +
-			myFormat.right("j", 10) +
-			myFormat.right("k", 10) +
-			myFormat.right("ia", 10) +
-			myFormat.right("ib", 10));
+		logger.info ( String.format ("%10s%10s%10s%10s%10s%10s%10s", "i", "start", "end", "j", "k", "ia", "ib" ) );
 	  	for (i=1; i < auxNodes; i++) {
 			start = ipb[i];
 			if (start >= 0) {
@@ -748,14 +680,7 @@ public class AuxTrNet implements Serializable {
 				end = ipb[j];
 		  		for (j=start; j < end; j++) {
 					k = indexb[j];
-					logger.info (
-						myFormat.right(i, 10) +
-						myFormat.right(start, 10) +
-						myFormat.right(end, 10) +
-						myFormat.right(j, 10) +
-						myFormat.right(k, 10) +
-						myFormat.right(ia[k], 10) +
-						myFormat.right(ib[k], 10));
+                    logger.info ( String.format ("%10d%10d%10d%10d%10d%10d%10d", i, start, end, j, k, ia[k], ib[k] ) );
 				}
 			}
 		}
@@ -781,9 +706,9 @@ public class AuxTrNet implements Serializable {
 	// for debugging purposes only
 	// linkImped in optimal strategy is generalized cost, not including wait time.
 	double getLinkImped (int k, int temp) {
-		logger.info ("IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k])=" + myFormat.df4.format(IVT_COEFF) + "*(" + myFormat.df4.format(invTime[k]) + " + " + myFormat.df4.format(dwellTime[k]) + " + " + myFormat.df4.format(layoverTime[k]) + ")");
-		logger.info ("OVT_COEFF*(walkTime[k])=" + myFormat.df4.format(OVT_COEFF) + "*(" + myFormat.df4.format(walkTime[k]) + ")");
-		logger.info ("COST_COEFF*(cost[k])=" + myFormat.df4.format(COST_COEFF) + "*(" + myFormat.df4.format(cost[k]) + ")");
+		logger.info ("IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k])=" + String.format("%.4f", IVT_COEFF) + "*(" + String.format("%.4f", invTime[k]) + " + " + String.format("%.4f", dwellTime[k]) + " + " + String.format("%.4f", layoverTime[k]) + ")" );
+		logger.info ("OVT_COEFF*(walkTime[k])=" + String.format("%.4f", OVT_COEFF) + "*(" + String.format("%.4f", walkTime[k]) + ")" );
+		logger.info ("COST_COEFF*(cost[k])=" + String.format("%.4f", COST_COEFF) + "*(" + String.format("%.4f", cost[k]) + ")");
 
 		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*walkTime[k] + COST_COEFF*cost[k]);
 	}

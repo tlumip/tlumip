@@ -18,7 +18,6 @@ package com.pb.tlumip.ts.assign;
 
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.datafile.DiskObjectArray;
-import com.pb.common.util.*;
 import com.pb.tlumip.ts.NetworkHandler;
 
 import java.io.IOException;
@@ -41,7 +40,6 @@ public class FW {
 	HashMap propertyMap;
 	
     NetworkHandler g;
-    Justify myFormat = new Justify();
 
     double [] lambdas;
     double [] fwFlowProps;
@@ -157,13 +155,13 @@ public class FW {
             if ( ( lub - gap ) > glb )
                 glb = lub - gap;
 
-            logger.info ("Iteration " + myFormat.right(iter, 3)
-                                + "    Lambda= " + myFormat.right(lambdas[iter], 8, 4)
-                                + "    LUB= "    + myFormat.right(lub, 16, 4)
-                                + "    Gap= "    + myFormat.right(gap, 16, 4)
-                                + "    GLB= "    + myFormat.right(glb, 16, 4)
-                                + "    LUB-GLB= "    + myFormat.right(lub-glb, 16, 4)
-                                + "    RelGap= " + myFormat.right(100.0*(lub - glb)/glb, 7, 4) + "%");
+            logger.info ("Iteration " + String.format("%3d", iter)
+                                + "    Lambda= " + String.format("%8.4f", lambdas[iter])
+                                + "    LUB= "    + String.format("%16.4f", lub)
+                                + "    Gap= "    + String.format("%16.4f", gap)
+                                + "    GLB= "    + String.format("%16.4f", glb)
+                                + "    LUB-GLB= "    + String.format("%16.4f", lub-glb)
+                                + "    RelGap= " + String.format("%7.4f%%", 100.0*(lub - glb)/glb, 7, 4) );
 
 
             // update link flows and times
@@ -204,9 +202,9 @@ public class FW {
         
 
         logger.info ("");
-        logger.info (myFormat.right("iter", 5) + myFormat.right("lambdas", 12) + myFormat.right("Flow Props", 12));
+        logger.info ( String.format( "%5s %12s %12s", "iter", "lambdas", "Flow Props" ) );
         for (int i=0; i < maxFwIters; i++)
-            logger.info (myFormat.right(i, 5) + myFormat.right(lambdas[i], 12, 6) + myFormat.right(100.0*fwFlowProps[i], 12, 4) + "%");
+            logger.info ( String.format("%6d %12.6f %12.4f%%", i, lambdas[i], 100.0*fwFlowProps[i]) );
         logger.info ("");
 
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -441,29 +439,31 @@ public class FW {
 
 
     public void linkSummaryReport ( double[][] flow ) {
+        
         double totalVol;
-        double[][] volumeSum = new double[numAutoClasses][MAX_LINK_TYPE];
+        double[][] volumeSum = new double[numAutoClasses][Constants.MAX_LINK_TYPE];
+        char[] autoClasses = g.getUserClasses();
 
-        for (int k=0; k < g.getLinkCount(); k++)
+        for (int k=0; k < linkType.length; k++)
             for (int m=0; m < numAutoClasses; m++)
                 volumeSum[m][linkType[k]] += flow[m][k];
 
         logger.info("");
         logger.info("");
         logger.info("");
-        logger.info("Link Type");
+        String logRecord = String.format("%-8s", "LinkType");
         for (int m=0; m < numAutoClasses; m++)
-            logger.info(myFormat.right("Class " + Integer.toString(m) + " Volume", 24));
-        logger.info("");
-        for (int i=0; i < MAX_LINK_TYPE; i++) {
+            logRecord.concat ( String.format("%12s", ("class " + autoClasses[m])) );
+        logger.info( logRecord );
+        for (int i=0; i < Constants.MAX_LINK_TYPE; i++) {
             totalVol = 0.0;
             for (int m=0; m < numAutoClasses; m++)
                 totalVol += volumeSum[m][i];
             if (totalVol > 0.0) {
-                logger.info (myFormat.left(i, 9));
+                logRecord = String.format("%-8d", i);
                 for (int m=0; m < numAutoClasses; m++)
-                    logger.info (myFormat.right(volumeSum[m][i], 24, 4));
-                logger.info("");
+                    logRecord.concat ( String.format("%12.2f", volumeSum[m][i]) );
+                logger.info( logRecord );
             }
         }
     }

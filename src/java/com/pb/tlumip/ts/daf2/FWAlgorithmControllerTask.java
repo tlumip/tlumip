@@ -28,7 +28,6 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.daf.Port;
 import com.pb.common.daf.PortManager;
-import com.pb.common.util.Justify;
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.assign.FW;
 
@@ -43,7 +42,6 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
 	private static boolean LOGGING = true;
     static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf2");
 
-    Justify myFormat = new Justify();
 
     double[][] aonFlow = null;
     double[] lambdas = null;
@@ -173,13 +171,13 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
             if ( ( lub - gap ) > glb )
                 glb = lub - gap;
 
-            logger.info ("Iteration " + myFormat.right(iter, 3)
-                                + "    Lambda= " + myFormat.right(lambdas[iter], 8, 4)
-                                + "    LUB= "    + myFormat.right(lub, 16, 4)
-                                + "    Gap= "    + myFormat.right(gap, 16, 4)
-                                + "    GLB= "    + myFormat.right(glb, 16, 4)
-                                + "    LUB-GLB= "    + myFormat.right(lub-glb, 16, 4)
-                                + "    RelGap= " + myFormat.right(100.0*(lub - glb)/glb, 7, 4) + "%");
+            logger.info ("Iteration " + String.format("%3d", iter)
+                    + "    Lambda= " + String.format("%8.4f", lambdas[iter])
+                    + "    LUB= "    + String.format("%16.4f", lub)
+                    + "    Gap= "    + String.format("%16.4f", gap)
+                    + "    GLB= "    + String.format("%16.4f", glb)
+                    + "    LUB-GLB= "    + String.format("%16.4f", lub-glb)
+                    + "    RelGap= " + String.format("%7.4f%%", 100.0*(lub - glb)/glb, 7, 4) );
 
 
             // update link flows and times
@@ -216,9 +214,9 @@ public class FWAlgorithmControllerTask extends MessageProcessingTask{
         
 
         logger.info ("");
-        logger.info (myFormat.right("iter", 5) + myFormat.right("lambdas", 12) + myFormat.right("Flow Props", 12));
+        logger.info ( String.format( "%5s %12s %12s", "iter", "lambdas", "Flow Props" ) );
         for (int i=0; i < maxFwIteration; i++)
-            logger.info (myFormat.right(i, 5) + myFormat.right(lambdas[i], 12, 6) + myFormat.right(100.0*fwFlowProps[i], 12, 4) + "%");
+            logger.info ( String.format("%6d %12.6f %12.4f%%", i, lambdas[i], 100.0*fwFlowProps[i]) );
         logger.info ("");
 
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());

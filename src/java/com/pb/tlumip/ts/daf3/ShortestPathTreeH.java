@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
-import com.pb.common.util.Justify;
 import com.pb.tlumip.ts.NetworkHandler;
 
 /**
@@ -42,7 +41,6 @@ public class ShortestPathTreeH {
 
     RpcClient networkHandlerClient;    
 
-    Justify myFormat = new Justify();
 
     int inOrigin;
 
@@ -369,7 +367,7 @@ public class ShortestPathTreeH {
 		for (int i=count-1; i >= 0; i--) {
 			k = pathLinks[i];
 			cumTime += linkCost[k];
-			logger.info (myFormat.left((Integer.toString(indexNode[ia[k]]) + "," + Integer.toString(indexNode[ib[k]])), 15) + myFormat.right(linkCost[k], 12, 4) + myFormat.right(cumTime, 12, 4));
+			logger.info ( String.format("%-15s%12.4f%12.4f", Integer.toString(indexNode[ia[k]]) + "," + Integer.toString(indexNode[ib[k]]), linkCost[k], cumTime) );
 		}
 	}
 

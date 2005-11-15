@@ -21,7 +21,6 @@ import com.pb.tlumip.ts.assign.ShortestPath;
 
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.IndexSort;
-import com.pb.common.util.Justify;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -59,7 +58,6 @@ public class OpStrategy {
 	static final double LATITUDE_PER_FEET  = 1.0;
 	static final double LONGITUDE_PER_FEET = 1.0;
 
-	Justify myFormat = new Justify();
 
 	AuxTrNet ag;
 	Network g;
@@ -202,7 +200,7 @@ public class OpStrategy {
 
 		int j, k, m, start, end;
 		int count = 0;
-		boolean inVehInStrategy = false;
+//		boolean inVehInStrategy = false;
 		boolean debug = classDebug;
 //		boolean debug = true;
 		
@@ -440,15 +438,15 @@ public class OpStrategy {
 		}
 		else {
 			logger.info ("Invalid skims for node " + node + ".  Exiting.");
-			logger.info ("nodeAccWalkTime[" + node + "]=    " + myFormat.right (nodeAccWalkTime[node], 10, 5));
-			logger.info ("nodeEgrWalkTime[" + node + "]=    " + myFormat.right (nodeEgrWalkTime[node], 10, 5));
-			logger.info ("nodeTotWalkTime[" + node + "]=    " + myFormat.right (nodeTotWalkTime[node], 10, 5));
-			logger.info ("nodeFirstWaitTime[" + node + "]=  " + myFormat.right (nodeFirstWaitTime[node], 10, 5));
-			logger.info ("nodeTotalWaitTime[" + node + "]=  " + myFormat.right (nodeTotalWaitTime[node], 10, 5));
-			logger.info ("nodeDriveAccTime[" + node + "]=   " + myFormat.right (nodeDriveAccTime[node], 10, 5));
-			logger.info ("nodeInVehTime[" + node + "]=      " + myFormat.right (nodeInVehTime[node], 10, 5));
-			logger.info ("nodeCost[" + node + "]=           " + myFormat.right (nodeCost[node], 10, 5));
-			logger.info ("nodeBoardings[" + node + "]=      " + myFormat.right (nodeBoardings[node], 10, 5));
+			logger.info ("nodeAccWalkTime[" + node + "]=    " + String.format ("%10.5f", nodeAccWalkTime[node]));
+			logger.info ("nodeEgrWalkTime[" + node + "]=    " + String.format ("%10.5f", nodeEgrWalkTime[node]));
+			logger.info ("nodeTotWalkTime[" + node + "]=    " + String.format ("%10.5f", nodeTotWalkTime[node]));
+			logger.info ("nodeFirstWaitTime[" + node + "]=  " + String.format ("%10.5f", nodeFirstWaitTime[node]));
+			logger.info ("nodeTotalWaitTime[" + node + "]=  " + String.format ("%10.5f", nodeTotalWaitTime[node]));
+			logger.info ("nodeDriveAccTime[" + node + "]=   " + String.format ("%10.5f", nodeDriveAccTime[node]));
+			logger.info ("nodeInVehTime[" + node + "]=      " + String.format ("%10.5f", nodeInVehTime[node]));
+			logger.info ("nodeCost[" + node + "]=           " + String.format ("%10.5f", nodeCost[node]));
+			logger.info ("nodeBoardings[" + node + "]=      " + String.format ("%10.5f", nodeBoardings[node]));
 			System.exit (-1);
 			return (false);
 		}
@@ -508,7 +506,7 @@ public class OpStrategy {
 
 			
 			if (debug)
-				logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + ag.linkType[k] + ", ia=" + ag.ia[k] + "(" + indexNode[gia[m]] + "), ib=" + ag.ib[k] + "(" + indexNode[gib[m]] + "), linkLabel[k]=" + myFormat.right(linkLabel[k], 15, 6) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] + ", linkImped=" + linkImped);
+				logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + ag.linkType[k] + ", ia=" + ag.ia[k] + "(" + indexNode[gia[m]] + "), ib=" + ag.ib[k] + "(" + indexNode[gib[m]] + "), linkLabel[k]=" + String.format("%15.6f", linkLabel[k]) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] + ", linkImped=" + linkImped);
 			candidateHeap.add(k);
 
 		}
@@ -524,7 +522,7 @@ public class OpStrategy {
 
 		int i, k, m;
 		int ia, ib;
-		double wait;
+//		double wait;
 
 		boolean[] first = new boolean[ag.getAuxNodeCount()+1];
 		Arrays.fill (first, true);
@@ -544,10 +542,10 @@ public class OpStrategy {
 			ia = ag.ia[k];
 			ib = ag.ib[k];
 
-			int dummy = 0;
+//			int dummy = 0;
 //			if ( indexNode[gia[m]] == 24923 && ag.linkType[k] == 0 ) {
 			if ( ia == 15470 ) {
-				dummy = 1;
+//				dummy = 1;
 				debug = true;
 			}
 			
@@ -558,15 +556,15 @@ public class OpStrategy {
 				logger.info ("k=" + k + ", i=" + i + ", m=" + m + ", ag.ia[k]=" + ag.ia[k] + ", ag.ib[k]=" + ag.ib[k] + ", ag.an[k]=" + (ag.ia[k] < indexNode.length ? indexNode[ag.ia[k]] : 0) + ", ag.bn[k]=" + (ag.ib[k] < indexNode.length ? indexNode[ag.ib[k]] : 0) + ", g.an[k]=" + indexNode[gia[m]] + ", g.bn[k]=" + indexNode[gib[m]] );
 				logger.info ("=====================================================================================================");
 				logger.info ("");
-				logger.info (myFormat.left(("first[ia]="),25)                     + myFormat.right (first[ia],15));
-				logger.info (myFormat.left(("ag.linkType[" + k + "]="),25)        + myFormat.right (ag.linkType[k],15));
-				logger.info (myFormat.left(("ag.walkTime[" + k + "]="),25)        + (ag.walkTime[k]        == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.walkTime[k]        == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.walkTime[k],15, 4))));
-				logger.info (myFormat.left(("ag.invTime[" + k + "]="),25)         + (ag.invTime[k]         == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.invTime[k]         == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.invTime[k],15, 4))));
-				logger.info (myFormat.left(("ag.driveAccTime[" + k + "]="),25)    + (ag.driveAccTime[k]    == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.driveAccTime[k]    == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.driveAccTime[k],15, 4))));
-				logger.info (myFormat.left(("ag.cost[" + k + "]="),25)            + (ag.cost[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.cost[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.cost[k],15, 4))));
-				logger.info (myFormat.left(("ag.freq[" + k + "]="),25)            + (ag.freq[k]            == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (ag.freq[k]            == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (ag.freq[k],15, 4))));
-				logger.info (myFormat.left(("nodeFreq[" + ia + "]="),25)          + (nodeFreq[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ia],15, 4))));
-				logger.info (myFormat.left(("nodeFreq[" + ib + "]="),25)          + (nodeFreq[ib]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFreq[ib]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFreq[ib],15, 4))));
+				logger.info (String.format("%-25s%15d", "first[ia]=", first[ia]) );
+				logger.info (String.format("%-25s%15d", "ag.linkType[" + k + "]=", ag.linkType[k]) );
+				logger.info (String.format("%-25s%15s", "ag.walkTime[" + k + "]=",  (ag.walkTime[k]        == -AuxTrNet.INFINITY ? "-Infinity" : (ag.walkTime[k]        == AuxTrNet.INFINITY ? "Infinity" : String.format ("%15.4f", ag.walkTime[k])))) );
+				logger.info (String.format("%-25s%15s", "ag.invTime[" + k + "]=", (ag.invTime[k]         == -AuxTrNet.INFINITY ? "-Infinity" : (ag.invTime[k]         == AuxTrNet.INFINITY ? "Infinity" : String.format ("%15.4f", ag.invTime[k],15, 4)))) );
+				logger.info (String.format("%-25s%15s", "ag.driveAccTime[" + k + "]=", (ag.driveAccTime[k]    == -AuxTrNet.INFINITY ? "-Infinity" : (ag.driveAccTime[k]    == AuxTrNet.INFINITY ? "Infinity" : String.format ("%15.4f", ag.driveAccTime[k],15, 4)))) );
+				logger.info (String.format("%-25s%15s", "ag.cost[" + k + "]=", (ag.cost[k]            == -AuxTrNet.INFINITY ? "-Infinity" : (ag.cost[k]            == AuxTrNet.INFINITY ? "Infinity" : String.format ("%15.4f", ag.cost[k],15, 4)))) );
+				logger.info (String.format("%-25s%15s", "ag.freq[" + k + "]=", (ag.freq[k]            == -AuxTrNet.INFINITY ? "-Infinity" : (ag.freq[k]            == AuxTrNet.INFINITY ? "Infinity" : String.format ("%15.4f", ag.freq[k],15, 4)))) );
+				logger.info (String.format("%-25s%15s", "nodeFreq[" + ia + "]=", (nodeFreq[ia]          == -AuxTrNet.INFINITY ? "-Infinity" : (nodeFreq[ia]          == AuxTrNet.INFINITY ? "Infinity" : String.format ("%15.4f", nodeFreq[ia],15, 4)))) );
+				logger.info (String.format("%-25s%15s", "nodeFreq[" + ib + "]=", (nodeFreq[ib]          == -AuxTrNet.INFINITY ? "-Infinity" : (nodeFreq[ib]          == AuxTrNet.INFINITY ? "Infinity" : String.format ("%15.4f", nodeFreq[ib],15, 4)))) );
 			}
 
 
@@ -629,26 +627,26 @@ public class OpStrategy {
 
 			
 			if (debug) {
-				logger.info (myFormat.left(("nodeAccWalkTime[" + ia + "]="),25)   + (nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeAccWalkTime[ia],15, 4))));
-				logger.info (myFormat.left(("nodeAccWalkTime[" + ib + "]="),25)   + (nodeAccWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeAccWalkTime[ib],15, 4))));
-				logger.info (myFormat.left(("nodeEgrWalkTime[" + ia + "]="),25)   + (nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeEgrWalkTime[ia],15, 4))));
-				logger.info (myFormat.left(("nodeEgrWalkTime[" + ib + "]="),25)   + (nodeEgrWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeEgrWalkTime[ib],15, 4))));
-				logger.info (myFormat.left(("nodeTotWalkTime[" + ia + "]="),25)   + (nodeTotWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ia]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotWalkTime[ia],15, 4))));
-				logger.info (myFormat.left(("nodeTotWalkTime[" + ib + "]="),25)   + (nodeTotWalkTime[ib]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ib]   == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotWalkTime[ib],15, 4))));
-				logger.info (myFormat.left(("nodeFirstWaitTime[" + ia + "]="),25) + (nodeFirstWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFirstWaitTime[ia],15, 4))));
-				logger.info (myFormat.left(("nodeFirstWaitTime[" + ib + "]="),25) + (nodeFirstWaitTime[ib] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ib] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeFirstWaitTime[ib],15, 4))));
-				logger.info (myFormat.left(("nodeTotalWaitTime[" + ia + "]="),25) + (nodeTotalWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotalWaitTime[ia],15, 4))));
-				logger.info (myFormat.left(("nodeTotalWaitTime[" + ib + "]="),25) + (nodeTotalWaitTime[ib] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ib] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeTotalWaitTime[ib],15, 4))));
-				logger.info (myFormat.left(("nodeDriveAccTime[" + ia + "]="),25)  + (nodeDriveAccTime[ia]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ia]  == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeDriveAccTime[ia],15, 4))));
-				logger.info (myFormat.left(("nodeDriveAccTime[" + ib + "]="),25)  + (nodeDriveAccTime[ib]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ib]  == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeDriveAccTime[ib],15, 4))));
-				logger.info (myFormat.left(("nodeInVehTime[" + ia + "]="),25)     + (nodeInVehTime[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeInVehTime[ia],15, 4))));
-				logger.info (myFormat.left(("nodeInVehTime[" + ib + "]="),25)     + (nodeInVehTime[ib]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ib]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeInVehTime[ib],15, 4))));
-				logger.info (myFormat.left(("nodeCost[" + ia + "]="),25)          + (nodeCost[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ia]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeCost[ia],15, 4))));
-				logger.info (myFormat.left(("nodeCost[" + ib + "]="),25)          + (nodeCost[ib]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ib]          == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeCost[ib],15, 4))));
-				logger.info (myFormat.left(("nodeBoardings[" + ia + "]="),25)     + (nodeBoardings[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ia]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeBoardings[ia],15, 4))));
-				logger.info (myFormat.left(("nodeBoardings[" + ib + "]="),25)     + (nodeBoardings[ib]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ib]     == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right (nodeBoardings[ib],15, 4))));
-				logger.info ((nodeBoardings[ia] == 0) + ", " + nodeBoardings[ia]);
-				logger.info ((nodeBoardings[ib] == 0) + ", " + nodeBoardings[ib]);
+				logger.info ( String.format("%-25s%15s", "nodeAccWalkTime[" + ia + "]=", (nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeAccWalkTime[ia]   == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeAccWalkTime[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeAccWalkTime[" + ib + "]=", (nodeAccWalkTime[ib]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeAccWalkTime[ib]   == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeAccWalkTime[ib])))) );
+				logger.info ( String.format("%-25s%15s", "nodeEgrWalkTime[" + ia + "]=", (nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeEgrWalkTime[ia]   == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeEgrWalkTime[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeEgrWalkTime[" + ib + "]=", (nodeEgrWalkTime[ib]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeEgrWalkTime[ib]   == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeEgrWalkTime[ib])))) );
+				logger.info ( String.format("%-25s%15s", "nodeTotWalkTime[" + ia + "]=", (nodeTotWalkTime[ia]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeTotWalkTime[ia]   == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeTotWalkTime[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeTotWalkTime[" + ib + "]=", (nodeTotWalkTime[ib]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeTotWalkTime[ib]   == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeTotWalkTime[ib])))) );
+				logger.info ( String.format("%-25s%15s", "nodeFirstWaitTime[" + ia + "]=", (nodeFirstWaitTime[ia] == -AuxTrNet.INFINITY ? "-Infinity" : (nodeFirstWaitTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeFirstWaitTime[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeFirstWaitTime[" + ib + "]=", (nodeFirstWaitTime[ib] == -AuxTrNet.INFINITY ? "-Infinity" : (nodeFirstWaitTime[ib] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeFirstWaitTime[ib])))) );
+				logger.info ( String.format("%-25s%15s", "nodeTotalWaitTime[" + ia + "]=", (nodeTotalWaitTime[ia] == -AuxTrNet.INFINITY ? "-Infinity" : (nodeTotalWaitTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeTotalWaitTime[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeTotalWaitTime[" + ib + "]=", (nodeTotalWaitTime[ib] == -AuxTrNet.INFINITY ? "-Infinity" : (nodeTotalWaitTime[ib] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeTotalWaitTime[ib])))) );
+				logger.info ( String.format("%-25s%15s", "nodeDriveAccTime[" + ia + "]=", (nodeDriveAccTime[ia]  == -AuxTrNet.INFINITY ? "-Infinity" : (nodeDriveAccTime[ia]  == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeDriveAccTime[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeDriveAccTime[" + ib + "]=", (nodeDriveAccTime[ib]  == -AuxTrNet.INFINITY ? "-Infinity" : (nodeDriveAccTime[ib]  == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeDriveAccTime[ib])))) );
+				logger.info ( String.format("%-25s%15s", "nodeInVehTime[" + ia + "]=", (nodeInVehTime[ia]     == -AuxTrNet.INFINITY ? "-Infinity" : (nodeInVehTime[ia]     == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeInVehTime[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeInVehTime[" + ib + "]=", (nodeInVehTime[ib]     == -AuxTrNet.INFINITY ? "-Infinity" : (nodeInVehTime[ib]     == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeInVehTime[ib])))) );
+				logger.info ( String.format("%-25s%15s", "nodeCost[" + ia + "]=", (nodeCost[ia]          == -AuxTrNet.INFINITY ? "-Infinity" : (nodeCost[ia]          == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeCost[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeCost[" + ib + "]=", (nodeCost[ib]          == -AuxTrNet.INFINITY ? "-Infinity" : (nodeCost[ib]          == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeCost[ib])))) );
+				logger.info ( String.format("%-25s%15s", "nodeBoardings[" + ia + "]=", (nodeBoardings[ia]     == -AuxTrNet.INFINITY ? "-Infinity" : (nodeBoardings[ia]     == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeBoardings[ia])))) );
+				logger.info ( String.format("%-25s%15s", "nodeBoardings[" + ib + "]=", (nodeBoardings[ib]     == -AuxTrNet.INFINITY ? "-Infinity" : (nodeBoardings[ib]     == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.4f", nodeBoardings[ib])))) );
+				logger.info ( (nodeBoardings[ia] == 0) + ", " + nodeBoardings[ia] );
+				logger.info ( (nodeBoardings[ib] == 0) + ", " + nodeBoardings[ib] );
 			}
 
 		}
@@ -660,11 +658,14 @@ public class OpStrategy {
 	public void getOptimalStrategyWtSkimsFromOrig (int startFromNode, int startToNode) {
 
 		int k, m;
-		int start, end, check;
-		int fromNodeIndex=0;
+//        int start;
+//        int end;
+//        int check;
+//		int fromNodeIndex=0;
 		int count;
 		
-		double waitTime, flow;
+//        double waitTime;
+        double flow;
 		
 		boolean debug = classDebug;
 //		boolean debug = true;
@@ -703,9 +704,9 @@ public class OpStrategy {
 			k = orderInStrategy[i];
 			m = ag.hwyLink[k];
 			
-			int dummy = 0;
+//			int dummy = 0;
 			if (indexNode[gia[m]]==24917) {
-				dummy = 1;
+//				dummy = 1;
 //				debug = true;
 			}
 			
@@ -955,7 +956,7 @@ public class OpStrategy {
 //		boolean debug = true;
 		boolean debug = classDebug;
 		
-		boolean firstBoard = false;
+//		boolean firstBoard = false;
 
 
 		Matrix[] skims = new Matrix[NUM_SKIMS];
@@ -1573,7 +1574,7 @@ public class OpStrategy {
 		}
 		if (debug) {
 		logger.info ("");
-		logger.info ("driveStopChoice(" + myFormat.left(driveStopPcts, 5, 2) + "," + fromNode + "), stopCount=" + stopCount);
+		logger.info ("driveStopChoice(" + String.format("%-5.2f", driveStopPcts) + "," + fromNode + "), stopCount=" + stopCount);
 	  }
 
 
@@ -1601,7 +1602,7 @@ public class OpStrategy {
 	  logger.info ("");
 	  logger.info ("fromNode=" + fromNode);
 	  for (i=0; i < stopCount; i++)
-		logger.info (myFormat.right(i, 5) + myFormat.right(stopNodes[i], 8) + myFormat.right(indexNode[stopNodes[i]], 8) + myFormat.right(stopTimes[i], 12, 3));
+		logger.info (String.format("%5d", i) + String.format("%8d", stopNodes[i]) + String.format("%8d", indexNode[stopNodes[i]]) + String.format("%12.3f", stopTimes[i]) );
 	}
 
 
@@ -1637,7 +1638,7 @@ public class OpStrategy {
 	  logger.info ("");
 	  logger.info ("");
 	  for (i=0; i < stopCount; i++)
-		logger.info (myFormat.right(i, 5) + myFormat.right(mnlNodes[i], 8) + "(" + indexNode[mnlNodes[i]] + ")" + myFormat.right(mnlTimes[i], 12, 3));
+		logger.info (String.format("%5d", i) + String.format("%8d", mnlNodes[i]) + "(" + indexNode[mnlNodes[i]] + ")" + String.format("%12.3f", mnlTimes[i]) );
 	}
 
 		stopNum =  mnlMonteCarlo (mnlTimes, stopAvail, stopCount);
@@ -1765,13 +1766,9 @@ public class OpStrategy {
 
 		logger.info ("Error: random number [0,1) not located in MNL CDF in mnlMonteCarlo().");
 		logger.info ("rnum =" + rnum);
-		logger.info (myFormat.right("i", 6) + myFormat.right("avail[i]", 10) + myFormat.right("util[i]", 10) + myFormat.right("prop[i]", 10) + myFormat.right("cdf[i]", 10));
+		logger.info ( String.format("%6s%10s%10s%10s%10s", "i", "avail[i]", "util[i]", "prop[i]", "cdf[i]") );
 		for (int i=0; i < count; i++)
-			logger.info (myFormat.right(i, 6) +
-				myFormat.right(avail[i], 10) +
-				myFormat.right(util[i], 10, 3) +
-				myFormat.right(expUtil[i]/denominator, 10, 3) +
-				myFormat.right(cdf[i], 10, 3));
+			logger.info ( String.format("%6d%10b%10.3f%10.3f%10.3f", i, avail[i], util[i], expUtil[i]/denominator, cdf[i]) );
 		
 		logger.info ("exiting.");
 		System.exit(-1);
@@ -1792,32 +1789,22 @@ public class OpStrategy {
 		logger.info ("");
 		logger.info ("Transit Skims from all origin zones to " + dest);
 
-		logger.info ( myFormat.right("int orig", 9) +
-			myFormat.right("ext orig", 9) +
-			myFormat.right("walk access", 15) +
-			myFormat.right("walk egress", 15) +
-			myFormat.right("walk total", 15) +
-			myFormat.right("first wait", 15) +
-			myFormat.right("total wait", 15) +
-			myFormat.right("drive access", 15) +
-			myFormat.right("in vehicle", 15) +
-			myFormat.right("cost", 15) +
-			myFormat.right("boardings", 15) );
+		logger.info ( String.format("%9s%9s%15s%15s%15s%15s%15s%15s%15s%15s%15s", "int orig", "ext orig", "walk access", "walk egress", "walk total", "first wait", "total wait", "drive access", "in vehicle", "cost", "boardings") );
 
 		for (i=0; i < g.getNumCentroids(); i++) {
 		    ia = i;
 		    if (ia > 0) {
-				logger.info (myFormat.right(ia, 9) +
-					(ia <= g.getNodeCount() ? myFormat.right (indexNode[ia], 9) : myFormat.right(" ", 9)) +
-					(nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeAccWalkTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeAccWalkTime[ia],15, 6))) +
-					(nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeEgrWalkTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeEgrWalkTime[ia],15, 6))) +
-					(nodeTotWalkTime[ia]   == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotWalkTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeTotWalkTime[ia],15, 6))) +
-					(nodeFirstWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeFirstWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeFirstWaitTime[ia]/AuxTrNet.OVT_COEFF,15, 6))) +
-					(nodeTotalWaitTime[ia] == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeTotalWaitTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeTotalWaitTime[ia]/AuxTrNet.OVT_COEFF,15, 6))) +
-					(nodeDriveAccTime[ia]  == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeDriveAccTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeDriveAccTime[ia],15, 6))) +
-					(nodeInVehTime[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeInVehTime[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeInVehTime[ia],15, 6))) +
-					(nodeCost[ia]          == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeCost[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeCost[ia],15, 6))) +
-					(nodeBoardings[ia]     == -AuxTrNet.INFINITY ? myFormat.right("-Infinity",15) : (nodeBoardings[ia] == AuxTrNet.INFINITY ? myFormat.right("Infinity",15) : myFormat.right(nodeBoardings[ia],15, 6))) );
+				logger.info ( String.format("%9d%9s%15s%15s%15s%15s%15s%15s%15s%15s%15s", ia,
+                    (ia <= g.getNodeCount() ? String.format("%s",indexNode[ia]) : " "),
+					(nodeAccWalkTime[ia]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeAccWalkTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeAccWalkTime[ia]))),
+					(nodeEgrWalkTime[ia]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeEgrWalkTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeEgrWalkTime[ia]))),
+					(nodeTotWalkTime[ia]   == -AuxTrNet.INFINITY ? "-Infinity" : (nodeTotWalkTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeTotWalkTime[ia]))),
+					(nodeFirstWaitTime[ia] == -AuxTrNet.INFINITY ? "-Infinity" : (nodeFirstWaitTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeFirstWaitTime[ia]/AuxTrNet.OVT_COEFF))),
+					(nodeTotalWaitTime[ia] == -AuxTrNet.INFINITY ? "-Infinity" : (nodeTotalWaitTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeTotalWaitTime[ia]/AuxTrNet.OVT_COEFF))),
+					(nodeDriveAccTime[ia]  == -AuxTrNet.INFINITY ? "-Infinity" : (nodeDriveAccTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeDriveAccTime[ia]))),
+					(nodeInVehTime[ia]     == -AuxTrNet.INFINITY ? "-Infinity" : (nodeInVehTime[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeInVehTime[ia]))),
+					(nodeCost[ia]          == -AuxTrNet.INFINITY ? "-Infinity" : (nodeCost[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeCost[ia]))),
+					(nodeBoardings[ia]     == -AuxTrNet.INFINITY ? "-Infinity" : (nodeBoardings[ia] == AuxTrNet.INFINITY ? "Infinity" : String.format("%15.6f", nodeBoardings[ia])))) );
 		    }
 		}
 	}
@@ -2083,7 +2070,7 @@ public class OpStrategy {
 				for (int i = 0; i <= last; i++) {
 					k = data[i];
 					m = ag.hwyLink[k];
-					logger.info ("i=" + i + ",k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k] + ", linkLabel[k]=" + myFormat.right(linkLabel[k], 10, 6));
+					logger.info ("i=" + i + ",k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k] + ", linkLabel[k]=" + String.format("%10.6f", linkLabel[k]) );
 				}
 			}
 		}

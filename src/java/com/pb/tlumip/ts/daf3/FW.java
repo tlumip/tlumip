@@ -19,7 +19,6 @@ package com.pb.tlumip.ts.daf3;
 import com.pb.common.datafile.DiskObjectArray;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
-import com.pb.common.util.Justify;
 import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.AonFlowHandler;
@@ -45,7 +44,6 @@ public class FW {
     HashMap appPropertyMap;
     HashMap globalPropertyMap;
 	
-    Justify myFormat = new Justify();
 
     double [] lambdas;
     double [] fwFlowProps;
@@ -209,13 +207,13 @@ public class FW {
                     gap = 0.0;
                 }
 
-                logger.info ("Iteration " + myFormat.right(iter, 3)
-                                    + "    Lambda= " + myFormat.right(lambdas[iter], 8, 4)
-                                    + "    LUB= "    + myFormat.right(lub, 16, 4)
-                                    + "    Gap= "    + myFormat.right(gap, 16, 4)
-                                    + "    GLB= "    + myFormat.right(glb, 16, 4)
-                                    + "    LUB-GLB= "    + myFormat.right(lub-glb, 16, 4)
-                                    + "    RelGap= " + myFormat.right(100.0*(lub - glb)/glb, 7, 4) + "%");
+                logger.info ("Iteration " + String.format("%3d", iter)
+                        + "    Lambda= " + String.format("%8.4f", lambdas[iter])
+                        + "    LUB= "    + String.format("%16.4f", lub)
+                        + "    Gap= "    + String.format("%16.4f", gap)
+                        + "    GLB= "    + String.format("%16.4f", glb)
+                        + "    LUB-GLB= "    + String.format("%16.4f", lub-glb)
+                        + "    RelGap= " + String.format("%7.4f%%", 100.0*(lub - glb)/glb, 7, 4) );
     
     
                 
@@ -261,11 +259,11 @@ public class FW {
             
     
             logger.info ("");
-            logger.info (myFormat.right("iter", 5) + myFormat.right("lambdas", 12) + myFormat.right("Flow Props", 12));
-            for (int i=0; i < iterationsCompleted; i++)
-                logger.info (myFormat.right(i, 5) + myFormat.right(lambdas[i], 12, 6) + myFormat.right(100.0*fwFlowProps[i], 12, 4) + "%");
+            logger.info ( String.format( "%5s %12s %12s", "iter", "lambdas", "Flow Props" ) );
+            for (int i=0; i < maxFwIters; i++)
+                logger.info ( String.format("%6d %12.6f %12.4f%%", i, lambdas[i], 100.0*fwFlowProps[i]) );
             logger.info ("");
-    
+
             String myDateString = DateFormat.getDateTimeInstance().format(new Date());
             logger.info ("done with Frank-Wolfe assignment: " + myDateString);
 

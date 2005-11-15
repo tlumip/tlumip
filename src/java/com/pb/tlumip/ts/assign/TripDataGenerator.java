@@ -84,7 +84,6 @@ public class TripDataGenerator {
         int[] attr = new int[nZones];
         double denominator, odTrips, tripBucket, avgTripLength;
         double beta;
-	    Justify myFormat = new Justify();
 
 
         // read productions and attractions, total trips read in.
@@ -169,7 +168,7 @@ public class TripDataGenerator {
 
 
         logger.info (totalTrips + " total trips entered into trip table from " + totalIJs + " od pairs, intras=" + intras + ".");
-		logger.info ("regional average trip length= " + myFormat.left(avgTripLength/totalTrips, 14, 4));
+		logger.info ("regional average trip length= " + String.format("%14.4f", avgTripLength/totalTrips) );
 		logger.info ("");
 
         return totalTrips;

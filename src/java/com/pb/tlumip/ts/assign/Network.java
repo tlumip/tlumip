@@ -36,7 +36,6 @@ import com.pb.common.calculator.LinkFunction;
 import com.pb.common.datafile.D211FileReader;
 import com.pb.common.datafile.D231FileReader;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.Justify;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
 
@@ -1142,9 +1141,6 @@ public class Network implements Serializable {
 	public int getLinkIndex( int an, int bn ) {
 
 		// takes external node numbers and returns link index
-
-	    boolean debug = false;
-	    
 		int k = 0;
 		int returnValue = 0;
 		
@@ -1346,8 +1342,6 @@ public class Network implements Serializable {
 
     public void linkSummaryReport ( double[][] flow ) {
         
-        Justify myFormat = new Justify();
-        
         double totalVol;
         double[][] volumeSum = new double[numUserClasses][Constants.MAX_LINK_TYPE];
         int[] linkType = getLinkType();
@@ -1359,19 +1353,19 @@ public class Network implements Serializable {
         logger.info("");
         logger.info("");
         logger.info("");
-        logger.info("Link Type");
+        String logRecord = String.format("%-8s", "LinkType");
         for (int m=0; m < numUserClasses; m++)
-            logger.info(myFormat.right("Class " + Integer.toString(m) + " Volume", 24));
-        logger.info("");
+            logRecord.concat ( String.format("%12s", ("class " + userClasses[m])) );
+        logger.info( logRecord );
         for (int i=0; i < Constants.MAX_LINK_TYPE; i++) {
             totalVol = 0.0;
             for (int m=0; m < numUserClasses; m++)
                 totalVol += volumeSum[m][i];
             if (totalVol > 0.0) {
-                logger.info (myFormat.left(i, 9));
+                logRecord = String.format("%-8d", i);
                 for (int m=0; m < numUserClasses; m++)
-                    logger.info (myFormat.right(volumeSum[m][i], 24, 4));
-                logger.info("");
+                    logRecord.concat ( String.format("%12.2f", volumeSum[m][i]) );
+                logger.info( logRecord );
             }
         }
     }

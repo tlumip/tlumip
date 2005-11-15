@@ -34,8 +34,6 @@ public class ShortestPathTreeH {
 
     static final double COMPARE_EPSILON = 1.0e-07;
 
-    Justify myFormat = new Justify();
-//    Network g;
 
     int inOrigin;
 
@@ -326,7 +324,7 @@ public class ShortestPathTreeH {
 		for (int i=count-1; i >= 0; i--) {
 			k = pathLinks[i];
 			cumTime += linkCost[k];
-			logger.info (myFormat.left((Integer.toString(indexNode[ia[k]]) + "," + Integer.toString(indexNode[ib[k]])), 15) + myFormat.right(linkCost[k], 12, 4) + myFormat.right(cumTime, 12, 4));
+            logger.info ( String.format ( "%d,%d   %12.4f  %12.4f\n", Integer.toString(indexNode[ia[k]]), Integer.toString(indexNode[ib[k]]), linkCost[k], cumTime ) );
 		}
 	}
 

@@ -19,7 +19,6 @@ package com.pb.tlumip.ts.assign;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
 
-import com.pb.common.util.Justify;
 
 /**
  * Class for node to node shortest paths.
@@ -35,8 +34,6 @@ public class ShortestPath {
 
 
     Network g;
-
-    Justify myFormat = new Justify();
 
     int[] pathLinks;
     int[] nodeLabeled;
@@ -162,7 +159,7 @@ public class ShortestPath {
         for (i=count-1; i >= 0; i--) {
             k = pathLinks[i];
             cumTime += congestedTime[k];
-            System.out.println (myFormat.left((Integer.toString(indexNode[ia[k]]) + "," + Integer.toString(indexNode[ib[k]])), 15) + myFormat.right(congestedTime[k], 12, 4) + myFormat.right(cumTime, 12, 4));
+            System.out.printf ( "%d,%d   %12.4f  %12.4f\n", Integer.toString(indexNode[ia[k]]), Integer.toString(indexNode[ib[k]]), congestedTime[k], cumTime );
         }
     }
 
