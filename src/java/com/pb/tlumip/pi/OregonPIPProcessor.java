@@ -18,6 +18,9 @@ package com.pb.tlumip.pi;
 
 import com.pb.common.datafile.*;
 import com.pb.common.matrix.AlphaToBeta;
+import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.MatrixCompression;
+import com.pb.common.matrix.ZipMatrixWriter;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.Industry;
@@ -28,8 +31,12 @@ import com.pb.models.pecas.PIPProcessor;
 import com.pb.models.pecas.SomeSkims;
 import com.pb.models.pecas.TransportKnowledge;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -621,4 +628,111 @@ public class OregonPIPProcessor extends PIPProcessor {
         pProcessor.createFloorspaceWFile();
     }
 
+    private AlphaToBeta beta2CountyMap = null; /* used for squeezing the commodities from beta flows to County flows */
+    MatrixCompression compressor = null;
+
+    public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter pctFile) {
+        Commodity com = Commodity.retrieveCommodity(name);
+        
+        ZipMatrixWriter  zmw = new ZipMatrixWriter(new File(getOutputPath()+"buying_"+com.name+".zipMatrix"));
+        Matrix b = com.getBuyingFlowMatrix();
+        zmw.writeMatrix(b);
+        
+        //write out the county flows for the SCTG commodities
+        if(name.startsWith("SCTG")){
+            if(compressor == null){
+                String filePath = ResourceUtil.getProperty(piRb,"reference.data") + "alpha2beta.csv";
+                File a2bFile = new File(filePath);
+                beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
+                compressor = new MatrixCompression(beta2CountyMap);
+            }
+            Matrix countySqueeze = compressor.getCompressedMatrix(b,"SUM");
+            
+            File output = new File(getOutputPath() + "CountyFlows_Value_"+ com.name+".csv");
+            CSVFileWriter writer = new CSVFileWriter();
+            try {
+                writer.writeFile(countySqueeze,output);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        zmw = new ZipMatrixWriter(new File(getOutputPath()+"selling_"+com.name+".zipMatrix"));
+        Matrix s = com.getSellingFlowMatrix();
+        zmw.writeMatrix(s);
+        if(logger.isDebugEnabled()) logger.debug("Buying and Selling Commodity Flow Matrices have been written for " + name);
+        
+        //write intrazonal numbers to calculate percentages
+        writePctIntrazonalFile(pctFile,name,b,s);
+        
+        writeFlowHistograms(histogramFile, name,b,s);
+    }
+    
+    private void writePctIntrazonalFile(PrintWriter writer,String name,Matrix b, Matrix s){
+        boolean closePctFile = false;
+        try {
+          /* for daf version, we have to write out a file for each commodity so
+           * we create a new file each time this routine is called, write to the
+           * file and then close it.  In the monolithic version, we just write lines
+           * to a single file as we iterate over the commodities and the file
+           * will be closed by the calling method.
+           */ 
+            if (writer == null) { 
+                writer = new PrintWriter(new BufferedWriter(new FileWriter(getOutputPath() + "PctIntrazonalxBetazone_"+name+".csv")));
+                writer.println("Bzone,Commodity,BuyIntra,BuyFrom,BuyTo,BuyPctIntraFrom,BuyPctIntraTo,SellIntra,SellFrom,SellTo,SellPctIntraFrom,SellPctIntraTo");
+                closePctFile = true;
+            }   
+            
+            float buyIntra = 0;
+            float buyFrom = 0;
+            float buyTo = 0;
+            float buyPctFrom = 0;
+            float buyPctTo = 0;
+            float sellIntra = 0;
+            float sellFrom = 0;
+            float sellTo = 0;
+            float sellPctFrom = 0;
+            float sellPctTo = 0;
+                
+            for(int i=0; i<b.getRowCount(); i++){
+                int betaZone = b.getExternalNumber(i);
+                buyIntra = b.getValueAt(betaZone,betaZone);
+                buyFrom = b.getRowSum(betaZone);
+                buyTo = b.getColumnSum(betaZone);
+                buyPctFrom = buyIntra/buyFrom;
+                buyPctTo = buyIntra/buyTo;
+                sellIntra = s.getValueAt(betaZone,betaZone);
+                sellFrom = s.getRowSum(betaZone);
+                sellTo = s.getColumnSum(betaZone);
+                sellPctFrom = sellIntra/sellFrom;
+                sellPctTo = sellIntra/sellTo;
+                writer.print(betaZone + ",");
+                writer.print(name + ",");
+                writer.print(buyIntra +","); //buyIntra
+                writer.print(buyFrom +","); //buyFrom
+                writer.print(buyTo + ","); //buyTo
+                writer.print(buyPctFrom + ","); //buyPctFrom
+                writer.print(buyPctTo + ","); //buyPctTo
+                writer.print(sellIntra +","); //sellIntra
+                writer.print(sellFrom +","); //sellFrom
+                writer.print(sellTo + ","); //sellTo
+                writer.print(sellPctFrom + ","); //sellPctFrom
+                writer.println(sellPctTo); //sellPctTo
+            }
+            
+            /* close the file if we are running the DAF version of pi
+             * otherwise the file will be closed after we have iterated
+             * thru all the commodities.
+             */
+            if (writer !=null && closePctFile == true) {
+                writer.close();
+            }
+            
+        } catch (Exception e) {
+            logger.fatal("Error writing to file " + e);
+            System.exit(1);
+        }    
+    }
+    
+    
 }
