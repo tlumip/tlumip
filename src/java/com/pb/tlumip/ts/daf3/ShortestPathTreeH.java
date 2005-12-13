@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
+import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandler;
 
 /**
@@ -34,12 +35,12 @@ import com.pb.tlumip.ts.NetworkHandler;
 
 public class ShortestPathTreeH {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3.ShortestPathTreeH");
-	protected static Logger unconnectedLogger = Logger.getLogger("com.pb.tlumip.ts.daf3.ShortestPathTreeH");
+	protected static Logger logger = Logger.getLogger(ShortestPathTreeH.class);
 
     static final double COMPARE_EPSILON = 1.0e-07;
 
     RpcClient networkHandlerClient;    
+    RpcClient demandHandlerClient;    
 
 
     int inOrigin;
@@ -62,6 +63,7 @@ public class ShortestPathTreeH {
     double[] nodeLabels;
     int[] predecessorLink;
 
+    int numLinks;
     int numNodes;
     int numZones;
 
@@ -82,6 +84,10 @@ public class ShortestPathTreeH {
             try {
                 handlerName = NetworkHandler.remoteHandlerName;
                 networkHandlerClient = new RpcClient( handlerName );
+                
+                handlerName = DemandHandler.remoteHandlerName;
+                demandHandlerClient = new RpcClient( handlerName );
+                
             }
             catch (MalformedURLException e) {
                 logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
@@ -96,6 +102,7 @@ public class ShortestPathTreeH {
 
         try {
             
+            numLinks = networkHandlerGetLinkCountRpcCall();
             numNodes = networkHandlerGetNodeCountRpcCall();
             numZones = networkHandlerGetNumCentroidsRpcCall();
             
@@ -108,7 +115,7 @@ public class ShortestPathTreeH {
     		nodeIndex = networkHandlerGetNodeIndexRpcCall();
     		centroid = networkHandlerGetCentroidRpcCall();
     		
-    		aonFlow = new double[networkHandlerGetLinkCountRpcCall()];
+    		aonFlow = new double[numLinks];
             
             nodeLabeled = new int[numNodes+1];
             nodeLabels = new double[numNodes+1];
@@ -236,7 +243,7 @@ public class ShortestPathTreeH {
 
         Arrays.fill (aonFlow, 0.0);
         
-		int k;
+        int k;
         for (int j=0; j < numZones; j++) {
             if ( tripRow[j] > 0 && j != inOrigin ) {
                 k = predecessorLink[j];
@@ -253,6 +260,60 @@ public class ShortestPathTreeH {
         }
         loadTime += (System.currentTimeMillis() - start);
         
+        return aonFlow;
+        
+    }
+
+
+
+    /**
+     * For the user class and origin zone pair, get the trip table row from the DemandHandler
+     * and buid and load the shortest path tree from the origin.
+     * The loaded Aon link flows are then returned. 
+     */
+    public double[] buildAndLoadTrees ( int userClass, int origin  ) {
+
+        int k;
+        
+        double[] tripTableRow = null;
+        
+        Arrays.fill (aonFlow, 0.0);
+        
+
+        // first build the shortest path tree for internal origin zone number z.
+        buildTree( origin );
+
+        // get the user class m trips from zone z to all other zones (trip table row z).
+        try {
+            tripTableRow = demandHandlerGetTripTableRowRpcCall( userClass, origin );
+        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught getting trip table row for user class = " + userClass + ", origin zone index = " + origin + ".", e ); 
+            System.exit(1);
+        }
+
+        
+        
+        // load these trips onto the links on routes from z to all destinations j, if there are trips from z to j. 
+        for (int j=0; j < numZones; j++) {
+            
+            if ( tripTableRow[j] > 0 && j != origin ) {
+                
+                k = predecessorLink[j];
+                if (k == -1) {
+                    logger.info ("no path from " + indexNode[origin] + " to " + indexNode[j] + " for userClass " + userClass );
+                    continue;
+                }
+                
+                aonFlow[k] += tripTableRow[j];
+                while (ia[k] != origin) {
+                    k = predecessorLink[ia[k]];
+                    aonFlow[k] += tripTableRow[j];
+                }
+            }
+        }
+
+
         return aonFlow;
         
     }
@@ -468,6 +529,15 @@ public class ShortestPathTreeH {
     }
 
     
+    
+    
+    
+    private double[] demandHandlerGetTripTableRowRpcCall( int userClass, int origin ) throws Exception {
+        Vector params = new Vector();
+        params.add( userClass );
+        params.add( origin );
+        return (double[])demandHandlerClient.execute("demandHandler.getTripTableRow", params );
+    }
     
     
     

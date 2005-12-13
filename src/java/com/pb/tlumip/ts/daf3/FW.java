@@ -27,7 +27,7 @@ import com.pb.tlumip.ts.ShortestPathTreeHandler;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Vector;
@@ -53,7 +53,10 @@ public class FW {
     int startOriginTaz;
     int lastOriginTaz;;
 	int maxFwIters;
-	double fwGap;
+    
+    boolean[][] validLinksForClasses;
+    
+    double fwGap;
 
     String timePeriod;
 
@@ -124,13 +127,11 @@ public class FW {
             lastOriginTaz = networkHandlerGetNumCentroidsRpcCall();
             numAutoClasses = networkHandlerGetNumUserClassesRpcCall();
             timePeriod = networkHandlerGetTimePeriodRpcCall();
+            validLinksForClasses = networkHandlerGetValidLinksForAllClassesRpcCall();
 
             // setup the demandHandler object 
             demandHandlerSetupRpcCall();
             
-            // setup the ShortestPathTreeHandler that aonFlowHandler uses
-            shortestPathHandlerSetupRpcCall();
-
             // setup the aonFlowHandlerClient object
             aonFlowHandlerSetupRpcCall();
             
@@ -184,19 +185,37 @@ public class FW {
                 lambdas[iter] = 1.0;
     
 
-                double[] linkCost = networkHandlerSetLinkGeneralizedCostRpcCall();
-                shortestPathHandlerSetLinkCostRpcCall( linkCost );
-                    
+                // tell aon handler to get aon flows from new shortest paths
             	double[][] aonFlow = aonFlowHandlerGetMulticlassAonLinkFlowsRpcCall();
+                for (int m=0; m < aonFlow.length; m++)
+                    logger.info( "total aon flow for class " + m + " in FW iter " + iter + " = " + sumArrayValues(aonFlow[m], validLinksForClasses[m]) );
     			
                 
+
+                // solve for FW lambda for this iteration 
                 if (iter > 0) {
-                    // print assignment iterations report
+
+                    // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
+                    lambdas[iter] = networkHandlerFwBisectRpcCall( iter, aonFlow, flow);
+                    if ( lambdas[iter] == -1.0 ) {
+                        logger.error ("Exact FW optimal solution found.  Unlikely, better check into this!");
+                        lambdas[iter] = 0.5;
+                        iter = 0;
+                        converged = true;
+                    }
+
+                    // compute objective function value - least upper bound
                     lub = networkHandlerGetFwOfValueRpcCall ( flow );
+                    
+                    // compute least upper bound minus objective function gap - lower bound
+                    // caluculation of gap also updates volau and congested times in network handler
                     gap = Math.abs( networkHandlerGetFwGapValueRpcCall( aonFlow, flow ));
+                    
+                    // if calculated lower bound is greater than previous greatest lower bound, make this one the gteatest lower bound 
                     if ( ( lub - gap ) > glb )
                         glb = lub - gap;
 
+                    // check for convergence based on relative gap
                     if ( Math.abs( (lub - glb)/glb ) < fwGap )
                         converged = true;
                     
@@ -207,6 +226,9 @@ public class FW {
                     gap = 0.0;
                 }
 
+
+                
+                // print assignment iterations report
                 logger.info ("Iteration " + String.format("%3d", iter)
                         + "    Lambda= " + String.format("%8.4f", lambdas[iter])
                         + "    LUB= "    + String.format("%16.4f", lub)
@@ -217,15 +239,6 @@ public class FW {
     
     
                 
-                // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
-                lambdas[iter] = networkHandlerFwBisectRpcCall( iter, aonFlow, flow);
-                if ( lambdas[iter] == -1.0 ) {
-                    logger.error ("Exact FW optimal solution found.  Unlikely, better check into this!");
-                    lambdas[iter] = 0.5;
-                    iter = maxFwIters;
-                }
-
-                
                 // sum total flow over all user classes for each link 
                 for (int m=0; m < numAutoClasses; m++) {
                     for (int k=0; k < numLinks; k++) {
@@ -233,12 +246,14 @@ public class FW {
                     }
                 }
 
+                gap = Math.abs( networkHandlerGetFwGapValueRpcCall( aonFlow, flow ));
+                for (int m=0; m < flow.length; m++)
+                    logger.info( "total final flow for class " + m + " in FW iter " + iter + " = " + sumArrayValues(flow[m], validLinksForClasses[m]) );
                 
                 
                 
-//                networkHandlerLogLinkTimeFreqsRpcCall ();
-    			
                 iterationsCompleted++;
+
                 
             } // end of FW iter loop
     
@@ -260,7 +275,7 @@ public class FW {
     
             logger.info ("");
             logger.info ( String.format( "%5s %12s %12s", "iter", "lambdas", "Flow Props" ) );
-            for (int i=0; i < maxFwIters; i++)
+            for (int i=0; i < iterationsCompleted; i++)
                 logger.info ( String.format("%6d %12.6f %12.4f%%", i, lambdas[i], 100.0*fwFlowProps[i]) );
             logger.info ("");
 
@@ -417,21 +432,11 @@ public class FW {
         return (boolean[][])networkHandlerClient.execute("networkHandler.getValidLinksForAllClasses", new Vector() );
     }
 
-    private void networkHandlerLogLinkTimeFreqsRpcCall() throws Exception {
-        // g.logLinkTimeFreqs( boolean[] validLinks )
-        networkHandlerClient.execute("networkHandler.logLinkTimeFreqs", new Vector() );
-    }
-
     private void networkHandlerCreateSelectLinkAnalysisDiskObjectRpcCall( double[] fwFlowProps ) throws Exception {
         // g.createSelectLinkAnalysisDiskObject( double[] fwFlowProps )
         Vector params = new Vector();
         params.add( fwFlowProps );
         networkHandlerClient.execute("networkHandler.createSelectLinkAnalysisDiskObject", params);
-    }
-
-    private double[] networkHandlerSetLinkGeneralizedCostRpcCall() throws Exception {
-        // g.setLinkGeneralizedCost()
-        return (double[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector() );
     }
 
     
@@ -466,23 +471,14 @@ public class FW {
     
     
     
-    private void shortestPathHandlerSetupRpcCall() throws Exception {
-        Vector params = new Vector();
-        params.addElement( appPropertyMap );
-        params.addElement( globalPropertyMap );
+    private double sumArrayValues ( double[] array, boolean[] validLinks ) {
+        double total = 0.0;
+        for (int i =0; i < array.length; i++)
+            if ( validLinks[i] )
+            total += array[i];
         
-        boolean[][] validLinksForClasses = networkHandlerGetValidLinksForAllClassesRpcCall();
-        params.addElement( validLinksForClasses );
-
-        shortestPathHandlerClient.execute("shortestPathTreeHandler.setup", params );
+        return total;
     }
     
-    private void shortestPathHandlerSetLinkCostRpcCall( double[] linkCost ) throws Exception {
-        Vector params = new Vector();
-        params.addElement( linkCost );
-        shortestPathHandlerClient.execute("shortestPathTreeHandler.setLinkCostArray", params );
-    }
-    
-
     
 }

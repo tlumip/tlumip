@@ -26,11 +26,12 @@ package com.pb.tlumip.ts;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcHandler;
 
-import com.pb.tlumip.ts.daf3.ShortestPathTreeH;
+import com.pb.tlumip.ts.daf3.AonBuildLoadCommon;
+import com.pb.tlumip.ts.daf3.SpBuildLoadMt;
 
-import java.util.HashMap;
-import java.net.MalformedURLException;
 import java.util.Vector;
+import java.net.MalformedURLException;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
 
@@ -38,20 +39,17 @@ import org.apache.log4j.Logger;
 
 public class ShortestPathTreeHandler implements RpcHandler {
 
+    protected static Logger logger = Logger.getLogger(ShortestPathTreeHandler.class);
+
+    // set the frequency with which the shared class is polled to see if all threads have finshed their work.
+    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
     public static String remoteHandlerName = "shortestPathTreeHandler";
     
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.ShortestPathTreeHandler");
-
+    
+    public int numberOfThreads = 4;
 
     RpcClient networkHandlerClient;    
 
-    ShortestPathTreeH[] sp = null;
-    int numUserClasses = 0;
-
-    double[] linkCost = null;
-    
-	HashMap componentPropertyMap;
-    HashMap globalPropertyMap;
     
 
 
@@ -81,22 +79,9 @@ public class ShortestPathTreeHandler implements RpcHandler {
 
     public Object execute (String methodName, Vector params) throws Exception {
                   
-        if ( methodName.equalsIgnoreCase( "setup" ) ) {
-            HashMap componentPropertyMap = (HashMap)params.get(0);
-            HashMap globalPropertyMap = (HashMap)params.get(1);
-            boolean[][] validLinksForClass = (boolean[][]) params.get(2);
-            setup( componentPropertyMap, globalPropertyMap, validLinksForClass );
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "setLinkCostArray" ) ) {
-            double[] linkCost = (double[]) params.get(0);
-            setLinkCostArray(linkCost);
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "getPredecessorLinkArray" ) ) {
-            int userClass = (Integer) params.get(0);
-            int origin = (Integer) params.get(1);
-            return getPredecessorLinkArray(userClass, origin);
+        if ( methodName.equalsIgnoreCase( "getLoadedAonFlows" ) ) {
+            int[][] workElements = (int[][]) params.get(0);
+            return getLoadedAonFlows ( workElements );
         }
         else {
             logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
@@ -107,56 +92,76 @@ public class ShortestPathTreeHandler implements RpcHandler {
 
 
     
-    public void setup( HashMap componentPropertyMap, HashMap globalPropertyMap, boolean[][] validLinksForClasses ) {
-        
-        this.componentPropertyMap = componentPropertyMap;
-        this.globalPropertyMap = globalPropertyMap; 
-        
-        numUserClasses = validLinksForClasses.length;
-        
-        
-        // build shortest path tree object and set cost and valid link attributes for this user class.
+    private double[][] getLoadedAonFlows ( int[][] workElements ) {
+
+
+        // update the link costs based on current flows
+        double[] linkCost = null;
+        boolean[][] validLinksForClasses = null;
         try {
-            
-            sp = new ShortestPathTreeH[numUserClasses];
-
-            for (int i=0; i < numUserClasses; i++) {
-                
-                sp[i] = new ShortestPathTreeH();
-                
-                sp[i].setValidLinks( validLinksForClasses[i] );
-                
-            }
-
+            validLinksForClasses = networkHandlerGetValidLinksForAllClassesRpcCall();
+            linkCost = networkHandlerSetLinkGeneralizedCostRpcCall();
         }
         catch ( Exception e ) {
-            logger.error ( "Exception caught setting up ShortestPathTreeH[] in ShortestPathTreeHandler.setup().", e );
+            logger.error ( "Exception caught setting link generalized costs prior to loading aon flows in ShortestPathTreeHandler.getLoadedAonFlows().", e );
             System.exit(1);
         }
-        
 
-    }
-
-
-    private void setLinkCostArray ( double[] linkCost ) {
         
-        // set the highway network attribute on which to build shortest paths over the network
-        this.linkCost = linkCost;
+        AonBuildLoadCommon buildLoadShared = AonBuildLoadCommon.getInstance();
+        buildLoadShared.setup(validLinksForClasses);
         
-        // set the highway network attribute on which to skim the network
-        for (int i=0; i < numUserClasses; i++) {
-            sp[i].setLinkCost( linkCost );
+        BlockingQueue workList = buildLoadShared.getWorkList();
+        
+        
+        // put the origin, user class pairs into the workList.
+        // put a -1, -1 pair for each thread to be started at the end of the workList.
+        try {
+            
+            for (int i=0; i < workElements.length; i++)
+                workList.put( workElements[i] );
+        
+            int[] endOfWorkMarker = { -1, -1 };
+            for (int i=0; i < numberOfThreads; i++)
+                workList.put( endOfWorkMarker );
+        
+        } catch (InterruptedException e) {
+            logger.error ( "InterruptedException caught putting work object into workList in ShortestPathTreeHandler.getLoadedAonFlows().", e);
+            System.exit(-1);
         }
 
-    }
-    
-    
-    private int[] getPredecessorLinkArray ( int userClass, int origin ) {
-
-        sp[userClass].buildTree ( origin );
-        return sp[userClass].getPredecessorLink();
+        
+        // start the specified number of threads to build and load shortest path trees from the workList
+        for (int i = 0; i < numberOfThreads; i++) {
+            SpBuildLoadMt spMt = new SpBuildLoadMt( linkCost, validLinksForClasses, buildLoadShared );
+            new Thread(spMt).start();
+        }
+        
+        
+        // wait here until all threads have indicated they are one.
+        while ( buildLoadShared.getThreadsFinishedCount() < numberOfThreads ) {
+            try {
+                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
+            }
+            catch (InterruptedException e){
+                logger.error ( "InterruptedException thrown while waiting " + POLLING_FREQUENCY_IN_SECONDS + " seconds.", e);
+            }
+        }
+        
+        return buildLoadShared.getResultsArray();
         
     }
 
     
+    
+    private double[] networkHandlerSetLinkGeneralizedCostRpcCall() throws Exception {
+        // g.setLinkGeneralizedCost()
+        return (double[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector() );
+    }
+
+    private boolean[][] networkHandlerGetValidLinksForAllClassesRpcCall() throws Exception {
+        // g.getValidLinksForAllClasses()
+        return (boolean[][])networkHandlerClient.execute("networkHandler.getValidLinksForAllClasses", new Vector() );
+    }
+
 }

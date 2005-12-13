@@ -312,16 +312,11 @@ public class TS {
                 params);
     }
 
-    private boolean[][] networkHandlerGetValidLinksForAllClassesRpcCall()
-            throws Exception {
-        // g.getValidLinksForAllClasses()
-        return (boolean[][]) networkHandlerClient.execute(
-                "networkHandler.getValidLinksForAllClasses", new Vector());
-    }
 
 public static void main (String[] args) {
         
-        String propertyFileName = null;
+    String propertyFileName = null;
+    String globalFileName = null;
         
         switch ( args.length ) {
         
@@ -337,12 +332,19 @@ public static void main (String[] args) {
         case 2:
             tsRpcConfigFileName = args[0];
             propertyFileName = args[1];
+            globalFileName = "global";
+            break;
+
+        case 3:
+            tsRpcConfigFileName = args[0];
+            propertyFileName = args[1];
+            globalFileName = args[2];
             break;
 
         }
         
         
-        TS tsTest = new TS( propertyFileName, "global" );
+        TS tsTest = new TS( propertyFileName, globalFileName );
 
         // run peak highway assignment
 		tsTest.runHighwayAssignment( "peak" );

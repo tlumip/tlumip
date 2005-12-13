@@ -28,9 +28,6 @@ import com.pb.common.rpc.RpcException;
 import com.pb.common.rpc.RpcHandler;
 import com.pb.common.util.ResourceUtil;
 
-//import com.pb.tlumip.ts.AonFlowResults;
-import com.pb.tlumip.ts.assign.NoPathFoundException;
-
 import java.util.HashMap;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -185,16 +182,7 @@ public class AonFlowHandler implements RpcHandler {
 
     private double[][] getMulticlassAonLinkFlows () {
 
-        int m=0;
-        int origin=0;
-        
-        // initialize the AON Flow arrays to zero
-        double[] aon;
-        double[][] aonFlow = new double[numUserClasses][numLinks];
-
         double[][] tripTableRowSums = null;
-        
-        
         
         // get the trip table row sums by user class
         try {
@@ -205,34 +193,54 @@ public class AonFlowHandler implements RpcHandler {
             System.exit(1);
         }
         
+        // build and load shortest path trees for all zones, all user classes, and return aon link flows by user class
+        double[][] aonFlow = calculateAonLinkFlows ( tripTableRowSums );
+        
+        return aonFlow;
+        
+    }
+
+
+    
+    
+    private double[][] calculateAonLinkFlows ( double[][] tripTableRowSums ) {
+
+        int origin=0;
+        
+        // initialize the AON Flow array to zero
+        double[][] aonFlow = null;
+        
+        int[][] workElements = null;
+        int[] workElementZoneList = new int[numUserClasses*numCentroids];
+        int[] workElementClassList = new int[numUserClasses*numCentroids];
 
         
-        try {
+        int k=0;
+        for (int m=0; m < numUserClasses; m++) {
+            for (origin=startOriginTaz; origin < lastOriginTaz; origin++) {
             
-            for (m=0; m < numUserClasses; m++) {
-                
-                for (origin=startOriginTaz; origin < lastOriginTaz; origin++) {
-                
-                    if (tripTableRowSums[m][origin] > 0.0) {
-                        
-                        double[] tripTableRow = demandHandlerGetTripTableRowRpcCall(m, origin);
-
-                        int[] predecessorLink = shortestPathHandlerGetPredecessorLinkArrayRpcCall(m, origin);
-
-                        aon = loadTree ( numCentroids, numLinks, origin, predecessorLink, tripTableRow );
-                        for (int k=0; k < numLinks; k++)
-                            aonFlow[m][k] += aon[k];
-                        
-                    }
-                    
+                if (tripTableRowSums[m][origin] > 0.0) {
+                    workElementZoneList[k] = origin;
+                    workElementClassList[k] = m ;
+                    k++;
                 }
-                
+
             }
-            
         }
-        catch ( NoPathFoundException e ) {
-            logger.error ("no path from " + indexNode[origin] + " to " + indexNode[e.code] + " for userClass " + m + ".", e );
-            System.exit(1);
+
+        
+        // dimension the work elements array from the number of work elemets added to the ArrayList.
+        workElements = new int[k][2];
+        
+        for (int i=0; i < workElements.length; i++) {
+            workElements[i][0] = workElementZoneList[i];
+            workElements[i][1] = workElementClassList[i];
+        }
+            
+        
+        try {
+            logger.info( "generating aon link flows for " + k + " userclass, origin zone pairs." );
+            aonFlow = shortestPathHandlerGetLoadedAonFlowsRpcCall( workElements );
         }
         catch ( Exception e ) {
             logger.error ( "Exception caught.", e );
@@ -243,41 +251,9 @@ public class AonFlowHandler implements RpcHandler {
         
     }
 
-
     
     
-    /**
-     * Load trips from the trip table row associated with the shortest
-     * path tree origin
-     */
-    public double[] loadTree ( int numZones, int numLinks, int inOrigin, int[] predecessorLink, double[] tripRow ) throws NoPathFoundException {
-
-        double[] aonFlow = new double[numLinks];
-        
-        int k;
-        for (int j=0; j < numZones; j++) {
-            if ( tripRow[j] > 0 && j != inOrigin ) {
-                
-                k = predecessorLink[j];
-                
-                if (k == -1) {
-                    throw new NoPathFoundException( j, "no path found exception" );
-                }
-                
-                aonFlow[k] += tripRow[j];
-                
-                while (ia[k] != inOrigin) {
-                    k = predecessorLink[ia[k]];
-                    aonFlow[k] += tripRow[j];
-                }
-            }
-        }
-        
-        return aonFlow;
-        
-    }
     
-
 
     private int networkHandlerGetNumCentroidsRpcCall() throws Exception {
         // g.getNumCentroids()
@@ -307,13 +283,6 @@ public class AonFlowHandler implements RpcHandler {
     
     
     
-    private double[] demandHandlerGetTripTableRowRpcCall( int userClass, int origin ) throws Exception {
-        Vector params = new Vector();
-        params.add( userClass );
-        params.add( origin );
-        return (double[])demandHandlerClient.execute("demandHandler.getTripTableRow", params );
-    }
-    
     private double[][] demandHandlerGetTripTableRowSumsRpcCall() throws Exception {
         return (double[][])demandHandlerClient.execute("demandHandler.getTripTableRowSums", new Vector() );
     }
@@ -321,11 +290,10 @@ public class AonFlowHandler implements RpcHandler {
     
     
     
-    private int[] shortestPathHandlerGetPredecessorLinkArrayRpcCall( int userClass, int origin ) throws Exception {
+    private double[][] shortestPathHandlerGetLoadedAonFlowsRpcCall( int[][] workElements ) throws Exception {
         Vector params = new Vector();
-        params.add( userClass );
-        params.add( origin );
-        return (int[])shortestPathHandlerClient.execute("shortestPathTreeHandler.getPredecessorLinkArray", params );
+        params.add( workElements );
+        return (double[][])shortestPathHandlerClient.execute("shortestPathTreeHandler.getLoadedAonFlows", params );
     }
     
 }

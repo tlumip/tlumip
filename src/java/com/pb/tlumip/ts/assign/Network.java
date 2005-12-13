@@ -818,7 +818,7 @@ public class Network implements Serializable {
 			double[] results = fdLc.solve(validLinks);
 			
 			for (int i=0 ; i < results.length; i++) {
-				if ( results[i] < 0 || results[i] == Double.NaN ) {
+				if ( validLinks[i] && (results[i] < 0 || results[i] == Double.NaN) ) {
 					logger.error ( "invalid result in Network.applyVdfs(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
 					logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
 					System.exit(-1);
@@ -836,7 +836,7 @@ public class Network implements Serializable {
 		double[] results = fdiLc.solve(validLinks);
 		
 		for (int i=0 ; i < results.length; i++) {
-			if ( results[i] == Double.NaN ) {
+			if ( validLinks[i] && results[i] == Double.NaN ) {
 				logger.error ( "invalid result in Network.applyVdfIntegrals(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
 				logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
 				System.exit(-1);
