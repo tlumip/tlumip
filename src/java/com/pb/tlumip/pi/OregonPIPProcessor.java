@@ -161,18 +161,18 @@ public class OregonPIPProcessor extends PIPProcessor {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Industry industry = new Industry();
+
                 float[] dollarsByIndustry = new float[dollars.getRowCount()]; //header row does not count in row count
                 if(logger.isDebugEnabled()) {
                     logger.debug("column count: "+ dollars.getColumnCount());
                 }
                 for(int r = 0; r < dollars.getRowCount(); r++){
-                    int industryIndex = industry.getIndustryIndex(dollars.getStringValueAt(r + 1, 1));//Activity Name
+                    int industryIndex = Industry.getSplitIndustryIndex(dollars.getStringValueAt(r + 1, 1));//Activity Name
                     dollarsByIndustry[industryIndex] = dollars.getValueAt(r + 1, 2); //Total Dollars
                 }
                 //update the values in the actI TableDataSet using the ED results
                 for(int r=0; r< actI.getRowCount(); r++){
-                    int industryIndex = industry.getIndustryIndex(actI.getStringValueAt(r+1,activityColumnPosition));
+                    int industryIndex = Industry.getSplitIndustryIndex(actI.getStringValueAt(r+1,activityColumnPosition));
                     if (industryIndex >= 0){
                         actI.setValueAt(r+1,sizeColumnPosition, dollarsByIndustry[industryIndex]);
                     }
@@ -598,7 +598,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         
         TableDataSet householdQuantity = loadTableDataSet("ActivityLocations2","pi.current.data");
         
-        String[] occupations = new Occupation().getOccupationLabels();
+        String[] occupations = Occupation.getOccupationLabels();
         List<String> tempList = new ArrayList<String>();
         for (String occupation : occupations){
             if(occupation.indexOf("Unemployed")>=0) continue;
@@ -611,7 +611,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         String[] hhCategories = new IncomeSize().getIncomeSizeLabels();
         
         
-        String[] activities = new Industry().getIndustryLabels();
+        String[] activities = Industry.getSplitIndustryLabels();
         
         
         LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AZone","BZone",householdQuantity,occupations,hhCategories,activities);
