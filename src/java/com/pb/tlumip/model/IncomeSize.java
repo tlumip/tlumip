@@ -21,9 +21,10 @@ import java.io.IOException;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.models.censusdata.SwIncomeSize;
 
 
-public class IncomeSize {
+public class IncomeSize extends SwIncomeSize {
 
     String[] incomeSizeLabels = {
 		"HH0to5k1to2",
@@ -53,30 +54,41 @@ public class IncomeSize {
 
     
 
-	// return the number of HH income/HH size categories.    
-	public int getNumberIncomeSizes() {
-		return incomeSizeLabels.length;
-	}
+    // return all the IncomeSize category labels.    
+    public String[] getIncomeSizeLabels() {
+        return incomeSizeLabels;
+    }
 
+    
+    // return the number of HH income/HH size categories.    
+    public int getNumberIncomeSizes() {
+        return incomeSizeLabels.length;
+    }
 
+    
+    // return the IncomeSize category index given the label.    
+    public int getIncomeSizeIndex(String incomeSizeLabel) {
+        
+        int returnValue = -1;
+        
+        for (int i=0; i < incomeSizeLabels.length; i++) {
+            if ( incomeSizeLabel.equalsIgnoreCase( incomeSizeLabels[i] ) ) {
+                returnValue = i;
+                break;
+            }
+        }
+        
+        return returnValue;
+    }
 
-	// return the IncomeSize category index given the label.    
-	public int getIncomeSizeIndex(String incomeSizeLabel) {
-	    
-		int returnValue = -1;
-	    
-		for (int i=0; i < incomeSizeLabels.length; i++) {
-			if ( incomeSizeLabel.equalsIgnoreCase( incomeSizeLabels[i] ) ) {
-				returnValue = i;
-				break;
-			}
-		}
-		
-		return returnValue;
-	}
+    
+    // return the IncomeSize category label given the index.    
+    public String getIncomeSizeLabel(int incomeSizeIndex) {
+        return incomeSizeLabels[incomeSizeIndex];
+    }
 
-
-
+    
+    
 	// return the IncomeSize category index given the pums IncomeSize code
 	// from the pums person record OCCUP field.    
 	public int getIncomeSize(int income, int hhSize) {
@@ -143,50 +155,5 @@ public class IncomeSize {
 		return returnValue;
 	}
 
-
-
-	// return the IncomeSize category label given the index.    
-	public String getIncomeSizeLabel(int incomeSizeIndex) {
-		return incomeSizeLabels[incomeSizeIndex];
-	}
-
-
-
-	// return all the IncomeSize category labels.    
-	public String[] getIncomeSizeLabels() {
-		return incomeSizeLabels;
-	}
-
-	
-	
-		// return the array of households by Income/HHSize HH Category from the named file
-	public int[] getIncSizeHouseholds( String fileName ) {
-	 
-		String[] formats = { "STRING", "NUMBER" };
-		
-		// read the base households by incSize file into a TableDataSet
-		CSVFileReader reader = new CSVFileReader();
-        
-		TableDataSet table = null;
-		try {
-			table = reader.readFileWithFormats( new File( fileName ), formats );
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	    
-		// this table has one row of number of households for each incSize category
-		String[] tempIncSizeLabels = table.getColumnAsString(1);
-		int[] incSize = table.getColumnAsInt(2);
-		
-		incomeSizeLabels = new String[tempIncSizeLabels.length];
-
-		for (int i=0; i < tempIncSizeLabels.length; i++)
-			incomeSizeLabels[i] = tempIncSizeLabels[i];
-	    
-		return incSize;
-	}
-	
-	
-	
 }
 
