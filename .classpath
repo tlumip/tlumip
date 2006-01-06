@@ -10,5 +10,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/jakarta-commons"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common-daf-v3"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/censusdata"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/synpop"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
