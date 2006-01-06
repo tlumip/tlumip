@@ -16,6 +16,7 @@
  */
 package com.pb.tlumip.model;
 
+import com.pb.common.datafile.TableDataSet;
 import com.pb.models.censusdata.SwIndustry;
 
 
@@ -71,6 +72,7 @@ public class Industry extends SwIndustry {
         super(corespondenceFile, year);
     }
 
+    
 
     // return the array of split-industry labels
     public static String[] getSplitIndustryLabels() {
@@ -93,5 +95,22 @@ public class Industry extends SwIndustry {
 		return returnValue;
 	}
     
+    
+    
+    // the Oregon model uses an industry employment data file with one column of
+    // employment dollars for an implied year.  There is a separate file for every
+    // simulation year.  Therefore the year passed in to this method is meaningless
+    // and the column index should be set to 2 for the TableDataSet that will be created.
+    public float[] getIndustryEmployment( String fileName, String year ) {
+
+        TableDataSet table = getIndustryEmploymentTableData( fileName );
+        int column = 2;
+
+        float[] industryEmployment = getIndustryEmploymentForColumn( table, column );
+
+        return industryEmployment;
+        
+    }
+
 }
 

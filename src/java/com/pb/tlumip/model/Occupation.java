@@ -22,11 +22,10 @@ import com.pb.models.censusdata.SwOccupation;
 
 public class Occupation extends SwOccupation {
 
-    
+
     public Occupation ( String correspondenceFileName, String year ) {
         super(correspondenceFileName, year);
     }
-    
-    
+
 }
 
