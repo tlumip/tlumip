@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 
 public class FW {
 
-    Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3.FW");
+    Logger logger = Logger.getLogger(FW.class);
 
 	static final int SIZEOF_INT = 4;
 
