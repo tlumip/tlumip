@@ -24,8 +24,8 @@ import com.pb.common.matrix.ZipMatrixWriter;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.Industry;
-import com.pb.models.pecas.LaborProductionAndConsumption;
 import com.pb.tlumip.model.Occupation;
+import com.pb.models.pecas.LaborProductionAndConsumption;
 import com.pb.models.pecas.Commodity;
 import com.pb.models.pecas.PIPProcessor;
 import com.pb.models.pecas.SomeSkims;
@@ -49,6 +49,9 @@ import java.util.ResourceBundle;
  */
 public class OregonPIPProcessor extends PIPProcessor {
 
+    ResourceBundle spgRb;
+    String year;
+    
     public OregonPIPProcessor() {
         super();
     }
@@ -57,7 +60,14 @@ public class OregonPIPProcessor extends PIPProcessor {
      * @param timePeriod
      */
     public OregonPIPProcessor(int timePeriod, ResourceBundle piRb, ResourceBundle globalRb) {
+        
         super(timePeriod, piRb, globalRb);
+        
+        // the property file used by SPG to build the population being used here
+        // should have been specified in the pi properties file.
+        this.spgRb = ResourceUtil.getPropertyBundle(new File(ResourceUtil.getProperty(piRb, "spg.property.name")));
+        this.year = timePeriod < 10 ? "1990" : "2000";
+        
     }
 
     /* (non-Javadoc)
@@ -598,7 +608,12 @@ public class OregonPIPProcessor extends PIPProcessor {
         
         TableDataSet householdQuantity = loadTableDataSet("ActivityLocations2","pi.current.data");
         
-        String[] occupations = Occupation.getOccupationLabels();
+       
+        // an Occupation class must be instantiated in order to get the PUMS/Occupation
+        // correspondence file to be read to make the statewide Occupation categories known.
+        Occupation occ = new Occupation( ResourceUtil.getProperty(spgRb, "sw_pums_occupation.correspondence.fileName"), year );
+        
+        String[] occupations = occ.getOccupationLabels();
         List<String> tempList = new ArrayList<String>();
         for (String occupation : occupations){
             if(occupation.indexOf("Unemployed")>=0) continue;
