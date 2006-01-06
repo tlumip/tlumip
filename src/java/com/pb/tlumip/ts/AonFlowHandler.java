@@ -42,7 +42,7 @@ public class AonFlowHandler implements RpcHandler {
 
     public static String remoteHandlerName = "aonFlowHandler";
     
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.ShortestPathTreeHandler");
+	protected static Logger logger = Logger.getLogger(AonFlowHandler.class);
 
 //    private AonFlowResults flowResults = AonFlowResults.getInstance();
 
@@ -212,7 +212,7 @@ public class AonFlowHandler implements RpcHandler {
         
         int[][] workElements = null;
         int[] workElementZoneList = new int[numUserClasses*numCentroids];
-        int[] workElementClassList = new int[numUserClasses*numCentroids];
+        int[] workElementUserClassList = new int[numUserClasses*numCentroids];
 
         
         int k=0;
@@ -221,7 +221,7 @@ public class AonFlowHandler implements RpcHandler {
             
                 if (tripTableRowSums[m][origin] > 0.0) {
                     workElementZoneList[k] = origin;
-                    workElementClassList[k] = m ;
+                    workElementUserClassList[k] = m ;
                     k++;
                 }
 
@@ -234,7 +234,7 @@ public class AonFlowHandler implements RpcHandler {
         
         for (int i=0; i < workElements.length; i++) {
             workElements[i][0] = workElementZoneList[i];
-            workElements[i][1] = workElementClassList[i];
+            workElements[i][1] = workElementUserClassList[i];
         }
             
         
