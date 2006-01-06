@@ -223,7 +223,9 @@ public class PTModelInputs extends ModelComponent implements Serializable{
     public PTHousehold[] getHouseholds(){
     
         //Read household and person data  
-        PTDataReader dataReader = new PTDataReader(ptRb, globalRb);
+        
+        // pass in the year of PUMS data from which the synthetic population was built
+        PTDataReader dataReader = new PTDataReader(ptRb, globalRb, "1990");
         logger.info("Adding synthetic population from JDataStore"); 
         return dataReader.readHouseholds("households.file");
 

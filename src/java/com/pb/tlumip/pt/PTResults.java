@@ -224,7 +224,11 @@ public class PTResults {
         PTHousehold[] households; 
         
         // Read household and person data  
-        PTDataReader dataReader = new PTDataReader(rb, globalRb);
+        
+        
+        // pass in the year of PUMS data from which the synthetic population was built
+        PTDataReader dataReader = new PTDataReader(rb, globalRb, "1990");
+        
         logger.info("Adding synthetic population from database"); 
         households = dataReader.readHouseholds("households.file");
         results.writeResults(households);

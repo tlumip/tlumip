@@ -247,7 +247,8 @@ public class AutoOwnershipModel {
 
          AutoOwnershipModel aom = new AutoOwnershipModel(rb);
 
-        PTDataReader dataReader = new PTDataReader(rb, globalRb);
+         // pass in the year of PUMS data from which the synthetic population was built
+        PTDataReader dataReader = new PTDataReader(rb, globalRb, "1990");
         logger.info("Adding synthetic population from database"); 
         PTHousehold []households = dataReader.readHouseholds("households.file");
         

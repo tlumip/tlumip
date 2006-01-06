@@ -18,9 +18,10 @@ package com.pb.tlumip.pt;
 
 import com.pb.common.util.ObjectUtil;
 import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.spg.EdIndustry;
+import com.pb.tlumip.model.Industry;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import org.apache.log4j.Logger;
@@ -40,10 +41,17 @@ public class PTDataReader{
 
     ResourceBundle ptRb;
     ResourceBundle globalRb;
+    ResourceBundle spgRb;
+    String year;
 
-    public PTDataReader(ResourceBundle appRb, ResourceBundle globalRb){
+    public PTDataReader(ResourceBundle appRb, ResourceBundle globalRb, String year){
         this.ptRb = appRb;
         this.globalRb = globalRb;
+        
+        // the property file used by SPG to build the population being used here
+        // should have been specified in the pt properties file.
+        this.spgRb = ResourceUtil.getPropertyBundle(new File(ResourceUtil.getProperty(ptRb, "spg.property.name")));
+        this.year = year;
     }
 
     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
@@ -156,7 +164,11 @@ public class PTDataReader{
         
         PTPerson[] personArray = new PTPerson[numberOfPersons];
         PTPerson thisPerson = new PTPerson();
-                
+        
+        // an Industry class must be instantiated in order to get the PUMS/Industry
+        // correspondence file to be read to make the statewide industry categories known.
+        Industry industry = new Industry(ResourceUtil.getProperty(spgRb, "sw_pums_industry.correspondence.fileName"), year);
+
         try{
             //read header lines
             String personLine = personReader.readLine();
@@ -182,7 +194,7 @@ public class PTDataReader{
                 	thisPerson.employed = false;
                 else 
                     thisPerson.employed = true;
-                thisPerson.industry = (byte)(new EdIndustry()).getEdIndustry((int)Integer.parseInt(fields[6])); //INDUSTRY
+                thisPerson.industry = (byte)(industry.getIndustryIndexFromPumsCode((int)Integer.parseInt(fields[6]))); //INDUSTRY
                 thisPerson.occupation = (byte)OccupationCode.codeOccupationFromPUMS((int)Integer.parseInt(fields[7]));  //OCCUP
 
                 personArray[personCounter]=thisPerson;
@@ -372,7 +384,9 @@ public class PTDataReader{
         long startTime = System.currentTimeMillis();
         ResourceBundle ptRb = ResourceUtil.getResourceBundle("pt");
         ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
-        PTDataReader dataReader = new PTDataReader(ptRb, globalRb);
+        
+        // pass in the year of PUMS data from which the synthetic population was built
+        PTDataReader dataReader = new PTDataReader(ptRb, globalRb, "1990");
         
         logger.info("Starting dataReader");
         

@@ -180,7 +180,9 @@ public class PTServerTask extends Task{
         //Read in the households and the persons and run the AutoOwnership.  This needs
         //to happen regardless of the ModeChoiceLogsum calculations and no workers can work
         //until we initialize the households.
-        PTDataReader dataReader = new PTDataReader(ptRb, globalRb);
+
+        // pass in the year of PUMS data from which the synthetic population was built
+        PTDataReader dataReader = new PTDataReader(ptRb, globalRb, "1990");
 
         logger.info("Adding synthetic population from database");
         households = dataReader.readHouseholds("households.file");
