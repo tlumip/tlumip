@@ -387,13 +387,14 @@ public class ApplicationOrchestrator {
 
     public void runSPG1Model(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
-		SPGnew testSPG = new SPGnew(appRb, globalRb);
+        String year = timeInterval < 10 ? "1990" : "2000";
+		SPGnew spg = new SPGnew( appRb, globalRb, year );
 
-		testSPG.getHHAttributesFromPUMS();
-		testSPG.spg1();
-		testSPG.writeFrequencyTables ();
-		TableDataSet table = testSPG.sumHouseholdsByIncomeSize();
-		testSPG.writePiInputFile ( table );
+		spg.getHHAttributesFromPUMS(year);
+        spg.spg1();
+        spg.writeFrequencyTables ();
+		TableDataSet table = spg.sumHouseholdsByIncomeSize();
+        spg.writePiInputFile ( table );
 
     }
 
@@ -420,9 +421,11 @@ public class ApplicationOrchestrator {
 
     public void runSPG2Model(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
-		SPGnew testSPG = new SPGnew(appRb, globalRb);
-        testSPG.spg2();
-        testSPG.writeHHOutputAttributesFromPUMS();
+        String year = timeInterval < 10 ? "1990" : "2000";
+		SPGnew spg = new SPGnew(appRb, globalRb, year);
+
+        spg.spg2();
+        spg.writeHHOutputAttributesFromPUMS();
 
     }
 
