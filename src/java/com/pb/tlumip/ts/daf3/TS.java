@@ -23,7 +23,7 @@ package com.pb.tlumip.ts.daf3;
  */
 
 import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.ShortestPathTreeHandler;
+import com.pb.tlumip.ts.SpBuildLoadHandler;
 
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
 
 public class TS {
 
-    protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3");
+    protected static Logger logger = Logger.getLogger(TS.class);
 
     HashMap tsPropertyMap;
 
@@ -62,7 +62,7 @@ public class TS {
 
     RpcClient networkHandlerClient;
 
-    RpcClient shortestPathHandlerClient;
+//    RpcClient shortestPathHandlerClient;
 
     public TS(String appPropertyName, String globalPropertyName) {
 
@@ -83,11 +83,13 @@ public class TS {
 
             // Create RpcClients this class connects to
             try {
+
                 handlerName = NetworkHandler.remoteHandlerName;
                 networkHandlerClient = new RpcClient(handlerName);
 
-                handlerName = ShortestPathTreeHandler.remoteHandlerName;
-                shortestPathHandlerClient = new RpcClient(handlerName);
+//                handlerName = SpBuildLoadHandler.remoteHandlerName;
+//                shortestPathHandlerClient = new RpcClient(handlerName);
+                
             } catch (MalformedURLException e) {
 
                 logger
@@ -122,11 +124,13 @@ public class TS {
 
             // Create RpcClients this class connects to
             try {
+                
                 handlerName = NetworkHandler.remoteHandlerName;
                 networkHandlerClient = new RpcClient(handlerName);
 
-                handlerName = ShortestPathTreeHandler.remoteHandlerName;
-                shortestPathHandlerClient = new RpcClient(handlerName);
+//                handlerName = SpBuildLoadHandler.remoteHandlerName;
+//                shortestPathHandlerClient = new RpcClient(handlerName);
+                
             } catch (MalformedURLException e) {
 
                 logger
@@ -203,18 +207,18 @@ public class TS {
 
         // create Frank-Wolfe Algortihm Object
         myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info("creating + " + assignmentPeriod + " FW object at: "
+        logger.info("creating " + assignmentPeriod + " FW object at: "
                 + myDateString);
         FW fw = new FW();
         fw.initialize(tsPropertyMap, globalPropertyMap);
 
         // Compute Frank-Wolfe solution
         myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info("starting + " + assignmentPeriod + " fw at: "
+        logger.info("starting " + assignmentPeriod + " fw at: "
                 + myDateString);
         fw.iterate();
         myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info("done with + " + assignmentPeriod + " fw at: "
+        logger.info("done with " + assignmentPeriod + " fw at: "
                 + myDateString);
 
         logger.info(assignmentPeriod + " highway assignment finished in "

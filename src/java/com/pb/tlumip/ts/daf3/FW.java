@@ -22,7 +22,7 @@ import com.pb.common.rpc.RpcException;
 import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.AonFlowHandler;
-import com.pb.tlumip.ts.ShortestPathTreeHandler;
+import com.pb.tlumip.ts.SpBuildLoadHandler;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -65,7 +65,7 @@ public class FW {
     RpcClient networkHandlerClient;    
     RpcClient demandHandlerClient;    
     RpcClient aonFlowHandlerClient;    
-    RpcClient shortestPathHandlerClient;    
+//    RpcClient shortestPathHandlerClient;    
     
 
    
@@ -89,8 +89,9 @@ public class FW {
                 handlerName = AonFlowHandler.remoteHandlerName;
                 aonFlowHandlerClient = new RpcClient( handlerName );
                 
-                handlerName = ShortestPathTreeHandler.remoteHandlerName;
-                shortestPathHandlerClient = new RpcClient( handlerName );
+//                handlerName = SpBuildLoadHandler.remoteHandlerName;
+//                shortestPathHandlerClient = new RpcClient( handlerName );
+
             }
             catch (MalformedURLException e) {
             

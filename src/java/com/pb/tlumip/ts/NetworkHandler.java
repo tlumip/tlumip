@@ -39,7 +39,7 @@ public class NetworkHandler implements RpcHandler {
 
     public static String remoteHandlerName = "networkHandler";
     
-    protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.NetworkHandler");
+    protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 
     HashMap componentPropertyMap;
     HashMap globalPropertyMap;

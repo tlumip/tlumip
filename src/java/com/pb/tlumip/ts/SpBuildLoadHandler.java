@@ -37,23 +37,22 @@ import org.apache.log4j.Logger;
 
 
 
-public class ShortestPathTreeHandler implements RpcHandler {
+public class SpBuildLoadHandler implements RpcHandler {
 
-    protected static Logger logger = Logger.getLogger(ShortestPathTreeHandler.class);
+    protected static Logger logger = Logger.getLogger(SpBuildLoadHandler.class);
 
     // set the frequency with which the shared class is polled to see if all threads have finshed their work.
     static final int POLLING_FREQUENCY_IN_SECONDS = 10;
-    public static String remoteHandlerName = "shortestPathTreeHandler";
+    public static String remoteHandlerName = "spBuildLoadHandler";
     
+    int numberOfThreads;
     
-    public int numberOfThreads = 4;
-
     RpcClient networkHandlerClient;    
 
     
 
 
-	public ShortestPathTreeHandler() {
+	public SpBuildLoadHandler() {
 
         String handlerName = null;
         
@@ -78,9 +77,13 @@ public class ShortestPathTreeHandler implements RpcHandler {
 
 
     public Object execute (String methodName, Vector params) throws Exception {
-                  
+
+        logger.info( "method name = SpBuildHandler.execute()." );
+
         if ( methodName.equalsIgnoreCase( "getLoadedAonFlows" ) ) {
-            int[][] workElements = (int[][]) params.get(0);
+            numberOfThreads = (Integer) params.get(0);
+            int[][] workElements = (int[][]) params.get(1);
+            logger.info( remoteHandlerName + " to build and load " + workElements.length + " shortest path trees on " + numberOfThreads + " threads." );
             return getLoadedAonFlows ( workElements );
         }
         else {
@@ -103,7 +106,7 @@ public class ShortestPathTreeHandler implements RpcHandler {
             linkCost = networkHandlerSetLinkGeneralizedCostRpcCall();
         }
         catch ( Exception e ) {
-            logger.error ( "Exception caught setting link generalized costs prior to loading aon flows in ShortestPathTreeHandler.getLoadedAonFlows().", e );
+            logger.error ( "Exception caught setting link generalized costs prior to loading aon flows in SpBuildLoadHandler.getLoadedAonFlows().", e );
             System.exit(1);
         }
 
@@ -126,7 +129,7 @@ public class ShortestPathTreeHandler implements RpcHandler {
                 workList.put( endOfWorkMarker );
         
         } catch (InterruptedException e) {
-            logger.error ( "InterruptedException caught putting work object into workList in ShortestPathTreeHandler.getLoadedAonFlows().", e);
+            logger.error ( "InterruptedException caught putting work object into workList in SpBuildLoadHandler.getLoadedAonFlows().", e);
             System.exit(-1);
         }
 
@@ -138,7 +141,7 @@ public class ShortestPathTreeHandler implements RpcHandler {
         }
         
         
-        // wait here until all threads have indicated they are one.
+        // wait here until all threads have indicated they are done.
         while ( buildLoadShared.getThreadsFinishedCount() < numberOfThreads ) {
             try {
                 Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
