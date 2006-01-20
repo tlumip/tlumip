@@ -40,37 +40,37 @@ import java.util.ResourceBundle;
 
 public class SPGnew extends SPG {
 
-    public SPGnew ( String spgPropertyFileName, String globalPropertyFileName, String year ) {
+    public SPGnew ( String spgPropertyFileName, String globalPropertyFileName, String baseYear, String currentYear ) {
 		
         super();
         
         HashMap spgPropertyMap = ResourceUtil.getResourceBundleAsHashMap( spgPropertyFileName );
         HashMap globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap(globalPropertyFileName);
 
-        spgNewInit( spgPropertyMap, globalPropertyMap, year );
+        spgNewInit( spgPropertyMap, globalPropertyMap, baseYear, currentYear );
 
     }
     
 
-    public SPGnew ( ResourceBundle appRb, ResourceBundle globalRb, String year ) {
+    public SPGnew ( ResourceBundle appRb, ResourceBundle globalRb, String baseYear, String currentYear ) {
         
         super();
         
         HashMap spgPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
         HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
-        spgNewInit( spgPropertyMap, globalPropertyMap, year );
+        spgNewInit( spgPropertyMap, globalPropertyMap, baseYear, currentYear );
 
     }
 
 	
-    private void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String year ) {
+    private void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String baseYear, String currentYear ) {
         
         IncomeSize incSize = new IncomeSize( Double.parseDouble( (String)spgPropertyMap.get("convertTo2000Dollars") ) );
-        Industry ind = new Industry( (String)spgPropertyMap.get("sw_pums_industry.correspondence.fileName"), year );
-        Occupation occ = new Occupation( (String)spgPropertyMap.get("sw_pums_occupation.correspondence.fileName"), year );
+        Industry ind = new Industry( (String)spgPropertyMap.get("sw_pums_industry.correspondence.fileName"), baseYear );
+        Occupation occ = new Occupation( (String)spgPropertyMap.get("sw_pums_occupation.correspondence.fileName"), baseYear );
         
-        spgInit ( spgPropertyMap, globalPropertyMap, incSize, ind, occ, year );
+        spgInit ( spgPropertyMap, globalPropertyMap, incSize, ind, occ, currentYear );
         
     }
     
@@ -91,23 +91,19 @@ public class SPGnew extends SPG {
                                     // be read from 1991 or 2001 depending on the baseyear argument,
                                     // and the PUMS data will be 1990 if t<10, otherwise it will be 2000.
         
-        int yr = Integer.valueOf(baseYear) + Integer.valueOf(tInterval);
-        if ( yr >= 2000 )
-            year = "2000";
-        else
-            year = "1990";
+        String currentYear = Integer.toString((Integer.valueOf(baseYear) + Integer.valueOf(tInterval)));
         
         String appPropertiesFile = args[3];
         String globalPropertiesFile = args[4];
 
         
-        SPGnew testSPG = new SPGnew( appPropertiesFile, globalPropertiesFile, year );
+        SPGnew testSPG = new SPGnew( appPropertiesFile, globalPropertiesFile, baseYear, currentYear );
 
         
         if(which.equals("spg1"))
 		{
-            testSPG.getHHAttributesFromPUMS( year );
-            testSPG.spg1();
+            testSPG.getHHAttributesFromPUMS( baseYear );
+            testSPG.spg1(currentYear);
             TableDataSet table = testSPG.sumHouseholdsByIncomeSize();
             testSPG.writePiInputFile(table);
             testSPG.writeFreqSummaryToCsvFile();
