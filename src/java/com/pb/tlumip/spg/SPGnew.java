@@ -21,6 +21,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.models.synpop.SPG;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.Industry;
+import com.pb.tlumip.model.Occupation;
 
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -65,10 +66,11 @@ public class SPGnew extends SPG {
 	
     private void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String year ) {
         
-        IncomeSize incSize = new IncomeSize();
+        IncomeSize incSize = new IncomeSize( Double.parseDouble( (String)spgPropertyMap.get("convertTo2000Dollars") ) );
         Industry ind = new Industry( (String)spgPropertyMap.get("sw_pums_industry.correspondence.fileName"), year );
+        Occupation occ = new Occupation( (String)spgPropertyMap.get("sw_pums_occupation.correspondence.fileName"), year );
         
-        spgInit ( spgPropertyMap, globalPropertyMap, incSize, ind, year );
+        spgInit ( spgPropertyMap, globalPropertyMap, incSize, ind, occ, year );
         
     }
     
