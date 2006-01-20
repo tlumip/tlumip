@@ -16,11 +16,6 @@
  */
 package com.pb.tlumip.model;
 
-import java.io.File;
-import java.io.IOException;
-
-import com.pb.common.datafile.CSVFileReader;
-import com.pb.common.datafile.TableDataSet;
 import com.pb.models.censusdata.SwIncomeSize;
 
 
@@ -49,6 +44,10 @@ public class IncomeSize extends SwIncomeSize {
     
     
     
+    public IncomeSize (double convertTo2000) {
+        super(convertTo2000);
+    }
+
     public IncomeSize () {
     }
 
