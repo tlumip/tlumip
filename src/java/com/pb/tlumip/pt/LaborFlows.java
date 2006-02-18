@@ -98,6 +98,14 @@ public class LaborFlows implements Serializable{
     }
 
 
+    /**
+     * Create a travel propensity matrix p from the logsum matrix m as:
+     * 
+     * p(i,j) = exp[dispersionParameter * m(i,j)]
+     * 
+     * @param m  A matrix, presumably of mode choice logsums.
+     * @return   The propensity matrix.
+     */
     public static Matrix calculatePropensityMatrix(Matrix m){
 
         if(logger.isDebugEnabled()) {
@@ -246,6 +254,15 @@ public class LaborFlows implements Serializable{
 
     }
 
+    /**
+     * Creates a new matrix collection, creates a number of matrices (one for each occupation code) and
+     * adds them to the collection, and returns it.
+     * 
+     * @param rows    The number of rows in each matrix.
+     * @param columns The number of zones in each matrix.
+     * @param externalNumbers An external number array.
+     * @return  The matrix collection.
+     */
     private static MatrixCollection setMatrixCollection(int rows, int columns, int[] externalNumbers){
         MatrixCollection mc = new MatrixCollection();
 
@@ -285,17 +302,17 @@ public class LaborFlows implements Serializable{
         return m;
     }
 
+    /**
+     * Log the total values across columns for each row in the matrix.
+     * @param m  The matrix to debug.
+     */
     public void debugMatrix(Matrix m){
-        //for(int i=1;i<=8;i++){
-
             for(int r=0;r<m.getRowCount();r++){
                 float rowSum = m.getRowSum(m.getExternalNumber(r));
                 if(rowSum<1)
                     logger.info("rowsum for occupation "+m.getName()+" taz "+m.getExternalNumber(r)+" = "+rowSum);
             }
-        //}
-
-    }
+     }
 
     public void writeLaborFlowProbabilities(Matrix lfProbability){
         logger.info("Calculate labor flow probabilities.");
