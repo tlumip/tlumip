@@ -79,7 +79,7 @@ public class TS {
         try {
 
             // Need a config file to initialize a Daf node
-            DafNode.getInstance().init("ts-client", tsRpcConfigFileName);
+            DafNode.getInstance().startClientNode(tsRpcConfigFileName);
 
             // Create RpcClients this class connects to
             try {
@@ -120,7 +120,7 @@ public class TS {
         try {
 
             // Need a config file to initialize a Daf node
-            DafNode.getInstance().init("ts-client", tsRpcConfigFileName);
+            DafNode.getInstance().startClientNode(tsRpcConfigFileName);
 
             // Create RpcClients this class connects to
             try {

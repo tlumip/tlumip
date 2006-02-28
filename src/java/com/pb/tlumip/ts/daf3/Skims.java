@@ -80,7 +80,7 @@ public class Skims {
         try {
             
             //Need a config file to initialize a Daf node
-            DafNode.getInstance().init("skims-client", TS.tsRpcConfigFileName);
+            DafNode.getInstance().startClientNode(TS.tsRpcConfigFileName);
 
             //Create RpcClients this class connects to
             try {
