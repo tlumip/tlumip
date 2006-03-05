@@ -23,7 +23,6 @@ package com.pb.tlumip.ts.daf3;
  */
 
 import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.SpBuildLoadHandler;
 
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
@@ -79,7 +78,7 @@ public class TS {
         try {
 
             // Need a config file to initialize a Daf node
-            DafNode.getInstance().startClientNode(tsRpcConfigFileName);
+            DafNode.getInstance().initClient(tsRpcConfigFileName);
 
             // Create RpcClients this class connects to
             try {
@@ -120,7 +119,7 @@ public class TS {
         try {
 
             // Need a config file to initialize a Daf node
-            DafNode.getInstance().startClientNode(tsRpcConfigFileName);
+            DafNode.getInstance().initClient(tsRpcConfigFileName);
 
             // Create RpcClients this class connects to
             try {
