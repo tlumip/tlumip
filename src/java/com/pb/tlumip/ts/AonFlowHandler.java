@@ -40,8 +40,8 @@ import org.apache.log4j.Logger;
 
 public class AonFlowHandler implements RpcHandler {
 
-    public static final int NUM_DISTRIBUTED_HANDLERS = 1;
-    public static final int[] numberOfThreads = { 4 };
+    public static final int NUM_DISTRIBUTED_HANDLERS = 2;
+    public static final int[] numberOfThreads = { 2, 4 };
 
     
     public static String remoteHandlerName = "aonFlowHandler";
@@ -98,7 +98,7 @@ public class AonFlowHandler implements RpcHandler {
             catch (MalformedURLException e) {
             
                 logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
-            
+                throw new RuntimeException(e);
             }
 
         }
@@ -214,9 +214,6 @@ public class AonFlowHandler implements RpcHandler {
 
         int origin=0;
         
-        // initialize the AON Flow array to zero
-        double[][] aonFlow = null;
-        
         int[][][] workElements = null;
         int[] workElementZoneList = new int[numUserClasses*numCentroids];
         int[] workElementUserClassList = new int[numUserClasses*numCentroids];
@@ -263,19 +260,35 @@ public class AonFlowHandler implements RpcHandler {
             
         }
         
+
+        double[][][] returnedAonFlows = new double[NUM_DISTRIBUTED_HANDLERS][][];
+        
         
         // send work elements arrays to each of the handlers
         try {
             for (int n=0; n < NUM_DISTRIBUTED_HANDLERS; n++) {
                 logger.info( SpBuildLoadHandler.remoteHandlerName + "_" + (n+1) + " sent " + numWorkElementsPerNode[n] + " userclass, origin zone pairs." );
-                aonFlow = spBuildLoadHandlerGetLoadedAonFlowsRpcCall( n, workElements[n] );
+                returnedAonFlows[n] = spBuildLoadHandlerGetLoadedAonFlowsRpcCall( n, workElements[n] );
             }
         }
         catch ( Exception e ) {
             logger.error ( "Exception caught.", e );
             System.exit(1);
         }
+
         
+        // initialize the AON Flow array
+        double[][] aonFlow = new double[returnedAonFlows[0].length][returnedAonFlows[0][0].length];
+        
+        // collect the distributed results into an array of AON link flows by user class
+        for (int n=0; n < NUM_DISTRIBUTED_HANDLERS; n++) {
+            for (int m=0; m < returnedAonFlows[n].length; m++) {
+                for (int j=0; j < returnedAonFlows[n][m].length; j++) {
+                    aonFlow[m][j] += returnedAonFlows[n][m][j];
+                }
+            }
+        }
+
         return aonFlow;
         
     }
@@ -323,8 +336,7 @@ public class AonFlowHandler implements RpcHandler {
         Vector params = new Vector();
         params.add( numberOfThreads[n] );
         params.add( workElements );
-        Object obj = spBuildLoadHandlerClient[n].execute( (SpBuildLoadHandler.remoteHandlerName + "_" + (n+1) + ".getLoadedAonFlows"), params );
-        return (double[][]) obj;
+        return (double[][])spBuildLoadHandlerClient[n].execute( (SpBuildLoadHandler.remoteHandlerName + "_" + (n+1) + ".getLoadedAonFlows"), params );
     }
     
 }
