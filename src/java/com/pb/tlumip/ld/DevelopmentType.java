@@ -351,5 +351,11 @@ public class DevelopmentType implements DevelopmentTypeInterface{
         
     }
 
+
+    public void setSameASC(double d) {
+        // TODO Auto-generated method stub
+        
+    }
+
 }
 
