@@ -57,25 +57,25 @@ public class PTDataReader{
     final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
 
     public BufferedReader openFile(String name){
+        BufferedReader inStream = null;
+        String pathName = null;
         try {
         	if(logger.isDebugEnabled()) {
                 logger.debug("Adding table "+name);
             }
 
-        	String pathName = ResourceUtil.getProperty(ptRb, name);
+        	pathName = ResourceUtil.getProperty(ptRb, name);
         	if(logger.isDebugEnabled()) {
                 logger.debug("pathName: "+pathName);
             }
-        	BufferedReader inStream = null;
             inStream = new BufferedReader( new FileReader(pathName) );
-            return inStream;
-            
         } catch (IOException e) {
-            logger.fatal("Can't find input table " + name);
-            e.printStackTrace();
+            logger.fatal("Can't find input table " + pathName, e);
+            throw new RuntimeException(e);
         }
-        return null;
-    };
+        return inStream;
+        
+    }
 
     /**
      * Helper method to find the number of lines in a text file.
@@ -95,7 +95,7 @@ public class PTDataReader{
             stream.close();
         }
         catch (IOException e) {
-             e.printStackTrace();
+            throw new RuntimeException(e);
         }
         //Don't count header row
         return numberOfRows-1;

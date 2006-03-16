@@ -429,7 +429,7 @@ public class ApplicationOrchestrator {
         SPGnew spg = new SPGnew( appRb, globalRb, baseYear, currentYear );
 
         spg.spg2();
-        spg.writeHHOutputAttributesFromPUMS();
+        spg.writeHHOutputAttributesFromPUMS(baseYear);
 
     }
 

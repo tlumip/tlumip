@@ -80,8 +80,6 @@ public class SPGnew extends SPG {
         
 		long startTime = System.currentTimeMillis();
 		
-        String year;
-        
         String which = args[0];
         String baseYear = args[1];  // in some calibration scenarios the base
                                     // year could be 1990, in other scenarios the base
@@ -118,7 +116,7 @@ public class SPGnew extends SPG {
             logger.info("SPG2 finished in " + ((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
             startTime = System.currentTimeMillis();
 
-            testSPG.writeHHOutputAttributesFromPUMS();
+            testSPG.writeHHOutputAttributesFromPUMS( baseYear );
             logger.info("writing SynPop files finished in " + ((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
 
         }
