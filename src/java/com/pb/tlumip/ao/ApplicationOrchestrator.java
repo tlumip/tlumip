@@ -355,6 +355,23 @@ public class ApplicationOrchestrator {
 
 
     
+    public void writeRunParamsToPropertiesFile(int timeInterval, String pathToAppRb, String pathToGlobalRb, String moduleName){
+        File runParams = new File(rootDir + "/daf/RunParams.properties");
+        logger.info("Writing 'timeInterval' and 'pathToRb' into " + runParams.getAbsolutePath());
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileWriter(runParams));
+            writer.println("scenarioName=" + scenarioName);
+            writer.println("timeInterval=" + timeInterval);
+            writer.println("pathToAppRb=" + pathToAppRb);
+            writer.println("pathToGlobalRb=" + pathToGlobalRb);
+            writer.println("pecasName=" + moduleName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        writer.close();
+    }
+    
     public void writeRunParamsToPropertiesFile(int timeInterval, String pathToAppRb, String pathToGlobalRb){
         File runParams = new File(rootDir + "/daf/RunParams.properties");
         logger.info("Writing 'timeInterval' and 'pathToRb' into " + runParams.getAbsolutePath());
@@ -410,7 +427,7 @@ public class ApplicationOrchestrator {
         //Since AO doesn't communicate directly with PI we need to write the absolute
         //path to the resource bundle and the time interval into a file, "RunParams.txt"
         //that will be read by the PIServer Task when the PIDAF application is launched.
-        writeRunParamsToPropertiesFile(timeInterval, pathToAppRb, pathToGlobalRb);
+        writeRunParamsToPropertiesFile(timeInterval, pathToAppRb, pathToGlobalRb,"pi");
         StartDafApplication appRunner = new StartDafApplication("pidaf", nodeName, timeInterval, rb);
         appRunner.run();
     }
@@ -566,7 +583,7 @@ public class ApplicationOrchestrator {
             ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,scenarioName,t);
 
             //Before starting in year 1, AO needs to create the base year run log
-            if(t==1) ao.createBaseYearPropFile();
+            ao.createBaseYearPropFile();
 
             //For each year (starting in year 1) AO needs to create the runLogProperty file and write in the current year
             // if the file does not already exist in that year.  This file will then be updated by any application that runs.
