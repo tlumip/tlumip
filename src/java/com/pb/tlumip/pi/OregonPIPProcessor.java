@@ -18,8 +18,10 @@ package com.pb.tlumip.pi;
 
 import com.pb.common.datafile.*;
 import com.pb.common.matrix.AlphaToBeta;
+import com.pb.common.matrix.CSVMatrixWriter;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
+import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.matrix.ZipMatrixWriter;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.IncomeSize;
@@ -664,12 +666,9 @@ public class OregonPIPProcessor extends PIPProcessor {
             Matrix countySqueeze = compressor.getCompressedMatrix(b,"SUM");
             
             File output = new File(getOutputPath() + "CountyFlows_Value_"+ com.name+".csv");
-            CSVFileWriter writer = new CSVFileWriter();
-            try {
-                writer.writeFile(countySqueeze,output);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            MatrixWriter writer = new CSVMatrixWriter(output);
+            writer.writeMatrix(countySqueeze);
+            
         }
         
         zmw = new ZipMatrixWriter(new File(getOutputPath()+"selling_"+com.name+".zipMatrix"));
@@ -683,7 +682,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         writeFlowHistograms(histogramFile, name,b,s);
     }
     
-    private void writePctIntrazonalFile(PrintWriter writer,String name,Matrix b, Matrix s){
+    protected void writePctIntrazonalFile(PrintWriter writer,String name,Matrix b, Matrix s){
         boolean closePctFile = false;
         try {
           /* for daf version, we have to write out a file for each commodity so
