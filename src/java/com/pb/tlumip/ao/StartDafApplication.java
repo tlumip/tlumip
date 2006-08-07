@@ -38,7 +38,7 @@ import java.util.ResourceBundle;
 public class StartDafApplication {
     private static Logger logger = Logger.getLogger("com.pb.tlumip.ao");
     private ResourceBundle rb; //this is ao.properties
-    private long startNodeSleepTime = 75000;
+    private long startNodeSleepTime = 15000;
     private long startClusterApplicationSleepTime = 15000;
     private long fileCheckSleepTime = 55;
     private int t;
