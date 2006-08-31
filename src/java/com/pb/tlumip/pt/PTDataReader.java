@@ -38,23 +38,18 @@ import java.util.*;
  */
 
 public class PTDataReader{
-
+    final static Logger logger = Logger.getLogger(PTDataReader.class);
     ResourceBundle ptRb;
     ResourceBundle globalRb;
-    ResourceBundle spgRb;
     String year;
 
     public PTDataReader(ResourceBundle appRb, ResourceBundle globalRb, String year){
         this.ptRb = appRb;
         this.globalRb = globalRb;
-        
-        // the property file used by SPG to build the population being used here
-        // should have been specified in the pt properties file.
-        this.spgRb = ResourceUtil.getPropertyBundle(new File(ResourceUtil.getProperty(ptRb, "spg.property.name")));
         this.year = year;
     }
 
-    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
+    
 
     public BufferedReader openFile(String name){
         BufferedReader inStream = null;
@@ -167,7 +162,7 @@ public class PTDataReader{
         
         // an Industry class must be instantiated in order to get the PUMS/Industry
         // correspondence file to be read to make the statewide industry categories known.
-        Industry industry = new Industry(ResourceUtil.getProperty(spgRb, "sw_pums_industry.correspondence.fileName"), year);
+        Industry industry = new Industry(ResourceUtil.getProperty(globalRb, "sw_pums_industry.correspondence.fileName"), year);
 
         try{
             //read header lines
