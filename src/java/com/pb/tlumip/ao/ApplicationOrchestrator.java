@@ -42,11 +42,11 @@ import java.util.regex.Pattern;
  */
 public class ApplicationOrchestrator {
 
-    private static Logger logger = Logger.getLogger("com.pb.tlumip.ao");
+    private static Logger logger = Logger.getLogger(ApplicationOrchestrator.class);
     private String rootDir;
     private String scenarioName;
     private int t;
-//    private int baseYear;
+    private int baseYear;
     AOProperties aoProps;
     ResourceBundle rb;
     BufferedWriter runLogWriter;
@@ -63,11 +63,11 @@ public class ApplicationOrchestrator {
         this.rb = rb;
     }
 
-    public ApplicationOrchestrator(String rootDir, String scenarioName, int timeInterval){
+    public ApplicationOrchestrator(String rootDir, String scenarioName, int timeInterval, int baseYear){
         this.rootDir = rootDir;
         this.scenarioName = scenarioName;
         this.t = timeInterval;
-
+        this.baseYear = baseYear;
     }
 
     public void setRb(ResourceBundle rb) {
@@ -206,7 +206,7 @@ public class ApplicationOrchestrator {
             }else {
                 if(t==1){
                     logger.info("No applications have been run yet so no run log exists");
-                }else logger.warn("NO RUN LOG EXISTS - PROPERTIES FILES WILL BE INCORRECT");
+                }else logger.warn("NO RUN LOG EXISTS IN t" + i + " - PROPERTY FILES COULD BE AFFECTED" );
                 i++;
             }
         }
@@ -355,14 +355,15 @@ public class ApplicationOrchestrator {
 
 
     
-    public void writeRunParamsToPropertiesFile(int timeInterval, String pathToAppRb, String pathToGlobalRb, String moduleName){
-        File runParams = new File(rootDir + "/daf/RunParams.properties");
+    public void writeRunParamsToPropertiesFile(String pathToAppRb, String pathToGlobalRb, String moduleName){
+        File runParams = new File(rootDir + "/scenario_" + scenarioName + "/daf/RunParams.properties");
         logger.info("Writing 'timeInterval' and 'pathToRb' into " + runParams.getAbsolutePath());
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileWriter(runParams));
             writer.println("scenarioName=" + scenarioName);
-            writer.println("timeInterval=" + timeInterval);
+            writer.println("baseYear=" + baseYear);
+            writer.println("timeInterval=" + t);
             writer.println("pathToAppRb=" + pathToAppRb);
             writer.println("pathToGlobalRb=" + pathToGlobalRb);
             writer.println("pecasName=" + moduleName);
@@ -372,14 +373,15 @@ public class ApplicationOrchestrator {
         writer.close();
     }
     
-    public void writeRunParamsToPropertiesFile(int timeInterval, String pathToAppRb, String pathToGlobalRb){
-        File runParams = new File(rootDir + "/daf/RunParams.properties");
-        logger.info("Writing 'timeInterval' and 'pathToRb' into " + runParams.getAbsolutePath());
+    public void writeRunParamsToPropertiesFile(String pathToAppRb, String pathToGlobalRb){
+        File runParams = new File(rootDir + "/scenario_" + scenarioName + "/daf/RunParams.properties");
+        logger.info("Writing 'scenarioName', 'baseYear, 'timeInterval', 'pathToRb' and 'pathToGlobalRb' into " + runParams.getAbsolutePath());
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileWriter(runParams));
             writer.println("scenarioName=" + scenarioName);
-            writer.println("timeInterval=" + timeInterval);
+            writer.println("baseYear=" + baseYear);
+            writer.println("timeInterval=" + t);
             writer.println("pathToAppRb=" + pathToAppRb);
             writer.println("pathToGlobalRb=" + pathToGlobalRb);
         } catch (IOException e) {
@@ -402,19 +404,19 @@ public class ApplicationOrchestrator {
         comp.startModel(timeInterval);
     }
 
-    public void runSPG1Model(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runSPG1Model(int baseYr, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
-        String baseYear = timeInterval < 10 ? "1990" : "2000";
-        String currentYear = Integer.toString((Integer.valueOf(baseYear) + Integer.valueOf(timeInterval)));
+        String baseYear = Integer.toString(baseYr);
+        String currentYear = Integer.toString(baseYr + timeInterval);
 
         SPGnew spg = new SPGnew( appRb, globalRb, baseYear, currentYear );
 
-		spg.getHHAttributesFromPUMS(baseYear);
+        spg.getHHAttributesFromPUMS(baseYear);
         spg.spg1(currentYear);
-        spg.writeFrequencyTables ();
-		TableDataSet table = spg.sumHouseholdsByIncomeSize();
-        spg.writePiInputFile ( table );
-
+        spg.writeFrequencyTables();
+        TableDataSet table = spg.sumHouseholdsByIncomeSize();
+        spg.writePiInputFile(table);
+        
     }
 
     public void runPIModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
@@ -427,7 +429,7 @@ public class ApplicationOrchestrator {
         //Since AO doesn't communicate directly with PI we need to write the absolute
         //path to the resource bundle and the time interval into a file, "RunParams.txt"
         //that will be read by the PIServer Task when the PIDAF application is launched.
-        writeRunParamsToPropertiesFile(timeInterval, pathToAppRb, pathToGlobalRb,"pi");
+        writeRunParamsToPropertiesFile(pathToAppRb, pathToGlobalRb,"pi");
         StartDafApplication appRunner = new StartDafApplication("pidaf", nodeName, timeInterval, rb);
         appRunner.run();
     }
@@ -438,20 +440,21 @@ public class ApplicationOrchestrator {
         pi.startConstrainedModel(timeInterval);
     }
 
-    public void runSPG2Model(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runSPG2Model(int baseYr, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
-        String baseYear = timeInterval < 10 ? "1990" : "2000";
-        String currentYear = Integer.toString((Integer.valueOf(baseYear) + Integer.valueOf(timeInterval)));
+        String baseYear = Integer.toString(baseYr);
+        String currentYear = Integer.toString(baseYr + timeInterval);
 
         SPGnew spg = new SPGnew( appRb, globalRb, baseYear, currentYear );
 
         spg.spg2();
+        spg.writeZonalSummaryToCsvFile();
         spg.writeHHOutputAttributesFromPUMS(baseYear);
 
     }
 
     public void runPTDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb,String nodeName){
-        writeRunParamsToPropertiesFile(timeInterval, pathToAppRb, pathToGlobalRb);
+        writeRunParamsToPropertiesFile(pathToAppRb, pathToGlobalRb);
         StartDafApplication appRunner = new StartDafApplication("ptdaf", nodeName, timeInterval, rb);
         appRunner.run();
     }
@@ -565,22 +568,25 @@ public class ApplicationOrchestrator {
             String rootDir = args[0];
             String scenarioName = args[1];
             String appName = args[2];
-            int t = Integer.parseInt(args[3]);
+            int baseYear = Integer.parseInt(args[3]);
+            int t = Integer.parseInt(args[4]);
+            
 
             logger.info("Root Directory: " + rootDir);
             logger.info("Scenario Name: " + scenarioName);
             logger.info("App Name: " + appName);
+            logger.info("Base Year: " + baseYear);
             logger.info("Time Interval: " + t);
             String nodeName = null; //will only be passed in for daf applications
-            if(args.length > 4 ){
-                nodeName = args[4];
-            	logger.info("Node to Start Cluster: "+ nodeName);
+            if(args.length == 6 ){
+                nodeName = args[5];
+                logger.info("Node to Start Cluster: "+ nodeName);
             }
 
             //Create an ApplicationOrchestrator object that will handle creating the
             //resource bundle for the appropriate app, retrieve that resource bundle and
             //start the application, passing along the property bundle
-            ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,scenarioName,t);
+            ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,scenarioName,t,baseYear);
 
             //Before starting in year 1, AO needs to create the base year run log
             ao.createBaseYearPropFile();
@@ -602,12 +608,11 @@ public class ApplicationOrchestrator {
             //value from the ao.properties so that you can pass it to the application that you are starting.
             ResourceBundle aoRb = ao.findResourceBundle(pathToAoRb);
             ao.setRb(aoRb);
-            int baseYear = Integer.parseInt(ResourceUtil.getProperty(ao.getRb(), "base.year"));
-
+            
             //Create a global.properties file for the current 't' directory
             // using the most recent globalTemplate.properties file
             String pathToGlobalRb = ao.createAppRb("global");
-
+            
             //Get the global properties file that was just created so that you can pass it to the current application
             ResourceBundle globalRb = null;
             if(!appName.endsWith("daf")){
@@ -618,8 +623,7 @@ public class ApplicationOrchestrator {
             //all patterns with values from the RunLogHashMap and write properties file
             //to the appropriate directory.
             String pathToAppRb = ao.createAppRb(appName);
-
-
+            
             //Unless AO is being asked to start a daf-application, it should
             //find the actual application resource bundle and pass it to the app
             //on start-up.  Daf applications will be passed a path to a runProperties file
@@ -628,7 +632,6 @@ public class ApplicationOrchestrator {
             if(! appName.endsWith("daf")){
                 appRb = ao.findResourceBundle(pathToAppRb);
             }
-
             if(appName.equalsIgnoreCase("ED")){
                 logger.info("AO will now start ED for simulation year " + (baseYear+t));
                 ao.runEDModel(t, appRb, baseYear);
@@ -637,7 +640,7 @@ public class ApplicationOrchestrator {
                 ao.runALDModel(t, appRb);
             }else if(appName.equalsIgnoreCase("SPG1")){
                 logger.info("AO will now start SPG1 for simulation year " + (baseYear+t));
-            	ao.runSPG1Model(t,appRb, globalRb);
+                ao.runSPG1Model(baseYear,t,appRb, globalRb);
             }else if (appName.equalsIgnoreCase("PI")){
                 logger.info("AO will now start PI for simulation year " + (baseYear+t));
                 ao.runPIModel(t,appRb,globalRb);
@@ -649,7 +652,7 @@ public class ApplicationOrchestrator {
                 ao.runPICONSTRAINEDModel(t,appRb,globalRb);
             }else if (appName.equalsIgnoreCase("SPG2")){ //not a daf application
                 logger.info("AO will now start SPG2 for simulation year " + (baseYear+t));
-                ao.runSPG2Model(t,appRb, globalRb);
+                ao.runSPG2Model(baseYear,t,appRb, globalRb);
             }else if(appName.equalsIgnoreCase("PTDAF")){
                 logger.info("AO will now start PTDAF for simulation year " + (baseYear+t));
                 ao.runPTDAFModel(t, pathToAppRb,pathToGlobalRb,nodeName);
