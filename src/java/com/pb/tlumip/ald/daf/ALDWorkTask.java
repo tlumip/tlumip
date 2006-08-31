@@ -18,7 +18,6 @@ package com.pb.tlumip.ald.daf;
 
 import com.pb.common.daf.MessageProcessingTask;
 import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.pt.daf.Scenario;
 
 import java.io.*;
 import java.util.ResourceBundle;
@@ -38,23 +37,23 @@ public class ALDWorkTask extends MessageProcessingTask {
         logger.info( "***" + getName() + " started");
         //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
         //that was written by the Application Orchestrator
-        BufferedReader reader = null;
         String scenarioName = null;
         int timeInterval = -1;
-        String pathToRb = null;
-        try {
-            logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
-            scenarioName = reader.readLine();
-            logger.info("\tScenario Name: " + scenarioName);
-            timeInterval = Integer.parseInt(reader.readLine());
-            logger.info("\tTime Interval: " + timeInterval);
-            pathToRb = reader.readLine();
-            logger.info("\tResourceBundle Path: " + pathToRb);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        rb = ResourceUtil.getPropertyBundle(new File(pathToRb));
+        String pathToAppRb = null;
+        String pathToGlobalRb = null;
+        
+        logger.info(getName() + ", Reading RunParams.properties file");
+        ResourceBundle runParamsRb = ResourceUtil.getResourceBundle("RunParams");
+        scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
+        logger.info(getName() + ", Scenario Name: " + scenarioName);
+        timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));
+        logger.info(getName() + ", Time Interval: " + timeInterval);
+        pathToAppRb = ResourceUtil.getProperty(runParamsRb,"pathToAppRb");
+        logger.info(getName() + ", ResourceBundle Path: " + pathToAppRb);
+        pathToGlobalRb = ResourceUtil.getProperty(runParamsRb,"pathToGlobalRb");
+        logger.info(getName() + ", ResourceBundle Path: " + pathToGlobalRb);
+        
+        rb = ResourceUtil.getPropertyBundle(new File(pathToAppRb));
 
         /*  first we need to create the Strings that ALD uses as runtime arguments
             R expects 3 arguments:
