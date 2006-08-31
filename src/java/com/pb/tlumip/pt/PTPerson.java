@@ -152,20 +152,24 @@ public class PTPerson implements Serializable, Comparable{
      
     /*
      * for the Mode/DC Logsums market segment
-     *
+     * @deprecated
+     * This method isn't used and it shouldn't be
+     * because the occupation is saved as a number
+     * between 0-8 (see PTDataReader.readPersons) and
+     * therefore this will not calculate an accurate segment
      */
-     public int calcWorkerLogsumSegment(){
-          
-          int segment=4;
-          if(occupation<=262)           // Manager/Professional
-               segment=1;
-          else if(occupation>=263 && occupation <= 282) // retail
-               segment=2;
-          else if(occupation>402) // Production/Fabrication
-               segment=3;
-          
-          return segment;
-     }
+//     public int calcWorkerLogsumSegment(){
+//          
+//          int segment=4;
+//          if(occupation<=262)           // Manager/Professional
+//               segment=1;
+//          else if(occupation>=263 && occupation <= 282) // retail
+//               segment=2;
+//          else if(occupation>402) // Production/Fabrication
+//               segment=3;
+//          
+//          return segment;
+//     }
      
           
      /*
@@ -181,13 +185,16 @@ public class PTPerson implements Serializable, Comparable{
           return segment;
      }
      
-     public int getDCSegment(int purpose){
-         if(purpose==ActivityPurpose.WORK)
-            return calcWorkerLogsumSegment();
-         else if(purpose==ActivityPurpose.SCHOOL)
-            return calcStudentLogsumSegment();
-         else return 1;
-     }
+//     This method was luckily not used - in the tlumip
+     //project - the segmentation is done in the household
+     //object instead.
+//     public int getDCSegment(int purpose){
+//         if(purpose==ActivityPurpose.WORK)
+//            return calcWorkerLogsumSegment();
+//         else if(purpose==ActivityPurpose.SCHOOL)
+//            return calcStudentLogsumSegment();
+//         else return 1;
+//     }
      
      public void print(){
          logger.info("");
