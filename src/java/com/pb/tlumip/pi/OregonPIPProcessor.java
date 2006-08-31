@@ -51,7 +51,6 @@ import java.util.ResourceBundle;
  */
 public class OregonPIPProcessor extends PIPProcessor {
 
-    ResourceBundle spgRb;
     String year;
     
     public OregonPIPProcessor() {
@@ -65,9 +64,6 @@ public class OregonPIPProcessor extends PIPProcessor {
         
         super(timePeriod, piRb, globalRb);
         
-        // the property file used by SPG to build the population being used here
-        // should have been specified in the pi properties file.
-        this.spgRb = ResourceUtil.getPropertyBundle(new File(ResourceUtil.getProperty(piRb, "spg.property.name")));
         this.year = timePeriod < 10 ? "1990" : "2000";
         
     }
@@ -613,7 +609,7 @@ public class OregonPIPProcessor extends PIPProcessor {
        
         // an Occupation class must be instantiated in order to get the PUMS/Occupation
         // correspondence file to be read to make the statewide Occupation categories known.
-        Occupation occ = new Occupation( ResourceUtil.getProperty(spgRb, "sw_pums_occupation.correspondence.fileName"), year );
+        Occupation occ = new Occupation( ResourceUtil.getProperty(globalRb, "sw_pums_occupation.correspondence.fileName"), year );
         
         String[] occupations = occ.getOccupationLabels();
         List<String> tempList = new ArrayList<String>();
