@@ -113,7 +113,7 @@ public class PTDafMaster extends MessageProcessingTask {
         String pathToGlobalRb;
 
         ptDafMasterLogger.info("Reading RunParams.properties file");
-        ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File(Scenario.runParamsFileName));
+        ResourceBundle runParamsRb = ResourceUtil.getResourceBundle("RunParams");
         scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
         ptDafMasterLogger.info("\tScenario Name: " + scenarioName);
         timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));

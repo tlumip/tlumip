@@ -52,27 +52,24 @@ public class PTServerTask extends Task{
     public void onStart(){
         logger.info( "***" + getName() + " started");
 
-        //We need to read in the Run Parameters (timeInterval and pathToResourceBundle) from the RunParams.txt file
-        //that was written by the Application Orchestrator
-        BufferedReader reader = null;
-        String scenarioName = null;
-        int timeInterval = -1;
-        String pathToPtRb = null;
-        String pathToGlobalRb = null;
-        try {
-            logger.info("Reading RunParams.txt file");
-            reader = new BufferedReader(new FileReader(new File( Scenario.runParamsFileName )));
-            scenarioName = reader.readLine();
-            logger.info("\tScenario Name: " + scenarioName);
-            timeInterval = Integer.parseInt(reader.readLine());
-            logger.info("\tTime Interval: " + timeInterval);
-            pathToPtRb = reader.readLine();
-            logger.info("\tPT ResourceBundle Path: " + pathToPtRb);
-            pathToGlobalRb = reader.readLine();
-            logger.info("\tGlobal ResourceBundle Path: " + pathToGlobalRb);
-        } catch (Exception e) {
-               e.printStackTrace();
-        }
+        String scenarioName;
+        int timeInterval;
+        String pathToPtRb;
+        String pathToGlobalRb;
+        
+        logger.info("Reading RunParams.properties file");
+        ResourceBundle runParamsRb = ResourceUtil.getResourceBundle("RunParams");
+        scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
+        logger.info("\tScenario Name: " + scenarioName);
+        timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));
+        logger.info("\tTime Interval: " + timeInterval);
+        pathToPtRb = ResourceUtil.getProperty(runParamsRb,"pathToAppRb");
+        logger.info("\tResourceBundle Path: " + pathToPtRb);
+        pathToGlobalRb = ResourceUtil.getProperty(runParamsRb,"pathToGlobalRb");
+        logger.info("\tResourceBundle Path: " + pathToGlobalRb);
+        ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
+        globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
+        
         ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
         globalRb = ResourceUtil.getPropertyBundle(new File(pathToGlobalRb));
 

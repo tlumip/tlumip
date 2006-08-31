@@ -59,7 +59,7 @@ public class PTMatrixWriter extends MessageProcessingTask{
                 String pathToPtRb = null;
                 
                 logger.info("Reading RunParams.properties file");
-                ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File(Scenario.runParamsFileName));
+                ResourceBundle runParamsRb = ResourceUtil.getResourceBundle("RunParams");
                 scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
                 logger.info("\tScenario Name: " + scenarioName);
                 timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));

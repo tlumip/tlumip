@@ -62,7 +62,7 @@ public class InitializeNode extends MessageProcessingTask {
         String pathToGlobalRb = null;
         
         logger.info(getName() + ", Reading RunParams.properties file");
-        ResourceBundle runParamsRb = ResourceUtil.getPropertyBundle(new File(Scenario.runParamsFileName));
+        ResourceBundle runParamsRb = ResourceUtil.getResourceBundle("RunParams");
         scenarioName = ResourceUtil.getProperty(runParamsRb,"scenarioName");
         logger.info(getName() + ", Scenario Name: " + scenarioName);
         timeInterval = Integer.parseInt(ResourceUtil.getProperty(runParamsRb,"timeInterval"));
