@@ -28,6 +28,7 @@ import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCollection;
 import com.pb.common.matrix.MatrixExpansion;
+import com.pb.common.matrix.MatrixExpansion2;
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
