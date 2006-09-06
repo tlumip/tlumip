@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -52,6 +53,10 @@ import java.util.ResourceBundle;
 public class OregonPIPProcessor extends PIPProcessor {
 
     String year;
+    Occupation occ; //initially null
+    String[] occupations; //initially null
+    private AlphaToBeta beta2CountyMap = null; /* used for squeezing the commodities from beta flows to County flows */
+    MatrixCompression compressor = null;
     
     public OregonPIPProcessor() {
         super();
@@ -631,52 +636,89 @@ public class OregonPIPProcessor extends PIPProcessor {
         labor.writeAllFiles(getOutputPath());
     }
     
+public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter pctFile) {
+        
+        if(ResourceUtil.getProperty(piRb, "pi.writeCountyOccupationFlowsOnly") != null 
+                && ResourceUtil.getBooleanProperty(piRb, "pi.writeCountyOccupationFlowsOnly")) {
+            Commodity com = Commodity.retrieveCommodity(name);
+            
+            Matrix s = com.getSellingFlowMatrix();
+            Matrix b = com.getBuyingFlowMatrix();
+            
+            if(occ == null){
+                occ = new Occupation( ResourceUtil.getProperty(globalRb, "sw_pums_occupation.correspondence.fileName"), String.valueOf(baseYear) );
+                occupations = occ.getOccupationLabels();
+                Arrays.sort(occupations);
+            }
+            
+            //write out the selling county flows for the labor commodities
+            if( Arrays.binarySearch(occupations,com.name) >= 0){
+                if(compressor == null){
+                    String filePath = ResourceUtil.getProperty(globalRb,"alpha2beta.file");
+                    File a2bFile = new File(filePath);
+                    beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
+                    compressor = new MatrixCompression(beta2CountyMap);
+                }
+                
+                Matrix countySqueeze = compressor.getCompressedMatrix(s,"SUM");
+                
+                File output = new File(getOutputPath() + "CountyFlows_Selling_"+ com.name+".csv");
+                MatrixWriter writer = new CSVMatrixWriter(output);
+                writer.writeMatrix(countySqueeze);
+                
+ 
+            }
+            
+            //write intrazonal numbers to calculate percentages
+            writePctIntrazonalFile(pctFile,name,b,s);
+            
+            writeFlowHistograms(histogramFile, name,b,s);
+        } else {
+            super.writeFlowZipMatrices(name, histogramFile, pctFile);
+        }
+    }
+    
     
 
-    public static void main(String[] args) {
-        ResourceBundle piRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/pi/pi.properties"));
-        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/global.properties"));
+    /**
+     * This method wrote out the county buying flows for the various commodities but as of
+     * 9/6/06 we are wanting county selling flows of labor.  I am saving this method in case we 
+     * want to go back to SCTG county flows.  We need to organize all of the outputs better.
+     */
 
-        OregonPIPProcessor pProcessor =  new OregonPIPProcessor(1,piRb, globalRb);
-        pProcessor.createFloorspaceWFile();
-    }
-
-    private AlphaToBeta beta2CountyMap = null; /* used for squeezing the commodities from beta flows to County flows */
-    MatrixCompression compressor = null;
-
-    public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter pctFile) {
-        Commodity com = Commodity.retrieveCommodity(name);
-        
-        ZipMatrixWriter  zmw = new ZipMatrixWriter(new File(getOutputPath()+"buying_"+com.name+".zipMatrix"));
-        Matrix b = com.getBuyingFlowMatrix();
-        zmw.writeMatrix(b);
-        
-        //write out the county flows for the SCTG commodities
-        if(name.startsWith("SCTG")){
-            if(compressor == null){
-                String filePath = ResourceUtil.getProperty(piRb,"reference.data") + "alpha2beta.csv";
-                File a2bFile = new File(filePath);
-                beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
-                compressor = new MatrixCompression(beta2CountyMap);
-            }
-            Matrix countySqueeze = compressor.getCompressedMatrix(b,"SUM");
-            
-            File output = new File(getOutputPath() + "CountyFlows_Value_"+ com.name+".csv");
-            MatrixWriter writer = new CSVMatrixWriter(output);
-            writer.writeMatrix(countySqueeze);
-            
-        }
-        
-        zmw = new ZipMatrixWriter(new File(getOutputPath()+"selling_"+com.name+".zipMatrix"));
-        Matrix s = com.getSellingFlowMatrix();
-        zmw.writeMatrix(s);
-        if(logger.isDebugEnabled()) logger.debug("Buying and Selling Commodity Flow Matrices have been written for " + name);
-        
-        //write intrazonal numbers to calculate percentages
-        writePctIntrazonalFile(pctFile,name,b,s);
-        
-        writeFlowHistograms(histogramFile, name,b,s);
-    }
+//    public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter pctFile) {
+//        Commodity com = Commodity.retrieveCommodity(name);
+//        
+//        ZipMatrixWriter  zmw = new ZipMatrixWriter(new File(getOutputPath()+"buying_"+com.name+".zipMatrix"));
+//        Matrix b = com.getBuyingFlowMatrix();
+//        zmw.writeMatrix(b);
+//        
+//        //write out the county flows for the SCTG commodities
+//        if(name.startsWith("SCTG")){
+//            if(compressor == null){
+//                String filePath = ResourceUtil.getProperty(piRb,"reference.data") + "alpha2beta.csv";
+//                File a2bFile = new File(filePath);
+//                beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
+//                compressor = new MatrixCompression(beta2CountyMap);
+//            }
+//            Matrix countySqueeze = compressor.getCompressedMatrix(b,"SUM");
+//            
+//            File output = new File(getOutputPath() + "CountyFlows_Value_"+ com.name+".csv");
+//            MatrixWriter writer = new CSVMatrixWriter(output);
+//            writer.writeMatrix(countySqueeze);
+//            
+//        }
+//        
+//        zmw = new ZipMatrixWriter(new File(getOutputPath()+"selling_"+com.name+".zipMatrix"));
+//        Matrix s = com.getSellingFlowMatrix();
+//        zmw.writeMatrix(s);
+//        if(logger.isDebugEnabled()) logger.debug("Buying and Selling Commodity Flow Matrices have been written for " + name);
+//        
+//        //write intrazonal numbers to calculate percentages
+//        writePctIntrazonalFile(pctFile,name,b,s);
+//        
+//        writeFlowHistograms(histogramFile, name,b,s);
+//    }
     
     protected void writePctIntrazonalFile(PrintWriter writer,String name,Matrix b, Matrix s){
         boolean closePctFile = false;
@@ -744,5 +786,12 @@ public class OregonPIPProcessor extends PIPProcessor {
         }    
     }
     
+    public static void main(String[] args) {
+        ResourceBundle piRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/pi/pi.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/global.properties"));
+
+        OregonPIPProcessor pProcessor =  new OregonPIPProcessor(1,piRb, globalRb);
+        pProcessor.createFloorspaceWFile();
+    }
     
 }
