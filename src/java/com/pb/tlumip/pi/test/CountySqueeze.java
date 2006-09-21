@@ -54,28 +54,28 @@ public class CountySqueeze {
         writer.writeMatrix(countySqueeze);
         
         logger.info("SCTG_01: Buying");
-        logger.info("\tBetaZone 4005 Row Sum, " + buyMatrix.getRowSum(4005));
-        logger.info("\tBetaZone 4005 Col Sum, " + buyMatrix.getColumnSum(4005));
+        logger.info("\tBetaZone 4005 Row Sum, " + buyMatrix.getSum());
+        logger.info("\tBetaZone 4005 Col Sum, " + buyMatrix.getSum());
         logger.info("");
-        logger.info("\tBetaZone 4017 Row Sum, " + buyMatrix.getRowSum(4017));
-        logger.info("\tBetaZone 4017 Col Sum, " + buyMatrix.getColumnSum(4017));
+        logger.info("\tBetaZone 4017 Row Sum, " + buyMatrix.getSum());
+        logger.info("\tBetaZone 4017 Col Sum, " + buyMatrix.getSum());
         logger.info("");
-        logger.info("\t4005RowSum + 4017RowSum, " + (buyMatrix.getRowSum(4005)+buyMatrix.getRowSum(4017)));
-        logger.info("\t4005ColSum + 4017ColSum, " + (buyMatrix.getColumnSum(4005)+buyMatrix.getColumnSum(4017)));
+        logger.info("\t4005RowSum + 4017RowSum, " + (buyMatrix.getSum()+buyMatrix.getSum()));
+        logger.info("\t4005ColSum + 4017ColSum, " + (buyMatrix.getSum()+buyMatrix.getSum()));
         logger.info("");
-        logger.info("\tCounty 6015 Row Sum, " + countySqueeze.getRowSum(6015));
-        logger.info("\tCounty 6015 Col Sum, " + countySqueeze.getColumnSum(6015));
+        logger.info("\tCounty 6015 Row Sum, " + countySqueeze.getSum());
+        logger.info("\tCounty 6015 Col Sum, " + countySqueeze.getSum());
         logger.info("");
         logger.info("");
         File sellComm = new File("/models/tlumip/scenario_aaaCurrentData/t1/pi/selling_SCTG_01.zipMatrix");
         MatrixReader sellReader = MatrixReader.createReader(MatrixType.ZIP, sellComm);
         Matrix sellMatrix = sellReader.readMatrix();
         logger.info("SCTG_01: Selling");
-        logger.info("\tBetaZone 4005 Row Sum, " + sellMatrix.getRowSum(4005));
-        logger.info("\tBetaZone 4005 Col Sum, " + sellMatrix.getColumnSum(4005));
+        logger.info("\tBetaZone 4005 Row Sum, " + sellMatrix.getSum());
+        logger.info("\tBetaZone 4005 Col Sum, " + sellMatrix.getSum());
         logger.info("");
-        logger.info("\tBetaZone 4017 Row Sum, " + sellMatrix.getRowSum(4017));
-        logger.info("\tBetaZone 4017 Col Sum, " + sellMatrix.getColumnSum(4017));
+        logger.info("\tBetaZone 4017 Row Sum, " + sellMatrix.getSum());
+        logger.info("\tBetaZone 4017 Col Sum, " + sellMatrix.getSum());
         logger.info("");
     }
 }

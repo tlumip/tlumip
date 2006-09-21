@@ -58,11 +58,11 @@ public class IntrazonalPercentFileTest {
                 writer.print(betaZone + ",");
                 writer.print("SCTG01,");
                 writer.print(buyMatrix.getValueAt(betaZone,betaZone)+",");
-                writer.print(buyMatrix.getRowSum(betaZone)+",");
-                writer.print(buyMatrix.getColumnSum(betaZone) + ",");
+                writer.print(buyMatrix.getSum()+",");
+                writer.print(buyMatrix.getSum() + ",");
                 writer.print(sellMatrix.getValueAt(betaZone,betaZone)+",");
-                writer.print(sellMatrix.getRowSum(betaZone)+",");
-                writer.println(sellMatrix.getColumnSum(betaZone));
+                writer.print(sellMatrix.getSum()+",");
+                writer.println(sellMatrix.getSum());
             }
             writer.close();
         } catch (IOException e) {
