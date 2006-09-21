@@ -309,7 +309,7 @@ public class LaborFlows implements Serializable{
      */
     public void debugMatrix(Matrix m){
             for(int r=0;r<m.getRowCount();r++){
-                float rowSum = m.getRowSum(m.getExternalNumber(r));
+                double rowSum = m.getSum();
                 if(rowSum<1)
                     logger.info("rowsum for occupation "+m.getName()+" taz "+m.getExternalNumber(r)+" = "+rowSum);
             }
