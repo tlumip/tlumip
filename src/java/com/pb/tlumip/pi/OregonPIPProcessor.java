@@ -735,27 +735,27 @@ public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter 
                 closePctFile = true;
             }   
             
-            float buyIntra = 0;
-            float buyFrom = 0;
-            float buyTo = 0;
-            float buyPctFrom = 0;
-            float buyPctTo = 0;
-            float sellIntra = 0;
-            float sellFrom = 0;
-            float sellTo = 0;
-            float sellPctFrom = 0;
-            float sellPctTo = 0;
-                
+            double buyIntra = 0;
+            double buyFrom = 0;
+            double buyTo = 0;
+            double buyPctFrom = 0;
+            double buyPctTo = 0;
+            double sellIntra = 0;
+            double sellFrom = 0;
+            double sellTo = 0;
+            double sellPctFrom = 0;
+            double sellPctTo = 0;
+
             for(int i=0; i<b.getRowCount(); i++){
                 int betaZone = b.getExternalNumber(i);
                 buyIntra = b.getValueAt(betaZone,betaZone);
-                buyFrom = b.getRowSum(betaZone);
-                buyTo = b.getColumnSum(betaZone);
+                buyFrom = b.getSum();
+                buyTo = b.getSum();
                 buyPctFrom = buyIntra/buyFrom;
                 buyPctTo = buyIntra/buyTo;
                 sellIntra = s.getValueAt(betaZone,betaZone);
-                sellFrom = s.getRowSum(betaZone);
-                sellTo = s.getColumnSum(betaZone);
+                sellFrom = s.getSum();
+                sellTo = s.getSum();
                 sellPctFrom = sellIntra/sellFrom;
                 sellPctTo = sellIntra/sellTo;
                 writer.print(betaZone + ",");
