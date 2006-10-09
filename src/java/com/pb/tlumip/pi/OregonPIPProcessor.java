@@ -22,7 +22,6 @@ import com.pb.common.matrix.CSVMatrixWriter;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.matrix.MatrixWriter;
-import com.pb.common.matrix.ZipMatrixWriter;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.Industry;
@@ -735,27 +734,27 @@ public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter 
                 closePctFile = true;
             }   
             
-            double buyIntra = 0;
-            double buyFrom = 0;
-            double buyTo = 0;
-            double buyPctFrom = 0;
-            double buyPctTo = 0;
-            double sellIntra = 0;
-            double sellFrom = 0;
-            double sellTo = 0;
-            double sellPctFrom = 0;
-            double sellPctTo = 0;
+            float buyIntra = 0;
+            float buyFrom = 0;
+            float buyTo = 0;
+            float buyPctFrom = 0;
+            float buyPctTo = 0;
+            float sellIntra = 0;
+            float sellFrom = 0;
+            float sellTo = 0;
+            float sellPctFrom = 0;
+            float sellPctTo = 0;
 
             for(int i=0; i<b.getRowCount(); i++){
                 int betaZone = b.getExternalNumber(i);
                 buyIntra = b.getValueAt(betaZone,betaZone);
-                buyFrom = b.getSum();
-                buyTo = b.getSum();
+                buyFrom = b.getRowSum(betaZone);
+                buyTo = b.getColumnSum(betaZone);
                 buyPctFrom = buyIntra/buyFrom;
                 buyPctTo = buyIntra/buyTo;
                 sellIntra = s.getValueAt(betaZone,betaZone);
-                sellFrom = s.getSum();
-                sellTo = s.getSum();
+                sellFrom = s.getRowSum(betaZone);
+                sellTo = s.getColumnSum(betaZone);
                 sellPctFrom = sellIntra/sellFrom;
                 sellPctTo = sellIntra/sellTo;
                 writer.print(betaZone + ",");
