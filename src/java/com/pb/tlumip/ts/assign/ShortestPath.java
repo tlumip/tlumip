@@ -19,6 +19,8 @@ package com.pb.tlumip.ts.assign;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
 
+import com.pb.tlumip.ts.NetworkHandler;
+
 
 /**
  * Class for node to node shortest paths.
@@ -27,13 +29,16 @@ import org.apache.log4j.Logger;
 
 public class ShortestPath {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign");
+	protected static Logger logger = Logger.getLogger(ShortestPath.class);
 
-    static final int MAX_PATH_LENGTH = 300;
+    static final int MAX_PATH_LENGTH = 500;
     static final double COMPARE_EPSILON = 1.0e-07;
 
 
-    Network g;
+    //Network g;
+    
+    int inOrigin;
+    int inDestination;
 
     int[] pathLinks;
     int[] nodeLabeled;
@@ -46,24 +51,32 @@ public class ShortestPath {
 	int[] ip;
     int[] indexNode;
 	int[] nodeIndex;
+    int[] sortedLinkIndex;
 	boolean[] centroid;
 	double[] congestedTime;
     
+    int numNodes;
+    int numZones;
+
     Heap candidateHeap;
 	int[] heapContents;
 
 
     public ShortestPath (Network g) {
-        this.g = g;
 
+        numNodes = g.getNodeCount();
+        numZones = g.getNumCentroids();
+        
         // store network fields in local arrays
-		ia = g.getIa();
-		ib = g.getIb();
-		ip = g.getIpa();
-		indexNode = g.getIndexNode();
-		nodeIndex = g.getNodeIndex();
-		centroid = g.getCentroid();
-		congestedTime = g.getCongestedTime();
+        ia = g.getIa();
+        ib = g.getIb();
+        ip = g.getIpa();
+        indexNode = g.getIndexNode();
+        nodeIndex = g.getNodeIndex();
+        centroid = g.getCentroid();
+        congestedTime = g.getCongestedTime();
+        sortedLinkIndex = g.getSortedLinkIndexA();
+        
         
         pathLinks = new int[MAX_PATH_LENGTH];
         nodeLabeled = new int[g.getNodeCount()+1];
@@ -73,16 +86,22 @@ public class ShortestPath {
 
         //Create a new heap structure to sort canidate node labels
         candidateHeap = new Heap(g.getNodeCount()+1);
-		heapContents = new int[g.getNodeCount()];
+        heapContents = new int[g.getNodeCount()];
     }
 
-
+    
     private void initData() {
+
         Arrays.fill(nodeLabeled, 0);
         Arrays.fill(nodeLabels, 1.0e+99);
+        nodeLabels[inOrigin] = 0.0;
+        nodeLabeled[inOrigin] = 1;
+
+        predecessorLink = new int[numNodes+1];
         Arrays.fill(predecessorLink, -1);
 
         candidateHeap.clear();
+
     }
 
 
@@ -90,24 +109,21 @@ public class ShortestPath {
         int k;
         boolean debug = false;
 
-        if (inOrigin == 1045)
-            debug = true;
+        this.inOrigin = inOrigin;
+        this.inDestination = inOrigin;
 
         if (debug) System.out.println ("building path from " + inOrigin + "(" + indexNode[inOrigin] + ")" + " to " + inDestination + "(" + indexNode[inDestination] + ")");
         initData();
 
-        nodeLabels[inOrigin] = 0.0;
-        nodeLabeled[inOrigin] = 1;
-
         // set labels for links eminating from the origin node
-        setRootLabels (g, inOrigin, inOrigin, inDestination, nodeLabels);
+        setRootLabels (inOrigin);
         if (debug) candidateHeap.dataPrint();
 
         // continue labeling until candidateHeap is empty
         k = candidateHeap.remove();
         if (debug) System.out.println ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
         while (ib[k] != inDestination) {
-            setRootLabels (g, ib[k], inOrigin, inDestination, nodeLabels);
+            setRootLabels (ib[k]);
             if (debug) candidateHeap.dataPrint();
             nodeLabeled[ib[k]] = 1;
             k = candidateHeap.remove();
@@ -120,22 +136,25 @@ public class ShortestPath {
     }
 
 
-    private void setRootLabels (Network g, int rootNode, int origin, int destination, double[] nodeLabels) {
+    private void setRootLabels (int rootNode) {
         int i;
         double label;
         boolean debug = false;
 
+        if (debug) System.out.println ("rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)]);
         for (i=ip[rootNode]; i < ip[rootNode+1]; i++) {
-            if (debug) System.out.println ("rootNode=" + rootNode + ", i=" + i + ", ia[i]=" + ia[i] + ", ib[i]=" + ib[i] + ", nodeLabeled[ib[i]]=" + nodeLabeled[ib[i]] + ", nodeLabels[ia[i]]=" + nodeLabels[ia[i]] + ", nodeLabels[ib[i]]=" + nodeLabels[ib[i]] + ", label=" + (congestedTime[i]+ nodeLabels[ia[i]]));
-            if (nodeLabeled[ib[i]] == 0) {
-                label = congestedTime[i] + nodeLabels[ia[i]];
-                if (label - nodeLabels[ib[i]] < -COMPARE_EPSILON) {
-                    nodeLabels[ib[i]] = label;
-                    if (debug) System.out.println ("ib[i]=" + ib[i] + ", nodeLabels[" + ib[i] + "]=" + nodeLabels[ib[i]]);
-                    if (!centroid[i] || rootNode == origin || ib[i] == destination) {
-                        candidateHeap.add(i);
+            
+            int k = sortedLinkIndex[i];
+            
+            if (debug) System.out.println ("considering link k=" + k + ": ia[k]=" + ia[k] + " " + indexNode[ia[k]] + "(external a-node)" + ", ib[k]=" + ib[k] + " " + indexNode[ib[k]] + "(external b-node), nodeLabeled[ib[k]]=" + nodeLabeled[ib[k]] + ", nodeLabels[ia[k]]=" + nodeLabels[ia[k]] + ", congestedTime[k]=" + congestedTime[k]);
+            if (nodeLabeled[ib[k]] == 0) {
+                label = congestedTime[k] + nodeLabels[ia[k]];
+                if (label - nodeLabels[ib[k]] < -COMPARE_EPSILON) {
+                    nodeLabels[ib[k]] = label;
+                    if (!centroid[k] || rootNode == inOrigin || ib[k] == inDestination) {
+                        candidateHeap.add(k);
                     }
-                    predecessorLink[ib[i]] = i;
+                    predecessorLink[ib[k]] = k;
                 }
             }
         }
@@ -187,7 +206,7 @@ public class ShortestPath {
     public int[] getNodeList (int inOrigin, int inDestination) {
 
         int i, j, k, count;
-        boolean debug = true;
+        boolean debug = false;
 
         if (debug) {
             System.out.println ("");
