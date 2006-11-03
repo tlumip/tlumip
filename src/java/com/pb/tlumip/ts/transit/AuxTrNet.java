@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 
 public class AuxTrNet implements Serializable {
 
-	protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.transit");
+	protected static transient Logger logger = Logger.getLogger( AuxTrNet.class );
 
 	public static final double INFINITY = 1.0e+30;
 	
@@ -46,11 +46,10 @@ public class AuxTrNet implements Serializable {
 
 	static final int MAX_ROUTES = 500;
 
-	static final float ALPHA = 0.5f;
-	static final float FARE = 0.75f;
+	static final double ALPHA = 0.5;
+	static final double FARE = 0.75;
 
-//	static final double MAX_WALK_ACCESS_DIST = 2.0;   // miles
-	static final double MAX_WALK_ACCESS_DIST = 100.0;   // miles
+	static final double MAX_WALK_ACCESS_DIST = 2.0;   // miles
 
 	// OVT_COEFF is used as both a scale variable and as a utility coefficient.
 	// It's value is assumed positive for use as a scale variable, and
@@ -200,7 +199,6 @@ public class AuxTrNet implements Serializable {
 				    anode = gia[ts.link];
 				    bnode = gib[ts.link];
 				    
-				    
 				    // Keep a list of transit lines using each network link.  Save using xxxyyy where xxx is rte and yyy is seg.
 				    // A link will therefore be able to look up all transit routes serving the link using tr.transitPaths[rte].get(seg)
 				    // for all the rteseg values stored for the link.
@@ -242,6 +240,7 @@ public class AuxTrNet implements Serializable {
 					logger.fatal( "      description = " + tr.getDescription(rte));
 					logger.fatal( "      anode = " + indexNode[anode]);
 					logger.fatal( "      bnode = " + indexNode[bnode]);
+                    logger.fatal ( "", e );
 					System.exit(1);
 				}
 			}
@@ -369,14 +368,13 @@ public class AuxTrNet implements Serializable {
 	
 	private int getAccessLinks ( String accessMode ) {
 	  
-	    // add highway access (walk or drive) links to auxilliary transit network
+	    // add auxilliary links (walk or drive access, and walk links) to transit network
 		int aux = 0;
 		for (int i=0; i < g.getLinkCount(); i++) {
 		    
-
 			if ( accessMode.equalsIgnoreCase("walk") ) {
 
-			    if ( gMode[i].indexOf('w') < 0 && gMode[i].indexOf('s') < 0 ) {
+			    if ( (gia[i] >= g.getNumCentroids() && gib[i] >= g.getNumCentroids()) || gDist[i] > MAX_WALK_ACCESS_DIST || gMode[i].indexOf('w') >= 0 || gMode[i].indexOf('s') >= 0 ) {
 			        // not a walk access link
 			        continue;
 			    }
@@ -398,7 +396,7 @@ public class AuxTrNet implements Serializable {
 			}
 			else if ( accessMode.equalsIgnoreCase("drive") ) {
 
-				if ( gMode[i].indexOf('w') < 0 && gMode[i].indexOf('p') < 0 && gMode[i].indexOf('k') < 0 ) {
+				if ( (gia[i] >= g.getNumCentroids() && gib[i] >= g.getNumCentroids()) || gMode[i].indexOf('w') >= 0 || gMode[i].indexOf('s') >= 0 || gMode[i].indexOf('p') >= 0 || gMode[i].indexOf('k') >= 0 ) {
 					// keep link only if it's a pnr, knr, or walk (but no walks at origin)
 					continue;
 				}
@@ -506,10 +504,10 @@ public class AuxTrNet implements Serializable {
 				new BufferedWriter (
 					new FileWriter (fileName)));
 
-		  	out.printf ("--------------------------");
+		  	out.println ("--------------------------");
 			out.println ("Auxilliary Transit Network");
 		  	out.println ("--------------------------");
-            out.format( "%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%10s%10s%10s%10s%10s%10s", "i", "ia", "ib", "type", "link", "an", "bn", "inB", "outB", "outI", "rte", "freq", "cost", "invT", "walkT", "layT", "hwyT" );
+            out.format( "%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%10s%10s%10s%10s%10s%10s\n", "i", "ia", "ib", "type", "link", "an", "bn", "inB", "outB", "outI", "rte", "freq", "cost", "invT", "walkT", "layT", "hwyT" );
 
 		  	for (i=0; i < auxLinks; i++) {
 				k = hwyLink[i];
@@ -539,7 +537,7 @@ public class AuxTrNet implements Serializable {
 					outI = -1;
 				
 				
-                out.format( "%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d%10s%10.2f%10.2f%10.2f%10.2f%10.2f",
+                out.format( "%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d%10s%10.2f%10.2f%10.2f%10.2f%10.2f\n",
                         i, ia[i], ib[i], linkType[i], k, indexNode[gia[k]], indexNode[gib[k]], inB, outB, outI, trRoute[i], (freq[i] == INFINITY ? String.format("%10s", "Inf") : String.format("%10.2f", freq[i])), cost[i], invTime[i], walkTime[i], layoverTime[i], gCongestedTime[k] );
 	  		}
 
@@ -744,9 +742,23 @@ public class AuxTrNet implements Serializable {
 	    return this.g;
 	}
 
-	
+    public int[] getHighwayNetworkNodeIndex() {
+        return g.getNodeIndex();
+    }
+    
+    public int[] getHighwayNetworkIndexNode() {
+        return g.getIndexNode();
+    }
+    
 	public String getAccessMode() {
 	    return accessMode;
 	}
 
+    public int getMaxRoutes() {
+        return MAX_ROUTES;
+    }
+    
+    public TrRoute getTrRoute() {
+        return tr;
+    }
 }

@@ -245,11 +245,15 @@ public class TrRoute implements Serializable {
 									defaults.set(10, Boolean.valueOf("false"));
 									value = value.replace ('#', ' ');
 								}
-								else if (value.indexOf('+') != -1) {
-								    defaults.set(9, Boolean.valueOf("true"));
-								    defaults.set(10, Boolean.valueOf("true"));
-								    value = value.replace ('+', ' ');
-								}
+                                else if (value.indexOf('+') != -1) {
+                                    defaults.set(9, Boolean.valueOf("true"));
+                                    defaults.set(10, Boolean.valueOf("true"));
+                                    value = value.replace ('+', ' ');
+                                }
+                                else {
+                                    defaults.set(9, Boolean.valueOf("true"));
+                                    defaults.set(10, Boolean.valueOf("true"));
+                                }
 								// if * is in the value field, set value to negative and it will get applied as a distance based rate later
 								if (value.indexOf('*') != -1) {
 								    value = value.replace ('*', '-');
@@ -647,6 +651,12 @@ public class TrRoute implements Serializable {
 		double[] dist = g.getDist();
 		
 		for (int rte=0; rte < transitPath.length; rte++) {
+            
+            int dummy=0;
+            if ( rte == 161 ) {
+                dummy = 1;
+            }
+            
 			for (int seg=0; seg < transitPath[rte].size(); seg++) {
 			    
 				ts = (TrSegment)transitPath[rte].get(seg);
@@ -682,8 +692,8 @@ public class TrRoute implements Serializable {
 					for (int j=1; j < nodes.length; j++) {
 						int b = nodes[j];
 						tsNew = ts.segmentCopy(ts, this);
-						tsNew.an = nodeIndex[a];
-						tsNew.bn = nodeIndex[b];
+						tsNew.an = indexNode[a];
+						tsNew.bn = indexNode[b];
 						if (j > 1 && tsNew.lay >= 0.0)
 							tsNew.lay = 0.0;
 						transitPath[rte].add(seg++, tsNew);
@@ -695,7 +705,7 @@ public class TrRoute implements Serializable {
 		}
 	}
 
-
+    
 	public int getTotalLinkCount() {
 		return totalLinkCount;
 	}
@@ -708,9 +718,13 @@ public class TrRoute implements Serializable {
 		return headway[rte];
 	}
 
-	public String getLine(int rte) {
-		return line[rte];
-	}
+    public String getLine(int rte) {
+        return line[rte];
+    }
+
+    public char getMode(int rte) {
+        return mode[rte];
+    }
 
 	public String getDescription(int rte) {
 		return description[rte].trim();
