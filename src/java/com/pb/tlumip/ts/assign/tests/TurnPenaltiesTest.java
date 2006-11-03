@@ -24,6 +24,7 @@ package com.pb.tlumip.ts.assign.tests;
 
 
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.ShortestPathTreeH;
 import com.pb.common.util.ResourceUtil;
 
@@ -55,19 +56,19 @@ public class TurnPenaltiesTest {
 	
 	private void runTest (String period) {
         
-        NetworkHandler g = new NetworkHandler();
-        g.setup( rb, globalRb, period );
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        nh.setup( rb, globalRb, period );
 		logger.info ("done building Network object.");
 
 		
 		// build shortest path tree object and set cost and valid link attributes for this user class.
-		ShortestPathTreeH sp = new ShortestPathTreeH( g );
+		ShortestPathTreeH sp = new ShortestPathTreeH( nh );
 
 		// set the highway network attribute on which to skim the network
-		double[] linkCost = g.getCongestedTime();
+		double[] linkCost = nh.getCongestedTime();
 		
 		// set all links as valid for this test
-		boolean[] validLinks = new boolean[g.getLinkCount()];
+		boolean[] validLinks = new boolean[nh.getLinkCount()];
 		Arrays.fill (validLinks, true);
    
 		sp.setLinkCost( linkCost );

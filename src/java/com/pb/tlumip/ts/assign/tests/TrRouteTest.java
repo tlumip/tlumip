@@ -23,6 +23,7 @@ package com.pb.tlumip.ts.assign.tests;
  */
 
 
+import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.transit.TrRoute;
 
@@ -37,10 +38,10 @@ import org.apache.log4j.Logger;
 
 public class TrRouteTest {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.tests");
+	protected static Logger logger = Logger.getLogger(TrRouteTest.class);
 
-	public static final String PK_TRANSIT_ROUTES_D221 = "c:\\jim\\tlumip\\TLUMIPEmme2\\pktran.in";
-	public static final String ROUTE_REPORT_FILE = "c:\\jim\\tlumip\\Tlumip_Routes.report";
+	public static final String PK_TRANSIT_ROUTES_D221 = "c:\\jim\\projects\\tlumip\\NetworkData\\pktran.in";
+	public static final String ROUTE_REPORT_FILE = "c:\\jim\\projects\\tlumip\\Tlumip_Routes.report";
 	
 
 	
@@ -53,9 +54,8 @@ public class TrRouteTest {
 	
 	public TrRouteTest() {
 
-	    //tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("ts");
-        //globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap("global");
-
+	    tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap("tsTest");
+        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap("globalTest");
 
 	}
     

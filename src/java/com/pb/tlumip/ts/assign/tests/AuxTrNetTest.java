@@ -248,7 +248,7 @@ public class AuxTrNetTest {
 		// create an optimal strategy object for this highway and transit network
 		OpStrategy os = new OpStrategy( ag );
 
-		int[] nodeIndex = ag.getHighwayNetwork().getNodeIndex();
+		int[] nodeIndex = ag.getHighwayNetworkNodeIndex();
 		os.buildStrategy( nodeIndex[END_NODE] );
 		os.getOptimalStrategyWtSkimsFromOrig( START_NODE, END_NODE );
 		System.exit(1);

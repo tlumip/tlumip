@@ -24,6 +24,7 @@ package com.pb.tlumip.ts.assign.tests;
 
 
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.Skims;
 import com.pb.tlumip.ts.assign.TripDataGenerator;
 import com.pb.tlumip.ts.assign.FW;
@@ -87,8 +88,8 @@ public class HighwayAssignTest {
         
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Network object at: " + myDateString);
-		NetworkHandler g = new NetworkHandler();
-        g.setup( rb, globalRb, period );
+		NetworkHandlerIF nh = NetworkHandler.getInstance();
+        nh.setup( rb, globalRb, period );
         logger.info ("done building Network object.");
 
 		
@@ -97,13 +98,13 @@ public class HighwayAssignTest {
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
 		FW fw = new FW();
-		fw.initialize( tsPropertyMap, g );
+		fw.initialize( tsPropertyMap, nh );
 
 
 		// create highway skims object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating hwy skims object at: " + myDateString);
-		Skims highwaySkims = new Skims( g, tsPropertyMap, globalPropertyMap );
+		Skims highwaySkims = new Skims( nh, tsPropertyMap, globalPropertyMap );
 
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("generating trips with gravity model at: " + myDateString);

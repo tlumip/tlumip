@@ -24,6 +24,7 @@ package com.pb.tlumip.ts.assign.tests;
 
 
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.Skims;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixReader;
@@ -50,7 +51,7 @@ public class HwyDistSkimsTest {
     
 	static HashMap tsPropertyMap;
     static HashMap globalPropertyMap;
-	static NetworkHandler g = null;
+	static NetworkHandlerIF nh = null;
 	
     static ResourceBundle rb;
     static ResourceBundle globalRb;
@@ -77,11 +78,11 @@ public class HwyDistSkimsTest {
         
 		HwyDistSkimsTest test = new HwyDistSkimsTest();
 		
-        g = new NetworkHandler();
-        g.setup( rb, globalRb, period );
+        nh = NetworkHandler.getInstance();
+        nh.setup( rb, globalRb, period );
 		logger.info ("done building Network object.");
         
-        Skims sk = new Skims( g, tsPropertyMap, globalPropertyMap );
+        Skims sk = new Skims( nh, tsPropertyMap, globalPropertyMap );
 		logger.info ("done building Skims object.");
 
 
@@ -107,7 +108,7 @@ public class HwyDistSkimsTest {
     private void writeSkimsToCsv ( Matrix distSkimMatrix, Matrix databankMatrix ) {
         
 
-		int[] indexNode = g.getIndexNode();
+		int[] indexNode = nh.getIndexNode();
 
 		try {
 			    
