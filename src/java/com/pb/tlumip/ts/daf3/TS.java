@@ -23,12 +23,17 @@ package com.pb.tlumip.ts.daf3;
  */
 
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.assign.Skims;
 
+import com.pb.common.datafile.DataWriter;
+import com.pb.common.matrix.Matrix;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.ResourceUtil;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 import java.io.IOException;
@@ -65,6 +70,12 @@ public class TS {
 
     public TS(String appPropertyName, String globalPropertyName) {
 
+        logger.error ( "TS in ts.daf3 package is not implemented." );
+        System.exit(1);
+        
+        
+        
+/*
         tsPropertyName = appPropertyName;
         this.globalPropertyName = globalPropertyName;
 
@@ -72,6 +83,7 @@ public class TS {
                 .getResourceBundleAsHashMap(appPropertyName);
         globalPropertyMap = ResourceUtil
                 .getResourceBundleAsHashMap(globalPropertyName);
+
 
         String handlerName = null;
 
@@ -102,11 +114,19 @@ public class TS {
             logger.error("Exception caught in TS().", e);
             System.exit(1);
         }
-
+*/
+        
     }
 
     public TS(ResourceBundle appRb, ResourceBundle globalRb) {
 
+        
+        logger.error ( "TS in ts.daf3 package is not implemented." );
+        System.exit(1);
+        
+        
+        
+/*        
         this.appRb = appRb;
         this.globalRb = globalRb;
 
@@ -143,9 +163,13 @@ public class TS {
             logger.error("Exception caught in TS().", e);
             System.exit(1);
         }
-
+*/
+        
     }
 
+    
+/*    
+    
     public void runHighwayAssignment(String assignmentPeriod) {
 
         this.assignmentPeriod = assignmentPeriod;
@@ -255,6 +279,7 @@ public class TS {
 
     }
 
+    
     public void writeHighwaySkimMatrix(String assignmentPeriod,
             String skimType, char modeChar) {
 
@@ -315,6 +340,105 @@ public class TS {
                 params);
     }
 
+    
+    public void checkODConnectivity ( double[][][] trips ) {
+
+        double[][] linkAttributes = new double[2][];
+        linkAttributes[0] = getDist();
+        linkAttributes[1] = getCongestedTime();
+        
+        char[] userClasses = g.getUserClasses();
+
+        Skims skims = new Skims(this, componentPropertyMap, globalPropertyMap);
+
+        
+        for (int m=0; m < userClasses.length; m++) {
+
+            double total = 0.0;
+            for (int i=0; i < trips[m].length; i++)
+                for (int j=0; j < trips[m][i].length; j++)
+                    total += trips[m][i][j];
+            
+                    
+            // log the average sov trip travel distance and travel time for this assignment
+            logger.info("Generating Time and Distance peak skims for subnetwork " + userClasses[m] + " (class " + m + ") ...");
+            
+            if (total > 0.0) {
+
+                Matrix[] skimMatrices = skims.getHwySkimMatrices( timePeriod, linkAttributes, userClasses[m] );
+
+                logger.info( "Total " + timePeriod + " demand for subnetwork " + userClasses[m] + " (class " + m + ") = " + total + " trips."); 
+
+                double[] distSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[0] );
+                
+                logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + timePeriod + " trip travel distance = " + distSummaries[0] + " miles."); 
+                logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on distance = " + distSummaries[1]);
+
+                double[] timeSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[1] );
+                
+                logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + timePeriod + " trip travel time = " + timeSummaries[1] + " minutes."); 
+                logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on time = " + timeSummaries[1]);
+                
+            }
+            else {
+                
+                logger.info("No demand for subnetwork " + userClasses[m] + " (class " + m + ") therefore, no average time or distance calculated.");
+                
+            }
+                    
+        }
+
+    }
+    
+    
+    
+    
+    public void checkAllODPairsForNetworkConnectivity () {
+        
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        
+        int numCentroids = nh.getNumCentroids();
+        int numUserClasses = nh.getNumUserClasses();
+        
+
+        double[][][] dummyTripTable = new double[numUserClasses][numCentroids+1][numCentroids+1];
+        for(int i=0; i < numUserClasses - 1; i++) {
+            for(int j=0; j < numCentroids + 1; j++) {
+                Arrays.fill(dummyTripTable[i][j], 1.0);
+            }
+        }
+      
+        checkODConnectivity(dummyTripTable);
+
+    }
+    
+    
+    
+    public void checkODPairsWithTripsForNetworkConnectivity ( double[][][] multiclassTripTable ) {
+        checkODConnectivity(multiclassTripTable);
+    }
+
+    
+    
+    
+    public void createSelectLinkAnalysisDiskObject ( double[] fwFlowProps ) {
+        
+        // get the locations of the files for storing the network and assignment proportions
+        String networkDiskObjectFile = (String)componentPropertyMap.get("NetworkDiskObject.file");
+        String proportionsDiskObjectFile = (String)componentPropertyMap.get("ProportionsDiskObject.file");
+
+            
+        // write the network and saved proportions to DiskObject files for subsequent select link analysis
+        if ( networkDiskObjectFile != null )
+            DataWriter.writeDiskObject ( g, networkDiskObjectFile, "highwayNetwork_" + timePeriod );
+        
+        if ( proportionsDiskObjectFile != null )
+            DataWriter.writeDiskObject ( fwFlowProps, proportionsDiskObjectFile, "fwProportions_" + timePeriod );
+    
+    }
+
+
+
 
 public static void main (String[] args) {
         
@@ -351,8 +475,12 @@ public static void main (String[] args) {
 
         // run peak highway assignment
 		tsTest.runHighwayAssignment( "peak" );
-// tsTest.runHighwayAssignment( "offpeak" );
+		// tsTest.runHighwayAssignment( "offpeak" );
 		
 		logger.info ("\ndone with TS run.");
 		
-    }}
+    }
+    
+*/
+    
+}

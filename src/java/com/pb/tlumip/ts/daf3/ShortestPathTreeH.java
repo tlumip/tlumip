@@ -16,17 +16,13 @@
  */
 package com.pb.tlumip.ts.daf3;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Arrays;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
-import com.pb.common.rpc.RpcClient;
-import com.pb.common.rpc.RpcException;
 import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 
 /**
  * Class for shortest path trees.
@@ -39,8 +35,6 @@ public class ShortestPathTreeH {
 
     static final double COMPARE_EPSILON = 1.0e-07;
 
-    RpcClient networkHandlerClient;    
-    RpcClient demandHandlerClient;    
 
 
     int inOrigin;
@@ -77,66 +71,30 @@ public class ShortestPathTreeH {
 
     public ShortestPathTreeH () {
 
-        String handlerName = null;
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
         
-        try {
+        numLinks = nh.getLinkCount();
+        numNodes = nh.getNodeCount();
+        numZones = nh.getNumCentroids();
         
-            try {
-                handlerName = NetworkHandler.remoteHandlerName;
-                networkHandlerClient = new RpcClient( handlerName );
-                
-                handlerName = DemandHandler.remoteHandlerName;
-                demandHandlerClient = new RpcClient( handlerName );
-                
-            }
-            catch (MalformedURLException e) {
-                logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
-            }
-
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught in ShortestPathTreeH().", e );
-            System.exit(1);
-        }
+		// store network fields in local arrays
+		ia = nh.getIa();
+		ib = nh.getIb();
+		ip = nh.getIpa();
+		sortedLinkIndex = nh.getSortedLinkIndexA();
+		indexNode = nh.getIndexNode();
+		nodeIndex = nh.getNodeIndex();
+		centroid = nh.getCentroid();
+		
+		aonFlow = new double[numLinks];
         
+        nodeLabeled = new int[numNodes+1];
+        nodeLabels = new double[numNodes+1];
 
-        try {
-            
-            numLinks = networkHandlerGetLinkCountRpcCall();
-            numNodes = networkHandlerGetNodeCountRpcCall();
-            numZones = networkHandlerGetNumCentroidsRpcCall();
-            
-    		// store network fields in local arrays
-    		ia = networkHandlerGetIaRpcCall();
-    		ib = networkHandlerGetIbRpcCall();
-    		ip = networkHandlerGetIpaRpcCall();
-    		sortedLinkIndex = networkHandlerGetSortedLinkIndexARpcCall();
-    		indexNode = networkHandlerGetIndexNodeRpcCall();
-    		nodeIndex = networkHandlerGetNodeIndexRpcCall();
-    		centroid = networkHandlerGetCentroidRpcCall();
-    		
-    		aonFlow = new double[numLinks];
-            
-            nodeLabeled = new int[numNodes+1];
-            nodeLabels = new double[numNodes+1];
-    
-            //Create a new heap structure to sort candidate node labels
-            candidateHeap = new Heap(numNodes+1);
-    		heapContents = new int[numNodes];
-
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
+        //Create a new heap structure to sort candidate node labels
+        candidateHeap = new Heap(numNodes+1);
+		heapContents = new int[numNodes];
         
     }
 
@@ -283,9 +241,14 @@ public class ShortestPathTreeH {
         // first build the shortest path tree for internal origin zone number z.
         buildTree( origin );
 
+        
+        // generate a NetworkHandler object to use for assignments and skimming
+        DemandHandler dh = new DemandHandler();
+        
+        
         // get the user class m trips from zone z to all other zones (trip table row z).
         try {
-            tripTableRow = demandHandlerGetTripTableRowRpcCall( userClass, origin );
+            tripTableRow = dh.getTripTableRow( userClass, origin );
         }
         catch ( Exception e ) {
             logger.error ( "Exception caught getting trip table row for user class = " + userClass + ", origin zone index = " + origin + ".", e ); 
@@ -478,73 +441,11 @@ public class ShortestPathTreeH {
     
     
     
-    private int networkHandlerGetNodeCountRpcCall() throws Exception {
-        // g.getNodeCount()
-        return (Integer)networkHandlerClient.execute("networkHandler.getNodeCount", new Vector() );
-    }
-
-    private int networkHandlerGetLinkCountRpcCall() throws Exception {
-        // g.getLinkCount()
-        return (Integer)networkHandlerClient.execute("networkHandler.getLinkCount", new Vector() );
-    }
-
-    private int networkHandlerGetNumCentroidsRpcCall() throws Exception {
-        // g.getNumCentroids()
-        return (Integer)networkHandlerClient.execute("networkHandler.getNumCentroids", new Vector());
-    }
-
-    private int[] networkHandlerGetIaRpcCall() throws Exception {
-        // g.getIa()
-        return (int[])networkHandlerClient.execute("networkHandler.getIa", new Vector() );
-    }
-
-    private int[] networkHandlerGetIbRpcCall() throws Exception {
-        // g.getIb()
-        return (int[])networkHandlerClient.execute("networkHandler.getIb", new Vector() );
-    }
-
-    private int[] networkHandlerGetIpaRpcCall() throws Exception {
-        // g.getIpa()
-        return (int[])networkHandlerClient.execute("networkHandler.getIpa", new Vector() );
-    }
-
-    private int[] networkHandlerGetSortedLinkIndexARpcCall() throws Exception {
-        // g.getSortedLinkIndexA()
-        return (int[])networkHandlerClient.execute("networkHandler.getSortedLinkIndexA", new Vector() );
-    }
-
-    private int[] networkHandlerGetIndexNodeRpcCall() throws Exception {
-        // g.getIndexNode()
-        return (int[])networkHandlerClient.execute("networkHandler.getIndexNode", new Vector() );
-    }
-
-    private int[] networkHandlerGetNodeIndexRpcCall() throws Exception {
-        // g.getNodeIndex()
-        return (int[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector() );
-    }
-
-    private boolean[] networkHandlerGetCentroidRpcCall() throws Exception {
-        // g.getCentroid()
-        return (boolean[])networkHandlerClient.execute("networkHandler.getCentroid", new Vector() );
-    }
 
     
     
     
     
-    private double[] demandHandlerGetTripTableRowRpcCall( int userClass, int origin ) throws Exception {
-        Vector params = new Vector();
-        params.add( userClass );
-        params.add( origin );
-        return (double[])demandHandlerClient.execute("demandHandler.getTripTableRow", params );
-    }
-    
-    
-    
-    
-    
-    
-
     /*-------------------- Inner class --------------------*/
 
     public class Heap {

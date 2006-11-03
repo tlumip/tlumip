@@ -70,7 +70,12 @@ public class FW {
 
    
     public FW () {
-    
+
+        logger.error ( "FW in ts.daf3 package is not implemented." );
+        System.exit(1);
+        
+        
+/*        
         String handlerName = null;
         
         try {
@@ -104,7 +109,9 @@ public class FW {
             logger.error ( "Exception caught in FW().", e );
             System.exit(1);
         }
-
+*/
+        
+        
     }
 
 

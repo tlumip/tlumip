@@ -18,11 +18,9 @@ package com.pb.tlumip.ts.daf3;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
@@ -35,24 +33,20 @@ import com.pb.common.matrix.MatrixWriter;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.rpc.DafNode;
-import com.pb.common.rpc.RpcClient;
-import com.pb.common.rpc.RpcException;
 import com.pb.common.ui.swing.MessageWindow;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 
 
 
 public class Skims {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.daf3.Skims");
+	protected static Logger logger = Logger.getLogger(Skims.class);
 
 	MessageWindow mw;
 	HashMap propertyMap;
     HashMap globalPropertyMap;
-
-    static RpcClient networkHandlerClient;    
 
     boolean useMessageWindow = false;
 	
@@ -64,7 +58,7 @@ public class Skims {
 
     int[] externalToAlphaInternal = null;
     int[] alphaExternalNumbers = null;
-	
+
     int numCentroids = 0;
 
     
@@ -73,30 +67,6 @@ public class Skims {
 
         this.propertyMap = tsMap;
         this.globalPropertyMap = globalMap;
-
-
-        String handlerName = null;
-        
-        try {
-            
-            //Need a config file to initialize a Daf node
-            DafNode.getInstance().initClient(TS.tsRpcConfigFileName);
-
-            //Create RpcClients this class connects to
-            try {
-                handlerName = NetworkHandler.remoteHandlerName;
-                networkHandlerClient = new RpcClient( handlerName );
-            }
-            catch (MalformedURLException e) {
-                logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
-            }
-
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught in ShortestPathTreeH().", e );
-            System.exit(1);
-        }
-        
         
         initSkims ();
 
@@ -119,35 +89,22 @@ public class Skims {
         }
 
     
-        try {
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
         
-            numCentroids = networkHandlerGetNumCentroidsRpcCall();
-            
-            // define which of the total set of centroids are within the Halo area and should have skim trees built
-    	    zonesToSkim = new int[networkHandlerGetMaxCentroidRpcCall()+1];
-    	    externalToAlphaInternal = new int[networkHandlerGetMaxCentroidRpcCall()+1];
-    	    alphaExternalNumbers = new int[alphaNumberArray.length+1];
-    		Arrays.fill ( zonesToSkim, 0 );
-    		Arrays.fill ( externalToAlphaInternal, -1 );
-    	    for (int i=0; i < alphaNumberArray.length; i++) {
-    	    	zonesToSkim[alphaNumberArray[i]] = 1;
-    	    	externalToAlphaInternal[alphaNumberArray[i]] = i;
-    	    	alphaExternalNumbers[i+1] = alphaNumberArray[i];
-    	    }
-
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
+        numCentroids = nh.getNumCentroids();
+        
+        // define which of the total set of centroids are within the Halo area and should have skim trees built
+	    zonesToSkim = new int[nh.getMaxCentroid()+1];
+	    externalToAlphaInternal = new int[nh.getMaxCentroid()+1];
+	    alphaExternalNumbers = new int[alphaNumberArray.length+1];
+		Arrays.fill ( zonesToSkim, 0 );
+		Arrays.fill ( externalToAlphaInternal, -1 );
+	    for (int i=0; i < alphaNumberArray.length; i++) {
+	    	zonesToSkim[alphaNumberArray[i]] = 1;
+	    	externalToAlphaInternal[alphaNumberArray[i]] = i;
+	    	alphaExternalNumbers[i+1] = alphaNumberArray[i];
+	    }
         
     }
 
@@ -202,57 +159,45 @@ public class Skims {
 		matrixName = new String[skimType.length];
 		matrixDescription = new String[skimType.length];
 		
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        
 		for (int i=0; i < skimType.length; i++) {
 
-            try {
-                
-    			// initialize the necessary values based on the assignmet period and type of skim to produce
-    	        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
-    	        	if ( skimType[i].equalsIgnoreCase("time") ) {
-    	        	    fileName[i] = (String)propertyMap.get( "pkHwyTimeSkim.fileName" );
-    	        	    matrixName[i] = (String)propertyMap.get( "pkHwyTimeSkim.matrixName" );
-    	        	    matrixDescription[i] = (String)propertyMap.get( "pkHwyTimeSkim.matrixDescription" );
-    
-    	        		linkAttrib[i] = networkHandlerGetCongestedTimeRpcCall();
-    	        	}
-    	        	else if ( skimType[i].equalsIgnoreCase("dist") ) {
-    	        	    fileName[i] = (String)propertyMap.get( "pkHwyDistSkim.fileName" );
-    	        	    matrixName[i] = (String)propertyMap.get( "pkHwyDistSkim.matrixName" );
-    	        	    matrixDescription[i] = (String)propertyMap.get( "pkHwyDistSkim.matrixDescription" );
-    
-    	        		linkAttrib[i] = networkHandlerGetDistRpcCall();
-    	        	}
-    	        }
-    	        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
-    	        	if ( skimType[i].equalsIgnoreCase("time") ) {
-    	        	    fileName[i] = (String)propertyMap.get( "opHwyTimeSkim.fileName" );
-    	        	    matrixName[i] = (String)propertyMap.get( "opHwyTimeSkim.matrixName" );
-    	        	    matrixDescription[i] = (String)propertyMap.get( "opHwyTimeSkim.matrixDescription" );
-    
-    	        		linkAttrib[i] = networkHandlerGetCongestedTimeRpcCall();
-    	        	}
-    	        	else if ( skimType[i].equalsIgnoreCase("dist") ) {
-    	        	    fileName[i] = (String)propertyMap.get( "opHwyDistSkim.fileName" );
-    	        	    matrixName[i] = (String)propertyMap.get( "opHwyDistSkim.matrixName" );
-    	        	    matrixDescription[i] = (String)propertyMap.get( "opHwyDistSkim.matrixDescription" );
-    
-    	        		linkAttrib[i] = networkHandlerGetDistRpcCall();
-    	        	}
-    	        }
+			// initialize the necessary values based on the assignmet period and type of skim to produce
+	        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+	        	if ( skimType[i].equalsIgnoreCase("time") ) {
+	        	    fileName[i] = (String)propertyMap.get( "pkHwyTimeSkim.fileName" );
+	        	    matrixName[i] = (String)propertyMap.get( "pkHwyTimeSkim.matrixName" );
+	        	    matrixDescription[i] = (String)propertyMap.get( "pkHwyTimeSkim.matrixDescription" );
+
+	        		linkAttrib[i] = nh.getCongestedTime();
+	        	}
+	        	else if ( skimType[i].equalsIgnoreCase("dist") ) {
+	        	    fileName[i] = (String)propertyMap.get( "pkHwyDistSkim.fileName" );
+	        	    matrixName[i] = (String)propertyMap.get( "pkHwyDistSkim.matrixName" );
+	        	    matrixDescription[i] = (String)propertyMap.get( "pkHwyDistSkim.matrixDescription" );
+
+	        		linkAttrib[i] = nh.getDist();
+	        	}
+	        }
+	        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+	        	if ( skimType[i].equalsIgnoreCase("time") ) {
+	        	    fileName[i] = (String)propertyMap.get( "opHwyTimeSkim.fileName" );
+	        	    matrixName[i] = (String)propertyMap.get( "opHwyTimeSkim.matrixName" );
+	        	    matrixDescription[i] = (String)propertyMap.get( "opHwyTimeSkim.matrixDescription" );
+
+	        		linkAttrib[i] = nh.getCongestedTime();
+	        	}
+	        	else if ( skimType[i].equalsIgnoreCase("dist") ) {
+	        	    fileName[i] = (String)propertyMap.get( "opHwyDistSkim.fileName" );
+	        	    matrixName[i] = (String)propertyMap.get( "opHwyDistSkim.matrixName" );
+	        	    matrixDescription[i] = (String)propertyMap.get( "opHwyDistSkim.matrixDescription" );
+
+	        		linkAttrib[i] = nh.getDist();
+	        	}
+	        }
 			
-		    }
-            catch ( RpcException e ) {
-                logger.error ( "RpcException caught.", e );
-                System.exit(1);
-            }
-            catch ( IOException e ) {
-                logger.error ( "IOException caught.", e );
-                System.exit(1);
-            }
-            catch ( Exception e ) {
-                logger.error ( "Exception caught.", e );
-                System.exit(1);
-            }
         
 		}
         
@@ -283,45 +228,32 @@ public class Skims {
 		Matrix[] newSkimMatrices = new Matrix[linkAttribs.length];
 		
 		
-        try {
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        
             
-    		// set generalized cost as the link attribute by which to build shortest paths trees
-    		double[] linkCost = networkHandlerSetLinkGeneralizedCostRpcCall();
-    
-    		// set the highway network attribute on which to skim the network - congested time in this case
-    		boolean[] validLinks = networkHandlerGetValidLinksForClassRpcCall( modeChar );
-    		
-    
-    		// get the skims as a double[][] array dimensioned to number of centroids (2984)
-            double[][][] zeroBasedDoubleArrays = buildHwySkimMatrices( linkCost, linkAttribs, validLinks );
-    
-    		for ( int i=0; i < linkAttribs.length; i++ ) {
-    
-    	        // convert to a float[][] dimensioned to number of alpha zones (2950)
-    	        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArrays[i] );
-    
-    	        // define default names for matrices.  They can be set later if necessary
-    			matrixName = "table" + i;
-    			matrixDescription = "table" + i + ", mode " + modeChar;
-    			newSkimMatrices[i] = new Matrix( matrixName, matrixDescription, zeroBasedFloatArray );
-    			newSkimMatrices[i].setExternalNumbers( alphaExternalNumbers );
-    			
-    		}
-        
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-        
+		// set generalized cost as the link attribute by which to build shortest paths trees
+		double[] linkCost = nh.setLinkGeneralizedCost();
+
+		// set the highway network attribute on which to skim the network - congested time in this case
+		boolean[] validLinks = nh.getValidLinksForClass( modeChar );
+		
+
+		// get the skims as a double[][] array dimensioned to number of centroids (2984)
+        double[][][] zeroBasedDoubleArrays = buildHwySkimMatrices( linkCost, linkAttribs, validLinks );
+
+		for ( int i=0; i < linkAttribs.length; i++ ) {
+
+	        // convert to a float[][] dimensioned to number of alpha zones (2950)
+	        float[][] zeroBasedFloatArray = getZeroBasedFloatArray ( zeroBasedDoubleArrays[i] );
+
+	        // define default names for matrices.  They can be set later if necessary
+			matrixName = "table" + i;
+			matrixDescription = "table" + i + ", mode " + modeChar;
+			newSkimMatrices[i] = new Matrix( matrixName, matrixDescription, zeroBasedFloatArray );
+			newSkimMatrices[i].setExternalNumbers( alphaExternalNumbers );
+			
+		}
         
         return newSkimMatrices;
         
@@ -338,62 +270,49 @@ public class Skims {
         boolean[] validLinks = null;
         
         
-        try {
-            
-    		// set generalized cost as the link attribute by which to build shortest paths trees
-    		linkCost = networkHandlerSetLinkGeneralizedCostRpcCall();
-    
-    		// define a variable to hold the link attribute to be skimmed (e.g. time, dist, toll, genCost, ...)
-    		linkAttrib = null;
-    
-    		// set the highway network attribute on which to skim the network - congested time in this case
-    		validLinks = networkHandlerGetValidLinksForClassRpcCall( modeChar );
-    		
-    
-    		// initialize the necessary values based on the assignmet period and type of skim to produce
-            if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
-            	if ( skimType.equalsIgnoreCase("time") ) {
-            	    matrixName = (String)propertyMap.get( "pkHwyTimeSkim.matrixName" );
-            	    matrixDescription = (String)propertyMap.get( "pkHwyTimeSkim.matrixDescription" );
-    
-            		linkAttrib = networkHandlerGetCongestedTimeRpcCall();
-            	}
-            	else if ( skimType.equalsIgnoreCase("dist") ) {
-            	    matrixName = (String)propertyMap.get( "pkHwyTimeSkim.matrixName" );
-            	    matrixDescription = (String)propertyMap.get( "pkHwyTimeSkim.matrixDescription" );
-    
-            		linkAttrib = networkHandlerGetDistRpcCall();
-            	}
-            }
-            else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
-            	if ( skimType.equalsIgnoreCase("time") ) {
-            	    matrixName = (String)propertyMap.get( "opHwyTimeSkim.matrixName" );
-            	    matrixDescription = (String)propertyMap.get( "opHwyTimeSkim.matrixDescription" );
-    
-            		linkAttrib = networkHandlerGetCongestedTimeRpcCall();
-            	}
-            	else if ( skimType.equalsIgnoreCase("dist") ) {
-            	    matrixName = (String)propertyMap.get( "opHwyTimeSkim.matrixName" );
-            	    matrixDescription = (String)propertyMap.get( "opHwyTimeSkim.matrixDescription" );
-    
-            		linkAttrib = networkHandlerGetDistRpcCall();
-            	}
-            }
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
         
+		// set generalized cost as the link attribute by which to build shortest paths trees
+		linkCost = nh.setLinkGeneralizedCost();
+
+		// define a variable to hold the link attribute to be skimmed (e.g. time, dist, toll, genCost, ...)
+		linkAttrib = null;
+
+		// set the highway network attribute on which to skim the network - congested time in this case
+		validLinks = nh.getValidLinksForClass( modeChar );
+		
+
+		// initialize the necessary values based on the assignmet period and type of skim to produce
+        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") ) {
+        	    matrixName = (String)propertyMap.get( "pkHwyTimeSkim.matrixName" );
+        	    matrixDescription = (String)propertyMap.get( "pkHwyTimeSkim.matrixDescription" );
+
+        		linkAttrib = nh.getCongestedTime();
+        	}
+        	else if ( skimType.equalsIgnoreCase("dist") ) {
+        	    matrixName = (String)propertyMap.get( "pkHwyTimeSkim.matrixName" );
+        	    matrixDescription = (String)propertyMap.get( "pkHwyTimeSkim.matrixDescription" );
+
+        		linkAttrib = nh.getDist();
+        	}
         }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
+        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+        	if ( skimType.equalsIgnoreCase("time") ) {
+        	    matrixName = (String)propertyMap.get( "opHwyTimeSkim.matrixName" );
+        	    matrixDescription = (String)propertyMap.get( "opHwyTimeSkim.matrixDescription" );
+
+        		linkAttrib = nh.getCongestedTime();
+        	}
+        	else if ( skimType.equalsIgnoreCase("dist") ) {
+        	    matrixName = (String)propertyMap.get( "opHwyTimeSkim.matrixName" );
+        	    matrixDescription = (String)propertyMap.get( "opHwyTimeSkim.matrixDescription" );
+
+        		linkAttrib = nh.getDist();
+        	}
         }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-    
+        
 
         
         // get the skims as a double[][] array dimensioned to number of centroids (2984)
@@ -467,21 +386,11 @@ public class Skims {
         int[] skimsInternalToExternal = null;
         
         
-        try {
-            skimsInternalToExternal = networkHandlerGetIndexNodeRpcCall();
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        
+        skimsInternalToExternal = nh.getIndexNode();
+
 
 		// convert the zero-based double[2983][2983] produced by the skimming procedure
     	// to a zero-based float[2950][2950] for alpha zones to be written to skims file.
@@ -755,62 +664,12 @@ public class Skims {
 
 
    
-
-    private int networkHandlerGetNumCentroidsRpcCall() throws Exception {
-        // g.getNumCentroids()
-        return (Integer)networkHandlerClient.execute("networkHandler.getNumCentroids", new Vector());
-    }
-
-    private int networkHandlerGetMaxCentroidRpcCall() throws Exception {
-        // g.getMaxCentroid()
-        return (Integer)networkHandlerClient.execute("networkHandler.getMaxCentroid", new Vector());
-    }
-
-    private double[] networkHandlerGetCongestedTimeRpcCall() throws Exception {
-        // g.getCongestedTime()
-        return (double[])networkHandlerClient.execute("networkHandler.getCongestedTime", new Vector());
-    }
-    
-    private double[] networkHandlerGetDistRpcCall() throws Exception {
-        // g.getDist()
-        return (double[])networkHandlerClient.execute("networkHandler.getDist", new Vector());
-    }
-    
-    private double[] networkHandlerSetLinkGeneralizedCostRpcCall() throws Exception {
-        // g.setLinkGeneralizedCost()
-        return (double[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector());
-    }
-
-    private int[] networkHandlerGetIndexNodeRpcCall() throws Exception {
-        // g.getIndexNode()
-        return (int[])networkHandlerClient.execute("networkHandler.getIndexNode", new Vector());
-    }
-
-    private boolean[] networkHandlerGetValidLinksForClassRpcCall( char modeChar ) throws Exception {
-        // g.getValidLinksForClass( char c )
-        Vector params = new Vector();
-        params.add( modeChar );
-        return (boolean[])networkHandlerClient.execute("networkHandler.getValidLinksForClassChar", params);
-    }
-
-    
-    
     
     
     
     
     
 	public static void main(String[] args) {
-
-        String handlerName = null;
-        
-        try {
-            handlerName = NetworkHandler.remoteHandlerName;
-            networkHandlerClient = new RpcClient( handlerName );
-        } catch (MalformedURLException e) {
-            logger.error ( "MalformedURLException caught in TS.setupRpcClients().", e );
-        }
-
 
         logger.info ("creating Skims object.");
         Skims s = new Skims ( ResourceUtil.changeResourceBundleIntoHashMap( ResourceBundle.getBundle("ts") ),
