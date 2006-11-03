@@ -23,21 +23,16 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.common.rpc.RpcClient;
-import com.pb.common.rpc.RpcHandler;
-
 import com.pb.tlumip.ts.daf3.AonBuildLoadCommon;
 import com.pb.tlumip.ts.daf3.SpBuildLoadMt;
 
-import java.util.Vector;
-import java.net.MalformedURLException;
 import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
 
 
 
-public class SpBuildLoadHandler implements RpcHandler {
+public class SpBuildLoadHandler {
 
     protected static Logger logger = Logger.getLogger(SpBuildLoadHandler.class);
 
@@ -47,63 +42,25 @@ public class SpBuildLoadHandler implements RpcHandler {
     
     int numberOfThreads;
     
-    RpcClient networkHandlerClient;    
-
-    
 
 
 	public SpBuildLoadHandler() {
 
-        String handlerName = null;
-        
-        try {
-            
-            //Create RpcClients this class connects to
-            try {
-                handlerName = NetworkHandler.remoteHandlerName;
-                networkHandlerClient = new RpcClient( handlerName );
-            }
-            catch (MalformedURLException e) {
-                logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
-            }
-
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught in ShortestPathTreeH().", e );
-            System.exit(1);
-        }
-
     }
 
 
-    public Object execute (String methodName, Vector params) throws Exception {
+    public double[][] getLoadedAonFlows ( int[][] workElements ) {
 
-        logger.info( "method name = SpBuildHandler.execute()." );
 
-        if ( methodName.equalsIgnoreCase( "getLoadedAonFlows" ) ) {
-            numberOfThreads = (Integer) params.get(0);
-            int[][] workElements = (int[][]) params.get(1);
-            logger.info( remoteHandlerName + " to build and load " + workElements.length + " shortest path trees on " + numberOfThreads + " threads." );
-            return getLoadedAonFlows ( workElements );
-        }
-        else {
-            logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
-            return 0;
-        }
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
         
-    }
-
-
-    
-    private double[][] getLoadedAonFlows ( int[][] workElements ) {
-
-
         // update the link costs based on current flows
         double[] linkCost = null;
         boolean[][] validLinksForClasses = null;
         try {
-            validLinksForClasses = networkHandlerGetValidLinksForAllClassesRpcCall();
-            linkCost = networkHandlerSetLinkGeneralizedCostRpcCall();
+            validLinksForClasses = nh.getValidLinksForAllClasses();
+            linkCost = nh.setLinkGeneralizedCost();
         }
         catch ( Exception e ) {
             logger.error ( "Exception caught setting link generalized costs prior to loading aon flows in SpBuildLoadHandler.getLoadedAonFlows().", e );
@@ -153,18 +110,6 @@ public class SpBuildLoadHandler implements RpcHandler {
         
         return buildLoadShared.getResultsArray();
         
-    }
-
-    
-    
-    private double[] networkHandlerSetLinkGeneralizedCostRpcCall() throws Exception {
-        // g.setLinkGeneralizedCost()
-        return (double[])networkHandlerClient.execute("networkHandler.setLinkGeneralizedCost", new Vector() );
-    }
-
-    private boolean[][] networkHandlerGetValidLinksForAllClassesRpcCall() throws Exception {
-        // g.getValidLinksForAllClasses()
-        return (boolean[][])networkHandlerClient.execute("networkHandler.getValidLinksForAllClasses", new Vector() );
     }
 
 }

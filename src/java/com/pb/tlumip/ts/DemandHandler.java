@@ -29,32 +29,24 @@ import com.pb.tlumip.model.ModeType;
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
-import com.pb.common.rpc.RpcClient;
-import com.pb.common.rpc.RpcHandler;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
 
 
-public class DemandHandler implements RpcHandler {
+public class DemandHandler {
 
-    public static String remoteHandlerName = "demandHandler";
-    
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.DemandHandler");
+	protected static Logger logger = Logger.getLogger(DemandHandler.class);
 
     
-    RpcClient networkHandlerClient;    
-
     final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
 
     String componentPropertyName;
@@ -63,9 +55,6 @@ public class DemandHandler implements RpcHandler {
 	HashMap componentPropertyMap;
     HashMap globalPropertyMap;
 
-    ResourceBundle appRb;
-    ResourceBundle globalRb;
-    
     int networkNumCentroids;
     int networkNumUserClasses;
     int[] networkNodeIndexArray;
@@ -80,70 +69,10 @@ public class DemandHandler implements RpcHandler {
 	
 
 
-	public DemandHandler() {
-
-        String handlerName = null;
-        
-        try {
-            
-            //Create RpcClients this class connects to
-            try {
-
-                handlerName = NetworkHandler.remoteHandlerName;
-                networkHandlerClient = new RpcClient( handlerName );
-                
-            }
-            catch (MalformedURLException e) {
-                logger.error ( "MalformedURLException caught in DemandHandler() while defining RpcClients.", e );
-            }
-
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught in DemandHandler().", e );
-            System.exit(1);
-        }
-
-	}
-
-
-    
-    public Object execute (String methodName, Vector params) throws Exception {
-                  
-        if ( methodName.equalsIgnoreCase( "setup" ) ) {
-            
-            // get the network attributes needed by demandHandler from the networkHandler
-            int numCentroids = networkHandlerGetNumCentroidsRpcCall();
-            int numUserClasses = networkHandlerGetNumUserClassesRpcCall();
-            int[] nodeIndex = networkHandlerGetNodeIndexRpcCall();
-            HashMap assignmentGroupMap = networkHandlerGetAssignmentGroupMapRpcCall();
-            boolean userClassesIncludeTruck = networkHandlerUserClassesIncludeTruckRpcCall();
-            setNetworkAttributes( numCentroids, numUserClasses, nodeIndex, assignmentGroupMap, userClassesIncludeTruck );
-            
-            // set the property objects from client that initialized this object and build the demand matrices
-            HashMap componentPropertyMap = (HashMap)params.get(0);
-            HashMap globalPropertyMap = (HashMap)params.get(1);
-            String timePeriod = (String)params.get(2);
-            return setup( componentPropertyMap, globalPropertyMap, timePeriod );
-
-        }
-        else if ( methodName.equalsIgnoreCase( "getTripTableRowSums" ) ) {
-            return multiclassTripTableRowSums;
-        }
-        else if ( methodName.equalsIgnoreCase( "getTripTableRow" ) ) {
-            int userClass = (Integer)params.get(0);
-            int row = (Integer)params.get(1);
-            double[] tripTableRow = getTripTableRow( userClass, row );
-            return tripTableRow;
-        }
-        else {
-            logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
-            return null;
-        }
-        
+    public DemandHandler() {
     }
-    
+   
 
-    
     
     public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod ) {
         
@@ -158,9 +87,6 @@ public class DemandHandler implements RpcHandler {
     public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod ) {
         
 
-        this.appRb = componentRb;
-        this.globalRb = globalRb;
-        
         this.componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( componentRb );
         this.globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( globalRb );
 
@@ -189,11 +115,64 @@ public class DemandHandler implements RpcHandler {
     
     
     public double[][][] getMulticlassTripTables () {
-        
         return multiclassTripTable;
-        
     }
     
+    
+    public double[][] getTripTableRowSums () {
+        return multiclassTripTableRowSums;
+    }
+    
+    
+
+    public double[][] getWalkTransitTripTable ( String timePeriod ) {
+        
+        int startHour = 0;
+        int endHour = 0;
+
+        // get trip list filenames from property file
+        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
+
+        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
+            // get peak period definitions from property files
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+        }
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
+            // get off-peak period definitions from property files
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+        }
+
+        return getWalkTransitTripTableFromPTList ( networkNodeIndexArray, ptFileName, startHour, endHour );
+        
+    }
+
+    
+    
+    public double[][] getDriveTransitTripTable ( String timePeriod ) {
+        
+        int startHour = 0;
+        int endHour = 0;
+
+        // get trip list filenames from property file
+        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
+
+        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
+            // get peak period definitions from property files
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+        }
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
+            // get off-peak period definitions from property files
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+        }
+
+        return getDriveTransitTripTableFromPTList ( networkNodeIndexArray, ptFileName, startHour, endHour );
+        
+    }
+
     
     
     private boolean buildDemandObject( String timePeriod ) {
@@ -319,58 +298,200 @@ public class DemandHandler implements RpcHandler {
         
 
         
-		// read the PT output person trip list file into a TableDataSet
+        // read the PT output person trip list file into a TableDataSet
         OLD_CSVFileReader reader = new OLD_CSVFileReader();
 
-		String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
-		TableDataSet table = null;
-		try {
-			if ( fileName != null) {
+        String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
+        TableDataSet table = null;
+        try {
+            if ( fileName != null) {
 
-				table = reader.readFile(new File( fileName ), columnsToRead);
+                table = reader.readFile(new File( fileName ), columnsToRead);
 
-				// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
-				for (int i=0; i < table.getRowCount(); i++) {
-				    
-					orig = (int)table.getValueAt( i+1, "origin" );
-					dest = (int)table.getValueAt( i+1, "destination" );
-					startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-					mode = (int)table.getValueAt( i+1, "tripMode" );
-					
-					o = nodeIndex[orig];
-					d = nodeIndex[dest];
-					
-					// accumulate all peak period highway mode trips
+                // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
+                for (int i=0; i < table.getRowCount(); i++) {
+                    
+                    orig = (int)table.getValueAt( i+1, "origin" );
+                    dest = (int)table.getValueAt( i+1, "destination" );
+                    startTime = (int)table.getValueAt( i+1, "tripStartTime" );
+                    mode = (int)table.getValueAt( i+1, "tripMode" );
+                    
+                    o = nodeIndex[orig];
+                    d = nodeIndex[dest];
+                    
+                    // accumulate all peak period highway mode trips
                     if ( (mode == ModeType.AUTODRIVER || mode == ModeType.AUTOPASSENGER) ) {
                         
                         if ( (startTime >= startPeriod && startTime <= endPeriod) ) {
-	
+    
                             tripTable[o][d]++;
                             tripCount++;
                         
                         }
 
                         allAutoTripCount++;
-					}
-					
-				}
-				
-				// done with trip list TabelDataSet
-				table = null;
+                    }
+                    
+                }
+                
+                // done with trip list TabelDataSet
+                table = null;
 
-			}
-			
-		} catch (IOException e) {
-			logger.error ( "", e );
-		}
+            }
+            
+        } catch (IOException e) {
+            logger.error ( "", e );
+        }
 
 
         logger.info (allAutoTripCount + " total auto network trips read from PT entire file");
         logger.info (tripCount + " total auto network trips read from PT file for period " + startPeriod +
                 " to " + endPeriod);
 
-		return tripTable;
-		    
+        return tripTable;
+            
+    }
+    
+
+    private double[][] getWalkTransitTripTableFromPTList ( int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
+        
+        int orig;
+        int dest;
+        int startTime;
+        int mode;
+        int o;
+        int d;
+        int allTripsCount=0;
+        int tripCount=0;
+        
+        
+        double[][] tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
+        
+
+        
+        // read the PT output person trip list file into a TableDataSet
+        OLD_CSVFileReader reader = new OLD_CSVFileReader();
+
+        String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
+        TableDataSet table = null;
+        try {
+            if ( fileName != null) {
+
+                table = reader.readFile(new File( fileName ), columnsToRead);
+
+                // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
+                for (int i=0; i < table.getRowCount(); i++) {
+                    
+                    orig = (int)table.getValueAt( i+1, "origin" );
+                    dest = (int)table.getValueAt( i+1, "destination" );
+                    startTime = (int)table.getValueAt( i+1, "tripStartTime" );
+                    mode = (int)table.getValueAt( i+1, "tripMode" );
+                    
+                    o = nodeIndex[orig];
+                    d = nodeIndex[dest];
+                    
+                    // accumulate all peak period highway mode trips
+                    if ( (mode == ModeType.WALKTRANSIT || mode == ModeType.TRANSITPASSENGER) ) {
+                        
+                        if ( (startTime >= startPeriod && startTime <= endPeriod) ) {
+    
+                            tripTable[o][d]++;
+                            tripCount++;
+                        
+                        }
+
+                        allTripsCount++;
+                    }
+                    
+                }
+                
+                // done with trip list TableDataSet
+                table = null;
+
+            }
+            
+        } catch (IOException e) {
+            logger.error ( "", e );
+        }
+
+
+        logger.info (allTripsCount + " total walk transit trips read from PT file");
+        logger.info (tripCount + " total walk transit trips read from PT file for period " + startPeriod +
+                " to " + endPeriod);
+
+        return tripTable;
+            
+    }
+    
+
+    private double[][] getDriveTransitTripTableFromPTList ( int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
+        
+        int orig;
+        int dest;
+        int startTime;
+        int mode;
+        int o;
+        int d;
+        int allTripsCount=0;
+        int tripCount=0;
+        
+        
+        double[][] tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
+        
+
+        
+        // read the PT output person trip list file into a TableDataSet
+        OLD_CSVFileReader reader = new OLD_CSVFileReader();
+
+        String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
+        TableDataSet table = null;
+        try {
+            if ( fileName != null) {
+
+                table = reader.readFile(new File( fileName ), columnsToRead);
+
+                // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
+                for (int i=0; i < table.getRowCount(); i++) {
+                    
+                    orig = (int)table.getValueAt( i+1, "origin" );
+                    dest = (int)table.getValueAt( i+1, "destination" );
+                    startTime = (int)table.getValueAt( i+1, "tripStartTime" );
+                    mode = (int)table.getValueAt( i+1, "tripMode" );
+                    
+                    o = nodeIndex[orig];
+                    d = nodeIndex[dest];
+                    
+                    // accumulate all peak period highway mode trips
+                    if ( (mode == ModeType.DRIVETRANSIT || mode == ModeType.PASSENGERTRANSIT) ) {
+                        
+                        if ( (startTime >= startPeriod && startTime <= endPeriod) ) {
+    
+                            tripTable[o][d]++;
+                            tripCount++;
+                        
+                        }
+
+                        allTripsCount++;
+                    }
+                    
+                }
+                
+                // done with trip list TableDataSet
+                table = null;
+
+            }
+            
+        } catch (IOException e) {
+            logger.error ( "", e );
+        }
+
+
+        logger.info (allTripsCount + " total drive transit trips read from PT file");
+        logger.info (tripCount + " total drive transit trips read from PT file for period " + startPeriod +
+                " to " + endPeriod);
+
+        return tripTable;
+            
     }
     
 
@@ -459,33 +580,6 @@ public class DemandHandler implements RpcHandler {
 
 		return tripTable;
 
-    }
-   
-
-
-    private int networkHandlerGetNumUserClassesRpcCall() throws Exception {
-        // g.getNumUserClasses()
-        return (Integer)networkHandlerClient.execute("networkHandler.getNumUserClasses", new Vector() );
-    }
-
-    private int networkHandlerGetNumCentroidsRpcCall() throws Exception {
-        // g.getNumCentroids()
-        return (Integer)networkHandlerClient.execute("networkHandler.getNumCentroids", new Vector());
-    }
-
-    private int[] networkHandlerGetNodeIndexRpcCall() throws Exception {
-        // g.getNodeIndex()
-        return (int[])networkHandlerClient.execute("networkHandler.getNodeIndex", new Vector() );
-    }
-
-    private HashMap networkHandlerGetAssignmentGroupMapRpcCall() throws Exception {
-        // g.getAssignmentGroupMap()
-        return (HashMap)networkHandlerClient.execute("networkHandler.getAssignmentGroupMap", new Vector() );
-    }
-
-    private boolean networkHandlerUserClassesIncludeTruckRpcCall() throws Exception {
-        // g.userClassesIncludeTruck()
-        return (Boolean)networkHandlerClient.execute("networkHandler.userClassesIncludeTruck", new Vector() );
     }
     
 }

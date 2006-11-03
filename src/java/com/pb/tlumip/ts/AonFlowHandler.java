@@ -23,14 +23,9 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.common.rpc.RpcClient;
-import com.pb.common.rpc.RpcException;
-import com.pb.common.rpc.RpcHandler;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
@@ -38,10 +33,12 @@ import org.apache.log4j.Logger;
 
 
 
-public class AonFlowHandler implements RpcHandler {
+public class AonFlowHandler {
 
-    public static final int NUM_DISTRIBUTED_HANDLERS = 2;
-    public static final int[] numberOfThreads = { 2, 4 };
+    public static final int NUM_DISTRIBUTED_HANDLERS = 1;
+    public static final int[] numberOfThreads = { 1 };
+//    public static final int NUM_DISTRIBUTED_HANDLERS = 2;
+//    public static final int[] numberOfThreads = { 2, 4 };
 
     
     public static String remoteHandlerName = "aonFlowHandler";
@@ -49,10 +46,6 @@ public class AonFlowHandler implements RpcHandler {
 	protected static Logger logger = Logger.getLogger(AonFlowHandler.class);
 
 //    private AonFlowResults flowResults = AonFlowResults.getInstance();
-
-    RpcClient demandHandlerClient;    
-    RpcClient networkHandlerClient;
-    RpcClient[] spBuildLoadHandlerClient;
 
     int numLinks;
     int numCentroids;
@@ -68,45 +61,10 @@ public class AonFlowHandler implements RpcHandler {
 	HashMap componentPropertyMap;
     HashMap globalPropertyMap;
 
-    ResourceBundle appRb;
-    ResourceBundle globalRb;
     
 
 
 	public AonFlowHandler() {
-
-        String handlerName = null;
-        
-        spBuildLoadHandlerClient = new RpcClient[NUM_DISTRIBUTED_HANDLERS];
-
-        try {
-            
-            //Create RpcClients this class connects to
-            try {
-
-                handlerName = NetworkHandler.remoteHandlerName;
-                networkHandlerClient = new RpcClient( handlerName );
-
-                handlerName = DemandHandler.remoteHandlerName;
-                demandHandlerClient = new RpcClient( handlerName );
-                
-                handlerName = SpBuildLoadHandler.remoteHandlerName;
-                for (int i=0; i < NUM_DISTRIBUTED_HANDLERS; i++)
-                    spBuildLoadHandlerClient[i] = new RpcClient( handlerName + "_" + (i+1) );
-                
-            }
-            catch (MalformedURLException e) {
-            
-                logger.error ( "MalformedURLException caught in ShortestPathTreeH() while defining RpcClients.", e );
-                throw new RuntimeException(e);
-            }
-
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught in ShortestPathTreeH().", e );
-            System.exit(1);
-        }
-
     }
     
 
@@ -144,10 +102,6 @@ public class AonFlowHandler implements RpcHandler {
     
     public void setup( ResourceBundle componentRb, ResourceBundle globalRb ) {
         
-
-        this.appRb = componentRb;
-        this.globalRb = globalRb;
-        
         this.componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( componentRb );
         this.globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( globalRb );
 
@@ -158,30 +112,17 @@ public class AonFlowHandler implements RpcHandler {
     
     private void getNetworkParameters () {
         
-        try {
-            
-            startOriginTaz = 0;
-            lastOriginTaz = networkHandlerGetNumCentroidsRpcCall();
-            numLinks = networkHandlerGetLinkCountRpcCall();
-            numCentroids = networkHandlerGetNumCentroidsRpcCall();
-            numUserClasses = networkHandlerGetNumUserClassesRpcCall();
-            
-            ia = networkHandlerGetIaRpcCall();
-            indexNode = networkHandlerGetIndexNodeRpcCall();
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
 
-        }
-        catch ( RpcException e ) {
-            logger.error ( "RpcException caught.", e );
-            System.exit(1);
-        }
-        catch ( IOException e ) {
-            logger.error ( "IOException caught.", e );
-            System.exit(1);
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
+        startOriginTaz = 0;
+        lastOriginTaz = nh.getNumCentroids();
+        numLinks = nh.getLinkCount();
+        numCentroids = nh.getNumCentroids();
+        numUserClasses = nh.getNumUserClasses();
+        
+        ia = nh.getIa();
+        indexNode = nh.getIndexNode();
         
     }
     
@@ -189,11 +130,13 @@ public class AonFlowHandler implements RpcHandler {
 
     private double[][] getMulticlassAonLinkFlows () {
 
+        DemandHandler dh = new DemandHandler();
+        
         double[][] tripTableRowSums = null;
         
         // get the trip table row sums by user class
         try {
-            tripTableRowSums = demandHandlerGetTripTableRowSumsRpcCall();
+            tripTableRowSums = dh.getTripTableRowSums();
         }
         catch ( Exception e ) {
             logger.error ( "Exception caught.", e );
@@ -264,11 +207,18 @@ public class AonFlowHandler implements RpcHandler {
         double[][][] returnedAonFlows = new double[NUM_DISTRIBUTED_HANDLERS][][];
         
         
+        
+        // create multiple handlers to distribute shortest path tree building and loading
+        SpBuildLoadHandler[] spblh = new SpBuildLoadHandler[NUM_DISTRIBUTED_HANDLERS];
+        for (int n=0; n < NUM_DISTRIBUTED_HANDLERS; n++)
+            spblh[n] = new SpBuildLoadHandler();
+        
+        
         // send work elements arrays to each of the handlers
         try {
             for (int n=0; n < NUM_DISTRIBUTED_HANDLERS; n++) {
-                logger.info( SpBuildLoadHandler.remoteHandlerName + "_" + (n+1) + " sent " + numWorkElementsPerNode[n] + " userclass, origin zone pairs." );
-                returnedAonFlows[n] = spBuildLoadHandlerGetLoadedAonFlowsRpcCall( n, workElements[n] );
+                logger.info( "SpBuildLoadHandler" + "_" + (n+1) + " sent " + numWorkElementsPerNode[n] + " userclass, origin zone pairs." );
+                returnedAonFlows[n] = spblh[n].getLoadedAonFlows( workElements[n] );
             }
         }
         catch ( Exception e ) {
@@ -296,7 +246,7 @@ public class AonFlowHandler implements RpcHandler {
     
     
     
-
+/*
     private int networkHandlerGetNumCentroidsRpcCall() throws Exception {
         // g.getNumCentroids()
         return (Integer)networkHandlerClient.execute("networkHandler.getNumCentroids", new Vector());
@@ -338,5 +288,6 @@ public class AonFlowHandler implements RpcHandler {
         params.add( workElements );
         return (double[][])spBuildLoadHandlerClient[n].execute( (SpBuildLoadHandler.remoteHandlerName + "_" + (n+1) + ".getLoadedAonFlows"), params );
     }
-    
+ 
+*/
 }

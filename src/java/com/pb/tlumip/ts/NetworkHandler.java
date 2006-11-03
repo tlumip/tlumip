@@ -16,35 +16,23 @@
  */
 package com.pb.tlumip.ts;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.DataReader;
-import com.pb.common.datafile.DataWriter;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.rpc.RpcHandler;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.assign.Network;
-import com.pb.tlumip.ts.assign.Skims;
 
 /**
  * @author   Jim Hicks  
- * @version  Sep 20, 2005
+ * @version  Nov 1, 2006
  */
-public class NetworkHandler implements RpcHandler {
+public class NetworkHandler implements NetworkHandlerIF {
 
-    public static String remoteHandlerName = "networkHandler";
-    
     protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 
-    HashMap componentPropertyMap;
-    HashMap globalPropertyMap;
-    String timePeriod;
-    
     Network g = null;
     
     
@@ -53,154 +41,35 @@ public class NetworkHandler implements RpcHandler {
     }
 
     
+    // Factory Method to return either local or remote instance
+    public static NetworkHandlerIF getInstance( String rpcConfigFile ) {
     
-    public Object execute (String methodName, Vector params) throws Exception {
+        // if false, remote method calls on networkHandler are made 
+        boolean localFlag = false;
     
-        if ( methodName.equalsIgnoreCase( "getNumCentroids" ) ) {
-            return getNumCentroids();
+        //This method needs to be written
+        //if (DafNode.getInstance().isHandlerLocal("networkHandler"))
+        //    localFlag = true;
+    
+        if (localFlag == false && rpcConfigFile != null) {
+            return new RpcNetworkHandler( rpcConfigFile );
         }
-        else if ( methodName.equalsIgnoreCase( "getMaxCentroid" ) ) {
-            return getMaxCentroid();
-        }
-        else if ( methodName.equalsIgnoreCase( "getCentroid" ) ) {
-            return getCentroid();
-        }
-        else if ( methodName.equalsIgnoreCase( "getNodeCount" ) ) {
-            return getNodeCount();
-        }
-        else if ( methodName.equalsIgnoreCase( "getLinkCount" ) ) {
-            return getLinkCount();
-        }
-        else if ( methodName.equalsIgnoreCase( "getNumUserClasses" ) ) {
-            return getNumUserClasses();
-        }
-        else if ( methodName.equalsIgnoreCase( "getTimePeriod" ) ) {
-            return getTimePeriod();
-        }
-        else if ( methodName.equalsIgnoreCase( "userClassesIncludeTruck" ) ) {
-            return userClassesIncludeTruck();
-        }
-        else if ( methodName.equalsIgnoreCase( "getValidLinksForAllClasses" ) ) {
-            return getValidLinksForAllClasses();
-        }
-        else if ( methodName.equalsIgnoreCase( "getValidLinksForClassInt" ) ) {
-            return getValidLinksForClass( (Integer)params.get(0) );
-        }
-        else if ( methodName.equalsIgnoreCase( "getValidLinksForClassChar" ) ) {
-            return getValidLinksForClass( (Character)params.get(0) );
-        }
-        else if ( methodName.equalsIgnoreCase( "getNodeIndex" ) ) {
-            return getNodeIndex();
-        }
-        else if ( methodName.equalsIgnoreCase( "getIndexNode" ) ) {
-            return getIndexNode();
-        }
-        else if ( methodName.equalsIgnoreCase( "getSortedLinkIndexA" ) ) {
-            return getSortedLinkIndexA();
-        }
-        else if ( methodName.equalsIgnoreCase( "getLinkType" ) ) {
-            return getLinkType();
-        }
-        else if ( methodName.equalsIgnoreCase( "getIa" ) ) {
-            return getIa();
-        }
-        else if ( methodName.equalsIgnoreCase( "getIb" ) ) {
-            return getIb();
-        }
-        else if ( methodName.equalsIgnoreCase( "getIpa" ) ) {
-            return getIpa();
-        }
-        else if ( methodName.equalsIgnoreCase( "getAssignmentGroupMap" ) ) {
-            return getAssignmentGroupMap();
-        }
-        else if ( methodName.equalsIgnoreCase( "getCongestedTime" ) ) {
-            return getCongestedTime();
-        }
-        else if ( methodName.equalsIgnoreCase( "getDist" ) ) {
-            return getDist();
-        }
-        else if ( methodName.equalsIgnoreCase( "setLinkGeneralizedCost" ) ) {
-            return setLinkGeneralizedCost();
-        }
-        else if ( methodName.equalsIgnoreCase( "setFlows" ) ) {
-            double[][] flows = (double[][])params.get(0);
-            setFlows( flows );
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "setVolau" ) ) {
-            double[] volau = (double[])params.get(0);
-            setVolau( volau );
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "setVolCapRatios" ) ) {
-            setVolCapRatios();
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "applyVdfs" ) ) {
-            applyVdfs();
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "applyVdfIntegrals" ) ) {
-            applyVdfIntegrals();
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "getSumOfVdfIntegrals" ) ) {
-            return getSumOfVdfIntegrals();
-        }
-        else if ( methodName.equalsIgnoreCase( "logLinkTimeFreqs" ) ) {
-            logLinkTimeFreqs();
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "fwBisect" ) ) {
-            int iter = (Integer)params.get(0);
-            double[][] aonFlow = (double[][])params.get(1);
-            double[][] flow = (double[][])params.get(2);
-            return g.bisect (iter, aonFlow, flow );
-        }
-        else if ( methodName.equalsIgnoreCase( "getFwOfValue" ) ) {
-            double[][] flow = (double[][])params.get(0);
-            return g.ofValue ( flow );
-        }
-        else if ( methodName.equalsIgnoreCase( "getFwGapValue" ) ) {
-            double[][] aonFlow = (double[][])params.get(0);
-            double[][] flow = (double[][])params.get(1);
-            return g.ofGap ( aonFlow, flow );
-        }
-        else if ( methodName.equalsIgnoreCase( "linkSummaryReport" ) ) {
-            double[][] flow = (double[][])params.get(0);
-            g.linkSummaryReport ( flow );
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "createSelectLinkAnalysisDiskObject" ) ) {
-            double[] fwFlowProps = (double[])params.get(0);
-            createSelectLinkAnalysisDiskObject( fwFlowProps );
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "buildNetworkObject" ) ) {
-            
-            componentPropertyMap = (HashMap)params.get(0);
-            globalPropertyMap = (HashMap)params.get(1);
-            timePeriod = (String)params.get(2);
-            return (Boolean)buildNetworkObject();
-            
-        }
-        else if ( methodName.equalsIgnoreCase( "writeNetworkAttributes" ) ) {
-            String fileName = (String)params.get(0);
-            writeNetworkAttributes( fileName );
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "checkForIsolatedLinks" ) ) {
-            checkForIsolatedLinks();
-            return 0;
-        }
-        else {
-            logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
-            return 0;
+        else { 
+            return new NetworkHandler();
         }
         
     }
     
+
+    // Factory Method to return local instance only
+    public static NetworkHandlerIF getInstance() {
+        return new NetworkHandler();
+    }
     
+
+    public Network getNetwork() {
+        return g;
+    }
     
     public int getNumCentroids() {
         return g.getNumCentroids();
@@ -270,32 +139,38 @@ public class NetworkHandler implements RpcHandler {
         return g.setLinkGeneralizedCost ();
     }
 
-    public void setFlows (double[][] flow) {
+    public int setFlows (double[][] flow) {
         g.setFlows( flow );
+        return 1;
     }
     
-    public void setVolau (double[] volau) {
+    public int setVolau (double[] volau) {
         g.setVolau( volau );
+        return 1;
     }
     
-    public void setVolCapRatios () {
+    public int setVolCapRatios () {
         g.setVolCapRatios ();
+        return 1;
     }
     
-    public void applyVdfs () {
+    public int applyVdfs () {
         g.applyVdfs();
+        return 1;
     }
     
-    public void applyVdfIntegrals () {
+    public int applyVdfIntegrals () {
         g.applyVdfIntegrals();
+        return 1;
     }
     
     public double getSumOfVdfIntegrals () {
         return g.getSumOfVdfIntegrals();
     }
     
-    public void logLinkTimeFreqs () {
+    public int logLinkTimeFreqs () {
         g.logLinkTimeFreqs();
+        return 1;
     }
     
     public char[] getUserClasses () {
@@ -322,132 +197,52 @@ public class NetworkHandler implements RpcHandler {
         return g.getSortedLinkIndexA();
     }
 
-    public void writeNetworkAttributes ( String fileName ) {
+    public int writeNetworkAttributes ( String fileName ) {
         g.writeNetworkAttributes(fileName);
+        return 1;
     }
     
-    public void checkForIsolatedLinks () {
+    public int checkForIsolatedLinks () {
         g.checkForIsolatedLinks ();
+        return 1;
     }
     
-    public void checkODConnectivity ( double[][][] trips ) {
-
-        double[][] linkAttributes = new double[2][];
-        linkAttributes[0] = getDist();
-        linkAttributes[1] = getCongestedTime();
+    public int setup( String appPropertyName, String globalPropertyName, String assignmentPeriod ) {
         
-        char[] userClasses = g.getUserClasses();
-
-        Skims skims = new Skims(this, componentPropertyMap, globalPropertyMap);
-
+        HashMap componentPropertyMap = ResourceUtil.getResourceBundleAsHashMap( appPropertyName );
+        HashMap globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap( globalPropertyName );
+        String timePeriod = assignmentPeriod;
         
-        for (int m=0; m < userClasses.length; m++) {
-
-            double total = 0.0;
-            for (int i=0; i < trips[m].length; i++)
-                for (int j=0; j < trips[m][i].length; j++)
-                    total += trips[m][i][j];
-            
-                    
-            // log the average sov trip travel distance and travel time for this assignment
-            logger.info("Generating Time and Distance peak skims for subnetwork " + userClasses[m] + " (class " + m + ") ...");
-            
-            if (total > 0.0) {
-
-                Matrix[] skimMatrices = skims.getHwySkimMatrices( timePeriod, linkAttributes, userClasses[m] );
-
-                logger.info( "Total " + timePeriod + " demand for subnetwork " + userClasses[m] + " (class " + m + ") = " + total + " trips."); 
-
-                double[] distSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[0] );
-                
-                logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + timePeriod + " trip travel distance = " + distSummaries[0] + " miles."); 
-                logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on distance = " + distSummaries[1]);
-
-                double[] timeSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[1] );
-                
-                logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + timePeriod + " trip travel time = " + timeSummaries[1] + " minutes."); 
-                logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on time = " + timeSummaries[1]);
-                
-            }
-            else {
-                
-                logger.info("No demand for subnetwork " + userClasses[m] + " (class " + m + ") therefore, no average time or distance calculated.");
-                
-            }
-                    
-        }
-
-    }
-    
-    
-    
-    
-    public void checkAllODPairsForNetworkConnectivity () {
+        buildNetworkObject ( componentPropertyMap, globalPropertyMap, timePeriod );
         
-        int numCentroids = getNumCentroids();
-        int numUserClasses = getNumUserClasses();
-        
+        return g.getLinkCount();
 
-        double[][][] dummyTripTable = new double[numUserClasses][numCentroids+1][numCentroids+1];
-        for(int i=0; i < numUserClasses - 1; i++) {
-            for(int j=0; j < numCentroids + 1; j++) {
-                Arrays.fill(dummyTripTable[i][j], 1.0);
-            }
-        }
-      
-        checkODConnectivity(dummyTripTable);
-
-    }
-    
-    
-    
-    public void checkODPairsWithTripsForNetworkConnectivity ( double[][][] multiclassTripTable ) {
-        checkODConnectivity(multiclassTripTable);
     }
 
     
-    
-    
-    public void createSelectLinkAnalysisDiskObject ( double[] fwFlowProps ) {
+    public int setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String assignmentPeriod ) {
         
-        // get the locations of the files for storing the network and assignment proportions
-        String networkDiskObjectFile = (String)componentPropertyMap.get("NetworkDiskObject.file");
-        String proportionsDiskObjectFile = (String)componentPropertyMap.get("ProportionsDiskObject.file");
-
-            
-        // write the network and saved proportions to DiskObject files for subsequent select link analysis
-        if ( networkDiskObjectFile != null )
-            DataWriter.writeDiskObject ( g, networkDiskObjectFile, "highwayNetwork_" + timePeriod );
+        buildNetworkObject ( componentPropertyMap, globalPropertyMap, assignmentPeriod );
         
-        if ( proportionsDiskObjectFile != null )
-            DataWriter.writeDiskObject ( fwFlowProps, proportionsDiskObjectFile, "fwProportions_" + timePeriod );
-    
-    }
-
-
-    public void setup( String appPropertyName, String globalPropertyName, String assignmentPeriod ) {
-        
-        componentPropertyMap = ResourceUtil.getResourceBundleAsHashMap( appPropertyName );
-        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap( globalPropertyName );
-        timePeriod = assignmentPeriod;
-        
-        buildNetworkObject ();
+        return g.getLinkCount();
         
     }
 
     
-    public void setup( ResourceBundle appRb, ResourceBundle globalRb, String assignmentPeriod ) {
+    public int setup( ResourceBundle appRb, ResourceBundle globalRb, String assignmentPeriod ) {
         
-        componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-        timePeriod = assignmentPeriod;
+        HashMap componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
+        String timePeriod = assignmentPeriod;
         
-        buildNetworkObject ();
+        buildNetworkObject ( componentPropertyMap, globalPropertyMap, timePeriod );
+        
+        return g.getLinkCount();
         
     }
 
     
-    public boolean buildNetworkObject () {
+    public boolean buildNetworkObject ( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod ) {
         
         
         try {
