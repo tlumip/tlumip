@@ -23,6 +23,8 @@ import com.pb.tlumip.ct.CTModel;
 import com.pb.tlumip.ed.EDControl;
 import com.pb.tlumip.model.ModelComponent;
 import com.pb.tlumip.spg.SPGnew;
+import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.TS;
 import com.pb.models.pecas.PIModel;
 import org.apache.commons.digester.Digester;
@@ -468,8 +470,15 @@ public class ApplicationOrchestrator {
     public void runTSModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
 		TS ts = new TS(appRb, globalRb);
-		ts.runHighwayAssignment( "peak" );
-		ts.runHighwayAssignment( "offpeak" );
+
+        String period = "peak";
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        nh.setup( appRb, globalRb, period );
+        logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+        
+		ts.runHighwayAssignment( nh, "peak" );
+        
+		//ts.runHighwayAssignment( g, "offpeak" );
 
     }
     
