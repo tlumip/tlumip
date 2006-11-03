@@ -29,6 +29,7 @@ package com.pb.tlumip.ts.odot;
 
 
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.FW;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -48,7 +49,7 @@ public class OdotAssign {
 
 	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.odot");
 
-	protected static NetworkHandler g = null;
+	protected static NetworkHandlerIF nh = null;
 
 	
 	
@@ -99,8 +100,8 @@ public class OdotAssign {
 		
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Highway Network object at: " + myDateString);
-        g = new NetworkHandler();
-        g.setup( appPropertyName, globalPropertyName, period );
+        nh = NetworkHandler.getInstance();
+        nh.setup( appPropertyName, globalPropertyName, period );
         logger.info ("done building Network object.");
 		
 		
@@ -108,7 +109,7 @@ public class OdotAssign {
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating FW object at: " + myDateString);
 		FW fw = new FW();
-		fw.initialize( tsPropertyMap, g );
+		fw.initialize( tsPropertyMap, nh );
 
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -143,7 +144,7 @@ public class OdotAssign {
         
         int[] nodeIndex = null;
         
-        double[][] tripTable = new double[g.getNumCentroids()+1][g.getNumCentroids()+1];
+        double[][] tripTable = new double[nh.getNumCentroids()+1][nh.getNumCentroids()+1];
 
         
 		// read the aggregate trip table into a TableDataSet
@@ -158,7 +159,7 @@ public class OdotAssign {
 	    
 
 		
-		nodeIndex = g.getNodeIndex();
+		nodeIndex = nh.getNodeIndex();
 		
 		
 		// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
