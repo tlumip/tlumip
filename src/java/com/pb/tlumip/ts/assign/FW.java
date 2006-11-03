@@ -18,7 +18,7 @@ package com.pb.tlumip.ts.assign;
 
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.datafile.DiskObjectArray;
-import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -39,7 +39,7 @@ public class FW {
 
 	HashMap propertyMap;
 	
-    NetworkHandler g;
+    NetworkHandlerIF nh;
 
     double [] lambdas;
     double [] fwFlowProps;
@@ -47,6 +47,7 @@ public class FW {
 	double[] volau;
 	int[] linkType;
     
+    int numLinks;
     int numAutoClasses;
     String timePeriod;
 
@@ -55,6 +56,8 @@ public class FW {
 	int maxFwIters;
 	double fwGap;
 
+    boolean[][] validLinksForClasses = null;
+    
 	DiskObjectArray fwPathsDoa = null;	
 
    
@@ -62,31 +65,38 @@ public class FW {
     }
 
 
-    public void initialize ( HashMap tsPropertyMap, NetworkHandler g ) {
+    public void initialize ( HashMap tsPropertyMap, NetworkHandlerIF nh ) {
 
 		this.propertyMap = tsPropertyMap;
-		this.g = g;
+		this.nh = nh;
         
         maxFwIters = Integer.parseInt ( (String)propertyMap.get( "NUM_FW_ITERATIONS" ) );
         fwGap = Double.parseDouble ( (String)propertyMap.get( "FW_RELATIVE_GAP" ) );
         
-        numAutoClasses = g.getUserClasses().length;
-		timePeriod = g.getTimePeriod();
+        numLinks = nh.getLinkCount();
+        
+        numAutoClasses = nh.getUserClasses().length;
+		timePeriod = nh.getTimePeriod();
 
 		lambdas = new double[maxFwIters];
 		fwFlowProps = new double[maxFwIters];
 
 		startOriginTaz = 0;
-        lastOriginTaz = g.getNumCentroids();
+        lastOriginTaz = nh.getNumCentroids();
 
     
 		// initialize assignment arrays prior to iterating
-		linkType = g.getLinkType();
+		linkType = nh.getLinkType();
 
 		
-		volau = new double[g.getLinkCount()];
+		volau = new double[numLinks];
 	
-		
+        // get valid links arrays for each user class for use in assignment algorithm
+        validLinksForClasses = new boolean[numAutoClasses][];
+        for (int m=0; m < numAutoClasses; m++) {
+            validLinksForClasses[m] = nh.getValidLinksForClass(m);
+        }
+        
 		// create a DiskObjectArray for storing shortest path trees
 		createDiskObjectArray();
     
@@ -104,20 +114,21 @@ public class FW {
 	    double glb = 0.0;
 
 
-		// determine which links are valid parts of paths for this skim
-		boolean[] validLinksForClass = null;
-		boolean[] validLinks = new boolean[g.getLinkCount()];
+		// set validLinks true for a link if true for any of the classes of that link.
+		boolean[] validLinks = new boolean[numLinks];
 	    Arrays.fill (validLinks, false);
-		for (int m=0; m < numAutoClasses; m++) {
-			validLinksForClass = g.getValidLinksForClass(m);
-			for (int k=0; k < g.getLinkCount(); k++)
-				if (validLinksForClass[k])
+        for (int k=0; k < numLinks; k++) {
+            for (int m=0; m < numAutoClasses; m++) {
+				if (validLinksForClasses[m][k]) {
 					validLinks[k] = true;
+                    break;
+                }
+            }
 		}
 
 			
 		
-		double[][] flow = new double[numAutoClasses][g.getLinkCount()];
+		double[][] flow = new double[numAutoClasses][numLinks];
 
 		for (int m=0; m < numAutoClasses; m++)
 		    Arrays.fill (flow[m], 0.0);
@@ -172,12 +183,12 @@ public class FW {
 					volau[k] += flow[m][k];
 				}
 			}
-			g.setFlows(flow);
-			g.setVolau(volau);
-            g.applyVdfs();
+			nh.setFlows(flow);
+			nh.setVolau(volau);
+            nh.applyVdfs();
 
             
-			g.logLinkTimeFreqs ();
+			nh.logLinkTimeFreqs ();
 			
 			
 			if ( Math.abs( (lub - glb)/glb ) < fwGap )
@@ -221,12 +232,12 @@ public class FW {
 		boolean[] validLinksForClass = null;
 
 		// build shortest path tree object and set cost and valid link attributes for this user class.
-		ShortestPathTreeH sp = new ShortestPathTreeH( g );
+		ShortestPathTreeH sp = new ShortestPathTreeH( nh );
 
 		// set the highway network attribute on which to skim the network
-		double[] linkCost = g.setLinkGeneralizedCost();
+		double[] linkCost = nh.setLinkGeneralizedCost();
 
-		double[][] aonFlow = new double[numAutoClasses][g.getLinkCount()];
+		double[][] aonFlow = new double[numAutoClasses][numLinks];
 		double[] aon;
 	
 		
@@ -244,8 +255,8 @@ public class FW {
 				for (int j=0; j < tripTable[m][origin].length; j++)
 					tripTableRowSum += tripTable[m][origin][j];
 
-				validLinksForClass = g.getValidLinksForClass(m);
-				sp.setValidLinks( validLinksForClass );
+
+				sp.setValidLinks( validLinksForClasses[m] );
 
 
 				if (origin % 500 == 0)
@@ -353,17 +364,20 @@ public class FW {
         logger.info ("starting FW.ofValue()" + myDateString);
  
 		// sum total flow over all user classes for each link 
+        double total = 0.0;
         for (int k=0; k < volau.length; k++) {
             volau[k] = 0.0;
-            for (int m=0; m < numAutoClasses; m++)
+            for (int m=0; m < numAutoClasses; m++) {
                 volau[k] += flow[m][k];
+                total += volau[k]; 
+            }
         }
         
-		g.setVolau(volau);
-		g.setVolCapRatios();
-        g.applyVdfIntegrals();
+		nh.setVolau(volau);
+		nh.setVolCapRatios();
+        nh.applyVdfIntegrals();
 
-        return( g.getSumOfVdfIntegrals() );
+        return( nh.getSumOfVdfIntegrals() );
     }
 
 
@@ -373,7 +387,7 @@ public class FW {
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
         logger.info ("starting FW.ofGap()" + myDateString);
  
-		double[] totAonFlow = new double[g.getLinkCount()];
+		double[] totAonFlow = new double[numLinks];
         
 		// sum total flow over all user classes for each link 
 		for (int k=0; k < volau.length; k++) {
@@ -385,17 +399,13 @@ public class FW {
 			}
 		}
         
-		g.setVolau(volau);
-		g.applyVdfs();
-		double[] cTime = g.getCongestedTime();
+		nh.setVolau(volau);
+		nh.applyVdfs();
+		double[] cTime = nh.getCongestedTime();
 		
 		double gap = 0.0;
-//		int dummy = 0;
 		for (int k=0; k < volau.length; k++) {
             if ( validLinks[k] ) {
-//            	if ( !( isValidDoubleValue(cTime[k]) && isValidDoubleValue(totAonFlow[k]) && isValidDoubleValue(volau[k]) ) ) {
-//            		dummy = 1;
-//            	}
             	gap += cTime[k]*(totAonFlow[k] - volau[k]);
             }
 		}
@@ -409,8 +419,8 @@ public class FW {
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
         logger.info ("starting FW.bisectGap()" + myDateString);
  
-		double[] totAonFlow = new double[g.getLinkCount()];
-		double[] totalFlow = new double[g.getLinkCount()];
+		double[] totAonFlow = new double[numLinks];
+		double[] totalFlow = new double[numLinks];
         
 		// sum total flow over all user classes for each link 
 		for (int k=0; k < totalFlow.length; k++) {
@@ -424,9 +434,9 @@ public class FW {
 			volau[k] = totalFlow[k] + x*(totAonFlow[k] - totalFlow[k]);
 		}
         
-		g.setVolau(volau);
-		g.applyVdfs();
-		double[] cTime = g.getCongestedTime();
+		nh.setVolau(volau);
+		nh.applyVdfs();
+		double[] cTime = nh.getCongestedTime();
 
         double gap = 0.0;
 		for (int k=0; k < cTime.length; k++)
@@ -442,7 +452,7 @@ public class FW {
         
         double totalVol;
         double[][] volumeSum = new double[numAutoClasses][Constants.MAX_LINK_TYPE];
-        char[] autoClasses = g.getUserClasses();
+        char[] autoClasses = nh.getUserClasses();
 
         for (int k=0; k < linkType.length; k++)
             for (int m=0; m < numAutoClasses; m++)
@@ -485,7 +495,7 @@ public class FW {
 			try{
 			    
 			    int numElements = maxFwIters*lastOriginTaz*numAutoClasses;
-			    int maxElementSize = SIZEOF_INT*(g.getNodeCount()+1) + 100;
+			    int maxElementSize = SIZEOF_INT*(nh.getNodeCount()+1) + 100;
 			    
 			    logger.info ("dimensions for paths DiskObjectArray: numElements=" + numElements + ", maxElementSize=" + maxElementSize );
 		
@@ -512,7 +522,7 @@ public class FW {
 			
 		// write the network and saved proportions to DiskObject files for subsequent select link analysis
 		if ( networkDiskObjectFile != null )
-		    DataWriter.writeDiskObject ( g, networkDiskObjectFile, "highwayNetwork_" + timePeriod );
+		    DataWriter.writeDiskObject ( nh, networkDiskObjectFile, "highwayNetwork_" + timePeriod );
 		
 		if ( proportionsDiskObjectFile != null )
 		    DataWriter.writeDiskObject ( fwFlowProps, proportionsDiskObjectFile, "fwProportions_" + timePeriod );

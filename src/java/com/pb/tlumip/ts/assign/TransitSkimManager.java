@@ -23,7 +23,8 @@ package com.pb.tlumip.ts.assign;
  */
 
 
-import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.OpStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
@@ -38,6 +39,7 @@ import com.pb.common.util.ResourceUtil;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.io.File;
 import java.text.DateFormat;
@@ -47,40 +49,54 @@ import org.apache.log4j.Logger;
 
 public class TransitSkimManager {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign");
+	protected static Logger logger = Logger.getLogger(TransitSkimManager.class);
 
+    static final boolean CREATE_NEW_NETWORK = true;
 	
-	static final boolean CREATE_NEW_NETWORK = true;
 	
-	
-	public static final String AUX_TRANSIT_NETWORK_LISTING = "c:\\jim\\tlumip\\aux_transit_net.listing";
-
-	float peakFactor;
-	float offPeakFactor;
-
-	AuxTrNet ag = null;	
+    AuxTrNet ag = null;
 	
 	HashMap tsPropertyMap = null;
     HashMap globalPropertyMap = null;
-
-
-	int MAX_ROUTES;
 	
 	
 	
-	public TransitSkimManager() {
+    public TransitSkimManager( String period, String walkAccessMode ) {
 
-		// get the items in the properties file
-		tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap ("ts" );
-        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap ("global" );
+        // default constructor used if object is created from an object that did not run an assignment first and dose not have a loaded highway network.
+        
+        
+        // get the items in the properties file
+        ResourceBundle appRb = ResourceUtil.getPropertyBundle( new File( "ts" ) );
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle( new File( "global" ) );
+        
+        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
-		peakFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
-		offPeakFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
-
-	}
+        
+        // generate a NetworkHandler object to use for skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        nh.setup( appRb, globalRb, period );
+        logger.info ("TransitSkimManager created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+        
+        // generate a transit network using the highway network just created
+        ag = getTransitNetwork( nh, period, walkAccessMode );
+        logger.info ("\nTransitSkimManager created  " + period + " " + walkAccessMode + " transit network.");
+        
+    }
     
-	
-	
+    
+    
+    public TransitSkimManager(AuxTrNet ag, ResourceBundle appRb, ResourceBundle globalRb) {
+
+        // get the items in the properties file
+        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap ( appRb );
+        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap ( globalRb );
+
+        this.ag = ag;
+    }
+    
+    
 	/*
 	 * return a peak period walk-transit skims Matrix[] including the following elements:
 	 * 
@@ -116,7 +132,7 @@ public class TransitSkimManager {
 		}
 		String[] skimFileNames = new String[variableList.size()];
 		for (int i=0; i < skimFileNames.length; i++)
-		skimFileNames[i] = (String)variableList.get(i);
+		    skimFileNames[i] = (String)variableList.get(i);
 
 		writeZipTransitSkims( "peak", "Walk", skimFileNames );
 	}
@@ -249,79 +265,86 @@ public class TransitSkimManager {
 	
 	
 	
+    private void writeZipTransitSkims ( String period, String accessMode, String[] transitSkimFileNames ) {
+        
+        // generate a set of output zip format peak walk transit skims
+        Matrix[] skims = getTransitSkims ( period, accessMode );
+        for (int i=0; i < skims.length; i++) {
+            MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP, new File(transitSkimFileNames[i]));
+            mw.writeMatrix( skims[i] );
+        }
+        
+    }
+        
 	private Matrix[] getTransitSkims ( String period, String accessMode ) {
         
-		
-		String diskObjectFileName = null;
-		
-		// create a new transit network from d211 highway network file and d221 transit routes file, or read it from DiskObject.
-		String key = period + accessMode + "TransitNetwork";
-		String path = (String) tsPropertyMap.get( "diskObject.pathName" );
-		if ( path.endsWith("/") || path.endsWith("\\") )
-		    diskObjectFileName = path + key + ".diskObject";
-		else
-		    diskObjectFileName = path + "/" + key + ".diskObject";
-		if ( CREATE_NEW_NETWORK ) {
-			ag = createTransitNetwork ( period, accessMode );
-			DataWriter.writeDiskObject ( ag, diskObjectFileName, key );
-		}
-		else {
-			ag = (AuxTrNet) DataReader.readDiskObject ( diskObjectFileName, key );
-		}
-
-		
-
-		
 		
 		// create an optimal strategy object for this highway and transit network
 		OpStrategy os = new OpStrategy( ag );
 
-		// generate the walk transit skims to zone 1 and print values in tabular report
-		int dest = 1;
-		if ( os.buildStrategy( dest ) >= 0 ) {
-		    
-			// compute skims for this O/D pair for use in stop/station choice
-			os.initSkims();
-			os.wtSkimsFromDest();
-
-//			for (int i=0; i < ag.getHighwayNodeCount(); i++)
-//				os.getOptimalStrategySkimsFromOrig(i);
-
-
-			os.printTransitSkimsTo ( dest );
-			
-		}
+//		// generate the walk transit skims to zone 1 and print values in tabular report
+//		int dest = 1;
+//		if ( os.buildStrategy( dest ) >= 0 ) {
+//		    
+//			// compute skims for this O/D pair for use in stop/station choice
+//			os.initSkims();
+//			os.wtSkimsFromDest();
+//
+////			for (int i=0; i < ag.getHighwayNodeCount(); i++)
+////				os.getOptimalStrategySkimsFromOrig(i);
+//
+//
+//			os.printTransitSkimsTo ( dest );
+//			
+//		}
 
 	
-		Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
+		//Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
 		
+        os.buildStrategy( 0 );
+        os.getOptimalStrategyWtSkimsFromOrig (12, 1);
 		
         
 		String myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("done with getTransitSkims(): " + myDateString);
 
-
-		return transitSkims;
+		return null;
+		//return transitSkims;
 	}
     
 
-	
-	private AuxTrNet createTransitNetwork ( String period, String accessMode ) {
+    private AuxTrNet getTransitNetwork( NetworkHandlerIF nh, String period, String accessMode ) {
         
-		long totalTime = 0;
-		long startTime = System.currentTimeMillis();
-		
-		float volumeFactor;
-		
-		if ( period.compareToIgnoreCase("peak") == 1 )
-			volumeFactor = peakFactor;
-		else
-			volumeFactor = offPeakFactor;
+        boolean create_new_network = CREATE_NEW_NETWORK;
 
-		// create a highway network oject
-		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
-		logger.info (g.getLinkCount() + " highway links");
-		logger.info (g.getNodeCount() + " highway nodes");
+        AuxTrNet ag = null; 
+        String diskObjectFileName = null;
+        
+        // create a new transit network from d211 highway network file and d221 transit routes file, or read it from DiskObject.
+        String key = period + accessMode + "TransitNetwork";
+        String path = (String) tsPropertyMap.get( "diskObject.pathName" );
+        if ( path.endsWith("/") || path.endsWith("\\") )
+            diskObjectFileName = path + key + ".diskObject";
+        else
+            diskObjectFileName = path + "/" + key + ".diskObject";
+        
+        if ( create_new_network ) {
+            ag = createTransitNetwork ( nh, period, accessMode );
+            DataWriter.writeDiskObject ( ag, diskObjectFileName, key );
+        }
+        else {
+            ag = (AuxTrNet) DataReader.readDiskObject ( diskObjectFileName, key );
+        }
+
+        return ag;
+        
+    }
+    
+    
+	private AuxTrNet createTransitNetwork ( NetworkHandlerIF nh, String period, String accessMode ) {
+        
+        logger.info (nh.getLinkCount() + " highway links");
+		logger.info (nh.getNodeCount() + " highway nodes");
 
 
 		// get the filenames for the peak and off-peak route files
@@ -330,24 +353,24 @@ public class TransitSkimManager {
 
 		
 		// read parameter for maximum number of transit routes
-		MAX_ROUTES = Integer.parseInt ( (String)tsPropertyMap.get("MAX_TRANSIT_ROUTES") );
+		int maxRoutes = Integer.parseInt ( (String)tsPropertyMap.get("MAX_TRANSIT_ROUTES") );
 
 		
 		
 		// create transit routes object with max 50 routes
-		TrRoute tr = new TrRoute (MAX_ROUTES);
+		TrRoute tr = new TrRoute (maxRoutes);
 
 		//read transit route info from Emme/2 for d221 file for the specified time period
 	    tr.readTransitRoutes ( period.equalsIgnoreCase("peak") ? d221PeakFile : d221OffPeakFile );
 		    
 
 		// associate transit segment node sequence with highway link indices
-		tr.getLinkIndices (g);
+		tr.getLinkIndices (nh.getNetwork());
 
 
 
 		// create an auxilliary transit network object
-		ag = new AuxTrNet(g.getLinkCount() + 3*tr.getTotalLinkCount() + 2*MAX_ROUTES, g, tr);
+		ag = new AuxTrNet(nh.getLinkCount() + 3*tr.getTotalLinkCount() + 2*maxRoutes, nh.getNetwork(), tr);
 
 		
 		// build the auxilliary links for the given transit routes object
@@ -366,17 +389,5 @@ public class TransitSkimManager {
 	}
     
 	
-	
-	private void writeZipTransitSkims ( String period, String accessMode, String[] transitSkimFileNames ) {
-	    
-		// generate a set of output zip format peak walk transit skims
-		Matrix[] skims = getTransitSkims ( period, accessMode );
-		for (int i=0; i < skims.length; i++) {
-			MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP, new File(transitSkimFileNames[i]));
-			mw.writeMatrix( skims[i] );
-		}
-		
-	}
-		
 	
 }

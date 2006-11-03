@@ -34,6 +34,7 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.ui.swing.MessageWindow;
 import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 
 
 
@@ -48,7 +49,7 @@ public class Skims {
 	boolean useMessageWindow = false;
 	
 
-    NetworkHandler g;
+    NetworkHandlerIF g;
     
 	int[] alphaNumberArray = null;
 	int[] betaNumberArray = null;
@@ -63,7 +64,7 @@ public class Skims {
     
     public Skims ( ResourceBundle tsRb, ResourceBundle globalRb, String timePeriod ) {
 
-        g = new NetworkHandler();
+        NetworkHandlerIF g = NetworkHandler.getInstance();
         g.setup( tsRb, globalRb, timePeriod );
 
         initSkims ();
@@ -71,7 +72,7 @@ public class Skims {
     }
 
 
-    public Skims ( NetworkHandler g, HashMap tsMap, HashMap globalMap ) {
+    public Skims ( NetworkHandlerIF g, HashMap tsMap, HashMap globalMap ) {
 
         this.g = g;
         this.tsPropertyMap = tsMap;

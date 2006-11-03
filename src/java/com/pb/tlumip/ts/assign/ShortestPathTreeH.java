@@ -19,8 +19,7 @@ package com.pb.tlumip.ts.assign;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
 
-import com.pb.common.util.*;
-import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 
 /**
  * Class for shortest path trees.
@@ -66,21 +65,21 @@ public class ShortestPathTreeH {
     int[] heapContents;
 
 
-    public ShortestPathTreeH ( NetworkHandler g ) {
+    public ShortestPathTreeH ( NetworkHandlerIF nh ) {
 
-        numNodes = g.getNodeCount();
-        numZones = g.getNumCentroids();
+        numNodes = nh.getNodeCount();
+        numZones = nh.getNumCentroids();
         
 		// store network fields in local arrays
-		ia = g.getIa();
-		ib = g.getIb();
-		ip = g.getIpa();
-		sortedLinkIndex = g.getSortedLinkIndexA();
-		indexNode = g.getIndexNode();
-		nodeIndex = g.getNodeIndex();
-		centroid = g.getCentroid();
+		ia = nh.getIa();
+		ib = nh.getIb();
+		ip = nh.getIpa();
+		sortedLinkIndex = nh.getSortedLinkIndexA();
+		indexNode = nh.getIndexNode();
+		nodeIndex = nh.getNodeIndex();
+		centroid = nh.getCentroid();
 		
-		aonFlow = new double[g.getLinkCount()];
+		aonFlow = new double[nh.getLinkCount()];
         
         nodeLabeled = new int[numNodes+1];
         nodeLabels = new double[numNodes+1];

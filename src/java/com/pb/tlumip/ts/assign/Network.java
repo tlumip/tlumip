@@ -815,19 +815,28 @@ public class Network implements Serializable {
 		
 	public void applyVdfs () {
 		
-			double[] results = fdLc.solve(validLinks);
-			
-			for (int i=0 ; i < results.length; i++) {
-				if ( validLinks[i] && (results[i] < 0 || results[i] == Double.NaN) ) {
-					logger.error ( "invalid result in Network.applyVdfs(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
-					logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
-					System.exit(-1);
-				}
-			}
-				
-			linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
-
+        double[] congestedTime = (double[])linkTable.getColumnAsDouble( "congestedTime" );
+        
+		double[] results = fdLc.solve(validLinks);
+		
+		for (int i=0 ; i < results.length; i++) {
+            // if link calculater returns a negative or NaN result for a valid link, report the error
+            if ( validLinks[i] ) {
+                if ( results[i] < 0 || results[i] == Double.NaN ) {
+                    logger.error ( "invalid result in Network.applyVdfs(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
+                    logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
+                    System.exit(-1);
+                }
+            }
+            // use the default travel times calcualted for non-valid links.  A non-valid link might be a bus-only link that's not included in highway assignment network, for example.
+            else {
+                results[i] = congestedTime[i];
+            }
 		}
+			
+		linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
+
+	}
 		
 		
 		
@@ -836,11 +845,18 @@ public class Network implements Serializable {
 		double[] results = fdiLc.solve(validLinks);
 		
 		for (int i=0 ; i < results.length; i++) {
-			if ( validLinks[i] && results[i] == Double.NaN ) {
-				logger.error ( "invalid result in Network.applyVdfIntegrals(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
-				logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
-				System.exit(-1);
+            // if link calculater returns a negative or NaN result for a valid link, report the error
+            if ( validLinks[i] ) {
+                if ( results[i] == Double.NaN ) {
+                    logger.error ( "invalid result in Network.applyVdfIntegrals(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
+                    logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
+                    System.exit(-1);
+                }
 			}
+            // the integral of a non-valid link is the constant, default time times the highway flow, which is zero, so the result is 0. 
+            else {
+                results[i] = 0.0;
+            }
 		}
 			
 		linkTable.setColumnAsDouble( linkTable.getColumnPosition("vdfIntegral"), results );
