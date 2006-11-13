@@ -302,8 +302,12 @@ public class TransitSkimManager {
 		//Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
 		
         os.buildStrategy( 0 );
+
         os.getOptimalStrategyWtSkimsFromOrig (12, 1);
 		
+        os.initSkims();
+        os.wtSkimsFromDest();
+        
         
 		String myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("done with getTransitSkims(): " + myDateString);
