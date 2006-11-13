@@ -25,7 +25,11 @@ import com.pb.common.util.IndexSort;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
@@ -69,7 +73,7 @@ public class OpStrategy {
 
 //	int orig, dest;
 	double[] nodeLabel, nodeFreq, linkLabel;
-	boolean[] tested, inStrategy;
+	boolean[] inStrategy;
 	int[] orderInStrategy;
 	int[] strategyOrderForLink;
 	
@@ -110,7 +114,6 @@ public class OpStrategy {
 		nodeLabel = new double[ag.getAuxNodeCount()+1];
 		nodeFreq = new double[ag.getAuxNodeCount()+1];
 		linkLabel = new double[ag.getAuxLinkCount()+1];
-		tested = new boolean[ag.getAuxLinkCount()+1];
 		inStrategy = new boolean[ag.getAuxLinkCount()+1];
 		orderInStrategy = new int[ag.getAuxLinkCount()+1];
 		strategyOrderForLink = new int[ag.getAuxLinkCount()+1];
@@ -127,7 +130,8 @@ public class OpStrategy {
 		nodeBoardings = new double[ag.getAuxNodeCount()+1];
 
 		//Create a new heap structure to sort candidate node labels
-		candidateHeap = new Heap(ag.getAuxNodeCount()+1);
+        //candidateHeap = new Heap(ag.getAuxNodeCount()+1);  // old Heap 
+        candidateHeap = new Heap( ag.getAuxLinkCount() ); // new SortedSet
 		heapContents = new int[ag.getAuxNodeCount()+1];
 
 		
@@ -147,7 +151,6 @@ public class OpStrategy {
 		Arrays.fill(nodeFlow, 0.0);
 		Arrays.fill(nodeFreq, 0.0);
 		Arrays.fill(linkLabel, 0.0);
-		Arrays.fill(tested, false);
 		Arrays.fill(inStrategy, false);
 		Arrays.fill(orderInStrategy, 0);
 		Arrays.fill(strategyOrderForLink, -1);
@@ -202,7 +205,7 @@ public class OpStrategy {
 		int j, k, m, start, end;
         
 //        boolean debug = classDebug;
-        boolean debug = true;
+        boolean debug = false;
 		
 		double linkImped = 0.0;
 
@@ -228,22 +231,33 @@ public class OpStrategy {
 		if (debug)
 		    logger.info ("building optimal strategy to " + dest + "(" + indexNode[dest] + ")");
 		
-		while ((k = candidateHeap.remove()) != -1) {
+        int size = candidateHeap.size();
+        
+        int dummy = 0;
+        //while ((k = candidateHeap.remove()) != -1) {  //old Heap
+        while ( candidateHeap.size() > 0 ) {
 
-            int dummy = 0;
+            HeapElement he = candidateHeap.getFirst();
+            k = he.getIndex();
+            
+            size = candidateHeap.size();
+            
             if ( ag.ia[k] == 17219 ) {
-                dummy = 1;
+                if ( dummy == 0 ) {
+                    dummy = 1;
+                    //candidateHeap.dataPrintSorted();
+                }
             }
             
             if ( ag.ib[k] == 17219 ) {
-                dummy = 1;
+                if ( dummy == 1 ) {
+                    dummy = 2;
+                }
             }
             
             
-            if (!tested[k] && ag.ia[k] != dest) {
+            if (ag.ia[k] != dest && !inStrategy[k]) {
 
-                tested[k] = true;
-                
     			// do not include links into centroids in strategy unless its going into dest.
     			if ( ag.ib[k] < g.getNumCentroids() && ag.ib[k] != dest ) {
     				inStrategy[k] = false;
@@ -305,10 +319,13 @@ public class OpStrategy {
 								ag.dwellTime[k-1] = 0;
 							
 						}
-						
+
+                        if ( inStrategy[k] == true ) {
+                            dummy = 2;
+                        }
 						inStrategy[k] = true;
 						strategyOrderForLink[k] = inStrategyCount;
-						orderInStrategy[inStrategyCount++] = k;
+                        orderInStrategy[inStrategyCount++] = k;
 						updateEnteringLabels(ag.ia[k]);
 
 					}
@@ -327,11 +344,12 @@ public class OpStrategy {
 							// at least one transit boarding link from the current node exists in optimal strategy
 							nodeLabel[ag.ia[k]] = (nodeFreq[ag.ia[k]]*nodeLabel[ag.ia[k]] + ag.freq[k]*(nodeLabel[ag.ib[k]] + linkImped))/(nodeFreq[ag.ia[k]] + ag.freq[k]);
 							nodeFreq[ag.ia[k]] += ag.freq[k];
-							
-                            // use heap.add() to insert the relabelled node at the end and allow it to percolate to the right position.
-                            candidateHeap.add(k);
-						}
+
+                        }
 						
+                        if ( inStrategy[k] == true ) {
+                            dummy = 2;
+                        }
 						inStrategy[k] = true;
 						strategyOrderForLink[k] = inStrategyCount;
 						orderInStrategy[inStrategyCount++] = k;
@@ -343,6 +361,9 @@ public class OpStrategy {
 						
 						nodeLabel[ag.ia[k]] = nodeLabel[ag.ib[k]] + linkImped;
 
+                        if ( inStrategy[k] == true ) {
+                            dummy = 2;
+                        }
 						inStrategy[k] = true;
 						strategyOrderForLink[k] = inStrategyCount;
 						orderInStrategy[inStrategyCount++] = k;
@@ -373,7 +394,9 @@ public class OpStrategy {
 				}
 				
 			}
-			
+
+            size = candidateHeap.size();
+
 		} // end of while heap not empty
 
 		return 0;
@@ -427,8 +450,8 @@ public class OpStrategy {
 
 		int i, j, k, m;
 		int start, end;
-//		boolean debug = classDebug;
-      boolean debug = true;
+		boolean debug = classDebug;
+//      boolean debug = true;
 		double linkImped = 0.0;
 
 		if (debug) {
@@ -473,12 +496,17 @@ public class OpStrategy {
 
 			if (debug)
 				logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + ag.linkType[k] + ", ia=" + ag.ia[k] + "(" + indexNode[gia[m]] + "), ib=" + ag.ib[k] + "(" + indexNode[gib[m]] + "), linkLabel[k]=" + String.format("%15.6f", linkLabel[k]) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] + ", linkImped=" + linkImped);
+
+            HeapElement he = new HeapElement(k, ag.linkType[k], linkLabel[k]);
             
-			candidateHeap.add(k);
+            if ( candidateHeap.contains(k))
+                candidateHeap.remove(he);
+            
+			candidateHeap.add(he);
 
 		}
 
-		if (debug) candidateHeap.dataPrintSorted();
+        if (debug) candidateHeap.dataPrintSorted();
 			
 		return 0;
 	}
@@ -498,6 +526,9 @@ public class OpStrategy {
 //		boolean debug = true;
 
 
+        int savedK = 0;
+        int savedM = 0;
+        
 		for (i=0; i < inStrategyCount; i++) {
 			
 			// get the transit network link index associated with the ith entry in the optimal strategy
@@ -510,7 +541,11 @@ public class OpStrategy {
 			ib = ag.ib[k];
 
 			
-
+			if ( indexNode[gia[m]] == 12 && indexNode[gib[m]] == 24960 ) {
+                savedK = k;
+                savedM = m;
+            }
+            
 			if (debug) {
 				logger.info ("");
 				logger.info ("=====================================================================================================");
@@ -530,11 +565,12 @@ public class OpStrategy {
 
 
 			if (first[ia]) {
-			    if (nodeFreq[ia] == AuxTrNet.INFINITY) {
+                //if (nodeFreq[ia] == AuxTrNet.INFINITY) {
+                if (nodeFreq[ia] == 0.0) {
 			        if (ag.freq[k] == AuxTrNet.INFINITY) {
 			            nodeEgrWalkTime[ia]   = nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0);
 			            nodeTotWalkTime[ia]   = nodeTotWalkTime[ib]   + ag.walkTime[k];
-			            nodeTotalWaitTime[ia] = nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0) + ag.layoverTime[k];
+			            nodeTotalWaitTime[ia] = nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? AuxTrNet.WAIT_COEFF/ag.freq[k] : 0) + ag.layoverTime[k];
 			            nodeCost[ia]          = nodeCost[ib]          + ag.cost[k];
 			            nodeInVehTime[ia]     = nodeInVehTime[ib]     + ag.invTime[k];
 			            nodeAccWalkTime[ia]   = nodeAccWalkTime[ib]   + ag.walkTime[k];
@@ -555,7 +591,7 @@ public class OpStrategy {
 			    else {
 			        nodeEgrWalkTime[ia]   = ag.freq[k]*(nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0)) / nodeFreq[ia];
 			        nodeTotWalkTime[ia]   = ag.freq[k]*(nodeTotWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
-			        nodeTotalWaitTime[ia] = ag.freq[k]*(nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0) + ag.layoverTime[k])    / nodeFreq[ia];
+			        nodeTotalWaitTime[ia] = ag.freq[k]*(nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? AuxTrNet.WAIT_COEFF/ag.freq[k] : 0) + ag.layoverTime[k])    / nodeFreq[ia];
 			        nodeCost[ia]          = ag.freq[k]*(nodeCost[ib]          + ag.cost[k])                                    / nodeFreq[ia];
 			        nodeInVehTime[ia]     = ag.freq[k]*(nodeInVehTime[ib]     + ag.invTime[k])                                 / nodeFreq[ia];
 			        nodeAccWalkTime[ia]   = ag.freq[k]*(nodeAccWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
@@ -568,7 +604,7 @@ public class OpStrategy {
 			        if (ag.freq[k] == AuxTrNet.INFINITY) {
 			            nodeEgrWalkTime[ia]   += nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0);
 			            nodeTotWalkTime[ia]   += nodeTotWalkTime[ib]   + ag.walkTime[k];
-			            nodeTotalWaitTime[ia] += nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0) + ag.layoverTime[k];
+			            nodeTotalWaitTime[ia] += nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? AuxTrNet.WAIT_COEFF/ag.freq[k] : 0) + ag.layoverTime[k];
 			            nodeCost[ia]          += nodeCost[ib]          + ag.cost[k];
 			            nodeInVehTime[ia]     += nodeInVehTime[ib]     + ag.invTime[k];
 			            nodeAccWalkTime[ia]   += nodeAccWalkTime[ib]   + ag.walkTime[k];
@@ -578,7 +614,7 @@ public class OpStrategy {
 			    else {
 			        nodeEgrWalkTime[ia]   += ag.freq[k]*(nodeEgrWalkTime[ib]   + (nodeBoardings[ib] == 0 ? ag.walkTime[k] : 0)) / nodeFreq[ia];
 			        nodeTotWalkTime[ia]   += ag.freq[k]*(nodeTotWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
-			        nodeTotalWaitTime[ia] += ag.freq[k]*(nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? 1.0/ag.freq[k] : 0) + ag.layoverTime[k])    / nodeFreq[ia];
+			        nodeTotalWaitTime[ia] += ag.freq[k]*(nodeTotalWaitTime[ib] + (ag.linkType[k] == 0 ? AuxTrNet.WAIT_COEFF/ag.freq[k] : 0) + ag.layoverTime[k])    / nodeFreq[ia];
 			        nodeCost[ia]          += ag.freq[k]*(nodeCost[ib]          + ag.cost[k])                                    / nodeFreq[ia];
 		          	nodeInVehTime[ia]     += ag.freq[k]*(nodeInVehTime[ib]     + ag.invTime[k])                                 / nodeFreq[ia];
 		          	nodeAccWalkTime[ia]   += ag.freq[k]*(nodeAccWalkTime[ib]   + ag.walkTime[k])                                / nodeFreq[ia];
@@ -612,6 +648,14 @@ public class OpStrategy {
 
 		}
 
+        k = savedK;
+        m = savedM;
+
+        ia = ag.ia[k];
+        ib = ag.ib[k];
+
+        i = 0;
+        
 	}
 
 
@@ -756,7 +800,6 @@ public class OpStrategy {
             k = orderInStrategy[i];
             m = ag.hwyLink[k];
             
-            
             int dummy = 0;
             if ( indexNode[gia[m]] == 24609 && indexNode[gib[m]] == 24969 ) {
                 if ( ag.linkType[k] == 0 ) {
@@ -772,8 +815,10 @@ public class OpStrategy {
                     dummy = 1;
                 }
             }
-            
+
+
             if (nodeFlow[ag.ia[k]] > 0.0) {
+
                 
                 if ( ag.linkType[k] == AuxTrNet.BOARDING_TYPE ) {
                     flow = (ag.freq[k]/nodeFreq[ag.ia[k]])*nodeFlow[ag.ia[k]];
@@ -792,7 +837,7 @@ public class OpStrategy {
                     }
                 }
                 
-                logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + ag.trRoute[k] + ", ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", ag.waitTime=" + ag.waitTime[k] + ", ag.flow[k]=" + ag.flow[k] + ", nodeLabel[ag.ia[k]]=" + nodeLabel[ag.ia[k]] + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] + ", ag.freq[k]=" + ag.freq[k] + ", nodeFlow[ag.ia[k]]=" + nodeFlow[ag.ia[k]] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ag.ib[k]] );
+                //logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + ag.trRoute[k] + ", ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", ag.waitTime=" + ag.waitTime[k] + ", ag.flow[k]=" + ag.flow[k] + ", nodeLabel[ag.ia[k]]=" + nodeLabel[ag.ia[k]] + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] + ", ag.freq[k]=" + ag.freq[k] + ", nodeFlow[ag.ia[k]]=" + nodeFlow[ag.ia[k]] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ag.ib[k]] );
                 count++;
 
             }
@@ -823,8 +868,24 @@ public class OpStrategy {
             
             if (nodeFlow[ag.ia[k]] == 0.0)
                 continue;
+
+            int dummy = 0;
+            if ( indexNode[gia[m]] == 24609 && indexNode[gib[m]] == 24969 ) {
+                if ( ag.linkType[k] == 0 ) {
+                    dummy = 1;
+                }
+                else if ( ag.linkType[k] == 1 ) {
+                    dummy = 1;
+                }
+                else if ( ag.linkType[k] == 2 ) {
+                    dummy = 1;
+                }
+                else {
+                    dummy = 1;
+                }
+            }
             
-            logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + ag.trRoute[k] + ", ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", ag.waitTime=" + ag.waitTime[k] + ", ag.flow[k]=" + ag.flow[k] + ", nodeLabel[ag.ia[k]]=" + nodeLabel[ag.ia[k]] + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] );
+            //logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + ag.trRoute[k] + ", ag.ia=" + ag.ia[k] + ", ag.ib="  + ag.ib[k] + ", g.an=" + indexNode[gia[m]] + ", g.bn=" + indexNode[gib[m]] + ", ag.linkType=" + ag.linkType[k] + ", ag.walkTime=" + ag.walkTime[k] + ", ag.invTime=" + ag.invTime[k] + ", ag.waitTime=" + ag.waitTime[k] + ", ag.flow[k]=" + ag.flow[k] + ", nodeLabel[ag.ia[k]]=" + nodeLabel[ag.ia[k]] + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ag.ib[k]] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ag.ia[k]] );
             
             
             if ( ag.linkType[k] == AuxTrNet.BOARDING_TYPE ) {
@@ -1774,234 +1835,350 @@ public class OpStrategy {
 
 
 
-	/*-------------------- Inner class --------------------*/
+    
+    
 
-		public class Heap  {
+        // Inner classes
+    
+        public class HeapElement implements Comparable {
+            
+            int index;
+            int type;
+            double label;
+            
+            public HeapElement (int index, int type, double label) {
+                this.index = index;
+                this.type = type;
+                this.label = label;
+            }
+            
+            
+            public int compareTo(Object obj) {
+                
+                int returnValue = 0;
+                HeapElement el = (HeapElement)obj;
+                
+                if ( label > el.getLabel() )
+                    returnValue = 1;
+                else if ( label < el.getLabel() )
+                    returnValue = -1;
+                else {
+                    if ( type > el.getType() )
+                        returnValue = 1;
+                    else if ( type < el.getType() )
+                        returnValue = -1;
+                    else {
+                        if ( index > el.getIndex() )
+                            returnValue = 1;
+                        else if ( index < el.getIndex() )
+                            returnValue = -1;
+                    }
+                }
+                
+                return returnValue;
+            }
 
-			public static final boolean DEBUG = false;
-			static final double COMPARE_EPSILON = 1.0e-09;
+            public int getIndex() {
+                return index;
+            }
+            
+            public int getType() {
+                return type;
+            }
+            
+            public double getLabel() {
+                return label;
+            }
+            
+        }
+
+        
+        
+        public class Heap {
+            
+            boolean[] inHeap = null;
+            SortedSet elements = null;
+            
+            public Heap( int numLinks ) {
+                elements = new TreeSet();
+                inHeap = new boolean[numLinks];
+            }
+
+            public void clear() {
+                elements.clear();
+                Arrays.fill ( inHeap, false );
+            }
+
+            public int size() {
+                return elements.size();
+            }
+
+            public void add( HeapElement el ) {
+                int k = el.getIndex();
+                inHeap[k] = true;
+                elements.add(el);
+            }
+            
+            public boolean remove( HeapElement el ) {
+                int k = el.getIndex();
+                inHeap[k] = false;
+                return elements.remove(el);
+            }
+            
+            public boolean contains( int k ) {
+                return inHeap[k];
+            }
+            
+            public HeapElement getFirst() {
+                HeapElement el = (HeapElement)elements.first();
+                if ( el != null )
+                    remove(el);
+                return el;
+            }
+
+            public void dataPrintSorted() {
+
+                logger.info( "Heap contents sorted by linklabel" );
+                Iterator it = elements.iterator();
+
+                int i=0;
+                while ( it.hasNext() ) {
+                    HeapElement h = (HeapElement)it.next();
+                    int k = h.getIndex();
+                    int m = ag.hwyLink[k];
+                    logger.info ("i=" + (i++) + ",k=" + k + ", ag.ia[k]=" + ag.ia[k] + "(g.an=" + indexNode[gia[m]] + "), ag.ib[k]=" + ag.ib[k] + "(g.bn=" + indexNode[gib[m]] + "), linkType=" + ag.linkType[k] + ", Route=" + ag.trRoute[k] + ", linkLabel[k]=" + String.format("%10.6f", linkLabel[k]) );
+                }
+            }
+
+        }
 
 
-			private int size;
-			private int data[];
-			private int last;
+
+        /*-------------------- Inner class --------------------
+
+        public class Heap  {
+
+            public static final boolean DEBUG = false;
+            static final double COMPARE_EPSILON = 1.0e-09;
 
 
-			public Heap(int size) {
-//			if (DEBUG) {
-				System.out.println ("creating a heap of size " + (size) );
-				System.out.flush();
-//			}
-				data = new int[size];
-				last = -1;
-			}
+            private int size;
+            private int data[];
+            private int last;
 
 
-			public Heap(int initData[]) {
-			if (DEBUG) {
-				System.out.println ("creating a heap of size " + (initData.length) );
-				System.out.flush();
-			}
-				data = new int[initData.length];
-				for (int i = 0; i < initData.length; i++) {
-					data[i] = initData[i];
-				}
-				last = initData.length - 1;
-				heapify();
-			}
+            public Heap(int size) {
+//          if (DEBUG) {
+                System.out.println ("creating a heap of size " + (size) );
+                System.out.flush();
+//          }
+                data = new int[size];
+                last = -1;
+            }
 
 
-			public int peek() {
-				if (last == -1) return -1;   // no item left
-					return data[0];              // return element at top of heap
-			}
+            public Heap(int initData[]) {
+            if (DEBUG) {
+                System.out.println ("creating a heap of size " + (initData.length) );
+                System.out.flush();
+            }
+                data = new int[initData.length];
+                for (int i = 0; i < initData.length; i++) {
+                    data[i] = initData[i];
+                }
+                last = initData.length - 1;
+                heapify();
+            }
 
 
-			public void clear() {
-				last = -1;
+            public int peek() {
+                if (last == -1) return -1;   // no item left
+                    return data[0];              // return element at top of heap
+            }
+
+
+            public void clear() {
+                last = -1;
                 for (int i=0; i < heapContents.length; i++)
                     heapContents[i] = 0;
-			}
+            }
 
 
-			//Rearrange current data into a heap
-			public void heapify() {
-				for (int i = (last - 1) / 2; i >= 0; i--) {
-					percolateDown(i);
-				}
-			}
+            //Rearrange current data into a heap
+            public void heapify() {
+                for (int i = (last - 1) / 2; i >= 0; i--) {
+                    percolateDown(i);
+                }
+            }
 
 
-			public void add(int x) {
+            public void add(int x) {
 
-				int addIndex;
-				
-				int m = ag.hwyLink[x];
+                int addIndex;
+                
+                int m = ag.hwyLink[x];
                 if (DEBUG) logger.info("adding " + x + ", last=" + last + ", ag.ia[x]= " + ag.ia[x] +", g.an= " + indexNode[gia[m]] + ", ag.ib[x]= " + ag.ib[x] + ", g.bn= " + indexNode[gib[m]] + ", linkLabel[x]=" + linkLabel[x]);
       
 //                if (heapContents[ag.ia[x]] == 1) {
-//                	addIndex = -1;
-//    				for (int i = last; i >= 0; i--) {
-//    				    if ( ag.ia[data[i]] == ag.ia[x] ) {
-//    				    	addIndex = i;
-//    				    	break;
-//    				    }
-//    				}
+//                  addIndex = -1;
+//                  for (int i = last; i >= 0; i--) {
+//                      if ( ag.ia[data[i]] == ag.ia[x] ) {
+//                          addIndex = i;
+//                          break;
+//                      }
+//                  }
 //
-//    				if (addIndex < 0) {
-//        				// not in the heap any longer, so add it at end
-//	                	last++;
-//	                	addIndex = last;
-//	    				data[last] = x;
-//    				}
+//                  if (addIndex < 0) {
+//                      // not in the heap any longer, so add it at end
+//                      last++;
+//                      addIndex = last;
+//                      data[last] = x;
+//                  }
 //                }
 //                else {
-                	last++;
-                	addIndex = last;
-    				data[last] = x;
+                    last++;
+                    addIndex = last;
+                    data[last] = x;
 //                }
 
-				percolateUp(addIndex);
-//				heapContents[ag.ia[x]] = 1;
-				
-			}
+                percolateUp(addIndex);
+//              heapContents[ag.ia[x]] = 1;
+                
+            }
 
 
-			public int remove() {
-				if (last == -1) return -1;   // no item left
-				int min = data[0];           // remove element at top of heap
-				data[0] = data[last];        // move last element to top of heap
+            public int remove() {
+                if (last == -1) return -1;   // no item left
+                int min = data[0];           // remove element at top of heap
+                data[0] = data[last];        // move last element to top of heap
 
-				if (last == 0) {
-					last = -1;
-					if (DEBUG) {
-						System.out.println("remove " + min + ", last=" + last);
-						System.out.flush();
-					}
-					return min;
-				}
+                if (last == 0) {
+                    last = -1;
+                    if (DEBUG) {
+                        System.out.println("remove " + min + ", last=" + last);
+                        System.out.flush();
+                    }
+                    return min;
+                }
 
-				last--;                      // reduce heap size
-				percolateDown(0);            // move element at top down
+                last--;                      // reduce heap size
+                percolateDown(0);            // move element at top down
 
-				if (DEBUG) {
-					System.out.println("remove " + min + ", last=" + last);
-					System.out.flush();
-				}
-				return min;
-			}
+                if (DEBUG) {
+                    System.out.println("remove " + min + ", last=" + last);
+                    System.out.flush();
+                }
+                return min;
+            }
 
 
-    		/**
-    		 * remove element i from the heap. 
-    		 * 
-    		 */
-    		public int remove(int i) {
-    			if (last == -1) return -1;   // no item left
-    			int min = data[i];           // remove element at top of heap
-    			data[i] = data[last];        // move last element to top of heap
+            // remove element i from the heap. 
+            public int remove(int i) {
+                if (last == -1) return -1;   // no item left
+                int min = data[i];           // remove element at top of heap
+                data[i] = data[last];        // move last element to top of heap
     
-    			if (last == 0) {
-    				last = -1;
-    				if (DEBUG) logger.info("remove " + min + ", last=" + last);
-    				return min;
-    			}
+                if (last == 0) {
+                    last = -1;
+                    if (DEBUG) logger.info("remove " + min + ", last=" + last);
+                    return min;
+                }
     
-    			last--;                      // reduce heap size
-    			percolateDown(i);            // move element at top down
+                last--;                      // reduce heap size
+                percolateDown(i);            // move element at top down
     
-    			if (DEBUG) logger.info("remove " + min + ", last=" + last);
-    			return min;
-    		}
+                if (DEBUG) logger.info("remove " + min + ", last=" + last);
+                return min;
+            }
 
 
-			//Let element move up and settle
-			public void percolateUp(int idx) {
-				if (DEBUG) {
-					System.out.println("pu " + idx);
-					System.out.flush();
-				}
-				if (idx == 0) return;
-				int parentIdx = (idx - 1) / 2;
-				int k = data[idx];									// added
-				int kParent = data[parentIdx];			// added
-				if (linkLabel[k] - linkLabel[kParent] < -COMPARE_EPSILON) {			// added
-//					if (data[parentIdx] > data[idx]) {
-					if (DEBUG) {
-						System.out.println ("pu: first if true");
-						System.out.flush();
-					}
-					swap(parentIdx, idx);           // move larger parent down
-					percolateUp(parentIdx);
-				}
-				else if ((linkLabel[k] - linkLabel[kParent] <= COMPARE_EPSILON) && (ag.ia[k] <= ag.ia[kParent]) && (ag.ib[k] < ag.ib[kParent])) {			// added
-//					if (data[parentIdx] > data[idx]) {
-					if (DEBUG) {
-						System.out.println ("pu: first else if true");
-						System.out.flush();
-					}
-					swap(parentIdx, idx);           // move larger parent down
-					percolateUp(parentIdx);
-				}
-			}
+            //Let element move up and settle
+            public void percolateUp(int idx) {
+                if (DEBUG) {
+                    System.out.println("pu " + idx);
+                    System.out.flush();
+                }
+                if (idx == 0) return;
+                int parentIdx = (idx - 1) / 2;
+                int k = data[idx];                                  // added
+                int kParent = data[parentIdx];          // added
+                if (linkLabel[k] - linkLabel[kParent] < -COMPARE_EPSILON) {         // added
+//                  if (data[parentIdx] > data[idx]) {
+                    if (DEBUG) {
+                        System.out.println ("pu: first if true");
+                        System.out.flush();
+                    }
+                    swap(parentIdx, idx);           // move larger parent down
+                    percolateUp(parentIdx);
+                }
+                else if ((linkLabel[k] - linkLabel[kParent] <= COMPARE_EPSILON) && (ag.ia[k] <= ag.ia[kParent]) && (ag.ib[k] < ag.ib[kParent])) {           // added
+//                  if (data[parentIdx] > data[idx]) {
+                    if (DEBUG) {
+                        System.out.println ("pu: first else if true");
+                        System.out.flush();
+                    }
+                    swap(parentIdx, idx);           // move larger parent down
+                    percolateUp(parentIdx);
+                }
+            }
 
 
-			public void percolateDown(int idx) {
-				if (DEBUG) {
-					System.out.println("pd " + idx);
-					System.out.flush();
-				}
-				int childIdx = idx * 2 + 1;
-				if (childIdx > last) return;
-				int k = data[idx];									// added
-				int kChild = data[childIdx];				// added
-				int kChildp1 = data[childIdx+1];		// added
+            public void percolateDown(int idx) {
+                if (DEBUG) {
+                    System.out.println("pd " + idx);
+                    System.out.flush();
+                }
+                int childIdx = idx * 2 + 1;
+                if (childIdx > last) return;
+                int k = data[idx];                                  // added
+                int kChild = data[childIdx];                // added
+                int kChildp1 = data[childIdx+1];        // added
 
-				if ((childIdx + 1) <= last && (linkLabel[kChildp1] - linkLabel[kChild] < -COMPARE_EPSILON)) {			// added
-//					if (childIdx + 1 <= last && data[childIdx+1] < data[childIdx]) {
-					if (DEBUG) {
-						System.out.println ("pd: first if true");
-						System.out.flush();
-					}
-					childIdx = childIdx + 1;
-					kChild = data[childIdx];				// added
-				}
-				else if ((childIdx + 1) <= last && (linkLabel[kChildp1] - linkLabel[kChild] <= COMPARE_EPSILON) && (ag.ia[kChildp1] <= ag.ia[kChild]) && (ag.ib[kChildp1] < ag.ib[kChild])) {			// added
-//					if (childIdx + 1 <= last && data[childIdx+1] < data[childIdx]) {
-					if (DEBUG) {
-						System.out.println ("pd: first else if true, kChild=" + kChild + ", ag.ib[kChild]=" + ag.ib[kChild] + ", kChildp1=" + kChildp1 + ", ag.ib[kChildp1]=" + ag.ib[kChildp1]);
-						System.out.flush();
-					}
-					childIdx = childIdx + 1;
-					kChild = data[childIdx];				// added
-				}
+                if ((childIdx + 1) <= last && (linkLabel[kChildp1] - linkLabel[kChild] < -COMPARE_EPSILON)) {           // added
+//                  if (childIdx + 1 <= last && data[childIdx+1] < data[childIdx]) {
+                    if (DEBUG) {
+                        System.out.println ("pd: first if true");
+                        System.out.flush();
+                    }
+                    childIdx = childIdx + 1;
+                    kChild = data[childIdx];                // added
+                }
+                else if ((childIdx + 1) <= last && (linkLabel[kChildp1] - linkLabel[kChild] <= COMPARE_EPSILON) && (ag.ia[kChildp1] <= ag.ia[kChild]) && (ag.ib[kChildp1] < ag.ib[kChild])) {           // added
+//                  if (childIdx + 1 <= last && data[childIdx+1] < data[childIdx]) {
+                    if (DEBUG) {
+                        System.out.println ("pd: first else if true, kChild=" + kChild + ", ag.ib[kChild]=" + ag.ib[kChild] + ", kChildp1=" + kChildp1 + ", ag.ib[kChildp1]=" + ag.ib[kChildp1]);
+                        System.out.flush();
+                    }
+                    childIdx = childIdx + 1;
+                    kChild = data[childIdx];                // added
+                }
 
-				if (linkLabel[kChild] - linkLabel[k] < -COMPARE_EPSILON) {			// added
-//					if (data[idx] > data[childIdx]) {
-					if (DEBUG) {
-						System.out.println ("pd: second if true");
-						System.out.flush();
-					}
-					swap(idx, childIdx);
-					percolateDown(childIdx);
-				}
-				else if ((linkLabel[kChild] - linkLabel[k] <= COMPARE_EPSILON) && (ag.ia[kChild] <= ag.ia[k]) && (ag.ib[kChild] < ag.ib[k])) {			// added
-//					if (data[idx] > data[childIdx]) {
-					if (DEBUG) {
-						System.out.println ("pd: second else if true");
-						System.out.flush();
-					}
-					swap(idx, childIdx);
-					percolateDown(childIdx);
-				}
-			}
+                if (linkLabel[kChild] - linkLabel[k] < -COMPARE_EPSILON) {          // added
+//                  if (data[idx] > data[childIdx]) {
+                    if (DEBUG) {
+                        System.out.println ("pd: second if true");
+                        System.out.flush();
+                    }
+                    swap(idx, childIdx);
+                    percolateDown(childIdx);
+                }
+                else if ((linkLabel[kChild] - linkLabel[k] <= COMPARE_EPSILON) && (ag.ia[kChild] <= ag.ia[k]) && (ag.ib[kChild] < ag.ib[k])) {          // added
+//                  if (data[idx] > data[childIdx]) {
+                    if (DEBUG) {
+                        System.out.println ("pd: second else if true");
+                        System.out.flush();
+                    }
+                    swap(idx, childIdx);
+                    percolateDown(childIdx);
+                }
+            }
 
 
-			public void swap(int idx1, int idx2) {
-				int temp = data[idx1];
-				data[idx1] = data[idx2];
-				data[idx2] = temp;
-			}
+            public void swap(int idx1, int idx2) {
+                int temp = data[idx1];
+                data[idx1] = data[idx2];
+                data[idx2] = temp;
+            }
 
 
             //Print heap contents to console (not in sorted order)
@@ -2037,6 +2214,8 @@ public class OpStrategy {
                 }
             }
             
-		}
+        }
+
+*/
 
 }	
