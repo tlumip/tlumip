@@ -45,7 +45,7 @@ public class NetworkHandler implements NetworkHandlerIF {
     public static NetworkHandlerIF getInstance( String rpcConfigFile ) {
     
         // if false, remote method calls on networkHandler are made 
-        boolean localFlag = false;
+        boolean localFlag = true;
     
         //This method needs to be written
         //if (DafNode.getInstance().isHandlerLocal("networkHandler"))
@@ -131,6 +131,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getCongestedTime();
     }
 
+    public double[] getTransitTime () {
+        return g.getTransitTime();
+    }
+
     public double[] getDist () {
         return g.getDist();
     }
@@ -159,6 +163,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return 1;
     }
     
+    public double applyLinkTransitVdf (int hwyLinkIndex, int transitVdfIndex ) {
+        return g.applyLinkTransitVdf(hwyLinkIndex, transitVdfIndex);
+    }
+    
     public int applyVdfIntegrals () {
         g.applyVdfIntegrals();
         return 1;
@@ -177,8 +185,20 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getUserClasses();
     }
     
+    public String[] getMode () {
+        return g.getMode();
+    }
+
     public int[] getIndexNode () {
         return g.getIndexNode();
+    }
+    
+    public double[] getNodeX () {
+        return g.getNodeX();
+    }
+    
+    public double[] getNodeY () {
+        return g.getNodeY();
     }
     
     public int[] getIa() {
@@ -195,6 +215,10 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     public int[] getSortedLinkIndexA() {
         return g.getSortedLinkIndexA();
+    }
+
+    public double getWalkSpeed () {
+        return g.getWalkSpeed();
     }
 
     public int writeNetworkAttributes ( String fileName ) {

@@ -1,12 +1,13 @@
 package com.pb.tlumip.ts;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
 import com.pb.tlumip.ts.assign.Network;
 
 
-public interface NetworkHandlerIF {
+public interface NetworkHandlerIF extends Serializable {
 
     public Network getNetwork();
     public int getNumCentroids();
@@ -24,21 +25,27 @@ public interface NetworkHandlerIF {
     public int[] getLinkType ();
     public HashMap getAssignmentGroupMap();
     public double[] getCongestedTime ();
+    public double[] getTransitTime ();
     public double[] getDist ();
     public double[] setLinkGeneralizedCost ();
     public int setFlows (double[][] flow);
     public int setVolau (double[] volau);
     public int setVolCapRatios ();
+    public double applyLinkTransitVdf (int hwyLinkIndex, int transitVdfIndex );
     public int applyVdfs ();
     public int applyVdfIntegrals ();
     public double getSumOfVdfIntegrals ();
     public int logLinkTimeFreqs ();
     public char[] getUserClasses ();
+    public String[] getMode ();
     public int[] getIndexNode ();
+    public double[] getNodeX ();
+    public double[] getNodeY ();
     public int[] getIa();
     public int[] getIb();
     public int[] getIpa();
     public int[] getSortedLinkIndexA();
+    public double getWalkSpeed ();
     public int writeNetworkAttributes ( String fileName );
     public int checkForIsolatedLinks ();
     public int setup( String appPropertyName, String globalPropertyName, String assignmentPeriod );

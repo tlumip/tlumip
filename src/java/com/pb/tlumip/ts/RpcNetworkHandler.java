@@ -247,6 +247,18 @@ public class RpcNetworkHandler implements NetworkHandlerIF {
         return returnValue;
     }
 
+    public double[] getTransitTime () {
+        double[] returnValue = null;
+        try {
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getTransitTime", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+
     public double[] getCongestedTime () {
         double[] returnValue = null;
         try {
@@ -320,6 +332,22 @@ public class RpcNetworkHandler implements NetworkHandlerIF {
         return 1;
     }
     
+    public double applyLinkTransitVdf (int hwyLinkIndex, int transitVdfIndex ) {
+        double returnValue = 0.0;
+        try {
+            Vector params = new Vector();
+            params.add(hwyLinkIndex);
+            params.add(transitVdfIndex);
+            returnValue = (Double)rc.execute(HANDLER_NAME+".applyLinkTransitVdf", params);
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+    
+    
     public int applyVdfs () {
         try {
             rc.execute(HANDLER_NAME+".applyVdfs", new Vector());
@@ -389,7 +417,55 @@ public class RpcNetworkHandler implements NetworkHandlerIF {
         }
         return returnValue;
     }
-    
+
+    public String[] getMode () {
+        String[] returnValue = null;
+        try {
+            returnValue = (String[])rc.execute(HANDLER_NAME+".getMode", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+
+    public double[] getNodeX () {
+        double[] returnValue = null;
+        try {
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getNodeX", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+
+    public double[] getNodeY () {
+        double[] returnValue = null;
+        try {
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getNodeY", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+
+    public double getWalkSpeed () {
+        double returnValue = 0.0;
+        try {
+            returnValue = (Double)rc.execute(HANDLER_NAME+".getWalkSpeed", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+
     public int[] getIa() {
         int[] returnValue = null;
         try {
