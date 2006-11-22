@@ -24,6 +24,8 @@ package com.pb.tlumip.ts.assign.tests;
  */
 
 
+import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.OpStrategy;
@@ -74,6 +76,9 @@ public class AuxTrNetTest {
 	HashMap tsPropertyMap = null;
     HashMap globalPropertyMap = null;
 
+    ResourceBundle rb = null;
+    ResourceBundle globalRb = null;
+    
 	String d221PeakFile = null;
 	String d221OffPeakFile = null;
 	
@@ -86,10 +91,14 @@ public class AuxTrNetTest {
 	
 	
 	
-	public AuxTrNetTest( HashMap tsPropertyMap, HashMap globalPropertyMap ) {
-		
-		this.tsPropertyMap = tsPropertyMap;
-        this.globalPropertyMap = globalPropertyMap;
+	public AuxTrNetTest() {
+
+        rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
+        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+
+        globalRb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties") );
+        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
+        
 
 
 		// get the filenames for the peak and off-peak route files
@@ -163,14 +172,9 @@ public class AuxTrNetTest {
 		
 		
 		
-    	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/ts.properties") );
-    	HashMap propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-
-        ResourceBundle globalRb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/global.properties") );
-    	HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
     	logger.info ("building transit network");
-		AuxTrNetTest test = new AuxTrNetTest(propertyMap, globalPropertyMap);
+		AuxTrNetTest test = new AuxTrNetTest();
 		
 		/*
 		 * specify which period, accessmode and matrix element to view:
@@ -250,7 +254,7 @@ public class AuxTrNetTest {
 
 		int[] nodeIndex = ag.getHighwayNetworkNodeIndex();
 		os.buildStrategy( nodeIndex[END_NODE] );
-		os.getOptimalStrategyWtSkimsFromOrig( START_NODE, END_NODE );
+		os.getOptimalStrategyWtSkimsOrigDest( START_NODE, END_NODE );
 		System.exit(1);
 		
 		
@@ -330,9 +334,11 @@ public class AuxTrNetTest {
 		
 
 		// create a highway network oject
-		Network g = new Network( tsPropertyMap, globalPropertyMap, period );
-		logger.info (g.getLinkCount() + " highway links");
-		logger.info (g.getNodeCount() + " highway nodes");
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        nh.setup( rb, globalRb, period );
+        
+		logger.info (nh.getLinkCount() + " highway links");
+		logger.info (nh.getNodeCount() + " highway nodes");
 
 
 		// create transit routes object
@@ -343,12 +349,12 @@ public class AuxTrNetTest {
 		    
 
 		// associate transit segment node sequence with highway link indices
-		tr.getLinkIndices (g);
+		tr.getLinkIndices (nh.getNetwork());
 
 
 
 		// create an auxilliary transit network object
-		ag = new AuxTrNet(g.getLinkCount() + 3*tr.getTotalLinkCount() + 2*MAX_ROUTES, g, tr);
+		ag = new AuxTrNet(nh, tr);
 
 		
 		// build the auxilliary links for the given transit routes object

@@ -144,7 +144,7 @@ public class OpStrategyTest {
 		int[] nodeIndex = ag.getHighwayNetworkNodeIndex();
 		os.buildStrategy( nodeIndex[END_NODE] );
         
-		os.getOptimalStrategyWtSkimsFromOrig( START_NODE, END_NODE );
+		os.getOptimalStrategyWtSkimsOrigDest( START_NODE, END_NODE );
 		
 	}
     
@@ -189,7 +189,7 @@ public class OpStrategyTest {
 
 
 		// create an auxilliary transit network object
-        AuxTrNet ag = new AuxTrNet(nh.getLinkCount() + 3*tr.getTotalLinkCount() + 2*maxRoutes, nh.getNetwork(), tr);
+        AuxTrNet ag = new AuxTrNet(nh, tr);
 
 		// build the auxilliary links for the given transit routes object
 		ag.buildAuxTrNet ( accessMode );
