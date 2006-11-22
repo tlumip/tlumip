@@ -26,7 +26,7 @@ package com.pb.tlumip.ts.assign;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.transit.AuxTrNet;
-import com.pb.tlumip.ts.transit.OpStrategy;
+import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
 import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.DataWriter;
@@ -280,40 +280,16 @@ public class TransitSkimManager {
         
 		
 		// create an optimal strategy object for this highway and transit network
-		OpStrategy os = new OpStrategy( ag );
+		OptimalStrategy os = new OptimalStrategy( ag );
 
-//		// generate the walk transit skims to zone 1 and print values in tabular report
-//		int dest = 1;
-//		if ( os.buildStrategy( dest ) >= 0 ) {
-//		    
-//			// compute skims for this O/D pair for use in stop/station choice
-//			os.initSkims();
-//			os.wtSkimsFromDest();
-//
-////			for (int i=0; i < ag.getHighwayNodeCount(); i++)
-////				os.getOptimalStrategySkimsFromOrig(i);
-//
-//
-//			os.printTransitSkimsTo ( dest );
-//			
-//		}
-
-	
-		//Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
+        os.initSkimMatrices ( (String)globalPropertyMap.get("alpha2beta.file") );
+		Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
 		
-        os.buildStrategy( 0 );
-
-        os.getOptimalStrategyWtSkimsFromOrig (12, 1);
-		
-        os.initSkims();
-        os.wtSkimsFromDest();
-        
-        
 		String myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("done with getTransitSkims(): " + myDateString);
 
-		return null;
-		//return transitSkims;
+		return transitSkims;
+        
 	}
     
 
@@ -374,7 +350,7 @@ public class TransitSkimManager {
 
 
 		// create an auxilliary transit network object
-		ag = new AuxTrNet(nh.getLinkCount() + 3*tr.getTotalLinkCount() + 2*maxRoutes, nh.getNetwork(), tr);
+		ag = new AuxTrNet( nh, tr);
 
 		
 		// build the auxilliary links for the given transit routes object
