@@ -16,7 +16,8 @@
  */
 package com.pb.tlumip.ts.transit;
 
-import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.assign.ShortestPathTreeH;
 
 import com.pb.common.util.IndexSort;
 
@@ -27,6 +28,10 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 
@@ -36,7 +41,9 @@ public class AuxTrNet implements Serializable {
 
 	protected static transient Logger logger = Logger.getLogger( AuxTrNet.class );
 
-	public static final double INFINITY = 1.0e+30;
+    public static final double UNCONNECTED = 0.0;
+    public static final double INFINITY = 1.0e+30;
+    public static final double NEG_INFINITY = Float.NEGATIVE_INFINITY;
 	
 	public static final int BOARDING_TYPE = 0;
 	public static final int IN_VEHICLE_TYPE = 1;
@@ -48,9 +55,13 @@ public class AuxTrNet implements Serializable {
 
 	static final double ALPHA = 0.5;
 	static final double FARE = 0.75;
+    static final double TRANSFER_FARE = 0.25;
 
-	static final double MAX_WALK_ACCESS_DIST = 2.0;   // miles
+	static final double MAX_WALK_ACCESS_DIST = 1.0;   // miles
+    static final double MAX_DRIVE_ACCESS_DIST = 25.0; // miles
+    static final int MAX_DRIVE_ACCESS_LINKS = 3;
 
+  
 	// OVT_COEFF is used as both a scale variable and as a utility coefficient.
 	// It's value is assumed positive for use as a scale variable, and
 	// whenever it is used as a coefficient, the resulting value is subtracted from utility,
@@ -79,7 +90,7 @@ public class AuxTrNet implements Serializable {
 	static final double WALK_XFR_COEFF    	= 2.0;							//  1/min
 	static final double TRANSFER_COEFF		= 2.0;							//  1/xfrs
 
-	Network g;
+    NetworkHandlerIF nh = null;
 	TrRoute tr;
 
 	private int auxLinks, auxNodes;
@@ -102,27 +113,37 @@ public class AuxTrNet implements Serializable {
 	double[] driveAccTime;
 
 
+
 	int[] ipa;
 	int[] ipb;
 	int[] indexa;
 	int[] indexb;
 
 
+    boolean[] boardingNode;
+    
+    Set[] nodeRoutes = null;
+    
 	int[] indexNode;
 	int[] gia;
 	int[] gib;
 	String[] gMode;
-	double[] gDist;
+    double[] gNodeX;
+    double[] gNodeY;
+    double[] gDist;
 	double[] gCongestedTime;
 
 	ArrayList[] gSegs = null;
 	String accessMode = null;
+    String period = null;
 
 
+    
+	public AuxTrNet (NetworkHandlerIF nh, TrRoute tr) {
 
-	public AuxTrNet (int maxAuxLinks, Network g, TrRoute tr) {
-
-		logger.info ("maxAuxLinks =" + maxAuxLinks + " in AuxTrNet() constructor.");
+        int maxAuxLinks = 300000;
+//        int maxAuxLinks = nh.getLinkCount() + 3*tr.getTotalLinkCount() + 2*tr.getMaxRoutes();
+		logger.info ("maxAuxLinks = " + maxAuxLinks + " in AuxTrNet() constructor.");
 
 		hwyLink = new int[maxAuxLinks];
 		trRoute = new int[maxAuxLinks];
@@ -139,20 +160,27 @@ public class AuxTrNet implements Serializable {
 		flow = new double[maxAuxLinks];
 		driveAccTime = new double[maxAuxLinks];
 
-
-		gia = g.getIa();
-		gib = g.getIb();
-		gMode = g.getMode();
-		indexNode = g.getIndexNode();
-		gDist = g.getDist();
-		gCongestedTime = g.getTransitTime();
-		gSegs = new ArrayList[g.getLinkCount()];
+        boardingNode = new boolean[nh.getNodeCount()+1];
+        
+        nodeRoutes = new Set[nh.getNodeCount()+1];
+        
+        
+		gia = nh.getIa();
+		gib = nh.getIb();
+		gMode = nh.getMode();
+		indexNode = nh.getIndexNode();
+        gNodeX = nh.getNodeX();
+        gNodeY = nh.getNodeY();
+		gDist = nh.getDist();
+		gCongestedTime = nh.getTransitTime();
+		gSegs = new ArrayList[nh.getLinkCount()];
 		
 		for (int i=0; i < gSegs.length; i++)
 			gSegs[i] = new ArrayList();
 		
-		this.g = g;
+        this.nh = nh;
 		this.tr = tr;
+        this.period = nh.getTimePeriod();
 	}
 
 
@@ -164,7 +192,7 @@ public class AuxTrNet implements Serializable {
 		TrSegment tsNext;
 		boolean debug = false;
 
-		int aux;
+		int aux = 0;
 		int nextNode;
 		int startNode;
 		int startAuxNode;
@@ -172,13 +200,8 @@ public class AuxTrNet implements Serializable {
 		int bnode=0;
 
 
-		// add walk links first
-		aux = getAccessLinks( accessMode );
-		logger.info ( aux + " " + accessMode + " access links added.");
-
-
-		// now add auxiliary transit links
-		nextNode = g.getNodeCount() + 1;
+		// add boarding, in-vehicle, and alighting transit links for each link in a transit route
+		nextNode = nh.getNodeCount() + 1;
 		for (int rte=0; rte < tr.getLineCount(); rte++) {
 			ts = (TrSegment)tr.transitPath[rte].get(0);
 			startNode = gia[ts.link];
@@ -221,6 +244,10 @@ public class AuxTrNet implements Serializable {
 				        if (ts.board) {
 				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
 				           	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte);
+                            if ( nodeRoutes[anode] == null )
+                                nodeRoutes[anode] = new HashSet();
+                            nodeRoutes[anode].add(rte);
+                            boardingNode[anode] = true;
 				        }
 				        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
 				       	addAuxInVehicleLink (aux++, nextNode, ts, tsNext, tr.headway[rte], tr.speed[rte], rte);
@@ -246,10 +273,15 @@ public class AuxTrNet implements Serializable {
 			}
 		}
 
-		auxLinks = aux;
 		auxNodes = nextNode;
-		logger.info (auxLinks + " auxilliary transit links added.");
-		logger.info (auxNodes + " is max auxilliary transit node.");
+		logger.info (aux + " transit links added.");
+		logger.info (auxNodes + " is max transit node.");
+
+        // add walk links first
+        auxLinks =  getAccessLinks( accessMode, aux );
+        logger.info ( (auxLinks-aux) + " " + accessMode + " access and walk egress links added.");
+        logger.info ( auxLinks + " total transit and access links.");
+
 
 		resizeAuxNetLinkAttributes ();
 		
@@ -366,104 +398,229 @@ public class AuxTrNet implements Serializable {
 	}
 
 	
-	private int getAccessLinks ( String accessMode ) {
-	  
-	    // add auxilliary links (walk or drive access, and walk links) to transit network
-		int aux = 0;
-		for (int i=0; i < g.getLinkCount(); i++) {
-		    
-			if ( accessMode.equalsIgnoreCase("walk") ) {
+	private int getAccessLinks ( String accessMode, int aux ) {
 
-			    if ( (gia[i] >= g.getNumCentroids() && gib[i] >= g.getNumCentroids()) || gDist[i] > MAX_WALK_ACCESS_DIST || gMode[i].indexOf('w') >= 0 || gMode[i].indexOf('s') >= 0 ) {
-			        // not a walk access link
-			        continue;
-			    }
-				else {
-					hwyLink[aux] = i;
-					trRoute[aux] = -1;
-					ia[aux] = gia[i];
-					ib[aux] = gib[i];
-					freq[aux] = INFINITY;
-					cost[aux] = 0.0;
-					invTime[aux] = 0.0;
-					walkTime[aux] = g.getWalkTime( (float)gDist[i] );
-					driveAccTime[aux] = 0.0;
-					layoverTime[aux] = 0.0;
-					linkType[aux] = AUXILIARY_TYPE;
-					aux++;
-				}
-			
-			}
-			else if ( accessMode.equalsIgnoreCase("drive") ) {
+        Iterator it;
+        
+        ArrayList walkAccessLinkList = null;
+        ArrayList driveAccessLinkList = null;
 
-				if ( (gia[i] >= g.getNumCentroids() && gib[i] >= g.getNumCentroids()) || gMode[i].indexOf('w') >= 0 || gMode[i].indexOf('s') >= 0 || gMode[i].indexOf('p') >= 0 || gMode[i].indexOf('k') >= 0 ) {
-					// keep link only if it's a pnr, knr, or walk (but no walks at origin)
-					continue;
-				}
-				else {
-				    if (gia[i] < g.getNumCentroids() && gMode[i].indexOf('w') >= 0) {
-				        continue;
-				    }
-				    
-				    
-					hwyLink[aux] = i;
-					trRoute[aux] = -1;
-					ia[aux] = gia[i];
-					ib[aux] = gib[i];
-					freq[aux] = INFINITY;
-					cost[aux] = 0.0;
-					invTime[aux] = 0.0;
-					if (gMode[i].indexOf('w') >= 0) {
-					    walkTime[aux] = g.getWalkTime( (float)gDist[i] );
-					    driveAccTime[aux] = 0.0;
-					}
-					else {
-						walkTime[aux] = 0.0;
-					    driveAccTime[aux] = gCongestedTime[i];
-					}
-					layoverTime[aux] = 0.0;
-					linkType[aux] = AUXILIARY_TYPE;
-					aux++;
-				}
-			
-			}
-		}
-		
+        
+        // get walk access links no matter the accessMode.
+        walkAccessLinkList = getWalkAccessLinks();
+        
+        
+        // get drive access links if the accessMode is "drive".
+        if ( accessMode.equalsIgnoreCase("drive") )
+            driveAccessLinkList = getDriveAccessLinks();
+        
+        
+        // add the access links depending on value of accessMode.
+        if ( accessMode.equalsIgnoreCase("walk") ) {
+
+            it = walkAccessLinkList.iterator();
+            while ( it.hasNext() ) {
+                double[] linkInfo = (double[])it.next();
+        
+                hwyLink[aux] = -1;
+                trRoute[aux] = -1;
+                ia[aux] = (int)linkInfo[0];
+                ib[aux] = (int)linkInfo[1];
+                freq[aux] = INFINITY;
+                cost[aux] = 0.0;
+                invTime[aux] = 0.0;
+                walkTime[aux] = (float)(60.0*linkInfo[2]/nh.getWalkSpeed());
+                driveAccTime[aux] = 0.0;
+                layoverTime[aux] = 0.0;
+                linkType[aux] = AUXILIARY_TYPE;
+                aux++;
+        
+            }
+
+        }
+        else {
+        
+            it = driveAccessLinkList.iterator();
+            while ( it.hasNext() ) {
+                double[] linkInfo = (double[])it.next();
+        
+                hwyLink[aux] = -1;
+                trRoute[aux] = -1;
+                ia[aux] = (int)linkInfo[0];
+                ib[aux] = (int)linkInfo[1];
+                freq[aux] = INFINITY;
+                cost[aux] = 0.0;
+                invTime[aux] = 0.0;
+                walkTime[aux] = 0.0;
+                driveAccTime[aux] = (float)linkInfo[2];
+                layoverTime[aux] = 0.0;
+                linkType[aux] = AUXILIARY_TYPE;
+                aux++;
+        
+            }
+        }
+        
+            
+        // add the egress links which are walk for either accessMode.
+        it = walkAccessLinkList.iterator();
+        while ( it.hasNext() ) {
+            double[] linkInfo = (double[])it.next();
+
+            hwyLink[aux] = -1;
+            trRoute[aux] = -1;
+            ia[aux] = (int)linkInfo[1];
+            ib[aux] = (int)linkInfo[0];
+            freq[aux] = INFINITY;
+            cost[aux] = 0.0;
+            invTime[aux] = 0.0;
+            walkTime[aux] = (float)(60.0*linkInfo[2]/nh.getWalkSpeed());
+            driveAccTime[aux] = 0.0;
+            layoverTime[aux] = 0.0;
+            linkType[aux] = AUXILIARY_TYPE;
+            aux++;
+        }
+            
 		return aux;
-	}
-	
-	
-	
-//	private void calculateInVehicleTimes() {
-//		
-//		for (int i=0; i < gSegs.length; i++) {
-//			
-//			// if this link doesn't serve any transit routes, skip to next link
-//			if (gSegs[i].size() == 0)
-//				continue;
-//			
-//			
-//			// loop through the transit lines served by this link and accumualte travel time and headway
-//			double[] times = new double[gSegs[i].size()];
-//			double[] hdwys = new double[gSegs[i].size()];
-//			double totalTime = 0.0;
-//			double totalHeadway = 0.0;
-//			for (int j=0; j < gSegs[i].size(); j++) {
-//				Integer rteSeg = (Integer)gSegs[i].get(j);
-//				int rte = rteSeg.intValue()/1000;
-//				int seg = rteSeg.intValue() - 1000*rte;
-//				TrSegment ts = (TrSegment)tr.transitPath[rte].get(seg);
-//				times[j] = g.applyLinkTransitVdf( ts.link, ts.ttf );
-//				hdwys[j] = tr.getHeadway(rte);
-//				totalTime += times[j];
-//				totalHeadway += hdwys[j];
-//			}
-//
-//		}
-//		
-//	}
 
+    }
+	
+    
+	
+    private ArrayList getWalkAccessLinks() {
+        
+        ArrayList walkAccessLinkList = new ArrayList();
+        
+        // update the link costs based on current flows
+        double[] linkCost = gDist;
+        boolean[] validLinks = new boolean[nh.getLinkCount()];
 
+        // build shortest path tree object and set cost and valid link attributes for this user class.
+        ShortestPathTreeH sp = new ShortestPathTreeH( nh );
+        
+        // let any link in the network be used in shortest paths from origin to boarding nodes.
+        Arrays.fill(validLinks, true);
+        sp.setValidLinks( validLinks );
+        sp.setLinkCost( linkCost );
+
+        for (int origin=0; origin < nh.getNumCentroids(); origin++) {
+
+            Set connectedRoutes = new HashSet();
+
+            // build a shortest path tree from the origin and get a list of boarding nodes ordered by distance from origin and within walking distance or origin.
+            sp.buildTree ( origin );
+            ArrayList endPoints = sp.getNodesWithinCost ( MAX_WALK_ACCESS_DIST, boardingNode );
+            
+            
+            // get a list of node pairs (origin,bnode) with shortest path distances to bnode to use to create walk access links.
+            // the node pairs will only be selected for bnodes that serve different transit routes from previously selected node pairs.
+            Iterator it = endPoints.iterator();
+            while ( it.hasNext() ) {
+                // get the node info for nodes within walk distance (ia, cumDist).
+                double[] nodeInfo = (double[])it.next();
+
+                // add each element in nodeRoutes to connectedRoutes.  The add method will only add the element to the connectedRoute set if it isn't already contained.
+                int oldSize = connectedRoutes.size();
+                Iterator rt = nodeRoutes[(int)nodeInfo[0]].iterator();
+                while ( rt.hasNext() )
+                    connectedRoutes.add( rt.next() );
+                
+                // if the updated connectedRoutes set has increased in size, create new walk access links to this boarding node
+                if ( connectedRoutes.size() > oldSize ) {
+                    
+                    // make an array to hold ia, ib, dist for new walk access link, then store in ArrayList
+                    double[] linkList = new double[3];
+                    
+                    linkList[0] = origin;
+                    linkList[1] = nodeInfo[0];
+                    linkList[2] = nodeInfo[1];
+    
+                    walkAccessLinkList.add(linkList);
+                }
+
+            }
+
+        }
+
+        return walkAccessLinkList;
+    }
+    
+    
+    
+    private ArrayList getDriveAccessLinks() {
+        
+        ArrayList driveAccessLinkList = new ArrayList();
+        
+        // update the link costs based on current flows
+        double[] linkCost = gCongestedTime;
+        boolean[][] validLinksForClasses = nh.getValidLinksForAllClasses();
+
+        // use auto userclass (m=0) for building paths
+        int m = 0;
+
+        double avgSpeed = 20.0;
+        double increment = 3.0;
+        
+        // build shortest path tree object and set cost and valid link attributes for this user class.
+        ShortestPathTreeH sp = new ShortestPathTreeH( nh );
+        sp.setValidLinks( validLinksForClasses[m] );
+        sp.setLinkCost( linkCost );
+
+        for (int origin=0; origin < nh.getNumCentroids(); origin++) {
+
+            sp.buildTree ( origin );
+            
+            // we'll add 3 miles incrementally to MAX_WALK_ACCESS_DIST until the desired number of drive access links are found
+            double distanceIncrement = MAX_WALK_ACCESS_DIST + 3.0;
+            
+            // determine time bands based on incremental distances and an assumed average speed.
+            // we'll get nodes from the shortest congested drive time tree that are within this band
+            double minTime = 60.0*MAX_WALK_ACCESS_DIST/avgSpeed;
+            double maxTime = 60.0*distanceIncrement/avgSpeed;
+            
+            // add distance incrementally until at least MIN_DRIVE_ACCESS_LINKS drive access links are found or MAX_DRIVE_ACCESS_DIST is reached
+            ArrayList endPoints = sp.getNodesWithinCosts ( minTime, maxTime, boardingNode );
+            while ( endPoints.size() < MAX_DRIVE_ACCESS_LINKS  && distanceIncrement < MAX_DRIVE_ACCESS_DIST ) {
+                distanceIncrement += increment;
+                minTime = maxTime;
+                maxTime = 60.0*distanceIncrement/avgSpeed;
+                endPoints.addAll( sp.getNodesWithinCosts ( minTime, maxTime, boardingNode ) );
+            }
+
+            
+            // if no end points were found, not drive access links will be created for this origin zone
+            if ( endPoints.size() > 0 ) {
+            
+                // select MIN_DRIVE_ACCESS_LINKS drive access links randomly from the set available
+                int randomIndex;
+                Set indexSet = new HashSet();
+                while ( indexSet.size() < MAX_DRIVE_ACCESS_LINKS ) {
+                    
+                    randomIndex = (int)(Math.random()*endPoints.size());
+                    while ( indexSet.contains(randomIndex) )
+                        randomIndex = (int)(Math.random()*endPoints.size());
+                    indexSet.add(randomIndex);
+                    
+                    double[] nodeInfo = (double[])endPoints.get(randomIndex);
+    
+                    // make an array to hold ia, ib, dist for new walk access link, then store in ArrayList
+                    double[] linkList = new double[3];
+                    linkList[0] = origin;
+                    linkList[1] = nodeInfo[0];
+                    linkList[2] = nodeInfo[1];
+                    
+                    driveAccessLinkList.add(linkList);
+                }
+            
+            }
+            
+        }
+
+        return driveAccessLinkList;
+    }
+    
+    
+    
+    
 	public void printAuxTrLinks (int rte, TrRoute tr) {
 
 		int i, k, start=0, end;
@@ -537,8 +694,8 @@ public class AuxTrNet implements Serializable {
 					outI = -1;
 				
 				
-                out.format( "%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d%10s%10.2f%10.2f%10.2f%10.2f%10.2f\n",
-                        i, ia[i], ib[i], linkType[i], k, indexNode[gia[k]], indexNode[gib[k]], inB, outB, outI, trRoute[i], (freq[i] == INFINITY ? String.format("%10s", "Inf") : String.format("%10.2f", freq[i])), cost[i], invTime[i], walkTime[i], layoverTime[i], gCongestedTime[k] );
+                out.format( "%8d%8d%8d%8d%8d%8s%8s%8d%8d%8d%8d%10s%10.2f%10.2f%10.2f%10.2f%10s\n",
+                        i, ia[i], ib[i], linkType[i], k, (k >= 0 ? Integer.toString(indexNode[gia[k]]) : "accA"), (k >= 0 ? Integer.toString(indexNode[gib[k]]) : "accB"), inB, outB, outI, trRoute[i], (freq[i] == INFINITY ? String.format("%10s", "Inf") : String.format("%10.2f", freq[i])), cost[i], invTime[i], walkTime[i], layoverTime[i], (k >= 0 ? String.format("%10.2f", gCongestedTime[k]) : "acc time") );
 	  		}
 
 			out.close();
@@ -608,7 +765,7 @@ public class AuxTrNet implements Serializable {
 		waitTime[aux] = 0.0;
 		
 		if (ts.ttf > 0)
-			invTime[aux] = g.applyLinkTransitVdf( ts.link, ts.ttf );
+			invTime[aux] = nh.applyLinkTransitVdf( ts.link, ts.ttf );
 		else
 			invTime[aux] = (60.0*gDist[ts.link]/speed);
 		
@@ -714,7 +871,7 @@ public class AuxTrNet implements Serializable {
 	
 	double getMaxWalkAccessTime() {
 	// return time in minutes to walk the maximum walk access distance
-		return (60.0*(MAX_WALK_ACCESS_DIST/g.getWalkSpeed()));
+		return (60.0*(MAX_WALK_ACCESS_DIST/nh.getWalkSpeed()));
 	}
 
 	
@@ -734,25 +891,29 @@ public class AuxTrNet implements Serializable {
 
 
 	public int getHighwayNodeCount () {
-		return g.getNodeCount();
+		return nh.getNodeCount();
 	}
 
 
-	public Network getHighwayNetwork () {
-	    return this.g;
+	public NetworkHandlerIF getHighwayNetworkHandler () {
+	    return this.nh;
 	}
 
     public int[] getHighwayNetworkNodeIndex() {
-        return g.getNodeIndex();
+        return nh.getNodeIndex();
     }
     
     public int[] getHighwayNetworkIndexNode() {
-        return g.getIndexNode();
+        return nh.getIndexNode();
     }
     
-	public String getAccessMode() {
-	    return accessMode;
-	}
+    public String getAccessMode() {
+        return accessMode;
+    }
+
+    public String getTimePeriod() {
+        return period;
+    }
 
     public int getMaxRoutes() {
         return MAX_ROUTES;
