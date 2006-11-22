@@ -37,6 +37,7 @@ public class TrRoute implements Serializable {
 
 	protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.transit");
 
+    int maxRoutes=0;
 	int lineCount= -1, linkCount=0, totalLinkCount=0;
 	int an, bn;
 	String[] line, description;
@@ -66,7 +67,9 @@ public class TrRoute implements Serializable {
 			transitPath[i] = new ArrayList(500);
 		defaults = new ArrayList();
 		tdefaults = new ArrayList();
-	}
+
+        this.maxRoutes = maxRoutes;
+    }
 
 
 	void initDefaults () {
@@ -155,14 +158,13 @@ public class TrRoute implements Serializable {
 //				}
 //			}
 		} catch (Exception e) {
-		    System.out.println ("IO Exception caught reading transit route file: " + fileName + ", record number=" + recNumber);
-		    e.printStackTrace();
+		    logger.error ("IO Exception caught reading transit route file: " + fileName + ", record number=" + recNumber, e);
 		}
 
 		lineCount++;
- 		System.out.println (recNumber + " transit line file records read.");
- 		System.out.println (lineCount + " transit lines found.");
- 		System.out.println (totalLinkCount + " total transit links found in all transit routes.");
+ 		logger.info (recNumber + " transit line file records read.");
+        logger.info (lineCount + " transit lines found.");
+        logger.info (totalLinkCount + " total transit links found in all transit routes.\n");
   
     }
 
@@ -729,5 +731,9 @@ public class TrRoute implements Serializable {
 	public String getDescription(int rte) {
 		return description[rte].trim();
 	}
+    
+    public int getMaxRoutes() {
+        return this.maxRoutes;
+    }
 
 }
