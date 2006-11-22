@@ -103,9 +103,6 @@ public class TS {
     	multiclassEquilibriumHighwayAssignment ( nh, assignmentPeriod );
         logger.info("TS main - equilibrium assignment done\n\n");
 		
-    	// write the auto time and distance highway skim matrices to disk
-//    	writeHighwaySkimMatrices ( g, assignmentPeriod, 'a' );
-		
     	// if at some point in time we want to have truck specific highway skims,
     	// we'd create them here and would modify the the properties file to include
     	// class specific naming in skims file properties file keynames.  We'd also
@@ -472,7 +469,7 @@ public class TS {
 
 
         // create an auxilliary transit network object
-        AuxTrNet ag = new AuxTrNet(nh.getLinkCount() + 3*tr.getTotalLinkCount() + 2*maxRoutes, nh.getNetwork(), tr);
+        AuxTrNet ag = new AuxTrNet(nh, tr);
 
         // build the auxilliary links for the given transit routes object
         ag.buildAuxTrNet ( accessMode );
@@ -524,30 +521,36 @@ public class TS {
         String testPeriod = "peak";
         String testMode = "walk";
         
-        TS tsTest = new TS( ResourceBundle.getBundle("tsTest"), ResourceBundle.getBundle ("globalTest") );
+        TS tsTest = new TS( ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle (args[2]) );
 
         // generate a NetworkHandler object to use for assignments and skimming
-        NetworkHandlerIF nh = NetworkHandler.getInstance("/jim/util/runtime/31oct2006/ts.groovy");
+        NetworkHandlerIF nh = NetworkHandler.getInstance(args[0]);
 
+        // use the following when testing transit assignment without highway assignment:
+        tsTest.initializeHighwayAssignment ( nh, testPeriod );
+        logger.info("TS main - highway network initialized\n\n");
 
         // run peak highway assignment
-		tsTest.runHighwayAssignment( nh, testPeriod );
-        logger.info ("\ndone with " + testPeriod + " highway assignment.");
+		//tsTest.runHighwayAssignment( nh, testPeriod );
+        //logger.info ("\ndone with " + testPeriod + " highway assignment.");
 
+        // write the auto time and distance highway skim matrices to disk
+        //writeHighwaySkimMatrices ( g, assignmentPeriod, 'a' );
         
-//        // generate a transit network using the new assignment results
-//        AuxTrNet ag = tsTest.getTransitNetwork( nh, testPeriod, testMode );
-//        logger.info ("\ndone generating " + testPeriod + " transit network.");
-//        
-//        
-//        // generate transit skim matrices using the network flows generated in above assignment
-//        TransitSkimManager tsm = new TransitSkimManager( ag, tsTest.appRb, tsTest.globalRb );        
-//        tsm.writePeakWalkTransitSkims();
-//        logger.info ("\ndone writing " + testPeriod + " " + testMode + " transit skims files.");
-//        
-//
-//        tsTest.runTransitAssignment( nh, ag, "peak" );
-//        logger.info ("\ndone with " + testPeriod + " transit assignment.");
+        
+        // generate a transit network using the new assignment results
+        AuxTrNet ag = tsTest.getTransitNetwork( nh, testPeriod, testMode );
+        logger.info ("\ndone generating " + testPeriod + " transit network.");
+        
+        
+        // generate transit skim matrices using the network flows generated in above assignment
+        TransitSkimManager tsm = new TransitSkimManager( ag, tsTest.appRb, tsTest.globalRb );        
+        tsm.writePeakWalkTransitSkims();
+        logger.info ("\ndone writing " + testPeriod + " " + testMode + " transit skims files.");
+        
+
+        tsTest.runTransitAssignment( nh, ag, testPeriod );
+        logger.info ("\ndone with " + testPeriod + " transit assignment.");
         
         
 		logger.info ("\ndone with TS run.");
