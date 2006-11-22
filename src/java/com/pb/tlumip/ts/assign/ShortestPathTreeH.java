@@ -16,9 +16,11 @@
  */
 package com.pb.tlumip.ts.assign;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
 
+import com.pb.common.util.IndexSort;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 
 /**
@@ -349,6 +351,57 @@ public class ShortestPathTreeH {
 
     
     
+    // return an ArrayList of arrays containing (internal node id, shortest path cost), for links where one of the nodes has a nodeLabel
+    // less than the threshold value, and the node is valid.
+    public ArrayList getNodesWithinCost ( double costThreshold, boolean[] validNode ) {
+
+        ArrayList tempList = new ArrayList();
+        int[] tempData = new int[nodeLabels.length];
+        
+        int k = 0;
+        for (int i=0; i < nodeLabels.length; i++) {
+            if ( validNode[i] && nodeLabels[i] < costThreshold  ) {
+                double[] nodeData = new double[2];
+                nodeData[0] = i;
+                nodeData[1] = nodeLabels[i];
+                tempData[k++] = (int)nodeLabels[i]*100000;
+                tempList.add( nodeData );
+            }
+        }
+
+        int[] sortData = new int[k];
+        for (int i=0; i < k; i++)
+            sortData[i] = tempData[i];
+        
+        // sort the node list by node label and return a sorted ArrayList with nodes sorted by shortest path cost from origin 
+        int[] sortIndices = IndexSort.indexSort( sortData );
+        ArrayList nodeList = new ArrayList(k);
+        for (int i=0; i < tempList.size(); i++)
+            nodeList.add( tempList.get(sortIndices[i]));
+        
+        return nodeList;
+    }
+    
+    
+    // return an ArrayList of arrays containing (internal node id, shortest path cost), for links where one of the nodes has a nodeLabel
+    // greater than the min and less than the max threshold values, and the node is valid.
+    public ArrayList getNodesWithinCosts ( double minThreshold, double maxThreshold, boolean[] validNode ) {
+
+        ArrayList nodeList = new ArrayList();
+        
+        for (int i=0; i < nodeLabels.length; i++) {
+            if ( validNode[i] && nodeLabels[i] >= minThreshold && nodeLabels[i] < maxThreshold ) {
+                double[] nodeData = new double[2];
+                nodeData[0] = i;
+                nodeData[1] = nodeLabels[i];
+                nodeList.add( nodeData );
+            }
+        }
+
+        return nodeList;
+    }
+    
+    
     private float getTurnPenalty( int k, int predecessorLink ) {
         
         float penalty = 0.0f;
@@ -373,6 +426,7 @@ public class ShortestPathTreeH {
 
     /*-------------------- Inner class --------------------*/
 
+    
     public class Heap {
 
 
