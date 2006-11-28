@@ -31,6 +31,8 @@ import java.io.*;
 import java.text.DecimalFormat;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.datafile.CSVFileWriter;
+import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.ZipMatrixReader;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.AlphaToBeta;
@@ -48,6 +50,8 @@ public class FreightDemand3 {
     String outputPath;
     ResourceBundle ctRb;
     long outputRecordsWritten = 0L;
+    TableDataSet annualDemandTable = new TableDataSet();
+    AlphaToBeta a2b;
 
     FreightDemand3(ResourceBundle appRb, ResourceBundle globalRb, String ctInputs, String ctOutputs, long seed){
         //set the ctRb to the ct.properties resource bundle and get the smallest allowable tonnage from there.
@@ -57,7 +61,7 @@ public class FreightDemand3 {
         //from global.properties file we need the path to the alpha2beta file so that we can initialize the
         //highest beta zone number.
         File alpha2beta = new File(ResourceUtil.getProperty(globalRb,"alpha2beta.file"));
-        AlphaToBeta a2b = new AlphaToBeta(alpha2beta);
+        a2b = new AlphaToBeta(alpha2beta);
         HIGHEST_BETA_ZONE = a2b.getMaxBetaZone();
 
         this.inputPath = ctInputs;
@@ -279,6 +283,7 @@ public class FreightDemand3 {
       // store the demand matrices in semi-permanent file because we'll probably want to
       // create off-line queries and summaries later.
       writeWeeklyTons(c, m);
+      putIntoTableDataSet(commodityList[c], m);
     }
 
   }
@@ -303,6 +308,48 @@ public class FreightDemand3 {
       ds.close();
     } catch (IOException e) { e.printStackTrace(); }
   }
+  
+  public void writeWeeklyTons(){
+      CSVFileWriter writer = new CSVFileWriter();
+      try {
+        writer.writeFile(annualDemandTable, new File(outputPath+"AnnualDemandinTons.csv"));
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+  }
+  
+  private void putIntoTableDataSet(String commodity, Matrix2d m){
+      int[] betazones = a2b.getBetaExternals();
+      int nBetaZones = a2b.getNumBetaZones();
+      //define first 2 columns (i,j)
+      if(annualDemandTable.getColumnCount()==0){
+          int[] col1 = new int[nBetaZones*nBetaZones];
+          int[] col2 = new int[nBetaZones*nBetaZones];
+          
+          int index = 0;
+          for (int p=1; p<nBetaZones; p++){
+              for (int q=1; q<nBetaZones; q++){
+                  col1[index] = betazones[p];
+                  col2[index] = betazones[q];
+                  index++;
+              }
+          }
+          annualDemandTable.appendColumn(col1, "i");
+          annualDemandTable.appendColumn(col2, "j");
+      }
+      
+      //build up the other columns as they come in and append them
+      //to the Table
+      float[] newColumn = new float[nBetaZones*nBetaZones];
+      int index = 0;
+      for (int p=1; p<nBetaZones; p++){
+          for (int q=1; q<nBetaZones; q++){
+              newColumn[index] = (float)(m.cell[betazones[p]][betazones[q]] * 52.0);
+              index++;
+          }
+      }
+      annualDemandTable.appendColumn(newColumn, commodity);
+  }
 
 
   public void run () {
@@ -314,6 +361,7 @@ public class FreightDemand3 {
         logger.debug("filterExternalData() run time: "+CTHelper.elapsedTime(start, next));
     }
     calculateTonnage();
+    writeWeeklyTons();  //this writes a CSV file that has all the commodities as columns.
     if(logger.isDebugEnabled()) {
         logger.debug(outputRecordsWritten+" OD records saved");
     }
