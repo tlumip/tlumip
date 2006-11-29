@@ -18,6 +18,8 @@
     <orderEntry type="module" module-name="jakarta-commons" />
     <orderEntry type="module" module-name="censusdata" />
     <orderEntry type="module" module-name="synpop" />
+    <orderEntry type="module" module-name="reference" />
+    <orderEntry type="module" module-name="pasaat" />
     <orderEntryProperties />
   </component>
 </module>
