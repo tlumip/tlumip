@@ -19,6 +19,9 @@ package com.pb.tlumip.spg;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.synpop.SPG;
+import com.pb.models.censusdata.SwOccupation;
+import com.pb.models.censusdata.SwIndustry;
+import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.Industry;
 import com.pb.tlumip.model.Occupation;
@@ -65,10 +68,10 @@ public class SPGnew extends SPG {
 
 	
     private void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String baseYear, String currentYear ) {
-        
+        IndustryOccupationSplitIndustryReference ref = new IndustryOccupationSplitIndustryReference((String) globalPropertyMap.get("sw_ind_occ_split.correspondence.fileName"));
         IncomeSize incSize = new IncomeSize( Double.parseDouble( (String)spgPropertyMap.get("convertTo2000Dollars") ) );
-        Industry ind = new Industry( (String)globalPropertyMap.get("sw_pums_industry.correspondence.fileName"), baseYear );
-        Occupation occ = new Occupation( (String)globalPropertyMap.get("sw_pums_occupation.correspondence.fileName"), baseYear );
+        SwIndustry ind = new Industry( (String)globalPropertyMap.get("sw_pums_industry.correspondence.fileName"), baseYear, ref );
+        SwOccupation occ = new SwOccupation( (String)globalPropertyMap.get("sw_pums_occupation.correspondence.fileName"), baseYear, ref );
         
         spgInit ( spgPropertyMap, globalPropertyMap, incSize, ind, occ, currentYear );
         
