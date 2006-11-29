@@ -18,97 +18,25 @@ package com.pb.tlumip.model;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.censusdata.SwIndustry;
+import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
 
 
 public class Industry extends SwIndustry {
 
-    static String[] splitIndustryLabels = {
-        "ACCOMMODATIONS",
-        "AGRICULTURE AND MINING-Agriculture",
-        "AGRICULTURE AND MINING-Office",
-        "COMMUNICATIONS AND UTILITIES-Light Industry",
-        "COMMUNICATIONS AND UTILITIES-Office",
-        "CONSTRUCTION",
-        "ELECTRONICS AND INSTRUMENTS-Light Industry",
-        "ELECTRONICS AND INSTRUMENTS-Office",
-        "FIRE BUSINESS AND PROFESSIONAL SERVICES",
-        "FOOD PRODUCTS-Heavy Industry",
-        "FOOD PRODUCTS-Light Industry",
-        "FOOD PRODUCTS-Office",
-        "FORESTRY AND LOGGING",
-        "GOVERNMENT ADMINISTRATION-Government Support",
-        "GOVERNMENT ADMINISTRATION-Office",
-        "HEALTH SERVICES-Hospital",
-        "HEALTH SERVICES-Institutional",
-        "HEALTH SERVICES-Office",
-        "HIGHER EDUCATION",
-        "HOMEBASED SERVICES",
-        "LOWER EDUCATION-Grade School",
-        "LOWER EDUCATION-Office",
-        "LUMBER AND WOOD PRODUCTS-Heavy Industry",
-        "LUMBER AND WOOD PRODUCTS-Office",
-        "OTHER DURABLES-Heavy Industry",
-        "OTHER DURABLES-Light Industry",
-        "OTHER DURABLES-Office",
-        "OTHER NON-DURABLES-Heavy Industry",
-        "OTHER NON-DURABLES-Light Industry",
-        "OTHER NON-DURABLES-Office",
-        "PERSONAL AND OTHER SERVICES AND AMUSEMENTS",
-        "PULP AND PAPER-Heavy Industry",
-        "PULP AND PAPER-Office",
-        "RETAIL TRADE-Office",
-        "RETAIL TRADE-Retail",
-        "TRANSPORT-Depot",
-        "TRANSPORT-Office",
-        "WHOLESALE TRADE-Office",
-        "WHOLESALE TRADE-Warehouse",
-        "Capitalists",
-        "GovInstitutions"
-    };
-    
-    
-    
-    public Industry (String corespondenceFile, String year) {
-        super(corespondenceFile, year);
+    public Industry (String corespondenceFile, String year, IndustryOccupationSplitIndustryReference ref) {
+        super(corespondenceFile, year, ref);
     }
 
     
 
-    // return the array of split-industry labels
-    public static String[] getSplitIndustryLabels() {
-        return splitIndustryLabels;
-    }
-    
-
-    // return the industy index given the label.
-	public static int getSplitIndustryIndex(String splitIndustryLabel) {
-
-		int returnValue = -1;
-
-		for (int i=0; i < splitIndustryLabels.length; i++) {
-			if ( splitIndustryLabel.equalsIgnoreCase( splitIndustryLabels[i] ) ) {
-				returnValue = i;
-				break;
-			}
-		}
-
-		return returnValue;
-	}
-    
-    
-    
     // the Oregon model uses an industry employment data file with one column of
     // employment dollars for an implied year.  There is a separate file for every
     // simulation year.  Therefore the year passed in to this method is meaningless
     // and the column index should be set to 2 for the TableDataSet that will be created.
-    public float[] getIndustryEmployment( String fileName, String year ) {
+    public float[] getIndustryEmployment( String fileName, String columnIndicator) {
 
         TableDataSet table = getIndustryEmploymentTableData( fileName );
-        int column = 2;
-
-        float[] industryEmployment = getIndustryEmploymentForColumn( table, column );
-
-        return industryEmployment;
+        return getIndustryEmploymentForColumn( table, 2 );
         
     }
 
