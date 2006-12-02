@@ -25,17 +25,31 @@ package com.pb.tlumip.ct;
 // @author rdonnelly@pbtfsc.com
 // @version "0.3, 14/08/04"
 
-import java.util.*;
-import org.apache.log4j.Logger;
-import java.io.*;
-import java.text.DecimalFormat;
-
-import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.ZipMatrixReader;
-import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.AlphaToBeta;
+import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.ZipMatrixReader;
+import com.pb.common.util.ResourceUtil;
+import org.apache.log4j.Logger;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Random;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 
 public class FreightDemand3 {
@@ -167,8 +181,7 @@ public class FreightDemand3 {
                         pFlow = pFlows[r][c];
                         distance = distMatrix.getValueAt(origin, destination);
 
-                        if (commodityList[i].equals("SCTG16")) modeOfTransport = "PIPE";
-                        else modeOfTransport = md.selectMode(commodityList[i], distance);
+                        modeOfTransport = md.selectMode(commodityList[i], distance);
 
                         pw.println(origin+","+destination+","+cFlow+","+"C"+","+modeOfTransport);
                         pw.println(origin+","+destination+","+pFlow+","+"P"+","+modeOfTransport);
