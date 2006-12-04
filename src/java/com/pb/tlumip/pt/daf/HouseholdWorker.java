@@ -63,9 +63,9 @@ public class HouseholdWorker extends MessageProcessingTask {
 
     static AlphaToBeta a2b = null;
 
-    CreateModeChoiceLogsums mcLogsumCalculator = new CreateModeChoiceLogsums();
-    CreateDestinationChoiceLogsums dcLogsumCalculator = new CreateDestinationChoiceLogsums();
-    WorkplaceLocationModel workLocationModel = new WorkplaceLocationModel();
+    CreateModeChoiceLogsums mcLogsumCalculator;
+    CreateDestinationChoiceLogsums dcLogsumCalculator;
+    WorkplaceLocationModel workLocationModel;
     DCExpUtilitiesManager expUtilitiesManager;
     PTModel ptModel;
     PTResults ptResults; //used by models to write debug info if model is unsuccessful
@@ -152,7 +152,9 @@ public class HouseholdWorker extends MessageProcessingTask {
                 initialized = true;
                 ptLogger.info(getName() + ", Finished initializing");
             }
-
+            mcLogsumCalculator = new CreateModeChoiceLogsums();
+            dcLogsumCalculator = new CreateDestinationChoiceLogsums();
+            workLocationModel = new WorkplaceLocationModel(ptRb);
             expUtilitiesManager = new DCExpUtilitiesManager(ptRb);
 
             ptModel = new PTModel(ptRb, globalRb);

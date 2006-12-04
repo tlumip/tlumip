@@ -34,7 +34,7 @@ import java.util.Date;
  */
 public class PTResults {
     
-    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt.PTModel");
+    final static Logger logger = Logger.getLogger(PTModel.class);
     PTTimer timer = new PTTimer();
     PTDataWriter ptWriter = new PTDataWriter();
     static PrintWriter debug;
@@ -210,11 +210,7 @@ public class PTResults {
         return debug;
     }
 
-    public static MatrixWriter createMatrixWriter(String fileName){
-        String pathToDebugDir = ResourceUtil.getProperty(rb,"debugFiles.path");
-        MatrixWriter mWriter = MatrixWriter.createWriter(MatrixType.BINARY, new File(pathToDebugDir + fileName));
-        return mWriter;
-    }
+    
 
 
     public static void main(String[] args){

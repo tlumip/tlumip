@@ -53,7 +53,7 @@ public class WorkplaceLocationTask  extends MessageProcessingTask{
     String fileWriterQueue = "FileWriterQueue";
     LogsumManager logsumManager;
 //    protected static WorkLogsumMap logsumMap = new WorkLogsumMap();
-    WorkplaceLocationModel workLocationModel = new WorkplaceLocationModel();
+    WorkplaceLocationModel workLocationModel;
 
     /**
      * Onstart method sets up model
@@ -97,7 +97,7 @@ public class WorkplaceLocationTask  extends MessageProcessingTask{
                 lf.readBetaLaborFlows();
                 initialized = true;
             }
-
+            workLocationModel = new WorkplaceLocationModel(ptRb);
             logsumManager = new LogsumManager(ptRb);
             logger.info( "***" + getName() + " finished onStart()");
         }

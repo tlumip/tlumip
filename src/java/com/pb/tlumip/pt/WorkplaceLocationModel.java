@@ -43,9 +43,14 @@ import com.pb.common.matrix.MatrixWriter;
 public class WorkplaceLocationModel{
 
     private int lastWorkLogsumSegment = -1;    
-    final static Logger logger = Logger.getLogger("com.pb.tlumip.pt");
+    final static Logger logger = Logger.getLogger(WorkplaceLocationModel.class);
+    ResourceBundle rb;
+    String pathToDebugDir;
 
-    public WorkplaceLocationModel(){}
+    public WorkplaceLocationModel(ResourceBundle rb){
+        this.rb = rb;
+        pathToDebugDir = ResourceUtil.getProperty(rb,"debugFiles.path");
+    }
 
     private Matrix getLaborFlowProbabilities(ResourceBundle rb, int occupation, int segment){
         String path = ResourceUtil.getProperty(rb, "laborFlows.path");
@@ -81,14 +86,13 @@ public class WorkplaceLocationModel{
             }
 
             if(destination==0){
-            	logger.error("Error With workplace location model - destination TAZ shouldn't ==0!");
-                logger.error("Selector value: " + selector + " Probability total: " + probabilityTotal +
-                        " Counter: " + counter);
-                logger.error("PersonID "+ thisPerson.ID+" Industry "+thisPerson.industry+
-                        " Occupation "+thisPerson.occupation+" WorkSegment "+thisPerson.householdWorkSegment);
-                logger.error("The labor flow matrix will be written to the debug directory");
-                MatrixWriter mWriter = PTResults.createMatrixWriter(laborFlowMatrix.getName());
-                mWriter.writeMatrix(laborFlowMatrix);
+            	logger.error("Person " + thisPerson.ID + " in HH " + thisPerson.hhID + 
+                        " in Industry " + thisPerson.industry + " with Occupation " + 
+                        thisPerson.occupation + " and HHSegment " + thisPerson.householdWorkSegment +
+                        " cannot find a workplace");
+//                logger.error("Selector value: " + selector + " Probability total: " + probabilityTotal +
+//                        " Counter: " + counter);
+                writeLaborFlowMatrix(laborFlowMatrix.getName(), laborFlowMatrix);
                 //in the interest of not stopping the model run we will assign the
                 // destinationTaz to be the originTaz.  The user will be notified at the
                 // end of the run
@@ -98,10 +102,29 @@ public class WorkplaceLocationModel{
         return (short)destination;
     }
     
+    public void writeLaborFlowMatrix(String fileName, Matrix laborFlowMatrix){
+        MatrixType type = null;
+
+        if (fileName.indexOf(".bin") > 0 || fileName.indexOf(".BIN") > 0 ||
+            fileName.indexOf(".binary") > 0 || fileName.indexOf(".BINARY") > 0)
+        {
+            type = MatrixType.BINARY;
+        }
+        else if (fileName.indexOf(".zip") > 0 || fileName.indexOf(".ZIP") > 0
+                 || fileName.indexOf(".zmx") > 0 || fileName.indexOf(".compressed") > 0
+                 || fileName.indexOf(".COMPRESSED") > 0) {
+            type = MatrixType.ZIP;
+        }
+        if(!(new File(pathToDebugDir + fileName).exists())){
+            MatrixWriter mWriter = MatrixWriter.createWriter(type, new File(pathToDebugDir + fileName));
+            mWriter.writeMatrix(laborFlowMatrix);
+        }
+    }
+    
     public static void main(String[] args) {
         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
         ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
-        WorkplaceLocationModel wlm = new WorkplaceLocationModel();
+        WorkplaceLocationModel wlm = new WorkplaceLocationModel(rb);
         
         
         // pass in the year of PUMS data from which the synthetic population was built
