@@ -152,56 +152,7 @@ public class PTDataReader{
 
     public PTPerson[] readPersons(String name){
 
-        //Load data to TableDataSet
-        logger.info("Opening person file");
-        BufferedReader personReader = openFile(name);
-        int numberOfPersons = findNumberOfRecordsInFile(name);
-        
-        PTPerson[] personArray = new PTPerson[numberOfPersons];
-        PTPerson thisPerson = new PTPerson();
-        
-        // an Industry class must be instantiated in order to get the PUMS/Industry
-        // correspondence file to be read to make the statewide industry categories known.
-        Industry industry = new Industry(ResourceUtil.getProperty(globalRb, "sw_pums_industry.correspondence.fileName"), year);
-
-        try{
-            //read header lines
-            String personLine = personReader.readLine();
-            //read first data line            
-            personLine = personReader.readLine();
-            
-            int personCounter=0;
-            String[] fields;
-            while(personLine!=null){
-            	fields = personLine.split(",");
-                thisPerson = new PTPerson();
-                thisPerson.hhID = (int)Integer.parseInt(fields[0]); //HH_ID
-                thisPerson.ID = Integer.parseInt(fields[1]);      //PERS_ID
-                thisPerson.female = (int)Integer.parseInt(fields[2])==1 ? true : false; //SEX
-                thisPerson.age =(byte)Integer.parseInt(fields[3]); //AGE
-                int school = (int)Integer.parseInt(fields[4]);  //SCHOOL
-                if(school==0||school==1)
-                    thisPerson.student=false;
-                else
-                    thisPerson.student=true;
-                int employStatus = (int)Integer.parseInt(fields[5]);   //RLABOR
-                if (employStatus == 0 || employStatus == 3 || employStatus == 6)
-                	thisPerson.employed = false;
-                else 
-                    thisPerson.employed = true;
-                thisPerson.industry = (byte)(industry.getIndustryIndexFromPumsCode((int)Integer.parseInt(fields[6]))); //INDUSTRY
-                thisPerson.occupation = (byte)OccupationCode.codeOccupationFromPUMS((int)Integer.parseInt(fields[7]));  //OCCUP
-
-                personArray[personCounter]=thisPerson;
-                personCounter++;
-                personLine = personReader.readLine();
-            }
-        }catch (Exception e) {            
-            System.err.println("Error reading person file");                   
-            e.printStackTrace();                                         
-        }
-        logger.info("Persons loaded into memory.");
-        return personArray;
+    return null;    
     }
     
     /**
