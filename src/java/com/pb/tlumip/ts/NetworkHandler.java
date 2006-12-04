@@ -52,7 +52,7 @@ public class NetworkHandler implements NetworkHandlerIF {
         //    localFlag = true;
     
         if (localFlag == false && rpcConfigFile != null) {
-            return new RpcNetworkHandler( rpcConfigFile );
+            return new NetworkHandlerRpc( rpcConfigFile );
         }
         else { 
             return new NetworkHandler();

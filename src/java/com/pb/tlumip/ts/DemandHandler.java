@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
 
 
 
-public class DemandHandler {
+public class DemandHandler implements DemandHandlerIF {
 
 	protected static Logger logger = Logger.getLogger(DemandHandler.class);
 
@@ -71,6 +71,34 @@ public class DemandHandler {
 
     public DemandHandler() {
     }
+
+    
+    // Factory Method to return either local or remote instance
+    public static DemandHandlerIF getInstance( String rpcConfigFile ) {
+    
+        // if false, remote method calls on networkHandler are made 
+        boolean localFlag = true;
+    
+        //This method needs to be written
+        //if (DafNode.getInstance().isHandlerLocal("demandHandler"))
+        //    localFlag = true;
+    
+        if (localFlag == false && rpcConfigFile != null) {
+            return new DemandHandlerRpc( rpcConfigFile );
+        }
+        else { 
+            return new DemandHandler();
+        }
+        
+    }
+    
+
+    // Factory Method to return local instance only
+    public static DemandHandlerIF getInstance() {
+        return new DemandHandler();
+    }
+    
+
    
 
     
@@ -95,7 +123,7 @@ public class DemandHandler {
     }
     
     
-    public void setNetworkAttributes( int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, boolean userClassesIncludeTruck ) {
+    public int setNetworkAttributes( int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, boolean userClassesIncludeTruck ) {
         
         networkNumCentroids = numCentroids;
         networkNumUserClasses = numUserClasses;
@@ -104,6 +132,7 @@ public class DemandHandler {
         networkUserClassesIncludeTruck = userClassesIncludeTruck;
         networkAssignmentGroupMap = assignmentGroupMap;
         
+        return 1;
     }
     
     

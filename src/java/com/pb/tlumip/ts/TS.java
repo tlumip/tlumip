@@ -64,8 +64,6 @@ public class TS {
     
 	double[][][] multiclassTripTable = new double[highwayModeCharacters.length][][];
 
-    double[] routeBoardings = null;
-	
 	
 	
 	public TS( String appPropertyName, String globalPropertyName ) {
@@ -302,20 +300,7 @@ public class TS {
 
 
     
-    public void runTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
-        
-        // assign walk transit trips
-        runWalkTransitAssignment ( nh, ag, assignmentPeriod );
-        
-        // assign drive transit trips
-        //runDriveTransitAssignment ( nh, ag, assignmentPeriod );
-        
-        logTransitBoardingsReport ( ag, assignmentPeriod );
-
-    }
-
-    
-    private void runWalkTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
+    private double[] runWalkTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
         
         // define assignment related variables dependent on the assignment period
         initializeHighwayAssignment ( nh, assignmentPeriod );
@@ -328,12 +313,13 @@ public class TS {
         double[][] tripTable = d.getWalkTransitTripTable ( assignmentPeriod );
         
         // load the triptable on walk access transit network
-        optimalStrategyNetworkLoading ( assignmentPeriod, "walk", nh, ag, tripTable );
+        double[] rteBoardings = optimalStrategyNetworkLoading ( assignmentPeriod, "walk", nh, ag, tripTable );
 
+        return rteBoardings;
     }
     
     
-    private void runDriveTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
+    private double[] runDriveTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
         
         // define assignment related variables dependent on the assignment period
         initializeHighwayAssignment ( nh, assignmentPeriod );
@@ -346,17 +332,19 @@ public class TS {
         double[][] tripTable = d.getDriveTransitTripTable ( assignmentPeriod );
         
         // load the triptable on drive access transit network
-        optimalStrategyNetworkLoading ( assignmentPeriod, "drive", nh, ag, tripTable );
+        double[] rteBoardings = optimalStrategyNetworkLoading ( assignmentPeriod, "drive", nh, ag, tripTable );
 
+        return rteBoardings;
+        
     }
     
     
-    private void optimalStrategyNetworkLoading ( String assignmentPeriod, String accessMode, NetworkHandlerIF nh, AuxTrNet ag, double[][] tripTable ) {
+    private double[] optimalStrategyNetworkLoading ( String assignmentPeriod, String accessMode, NetworkHandlerIF nh, AuxTrNet ag, double[][] tripTable ) {
         
         // create an optimal strategy object for this highway and transit network
         OpStrategy os = new OpStrategy( ag );
 
-        routeBoardings = new double[ag.getMaxRoutes()];
+        double[] routeBoardings = new double[ag.getMaxRoutes()];
 
         double tripTableColumn[] = new double[tripTable[0].length];
 
@@ -405,6 +393,7 @@ public class TS {
 
         logger.info( intrazonal + " " + assignmentPeriod + " period intrazonal " + accessMode + " transit trips, " + totalTrips + " total, " + notLoadedTrips + " not loaded." );
         
+        return routeBoardings;
     }
     
    
@@ -431,6 +420,7 @@ public class TS {
             ag = (AuxTrNet) DataReader.readDiskObject ( diskObjectFileName, key );
         }
 
+        
         return ag;
         
     }
@@ -492,7 +482,7 @@ public class TS {
 
     
     
-    public void logTransitBoardingsReport ( AuxTrNet ag, String period ) {
+    public void logTransitBoardingsReport ( AuxTrNet ag, String periodHeadingLabel, double[] routeBoardings ) {
         
         TrRoute tr = ag.getTrRoute();
         
@@ -503,7 +493,7 @@ public class TS {
                 maxStringLength = tr.getDescription(rte).length();
         String descrFormat = "%-" + (maxStringLength+4) + "s";
 
-        logger.info ( String.format("%-10s", "Count") + String.format("%-10s", "Line") + String.format(descrFormat, "Description") + String.format("%-8s", "Mode") + String.format("%18s", (period + " Boardings")) );
+        logger.info ( String.format("%-10s", "Count") + String.format("%-10s", "Line") + String.format(descrFormat, "Description") + String.format("%-8s", "Mode") + String.format("%18s", (periodHeadingLabel + " Boardings")) );
         logger.info ( String.format("%-10s", "-----") + String.format("%-10s", "----") + String.format(descrFormat, "-----------") + String.format("%-8s", "----") + String.format("%18s", "-----------------") );
 
         float total = 0.0f;
@@ -516,45 +506,94 @@ public class TS {
     }
     
     
-    public static void main (String[] args) {
-
-        String testPeriod = "peak";
-        String testMode = "walk";
-        
-        TS tsTest = new TS( ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle (args[2]) );
-
-        // generate a NetworkHandler object to use for assignments and skimming
-        NetworkHandlerIF nh = NetworkHandler.getInstance(args[0]);
-
-        // use the following when testing transit assignment without highway assignment:
-        tsTest.initializeHighwayAssignment ( nh, testPeriod );
-        logger.info("TS main - highway network initialized\n\n");
+    private void assignAndSkimHighway ( NetworkHandlerIF nh, String assignmentPeriod ) {
 
         // run peak highway assignment
-		//tsTest.runHighwayAssignment( nh, testPeriod );
-        //logger.info ("\ndone with " + testPeriod + " highway assignment.");
+        runHighwayAssignment( nh, assignmentPeriod );
+        logger.info ("done with " + assignmentPeriod + " highway assignment.");
 
         // write the auto time and distance highway skim matrices to disk
-        //writeHighwaySkimMatrices ( g, assignmentPeriod, 'a' );
+        writeHighwaySkimMatrices ( nh, assignmentPeriod, 'a' );
+        logger.info ("done writing " + assignmentPeriod + " highway skims files.");
         
+        logger.info ("done with " + assignmentPeriod + " highway skimming and loading.");
         
-        // generate a transit network using the new assignment results
-        AuxTrNet ag = tsTest.getTransitNetwork( nh, testPeriod, testMode );
-        logger.info ("\ndone generating " + testPeriod + " transit network.");
-        
-        
-        // generate transit skim matrices using the network flows generated in above assignment
-        TransitSkimManager tsm = new TransitSkimManager( ag, tsTest.appRb, tsTest.globalRb );        
-        tsm.writePeakWalkTransitSkims();
-        logger.info ("\ndone writing " + testPeriod + " " + testMode + " transit skims files.");
-        
+    }
 
-        tsTest.runTransitAssignment( nh, ag, testPeriod );
-        logger.info ("\ndone with " + testPeriod + " transit assignment.");
+
+    private void assignAndSkimTransit ( NetworkHandlerIF nh, String assignmentPeriod, ResourceBundle appRb, ResourceBundle globalRb ) {
+
+        // generate walk transit network
+        String accessMode = "walk";
+        AuxTrNet ag = getTransitNetwork( nh, assignmentPeriod, accessMode );
+        logger.info ("done generating " + assignmentPeriod + " " + accessMode + " transit network.");
+        
+        // generate walk transit skim matrices
+        TransitSkimManager tsm = new TransitSkimManager( ag, appRb, globalRb );     
+        if ( assignmentPeriod.equalsIgnoreCase("peak") )
+            tsm.writePeakWalkTransitSkims();
+        else
+            tsm.writeOffPeakWalkTransitSkims();
+        logger.info ("done writing " + assignmentPeriod + " " + accessMode + " transit skims files.");
+
+        // load walk transit trips
+        double[] walkTransitBoardings = runWalkTransitAssignment ( nh, ag, assignmentPeriod );
+        logger.info ("done with " + assignmentPeriod + " " + accessMode + " transit assignment.");
         
         
-		logger.info ("\ndone with TS run.");
-		
+        // generate drive transit network
+        accessMode = "drive";
+        ag = getTransitNetwork( nh, assignmentPeriod, accessMode );
+        logger.info ("done generating " + assignmentPeriod + " " + accessMode + " transit network.");
+        
+        // generate drive transit skim matrices
+        tsm = new TransitSkimManager( ag, appRb, globalRb );     
+        if ( assignmentPeriod.equalsIgnoreCase("peak") )
+            tsm.writePeakDriveTransitSkims();
+        else
+            tsm.writeOffPeakDriveTransitSkims();
+        logger.info ("done writing " + assignmentPeriod + " " + accessMode + " transit skims files.");
+
+        // load drive transit trips
+        double[] driveTransitBoardings = runDriveTransitAssignment ( nh, ag, assignmentPeriod );
+        logger.info ("done with " + assignmentPeriod + " " + accessMode + " transit assignment.");
+        
+        
+        TrRoute tr = ag.getTrRoute();
+        double[] totalBoardings = new double[tr.getLineCount()]; 
+        
+        for (int rte=0; rte < totalBoardings.length; rte++) { 
+            totalBoardings[rte] = walkTransitBoardings[rte] + driveTransitBoardings[rte];
+        }
+        
+        logTransitBoardingsReport ( ag, assignmentPeriod, totalBoardings );
+        
+        logger.info ("done with " + assignmentPeriod + " transit skimming and loading.");
+        
+    }
+
+
+    public static void main (String[] args) {
+
+        TS tsTest = new TS( ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle (args[2]) );
+
+        // generate a NetworkHandler object to use for peak period assignments and skimming
+        NetworkHandlerIF nhPeak = NetworkHandler.getInstance(args[0]);
+
+        tsTest.assignAndSkimHighway ( nhPeak, "peak" );
+        tsTest.assignAndSkimTransit ( nhPeak, "peak", ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle(args[2]) );
+ 
+        nhPeak = null;
+        
+        // generate a NetworkHandler object to use for off-peak period assignments and skimming
+        NetworkHandlerIF nhOffPeak = NetworkHandler.getInstance(args[0]);
+
+        tsTest.assignAndSkimHighway ( nhOffPeak, "offpeak" );
+        tsTest.assignAndSkimTransit ( nhOffPeak, "offpeak", ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle(args[2]) );
+        
+        nhOffPeak = null;
+
+        logger.info ("TS.main() is finished.");
     }
 
 }

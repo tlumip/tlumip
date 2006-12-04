@@ -27,13 +27,12 @@ import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
 
 
-public class AonFlowHandler {
+public class AonFlowHandler implements AonFlowHandlerIF {
 
     public static final int NUM_DISTRIBUTED_HANDLERS = 1;
     public static final int[] numberOfThreads = { 1 };
@@ -45,13 +44,13 @@ public class AonFlowHandler {
     
 	protected static Logger logger = Logger.getLogger(AonFlowHandler.class);
 
-//    private AonFlowResults flowResults = AonFlowResults.getInstance();
 
     int numLinks;
     int numCentroids;
     int numUserClasses;
-    int lastOriginTaz;
     int startOriginTaz;
+    int lastOriginTaz;
+
     int[] ia;
     int[] indexNode;
 
@@ -70,67 +69,33 @@ public class AonFlowHandler {
 
 
     
-    public Object execute (String methodName, Vector params) throws Exception {
-                  
-        if ( methodName.equalsIgnoreCase( "setup" ) ) {
-            HashMap componentPropertyMap = (HashMap)params.get(0);
-            HashMap globalPropertyMap = (HashMap)params.get(1);
-            setup( componentPropertyMap, globalPropertyMap );
-            return 0;
-        }
-        else if ( methodName.equalsIgnoreCase( "getMulticlassAonLinkFlows" ) ) {
-            return getMulticlassAonLinkFlows();
-        }
-        else {
-            logger.error ( "method name " + methodName + " called from remote client is not registered for remote method calls.", new Exception() );
-            return 0;
-        }
-        
-    }
-    
-
-    
-    
-    public void setup( HashMap componentPropertyMap, HashMap globalPropertyMap ) {
+    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap ) {
         
         this.componentPropertyMap = componentPropertyMap;
         this.globalPropertyMap = globalPropertyMap; 
         
-        getNetworkParameters ();
+        setNetworkParameters ();
+        
+        return true;
     }
     
     
-    public void setup( ResourceBundle componentRb, ResourceBundle globalRb ) {
+
+    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb ) {
         
         this.componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( componentRb );
         this.globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( globalRb );
 
-        getNetworkParameters ();
+        setNetworkParameters ();
+
+        return true;
     }
     
     
     
-    private void getNetworkParameters () {
-        
-        // generate a NetworkHandler object to use for assignments and skimming
-        NetworkHandlerIF nh = NetworkHandler.getInstance();
+    public double[][] getMulticlassAonLinkFlows () {
 
-        startOriginTaz = 0;
-        lastOriginTaz = nh.getNumCentroids();
-        numLinks = nh.getLinkCount();
-        numCentroids = nh.getNumCentroids();
-        numUserClasses = nh.getNumUserClasses();
-        
-        ia = nh.getIa();
-        indexNode = nh.getIndexNode();
-        
-    }
-    
-    
-
-    private double[][] getMulticlassAonLinkFlows () {
-
-        DemandHandler dh = new DemandHandler();
+        DemandHandlerIF dh = DemandHandler.getInstance();
         
         double[][] tripTableRowSums = null;
         
@@ -152,7 +117,24 @@ public class AonFlowHandler {
 
 
     
+    private void setNetworkParameters () {
+        
+        // generate a NetworkHandler object to use for assignments and skimming
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+
+        startOriginTaz = 0;
+        lastOriginTaz = nh.getNumCentroids();
+        numLinks = nh.getLinkCount();
+        numCentroids = nh.getNumCentroids();
+        numUserClasses = nh.getNumUserClasses();
+        
+        ia = nh.getIa();
+        indexNode = nh.getIndexNode();
+        
+    }
     
+    
+
     private double[][] calculateAonLinkFlows ( double[][] tripTableRowSums ) {
 
         int origin=0;
@@ -243,51 +225,4 @@ public class AonFlowHandler {
         
     }
 
-    
-    
-    
-/*
-    private int networkHandlerGetNumCentroidsRpcCall() throws Exception {
-        // g.getNumCentroids()
-        return (Integer)networkHandlerClient.execute("networkHandler.getNumCentroids", new Vector());
-    }
-
-    private int networkHandlerGetLinkCountRpcCall() throws Exception {
-        // g.getLinkCount()
-        return (Integer)networkHandlerClient.execute("networkHandler.getLinkCount", new Vector() );
-    }
-
-    private int networkHandlerGetNumUserClassesRpcCall() throws Exception {
-        // g.getNumUserClasses()
-        return (Integer)networkHandlerClient.execute("networkHandler.getNumUserClasses", new Vector() );
-    }
-
-    private int[] networkHandlerGetIaRpcCall() throws Exception {
-        // g.getIa()
-        return (int[])networkHandlerClient.execute("networkHandler.getIa", new Vector() );
-    }
-
-    private int[] networkHandlerGetIndexNodeRpcCall() throws Exception {
-        // g.getIndexNode()
-        return (int[])networkHandlerClient.execute("networkHandler.getIndexNode", new Vector() );
-    }
-
-    
-    
-    
-    private double[][] demandHandlerGetTripTableRowSumsRpcCall() throws Exception {
-        return (double[][])demandHandlerClient.execute("demandHandler.getTripTableRowSums", new Vector() );
-    }
-    
-    
-    
-    
-    private double[][] spBuildLoadHandlerGetLoadedAonFlowsRpcCall( int n, int[][] workElements ) throws Exception {
-        Vector params = new Vector();
-        params.add( numberOfThreads[n] );
-        params.add( workElements );
-        return (double[][])spBuildLoadHandlerClient[n].execute( (SpBuildLoadHandler.remoteHandlerName + "_" + (n+1) + ".getLoadedAonFlows"), params );
-    }
- 
-*/
 }
