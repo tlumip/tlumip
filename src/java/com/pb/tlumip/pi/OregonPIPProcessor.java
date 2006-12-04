@@ -16,21 +16,25 @@
  */
 package com.pb.tlumip.pi;
 
-import com.pb.common.datafile.*;
+import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.datafile.CSVFileWriter;
+import com.pb.common.datafile.GeneralDecimalFormat;
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.datafile.TableDataSetCollection;
+import com.pb.common.datafile.TableDataSetIndex;
 import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.CSVMatrixWriter;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.model.IncomeSize;
-import com.pb.tlumip.model.Industry;
-import com.pb.tlumip.model.Occupation;
-import com.pb.models.pecas.LaborProductionAndConsumption;
 import com.pb.models.pecas.Commodity;
+import com.pb.models.pecas.LaborProductionAndConsumption;
 import com.pb.models.pecas.PIPProcessor;
 import com.pb.models.pecas.SomeSkims;
 import com.pb.models.pecas.TransportKnowledge;
+import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
+import com.pb.tlumip.model.IncomeSize;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -44,6 +48,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 /**
  * @author John Abraham
@@ -52,13 +57,14 @@ import java.util.ResourceBundle;
 public class OregonPIPProcessor extends PIPProcessor {
 
     String year;
-    Occupation occ; //initially null
+    IndustryOccupationSplitIndustryReference indOccRef; //initially null
     String[] occupations; //initially null
     private AlphaToBeta beta2CountyMap = null; /* used for squeezing the commodities from beta flows to County flows */
     MatrixCompression compressor = null;
     
     public OregonPIPProcessor() {
         super();
+        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
     }
 
     /**
@@ -67,7 +73,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     public OregonPIPProcessor(int timePeriod, ResourceBundle piRb, ResourceBundle globalRb) {
         
         super(timePeriod, piRb, globalRb);
-        
+        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
         this.year = timePeriod < 10 ? "1990" : "2000";
         
     }
@@ -179,12 +185,12 @@ public class OregonPIPProcessor extends PIPProcessor {
                     logger.debug("column count: "+ dollars.getColumnCount());
                 }
                 for(int r = 0; r < dollars.getRowCount(); r++){
-                    int industryIndex = Industry.getSplitIndustryIndex(dollars.getStringValueAt(r + 1, 1));//Activity Name
+                    int industryIndex = indOccRef.getSplitIndustryIndexFromLabel(dollars.getStringValueAt(r + 1, 1));//Activity Name
                     dollarsByIndustry[industryIndex] = dollars.getValueAt(r + 1, 2); //Total Dollars
                 }
                 //update the values in the actI TableDataSet using the ED results
                 for(int r=0; r< actI.getRowCount(); r++){
-                    int industryIndex = Industry.getSplitIndustryIndex(actI.getStringValueAt(r+1,activityColumnPosition));
+                    int industryIndex = indOccRef.getSplitIndustryIndexFromLabel(actI.getStringValueAt(r+1,activityColumnPosition));
                     if (industryIndex >= 0){
                         actI.setValueAt(r+1,sizeColumnPosition, dollarsByIndustry[industryIndex]);
                     }
@@ -613,9 +619,7 @@ public class OregonPIPProcessor extends PIPProcessor {
        
         // an Occupation class must be instantiated in order to get the PUMS/Occupation
         // correspondence file to be read to make the statewide Occupation categories known.
-        Occupation occ = new Occupation( ResourceUtil.getProperty(globalRb, "sw_pums_occupation.correspondence.fileName"), year );
-        
-        String[] occupations = occ.getOccupationLabels();
+        String[] occupations =  indOccRef.getOccupationLabelsByIndex();
         List<String> tempList = new ArrayList<String>();
         for (String occupation : occupations){
             if(occupation.indexOf("Unemployed")>=0) continue;
@@ -628,7 +632,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         String[] hhCategories = new IncomeSize().getIncomeSizeLabels();
         
         
-        String[] activities = Industry.getSplitIndustryLabels();
+        Set activities = indOccRef.getIndustryLabels();
         
         
         LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AZone","BZone",householdQuantity,occupations,hhCategories,activities);
@@ -636,46 +640,71 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
     
 public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter pctFile) {
+    
+    //first check to see if county outputs are requested of either occupations or SCTGs
+    if((ResourceUtil.getProperty(piRb, "pi.writeCountyOccupationFlows") != null 
+            && ResourceUtil.getBooleanProperty(piRb, "pi.writeCountyOccupationFlows")) ||
+       (ResourceUtil.getProperty(piRb, "pi.writeCountySCTGFlows") != null 
+                    && ResourceUtil.getBooleanProperty(piRb, "pi.writeCountySCTGFlows"))){
         
-        if(ResourceUtil.getProperty(piRb, "pi.writeCountyOccupationFlowsOnly") != null 
-                && ResourceUtil.getBooleanProperty(piRb, "pi.writeCountyOccupationFlowsOnly")) {
-            Commodity com = Commodity.retrieveCommodity(name);
-            
-            Matrix s = com.getSellingFlowMatrix();
-            Matrix b = com.getBuyingFlowMatrix();
-            
-            if(occ == null){
-                occ = new Occupation( ResourceUtil.getProperty(globalRb, "sw_pums_occupation.correspondence.fileName"), String.valueOf(baseYear) );
-                occupations = occ.getOccupationLabels();
-                Arrays.sort(occupations);
-            }
-            
-            //write out the selling county flows for the labor commodities
-            if( Arrays.binarySearch(occupations,com.name) >= 0){
-                if(compressor == null){
-                    String filePath = ResourceUtil.getProperty(globalRb,"alpha2beta.file");
-                    File a2bFile = new File(filePath);
-                    beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
-                    compressor = new MatrixCompression(beta2CountyMap);
+        Commodity com = Commodity.retrieveCommodity(name);
+        Matrix s = com.getSellingFlowMatrix();
+        Matrix b = com.getBuyingFlowMatrix();
+        
+        //need to initialize the occupation variable if it hasn't been already.
+        if(indOccRef == null){
+            indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
+            occupations = indOccRef.getOccupationLabelsByIndex();
+            Arrays.sort(occupations);
+        }
+
+
+
+        //Either occupation or SCTG county flows are requested so figure out if the
+        //commodity name passed in is an occupation or an SCTG
+        if( Arrays.binarySearch(occupations,com.name) >= 0){  //commodity is an occupation
+            if(ResourceUtil.getBooleanProperty(piRb, "pi.writeCountyOccupationFlows")){
+                //write out the selling county flows for the labor commodities
+                if( Arrays.binarySearch(occupations,com.name) >= 0){
+                    if(compressor == null){
+                        String filePath = ResourceUtil.getProperty(globalRb,"alpha2beta.file");
+                        File a2bFile = new File(filePath);
+                        beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
+                        compressor = new MatrixCompression(beta2CountyMap);
+                    }
+                
+                    Matrix countySqueeze = compressor.getCompressedMatrix(s,"SUM");
+                
+                    File output = new File(getOutputPath() + "CountyFlows_Selling_"+ com.name+".csv");
+                    MatrixWriter writer = new CSVMatrixWriter(output);
+                    writer.writeMatrix(countySqueeze);
                 }
-                
-                Matrix countySqueeze = compressor.getCompressedMatrix(s,"SUM");
-                
-                File output = new File(getOutputPath() + "CountyFlows_Selling_"+ com.name+".csv");
+            } 
+        }else if(name.startsWith("SCTG")){
+            if(ResourceUtil.getBooleanProperty(piRb, "pi.writeCountySCTGFlows")){
+                if(compressor == null){
+                  String filePath = ResourceUtil.getProperty(piRb,"reference.data") + "alpha2beta.csv";
+                  File a2bFile = new File(filePath);
+                  beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
+                  compressor = new MatrixCompression(beta2CountyMap);
+                }
+                Matrix countySqueeze = compressor.getCompressedMatrix(b,"SUM");
+              
+                File output = new File(getOutputPath() + "CountyFlows_Value_"+ com.name+".csv");
                 MatrixWriter writer = new CSVMatrixWriter(output);
                 writer.writeMatrix(countySqueeze);
-                
- 
             }
-            
-            //write intrazonal numbers to calculate percentages
-            writePctIntrazonalFile(pctFile,name,b,s);
-            
-            writeFlowHistograms(histogramFile, name,b,s);
-        } else {
-            super.writeFlowZipMatrices(name, histogramFile, pctFile);
         }
+        //Write intrazonal numbers to calculate percentages
+        writePctIntrazonalFile(pctFile,name,b,s);
+
+        writeFlowHistograms(histogramFile,name,b,s);
+        
+        
+    }else {
+        super.writeFlowZipMatrices(name, histogramFile, pctFile);
     }
+}
     
     
 
@@ -744,7 +773,7 @@ public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter 
             float sellTo = 0;
             float sellPctFrom = 0;
             float sellPctTo = 0;
-
+                
             for(int i=0; i<b.getRowCount(); i++){
                 int betaZone = b.getExternalNumber(i);
                 buyIntra = b.getValueAt(betaZone,betaZone);
