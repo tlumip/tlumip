@@ -16,13 +16,23 @@
  */
 package com.pb.tlumip.ct;
 
-import com.pb.common.util.ResourceUtil;
-import com.pb.common.matrix.ZipMatrixReader;
 import com.pb.common.matrix.Matrix;
-
-import java.util.*;
+import com.pb.common.matrix.ZipMatrixReader;
+import com.pb.common.util.ResourceUtil;
 import org.apache.log4j.Logger;
-import java.io.*;
+
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Random;
+import java.util.ResourceBundle;
+import java.util.Vector;
 
 public class DiscreteShipments2 {
     protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
@@ -121,7 +131,7 @@ public class DiscreteShipments2 {
 
 // We have a pathological case where commodity 00 is found. We need to fix FreightDemand, but for now
 // just ignore them
-           if (commodity.equals("00") || commodity.equals("16")) continue;
+           if (commodity.equals("00")) continue;
 
            shipmentList = getShipmentList(commodity, weeklyTons);
            for (int i=0; i<shipmentList.length; i++) {
