@@ -20,6 +20,7 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.ModelComponent;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -36,6 +37,8 @@ public class ALDModel extends ModelComponent {
     Process process;
 
     public void startModel(int t){
+        
+        
         /*  first we need to create the Strings that ALD uses as runtime arguments
             R expects 3 arguments:
                 1. the path to the ald_inputs_XXX.R file which is located
@@ -63,8 +66,21 @@ public class ALDModel extends ModelComponent {
         Runtime rt = Runtime.getRuntime();
         try {
 //            process = rt.exec("cmd.exe /c " + execCommand);
+//          First delete the indicator file (if there is one) that signals the 
+            //java program that the R script has completed.
+            File doneFile = new File(pathToIOFiles + "t" + t + "/ald/.RData");
+            if(doneFile.exists()) doneFile.delete();
+            
             process = rt.exec(execCommand);
-            logger.info("ALD is done");
+            try {
+                while(!doneFile.exists())
+                    Thread.sleep(2000);
+                //Will wait for the .RData file to appear before signaling 
+                //that ALD is done.
+                logger.info("ALD is done");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
