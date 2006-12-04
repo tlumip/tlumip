@@ -47,8 +47,9 @@ public class OptimalStrategy {
 	public static final int TWT = 2;
 	public static final int AUX = 3;
 	public static final int BRD = 4;
-	public static final int FAR = 5;
-	public static final int NUM_SKIMS = 6;
+    public static final int FAR = 5;
+    public static final int HSR = 6;
+	public static final int NUM_SKIMS = 7;
 
 	static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -619,7 +620,7 @@ public class OptimalStrategy {
         
 
         double[] results = new double[6];
-        Arrays.fill (results, AuxTrNet.NEG_INFINITY);
+        Arrays.fill (results, AuxTrNet.UNCONNECTED);
         Arrays.fill (nodeFlow, 0.0);
         Arrays.fill (ag.flow, 0.0);
 
@@ -854,8 +855,10 @@ public class OptimalStrategy {
         
         double[][] nodeSkims = new double[NUM_SKIMS][ag.getAuxNodeCount()];
         double[][] skimResults = new double[NUM_SKIMS][nh.getNumCentroids()];
-        for (k=0; k < NUM_SKIMS; k++)
+        for (k=0; k < NUM_SKIMS; k++) {
+            Arrays.fill (nodeSkims[k], AuxTrNet.UNCONNECTED);
             Arrays.fill (skimResults[k], AuxTrNet.UNCONNECTED);
+        }
 
 //        Arrays.fill (ag.flow, 0.0);
 //        for (int i=0; i < nh.getNumCentroids(); i++)
@@ -917,7 +920,6 @@ public class OptimalStrategy {
             
             
 
-
         // loop through links in optimal strategy in ascending order and accumulate skim component values at nodes weighted by link flows
         count = 0;
         for (int i=0; i < inStrategyCount; i++) {
@@ -933,26 +935,36 @@ public class OptimalStrategy {
             if ( ag.linkType[k] == AuxTrNet.BOARDING_TYPE ) {
 
                 if ( nodeSkims[FWT][ag.ib[k]] == 0.0 ) {
-                    nodeSkims[FWT][ag.ia[k]] += ag.freq[k]*(AuxTrNet.ALPHA/nodeFreq[ag.ia[k]])/nodeFreq[ag.ia[k]];
-                    nodeSkims[TWT][ag.ia[k]] += ag.freq[k]*(AuxTrNet.ALPHA/nodeFreq[ag.ia[k]])/nodeFreq[ag.ia[k]];
-                    nodeSkims[BRD][ag.ia[k]] += ag.freq[k]/nodeFreq[ag.ia[k]];
-                    nodeSkims[FAR][ag.ia[k]] += ag.freq[k]*AuxTrNet.FARE/nodeFreq[ag.ia[k]];
+                    nodeSkims[FWT][ag.ia[k]] = ag.freq[k]*(AuxTrNet.ALPHA/nodeFreq[ag.ia[k]])/nodeFreq[ag.ia[k]];
+                    nodeSkims[TWT][ag.ia[k]] = ag.freq[k]*(AuxTrNet.ALPHA/nodeFreq[ag.ia[k]])/nodeFreq[ag.ia[k]];
+                    nodeSkims[BRD][ag.ia[k]] = ag.freq[k]/nodeFreq[ag.ia[k]];
+                    nodeSkims[FAR][ag.ia[k]] = ag.freq[k]*AuxTrNet.FARE/nodeFreq[ag.ia[k]];
                 }
                 else {
-                    nodeSkims[FWT][ag.ia[k]] += nodeSkims[FWT][ag.ib[k]] + ag.freq[k]*AuxTrNet.ALPHA/nodeFreq[ag.ia[k]];
-                    nodeSkims[TWT][ag.ia[k]] += nodeSkims[TWT][ag.ib[k]] + ag.freq[k]*AuxTrNet.ALPHA/nodeFreq[ag.ia[k]];
-                    nodeSkims[BRD][ag.ia[k]] += nodeSkims[BRD][ag.ib[k]] + ag.freq[k]/nodeFreq[ag.ia[k]];
-                    nodeSkims[FAR][ag.ia[k]] += nodeSkims[FAR][ag.ib[k]] + ag.freq[k]*AuxTrNet.TRANSFER_FARE/nodeFreq[ag.ia[k]];
+                    nodeSkims[FWT][ag.ia[k]] = nodeSkims[FWT][ag.ib[k]] + ag.freq[k]*AuxTrNet.ALPHA/nodeFreq[ag.ia[k]];
+                    nodeSkims[TWT][ag.ia[k]] = nodeSkims[TWT][ag.ib[k]] + ag.freq[k]*AuxTrNet.ALPHA/nodeFreq[ag.ia[k]];
+                    nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]] + ag.freq[k]/nodeFreq[ag.ia[k]];
+                    nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]] + ag.freq[k]*AuxTrNet.TRANSFER_FARE/nodeFreq[ag.ia[k]];
                 }
                 nodeSkims[IVT][ag.ia[k]] = nodeSkims[IVT][ag.ib[k]];
                 nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
+                nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
                 
             }
             else if ( ag.linkType[k] == AuxTrNet.IN_VEHICLE_TYPE ) {
                 
                 nodeSkims[IVT][ag.ia[k]] = nodeSkims[IVT][ag.ib[k]] + ag.invTime[k];
+                nodeSkims[FWT][ag.ia[k]] = nodeSkims[FWT][ag.ib[k]];
                 nodeSkims[TWT][ag.ia[k]] = nodeSkims[TWT][ag.ib[k]] + ag.dwellTime[k];
+                nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
+                nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
+                nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
                 
+                if ( ag.rteMode[k] == 'm' )
+                    nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]] + ag.invTime[k];
+                else
+                    nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
+                    
             }
             else if ( ag.linkType[k] == AuxTrNet.ALIGHTING_TYPE ) {
                 
@@ -962,6 +974,7 @@ public class OptimalStrategy {
                 nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
                 nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
                 nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
+                nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
                 
             }
             else if ( ag.linkType[k] == AuxTrNet.AUXILIARY_TYPE ) {
@@ -974,6 +987,7 @@ public class OptimalStrategy {
                     nodeSkims[AUX][ag.ia[k]] = ag.walkTime[k];
                     nodeSkims[BRD][ag.ia[k]] = 0.0;
                     nodeSkims[FAR][ag.ia[k]] = 0.0;
+                    nodeSkims[HSR][ag.ia[k]] = 0.0;
                 }
                 // anode is an origin node, set final skim values for that origin and add the access time
                 else if ( ag.ia[k] < nh.getNumCentroids() ) {
@@ -983,6 +997,7 @@ public class OptimalStrategy {
                     skimResults[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]] + accessTime[k];
                     skimResults[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
                     skimResults[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
+                    skimResults[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
                 }
                 // link is a walk link, not connected to a centroid
                 else {
@@ -992,6 +1007,7 @@ public class OptimalStrategy {
                     nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]] + accessTime[k];
                     nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
                     nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
+                    nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
                 }
                 
             }
@@ -1081,6 +1097,7 @@ public class OptimalStrategy {
         skimMatrices[AUX] = new Matrix( nameQualifier + "aux", descQualifier + " auxilliary time skims", zeroBasedFloatArrays[AUX] );
         skimMatrices[BRD] = new Matrix( nameQualifier + "brd", descQualifier + " boardings skims", zeroBasedFloatArrays[BRD] );
         skimMatrices[FAR] = new Matrix( nameQualifier + "far", descQualifier + " fare skims", zeroBasedFloatArrays[FAR] );
+        skimMatrices[HSR] = new Matrix( nameQualifier + "hsr", descQualifier + " high speed rail ivt skims", zeroBasedFloatArrays[HSR] );
         
         for (int k=0; k < NUM_SKIMS; k++)
             skimMatrices[k].setExternalNumbers( alphaExternalNumbers );

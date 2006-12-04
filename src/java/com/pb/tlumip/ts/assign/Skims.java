@@ -529,7 +529,8 @@ public class Skims {
 
 	    int i;
 	    
-		double[][][] skimMatrices = new double[linkAttributes.length][numCentroids][];
+        double[][] tempMatrices;
+        double[][][] skimMatrices = new double[linkAttributes.length][numCentroids][];
 
 		
 		// create a ShortestPathTreeH object
@@ -541,22 +542,17 @@ public class Skims {
 		sp.setValidLinks( validLinks );
 		
 		
-		// loop through the arrays of link attributes, on link attribute for each skim table
-		for (int k=0; k < linkAttributes.length; k++) {
+		// loop through the origin zones
+		for (i=0; i < numCentroids; i++) {
 			
-			// loop through the origin zones
-			for (i=0; i < numCentroids; i++) {
-				
-				if (useMessageWindow) mw.setMessage2 ( "Skimming shortest paths for table " + (k+1) + " from zone " + (i+1) + " of " + alphaNumberArray.length + " zones." );
-	
-				// build the shortest path tree
-				sp.buildTree( i );
-				
-				// skim the shortest path tree for all the link attributes required
-				skimMatrices[k] = sp.getSkims( linkAttributes );
-				
-			}
-		
+			// build the shortest path tree
+			sp.buildTree( i );
+			
+			// skim the shortest path tree for all the link attributes required
+            tempMatrices = sp.getSkims( linkAttributes );
+            for (int k=0; k < linkAttributes.length; k++)
+                skimMatrices[k][i] = tempMatrices[k];
+			
 		}
 
 		return skimMatrices;

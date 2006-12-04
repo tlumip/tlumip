@@ -41,9 +41,9 @@ public class AuxTrNet implements Serializable {
 
 	protected static transient Logger logger = Logger.getLogger( AuxTrNet.class );
 
-    public static final double UNCONNECTED = 0.0;
     public static final double INFINITY = 1.0e+30;
     public static final double NEG_INFINITY = Float.NEGATIVE_INFINITY;
+    public static final double UNCONNECTED = 0.0;
 	
 	public static final int BOARDING_TYPE = 0;
 	public static final int IN_VEHICLE_TYPE = 1;
@@ -111,7 +111,7 @@ public class AuxTrNet implements Serializable {
 	double[] layoverTime;
 	double[] flow;
 	double[] driveAccTime;
-
+	char[] rteMode;
 
 
 	int[] ipa;
@@ -149,7 +149,8 @@ public class AuxTrNet implements Serializable {
 		trRoute = new int[maxAuxLinks];
 		ia = new int[maxAuxLinks];
 		ib = new int[maxAuxLinks];
-		linkType = new int[maxAuxLinks];
+        linkType = new int[maxAuxLinks];
+        rteMode = new char[maxAuxLinks];
 		freq = new double[maxAuxLinks];
 		cost = new double[maxAuxLinks];
 		invTime = new double[maxAuxLinks];
@@ -236,24 +237,24 @@ public class AuxTrNet implements Serializable {
 				        }
 				        else {
 				        	if (debug) logger.info ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-				       	   	addAuxLayoverLink (aux++, nextNode, nextNode + 1, ts, tr.headway[rte], rte);
+				       	   	addAuxLayoverLink (aux++, nextNode, nextNode + 1, ts, tr.headway[rte], rte, tr.mode[rte]);
 							nextNode++;
 				        }
 				    }
 				    else {
 				        if (ts.board) {
 				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-				           	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte);
+				           	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte, tr.mode[rte]);
                             if ( nodeRoutes[anode] == null )
                                 nodeRoutes[anode] = new HashSet();
                             nodeRoutes[anode].add(rte);
                             boardingNode[anode] = true;
 				        }
 				        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-				       	addAuxInVehicleLink (aux++, nextNode, ts, tsNext, tr.headway[rte], tr.speed[rte], rte);
+				       	addAuxInVehicleLink (aux++, nextNode, ts, tsNext, tr.headway[rte], tr.speed[rte], rte, tr.mode[rte]);
 				   	   	if (ts.alight) {
 							if (debug) logger.info ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-							addAuxAlightingLink (aux++, nextNode, bnode, ts, tr.headway[rte], rte);
+							addAuxAlightingLink (aux++, nextNode, bnode, ts, tr.headway[rte], rte, tr.mode[rte]);
 						}
 						nextNode++;
 					}
@@ -574,7 +575,8 @@ public class AuxTrNet implements Serializable {
             
             // determine time bands based on incremental distances and an assumed average speed.
             // we'll get nodes from the shortest congested drive time tree that are within this band
-            double minTime = 60.0*MAX_WALK_ACCESS_DIST/avgSpeed;
+//            double minTime = 60.0*MAX_WALK_ACCESS_DIST/avgSpeed;
+            double minTime = 0.0;
             double maxTime = 60.0*distanceIncrement/avgSpeed;
             
             // add distance incrementally until at least MIN_DRIVE_ACCESS_LINKS drive access links are found or MAX_DRIVE_ACCESS_DIST is reached
@@ -735,7 +737,7 @@ public class AuxTrNet implements Serializable {
 	}
 
 
-	void addAuxBoardingLink (int aux, int anode, int nextNode, TrSegment ts, double headway, int rte)	{
+	void addAuxBoardingLink (int aux, int anode, int nextNode, TrSegment ts, double headway, int rte, char mode)	{
 		// add boarding link to auxilliary link table
 		hwyLink[aux] = ts.link;
 		trRoute[aux] = rte;
@@ -749,10 +751,11 @@ public class AuxTrNet implements Serializable {
 		waitTime[aux] = 0.0;
 		layoverTime[aux] = 0.0;
 		linkType[aux] = BOARDING_TYPE;
+        rteMode[aux] = mode;
 	}
 
 
-	void addAuxInVehicleLink (int aux, int nextNode, TrSegment ts, TrSegment tsNext, double headway, double speed, int rte) {
+	void addAuxInVehicleLink (int aux, int nextNode, TrSegment ts, TrSegment tsNext, double headway, double speed, int rte, char mode) {
 		// add in-vehicle link to auxilliary link table
 		
 		hwyLink[aux] = ts.link;
@@ -779,10 +782,11 @@ public class AuxTrNet implements Serializable {
 			dwellTime[aux] = -ts.getDwt()/gDist[ts.link];
 		}
 		
+        rteMode[aux] = mode;
 	}
 
 
-	void addAuxAlightingLink (int aux, int nextNode, int bnode, TrSegment ts, double headway, int rte) {
+	void addAuxAlightingLink (int aux, int nextNode, int bnode, TrSegment ts, double headway, int rte, char mode) {
 		// add alighting link to auxilliary link table
 		hwyLink[aux] = ts.link;
 		trRoute[aux] = rte;
@@ -795,10 +799,11 @@ public class AuxTrNet implements Serializable {
 		invTime[aux] = 0.0;
 		layoverTime[aux] = 0.0;
 		linkType[aux] = ALIGHTING_TYPE;
+        rteMode[aux] = mode;
 	}
 
 
-	void addAuxLayoverLink (int aux, int nextNode, int layoverNode, TrSegment ts, double headway, int rte) {
+	void addAuxLayoverLink (int aux, int nextNode, int layoverNode, TrSegment ts, double headway, int rte, char mode) {
 		// add layover link to auxilliary link table
 		hwyLink[aux] = ts.link;
 		trRoute[aux] = rte;
@@ -811,6 +816,7 @@ public class AuxTrNet implements Serializable {
 		invTime[aux] = 0.0;
 		layoverTime[aux] = ts.lay;
 		linkType[aux] = LAYOVER_TYPE;
+        rteMode[aux] = mode; 
 	}
 
 

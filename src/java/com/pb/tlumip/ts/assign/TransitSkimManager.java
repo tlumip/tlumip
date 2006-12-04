@@ -283,6 +283,7 @@ public class TransitSkimManager {
 		OptimalStrategy os = new OptimalStrategy( ag );
 
         os.initSkimMatrices ( (String)globalPropertyMap.get("alpha2beta.file") );
+        
 		Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
 		
 		String myDateString = DateFormat.getDateTimeInstance().format(new Date());
