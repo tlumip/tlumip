@@ -21,12 +21,12 @@
         <pathelement location ="${censusdata.dir}/build/classes"/>
         <pathelement location ="${synpop.dir}/build/classes"/>
         <pathelement path="${build.classes.dir};${basedir}/config"/>
-        
+
         <fileset dir="${common-base.dir}">
             <include name="**/lib/*.jar"/>
             <include name="**/lib/*.zip"/>
         </fileset>
-    	
+
     	<fileset dir="${common-daf-v3.dir}">
     	    <include name="**/lib/*.jar"/>
     	    <include name="**/lib/*.zip"/>
@@ -59,7 +59,7 @@
     <!-- ********************************************************* -->
     <!-- Create a set of jar files for release -->
     <target name="release" depends="makejar">
-   
+
         <!-- copy dependencies to release directory -->
         <copy file="${common-base.dir}/release/common-base.jar" todir="${release.dir}"/>
         <copy file="${reference.dir}/release/reference.jar" todir="${release.dir}"/>
