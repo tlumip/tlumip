@@ -79,10 +79,10 @@ public class ALDModel extends ModelComponent {
                 //that ALD is done.
                 logger.info("ALD is done");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw new RuntimeException("InterruptedException: ", e);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("IOException: ", e);
         }
     }
 
