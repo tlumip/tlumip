@@ -73,7 +73,8 @@ public class ALDModel extends ModelComponent {
             
             process = rt.exec(execCommand);
             try {
-                while(!doneFile.exists())
+                long startTime = System.currentTimeMillis();
+                while(!doneFile.exists() && System.currentTimeMillis()-startTime < 300000)
                     Thread.sleep(2000);
                 //Will wait for the .RData file to appear before signaling 
                 //that ALD is done.
