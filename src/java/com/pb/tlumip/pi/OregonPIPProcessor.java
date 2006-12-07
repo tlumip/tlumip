@@ -213,8 +213,12 @@ public class OregonPIPProcessor extends PIPProcessor {
         logger.info("Creating new FloorspaceW.csv using current ALD PIAgForestFloorspace.csv file");
         //Read in the FloorspaceI.csv file that was produced by ALD
         TableDataSet floorspaceTable = loadTableDataSet("FloorspaceI","ald.input.data");
+        if (floorspaceTable == null)
+            throw new RuntimeException("floorspaceTable is null.");
         //And the PIAgForestFloorspace.csv file that was created by Tara
         TableDataSet piAgForTable = loadTableDataSet("PIAgForestFloorspace", "pi.base.data");
+        if (piAgForTable == null)
+            throw new RuntimeException("piAgForTable is null.");
         // Find the maximum alphazone in the file - we haven't yet read in the FloorspaceZones file
         int azoneCol = piAgForTable.checkColumnPosition("AZone");
         int flrTypeCol = piAgForTable.checkColumnPosition("FLRName");
