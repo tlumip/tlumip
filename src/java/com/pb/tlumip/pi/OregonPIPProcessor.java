@@ -172,27 +172,24 @@ public class OregonPIPProcessor extends PIPProcessor {
             //The ED File has 2 columns, Activity and Dollar Amounts
             if(readEDDollarFile){
                 String dollarPath = ResourceUtil.getProperty(piRb,"ed.input.data");
-                //read the ED input file and put the data into an array by Industry Index
+                //read the ED input file and put the data into a hashmap by industry
                 TableDataSet dollars = null;
                 try {
                     dollars = reader.readFile(new File(dollarPath + "ActivityDollarDataForPI.csv"));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException("Can't find ActivityDollarDataForPI.csv file");
                 }
 
-                float[] dollarsByIndustry = new float[dollars.getRowCount()]; //header row does not count in row count
-                if(logger.isDebugEnabled()) {
-                    logger.debug("column count: "+ dollars.getColumnCount());
-                }
+                HashMap<String, Float> dollarsByIndustry = new HashMap<String, Float>(); //header row does not count in row count
                 for(int r = 0; r < dollars.getRowCount(); r++){
-                    int industryIndex = indOccRef.getSplitIndustryIndexFromLabel(dollars.getStringValueAt(r + 1, 1));//Activity Name
-                    dollarsByIndustry[industryIndex] = dollars.getValueAt(r + 1, 2); //Total Dollars
+                    String splitIndustryLabel = dollars.getStringValueAt(r + 1, 1);//Activity Name
+                    dollarsByIndustry.put(splitIndustryLabel, dollars.getValueAt(r + 1, 2)); //Total Dollars
                 }
                 //update the values in the actI TableDataSet using the ED results
                 for(int r=0; r< actI.getRowCount(); r++){
-                    int industryIndex = indOccRef.getSplitIndustryIndexFromLabel(actI.getStringValueAt(r+1,activityColumnPosition));
-                    if (industryIndex >= 0){
-                        actI.setValueAt(r+1,sizeColumnPosition, dollarsByIndustry[industryIndex]);
+                    String key = actI.getStringValueAt(r+1,activityColumnPosition);
+                    if (dollarsByIndustry.containsKey(key)){
+                        actI.setValueAt(r+1,sizeColumnPosition, dollarsByIndustry.get(key));
                     }
                 }
             }
@@ -204,9 +201,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return;
         }//otherwise just use the ActivitiesI.csv file
-        return;
     }
 
     /* This method will read in the FloorspaceI.csv file that was output by ALD
