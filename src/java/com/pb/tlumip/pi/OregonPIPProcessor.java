@@ -64,7 +64,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     
     public OregonPIPProcessor() {
         super();
-        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
+
     }
 
     /**
@@ -87,7 +87,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     public void doProjectSpecificInputProcessing() {
-
+        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
         String calibrationMetaParameters = ResourceUtil.getProperty(piRb,"pi.readMetaParameters");
         if (calibrationMetaParameters.equalsIgnoreCase("true")) {
             setUpMetaParameters();
