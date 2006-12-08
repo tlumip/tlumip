@@ -631,7 +631,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         String[] hhCategories = new IncomeSize().getIncomeSizeLabels();
         
         
-        Set activities = indOccRef.getIndustryLabels();
+        Set activities = indOccRef.getSplitIndustryLabels();
         
         
         LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AZone","BZone",householdQuantity,occupations,hhCategories,activities);
