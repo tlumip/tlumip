@@ -18,6 +18,7 @@ package com.pb.tlumip.ao;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import com.pb.models.pecas.PIModel;
 import com.pb.tlumip.ald.ALDModel;
 import com.pb.tlumip.ct.CTModel;
 import com.pb.tlumip.ed.EDControl;
@@ -26,8 +27,6 @@ import com.pb.tlumip.spg.SPGnew;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.TS;
-import com.pb.models.pecas.PIModel;
-import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -49,17 +48,11 @@ public class ApplicationOrchestrator {
     private String scenarioName;
     private int t;
     private int baseYear;
-    AOProperties aoProps;
     ResourceBundle rb;
     BufferedWriter runLogWriter;
     File runLogPropFile;
-    HashMap runLogHashmap;
+    HashMap<String,String> runLogHashmap;
     
-//    CalibrationManager cManager;
-
-    public ApplicationOrchestrator(){
-        aoProps=new AOProperties();
-    }
 
     public ApplicationOrchestrator(ResourceBundle rb){
         this.rb = rb;
@@ -92,27 +85,27 @@ public class ApplicationOrchestrator {
                 runLogWriter.newLine();
                 runLogWriter.write("SCENARIO_NAME=" + scenarioName);
                 runLogWriter.newLine();
-                runLogWriter.write("BASE_YEAR=0");
+                runLogWriter.write("BASE_YEAR=" + baseYear);
                 runLogWriter.newLine();
-                runLogWriter.write("CURRENT_YEAR=0");
+                runLogWriter.write("CURRENT_INTERVAL=0");
                 runLogWriter.newLine();
-//                runLogWriter.write("GLOBAL_TEMPLATE_YEAR=0");
+//                runLogWriter.write("GLOBAL_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
-//                runLogWriter.write("AO_TEMPLATE_YEAR=0");
+//                runLogWriter.write("AO_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
-//                runLogWriter.write("ED_TEMPLATE_YEAR=0");
+//                runLogWriter.write("ED_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
-//                runLogWriter.write("ALD_TEMPLATE_YEAR=0");
+//                runLogWriter.write("ALD_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
-//                runLogWriter.write("SPG_TEMPLATE_YEAR=0");
+//                runLogWriter.write("SPG_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
-//                runLogWriter.write("PI_TEMPLATE_YEAR=0");
+//                runLogWriter.write("PI_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
-//                runLogWriter.write("CT_TEMPLATE_YEAR=0");
+//                runLogWriter.write("CT_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
-//                runLogWriter.write("PT_TEMPLATE_YEAR=0");
+//                runLogWriter.write("PT_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
-//                runLogWriter.write("TS_TEMPLATE_YEAR=0");
+//                runLogWriter.write("TS_TEMPLATE_INTERVAL=0");
 //	            runLogWriter.newLine();
                 runLogWriter.write("ED_LAST_RUN=0");
                 runLogWriter.newLine();
@@ -150,9 +143,9 @@ public class ApplicationOrchestrator {
 	            runLogWriter.newLine();
 	            runLogWriter.write("SCENARIO_NAME=" + scenarioName);
 	            runLogWriter.newLine();
-	            runLogWriter.write("BASE_YEAR=0");
+	            runLogWriter.write("BASE_YEAR=" + baseYear);
 	            runLogWriter.newLine();
-	            runLogWriter.write("CURRENT_YEAR=" + t);
+	            runLogWriter.write("CURRENT_INTERVAL=" + t);
 	            runLogWriter.newLine();
 	            runLogWriter.flush();
 	        } catch (IOException e) {
@@ -217,7 +210,7 @@ public class ApplicationOrchestrator {
     
     private String createAppRb(String appName){
         //First read in the template properties file.  This will have default values and
-        //tokens (surrounded by @ symbols).  The tokens will be replace with the values
+        //tokens (surrounded by @ symbols).  The tokens will be replaced with the values
         //in the runLogHashMap
 
         //Get Template File
@@ -276,7 +269,10 @@ public class ApplicationOrchestrator {
             e1.printStackTrace();
         }
 
-        return appPropertyFile.getAbsolutePath();
+        if (appPropFileName.equalsIgnoreCase("global"))
+            return (outputPath + "global.properties");
+        else
+            return (outputPath + appPropFileName + "/" + appPropFileName + ".properties");
     }
 
 
@@ -312,12 +308,12 @@ public class ApplicationOrchestrator {
 
             if(templateFile.exists()){
                 logger.info("Full Path to Template File: " + templateFile.getAbsolutePath());
-                String currentTemplate = (String) runLogHashmap.get(editedName + "_TEMPLATE_YEAR");
+                String currentTemplate = (String) runLogHashmap.get(editedName + "_TEMPLATE_INTERVAL");
                 if(currentTemplate == null){ // no previous template was found.
-                    runLogHashmap.put(editedName + "_TEMPLATE_YEAR", Integer.toString(i));
+                    runLogHashmap.put(editedName + "_TEMPLATE_INTERVAL", Integer.toString(i));
                     try {
                         logger.info("Writing the initial template location for this app into the run log");
-                        runLogWriter.write(editedName + "_TEMPLATE_YEAR=" + Integer.toString(i));
+                        runLogWriter.write(editedName + "_TEMPLATE_INTERVAL=" + Integer.toString(i));
                         runLogWriter.newLine();
                         runLogWriter.flush();
                     } catch (IOException e) {
@@ -326,7 +322,7 @@ public class ApplicationOrchestrator {
                  } else if(!currentTemplate.equals(Integer.toString(i))){  //a more recent template file was found
                     try {
                         logger.info("Writing the new template location for this app into the run log");
-                        runLogWriter.write(editedName + "_TEMPLATE_YEAR=" + Integer.toString(i));
+                        runLogWriter.write(editedName + "_TEMPLATE_INTERVAL=" + Integer.toString(i));
                         runLogWriter.newLine();
                         runLogWriter.flush();
                     } catch (IOException e) {
@@ -347,9 +343,8 @@ public class ApplicationOrchestrator {
 
 
     public ResourceBundle findResourceBundle(String pathToRb) {
-        ResourceBundle rb = null;
         File propFile = new File(pathToRb);
-        rb = ResourceUtil.getPropertyBundle(propFile);
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(propFile);
         if(rb == null ) logger.fatal("Problem loading resource bundle: " + pathToRb);
         return rb;
     }
@@ -359,7 +354,7 @@ public class ApplicationOrchestrator {
     
     public void writeRunParamsToPropertiesFile(String pathToAppRb, String pathToGlobalRb, String moduleName){
         File runParams = new File(rootDir + "/scenario_" + scenarioName + "/daf/RunParams.properties");
-        logger.info("Writing 'timeInterval' and 'pathToRb' into " + runParams.getAbsolutePath());
+        logger.info("Writing 'scenarioName', 'baseYear, 'timeInterval', 'pathToRb' and 'pathToGlobalRb' into " + runParams.getAbsolutePath());
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileWriter(runParams));
@@ -421,10 +416,10 @@ public class ApplicationOrchestrator {
         
     }
 
-    public void runPIModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runPIModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
         PIModel pi = new PIModel();
         pi.setResourceBundles(appRb, globalRb);
-        pi.startModel(timeInterval);
+        pi.startModel(baseYear, timeInterval);
     }
 
     public void runPIDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb, String nodeName){
@@ -496,83 +491,10 @@ public class ApplicationOrchestrator {
         }
     }
     
-    
-    public void addPropertiesObject(AOProperties properties){
-        this.aoProps = properties;
-    }
-
-    private Digester initDigester(Digester digester){
-
-        //we are setting up rules to parse the AOProperties.xml file
-        //addObjectCreate() creates an aoProperty object
-        //first param is the tag pattern that we want to identify and set a rule for
-        //second param is the default class name
-        //third param will override the default class name if it is an attribute in the xml file.
-        digester.addObjectCreate("propertiesObject", "com.pb.tlumip.model.ModelProperties", "className");
-
-        digester.addCallMethod("propertiesObject/property","setProperty",2);
-        digester.addCallParam("propertiesObject/property/name",0);
-        digester.addCallParam("propertiesObject/property/value",1);
-
-        digester.addObjectCreate("propertiesObject/resource","com.pb.tlumip.ao.Resource"); //create a Resource object
-        digester.addSetProperties("propertiesObject/resource");  //will set the "name" field in the resource object
-        digester.addBeanPropertySetter("propertiesObject/resource/type"); //will set the "type" field in the resource object
-        digester.addBeanPropertySetter("propertiesObject/resource/ip");//sets the "ip" field in resource object
-        digester.addBeanPropertySetter("propertiesObject/resource/status"); //set the "status" field in resource object
-        digester.addSetNext("propertiesObject/resource","addResource"); //adds the resource to the AOProperties object and pops the
-                                                                        //resource object off the stack
-
-        digester.addObjectCreate("propertiesObject/scenario","com.pb.tlumip.ao.Scenario"); //create a Scenario object
-        digester.addSetProperties("propertiesObject/scenario"); //will set the "name" field in the scenario object
-        digester.addBeanPropertySetter("propertiesObject/scenario/start"); //sets the value of "start"
-        digester.addBeanPropertySetter("propertiesObject/scenario/end");  //sets the value of "end"
-        digester.addSetNext("propertiesObject/scenario","addScenario"); //adds Scenario object to AOProperties object and pops off the stack
-
-        digester.addObjectCreate("propertiesObject/intervalUpdate","com.pb.tlumip.ao.IntervalUpdate");
-        digester.addSetProperties("propertiesObject/intervalUpdate"); //sets "year" field in IntervalUpdate object
-        digester.addBeanPropertySetter("propertiesObject/intervalUpdate/fileUpdates/file"); //sets an array of file updates
-        digester.addBeanPropertySetter("propertiesObject/intervalUpdate/policyFileUpdates/policyFile"); //sets an array of policy file updates
-        digester.addSetNext("propertiesObject/intervalUpdate","addIntervalUpdate"); //adds to AOProperties and pops off the stack
-
-        //addSetNext()
-        //first param is the tag pattern
-        //second param is the method in the ApplicationOrchestrator that will be called
-        //to pass back the object that was just created.
-        digester.addSetNext("propertiesObject","addPropertiesObject"); //adds the AOProperties object to the ApplicationOrchestrator and pops
-                                                                        //off the stack.
-        return digester;
-
-    }
-
-
-
-    public String toString(){
-        String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer();
-
-        buf.append("--- properties ---").append(newline);
-        buf.append(aoProps.getPropertyMap()).append(newline).append(newline);
-
-        buf.append("---resources---").append(newline);
-        for(int i=0;i<aoProps.getResourceList().size();i++)
-            buf.append(aoProps.getResourceList().get(i)).append(newline);
-
-        buf.append("--scenario---").append(newline);
-        buf.append(aoProps.getScenario()).append(newline);
-
-        buf.append("---interval updates---").append(newline);
-        for(int i=0;i<aoProps.getIntervalUpdateList().size();i++)
-            buf.append(aoProps.getIntervalUpdateList().get(i)).append(newline);
-
-        return buf.toString();
-
-    }
-
-
     public static void main(String[] args) {
 
         try {
-            //Get command line arguments: Scenario Name, Application Name,
+            //Get command line arguments: Root Directory, Scenario Name, Application Name,
             //                            Time Interval and Start Node (for daf applications)
             String rootDir = args[0];
             String scenarioName = args[1];
@@ -597,10 +519,10 @@ public class ApplicationOrchestrator {
             //start the application, passing along the property bundle
             ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,scenarioName,t,baseYear);
 
-            //Before starting in year 1, AO needs to create the base year run log
+            //Before starting, AO needs to create the base year run log
             ao.createBaseYearPropFile();
 
-            //For each year (starting in year 1) AO needs to create the runLogProperty file and write in the current year
+            //For each t interval that the model runs in,  AO needs to create the runLogProperty file and write in the current year
             // if the file does not already exist in that year.  This file will then be updated by any application that runs.
             ao.createRunLogPropFile();
             
@@ -617,11 +539,11 @@ public class ApplicationOrchestrator {
             //value from the ao.properties so that you can pass it to the application that you are starting.
             ResourceBundle aoRb = ao.findResourceBundle(pathToAoRb);
             ao.setRb(aoRb);
-            
+
             //Create a global.properties file for the current 't' directory
             // using the most recent globalTemplate.properties file
             String pathToGlobalRb = ao.createAppRb("global");
-            
+
             //Get the global properties file that was just created so that you can pass it to the current application
             ResourceBundle globalRb = null;
             if(!appName.endsWith("daf")){
@@ -652,7 +574,7 @@ public class ApplicationOrchestrator {
                 ao.runSPG1Model(baseYear,t,appRb, globalRb);
             }else if (appName.equalsIgnoreCase("PI")){
                 logger.info("AO will now start PI for simulation year " + (baseYear+t));
-                ao.runPIModel(t,appRb,globalRb);
+                ao.runPIModel(baseYear,t,appRb,globalRb);
             }else if(appName.equalsIgnoreCase("PIDAF")){
                 logger.info("AO will now start PIDAF for simulation year " + (baseYear+t));
                 ao.runPIDAFModel(t,pathToAppRb,pathToGlobalRb,nodeName);
@@ -665,7 +587,6 @@ public class ApplicationOrchestrator {
             }else if(appName.equalsIgnoreCase("PTDAF")){
                 logger.info("AO will now start PTDAF for simulation year " + (baseYear+t));
                 ao.runPTDAFModel(t, pathToAppRb,pathToGlobalRb,nodeName);
-
             }else if(appName.equalsIgnoreCase("CT")){
                 logger.info("AO will now start CT for simulation year " + (baseYear+t));
                 ao.runCTModel(t, appRb, globalRb);
@@ -676,29 +597,13 @@ public class ApplicationOrchestrator {
                 logger.fatal("AppName not recognized");
             }
 
-
-//        ApplicationOrchestrator ao = new ApplicationOrchestrator();
-//        Digester digester = new Digester();
-//        digester.push(ao); //is supposed to put the application orchestator on the stack
-//        digester = ao.initDigester(digester);
-//        try {
-//            digester.parse(new File("c:/code/tlumip/config/AOProperties.xml"));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (SAXException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println(ao.toString());
-
             ao.logAppRun(appName);
             logger.info(appName + " is complete");
             
             
         } catch (Exception e) {
             logger.fatal("An application threw the following error");
-            logger.fatal(e);
-            e.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException("An application threw the following error", e);
         }
     }
 
