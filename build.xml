@@ -17,6 +17,7 @@
         <pathelement location="${common-daf-v2.dir}/build/classes"/>
     	<pathelement location="${common-daf-v3.dir}/build/classes"/>
         <pathelement location ="${pecas.dir}/build/classes"/>
+        <pathelement location ="${utils.dir}/build/classes"/>
         <pathelement location ="${pasaat.dir}/build/classes"/>
         <pathelement location ="${censusdata.dir}/build/classes"/>
         <pathelement location ="${synpop.dir}/build/classes"/>
@@ -49,6 +50,7 @@
         <ant dir="${common-daf-v2.dir}" target="build" inheritAll="false"/>
 	    <ant dir="${common-daf-v3.dir}" target="build" inheritAll="false"/>
         <ant dir="${pecas.dir}" target="build" inheritAll="false"/>
+        <ant dir="${utils.dir}" target="build" inheritAll="false"/>
         <ant dir="${pasaat.dir}" target="build" inheritAll="false"/>
         <ant dir="${censusdata.dir}" target="build" inheritAll="false"/>
         <ant dir="${synpop.dir}" target="build" inheritAll="false"/>
@@ -66,6 +68,7 @@
     	<copy file="${common-daf-v3.dir}/release/common-daf-v3.jar" todir="${release.dir}"/>
         <copy file="${pecas.dir}/release/pecas.jar" todir="${release.dir}"/>
         <copy file="${censusdata.dir}/release/censusdata.jar" todir="${release.dir}"/>
+        <copy file="${utils.dir}/release/utils.jar" todir="${release.dir}"/>
         <copy file="${pasaat.dir}/release/pasaat.jar" todir="${release.dir}"/>
         <copy file="${synpop.dir}/release/synpop.jar" todir="${release.dir}"/>
         <copy file="${thirdParty.dir}/logging-log4j-1.2.9/log4j-1.2.9.jar" todir="${release.dir}"/>
