@@ -34,8 +34,7 @@
 
         <fileset dir="${thirdParty.dir}">
             <include name="**/logging-log4j-1.2.9/*.jar"/>
-            <include name="**/mtj/*.jar"/>
-            <include name="**/jakarta-commons/commons-digester-1.5/*.jar"/>
+            <include name="**/mtj/*.jar"/>            
         </fileset>
 
 
@@ -70,6 +69,7 @@
         <copy file="${pasaat.dir}/release/pasaat.jar" todir="${release.dir}"/>
         <copy file="${synpop.dir}/release/synpop.jar" todir="${release.dir}"/>
         <copy file="${thirdParty.dir}/logging-log4j-1.2.9/log4j-1.2.9.jar" todir="${release.dir}"/>
+        <copy file="${thirdParty.dir}/mtj/mtj.jar" todir="${release.dir}"/>
     </target>
     
 </project>
