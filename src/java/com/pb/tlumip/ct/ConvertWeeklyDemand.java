@@ -16,7 +16,6 @@
  */
 package com.pb.tlumip.ct;
 
-import java.util.*;
 import java.io.*;
 
 class ConvertWeeklyDemand {
