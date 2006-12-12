@@ -18,14 +18,14 @@ package com.pb.tlumip.pt;
 
 import com.pb.common.util.ObjectUtil;
 import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.model.Industry;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import org.apache.log4j.Logger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.ResourceBundle;
 
 /** 
  * PTDataReader reads Household and Person data 
