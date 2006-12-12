@@ -16,16 +16,16 @@
  */
 package com.pb.tlumip.ha;
 
-import com.pb.tlumip.model.ModeChoiceLogsums;
-import com.pb.tlumip.model.PersonInterface;
-import com.pb.tlumip.model.SimulationDays;
-import com.pb.tlumip.pt.Pattern;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pecas.AbstractTAZ;
 import com.pb.models.pecas.CommodityZUtility;
 import com.pb.models.pecas.LogitModel;
+import com.pb.tlumip.model.ModeChoiceLogsums;
+import com.pb.tlumip.model.PersonInterface;
+import com.pb.tlumip.model.SimulationDays;
 
-import java.util.*;
+import java.util.Hashtable;
+import java.util.ResourceBundle;
 
 /**
  * A class that represents a person
@@ -517,9 +517,7 @@ public class Person implements PersonInterface {
     /* not yet implemented
     */
 
-    public Pattern choosePattern() {
-        return new Pattern("hwh");
-    }
+    
 
  /*   public CommodityFlow retrieveCommodityFlowForTripType(int work1work2school3) {
         UnitOfLand location = null;
