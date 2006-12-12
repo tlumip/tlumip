@@ -16,9 +16,9 @@
  */
 package com.pb.tlumip.pt;
 
-import com.pb.models.pt.TazManager;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pt.Taz;
+import com.pb.models.pt.TazManager;
 
 import java.util.ResourceBundle;
 
@@ -38,15 +38,17 @@ public class TLUMIPTazManager extends TazManager {
 
 
     public void setParkingCost(ResourceBundle rb, String fileName) {
+        float conversionFactor = Float.parseFloat(rb.getString("cf.1990.to.2000.dollars"));
         TableDataSet table = loadTableDataSet(rb, fileName);
-        int workColumn = table.getColumnPosition("WorkParkingCost");
-        int nonWorkColumn = table.getColumnPosition("NonWorkParkingCost");
-        int aZoneColumn = table.getColumnPosition("ZoneNumber");
-        for(int i=1;i<=table.getRowCount();i++){
-            if(tazData.containsKey(new Integer((int)table.getValueAt(i,aZoneColumn)))){
-                Taz thisTaz = tazData.get((int)table.getValueAt(i,aZoneColumn));
-                thisTaz.workParkingCost = table.getValueAt(i,workColumn);
-                thisTaz.nonWorkParkingCost = table.getValueAt(i,nonWorkColumn);
+        int workColumn = table.getColumnPosition("DayPark");
+        int nonWorkColumn = table.getColumnPosition("HourPark");
+        int aZoneColumn = table.getColumnPosition("TAZ");
+
+        for (int i = 1; i <= table.getRowCount(); i++) {
+            if (tazData.containsKey((int)table.getValueAt(i, aZoneColumn))) {
+                Taz thisTaz = tazData.get((int)table.getValueAt(i, aZoneColumn));
+                thisTaz.workParkingCost = (table.getValueAt(i, workColumn))*conversionFactor;
+                thisTaz.nonWorkParkingCost = (table.getValueAt(i, nonWorkColumn))*conversionFactor;
             }
         }
     }
