@@ -36,10 +36,10 @@ import com.pb.tlumip.ts.assign.Network;
  */
 public class NetworkHandlerRpc implements NetworkHandlerIF {
 
-    public static final String HANDLER_NAME = "networkHandler";
-    
     protected static transient Logger logger = Logger.getLogger(NetworkHandlerRpc.class);
 
+    public static final String HANDLER_NAME = "networkHandler";
+    
     RpcClient rc = null;
 
 

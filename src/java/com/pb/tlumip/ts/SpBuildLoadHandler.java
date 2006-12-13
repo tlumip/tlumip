@@ -23,12 +23,9 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.tlumip.ts.daf3.AonBuildLoadCommon;
-import com.pb.tlumip.ts.daf3.SpBuildLoadMt;
-
-import java.util.concurrent.BlockingQueue;
-
 import org.apache.log4j.Logger;
+
+import com.pb.common.rpc.DHashMap;
 
 
 
@@ -36,80 +33,117 @@ public class SpBuildLoadHandler {
 
     protected static Logger logger = Logger.getLogger(SpBuildLoadHandler.class);
 
-    // set the frequency with which the shared class is polled to see if all threads have finshed their work.
-    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
-    public static String remoteHandlerName = "spBuildLoadHandler";
+    public static final String HANDLER_NAME = "spBuildLoadHandler";
     
-    int numberOfThreads;
+    private DHashMap controlMap = new DHashMap( AonFlowHandler.CONTROL_MAP_NAME );
+    private DHashMap resultsMap = new DHashMap( AonFlowHandler.RESULTS_MAP_NAME );
+    
+    private SpBuildLoadCommon spCommon = null;
+    
+    private int numberOfThreads = 1;
     
 
 
 	public SpBuildLoadHandler() {
 
+        // setup method sets up singleton class common to the objects created to run on multiple threads 
+	    setup();
+        
+        
+        // create the objects and start their run() methods 
+        startThreads();
+        
+        
+        // wait for a signal to be set in the controlMap, then update resultsMap.
+        waitForSignalThenWriteResults();
+        
+    }
+
+    
+    private void setup() {
+
+        spCommon = SpBuildLoadCommon.getInstance();
+        
+        // ShortestPathHandlers assume that a NetworkHandler and a DemandHandler are running either in the same VM or as an RPC server
+        spCommon.setup( NetworkHandler.getInstance(), DemandHandler.getInstance() );
+        
     }
 
 
-    public double[][] getLoadedAonFlows ( int[][] workElements ) {
-
-
-        // generate a NetworkHandler object to use for assignments and skimming
-        NetworkHandlerIF nh = NetworkHandler.getInstance();
-        
-        // update the link costs based on current flows
-        double[] linkCost = null;
-        boolean[][] validLinksForClasses = null;
-        try {
-            validLinksForClasses = nh.getValidLinksForAllClasses();
-            linkCost = nh.setLinkGeneralizedCost();
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught setting link generalized costs prior to loading aon flows in SpBuildLoadHandler.getLoadedAonFlows().", e );
-            System.exit(1);
-        }
-
-        
-        AonBuildLoadCommon buildLoadShared = AonBuildLoadCommon.getInstance();
-        buildLoadShared.setup(validLinksForClasses);
-        
-        BlockingQueue workList = buildLoadShared.getWorkList();
-        
-        
-        // put the origin, user class pairs into the workList.
-        // put a -1, -1 pair for each thread to be started at the end of the workList.
-        try {
-            
-            for (int i=0; i < workElements.length; i++)
-                workList.put( workElements[i] );
-        
-            int[] endOfWorkMarker = { -1, -1 };
-            for (int i=0; i < numberOfThreads; i++)
-                workList.put( endOfWorkMarker );
-        
-        } catch (InterruptedException e) {
-            logger.error ( "InterruptedException caught putting work object into workList in SpBuildLoadHandler.getLoadedAonFlows().", e);
-            System.exit(-1);
-        }
-
+    private void startThreads() {
         
         // start the specified number of threads to build and load shortest path trees from the workList
         for (int i = 0; i < numberOfThreads; i++) {
-            SpBuildLoadMt spMt = new SpBuildLoadMt( linkCost, validLinksForClasses, buildLoadShared );
+            SpBuildLoadMt spMt = new SpBuildLoadMt( spCommon );
             new Thread(spMt).start();
         }
         
+    }
+    
+
+
+    private void waitForSignalThenWriteResults() {
         
-        // wait here until all threads have indicated they are done.
-        while ( buildLoadShared.getThreadsFinishedCount() < numberOfThreads ) {
-            try {
-                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
+        // wait here until all packets have been computed by distributed processes.
+        // AonFlowHandler is watching the number of completed packets and will set a signal when they're all finished.
+        try {
+        
+            while ( ! (Boolean)controlMap.get( AonFlowHandler.COMPILE_RESULTS_SIGNAL ) ) {
+                try {
+                    Thread.sleep( AonFlowHandler.POLLING_FREQUENCY_IN_SECONDS*1000 );
+                }
+                catch (InterruptedException e){
+                    logger.error ( "", e);
+                }
             }
-            catch (InterruptedException e){
-                logger.error ( "InterruptedException thrown while waiting " + POLLING_FREQUENCY_IN_SECONDS + " seconds.", e);
-            }
+            
+            getResultsAndUpdateResultsMap();
+            
+        }
+        catch (Exception e) {
+            logger.error ( "Exception thrown while waiting " + AonFlowHandler.POLLING_FREQUENCY_IN_SECONDS + " seconds to see if COMPILE_RESULTS signal has been set.", e);
         }
         
-        return buildLoadShared.getResultsArray();
         
+        
+        // at this point, all link flows have been written by this SpBuildLoadHandler to the resultsMap.
+        // get the number of packets processed by this handler and add it to the COMPILED_RESULTS value
+        // that other handlers are also updating so the AonFlowHandler will know when results for all
+        // work packets have been updated to the resultsMap.
+        try {
+            int value = (Integer)controlMap.get( AonFlowHandler.NUM_COMPILED_RESULTS_SIGNAL ) + spCommon.getPacketsCompletedCount();
+            controlMap.put( AonFlowHandler.NUM_COMPILED_RESULTS_SIGNAL, value );
+        }
+        catch (Exception e) {
+            logger.error ("exception thrown updating number of packets completed count by this SpBuildLoadHandler into controlMap.", e);
+        }
+
     }
 
+
+    private void getResultsAndUpdateResultsMap() {
+        
+        // at this point, all work packets have been completed by threads created on this and possibly many other VMs.
+        // the results accumulated in spBuildLoadCommon in this VM will be accumulated by AonFlowHanlder.
+        double[][] aonFlows = spCommon.getResultsArray();
+
+        int m=0;
+        int k=0;
+        String key = "";
+        double value = 0.0;
+        try {
+            for (m=0; m < aonFlows.length; m++) {
+                for (k=0; k < aonFlows[m].length; k++) {
+                    key = m + "_" + k;
+                    value = (Double)resultsMap.get(key);
+                    resultsMap.put(key, value + aonFlows[m][k]);
+                }
+            }
+        }
+        catch (Exception e) {
+            logger.error ("exception thrown putting flows into resultsMap in SpBuildLoadHandler.  m=" + m + ", k=" + k + ", aonFlows[m][k]=" + aonFlows[m][k] + ", key=" + key + ", value=" + value + ".", e);
+        }
+        
+    }
+    
 }

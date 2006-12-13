@@ -23,6 +23,9 @@ package com.pb.tlumip.ts;
  */
 
 
+import com.pb.common.rpc.DBlockingQueue;
+import com.pb.common.rpc.DHashMap;
+import com.pb.common.rpc.RpcException;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
@@ -34,16 +37,22 @@ import org.apache.log4j.Logger;
 
 public class AonFlowHandler implements AonFlowHandlerIF {
 
-    public static final int NUM_DISTRIBUTED_HANDLERS = 1;
-    public static final int[] numberOfThreads = { 1 };
-//    public static final int NUM_DISTRIBUTED_HANDLERS = 2;
-//    public static final int[] numberOfThreads = { 2, 4 };
+    protected static Logger logger = Logger.getLogger(AonFlowHandler.class);
 
+    public static final String COMPILE_RESULTS_SIGNAL = "aonFlowHandlerCompileResults";
+    public static final String NUM_COMPILED_RESULTS_SIGNAL = "aonFlowHandlerNumCompiledResults";
+    public static final String NUM_COMPLETED_PACKETS_NAME = "aonFlowHandlerWorkCompletedQueue";
     
-    public static String remoteHandlerName = "aonFlowHandler";
+    public static final String WORK_QUEUE_NAME = "aonFlowHandlerWorkQueue";
+    public static final String CONTROL_MAP_NAME = "aonFlowHandlerControlMap";
+    public static final String RESULTS_MAP_NAME = "aonFlowHandlerResultsMap";
     
-	protected static Logger logger = Logger.getLogger(AonFlowHandler.class);
+    public static final int PACKET_SIZE = 100;
 
+    // set the frequency with which the shared class is polled to see if all threads have finshed their work.
+    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
+    
+    
 
     int numLinks;
     int numCentroids;
@@ -61,7 +70,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     HashMap globalPropertyMap;
 
     
-
 
 	public AonFlowHandler() {
     }
@@ -104,12 +112,19 @@ public class AonFlowHandler implements AonFlowHandlerIF {
             tripTableRowSums = dh.getTripTableRowSums();
         }
         catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
+            logger.error ( "Exception caught getting trip table row sums from DemandHandler.", e );
             System.exit(1);
         }
         
         // build and load shortest path trees for all zones, all user classes, and return aon link flows by user class
-        double[][] aonFlow = calculateAonLinkFlows ( tripTableRowSums );
+        double[][] aonFlow = null;
+        try {
+            aonFlow = calculateAonLinkFlows ( tripTableRowSums );
+        }
+        catch ( Exception e ) {
+            logger.error ( "Exception caught calculating AON link flows in AonFlowHandler.", e );
+            System.exit(1);
+        }
         
         return aonFlow;
         
@@ -135,93 +150,111 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     
 
-    private double[][] calculateAonLinkFlows ( double[][] tripTableRowSums ) {
-
-        int origin=0;
-        
-        int[][][] workElements = null;
-        int[] workElementZoneList = new int[numUserClasses*numCentroids];
-        int[] workElementUserClassList = new int[numUserClasses*numCentroids];
+    private double[][] calculateAonLinkFlows ( double[][] tripTableRowSums ) throws RpcException {
 
         
+        DHashMap workResultsMap = new DHashMap(RESULTS_MAP_NAME);
+        DHashMap controlMap = new DHashMap(CONTROL_MAP_NAME);
+
+        
+        
+        controlMap.put(COMPILE_RESULTS_SIGNAL, false);
+        controlMap.put(NUM_COMPLETED_PACKETS_NAME, 0);
+        
+        // distribute work into packets and put on queue
+        int numPackets = putWorkPacketsOnQueue(tripTableRowSums);
+                
+        
+        
+        // wait here until all packets have been processed.
+        while ( (Integer)controlMap.get( NUM_COMPLETED_PACKETS_NAME ) < numPackets ) {
+            try {
+                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
+            }
+            catch (InterruptedException e){
+                logger.error ( "InterruptedException thrown while waiting " + POLLING_FREQUENCY_IN_SECONDS + " seconds to see if all packets have been handled.", e);
+            }
+        }
+        controlMap.put(NUM_COMPILED_RESULTS_SIGNAL, 0);
+        controlMap.put(COMPILE_RESULTS_SIGNAL, true);
+
+        
+
+        
+        // wait here until all results from all packets have been transferred.
+        while ( (Integer)controlMap.get( NUM_COMPILED_RESULTS_SIGNAL ) < numPackets ) {
+            try {
+                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
+            }
+            catch (InterruptedException e){
+                logger.error ( "InterruptedException thrown while waiting " + POLLING_FREQUENCY_IN_SECONDS + " seconds to see if all compiled results have been updated.", e);
+            }
+        }
+
+
+        // resultsMap is complete, so get results.
+        double[][] aonFlow = new double[numUserClasses][numLinks];
+        
+        int m=0;
         int k=0;
-        for (int m=0; m < numUserClasses; m++) {
-            for (origin=startOriginTaz; origin < lastOriginTaz; origin++) {
-            
-                if (tripTableRowSums[m][origin] > 0.0) {
-                    workElementZoneList[k] = origin;
-                    workElementUserClassList[k] = m ;
-                    k++;
-                }
-
-            }
-        }
-
-        
-        // divide the work evenly among handlers for now.  First allocate workElements/handlers to
-        // the first n-1 handlers and accumulate the number of work elements allocated.  Allocate
-        // the remaining elements to the last handler.
-        int[] numWorkElementsPerNode = new int[NUM_DISTRIBUTED_HANDLERS];
-        int cumNumElements = 0;
-        for (int i=0; i < NUM_DISTRIBUTED_HANDLERS - 1; i++) {
-            numWorkElementsPerNode[i] = (int)(k/NUM_DISTRIBUTED_HANDLERS);
-            cumNumElements += numWorkElementsPerNode[i]; 
-        }
-        numWorkElementsPerNode[NUM_DISTRIBUTED_HANDLERS - 1] = k - cumNumElements; 
-
-
-        
-        // dimension the work elements array from the number of work elemets added to the ArrayList.
-        workElements = new int[NUM_DISTRIBUTED_HANDLERS][][];
-
-        for (int n=0; n < NUM_DISTRIBUTED_HANDLERS; n++) {
-
-            workElements[n] = new int[numWorkElementsPerNode[n]][2];
-            
-            for (int i=0; i < numWorkElementsPerNode[n]; i++) {
-                workElements[n][i][0] = workElementZoneList[i];
-                workElements[n][i][1] = workElementUserClassList[i];
-            }
-            
-        }
-        
-
-        double[][][] returnedAonFlows = new double[NUM_DISTRIBUTED_HANDLERS][][];
-        
-        
-        
-        // create multiple handlers to distribute shortest path tree building and loading
-        SpBuildLoadHandler[] spblh = new SpBuildLoadHandler[NUM_DISTRIBUTED_HANDLERS];
-        for (int n=0; n < NUM_DISTRIBUTED_HANDLERS; n++)
-            spblh[n] = new SpBuildLoadHandler();
-        
-        
-        // send work elements arrays to each of the handlers
+        String key = "";
         try {
-            for (int n=0; n < NUM_DISTRIBUTED_HANDLERS; n++) {
-                logger.info( "SpBuildLoadHandler" + "_" + (n+1) + " sent " + numWorkElementsPerNode[n] + " userclass, origin zone pairs." );
-                returnedAonFlows[n] = spblh[n].getLoadedAonFlows( workElements[n] );
-            }
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-
-        
-        // initialize the AON Flow array
-        double[][] aonFlow = new double[returnedAonFlows[0].length][returnedAonFlows[0][0].length];
-        
-        // collect the distributed results into an array of AON link flows by user class
-        for (int n=0; n < NUM_DISTRIBUTED_HANDLERS; n++) {
-            for (int m=0; m < returnedAonFlows[n].length; m++) {
-                for (int j=0; j < returnedAonFlows[n][m].length; j++) {
-                    aonFlow[m][j] += returnedAonFlows[n][m][j];
+            for (m=0; m < numUserClasses; m++) {
+                for (k=0; k < numLinks; k++) {
+                    key = m + "_" + k;
+                    aonFlow[m][k] = (Double)workResultsMap.get(key);
                 }
             }
+        }
+        catch (Exception e) {
+            logger.error ("exception thrown retreiving final flows from resultsMap in AonFlowHandler.  m=" + m + ", k=" + k + ", aonFlow[m][k]=" + aonFlow[m][k] + ", key=" + key + ".", e);
         }
 
         return aonFlow;
+        
+    }
+
+    
+    
+    // Work elements consist of a [user class, origin taz].
+    // There will by numUserClasses*numCentroids total work elements.
+    // Packets of work elements will be created  and placed on a distributed queue
+    // to be processed concurrently if possible.
+    private int putWorkPacketsOnQueue( double[][] tripTableRowSums ) throws RpcException {
+
+        DBlockingQueue workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
+
+        int numPackets = 0;
+        
+        int[][] workElements = new int[PACKET_SIZE][2];
+        
+        int k=0;
+        for (int m=0; m < numUserClasses; m++) {
+            for (int i=startOriginTaz; i < lastOriginTaz; i++) {
+            
+                if (tripTableRowSums[m][i] > 0.0) {
+                    workElements[k][0] = m;
+                    workElements[k][1] = i;
+                    k++;
+
+                    if ( k == PACKET_SIZE ) {
+                        workQueue.put(workElements);
+                        numPackets++;
+
+                        workElements = new int[PACKET_SIZE][2];
+                        k = 0;
+                    }
+                }
+                
+            }
+        }
+
+        if ( k > 0 ) {
+            workQueue.put(workElements);
+            numPackets++;
+        }
+
+        return numPackets;
         
     }
 

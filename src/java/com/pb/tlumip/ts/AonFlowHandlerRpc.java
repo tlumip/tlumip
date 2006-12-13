@@ -41,7 +41,7 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
 
 	protected static Logger logger = Logger.getLogger(AonFlowHandlerRpc.class);
 
-    public static final String HANDLER_NAME = "aonFlowHandler";
+    public static String HANDLER_NAME = "aonFlowHandler";
     
     RpcClient rc = null;
 

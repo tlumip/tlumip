@@ -966,6 +966,16 @@ public class OptimalStrategy {
                     nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
                     
             }
+            else if ( ag.linkType[k] == AuxTrNet.LAYOVER_TYPE ) {
+                
+                nodeSkims[IVT][ag.ia[k]] = nodeSkims[IVT][ag.ib[k]];
+                nodeSkims[FWT][ag.ia[k]] = nodeSkims[FWT][ag.ib[k]];
+                nodeSkims[TWT][ag.ia[k]] = nodeSkims[TWT][ag.ib[k]] + ag.layoverTime[k];
+                nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
+                nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
+                nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
+                    
+            }
             else if ( ag.linkType[k] == AuxTrNet.ALIGHTING_TYPE ) {
                 
                 nodeSkims[IVT][ag.ia[k]] = nodeSkims[IVT][ag.ib[k]];

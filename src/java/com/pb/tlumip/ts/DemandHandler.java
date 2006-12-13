@@ -137,9 +137,7 @@ public class DemandHandler implements DemandHandlerIF {
     
     
     public double[] getTripTableRow ( int userClass, int row ) {
-        
         return multiclassTripTable[userClass][row];
-        
     }
     
     
