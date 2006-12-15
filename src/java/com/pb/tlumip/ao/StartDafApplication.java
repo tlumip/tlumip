@@ -45,7 +45,6 @@ public class StartDafApplication {
     private long startNodeSleepTime = 15000;
     private long startClusterApplicationSleepTime = 15000;
     private long fileCheckSleepTime = 55;
-    private int baseYear;
     private int t;
     String pathPrefix;
     String doneFilePath;
@@ -61,10 +60,6 @@ public class StartDafApplication {
         this(appName, "node0", timeInterval, rb);
     }
 
-    public StartDafApplication(String appName, int baseYear, int timeInterval, ResourceBundle rb){
-        this(appName, "node0", baseYear, timeInterval, rb);
-    }
-
     public StartDafApplication(String appName, String nodeName, int timeInterval, ResourceBundle rb){
         this.rb = rb;
         this.appName = appName;
@@ -77,45 +72,6 @@ public class StartDafApplication {
         this.pathPrefix = rootDir + "scenario_" + scenarioName+ "/";
 
         this.errorFile = new File(rootDir + LogServer.clientLogName);
-    }
-
-    public StartDafApplication(String appName, String nodeName, int baseYear, int timeInterval, ResourceBundle rb){
-        this.rb = rb;
-        this.appName = appName;
-        this.nodeName = nodeName;
-        this.baseYear = baseYear;
-        this.t = timeInterval;
-
-        this.rootDir =  ResourceUtil.getProperty(rb, "root.dir");
-        this.scenarioName = ResourceUtil.getProperty(rb, "scenario.name");
-
-        this.pathPrefix = rootDir + "scenario_" + scenarioName+ "/";
-
-    }
-
-    public void run(){
-        //get the path to the command file and make sure the file exists
-        String cmdPath = pathPrefix  + ResourceUtil.getProperty(rb,"command.file.dir");
-        logger.info("CommandFile Path: "+ cmdPath);
-        commandFile = getCommandFile(cmdPath);
-
-        //construct the path to the $appName_done.txt file
-        //and delete the file if it already exists
-        int appIndex = appName.indexOf("daf");
-        String doneFile = pathPrefix + "t" + t + "/" + appName.substring(0,appIndex) + "/" + appName + "_done.txt";
-        logger.info("DoneFile Path: " + doneFile);
-        appDone = new File(doneFile);
-        deleteAppDoneFile(appDone);
-
-        //begin the daf application by writing the correct
-        //commands to the command file
-        logger.info("Starting nodes, cluster and application.  Waiting " + startNodeSleepTime + " ms for nodes to start");
-        writeCommands();
-
-        logger.info("Ending application");
-        //end daf application by writing 'StopNode' into the command file
-        cleanUpAndExit();
-
     }
 
     private File getCommandFile(String cmdFilePath){
@@ -205,7 +161,6 @@ public class StartDafApplication {
             //Check if an error has been written to LogServer file
             if (errorFile != null && errorFile.length() > 0) {
                 logger.fatal("leaving waitForAppDoneOrErrorCondition() because an error was found");
-                stopRequested=true;
                 break;
             }
 
@@ -219,6 +174,33 @@ public class StartDafApplication {
     private void cleanUpAndExit(){
         writeCommandToCmdFile(Entry.STOP_NODE);
     }
+
+    public void run(){
+        //get the path to the command file and make sure the file exists
+        String cmdPath = pathPrefix  + ResourceUtil.getProperty(rb,"command.file.dir");
+        logger.info("CommandFile Path: "+ cmdPath);
+        commandFile = getCommandFile(cmdPath);
+
+        //construct the path to the $appName_done.txt file
+        //and delete the file if it already exists
+        int appIndex = appName.indexOf("daf");
+        String doneFile = pathPrefix + "t" + t + "/" + appName.substring(0,appIndex) + "/" + appName + "_done.txt";
+        logger.info("DoneFile Path: " + doneFile);
+        appDone = new File(doneFile);
+        deleteAppDoneFile(appDone);
+
+        //begin the daf application by writing the correct
+        //commands to the command file
+        logger.info("Starting nodes, cluster and application.  Waiting " + startNodeSleepTime + " ms for nodes to start");
+        writeCommands();
+
+        logger.info("Ending application");
+        //end daf application by writing 'StopNode' into the command file
+        cleanUpAndExit();
+
+    }
+
+
 
 
     public static void main(String[] args) {
