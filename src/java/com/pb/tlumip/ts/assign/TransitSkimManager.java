@@ -103,9 +103,11 @@ public class TransitSkimManager {
 	 * 0: in-vehicle time Matrix
 	 * 1: first wait Matrix
 	 * 2: total wait Matrix
-	 * 3: access time Matrix
-	 * 4: boardings Matrix
-	 * 5: cost Matrix
+     * 3: access time Matrix
+     * 4: walk time Matrix
+	 * 5: boardings Matrix
+     * 6: cost Matrix
+     * 7: high-speed/Amtrak rail ivt Matrix
 	 */
 	public Matrix[] getPeakWalkTransitSkims () {
 		return getTransitSkims ( "peak", "Walk" );
