@@ -17,7 +17,6 @@
 package com.pb.tlumip.ts.transit;
 
 import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.assign.Network;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -45,11 +44,12 @@ public class OptimalStrategy {
 	public static final int IVT = 0;
 	public static final int FWT = 1;
 	public static final int TWT = 2;
-	public static final int AUX = 3;
-	public static final int BRD = 4;
-    public static final int FAR = 5;
-    public static final int HSR = 6;
-	public static final int NUM_SKIMS = 7;
+    public static final int ACC = 3;
+    public static final int AUX = 4;
+	public static final int BRD = 5;
+    public static final int FAR = 6;
+    public static final int HSR = 7;
+	public static final int NUM_SKIMS = 8;
 
 	static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -748,10 +748,6 @@ public class OptimalStrategy {
                 inVehTime += ag.invTime[k]*ag.flow[k];
                 dwellTime += ag.dwellTime[k]*ag.flow[k];
                 
-                int dummy=0;
-                if ( inVehTime > 1000 || startFromNode == 445 && startToNode == 1 ) {
-                    dummy = 1;
-                }
             }
             else if ( ag.linkType[k] == AuxTrNet.AUXILIARY_TYPE ) {
 
@@ -948,6 +944,7 @@ public class OptimalStrategy {
                 }
                 nodeSkims[IVT][ag.ia[k]] = nodeSkims[IVT][ag.ib[k]];
                 nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
+                nodeSkims[ACC][ag.ia[k]] = nodeSkims[ACC][ag.ib[k]];
                 nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
                 
             }
@@ -957,6 +954,7 @@ public class OptimalStrategy {
                 nodeSkims[FWT][ag.ia[k]] = nodeSkims[FWT][ag.ib[k]];
                 nodeSkims[TWT][ag.ia[k]] = nodeSkims[TWT][ag.ib[k]] + ag.dwellTime[k];
                 nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
+                nodeSkims[ACC][ag.ia[k]] = nodeSkims[ACC][ag.ib[k]];
                 nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
                 nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
                 
@@ -972,6 +970,7 @@ public class OptimalStrategy {
                 nodeSkims[FWT][ag.ia[k]] = nodeSkims[FWT][ag.ib[k]];
                 nodeSkims[TWT][ag.ia[k]] = nodeSkims[TWT][ag.ib[k]] + ag.layoverTime[k];
                 nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
+                nodeSkims[ACC][ag.ia[k]] = nodeSkims[ACC][ag.ib[k]];
                 nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
                 nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
                     
@@ -982,6 +981,7 @@ public class OptimalStrategy {
                 nodeSkims[FWT][ag.ia[k]] = nodeSkims[FWT][ag.ib[k]];
                 nodeSkims[TWT][ag.ia[k]] = nodeSkims[TWT][ag.ib[k]];
                 nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
+                nodeSkims[ACC][ag.ia[k]] = nodeSkims[ACC][ag.ib[k]];
                 nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
                 nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
                 nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
@@ -995,6 +995,7 @@ public class OptimalStrategy {
                     nodeSkims[FWT][ag.ia[k]] = 0.0;
                     nodeSkims[TWT][ag.ia[k]] = 0.0;
                     nodeSkims[AUX][ag.ia[k]] = ag.walkTime[k];
+                    nodeSkims[ACC][ag.ia[k]] = 0.0;
                     nodeSkims[BRD][ag.ia[k]] = 0.0;
                     nodeSkims[FAR][ag.ia[k]] = 0.0;
                     nodeSkims[HSR][ag.ia[k]] = 0.0;
@@ -1004,7 +1005,8 @@ public class OptimalStrategy {
                     skimResults[IVT][ag.ia[k]] = nodeSkims[IVT][ag.ib[k]];
                     skimResults[FWT][ag.ia[k]] = nodeSkims[FWT][ag.ib[k]];
                     skimResults[TWT][ag.ia[k]] = nodeSkims[TWT][ag.ib[k]];
-                    skimResults[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]] + accessTime[k];
+                    skimResults[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]];
+                    skimResults[ACC][ag.ia[k]] = nodeSkims[ACC][ag.ib[k]] + accessTime[k];
                     skimResults[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
                     skimResults[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
                     skimResults[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
@@ -1014,7 +1016,8 @@ public class OptimalStrategy {
                     nodeSkims[IVT][ag.ia[k]] = nodeSkims[IVT][ag.ib[k]];
                     nodeSkims[FWT][ag.ia[k]] = nodeSkims[FWT][ag.ib[k]];
                     nodeSkims[TWT][ag.ia[k]] = nodeSkims[TWT][ag.ib[k]];
-                    nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]] + accessTime[k];
+                    nodeSkims[AUX][ag.ia[k]] = nodeSkims[AUX][ag.ib[k]] + ag.walkTime[k];
+                    nodeSkims[ACC][ag.ia[k]] = nodeSkims[ACC][ag.ib[k]] + ag.walkTime[k];
                     nodeSkims[BRD][ag.ia[k]] = nodeSkims[BRD][ag.ib[k]];
                     nodeSkims[FAR][ag.ia[k]] = nodeSkims[FAR][ag.ib[k]];
                     nodeSkims[HSR][ag.ia[k]] = nodeSkims[HSR][ag.ib[k]];
@@ -1104,7 +1107,8 @@ public class OptimalStrategy {
         skimMatrices[IVT] = new Matrix( nameQualifier + "ivt", descQualifier + " in-vehicle time skims", zeroBasedFloatArrays[IVT] );
         skimMatrices[FWT] = new Matrix( nameQualifier + "fwt", descQualifier + " first wait time skims", zeroBasedFloatArrays[FWT] );
         skimMatrices[TWT] = new Matrix( nameQualifier + "twt", descQualifier + " total wait time skims", zeroBasedFloatArrays[TWT] );
-        skimMatrices[AUX] = new Matrix( nameQualifier + "aux", descQualifier + " auxilliary time skims", zeroBasedFloatArrays[AUX] );
+        skimMatrices[AUX] = new Matrix( nameQualifier + "acc", descQualifier + " other/egress time skims", zeroBasedFloatArrays[ACC] );
+        skimMatrices[ACC] = new Matrix( nameQualifier + "aux", descQualifier + " access time skims", zeroBasedFloatArrays[AUX] );
         skimMatrices[BRD] = new Matrix( nameQualifier + "brd", descQualifier + " boardings skims", zeroBasedFloatArrays[BRD] );
         skimMatrices[FAR] = new Matrix( nameQualifier + "far", descQualifier + " fare skims", zeroBasedFloatArrays[FAR] );
         skimMatrices[HSR] = new Matrix( nameQualifier + "hsr", descQualifier + " high speed rail ivt skims", zeroBasedFloatArrays[HSR] );
