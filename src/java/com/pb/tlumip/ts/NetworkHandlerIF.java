@@ -9,6 +9,9 @@ import com.pb.tlumip.ts.assign.Network;
 
 public interface NetworkHandlerIF extends Serializable {
 
+    public static final String HANDLER_NAME = "networkHandler";
+    
+    public String getRpcConfigFileName();
     public Network getNetwork();
     public int getNumCentroids();
     public int getMaxCentroid();

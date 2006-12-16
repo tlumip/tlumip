@@ -38,8 +38,6 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
 
     protected static transient Logger logger = Logger.getLogger(NetworkHandlerRpc.class);
 
-    public static final String HANDLER_NAME = "networkHandler";
-    
     RpcClient rc = null;
 
 
@@ -62,6 +60,17 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
     }
     
     
+    public String getRpcConfigFileName() {
+        String returnValue = null;
+        try {
+            returnValue = (String)rc.execute(HANDLER_NAME+".getRpcConfigFileName", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
     
     public Network getNetwork() {
         Network returnValue = null;
@@ -275,6 +284,21 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         double[] returnValue = null;
         try {
             returnValue = (double[])rc.execute(HANDLER_NAME+".getDist", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+
+    public double getFwOfValue( boolean[] validLinks, double[][] flow ) {
+        double returnValue = -1.0;
+        try {
+            Vector params = new Vector();
+            params.add( validLinks );
+            params.add( flow );
+            returnValue = (Double)rc.execute(HANDLER_NAME+".getFwOfValue", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {

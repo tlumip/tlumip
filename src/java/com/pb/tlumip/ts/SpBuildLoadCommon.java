@@ -17,10 +17,10 @@
 package com.pb.tlumip.ts;
 
 
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 
-import com.pb.common.rpc.DBlockingQueue;
-import com.pb.common.rpc.DHashMap;
 import com.pb.tlumip.ts.AonFlowHandler;
 
 /**
@@ -36,16 +36,14 @@ public class SpBuildLoadCommon {
     
     private static SpBuildLoadCommon instance = new SpBuildLoadCommon();
 
-    private DBlockingQueue workQueue = new DBlockingQueue(AonFlowHandler.WORK_QUEUE_NAME);
-    private DHashMap controlMap = new DHashMap( AonFlowHandler.CONTROL_MAP_NAME );
+    private HashMap controlMap;
     
-    private NetworkHandlerIF nh;
-    private DemandHandlerIF dh;
-    
-    private double[][] cumulativeBuildLoadResults;
+    private double[][][] cumulativeBuildLoadResults;
+    private double[][][] tripTables;
     
     private int packetsCompleted = 0;
     
+    private NetworkHandlerIF nh;
     
     private SpBuildLoadCommon () {
     }
@@ -62,39 +60,33 @@ public class SpBuildLoadCommon {
     /** setup data structures to be used by all threads
      *  working on building and loading aon link flows.
      */
-    public void setup(NetworkHandlerIF nh, DemandHandlerIF dh) {
+    public void setup(int numThreads, int numUserClasses, int numLinks, double[][][] tripTables, NetworkHandlerIF nh, HashMap controlMap ) {
 
-        // get a handle to a NetworkHandler object.
         this.nh = nh;
-        
-        // get a handle to a DemandHandler object.
-        this.dh = dh;
-        
-       
-        int numUserClasses = nh.getNumUserClasses();
-        int numLinks = nh.getLinkCount();
+        this.tripTables = tripTables;
+        this.controlMap = controlMap;
         
         // declare an an array to be used by all threads for accumulating loaded aon link flows.
-        cumulativeBuildLoadResults = new double[numUserClasses][numLinks];
+        cumulativeBuildLoadResults = new double[numThreads][numUserClasses][numLinks];
         
         packetsCompleted = 0;
         
     }
     
 
-    /** return the queue for holding work elements to be completed
-     * *
-     */
-    public DBlockingQueue getWorkList() {
-        return workQueue;
-    }
-
-    
     /** return the array for accumulating loaded aon link flows.
      * *
      */
-    public double[][] getResultsArray() {
-        return cumulativeBuildLoadResults;
+    public double[][] getResultsArray( int threadId ) {
+        return cumulativeBuildLoadResults[threadId];
+    }
+
+
+    /** update the array afterr accumulating loaded aon link flows.
+     * *
+     */
+    public void setResultsArray( int threadId, double[][] updatedArray ) {
+        cumulativeBuildLoadResults[threadId] = updatedArray;
     }
 
 
@@ -102,18 +94,7 @@ public class SpBuildLoadCommon {
      * *
      */
     public double[] getTripTableRow( int m, int z ) {
-
-        // get the user class m trips from zone z to all other zones (trip table row z).
-        double[] tripTableRow = null;
-        try {
-            tripTableRow = dh.getTripTableRow( m, z );
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught getting trip table row for user class = " + m + ", origin zone index = " + z + ".", e ); 
-            System.exit(1);
-        }
-
-        return tripTableRow;
+        return tripTables[m][z];
     }
 
 
@@ -124,14 +105,25 @@ public class SpBuildLoadCommon {
 
         packetsCompleted++;
 
-        try {
-            int value = (Integer)controlMap.get( AonFlowHandler.NUM_COMPLETED_PACKETS_NAME ) + 1;
-            controlMap.put( AonFlowHandler.NUM_COMPLETED_PACKETS_NAME, value );
+        int numPackets = (Integer)controlMap.get( AonFlowHandler.NUM_ASSIGNED_PACKETS_NAME );
+        if ( packetsCompleted == numPackets ) {
+
+            try {
+                controlMap.put( AonFlowHandler.NUM_COMPILED_RESULTS_SIGNAL, 0 );
+                controlMap.put( AonFlowHandler.COMPILE_RESULTS_SIGNAL, true );
+            }
+            catch ( Exception e ) {
+                logger.error ("exception thrown setting COMPILE_RESULTS_SIGNAL to true and NUM_COMPILED_RESULTS_SIGNAL to 0 in controlMap.", e);
+            }
+
         }
-        catch (Exception e) {
-            logger.error ("exception thrown updating number of packets completed count by this SpBuildLoadHandler into controlMap.", e);
-        }
-        
+
+    }
+    
+    
+    public int getPacketsLeft() {
+        int numPackets = (Integer)controlMap.get( AonFlowHandler.NUM_ASSIGNED_PACKETS_NAME );
+        return numPackets - packetsCompleted;
     }
     
     

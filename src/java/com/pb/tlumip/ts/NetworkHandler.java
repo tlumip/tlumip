@@ -22,7 +22,9 @@ import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.DataReader;
+import com.pb.common.rpc.DafNode;
 import com.pb.common.util.ResourceUtil;
+
 import com.pb.tlumip.ts.assign.Network;
 
 /**
@@ -34,8 +36,8 @@ public class NetworkHandler implements NetworkHandlerIF {
     protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 
     Network g = null;
-    
-    
+    static String rpcConfigFile = null;
+
     
     public NetworkHandler() {
     }
@@ -44,18 +46,31 @@ public class NetworkHandler implements NetworkHandlerIF {
     // Factory Method to return either local or remote instance
     public static NetworkHandlerIF getInstance( String rpcConfigFile ) {
     
-        // if false, remote method calls on networkHandler are made 
-        boolean localFlag = true;
-    
-        //This method needs to be written
-        //if (DafNode.getInstance().isHandlerLocal("networkHandler"))
-        //    localFlag = true;
-    
-        if (localFlag == false && rpcConfigFile != null) {
-            return new NetworkHandlerRpc( rpcConfigFile );
-        }
-        else { 
+        // store config file name in this object so it can be retrieved by others if needed.
+        NetworkHandler.rpcConfigFile = rpcConfigFile;
+        
+        
+        if ( rpcConfigFile == null ) {
+
+            // if rpc config file is null, then all handlers are local, so return local instance
             return new NetworkHandler();
+
+        }
+        else {
+            
+            // return either a local instance or an rpc instance depending on how the handler was defined.
+            Boolean isLocal = DafNode.getInstance().isHandlerLocal( HANDLER_NAME );
+
+            if ( isLocal == null )
+                // handler name not found in config file, so create a local instance.
+                return new NetworkHandler();
+            else if ( isLocal )
+                // handler name found in config file and is local, so create a local instance.
+                return new NetworkHandler();
+            else 
+                // handler name found in config file but is not local, so create an rpc instance.
+                return new NetworkHandlerRpc( rpcConfigFile );
+
         }
         
     }
@@ -67,6 +82,10 @@ public class NetworkHandler implements NetworkHandlerIF {
     }
     
 
+    public String getRpcConfigFileName() {
+        return rpcConfigFile;
+    }
+    
     public Network getNetwork() {
         return g;
     }

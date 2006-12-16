@@ -24,22 +24,23 @@ package com.pb.tlumip.ts;
 
 
 
+import com.pb.tlumip.ts.FW;
 import com.pb.tlumip.ts.assign.Skims;
-import com.pb.tlumip.ts.assign.FW;
 import com.pb.tlumip.ts.assign.TransitSkimManager;
 import com.pb.tlumip.ts.transit.AuxTrNet;
-import com.pb.tlumip.ts.transit.OpStrategy;
+import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
 
 
 import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.matrix.Matrix;
+import com.pb.common.rpc.DafNode;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
 import java.util.Arrays;
-import java.io.File;
+import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -56,34 +57,16 @@ public class TS {
 
     final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
 
-	HashMap tsPropertyMap;
-    HashMap globalPropertyMap;
-
     ResourceBundle appRb;
     ResourceBundle globalRb;
     
-	double[][][] multiclassTripTable = new double[highwayModeCharacters.length][][];
 
-	
-	
-	public TS( String appPropertyName, String globalPropertyName ) {
-
-        this.appRb = ResourceUtil.getPropertyBundle( new File(appPropertyName) );
-        this.globalRb = ResourceUtil.getPropertyBundle( new File(globalPropertyName) );
-        
-        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-		
-	}
-
+    
     public TS(ResourceBundle appRb, ResourceBundle globalRb) {
 
         this.appRb = appRb;
         this.globalRb = globalRb;
         
-        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-
 	}
 
 
@@ -94,8 +77,8 @@ public class TS {
         logger.info("TS main - highway network initialized\n\n");
 
     	// load the trips from PT and CT trip lists into multiclass o/d demand matrices for assignment
-		createMulticlassDemandMatrices ( nh, assignmentPeriod );
-        logger.info("TS main - demand matrices created\n\n");
+		//createMulticlassDemandMatrices ( nh, assignmentPeriod );
+        //logger.info("TS main - demand matrices created\n\n");
 		
 		// run the multiclass assignment for the time period
     	multiclassEquilibriumHighwayAssignment ( nh, assignmentPeriod );
@@ -121,22 +104,13 @@ public class TS {
     }
 	
 	
-    private void createMulticlassDemandMatrices ( NetworkHandlerIF nh, String assignmentPeriod ) {
-        
-		DemandHandler d = new DemandHandler();
-        d.setNetworkAttributes( nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), nh.userClassesIncludeTruck() );
-        d.setup( appRb, globalRb, assignmentPeriod );
-        
-        multiclassTripTable = d.getMulticlassTripTables();
-        
-    }
-
-    
-	
     private void multiclassEquilibriumHighwayAssignment ( NetworkHandlerIF nh, String assignmentPeriod ) {
         
 		long startTime = System.currentTimeMillis();
 		
+        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
+
 		String myDateString;
 
 		
@@ -145,13 +119,13 @@ public class TS {
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating + " + assignmentPeriod + " FW object at: " + myDateString);
 		FW fw = new FW();
-		fw.initialize( tsPropertyMap, nh );
+		fw.initialize( appRb, globalRb, nh, highwayModeCharacters );
 
 
 		// Compute Frank-Wolfe solution
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("starting + " + assignmentPeriod + " fw at: " + myDateString);
-		fw.iterate ( multiclassTripTable );
+		fw.iterate ();
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("done with + " + assignmentPeriod + " fw at: " + myDateString);
 
@@ -205,6 +179,11 @@ public class TS {
     
     
     public void checkODPairsWithTripsForNetworkConnectivity (NetworkHandlerIF nh) {
+        DemandHandler d = new DemandHandler();
+        d.setup( appRb, globalRb, "peak", nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        d.buildDemandObject();
+
+        double[][][] multiclassTripTable = d.getMulticlassTripTables();
 		checkODConnectivity(nh, multiclassTripTable);
     }
 
@@ -212,6 +191,9 @@ public class TS {
     
     
     public void checkODConnectivity ( NetworkHandlerIF nh, double[][][] trips ) {
+
+        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
         String timePeriod = "peak";
         
@@ -267,6 +249,9 @@ public class TS {
     
     public void writeHighwaySkimMatrix ( NetworkHandlerIF nh, String assignmentPeriod, String skimType, char modeChar ) {
 
+        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
+
 		logger.info("Writing " + assignmentPeriod + " time skim matrix for highway mode " + modeChar + " to disk...");
         long startTime = System.currentTimeMillis();
         
@@ -282,6 +267,9 @@ public class TS {
 
     
     public void writeHighwaySkimMatrices ( NetworkHandlerIF nh, String assignmentPeriod, char modeChar ) {
+
+        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
     	String[] skimTypeArray = { "time", "dist" };
     	
@@ -307,10 +295,10 @@ public class TS {
         
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
-        d.setNetworkAttributes( nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), nh.userClassesIncludeTruck() );
-        d.setup( appRb, globalRb, assignmentPeriod );
+        d.setup( appRb, globalRb, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        d.buildDemandObject();
         
-        double[][] tripTable = d.getWalkTransitTripTable ( assignmentPeriod );
+        double[][] tripTable = d.getWalkTransitTripTable ();
         
         // load the triptable on walk access transit network
         double[] rteBoardings = optimalStrategyNetworkLoading ( assignmentPeriod, "walk", nh, ag, tripTable );
@@ -326,10 +314,10 @@ public class TS {
         
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
-        d.setNetworkAttributes( nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), nh.userClassesIncludeTruck() );
-        d.setup( appRb, globalRb, assignmentPeriod );
+        d.setup( appRb, globalRb, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        d.buildDemandObject();
         
-        double[][] tripTable = d.getDriveTransitTripTable ( assignmentPeriod );
+        double[][] tripTable = d.getDriveTransitTripTable ();
         
         // load the triptable on drive access transit network
         double[] rteBoardings = optimalStrategyNetworkLoading ( assignmentPeriod, "drive", nh, ag, tripTable );
@@ -342,7 +330,7 @@ public class TS {
     private double[] optimalStrategyNetworkLoading ( String assignmentPeriod, String accessMode, NetworkHandlerIF nh, AuxTrNet ag, double[][] tripTable ) {
         
         // create an optimal strategy object for this highway and transit network
-        OpStrategy os = new OpStrategy( ag );
+        OptimalStrategy os = new OptimalStrategy( ag );
 
         double[] routeBoardings = new double[ag.getMaxRoutes()];
 
@@ -399,6 +387,8 @@ public class TS {
    
     private AuxTrNet getTransitNetwork( NetworkHandlerIF nh, String period, String accessMode ) {
         
+        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+
         boolean create_new_network = CREATE_NEW_NETWORK;
 
         AuxTrNet ag = null; 
@@ -428,6 +418,7 @@ public class TS {
     
     private AuxTrNet createTransitNetwork ( NetworkHandlerIF nh, String period, String accessMode ) {
         
+        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
 
         String auxTransitNetworkListingFileName = (String)tsPropertyMap.get("AUX_TRANSIT_NETWORK_LISTING");
 
@@ -575,25 +566,47 @@ public class TS {
 
     public static void main (String[] args) {
 
-        TS tsTest = new TS( ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle (args[2]) );
+        TS tsMain = new TS( ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle (args[1]) );
 
+        String rpcConfigFileName = (args.length == 3 ? args[2] : null);
+        
+        
+        // Need a DafNode instance to read a config file and initialize a DafNode.
+        if ( rpcConfigFileName != null ) {
+            
+            try {
+                DafNode.getInstance().initClient(rpcConfigFileName);
+            }
+            catch (MalformedURLException e) {
+                logger.error( "MalformedURLException caught in TS.main() initializing a DafNode.", e);
+            }
+            catch (Exception e) {
+                logger.error( "Exception caught in TS.main() initializing a DafNode.", e);
+            }
+            
+        }
+
+        
         // generate a NetworkHandler object to use for peak period assignments and skimming
-        NetworkHandlerIF nhPeak = NetworkHandler.getInstance(args[0]);
+        NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
 
-        tsTest.assignAndSkimHighway ( nhPeak, "peak" );
-        tsTest.assignAndSkimTransit ( nhPeak, "peak", ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle(args[2]) );
- 
-        nhPeak = null;
+        tsMain.runHighwayAssignment(nhPeak, "peak");
         
-        // generate a NetworkHandler object to use for off-peak period assignments and skimming
-        NetworkHandlerIF nhOffPeak = NetworkHandler.getInstance(args[0]);
-
-        tsTest.assignAndSkimHighway ( nhOffPeak, "offpeak" );
-        tsTest.assignAndSkimTransit ( nhOffPeak, "offpeak", ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle(args[2]) );
-        
-        nhOffPeak = null;
+//        tsMain.assignAndSkimHighway ( nhPeak, "peak" );
+//        tsMain.assignAndSkimTransit ( nhPeak, "peak", ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle(args[2]) );
+// 
+//        nhPeak = null;
+//        
+//        // generate a NetworkHandler object to use for off-peak period assignments and skimming
+//        NetworkHandlerIF nhOffPeak = NetworkHandler.getInstance( rpcConfigFileName );
+//
+//        tsMain.assignAndSkimHighway ( nhOffPeak, "offpeak" );
+//        tsMain.assignAndSkimTransit ( nhOffPeak, "offpeak", ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle(args[2]) );
+//        
+//        nhOffPeak = null;
 
         logger.info ("TS.main() is finished.");
+ 
     }
 
 }

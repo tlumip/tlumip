@@ -6,9 +6,10 @@ import java.util.ResourceBundle;
 
 public interface DemandHandlerIF {
 
-    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod );
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod );
-    public int setNetworkAttributes( int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, boolean userClassesIncludeTruck );
+    public static final String HANDLER_NAME = "demandHandler";
+    
+    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck );
+    public boolean buildDemandObject();
     public double[][][] getMulticlassTripTables();
     public double[][] getTripTableRowSums();
     public double[] getTripTableRow(int userClass, int row);

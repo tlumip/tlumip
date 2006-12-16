@@ -27,7 +27,6 @@ import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 
-import java.util.HashMap;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ResourceBundle;
@@ -41,15 +40,7 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
 
 	protected static Logger logger = Logger.getLogger(AonFlowHandlerRpc.class);
 
-    public static String HANDLER_NAME = "aonFlowHandler";
-    
     RpcClient rc = null;
-
-    String componentPropertyName;
-    String globalPropertyName;
-    
-	HashMap componentPropertyMap;
-    HashMap globalPropertyMap;
 
 	
 
@@ -74,14 +65,15 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
     
    
 
-    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap ) {
-        
-        Vector params = new Vector();
-        params.add(componentPropertyMap);
-        params.add(globalPropertyMap);
+    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, NetworkHandlerIF nh, char[] highwayModeCharacters ) {
 
         boolean returnValue = false;
         try {
+            Vector params = new Vector();
+            params.add(componentRb);
+            params.add(globalRb);
+            params.add(nh);
+            params.add(highwayModeCharacters);
             returnValue = (Boolean)rc.execute(HANDLER_NAME+".setup", params);
         } catch (RpcException e) {
             logger.error( e );
@@ -93,23 +85,6 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
     }
     
     
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb ) {
-        
-        Vector params = new Vector();
-        params.add(componentRb);
-        params.add(globalRb);
-
-        boolean returnValue = false;
-        try {
-            returnValue = (Boolean)rc.execute(HANDLER_NAME+".setup", params);
-        } catch (RpcException e) {
-            logger.error( e );
-        } catch (IOException e) {
-            logger.error(  e );
-        }
-        return returnValue;
-        
-    }
     
     
     public double[][] getMulticlassAonLinkFlows () {

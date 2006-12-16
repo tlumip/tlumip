@@ -41,15 +41,8 @@ public class DemandHandlerRpc implements DemandHandlerIF {
 
 	protected static Logger logger = Logger.getLogger(DemandHandlerRpc.class);
 
-    public static final String HANDLER_NAME = "demandHandler";
-    
     RpcClient rc = null;
 
-    final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
-
-    String componentPropertyName;
-    String globalPropertyName;
-    
 	HashMap componentPropertyMap;
     HashMap globalPropertyMap;
 
@@ -86,33 +79,18 @@ public class DemandHandlerRpc implements DemandHandlerIF {
     
     
    
+    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
 
-    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod ) {
-        
-        Vector params = new Vector();
-        params.add(componentPropertyMap);
-        params.add(globalPropertyMap);
-        params.add(timePeriod);
-
-        boolean returnValue = false;
-        try {
-            returnValue = (Boolean)rc.execute(HANDLER_NAME+".setup", params);
-        } catch (RpcException e) {
-            logger.error( e );
-        } catch (IOException e) {
-            logger.error(  e );
-        }
-        return returnValue;
-        
-    }
-    
-    
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod ) {
-        
         Vector params = new Vector();
         params.add(componentRb);
         params.add(globalRb);
         params.add(timePeriod);
+        params.add(numCentroids);
+        params.add(numUserClasses);
+        params.add(nodeIndexArray);
+        params.add(assignmentGroupMap);
+        params.add(highwayModeCharacters);
+        params.add(userClassesIncludeTruck);
 
         boolean returnValue = false;
         try {
@@ -127,18 +105,11 @@ public class DemandHandlerRpc implements DemandHandlerIF {
     }
     
     
-    public int setNetworkAttributes( int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, boolean userClassesIncludeTruck ) {
+    public boolean buildDemandObject() {
         
-        Vector params = new Vector();
-        params.add(numCentroids);
-        params.add(numUserClasses);
-        params.add(nodeIndexArray);
-        params.add(assignmentGroupMap);
-        params.add(userClassesIncludeTruck);
-
-        int returnValue = -1;
+        boolean returnValue = false;
         try {
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".setNetworkAttributes", params);
+            returnValue = (Boolean)rc.execute(HANDLER_NAME+".buildDemandObject", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {

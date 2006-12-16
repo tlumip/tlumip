@@ -1,9 +1,10 @@
 package com.pb.tlumip.ts;
 
 
+import java.util.concurrent.BlockingQueue;
+
 import org.apache.log4j.Logger;
 
-import com.pb.common.rpc.DBlockingQueue;
 
 
 /**
@@ -16,8 +17,9 @@ public class SpBuildLoadMt implements Runnable
 {
     protected static Logger logger = Logger.getLogger(SpBuildLoadMt.class);
     
-    private static Object objLock = new Object();
-
+    private int threadId;
+    private BlockingQueue workQueue;
+    
     private ShortestPathTreeH[] sp;
     private SpBuildLoadCommon spBuildLoadShared;
     
@@ -27,7 +29,13 @@ public class SpBuildLoadMt implements Runnable
     
     // a distributed queue common to all instances of this class running in different
     // threads and possibly in different VMs hold packets of work elements to be processed, i.e. int[][userClass, originTaz].
-    public SpBuildLoadMt ( SpBuildLoadCommon spBuildLoadShared ) {
+    public SpBuildLoadMt ( int threadId, SpBuildLoadCommon spBuildLoadShared, BlockingQueue workQueue ) {
+        
+        this.threadId = threadId;
+        
+        // The objects in the workQueue are work packets of work elements: int[][2] arrays, with the first element
+        // the user class index, and the second element the origin zone index.
+        this.workQueue = workQueue;
 
         // SpBuildLoadCommon is a singleton created by the class which creates one or more instances of this class
         // and is therefore common to each of these instances.
@@ -70,16 +78,15 @@ public class SpBuildLoadMt implements Runnable
         double[][] cumulativeAonFlowsThread = new double[numUserClasses][numLinks];
         
 
-        // The objects in the workQueue are work packets of work elements: int[][2] arrays, with the first element
-        // the user class index, and the second element the origin zone index.
-        DBlockingQueue workList = spBuildLoadShared.getWorkList();
-        
-
-        while ( true ) {
+        double totalFlow = 0.0;
+        while ( spBuildLoadShared.getPacketsLeft() > 0 ) {
             
             try {
                 // The next line blocks until a work packet has been put on the queue.
-                workPacket = (int[][])workList.take();
+                if ( workQueue.size() == 0 )
+                    continue;
+                
+                workPacket = (int[][])workQueue.take();
             }
             catch (Exception e) {
                 logger.error("exception caught in SpBuildLoadMt.run() retrieving work packet from distributed queue.", e);
@@ -94,29 +101,21 @@ public class SpBuildLoadMt implements Runnable
                 
                 double[] aonFlows = sp[userClass].buildAndLoadTrees ( userClass, origin, originTrips );
 
-                for (int k=0; k < numLinks; k++)
+                for (int k=0; k < numLinks; k++) {
                     cumulativeAonFlowsThread[userClass][k] += aonFlows[k];
+                    totalFlow += aonFlows[k];
+                }
                 
             }
 
-
-            // at this point, the packet of shortest path trees taken by this thread have been loaded,
-            // so update these acumulated link flows in the common results array for the VM this thread runs on.
-            synchronized (objLock) {
-
-                // get the results array from the shared object and update its values with
-                // the aon flows calculated in this thread.
-                double[][] cumulativeAonFlowsShared = spBuildLoadShared.getResultsArray();
-                
-                for (int m=0; m < cumulativeAonFlowsThread.length; m++)
-                    for (int k=0; k < cumulativeAonFlowsThread[m].length; k++)
-                        cumulativeAonFlowsShared[m][k] += cumulativeAonFlowsThread[m][k];
-                
-                // update completed packet count
-                spBuildLoadShared.updateCompletedPacketCount();
-            }
+            // update completed packet count
+            spBuildLoadShared.updateCompletedPacketCount();
             
         }
+
+        spBuildLoadShared.setResultsArray( threadId, cumulativeAonFlowsThread );
+        
+        logger.info( totalFlow + " total link flow assigned by thread " + threadId );
         
     }
 

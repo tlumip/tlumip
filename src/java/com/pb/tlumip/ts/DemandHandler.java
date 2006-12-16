@@ -29,6 +29,7 @@ import com.pb.tlumip.model.ModeType;
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
+import com.pb.common.rpc.DafNode;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
@@ -46,12 +47,6 @@ public class DemandHandler implements DemandHandlerIF {
 
 	protected static Logger logger = Logger.getLogger(DemandHandler.class);
 
-    
-    final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
-
-    String componentPropertyName;
-    String globalPropertyName;
-    
 	HashMap componentPropertyMap;
     HashMap globalPropertyMap;
 
@@ -59,8 +54,9 @@ public class DemandHandler implements DemandHandlerIF {
     int networkNumUserClasses;
     int[] networkNodeIndexArray;
     boolean networkUserClassesIncludeTruck;
+    char[] highwayModeCharacters;
     HashMap networkAssignmentGroupMap;
-
+    String timePeriod;
     
 	double[][][] multiclassTripTable = null;
     
@@ -76,18 +72,27 @@ public class DemandHandler implements DemandHandlerIF {
     // Factory Method to return either local or remote instance
     public static DemandHandlerIF getInstance( String rpcConfigFile ) {
     
-        // if false, remote method calls on networkHandler are made 
-        boolean localFlag = true;
-    
-        //This method needs to be written
-        //if (DafNode.getInstance().isHandlerLocal("demandHandler"))
-        //    localFlag = true;
-    
-        if (localFlag == false && rpcConfigFile != null) {
-            return new DemandHandlerRpc( rpcConfigFile );
-        }
-        else { 
+        if ( rpcConfigFile == null ) {
+
+            // if rpc config file is null, then all handlers are local, so return local instance
             return new DemandHandler();
+
+        }
+        else {
+            
+            // return either a local instance or an rpc instance depending on how the handler was defined.
+            Boolean isLocal = DafNode.getInstance().isHandlerLocal( HANDLER_NAME );
+
+            if ( isLocal == null )
+                // handler name not found in config file, so create a local instance.
+                return new DemandHandler();
+            else if ( isLocal )
+                // handler name found in config file and is local, so create a local instance.
+                return new DemandHandler();
+            else 
+                // handler name found in config file but is not local, so create an rpc instance.
+                return new DemandHandlerRpc( rpcConfigFile );
+
         }
         
     }
@@ -100,119 +105,37 @@ public class DemandHandler implements DemandHandlerIF {
     
 
    
-
-    
-    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod ) {
-        
-        this.componentPropertyMap = componentPropertyMap;
-        this.globalPropertyMap = globalPropertyMap; 
-        
-        return buildDemandObject( timePeriod );
-        
-    }
-    
-    
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod ) {
+    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
 
         this.componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( componentRb );
         this.globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( globalRb );
 
-        return buildDemandObject( timePeriod );
-        
-    }
-    
-    
-    public int setNetworkAttributes( int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, boolean userClassesIncludeTruck ) {
-        
         networkNumCentroids = numCentroids;
         networkNumUserClasses = numUserClasses;
         networkAssignmentGroupMap = assignmentGroupMap;
         networkNodeIndexArray = nodeIndexArray;
         networkUserClassesIncludeTruck = userClassesIncludeTruck;
         networkAssignmentGroupMap = assignmentGroupMap;
-        
-        return 1;
-    }
-    
-    
-    public double[] getTripTableRow ( int userClass, int row ) {
-        return multiclassTripTable[userClass][row];
-    }
-    
-    
-    public double[][][] getMulticlassTripTables () {
-        return multiclassTripTable;
-    }
-    
-    
-    public double[][] getTripTableRowSums () {
-        return multiclassTripTableRowSums;
-    }
-    
-    
+        this.highwayModeCharacters = highwayModeCharacters;
+        this.timePeriod = timePeriod;
 
-    public double[][] getWalkTransitTripTable ( String timePeriod ) {
-        
-        int startHour = 0;
-        int endHour = 0;
-
-        // get trip list filenames from property file
-        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
-
-        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
-        }
-        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
-        }
-
-        return getWalkTransitTripTableFromPTList ( networkNodeIndexArray, ptFileName, startHour, endHour );
+        return true;
         
     }
-
     
     
-    public double[][] getDriveTransitTripTable ( String timePeriod ) {
+    public boolean buildDemandObject() {
         
-        int startHour = 0;
-        int endHour = 0;
-
-        // get trip list filenames from property file
-        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
-
-        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
-        }
-        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
-        }
-
-        return getDriveTransitTripTableFromPTList ( networkNodeIndexArray, ptFileName, startHour, endHour );
-        
-    }
-
-    
-    
-    private boolean buildDemandObject( String timePeriod ) {
-    	
         int i=0;
         int j=0;
         int k=0;
         
-    	// load the trips from PT and CT trip lists into multiclass o/d demand matrices for assignment
+        // load the trips from PT and CT trip lists into multiclass o/d demand matrices for assignment
         try {
 
             // read in the trip lists
-            multiclassTripTable = createMulticlassDemandMatrices ( timePeriod );
+            multiclassTripTable = createMulticlassDemandMatrices ();
             
             
             multiclassTripTableRowSums = new double[multiclassTripTable.length][multiclassTripTable[0].length];
@@ -239,12 +162,78 @@ public class DemandHandler implements DemandHandlerIF {
             return false;
             
         }
-		
+        
     }
     
     
+    public double[] getTripTableRow ( int userClass, int row ) {
+        return multiclassTripTable[userClass][row];
+    }
     
-    private double[][][] createMulticlassDemandMatrices ( String timePeriod ) {
+    
+    public double[][][] getMulticlassTripTables () {
+        return multiclassTripTable;
+    }
+    
+    
+    public double[][] getTripTableRowSums () {
+        return multiclassTripTableRowSums;
+    }
+    
+    
+
+    public double[][] getWalkTransitTripTable () {
+        
+        int startHour = 0;
+        int endHour = 0;
+
+        // get trip list filenames from property file
+        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
+
+        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
+            // get peak period definitions from property files
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+        }
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
+            // get off-peak period definitions from property files
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+        }
+
+        return getWalkTransitTripTableFromPTList ( ptFileName, startHour, endHour );
+        
+    }
+
+    
+    
+    public double[][] getDriveTransitTripTable () {
+        
+        int startHour = 0;
+        int endHour = 0;
+
+        // get trip list filenames from property file
+        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
+
+        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
+            // get peak period definitions from property files
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+        }
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
+            // get off-peak period definitions from property files
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+        }
+
+        return getDriveTransitTripTableFromPTList ( ptFileName, startHour, endHour );
+        
+    }
+
+    
+    
+    
+    private double[][][] createMulticlassDemandMatrices () {
         
 		String myDateString;
 		
@@ -274,7 +263,7 @@ public class DemandHandler implements DemandHandlerIF {
 
 		// check that at least one valid user class has been defined
 		if ( networkNumUserClasses == 0 ) {
-			logger.error ( "No valid user classes defined in " + componentPropertyName + " file.", new RuntimeException() );
+			logger.error ( "No valid user classes defined in the application properties file.", new RuntimeException() );
 		}
 		
 		HashMap assignmentGroupMap = networkAssignmentGroupMap;
@@ -284,7 +273,7 @@ public class DemandHandler implements DemandHandlerIF {
 		if ( assignmentGroupMap.containsKey( String.valueOf('a') ) ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
 			logger.info ("reading " + timePeriod + " PT trip list at: " + myDateString);
-			multiclassTripTable[0] = getAutoTripTableFromPTList ( networkNodeIndexArray, ptFileName, startHour, endHour );
+			multiclassTripTable[0] = getAutoTripTableFromPTList ( ptFileName, startHour, endHour );
 		}
 		else {
 			logger.info ("no auto class defined, so " + timePeriod + " PT trip list was not read." );
@@ -295,7 +284,7 @@ public class DemandHandler implements DemandHandlerIF {
 		if ( networkUserClassesIncludeTruck ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
 			logger.info ("reading " + timePeriod + " CT trip list at: " + myDateString);
-			double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ( assignmentGroupMap, networkNodeIndexArray, ctFileName, startHour, endHour );
+			double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ( ctFileName, startHour, endHour );
 
 			for(int i=0; i < truckTripTables.length - 1; i++)
 				multiclassTripTable[i+1] = truckTripTables[i];
@@ -309,7 +298,7 @@ public class DemandHandler implements DemandHandlerIF {
 	
 
     
-    private double[][] getAutoTripTableFromPTList ( int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
+    private double[][] getAutoTripTableFromPTList ( String fileName, int startPeriod, int endPeriod ) {
         
         int orig;
         int dest;
@@ -343,8 +332,8 @@ public class DemandHandler implements DemandHandlerIF {
                     startTime = (int)table.getValueAt( i+1, "tripStartTime" );
                     mode = (int)table.getValueAt( i+1, "tripMode" );
                     
-                    o = nodeIndex[orig];
-                    d = nodeIndex[dest];
+                    o = networkNodeIndexArray[orig];
+                    d = networkNodeIndexArray[dest];
                     
                     // accumulate all peak period highway mode trips
                     if ( (mode == ModeType.AUTODRIVER || mode == ModeType.AUTOPASSENGER) ) {
@@ -380,7 +369,7 @@ public class DemandHandler implements DemandHandlerIF {
     }
     
 
-    private double[][] getWalkTransitTripTableFromPTList ( int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
+    private double[][] getWalkTransitTripTableFromPTList ( String fileName, int startPeriod, int endPeriod ) {
         
         int orig;
         int dest;
@@ -414,8 +403,8 @@ public class DemandHandler implements DemandHandlerIF {
                     startTime = (int)table.getValueAt( i+1, "tripStartTime" );
                     mode = (int)table.getValueAt( i+1, "tripMode" );
                     
-                    o = nodeIndex[orig];
-                    d = nodeIndex[dest];
+                    o = networkNodeIndexArray[orig];
+                    d = networkNodeIndexArray[dest];
                     
                     // accumulate all peak period highway mode trips
                     if ( (mode == ModeType.WALKTRANSIT || mode == ModeType.TRANSITPASSENGER) ) {
@@ -451,7 +440,7 @@ public class DemandHandler implements DemandHandlerIF {
     }
     
 
-    private double[][] getDriveTransitTripTableFromPTList ( int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
+    private double[][] getDriveTransitTripTableFromPTList ( String fileName, int startPeriod, int endPeriod ) {
         
         int orig;
         int dest;
@@ -485,8 +474,8 @@ public class DemandHandler implements DemandHandlerIF {
                     startTime = (int)table.getValueAt( i+1, "tripStartTime" );
                     mode = (int)table.getValueAt( i+1, "tripMode" );
                     
-                    o = nodeIndex[orig];
-                    d = nodeIndex[dest];
+                    o = networkNodeIndexArray[orig];
+                    d = networkNodeIndexArray[dest];
                     
                     // accumulate all peak period highway mode trips
                     if ( (mode == ModeType.DRIVETRANSIT || mode == ModeType.PASSENGERTRANSIT) ) {
@@ -522,7 +511,7 @@ public class DemandHandler implements DemandHandlerIF {
     }
     
 
-    private double[][][] getTruckAssignmentGroupTripTableFromCTList ( HashMap assignmentGroupMap, int[] nodeIndex, String fileName, int startPeriod, int endPeriod ) {
+    private double[][][] getTruckAssignmentGroupTripTableFromCTList ( String fileName, int startPeriod, int endPeriod ) {
 
         int orig;
         int dest;
@@ -565,10 +554,10 @@ public class DemandHandler implements DemandHandlerIF {
 	
 					mode = Integer.parseInt( truckType.substring(3) );
 					modeChar = highwayModeCharacters[mode];
-					group = ((Integer)assignmentGroupMap.get( String.valueOf( modeChar ) )).intValue();
+					group = ((Integer)networkAssignmentGroupMap.get( String.valueOf( modeChar ) )).intValue();
 					
-					o = nodeIndex[orig];
-					d = nodeIndex[dest];
+					o = networkNodeIndexArray[orig];
+					d = networkNodeIndexArray[dest];
 	
 					// accumulate all peak period highway mode trips
 					if ( startTime >= startPeriod && startTime <= endPeriod ) {

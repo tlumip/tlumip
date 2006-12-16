@@ -23,13 +23,13 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.common.rpc.DBlockingQueue;
-import com.pb.common.rpc.DHashMap;
-import com.pb.common.rpc.RpcException;
-import com.pb.common.util.ResourceUtil;
-
 import java.util.HashMap;
 import java.util.ResourceBundle;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import com.pb.common.rpc.DafNode;
+import com.pb.common.util.ResourceUtil;
 
 import org.apache.log4j.Logger;
 
@@ -41,168 +41,177 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
     public static final String COMPILE_RESULTS_SIGNAL = "aonFlowHandlerCompileResults";
     public static final String NUM_COMPILED_RESULTS_SIGNAL = "aonFlowHandlerNumCompiledResults";
-    public static final String NUM_COMPLETED_PACKETS_NAME = "aonFlowHandlerWorkCompletedQueue";
-    
-    public static final String WORK_QUEUE_NAME = "aonFlowHandlerWorkQueue";
-    public static final String CONTROL_MAP_NAME = "aonFlowHandlerControlMap";
-    public static final String RESULTS_MAP_NAME = "aonFlowHandlerResultsMap";
+    public static final String NUM_ASSIGNED_PACKETS_NAME = "aonFlowHandlerNumPacketsAssigned";
     
     public static final int PACKET_SIZE = 100;
 
     // set the frequency with which the shared class is polled to see if all threads have finshed their work.
-    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
+//    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
+    static final int POLLING_FREQUENCY_IN_SECONDS = 1;
     
+    static String rpcConfigFile = null;
     
-
-    int numLinks;
-    int numCentroids;
-    int numUserClasses;
-    int startOriginTaz;
-    int lastOriginTaz;
-
-    int[] ia;
-    int[] indexNode;
-
-    String componentPropertyName;
-    String globalPropertyName;
-    
-	HashMap componentPropertyMap;
+    HashMap componentPropertyMap;
     HashMap globalPropertyMap;
 
+    ResourceBundle componentRb;
+    ResourceBundle globalRb;
     
+    int networkNumLinks;
+    int networkNumUserClasses;
+    int networkNumCentroids;
+    String timePeriod;
 
+    double[][] tripTableRowSums = null;
+    
+    NetworkHandlerIF nh;
+    DemandHandlerIF dh;
+    
 	public AonFlowHandler() {
     }
-    
 
 
+
+    // Factory Method to return either local or remote instance
+    public static AonFlowHandlerIF getInstance( String rpcConfigFile ) {
     
-    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap ) {
+        // store config file name in this object so it can be retrieved by others if needed.
+        AonFlowHandler.rpcConfigFile = rpcConfigFile;
+
         
-        this.componentPropertyMap = componentPropertyMap;
-        this.globalPropertyMap = globalPropertyMap; 
+        if ( rpcConfigFile == null ) {
+
+            // if rpc config file is null, then all handlers are local, so return local instance
+            return new AonFlowHandler();
+
+        }
+        else {
+            
+            // return either a local instance or an rpc instance depending on how the handler was defined.
+            Boolean isLocal = DafNode.getInstance().isHandlerLocal( HANDLER_NAME );
+
+            if ( isLocal == null )
+                // handler name not found in config file, so create a local instance.
+                return new AonFlowHandler();
+            else if ( isLocal )
+                // handler name found in config file and is local, so create a local instance.
+                return new AonFlowHandler();
+            else 
+                // handler name found in config file but is not local, so create an rpc instance.
+                return new AonFlowHandlerRpc( rpcConfigFile );
+
+        }
         
-        setNetworkParameters ();
+    }
+    
+
+    // Factory Method to return local instance only
+    public static AonFlowHandlerIF getInstance() {
+        return new AonFlowHandler();
+    }
+    
+
+    
+    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, NetworkHandlerIF nh, char[] highwayModeCharacters ) {
+
+        this.componentRb = componentRb;
+        this.globalRb = globalRb;
+
+        componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( componentRb );
+        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( globalRb );
+
+        this.nh = nh;
+        networkNumLinks = nh.getLinkCount();
+        networkNumCentroids = nh.getNumCentroids();
+        networkNumUserClasses = nh.getNumUserClasses();
+        this.timePeriod = nh.getTimePeriod();
+
+        dh = DemandHandler.getInstance( rpcConfigFile );
+        dh.setup( componentRb, globalRb, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        dh.buildDemandObject();
         
         return true;
+        
     }
     
     
 
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb ) {
-        
-        this.componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( componentRb );
-        this.globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( globalRb );
-
-        setNetworkParameters ();
-
-        return true;
-    }
-    
-    
-    
     public double[][] getMulticlassAonLinkFlows () {
 
-        DemandHandlerIF dh = DemandHandler.getInstance();
-        
-        double[][] tripTableRowSums = null;
-        
-        // get the trip table row sums by user class
-        try {
-            tripTableRowSums = dh.getTripTableRowSums();
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught getting trip table row sums from DemandHandler.", e );
-            System.exit(1);
-        }
+        double[][] aonFlow = null;
         
         // build and load shortest path trees for all zones, all user classes, and return aon link flows by user class
-        double[][] aonFlow = null;
-        try {
-            aonFlow = calculateAonLinkFlows ( tripTableRowSums );
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught calculating AON link flows in AonFlowHandler.", e );
-            System.exit(1);
-        }
+        aonFlow = calculateAonLinkFlows ( dh.getTripTableRowSums(), dh.getMulticlassTripTables() );
         
         return aonFlow;
         
     }
 
-
-    
-    private void setNetworkParameters () {
-        
-        // generate a NetworkHandler object to use for assignments and skimming
-        NetworkHandlerIF nh = NetworkHandler.getInstance();
-
-        startOriginTaz = 0;
-        lastOriginTaz = nh.getNumCentroids();
-        numLinks = nh.getLinkCount();
-        numCentroids = nh.getNumCentroids();
-        numUserClasses = nh.getNumUserClasses();
-        
-        ia = nh.getIa();
-        indexNode = nh.getIndexNode();
-        
-    }
     
     
+    private double[][] calculateAonLinkFlows ( double[][] tripTableRowSums, double[][][] tripTables ) {
 
-    private double[][] calculateAonLinkFlows ( double[][] tripTableRowSums ) throws RpcException {
+        // define data structures used to manage the distribution of work
+        HashMap controlMap = new HashMap();
+        HashMap resultsMap = new HashMap();
+        BlockingQueue workQueue = new LinkedBlockingQueue();
 
         
-        DHashMap workResultsMap = new DHashMap(RESULTS_MAP_NAME);
-        DHashMap controlMap = new DHashMap(CONTROL_MAP_NAME);
+        int numPackets = putWorkPacketsOnQueue(workQueue, tripTableRowSums);
 
-        
-        
-        controlMap.put(COMPILE_RESULTS_SIGNAL, false);
-        controlMap.put(NUM_COMPLETED_PACKETS_NAME, 0);
-        
         // distribute work into packets and put on queue
-        int numPackets = putWorkPacketsOnQueue(tripTableRowSums);
-                
-        
-        
-        // wait here until all packets have been processed.
-        while ( (Integer)controlMap.get( NUM_COMPLETED_PACKETS_NAME ) < numPackets ) {
-            try {
-                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
-            }
-            catch (InterruptedException e){
-                logger.error ( "InterruptedException thrown while waiting " + POLLING_FREQUENCY_IN_SECONDS + " seconds to see if all packets have been handled.", e);
-            }
+        try {
+            controlMap.put(COMPILE_RESULTS_SIGNAL, false);
+            controlMap.put(NUM_ASSIGNED_PACKETS_NAME, numPackets);
         }
-        controlMap.put(NUM_COMPILED_RESULTS_SIGNAL, 0);
-        controlMap.put(COMPILE_RESULTS_SIGNAL, true);
-
+        catch ( Exception e ) {
+            logger.error ("exception thrown seting COMPILE_RESULTS_SIGNAL to false and NUM_COMPLETED_PACKETS_NAME to 0 in controlMap.", e);
+        }
         
-
+        
+        
+        SpBuildLoadHandlerIF sp = SpBuildLoadHandler.getInstance( rpcConfigFile );
+        sp.setup( tripTables, nh, workQueue, controlMap, resultsMap );
+        sp.start();
+        
+        
+        
         
         // wait here until all results from all packets have been transferred.
-        while ( (Integer)controlMap.get( NUM_COMPILED_RESULTS_SIGNAL ) < numPackets ) {
-            try {
-                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
+        try {
+            while ( (Integer)controlMap.get( NUM_COMPILED_RESULTS_SIGNAL ) < numPackets ) {
+                try {
+                    Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
+                }
+                catch (InterruptedException e){
+                    logger.error ( "InterruptedException thrown while waiting " + POLLING_FREQUENCY_IN_SECONDS + " seconds to see if all compiled results have been updated.", e);
+                }
             }
-            catch (InterruptedException e){
-                logger.error ( "InterruptedException thrown while waiting " + POLLING_FREQUENCY_IN_SECONDS + " seconds to see if all compiled results have been updated.", e);
-            }
+        }
+        catch ( Exception e ) {
+            logger.error ("exception thrown checking NUM_COMPILED_RESULTS_SIGNAL < numPackets in controlMap.", e);
         }
 
 
+        
+        
+        
         // resultsMap is complete, so get results.
-        double[][] aonFlow = new double[numUserClasses][numLinks];
+        double[][] aonFlow = new double[networkNumUserClasses][networkNumLinks];
         
         int m=0;
         int k=0;
         String key = "";
         try {
-            for (m=0; m < numUserClasses; m++) {
-                for (k=0; k < numLinks; k++) {
+            for (m=0; m < networkNumUserClasses; m++) {
+                for (k=0; k < networkNumLinks; k++) {
                     key = m + "_" + k;
-                    aonFlow[m][k] = (Double)workResultsMap.get(key);
+                    try {
+                        aonFlow[m][k] = (Double)resultsMap.get(key);
+                    }
+                    catch (Exception e) {
+                        aonFlow[m][k] = 0.0;
+                    }
                 }
             }
         }
@@ -220,17 +229,15 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     // There will by numUserClasses*numCentroids total work elements.
     // Packets of work elements will be created  and placed on a distributed queue
     // to be processed concurrently if possible.
-    private int putWorkPacketsOnQueue( double[][] tripTableRowSums ) throws RpcException {
-
-        DBlockingQueue workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
+    private int putWorkPacketsOnQueue( BlockingQueue workQueue, double[][] tripTableRowSums )  {
 
         int numPackets = 0;
         
         int[][] workElements = new int[PACKET_SIZE][2];
         
         int k=0;
-        for (int m=0; m < numUserClasses; m++) {
-            for (int i=startOriginTaz; i < lastOriginTaz; i++) {
+        for (int m=0; m < networkNumUserClasses; m++) {
+            for (int i=0; i < networkNumCentroids; i++) {
             
                 if (tripTableRowSums[m][i] > 0.0) {
                     workElements[k][0] = m;
@@ -238,19 +245,34 @@ public class AonFlowHandler implements AonFlowHandlerIF {
                     k++;
 
                     if ( k == PACKET_SIZE ) {
-                        workQueue.put(workElements);
+                        
+                        try {
+                            workQueue.put(workElements);
+                        }
+                        catch ( InterruptedException e ) {
+                            logger.error ("exception thrown putting work packets on workQueue.  m=" + m + ", i=" + i + ", k=" + k + ".", e);
+                        }
+                        
                         numPackets++;
 
                         workElements = new int[PACKET_SIZE][2];
                         k = 0;
                     }
+
                 }
                 
             }
         }
 
         if ( k > 0 ) {
-            workQueue.put(workElements);
+
+            try {
+                workQueue.put(workElements);
+            }
+            catch ( InterruptedException e ) {
+                logger.error ("exception thrown putting work packets on workQueue.  m=" + networkNumUserClasses + ", i=" + networkNumCentroids + ", k=" + k + ".", e);
+            }
+            
             numPackets++;
         }
 
