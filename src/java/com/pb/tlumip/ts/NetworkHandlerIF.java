@@ -11,6 +11,7 @@ public interface NetworkHandlerIF extends Serializable {
 
     public static final String HANDLER_NAME = "networkHandler";
     
+    public int setRpcConfigFileName(String configFile);
     public String getRpcConfigFileName();
     public Network getNetwork();
     public int getNumCentroids();

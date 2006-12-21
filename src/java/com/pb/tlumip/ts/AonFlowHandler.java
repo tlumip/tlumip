@@ -93,9 +93,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
             if ( isLocal == null )
                 // handler name not found in config file, so create a local instance.
                 return new AonFlowHandler();
-            else if ( isLocal )
-                // handler name found in config file and is local, so create a local instance.
-                return new AonFlowHandler();
             else 
                 // handler name found in config file but is not local, so create an rpc instance.
                 return new AonFlowHandlerRpc( rpcConfigFile );

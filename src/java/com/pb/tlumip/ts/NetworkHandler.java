@@ -36,7 +36,7 @@ public class NetworkHandler implements NetworkHandlerIF {
     protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 
     Network g = null;
-    static String rpcConfigFile = null;
+    String rpcConfigFile = null;
 
     
     public NetworkHandler() {
@@ -46,10 +46,6 @@ public class NetworkHandler implements NetworkHandlerIF {
     // Factory Method to return either local or remote instance
     public static NetworkHandlerIF getInstance( String rpcConfigFile ) {
     
-        // store config file name in this object so it can be retrieved by others if needed.
-        NetworkHandler.rpcConfigFile = rpcConfigFile;
-        
-        
         if ( rpcConfigFile == null ) {
 
             // if rpc config file is null, then all handlers are local, so return local instance
@@ -64,9 +60,6 @@ public class NetworkHandler implements NetworkHandlerIF {
             if ( isLocal == null )
                 // handler name not found in config file, so create a local instance.
                 return new NetworkHandler();
-            else if ( isLocal )
-                // handler name found in config file and is local, so create a local instance.
-                return new NetworkHandler();
             else 
                 // handler name found in config file but is not local, so create an rpc instance.
                 return new NetworkHandlerRpc( rpcConfigFile );
@@ -80,7 +73,11 @@ public class NetworkHandler implements NetworkHandlerIF {
     public static NetworkHandlerIF getInstance() {
         return new NetworkHandler();
     }
-    
+
+    public int setRpcConfigFileName(String configFile) {
+        this.rpcConfigFile = configFile;
+        return 1;
+    }
 
     public String getRpcConfigFileName() {
         return rpcConfigFile;
