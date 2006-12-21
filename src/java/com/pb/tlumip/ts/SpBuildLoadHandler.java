@@ -24,9 +24,7 @@ package com.pb.tlumip.ts;
 
 
 import com.pb.common.rpc.DBlockingQueue;
-import com.pb.common.rpc.DHashMap;
 import com.pb.common.rpc.DafNode;
-import com.pb.common.rpc.RpcException;
 
 import org.apache.log4j.Logger;
 
@@ -36,10 +34,9 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     protected static Logger logger = Logger.getLogger(SpBuildLoadHandler.class);
 
-    private String rpcConfigFile;
+    private static String rpcConfigFile;
     private static String handlerName;
     
-    private DHashMap controlMap;
     private DBlockingQueue workQueue;
     
     private double[][] aonFlows = null;
@@ -52,11 +49,11 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     public SpBuildLoadHandler() {
         SpBuildLoadHandler.handlerName = "";
-        this.rpcConfigFile = "";
+        SpBuildLoadHandler.rpcConfigFile = "";
     }
 
     public SpBuildLoadHandler(String rpcConfigFile, String handlerName) {
-        this.rpcConfigFile = rpcConfigFile;
+        SpBuildLoadHandler.rpcConfigFile = rpcConfigFile;
         SpBuildLoadHandler.handlerName = handlerName;
     }
 
@@ -77,11 +74,13 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
             if ( isLocal == null ) {
                 // handler name not found in config file, so create a local instance.
+                SpBuildLoadHandler.rpcConfigFile = rpcConfigFile;
                 return new SpBuildLoadHandler( rpcConfigFile, "local" );
             }
             else { 
                 // handler name found in config file; since the handler was loaded by the framework, create an rpc instance.
                 SpBuildLoadHandler.handlerName = handlerName;
+                SpBuildLoadHandler.rpcConfigFile = rpcConfigFile;
                 return new SpBuildLoadHandlerRpc( rpcConfigFile, handlerName );
             }
 
@@ -103,22 +102,12 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
         
         // define data structures used to manage the distribution of work
         workQueue = new DBlockingQueue( AonFlowHandler.WORK_QUEUE_NAME );
-        controlMap = new DHashMap( AonFlowHandler.CONTROL_MAP_NAME );
 
+        
         // get a NetworkHandler instance.
         // if the instance has a null Network object, a local instance is to be used, and it can be retrieved from the controlMap,
         // where it was stored by AonFlowHandler.
         NetworkHandlerIF nh = NetworkHandler.getInstance(rpcConfigFile);
-        
-        if ( nh.getNetwork() == null ) {
-            
-            try {
-                nh = (NetworkHandlerIF)controlMap.get ( NetworkHandler.HANDLER_NAME );
-            } catch (RpcException e) {
-                logger.error ("exception thrown getting NetworkHandler handle from controlMap.", e);
-            }
-
-        }
 
         
         // ShortestPathHandlers assume that a NetworkHandler and a DemandHandler are running either in the same VM or as an RPC server

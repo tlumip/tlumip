@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 
 import com.pb.common.rpc.DBlockingQueue;
-import com.pb.common.rpc.DHashMap;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.ResourceUtil;
@@ -41,7 +40,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     protected static Logger logger = Logger.getLogger(AonFlowHandler.class);
 
     public static final String WORK_QUEUE_NAME = "aonFlowWorkQueue";
-    public static final String CONTROL_MAP_NAME = "aonFlowControlMap";
     
     public static final int PACKET_SIZE = 100;
     public static final int NUM_NULL_PACKETS_TO_QUEUE = 100;
@@ -142,20 +140,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         // define data structures used to manage the distribution of work
         DBlockingQueue workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
-        DHashMap controlMap = new DHashMap(CONTROL_MAP_NAME);
-        
-        
-        // clear controlMap to make sure no remnants of an earlier btched run exist,
-        // then put the NetworkHandler handle in the controlMap.
-        // if an SpBuildLoadHandler is started in this VM, it will get the NetworkHandler instance
-        // from the controlMap.
-        try {
-            controlMap.clear();
-            controlMap.put ( NetworkHandler.HANDLER_NAME, nh );
-        } catch (RpcException e) {
-            logger.error ("exception thrown setting NetworkHandler handle in controlMap.", e);
-        }
-        
         
         
         // distribute work into packets and put on queue
@@ -168,14 +152,14 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         
         // start the distributed handlers, and combine their results when they've all finished.
-        double[][] aonFlow = runSpBuildLoadHandlers( controlMap, dh.getMulticlassTripTables() );
+        double[][] aonFlow = runSpBuildLoadHandlers( dh.getMulticlassTripTables() );
         
         return aonFlow;
         
     }
 
     
-    private double[][] runSpBuildLoadHandlers( DHashMap controlMap, double[][][] tripTables ) {
+    private double[][] runSpBuildLoadHandlers( double[][][] tripTables ) {
 
         // get the specific handler names from the config file that begin with the SpBuildLoadHandler handler name.
         String[] spHandlerNames = null;
