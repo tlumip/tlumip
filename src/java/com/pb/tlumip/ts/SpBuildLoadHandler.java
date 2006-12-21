@@ -23,10 +23,10 @@ package com.pb.tlumip.ts;
  */
 
 
-import java.util.HashMap;
-import java.util.concurrent.BlockingQueue;
-
+import com.pb.common.rpc.DBlockingQueue;
+import com.pb.common.rpc.DHashMap;
 import com.pb.common.rpc.DafNode;
+import com.pb.common.rpc.RpcException;
 
 import org.apache.log4j.Logger;
 
@@ -36,47 +36,54 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     protected static Logger logger = Logger.getLogger(SpBuildLoadHandler.class);
 
-    private HashMap controlMap;
-    private HashMap resultsMap;
-    private BlockingQueue workQueue;
+    private String rpcConfigFile;
+    private static String handlerName;
     
+    private DHashMap controlMap;
+    private DBlockingQueue workQueue;
+    
+    private double[][] aonFlows = null;
     private SpBuildLoadCommon spCommon = null;
     
-    static String rpcConfigFile = null;
-    
     private int numberOfThreads = java.lang.Runtime.getRuntime().availableProcessors();
+//    private int numberOfThreads = 1;
     
 
 
-	public SpBuildLoadHandler() {
+    public SpBuildLoadHandler() {
+        SpBuildLoadHandler.handlerName = "";
+        this.rpcConfigFile = "";
+    }
+
+    public SpBuildLoadHandler(String rpcConfigFile, String handlerName) {
+        this.rpcConfigFile = rpcConfigFile;
+        SpBuildLoadHandler.handlerName = handlerName;
     }
 
     
     // Factory Method to return either local or remote instance
-    public static SpBuildLoadHandlerIF getInstance( String rpcConfigFile ) {
-    
-        SpBuildLoadHandler.rpcConfigFile = rpcConfigFile;
+    public static SpBuildLoadHandlerIF getInstance( String rpcConfigFile, String handlerName ) {
         
         if ( rpcConfigFile == null ) {
 
             // if rpc config file is null, then all handlers are local, so return local instance
-            return new SpBuildLoadHandler();
+            return new SpBuildLoadHandler( rpcConfigFile, "local" );
 
         }
         else {
             
             // return either a local instance or an rpc instance depending on how the handler was defined.
-            Boolean isLocal = DafNode.getInstance().isHandlerLocal( HANDLER_NAME );
+            Boolean isLocal = DafNode.getInstance().isHandlerLocal( handlerName );
 
-            if ( isLocal == null )
+            if ( isLocal == null ) {
                 // handler name not found in config file, so create a local instance.
-                return new SpBuildLoadHandler();
-            else if ( isLocal )
-                // handler name found in config file and is local, so create a local instance.
-                return new SpBuildLoadHandler();
-            else 
-                // handler name found in config file but is not local, so create an rpc instance.
-                return new SpBuildLoadHandlerRpc( rpcConfigFile );
+                return new SpBuildLoadHandler( rpcConfigFile, "local" );
+            }
+            else { 
+                // handler name found in config file; since the handler was loaded by the framework, create an rpc instance.
+                SpBuildLoadHandler.handlerName = handlerName;
+                return new SpBuildLoadHandlerRpc( rpcConfigFile, handlerName );
+            }
 
         }
         
@@ -85,21 +92,37 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     // Factory Method to return local instance only
     public static SpBuildLoadHandlerIF getInstance() {
-        return new SpBuildLoadHandler();
+        return new SpBuildLoadHandler("", "local");
     }
     
     
     
-    public int setup(double[][][] tripTables, NetworkHandlerIF nh, BlockingQueue workQueue, HashMap controlMap, HashMap resultsMap ) {
+    public int setup( double[][][] tripTables ) {
 
-        this.workQueue = workQueue;
-        this.controlMap = controlMap;
-        this.resultsMap = resultsMap;
-        
         spCommon = SpBuildLoadCommon.getInstance();
         
+        // define data structures used to manage the distribution of work
+        workQueue = new DBlockingQueue( AonFlowHandler.WORK_QUEUE_NAME );
+        controlMap = new DHashMap( AonFlowHandler.CONTROL_MAP_NAME );
+
+        // get a NetworkHandler instance.
+        // if the instance has a null Network object, a local instance is to be used, and it can be retrieved from the controlMap,
+        // where it was stored by AonFlowHandler.
+        NetworkHandlerIF nh = NetworkHandler.getInstance(rpcConfigFile);
+        
+        if ( nh.getNetwork() == null ) {
+            
+            try {
+                nh = (NetworkHandlerIF)controlMap.get ( NetworkHandler.HANDLER_NAME );
+            } catch (RpcException e) {
+                logger.error ("exception thrown getting NetworkHandler handle from controlMap.", e);
+            }
+
+        }
+
+        
         // ShortestPathHandlers assume that a NetworkHandler and a DemandHandler are running either in the same VM or as an RPC server
-        spCommon.setup( numberOfThreads, nh.getNumUserClasses(), nh.getLinkCount(), tripTables, nh, controlMap );
+        spCommon.setup( numberOfThreads, tripTables, nh );
         
         return 1;
     }
@@ -107,102 +130,46 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     public int start() {
         
-        // start the specified number of threads to build and load shortest path trees from the workList
+        // start the specified number of threads to build and load shortest path trees from the workList, then return
         for (int i = 0; i < numberOfThreads; i++) {
-            SpBuildLoadMt spMt = new SpBuildLoadMt( i, spCommon, workQueue );
+            SpBuildLoadMt spMt = new SpBuildLoadMt( handlerName, i, spCommon, workQueue );
             new Thread(spMt).start();
         }
         
-        // wait for a signal to be set in the controlMap, then update resultsMap.
-        waitForSignalThenWriteResults();
-
         return 1;
         
     }
     
+    
+    public double[][] getResults() {
 
-    private void waitForSignalThenWriteResults() {
+        // at this point, all work packets have been completed by threads created on this and
+        // possibly many other VMs.  Combine the results from the threads used by this handler.
+        // These results will then be accumulated by AonFlowHandler.
         
-        // wait here until all packets have been computed by distributed processes.
-        // AonFlowHandler is watching the number of completed packets and will set a signal when they're all finished.
-        try {
-        
-            boolean compileResults = false;
-            while ( ! compileResults ) {
-                compileResults = (Boolean)controlMap.get( AonFlowHandler.COMPILE_RESULTS_SIGNAL );
-                try {
-                    Thread.sleep( AonFlowHandler.POLLING_FREQUENCY_IN_SECONDS*1000 );
-                }
-                catch (InterruptedException e){
-                    logger.error ( "", e);
-                }
-            }
-            
-            getResultsAndUpdateResultsMap();
-            
-        }
-        catch (Exception e) {
-            logger.error ( "Exception thrown while waiting " + AonFlowHandler.POLLING_FREQUENCY_IN_SECONDS + " seconds to see if COMPILE_RESULTS signal has been set.", e);
-        }
-        
-        
-        
-        // at this point, all link flows have been written by this SpBuildLoadHandler to the resultsMap.
-        // get the number of packets processed by this handler and add it to the COMPILED_RESULTS value
-        // that other handlers are also updating so the AonFlowHandler will know when results for all
-        // work packets have been updated to the resultsMap.
-        try {
-            int value = (Integer)controlMap.get( AonFlowHandler.NUM_COMPILED_RESULTS_SIGNAL ) + spCommon.getPacketsCompletedCount();
-            controlMap.put( AonFlowHandler.NUM_COMPILED_RESULTS_SIGNAL, value );
-        }
-        catch (Exception e) {
-            logger.error ("exception thrown updating number of packets completed count by this SpBuildLoadHandler into controlMap.", e);
-        }
-
-    }
-
-
-    private void getResultsAndUpdateResultsMap() {
-        
-        // at this point, all work packets have been completed by threads created on this and possibly many other VMs.
-        // the results accumulated in spBuildLoadCommon in this VM will be accumulated by AonFlowHanlder.
-        
-        double[][] aonFlows = spCommon.getResultsArray( 0 );
+        aonFlows = spCommon.getResultsForThread( 0 );
         for (int i=1; i < numberOfThreads; i++) {
-            double[][] threadFlows = spCommon.getResultsArray( i );
+            double[][] threadFlows = spCommon.getResultsForThread( i );
             for (int m=0; m < aonFlows.length; m++) {
                 for (int k=0; k < aonFlows[m].length; k++) {
                     aonFlows[m][k] += threadFlows[m][k];
                 }
             }
         }
-        
-        double total = 0.0;
-        for (int m=0; m < aonFlows.length; m++) {
-            for (int k=0; k < aonFlows[m].length; k++) {
-                total += aonFlows[m][k];
-            }
-        }
-        logger.info( total + " total link flows assigned by SpBuildLoadHnandler." );
-        
 
-        int m=0;
-        int k=0;
-        String key = "";
-        double value = 0.0;
-        for (m=0; m < aonFlows.length; m++) {
-            for (k=0; k < aonFlows[m].length; k++) {
-                key = m + "_" + k;
-                try {
-                    value = (Double)resultsMap.get(key);
-                }
-                catch (Exception e) {
-                    value = 0.0;
-                }
-                resultsMap.put(key, value + aonFlows[m][k]);
-            }
-        }
+        return aonFlows;
         
     }
+    
+ 
+    public boolean handlerIsFinished() {
+        // check to see if all handler threads have completed.
+        boolean result = false;
+        if ( spCommon.getNumberOfThreadsCompleted() == numberOfThreads )
+            result = true;
+        
+        return result;
+    }
+
     
 }

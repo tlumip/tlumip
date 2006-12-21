@@ -16,9 +16,7 @@
  */
 package com.pb.tlumip.ts;
 
-import java.util.HashMap;
 import java.util.Vector;
-import java.util.concurrent.BlockingQueue;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -37,39 +35,38 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     protected static transient Logger logger = Logger.getLogger(SpBuildLoadHandlerRpc.class);
 
     RpcClient rc = null;
+    String handlerName = null;
 
 
 
-    public SpBuildLoadHandlerRpc( String rpcConfigFileName ) {
+    public SpBuildLoadHandlerRpc( String rpcConfigFileName, String handlerName ) {
+        
+        this.handlerName = handlerName;
         
         try {
             
             // Need a config file to initialize a Daf node
             DafNode.getInstance().initClient(rpcConfigFileName);
             
-            rc = new RpcClient(HANDLER_NAME);
+            rc = new RpcClient(handlerName);
         }
         catch (MalformedURLException e) {
-            logger.error( "MalformedURLException caught in SpBuildLoadHandlerRpc() while defining RpcClient for " + HANDLER_NAME + ".", e);
+            logger.error( "MalformedURLException caught in SpBuildLoadHandlerRpc() while defining RpcClient for " + handlerName + ".", e);
         }
         catch (Exception e) {
-            logger.error( "Exception caught in SpBuildLoadHandlerRpc() while defining RpcClient for " + HANDLER_NAME + ".", e);
+            logger.error( "Exception caught in SpBuildLoadHandlerRpc() while defining RpcClient for " + handlerName + ".", e);
         }
     }
     
     
     
-    public int setup(double[][][] tripTables, NetworkHandlerIF nh, BlockingQueue workQueue, HashMap controlMap, HashMap resultsMap ) {
+    public int setup(double[][][] tripTables ) {
 
         int returnValue = -1;
         try {
             Vector params = new Vector();
             params.add(tripTables);
-            params.add(nh);
-            params.add(workQueue);
-            params.add(controlMap);
-            params.add(resultsMap);
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".setup", params );
+            returnValue = (Integer)rc.execute(handlerName+".setup", params );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -82,7 +79,33 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     public int start() {
         int returnValue = -1;
         try {
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".start", new Vector() );
+            returnValue = (Integer)rc.execute(handlerName+".start", new Vector() );
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+
+    
+    public double[][] getResults() {
+        double[][] returnValue = null;
+        try {
+            returnValue = (double[][])rc.execute(handlerName+".getResults", new Vector() );
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+    
+    
+    public boolean handlerIsFinished() {
+        boolean returnValue = false;
+        try {
+            returnValue = (Boolean)rc.execute(handlerName+".handlerIsFinished", new Vector() );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {

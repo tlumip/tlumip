@@ -25,10 +25,11 @@ package com.pb.tlumip.ts;
 
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
+import com.pb.common.rpc.DBlockingQueue;
+import com.pb.common.rpc.DHashMap;
 import com.pb.common.rpc.DafNode;
+import com.pb.common.rpc.RpcException;
 import com.pb.common.util.ResourceUtil;
 
 import org.apache.log4j.Logger;
@@ -39,11 +40,12 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
     protected static Logger logger = Logger.getLogger(AonFlowHandler.class);
 
-    public static final String COMPILE_RESULTS_SIGNAL = "aonFlowHandlerCompileResults";
-    public static final String NUM_COMPILED_RESULTS_SIGNAL = "aonFlowHandlerNumCompiledResults";
-    public static final String NUM_ASSIGNED_PACKETS_NAME = "aonFlowHandlerNumPacketsAssigned";
+    public static final String WORK_QUEUE_NAME = "aonFlowWorkQueue";
+    public static final String CONTROL_MAP_NAME = "aonFlowControlMap";
     
     public static final int PACKET_SIZE = 100;
+    public static final int NUM_NULL_PACKETS_TO_QUEUE = 100;
+    
 
     // set the frequency with which the shared class is polled to see if all threads have finshed their work.
 //    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
@@ -138,88 +140,117 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
     public double[][] getMulticlassAonLinkFlows () {
 
-        double[][] aonFlow = null;
+        // define data structures used to manage the distribution of work
+        DBlockingQueue workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
+        DHashMap controlMap = new DHashMap(CONTROL_MAP_NAME);
         
-        // build and load shortest path trees for all zones, all user classes, and return aon link flows by user class
-        aonFlow = calculateAonLinkFlows ( dh.getTripTableRowSums(), dh.getMulticlassTripTables() );
+        
+        // clear controlMap to make sure no remnants of an earlier btched run exist,
+        // then put the NetworkHandler handle in the controlMap.
+        // if an SpBuildLoadHandler is started in this VM, it will get the NetworkHandler instance
+        // from the controlMap.
+        try {
+            controlMap.clear();
+            controlMap.put ( NetworkHandler.HANDLER_NAME, nh );
+        } catch (RpcException e) {
+            logger.error ("exception thrown setting NetworkHandler handle in controlMap.", e);
+        }
+        
+        
+        
+        // distribute work into packets and put on queue
+        try {
+            workQueue.clear();
+            putWorkPacketsOnQueue( workQueue, dh.getTripTableRowSums() );
+        } catch (RpcException e) {
+            logger.error ("exception thrown distributing work into packets and putting on workQueue.", e);
+        }
+
+        
+        // start the distributed handlers, and combine their results when they've all finished.
+        double[][] aonFlow = runSpBuildLoadHandlers( controlMap, dh.getMulticlassTripTables() );
         
         return aonFlow;
         
     }
 
     
-    
-    private double[][] calculateAonLinkFlows ( double[][] tripTableRowSums, double[][][] tripTables ) {
+    private double[][] runSpBuildLoadHandlers( DHashMap controlMap, double[][][] tripTables ) {
 
-        // define data structures used to manage the distribution of work
-        HashMap controlMap = new HashMap();
-        HashMap resultsMap = new HashMap();
-        BlockingQueue workQueue = new LinkedBlockingQueue();
-
-        
-        int numPackets = putWorkPacketsOnQueue(workQueue, tripTableRowSums);
-
-        // distribute work into packets and put on queue
-        try {
-            controlMap.put(COMPILE_RESULTS_SIGNAL, false);
-            controlMap.put(NUM_ASSIGNED_PACKETS_NAME, numPackets);
+        // get the specific handler names from the config file that begin with the SpBuildLoadHandler handler name.
+        String[] spHandlerNames = null;
+        if ( rpcConfigFile == null ) {
+            spHandlerNames = new String[1];
+            spHandlerNames[0] = SpBuildLoadHandlerIF.HANDLER_NAME;
         }
-        catch ( Exception e ) {
-            logger.error ("exception thrown seting COMPILE_RESULTS_SIGNAL to false and NUM_COMPLETED_PACKETS_NAME to 0 in controlMap.", e);
-        }
-        
-        
-        
-        SpBuildLoadHandlerIF sp = SpBuildLoadHandler.getInstance( rpcConfigFile );
-        sp.setup( tripTables, nh, workQueue, controlMap, resultsMap );
-        sp.start();
-        
-        
-        
-        
-        // wait here until all results from all packets have been transferred.
-        try {
-            while ( (Integer)controlMap.get( NUM_COMPILED_RESULTS_SIGNAL ) < numPackets ) {
-                try {
-                    Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
-                }
-                catch (InterruptedException e){
-                    logger.error ( "InterruptedException thrown while waiting " + POLLING_FREQUENCY_IN_SECONDS + " seconds to see if all compiled results have been updated.", e);
-                }
+        else {
+            spHandlerNames = DafNode.getInstance().getHandlerNamesStartingWith( SpBuildLoadHandlerIF.HANDLER_NAME );
+
+            if ( spHandlerNames == null ) {
+                spHandlerNames = new String[1];
+                spHandlerNames[0] = SpBuildLoadHandlerIF.HANDLER_NAME;
             }
         }
-        catch ( Exception e ) {
-            logger.error ("exception thrown checking NUM_COMPILED_RESULTS_SIGNAL < numPackets in controlMap.", e);
+
+        // create an array of SpBuildLoadHandlers dimensioned to the number of handler names found
+        SpBuildLoadHandlerIF[] sp = new SpBuildLoadHandlerIF[spHandlerNames.length];
+
+        
+        // for each handler name, create a SpBuildLoadHandler, set it up, and start it running
+        for ( int i=0; i < spHandlerNames.length; i++ ) {
+            sp[i] = SpBuildLoadHandler.getInstance( rpcConfigFile, spHandlerNames[i] );
+            sp[i].setup( tripTables );
+            sp[i].start();
         }
 
 
+        // wait for all SpBuildLoadHandlers to ave indicated they are finished.
+        waitForAllHandlers( sp );
+
         
-        
-        
-        // resultsMap is complete, so get results.
+        // all SpBuildLoadHandlers are finished, so get results.
         double[][] aonFlow = new double[networkNumUserClasses][networkNumLinks];
-        
-        int m=0;
-        int k=0;
-        String key = "";
-        try {
-            for (m=0; m < networkNumUserClasses; m++) {
-                for (k=0; k < networkNumLinks; k++) {
-                    key = m + "_" + k;
-                    try {
-                        aonFlow[m][k] = (Double)resultsMap.get(key);
-                    }
-                    catch (Exception e) {
-                        aonFlow[m][k] = 0.0;
-                    }
-                }
-            }
-        }
-        catch (Exception e) {
-            logger.error ("exception thrown retreiving final flows from resultsMap in AonFlowHandler.  m=" + m + ", k=" + k + ", aonFlow[m][k]=" + aonFlow[m][k] + ", key=" + key + ".", e);
-        }
 
+        for ( int i=0; i < spHandlerNames.length; i++ ) {
+
+            double[][] handlerResults = sp[i].getResults();
+            for (int m=0; m < handlerResults.length; m++)
+                for (int k=0; k < handlerResults[m].length; k++)
+                    aonFlow[m][k] += handlerResults[m][k];
+            
+        }
+        
         return aonFlow;
+        
+    }
+    
+    
+    private void waitForAllHandlers( SpBuildLoadHandlerIF[] sp ) {
+        
+        // wait here until all distributed handlers have indicated they are finished.
+        while ( getNumberOfHandlersCompleted ( sp ) < sp.length ) {
+
+            try {
+                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
+            }
+            catch (InterruptedException e){
+                logger.error ( "exception thrown waiting for all SpBuildLoadHandlers to finish.", e);
+            }
+            
+        }
+        
+    }
+
+
+    
+    private int getNumberOfHandlersCompleted ( SpBuildLoadHandlerIF[] sp ) {
+
+        int numHandlersCompleted = 0;
+        for ( int i=0; i < sp.length; i++ )
+            if ( sp[i].handlerIsFinished() )
+                numHandlersCompleted++;
+
+        return numHandlersCompleted;
         
     }
 
@@ -229,33 +260,28 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     // There will by numUserClasses*numCentroids total work elements.
     // Packets of work elements will be created  and placed on a distributed queue
     // to be processed concurrently if possible.
-    private int putWorkPacketsOnQueue( BlockingQueue workQueue, double[][] tripTableRowSums )  {
+    private int putWorkPacketsOnQueue( DBlockingQueue workQueue, double[][] tripTableRowSums ) throws RpcException {
 
         int numPackets = 0;
         
-        int[][] workElements = new int[PACKET_SIZE][2];
-        
+        int[][] workElements = null;
+
+        // group individual work elements into packets to be retrieved by the distributed work handlers
         int k=0;
         for (int m=0; m < networkNumUserClasses; m++) {
             for (int i=0; i < networkNumCentroids; i++) {
-            
+
+                if ( k == 0 )
+                    workElements = new int[PACKET_SIZE][2];
+
                 if (tripTableRowSums[m][i] > 0.0) {
                     workElements[k][0] = m;
                     workElements[k][1] = i;
                     k++;
 
                     if ( k == PACKET_SIZE ) {
-                        
-                        try {
-                            workQueue.put(workElements);
-                        }
-                        catch ( InterruptedException e ) {
-                            logger.error ("exception thrown putting work packets on workQueue.  m=" + m + ", i=" + i + ", k=" + k + ".", e);
-                        }
-                        
+                        workQueue.put(workElements);
                         numPackets++;
-
-                        workElements = new int[PACKET_SIZE][2];
                         k = 0;
                     }
 
@@ -264,17 +290,30 @@ public class AonFlowHandler implements AonFlowHandlerIF {
             }
         }
 
-        if ( k > 0 ) {
+        // create a final packet with the remaining elements
+        if ( k > 0 && k < PACKET_SIZE ) {
 
-            try {
-                workQueue.put(workElements);
+            int[][] lastElements = new int[k][2];
+            for ( int j=0; j < k; j++) {
+                lastElements[j][0] = workElements[j][0];
+                lastElements[j][1] = workElements[j][1];
             }
-            catch ( InterruptedException e ) {
-                logger.error ("exception thrown putting work packets on workQueue.  m=" + networkNumUserClasses + ", i=" + networkNumCentroids + ", k=" + k + ".", e);
-            }
-            
+
+            workQueue.put(lastElements);
             numPackets++;
+            
         }
+        
+        
+        // add a number of null packets.  this number should be at least as large as the
+        // potential number of handlers drawing packets from the work queue.
+        // each thread in each worker handler will draws packets from the workQueue
+        // until it draws a null packet, at which time the thread's run() method
+        // will finalize and return.
+        int[][] nullPacket = new int[0][];
+        for (int i=0; i < NUM_NULL_PACKETS_TO_QUEUE; i++)
+            workQueue.put(nullPacket);
+            
 
         return numPackets;
         

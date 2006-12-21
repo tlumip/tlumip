@@ -76,10 +76,6 @@ public class TS {
     	initializeHighwayAssignment ( nh, assignmentPeriod );
         logger.info("TS main - highway network initialized\n\n");
 
-    	// load the trips from PT and CT trip lists into multiclass o/d demand matrices for assignment
-		//createMulticlassDemandMatrices ( nh, assignmentPeriod );
-        //logger.info("TS main - demand matrices created\n\n");
-		
 		// run the multiclass assignment for the time period
     	multiclassEquilibriumHighwayAssignment ( nh, assignmentPeriod );
         logger.info("TS main - equilibrium assignment done\n\n");
@@ -109,7 +105,6 @@ public class TS {
 		long startTime = System.currentTimeMillis();
 		
         HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
 		String myDateString;
 
@@ -563,6 +558,47 @@ public class TS {
         
     }
 
+    
+    public void bench ( ResourceBundle appRb, ResourceBundle globalRb, String rpcConfigFileName ) {
+
+        long startTime = System.currentTimeMillis();
+
+        // generate a NetworkHandler object to use for peak period assignments and skimming
+        NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
+
+        runHighwayAssignment(nhPeak, "peak");
+
+        logger.info ("TS.bench() finished peak highway assignment in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
+
+    }
+
+    
+
+    public void assignAndSkimAllHighwayAndTransit ( ResourceBundle appRb, ResourceBundle globalRb, String rpcConfigFileName ) {
+
+        long startTime = System.currentTimeMillis();
+
+        // generate a NetworkHandler object to use for peak period assignments and skimming
+        NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
+
+        assignAndSkimHighway ( nhPeak, "peak" );
+        assignAndSkimTransit ( nhPeak, "peak", appRb, globalRb );
+ 
+        nhPeak = null;
+        
+        // generate a NetworkHandler object to use for off-peak period assignments and skimming
+        NetworkHandlerIF nhOffPeak = NetworkHandler.getInstance( rpcConfigFileName );
+
+        assignAndSkimHighway ( nhOffPeak, "offpeak" );
+        assignAndSkimTransit ( nhOffPeak, "offpeak", appRb, globalRb );
+        
+        nhOffPeak = null;
+
+        logger.info ("TS.assignAndSkimAllHighwayAndTransit() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
+
+    }
+
+    
 
     public static void main (String[] args) {
 
@@ -586,27 +622,12 @@ public class TS {
             
         }
 
-        
-        // generate a NetworkHandler object to use for peak period assignments and skimming
-        NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
+        // run the full set of assignment and skimming procedures
+//        tsMain.assignAndSkimAllHighwayAndTransit ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
 
-        tsMain.runHighwayAssignment(nhPeak, "peak");
-        
-//        tsMain.assignAndSkimHighway ( nhPeak, "peak" );
-//        tsMain.assignAndSkimTransit ( nhPeak, "peak", ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle(args[2]) );
-// 
-//        nhPeak = null;
-//        
-//        // generate a NetworkHandler object to use for off-peak period assignments and skimming
-//        NetworkHandlerIF nhOffPeak = NetworkHandler.getInstance( rpcConfigFileName );
-//
-//        tsMain.assignAndSkimHighway ( nhOffPeak, "offpeak" );
-//        tsMain.assignAndSkimTransit ( nhOffPeak, "offpeak", ResourceBundle.getBundle(args[1]), ResourceBundle.getBundle(args[2]) );
-//        
-//        nhOffPeak = null;
+        // run the benchmark highway assignment procedure
+        tsMain.bench ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
 
-        logger.info ("TS.main() is finished.");
- 
     }
 
 }

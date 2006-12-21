@@ -17,16 +17,15 @@
 package com.pb.tlumip.ts;
 
 
-import java.util.HashMap;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
-import com.pb.tlumip.ts.AonFlowHandler;
 
 /**
  *   This class manages information that is common to all threads running SpBuildLoadMt.run() rethods on the vm from
  *   which an instance of this class was created.  Common information includes the workQueue, the results arrays in
- *   which results computed by the running threads are accumulated, and network and demand setup data.
+ *   which results computed by the running threads are accumulated, and network setup data.
  * 
  */
 
@@ -36,12 +35,10 @@ public class SpBuildLoadCommon {
     
     private static SpBuildLoadCommon instance = new SpBuildLoadCommon();
 
-    private HashMap controlMap;
+    private int[] packetsCompletedByThread;
     
     private double[][][] cumulativeBuildLoadResults;
     private double[][][] tripTables;
-    
-    private int packetsCompleted = 0;
     
     private NetworkHandlerIF nh;
     
@@ -60,16 +57,16 @@ public class SpBuildLoadCommon {
     /** setup data structures to be used by all threads
      *  working on building and loading aon link flows.
      */
-    public void setup(int numThreads, int numUserClasses, int numLinks, double[][][] tripTables, NetworkHandlerIF nh, HashMap controlMap ) {
+    public void setup( int numThreads, double[][][] tripTables, NetworkHandlerIF nh ) {
 
         this.nh = nh;
         this.tripTables = tripTables;
-        this.controlMap = controlMap;
         
         // declare an an array to be used by all threads for accumulating loaded aon link flows.
-        cumulativeBuildLoadResults = new double[numThreads][numUserClasses][numLinks];
+        cumulativeBuildLoadResults = new double[numThreads][nh.getNumUserClasses()][nh.getLinkCount()];
         
-        packetsCompleted = 0;
+        packetsCompletedByThread = new int[numThreads];
+        Arrays.fill ( packetsCompletedByThread, -1 );
         
     }
     
@@ -77,7 +74,7 @@ public class SpBuildLoadCommon {
     /** return the array for accumulating loaded aon link flows.
      * *
      */
-    public double[][] getResultsArray( int threadId ) {
+    public double[][] getResultsForThread( int threadId ) {
         return cumulativeBuildLoadResults[threadId];
     }
 
@@ -97,40 +94,34 @@ public class SpBuildLoadCommon {
         return tripTables[m][z];
     }
 
-
-    /**
-     * increment the count of packets completed by the worker threads
+    
+    /** set the number of packets handled by th thread.
      */
-    public void updateCompletedPacketCount() {
-
-        packetsCompleted++;
-
-        int numPackets = (Integer)controlMap.get( AonFlowHandler.NUM_ASSIGNED_PACKETS_NAME );
-        if ( packetsCompleted == numPackets ) {
-
-            try {
-                controlMap.put( AonFlowHandler.NUM_COMPILED_RESULTS_SIGNAL, 0 );
-                controlMap.put( AonFlowHandler.COMPILE_RESULTS_SIGNAL, true );
-            }
-            catch ( Exception e ) {
-                logger.error ("exception thrown setting COMPILE_RESULTS_SIGNAL to true and NUM_COMPILED_RESULTS_SIGNAL to 0 in controlMap.", e);
-            }
-
-        }
-
+    public void setPacketsCompletedByThread ( int threadId, int packetsCompleted ) {
+        packetsCompletedByThread[threadId] = packetsCompleted;
     }
+
     
-    
-    public int getPacketsLeft() {
-        int numPackets = (Integer)controlMap.get( AonFlowHandler.NUM_ASSIGNED_PACKETS_NAME );
-        return numPackets - packetsCompleted;
+    /** return the number of packets handled by the thread.
+     */
+    public int getpacketsCompletedByThread ( int threadId ) {
+        return packetsCompletedByThread[threadId];
     }
-    
-    
-    public int getPacketsCompletedCount () {
-        return packetsCompleted;
+
+
+    /** return the number of threads that have a non-negative packet count indicating they's finished.
+     */
+    public int getNumberOfThreadsCompleted () {
+
+        int numThreadsCompleted = 0;
+        for ( int i=0; i < packetsCompletedByThread.length; i++ )
+            if ( packetsCompletedByThread[i] >= 0 )
+                numThreadsCompleted++;
+
+        return numThreadsCompleted;
+        
     }
-    
+
     
     /** a NetworkHandler object is needed by the worker threads to create ShortestPathTreeH objects.
      * 

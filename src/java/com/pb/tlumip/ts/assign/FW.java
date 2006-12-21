@@ -145,6 +145,14 @@ public class FW {
             
         	double[][] aonFlow = getMulticlassAonLinkFlows ( tripTable, iter );
 			
+            for (int i=0; i < aonFlow.length; i++) {
+                double tot = 0.0;
+                for (int k=0; k < aonFlow[i].length; k++)
+                    tot += aonFlow[i][k];
+                logger.info( " flow[" + i + "]: " + tot);
+            }
+                
+            
 
             // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
             if (iter > 0) {
@@ -199,7 +207,7 @@ public class FW {
 
 
 
-        linkSummaryReport( flow );
+        //linkSummaryReport( flow );
 
         fwFlowProps = getFWFlowProps();
         
@@ -229,8 +237,6 @@ public class FW {
 
 	    int storedPathIndex = 0;
 	    
-		boolean[] validLinksForClass = null;
-
 		// build shortest path tree object and set cost and valid link attributes for this user class.
 		ShortestPathTreeH sp = new ShortestPathTreeH( nh );
 
@@ -247,11 +253,15 @@ public class FW {
 
 		sp.setLinkCost( linkCost );
 
+        int count = 0;
+        
+        double totalFlow = 0.0;
+        double tripTableRowSum = 0.0;
 		for (int origin=startOriginTaz; origin < lastOriginTaz; origin++) {
 		    
 			for (int m=0; m < numAutoClasses; m++) {
 
-				double tripTableRowSum = 0.0;
+				tripTableRowSum = 0.0;
 				for (int j=0; j < tripTable[m][origin].length; j++)
 					tripTableRowSum += tripTable[m][origin][j];
 
@@ -259,19 +269,26 @@ public class FW {
 				sp.setValidLinks( validLinksForClasses[m] );
 
 
-				if (origin % 500 == 0)
-					logger.info ("assigning origin zone index " + origin + ", user class index " + m);
-
 				if (tripTableRowSum > 0.0) {
 					
 					sp.buildTree ( origin );
 					aon = sp.loadTree ( tripTable[m][origin], m );
 
-				    for (int k=0; k < aon.length; k++)
+				    for (int k=0; k < aon.length; k++) {
 				        aonFlow[m][k] += aon[k];
+                        totalFlow += aon[k];
+                    }
+                    
+                    count++;
 				    
-				}
+                    if ( logger.isDebugEnabled() ) {
+                        if ( count > 0 && count % 100 == 0)
+                            logger.debug( count + ": " + ", origin=" + origin + ", sum=" + tripTableRowSum + ", totalFlow=" + totalFlow );
+                    }
+
+                }
 			    
+
 				
 			    if ( fwPathsDoa != null ) {
 
@@ -294,7 +311,11 @@ public class FW {
 			
 		}
 		
-		return aonFlow;
+        if ( logger.isDebugEnabled() ) {
+            logger.debug( count + ": " + ", origin=" + lastOriginTaz + ", sum=" + tripTableRowSum + ", totalFlow=" + totalFlow );
+        }
+
+        return aonFlow;
 		
 	}
 
@@ -302,9 +323,6 @@ public class FW {
     //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
     public boolean bisect ( int iter, boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
         
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info ("starting FW.bisect()" + myDateString);
- 
         double x=0.0, xleft=0.0, xright=1.0, gap=0.0;
 
         int numBisectIterations = (int)(Math.log(1.0e-07)/Math.log(0.5) + 1.5);
@@ -360,9 +378,6 @@ public class FW {
 
     public double ofValue ( boolean[] validLinks, double[][] flow )  {
 
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info ("starting FW.ofValue()" + myDateString);
- 
 		// sum total flow over all user classes for each link 
         double total = 0.0;
         for (int k=0; k < volau.length; k++) {
@@ -384,9 +399,6 @@ public class FW {
 
     public double ofGap ( boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
 
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info ("starting FW.ofGap()" + myDateString);
- 
 		double[] totAonFlow = new double[numLinks];
         
 		// sum total flow over all user classes for each link 
@@ -416,9 +428,6 @@ public class FW {
 
     public double bisectGap (double x, boolean[] validLinks, double[][] aonFlow, double[][] flow ) {
 
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info ("starting FW.bisectGap()" + myDateString);
- 
 		double[] totAonFlow = new double[numLinks];
 		double[] totalFlow = new double[numLinks];
         

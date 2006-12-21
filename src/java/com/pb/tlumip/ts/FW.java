@@ -131,6 +131,14 @@ public class FW {
                 logger.info( ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds to build and loaded shortest path trees." );
                 
 
+                for (int i=0; i < aonFlow.length; i++) {
+                    double tot = 0.0;
+                    for (int k=0; k < aonFlow[i].length; k++)
+                        tot += aonFlow[i][k];
+                    logger.info( " flow[" + i + "]: " + tot);
+                }
+                    
+                
                 // use bisect to do Frank-Wolfe averaging -- returns true if exact solution
                 if (iter > 0) {
                     if ( bisect ( iter, validLinks, aonFlow, flow ) ) {
@@ -211,7 +219,7 @@ public class FW {
         
 	    }
         catch ( Exception e ) {
-            logger.error ( "Exception caught in FW.iterat().", e );
+            logger.error ( "Exception caught in FW.iterate().", e );
             System.exit(1);
         }
         
