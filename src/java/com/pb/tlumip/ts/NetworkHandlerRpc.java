@@ -63,6 +63,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int returnValue = -1;
         try {
             Vector params = new Vector();
+            params.add(configFile);
             returnValue = (Integer)rc.execute(HANDLER_NAME+".setRpcConfigFileName", params);
         } catch (RpcException e) {
             logger.error( e );

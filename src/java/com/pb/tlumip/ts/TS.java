@@ -565,6 +565,7 @@ public class TS {
 
         // generate a NetworkHandler object to use for peak period assignments and skimming
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
+        nhPeak.setRpcConfigFileName( rpcConfigFileName );
 
         runHighwayAssignment(nhPeak, "peak");
 
