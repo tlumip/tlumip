@@ -34,6 +34,9 @@ public class SpBuildLoadCommon {
     protected static Logger logger = Logger.getLogger(SpBuildLoadCommon.class);
     
     private static SpBuildLoadCommon instance = new SpBuildLoadCommon();
+    
+    private String handlerName;
+
 
     private int[] packetsCompletedByThread;
     
@@ -57,8 +60,9 @@ public class SpBuildLoadCommon {
     /** setup data structures to be used by all threads
      *  working on building and loading aon link flows.
      */
-    public void setup( int numThreads, double[][][] tripTables, NetworkHandlerIF nh ) {
+    public void setup( String handlerName, int numThreads, double[][][] tripTables, NetworkHandlerIF nh ) {
 
+        this.handlerName = handlerName;
         this.nh = nh;
         this.tripTables = tripTables;
         
@@ -122,6 +126,11 @@ public class SpBuildLoadCommon {
         
     }
 
+    
+    public String getHandlerName() {
+        return handlerName;
+    }
+    
     
     /** a NetworkHandler object is needed by the worker threads to create ShortestPathTreeH objects.
      * 

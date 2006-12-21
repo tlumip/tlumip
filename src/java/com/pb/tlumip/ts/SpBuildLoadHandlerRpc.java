@@ -60,11 +60,13 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     
     
     
-    public int setup(double[][][] tripTables ) {
+    public int setup(String handlerName, String rpcConfigFile, double[][][] tripTables ) {
 
         int returnValue = -1;
         try {
             Vector params = new Vector();
+            params.add(handlerName);
+            params.add(rpcConfigFile);
             params.add(tripTables);
             returnValue = (Integer)rc.execute(handlerName+".setup", params );
         } catch (RpcException e) {

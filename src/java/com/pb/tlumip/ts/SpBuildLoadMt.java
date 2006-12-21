@@ -16,7 +16,6 @@ public class SpBuildLoadMt implements Runnable
 {
     protected static Logger logger = Logger.getLogger(SpBuildLoadMt.class);
     
-    private String spHandlerName = null;
     private int threadId;
     private DBlockingQueue workQueue;
     
@@ -30,9 +29,8 @@ public class SpBuildLoadMt implements Runnable
     // a distributed queue common to all instances of this class running in different
     // threads and possibly in different VMs hold packets of work elements to be
     // processed, i.e. int[][userClass, originTaz].
-    public SpBuildLoadMt ( String spHandlerName, int threadId, SpBuildLoadCommon spBuildLoadShared, DBlockingQueue workQueue ) {
+    public SpBuildLoadMt ( int threadId, SpBuildLoadCommon spBuildLoadShared, DBlockingQueue workQueue ) {
         
-        this.spHandlerName = spHandlerName;
         this.threadId = threadId;
         
         // The objects in the workQueue are work packets of work elements: int[][2] arrays, with the first element
@@ -136,7 +134,7 @@ public class SpBuildLoadMt implements Runnable
         
         spBuildLoadShared.setPacketsCompletedByThread ( threadId, packetCount );
         
-        logger.info( totalFlow + " total link flow from " + packetCount + " packets assigned by thread " + threadId + " on " + spHandlerName );
+        logger.info( totalFlow + " total link flow from " + packetCount + " packets assigned by thread " + threadId + " on " + spBuildLoadShared.getHandlerName() );
         
     }
 

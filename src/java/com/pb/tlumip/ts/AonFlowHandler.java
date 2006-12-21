@@ -183,7 +183,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         // for each handler name, create a SpBuildLoadHandler, set it up, and start it running
         for ( int i=0; i < spHandlerNames.length; i++ ) {
             sp[i] = SpBuildLoadHandler.getInstance( rpcConfigFile, spHandlerNames[i] );
-            sp[i].setup( tripTables );
+            sp[i].setup( spHandlerNames[i], rpcConfigFile, tripTables );
             sp[i].start();
         }
 

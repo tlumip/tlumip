@@ -34,8 +34,6 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     protected static Logger logger = Logger.getLogger(SpBuildLoadHandler.class);
 
-    private static String rpcConfigFile;
-    private static String handlerName;
     
     private DBlockingQueue workQueue;
     
@@ -48,14 +46,8 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
 
     public SpBuildLoadHandler() {
-        SpBuildLoadHandler.handlerName = "";
-        SpBuildLoadHandler.rpcConfigFile = "";
     }
 
-    public SpBuildLoadHandler(String rpcConfigFile, String handlerName) {
-        SpBuildLoadHandler.rpcConfigFile = rpcConfigFile;
-        SpBuildLoadHandler.handlerName = handlerName;
-    }
 
     
     // Factory Method to return either local or remote instance
@@ -64,7 +56,7 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
         if ( rpcConfigFile == null ) {
 
             // if rpc config file is null, then all handlers are local, so return local instance
-            return new SpBuildLoadHandler( rpcConfigFile, "local" );
+            return new SpBuildLoadHandler();
 
         }
         else {
@@ -74,13 +66,10 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
             if ( isLocal == null ) {
                 // handler name not found in config file, so create a local instance.
-                SpBuildLoadHandler.rpcConfigFile = rpcConfigFile;
-                return new SpBuildLoadHandler( rpcConfigFile, "local" );
+                return new SpBuildLoadHandler();
             }
             else { 
                 // handler name found in config file; since the handler was loaded by the framework, create an rpc instance.
-                SpBuildLoadHandler.handlerName = handlerName;
-                SpBuildLoadHandler.rpcConfigFile = rpcConfigFile;
                 return new SpBuildLoadHandlerRpc( rpcConfigFile, handlerName );
             }
 
@@ -91,12 +80,12 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     // Factory Method to return local instance only
     public static SpBuildLoadHandlerIF getInstance() {
-        return new SpBuildLoadHandler("", "local");
+        return new SpBuildLoadHandler();
     }
     
     
     
-    public int setup( double[][][] tripTables ) {
+    public int setup( String handlerName, String rpcConfigFile, double[][][] tripTables ) {
 
         spCommon = SpBuildLoadCommon.getInstance();
         
@@ -111,7 +100,7 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
         
         // ShortestPathHandlers assume that a NetworkHandler and a DemandHandler are running either in the same VM or as an RPC server
-        spCommon.setup( numberOfThreads, tripTables, nh );
+        spCommon.setup( handlerName, numberOfThreads, tripTables, nh );
         
         return 1;
     }
@@ -121,7 +110,7 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
         
         // start the specified number of threads to build and load shortest path trees from the workList, then return
         for (int i = 0; i < numberOfThreads; i++) {
-            SpBuildLoadMt spMt = new SpBuildLoadMt( handlerName, i, spCommon, workQueue );
+            SpBuildLoadMt spMt = new SpBuildLoadMt( i, spCommon, workQueue );
             new Thread(spMt).start();
         }
         
