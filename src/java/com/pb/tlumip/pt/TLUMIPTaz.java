@@ -33,58 +33,50 @@ public class TLUMIPTaz extends Taz {
 
     public void setTourSizeTerms(float[][] tdpd){
         float sizeTerm;
-        for(String key: employment.keySet()){
-            logger.info("key: "  + key);
-       }
 
         ActivityPurpose[] purposes = ActivityPurpose.values();
-        int lineNumber = 46;
         for(int i=0;i<purposes.length;i++){
-                sizeTerm = 0.0f;
-                float destParams[] = tdpd[i];
-            try {
-                lineNumber++;
-                sizeTerm = (destParams[RETAIL] * employment.get("RETAIL TRADE-Retail"))
-                  + (destParams[OTHERSERVICES] * (employment.get("FIRE BUSINESS AND PROFESSIONAL SERVICES")  +
-                                                        employment.get("PERSONAL AND OTHER SERVICES AND AMUSEMENTS")));
-                  lineNumber++;sizeTerm += (destParams[HOUSEHOLDS] * households);
-                  lineNumber++;sizeTerm += (destParams[GOVERNMENT] * (employment.get("GOVERNMENT ADMINISTRATION-Office") +
-                                                    employment.get("GOVERNMENT ADMINISTRATION-Government Support")));
-                  lineNumber++;sizeTerm += (destParams[HEALTH] * (employment.get("HEALTH SERVICES-Office" + employment.get("HEALTH SERVICES-Institutional") +
-                                             employment.get("HEALTH SERVICES-Hospital"))));
-                  lineNumber++;sizeTerm += (destParams[TRANSPORTATION] * (employment.get("TRANSPORT-Office" + employment.get("TRANSPORT-Depot"))));
-                  lineNumber++;sizeTerm += (destParams[HIGHEREDUCATION] * employment.get("HIGHER EDUCATION"));
-                  lineNumber++;sizeTerm += (destParams[K12EDUCATION] * employment.get("LOWER EDUCATION-Grade School"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ACCOMMODATIONS"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("AGRICULTURE AND MINING-Agriculture"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("AGRICULTURE AND MINING-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("COMMUNICATIONS AND UTILITIES-Light Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("COMMUNICATIONS AND UTILITIES-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("CONSTRUCTION"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ELECTRONICS AND INSTRUMENTS-Light Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ELECTRONICS AND INSTRUMENTS-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("FOOD PRODUCTS-Heavy Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("FOOD PRODUCTS-Light Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("FOOD PRODUCTS-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("FORESTRY AND LOGGING"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("HOMEBASED SERVICES"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("LOWER EDUCATION-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("LUMBER AND WOOD PRODUCTS-Heavy Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("LUMBER AND WOOD PRODUCTS-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER DURABLES-Heavy Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER DURABLES-Light Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER DURABLES-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER NON-DURABLES-Heavy Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER NON-DURABLES-Light Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER NON-DURABLES-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("PULP AND PAPER-Heavy Industry"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("PULP AND PAPER-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("RETAIL TRADE-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("WHOLESALE TRADE-Office"));
-                  lineNumber++;sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("WHOLESALE TRADE-Warehouse"));
-            } catch (Exception e) {
-                logger.info("Null pointer is in line: " + lineNumber);
-            }
+            float destParams[] = tdpd[i];
+
+
+            sizeTerm = (destParams[RETAIL] * employment.get("RETAIL TRADE-Retail"))
+              + (destParams[OTHERSERVICES] * (employment.get("FIRE BUSINESS AND PROFESSIONAL SERVICES")  +
+                                                    employment.get("PERSONAL AND OTHER SERVICES AND AMUSEMENTS")));
+              sizeTerm += (destParams[HOUSEHOLDS] * households);
+              sizeTerm += (destParams[GOVERNMENT] * (employment.get("GOVERNMENT ADMINISTRATION-Office") +
+                                                employment.get("GOVERNMENT ADMINISTRATION-Government Support")));
+              sizeTerm += (destParams[HEALTH] * (employment.get("HEALTH SERVICES-Office") + employment.get("HEALTH SERVICES-Institutional") +
+                                         employment.get("HEALTH SERVICES-Hospital")));
+              sizeTerm += (destParams[TRANSPORTATION] * (employment.get("TRANSPORT-Office") + employment.get("TRANSPORT-Depot")));
+              sizeTerm += (destParams[HIGHEREDUCATION] * employment.get("HIGHER EDUCATION"));
+              sizeTerm += (destParams[K12EDUCATION] * employment.get("LOWER EDUCATION-Grade School"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ACCOMMODATIONS"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("AGRICULTURE AND MINING-Agriculture"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("AGRICULTURE AND MINING-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("COMMUNICATIONS AND UTILITIES-Light Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("COMMUNICATIONS AND UTILITIES-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("CONSTRUCTION"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ELECTRONICS AND INSTRUMENTS-Light Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ELECTRONICS AND INSTRUMENTS-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("FOOD PRODUCTS-Heavy Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("FOOD PRODUCTS-Light Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("FOOD PRODUCTS-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("FORESTRY AND LOGGING"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("HOMEBASED SERVICES"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("LOWER EDUCATION-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("LUMBER AND WOOD PRODUCTS-Heavy Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("LUMBER AND WOOD PRODUCTS-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER DURABLES-Heavy Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER DURABLES-Light Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER DURABLES-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER NON-DURABLES-Heavy Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER NON-DURABLES-Light Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("OTHER NON-DURABLES-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("PULP AND PAPER-Heavy Industry"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("PULP AND PAPER-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("RETAIL TRADE-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("WHOLESALE TRADE-Office"));
+              sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("WHOLESALE TRADE-Warehouse"));
 
             if (trace) {
                     logger.info("tour size term for purpose " + i + " taz "+ zoneNumber + ": "
@@ -94,8 +86,8 @@ public class TLUMIPTaz extends Taz {
                             + " + " + (destParams[HOUSEHOLDS]       + " * " + households)
                             + " + " + (destParams[GOVERNMENT]       + " * " + (employment.get("GOVERNMENT ADMINISTRATION-Office")
                             + " + " +                                            employment.get("GOVERNMENT ADMINISTRATION-Government Support")))
-                            + " + " + (destParams[HEALTH]           + " * " + (employment.get("HEALTH SERVICES-Office" + employment.get("HEALTH SERVICES-Institutional")
-                            + " + " +                                            employment.get("HEALTH SERVICES-Hospital"))))
+                            + " + " + (destParams[HEALTH]           + " * " + (employment.get("HEALTH SERVICES-Office") + employment.get("HEALTH SERVICES-Institutional")
+                            + " + " +                                            employment.get("HEALTH SERVICES-Hospital")))
                             + " + " + (destParams[TRANSPORTATION]   + " * " + (employment.get("TRANSPORT-Office" + employment.get("TRANSPORT-Depot"))))
                             + " + " + (destParams[HIGHEREDUCATION]  + " * " + employment.get("HIGHER EDUCATION"))
                             + " + " + (destParams[K12EDUCATION]     + " * " + employment.get("LOWER EDUCATION-Grade School"))
@@ -147,7 +139,7 @@ public class TLUMIPTaz extends Taz {
 
         	float[] p = params[i];
 
-            sizeTerm =  (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("RETAIL TRADE-Retail"))
+            sizeTerm =    (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("RETAIL TRADE-Retail"))
                         + (p[StopDestinationParameters.TOTAL_RETAIL] *   employment.get("FIRE BUSINESS AND PROFESSIONAL SERVICES"))
                         + (p[StopDestinationParameters.TOTAL_RETAIL] *   employment.get("PERSONAL AND OTHER SERVICES AND AMUSEMENTS"))
                         + (p[StopDestinationParameters.TOTAL_RETAIL] *   employment.get("ACCOMMODATIONS"))

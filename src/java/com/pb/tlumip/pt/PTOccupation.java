@@ -52,7 +52,7 @@ public enum PTOccupation implements PTOccupationReferencer {
         if (occupation.startsWith("7_NonOfc")) {
             return NON_OFFICE;
         }
-        throw new ModelException("Could not String convert the occupation: "
+        throw new ModelException("Could not convert the occupation: "
                 + occupation);
     }
 
@@ -72,6 +72,10 @@ public enum PTOccupation implements PTOccupationReferencer {
             default: throw new ModelException("Invalid occupation index code: "
                     + index);
         }
+    }
+
+    public PTOccupation getRetailOccupation(){
+        return RETAIL;
     }
     
 
