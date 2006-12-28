@@ -128,7 +128,7 @@ public class FW {
 
                 long startTime = System.currentTimeMillis();
                 double[][] aonFlow = ah.getMulticlassAonLinkFlows ();
-                logger.info( ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds to build and loaded shortest path trees." );
+                logger.info( ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds to build and load shortest path trees." );
                 
 
                 for (int i=0; i < aonFlow.length; i++) {

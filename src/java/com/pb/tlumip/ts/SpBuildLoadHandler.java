@@ -85,22 +85,39 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     
     
     
-    public int setup( String handlerName, String rpcConfigFile, double[][][] tripTables ) {
+    // this method is called by local instances of SpBuildLoadHandler.
+    public int setup( String handlerName, String rpcConfigFile, NetworkHandlerIF nh, DemandHandlerIF dh ) {
 
         spCommon = SpBuildLoadCommon.getInstance();
         
         // define data structures used to manage the distribution of work
         workQueue = new DBlockingQueue( AonFlowHandler.WORK_QUEUE_NAME );
 
+        // a local instance made this call and is loaded in the same VM as this instance, so NetworkHandler and DemandHandler handles are passed in
+        // and can be passed on by this handler.
+        spCommon.setup( handlerName, numberOfThreads, nh, dh );
         
-        // get a NetworkHandler instance.
-        // if the instance has a null Network object, a local instance is to be used, and it can be retrieved from the controlMap,
-        // where it was stored by AonFlowHandler.
-        NetworkHandlerIF nh = NetworkHandler.getInstance(rpcConfigFile);
+        return 1;
+    }
 
+    
+
+    // this method is called by instances of SpBuildLoadHandlerRPC.
+    public int setup( String handlerName, String rpcConfigFile ) {
+
+        spCommon = SpBuildLoadCommon.getInstance();
         
-        // ShortestPathHandlers assume that a NetworkHandler and a DemandHandler are running either in the same VM or as an RPC server
-        spCommon.setup( handlerName, numberOfThreads, tripTables, nh );
+        // define data structures used to manage the distribution of work
+        workQueue = new DBlockingQueue( AonFlowHandler.WORK_QUEUE_NAME );
+
+        // an rpc instance made this call, so create new instances of NetworkHandler and DemandHandler, which should both also be rpc instances
+        // and will be used to make remote calls to handlers loaded in other VMs.
+        NetworkHandlerIF nh = NetworkHandler.getInstance(rpcConfigFile);
+        
+        DemandHandlerIF dh = DemandHandler.getInstance(rpcConfigFile);
+        
+        // setup the singleton common to threads started in parallel by this handler
+        spCommon.setup( handlerName, numberOfThreads, nh, dh );
         
         return 1;
     }

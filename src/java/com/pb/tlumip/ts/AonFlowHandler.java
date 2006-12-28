@@ -46,8 +46,8 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
 
     // set the frequency with which the shared class is polled to see if all threads have finshed their work.
-//    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
-    static final int POLLING_FREQUENCY_IN_SECONDS = 1;
+    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
+//    static final int POLLING_FREQUENCY_IN_SECONDS = 1;
     
     static String rpcConfigFile = null;
     
@@ -124,7 +124,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         this.timePeriod = nh.getTimePeriod();
 
         dh = DemandHandler.getInstance( rpcConfigFile );
-        dh.setup( componentRb, globalRb, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        dh.setup( componentPropertyMap, globalPropertyMap, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildDemandObject();
         
         return true;
@@ -149,14 +149,14 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         
         // start the distributed handlers, and combine their results when they've all finished.
-        double[][] aonFlow = runSpBuildLoadHandlers( dh.getMulticlassTripTables() );
+        double[][] aonFlow = runSpBuildLoadHandlers();
         
         return aonFlow;
         
     }
 
     
-    private double[][] runSpBuildLoadHandlers( double[][][] tripTables ) {
+    private double[][] runSpBuildLoadHandlers() {
 
         // get the specific handler names from the config file that begin with the SpBuildLoadHandler handler name.
         String[] spHandlerNames = null;
@@ -180,7 +180,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         // for each handler name, create a SpBuildLoadHandler, set it up, and start it running
         for ( int i=0; i < spHandlerNames.length; i++ ) {
             sp[i] = SpBuildLoadHandler.getInstance( rpcConfigFile, spHandlerNames[i] );
-            sp[i].setup( spHandlerNames[i], rpcConfigFile, tripTables );
+            sp[i].setup( spHandlerNames[i], rpcConfigFile, nh, dh );
             sp[i].start();
         }
 

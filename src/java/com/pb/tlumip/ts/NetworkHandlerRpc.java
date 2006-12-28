@@ -17,6 +17,7 @@
 package com.pb.tlumip.ts;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -34,11 +35,11 @@ import com.pb.tlumip.ts.assign.Network;
  * @author   Jim Hicks  
  * @version  Sep 20, 2005
  */
-public class NetworkHandlerRpc implements NetworkHandlerIF {
+public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
 
     protected static transient Logger logger = Logger.getLogger(NetworkHandlerRpc.class);
 
-    RpcClient rc = null;
+    transient RpcClient rc = null;
 
 
 

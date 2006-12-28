@@ -90,7 +90,6 @@ public class SpBuildLoadMt implements Runnable
             try {
                 // The next line blocks until a work packet can be taken off the queue.
                 workPacket = (int[][])workQueue.take();
-                packetCount++;
             }
             catch (Exception e) {
                 logger.error("exception caught in SpBuildLoadMt.run() retrieving work packet from distributed workQueue.", e);
@@ -101,9 +100,11 @@ public class SpBuildLoadMt implements Runnable
             // so finalize results and return.
             if ( workPacket.length == 0 ) {
                 workPacketsRemain = false;
+                logger.info( " thread " + threadId + " on " + spBuildLoadShared.getHandlerName() + " took an empty packet." );
                 continue;
             }
             
+            packetCount++;
             
             // process work elements in the packet
             for (int i=0; i < workPacket.length; i++) {

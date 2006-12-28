@@ -16,48 +16,30 @@
  */
 package com.pb.tlumip.ts;
 
-/**
- *
- * @author    Jim Hicks
- * @version   1.0, 6/30/2004
- */
-
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Vector;
 
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 
-import java.util.HashMap;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.ResourceBundle;
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
 
 
 
-public class DemandHandlerRpc implements DemandHandlerIF {
+/**
+ * @author    Jim Hicks
+ * @version   1.0, 6/30/2004
+ */
+public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
 
-	protected static Logger logger = Logger.getLogger(DemandHandlerRpc.class);
+	protected static transient Logger logger = Logger.getLogger(DemandHandlerRpc.class);
 
-    RpcClient rc = null;
+    transient RpcClient rc = null;
 
-	HashMap componentPropertyMap;
-    HashMap globalPropertyMap;
-
-    int networkNumCentroids;
-    int networkNumUserClasses;
-    int[] networkNodeIndexArray;
-    boolean networkUserClassesIncludeTruck;
-    HashMap networkAssignmentGroupMap;
-
-    
-	double[][][] multiclassTripTable = null;
-    
-    double[][] multiclassTripTableRowSums = null;
-
-	
 
 
     public DemandHandlerRpc( String rpcConfigFileName ) {
@@ -79,11 +61,11 @@ public class DemandHandlerRpc implements DemandHandlerIF {
     
     
    
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
 
         Vector params = new Vector();
-        params.add(componentRb);
-        params.add(globalRb);
+        params.add(componentPropertyMap);
+        params.add(globalPropertyMap);
         params.add(timePeriod);
         params.add(numCentroids);
         params.add(numUserClasses);

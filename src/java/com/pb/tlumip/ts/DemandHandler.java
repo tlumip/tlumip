@@ -30,22 +30,21 @@ import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.rpc.DafNode;
-import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 
 
 
-public class DemandHandler implements DemandHandlerIF {
+public class DemandHandler implements DemandHandlerIF, Serializable {
 
-	protected static Logger logger = Logger.getLogger(DemandHandler.class);
+	protected static transient Logger logger = Logger.getLogger(DemandHandler.class);
 
 	HashMap componentPropertyMap;
     HashMap globalPropertyMap;
@@ -86,9 +85,6 @@ public class DemandHandler implements DemandHandlerIF {
             if ( isLocal == null )
                 // handler name not found in config file, so create a local instance.
                 return new DemandHandler();
-            else if ( isLocal )
-                // handler name found in config file and is local, so create a local instance.
-                return new DemandHandler();
             else 
                 // handler name found in config file but is not local, so create an rpc instance.
                 return new DemandHandlerRpc( rpcConfigFile );
@@ -105,11 +101,11 @@ public class DemandHandler implements DemandHandlerIF {
     
 
    
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
 
-        this.componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( componentRb );
-        this.globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( globalRb );
+        this.componentPropertyMap = componentPropertyMap;
+        this.globalPropertyMap = globalPropertyMap;
 
         networkNumCentroids = numCentroids;
         networkNumUserClasses = numUserClasses;

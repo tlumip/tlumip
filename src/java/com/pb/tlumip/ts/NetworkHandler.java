@@ -16,6 +16,7 @@
  */
 package com.pb.tlumip.ts;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
@@ -31,7 +32,7 @@ import com.pb.tlumip.ts.assign.Network;
  * @author   Jim Hicks  
  * @version  Nov 1, 2006
  */
-public class NetworkHandler implements NetworkHandlerIF {
+public class NetworkHandler implements NetworkHandlerIF, Serializable {
 
     protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 

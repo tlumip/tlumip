@@ -175,7 +175,7 @@ public class TS {
     
     public void checkODPairsWithTripsForNetworkConnectivity (NetworkHandlerIF nh) {
         DemandHandler d = new DemandHandler();
-        d.setup( appRb, globalRb, "peak", nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        d.setup( ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), "peak", nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         d.buildDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
@@ -290,7 +290,7 @@ public class TS {
         
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
-        d.setup( appRb, globalRb, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        d.setup( ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         d.buildDemandObject();
         
         double[][] tripTable = d.getWalkTransitTripTable ();
@@ -309,7 +309,7 @@ public class TS {
         
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
-        d.setup( appRb, globalRb, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        d.setup( ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         d.buildDemandObject();
         
         double[][] tripTable = d.getDriveTransitTripTable ();

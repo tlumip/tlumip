@@ -41,9 +41,9 @@ public class SpBuildLoadCommon {
     private int[] packetsCompletedByThread;
     
     private double[][][] cumulativeBuildLoadResults;
-    private double[][][] tripTables;
     
     private NetworkHandlerIF nh;
+    private DemandHandlerIF dh;
     
     private SpBuildLoadCommon () {
     }
@@ -60,11 +60,11 @@ public class SpBuildLoadCommon {
     /** setup data structures to be used by all threads
      *  working on building and loading aon link flows.
      */
-    public void setup( String handlerName, int numThreads, double[][][] tripTables, NetworkHandlerIF nh ) {
+    public void setup( String handlerName, int numThreads, NetworkHandlerIF nh, DemandHandlerIF dh ) {
 
         this.handlerName = handlerName;
         this.nh = nh;
-        this.tripTables = tripTables;
+        this.dh = dh;
         
         // declare an an array to be used by all threads for accumulating loaded aon link flows.
         cumulativeBuildLoadResults = new double[numThreads][nh.getNumUserClasses()][nh.getLinkCount()];
@@ -95,7 +95,8 @@ public class SpBuildLoadCommon {
      * *
      */
     public double[] getTripTableRow( int m, int z ) {
-        return tripTables[m][z];
+        double[] tripTableRow = dh.getTripTableRow(m, z);
+        return tripTableRow;
     }
 
     
@@ -118,9 +119,11 @@ public class SpBuildLoadCommon {
     public int getNumberOfThreadsCompleted () {
 
         int numThreadsCompleted = 0;
-        for ( int i=0; i < packetsCompletedByThread.length; i++ )
+        for ( int i=0; i < packetsCompletedByThread.length; i++ ) {
+            logger.info( handlerName + " thread " + i + " completed " + packetsCompletedByThread[i] + " packets, numThreadsCompleted=" + numThreadsCompleted + ".");
             if ( packetsCompletedByThread[i] >= 0 )
                 numThreadsCompleted++;
+        }
 
         return numThreadsCompleted;
         

@@ -59,15 +59,23 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     }
     
     
+    // when an instance of this rpc handler is used to call the setup method of an SpBuildLoadHandler running in
+    // another VM, it is not necessary to send the NetworkHandler and DemandHandler object handles, so the alternate  
+    // setup method is used.  
+    public int setup( String handlerName, String rpcConfigFile, NetworkHandlerIF nh, DemandHandlerIF dh ) {
+
+        return setup( handlerName, rpcConfigFile );
+        
+    }
     
-    public int setup(String handlerName, String rpcConfigFile, double[][][] tripTables ) {
+    
+    public int setup( String handlerName, String rpcConfigFile ) {
 
         int returnValue = -1;
         try {
             Vector params = new Vector();
             params.add(handlerName);
             params.add(rpcConfigFile);
-            params.add(tripTables);
             returnValue = (Integer)rc.execute(handlerName+".setup", params );
         } catch (RpcException e) {
             logger.error( e );

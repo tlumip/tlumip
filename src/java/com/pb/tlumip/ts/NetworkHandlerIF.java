@@ -1,13 +1,12 @@
 package com.pb.tlumip.ts;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
 import com.pb.tlumip.ts.assign.Network;
 
 
-public interface NetworkHandlerIF extends Serializable {
+public interface NetworkHandlerIF {
 
     public static final String HANDLER_NAME = "networkHandler";
     
