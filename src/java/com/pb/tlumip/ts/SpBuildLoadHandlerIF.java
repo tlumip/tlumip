@@ -6,6 +6,7 @@ public interface SpBuildLoadHandlerIF {
     
     public int setup( String handlerName, String rpcConfigFile, NetworkHandlerIF nh, DemandHandlerIF dh );
     public int setup( String handlerName, String rpcConfigFile );
+    public int reset();
     public int start();
     public double[][] getResults();
     public boolean handlerIsFinished();

@@ -86,6 +86,19 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     }
     
     
+    public int reset() {
+        int returnValue = -1;
+        try {
+            returnValue = (Integer)rc.execute(handlerName+".reset", new Vector() );
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+    
+    
     public int start() {
         int returnValue = -1;
         try {

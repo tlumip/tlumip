@@ -121,6 +121,12 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
         
         return 1;
     }
+    
+    
+    public int reset () {
+        spCommon.reset();
+        return 1;
+    }
 
 
     public int start() {

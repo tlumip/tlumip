@@ -45,6 +45,10 @@ public class SpBuildLoadCommon {
     private NetworkHandlerIF nh;
     private DemandHandlerIF dh;
     
+    private int numLinks;
+    private int numUserClasses;
+    private int numThreads;
+    
     private SpBuildLoadCommon () {
     }
 
@@ -65,9 +69,17 @@ public class SpBuildLoadCommon {
         this.handlerName = handlerName;
         this.nh = nh;
         this.dh = dh;
+        this.numThreads = numThreads;
+        this.numUserClasses = nh.getNumUserClasses();
+        this.numLinks = nh.getLinkCount();
+
+        reset();
+    }
+    
+    public void reset() {
         
         // declare an an array to be used by all threads for accumulating loaded aon link flows.
-        cumulativeBuildLoadResults = new double[numThreads][nh.getNumUserClasses()][nh.getLinkCount()];
+        cumulativeBuildLoadResults = new double[numThreads][numUserClasses][numLinks];
         
         packetsCompletedByThread = new int[numThreads];
         Arrays.fill ( packetsCompletedByThread, -1 );

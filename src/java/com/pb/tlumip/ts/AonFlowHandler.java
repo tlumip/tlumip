@@ -67,6 +67,8 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     NetworkHandlerIF nh;
     DemandHandlerIF dh;
     
+    SpBuildLoadHandlerIF[] sp;
+    
 	public AonFlowHandler() {
     }
 
@@ -127,6 +129,8 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         dh.setup( componentPropertyMap, globalPropertyMap, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildDemandObject();
         
+        sp = setupSpBuildLoadHandlers();
+        
         return true;
         
     }
@@ -158,6 +162,36 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     private double[][] runSpBuildLoadHandlers() {
 
+        // start each handler working on the new workQueue
+        for ( int i=0; i < sp.length; i++ ) {
+            sp[i].reset();
+            sp[i].start();
+        }
+
+
+        // wait for all SpBuildLoadHandlers to ave indicated they are finished.
+        waitForAllHandlers( sp );
+
+        
+        // all SpBuildLoadHandlers are finished, so get results.
+        double[][] aonFlow = new double[networkNumUserClasses][networkNumLinks];
+
+        for ( int i=0; i < sp.length; i++ ) {
+
+            double[][] handlerResults = sp[i].getResults();
+            for (int m=0; m < handlerResults.length; m++)
+                for (int k=0; k < handlerResults[m].length; k++)
+                    aonFlow[m][k] += handlerResults[m][k];
+            
+        }
+        
+        return aonFlow;
+        
+    }
+    
+    
+    private SpBuildLoadHandlerIF[] setupSpBuildLoadHandlers() {
+
         // get the specific handler names from the config file that begin with the SpBuildLoadHandler handler name.
         String[] spHandlerNames = null;
         if ( rpcConfigFile == null ) {
@@ -181,27 +215,10 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         for ( int i=0; i < spHandlerNames.length; i++ ) {
             sp[i] = SpBuildLoadHandler.getInstance( rpcConfigFile, spHandlerNames[i] );
             sp[i].setup( spHandlerNames[i], rpcConfigFile, nh, dh );
-            sp[i].start();
         }
 
 
-        // wait for all SpBuildLoadHandlers to ave indicated they are finished.
-        waitForAllHandlers( sp );
-
-        
-        // all SpBuildLoadHandlers are finished, so get results.
-        double[][] aonFlow = new double[networkNumUserClasses][networkNumLinks];
-
-        for ( int i=0; i < spHandlerNames.length; i++ ) {
-
-            double[][] handlerResults = sp[i].getResults();
-            for (int m=0; m < handlerResults.length; m++)
-                for (int k=0; k < handlerResults[m].length; k++)
-                    aonFlow[m][k] += handlerResults[m][k];
-            
-        }
-        
-        return aonFlow;
+        return sp;
         
     }
     
