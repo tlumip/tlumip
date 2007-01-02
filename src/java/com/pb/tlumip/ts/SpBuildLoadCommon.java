@@ -132,7 +132,7 @@ public class SpBuildLoadCommon {
 
         int numThreadsCompleted = 0;
         for ( int i=0; i < packetsCompletedByThread.length; i++ ) {
-            logger.info( handlerName + " thread " + i + " completed " + packetsCompletedByThread[i] + " packets, numThreadsCompleted=" + numThreadsCompleted + ".");
+            //logger.info( handlerName + " thread " + i + " completed " + packetsCompletedByThread[i] + " packets, numThreadsCompleted=" + numThreadsCompleted + ".");
             if ( packetsCompletedByThread[i] >= 0 )
                 numThreadsCompleted++;
         }
