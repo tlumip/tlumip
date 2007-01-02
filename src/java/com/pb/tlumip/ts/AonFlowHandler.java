@@ -46,8 +46,8 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
 
     // set the frequency with which the shared class is polled to see if all threads have finshed their work.
-    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
-//    static final int POLLING_FREQUENCY_IN_SECONDS = 1;
+//    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
+    static final int POLLING_FREQUENCY_IN_SECONDS = 1;
     
     static String rpcConfigFile = null;
     
