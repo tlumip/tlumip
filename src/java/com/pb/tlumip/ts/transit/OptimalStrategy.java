@@ -1107,8 +1107,8 @@ public class OptimalStrategy {
         skimMatrices[IVT] = new Matrix( nameQualifier + "ivt", descQualifier + " in-vehicle time skims", zeroBasedFloatArrays[IVT] );
         skimMatrices[FWT] = new Matrix( nameQualifier + "fwt", descQualifier + " first wait time skims", zeroBasedFloatArrays[FWT] );
         skimMatrices[TWT] = new Matrix( nameQualifier + "twt", descQualifier + " total wait time skims", zeroBasedFloatArrays[TWT] );
-        skimMatrices[AUX] = new Matrix( nameQualifier + "acc", descQualifier + " other/egress time skims", zeroBasedFloatArrays[ACC] );
-        skimMatrices[ACC] = new Matrix( nameQualifier + "aux", descQualifier + " access time skims", zeroBasedFloatArrays[AUX] );
+        skimMatrices[ACC] = new Matrix( nameQualifier + "acc", descQualifier + " access time skims", zeroBasedFloatArrays[ACC] );
+        skimMatrices[AUX] = new Matrix( nameQualifier + "aux", descQualifier + " other/egress time skims", zeroBasedFloatArrays[AUX] );
         skimMatrices[BRD] = new Matrix( nameQualifier + "brd", descQualifier + " boardings skims", zeroBasedFloatArrays[BRD] );
         skimMatrices[FAR] = new Matrix( nameQualifier + "far", descQualifier + " fare skims", zeroBasedFloatArrays[FAR] );
         skimMatrices[HSR] = new Matrix( nameQualifier + "hsr", descQualifier + " high speed rail ivt skims", zeroBasedFloatArrays[HSR] );
