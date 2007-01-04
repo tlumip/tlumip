@@ -69,6 +69,8 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     SpBuildLoadHandlerIF[] sp;
     
+    DBlockingQueue workQueue;
+    
 	public AonFlowHandler() {
     }
 
@@ -130,6 +132,9 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         dh.setup( componentPropertyMap, globalPropertyMap, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildDemandObject();
         
+        logger.info( "AonFlowHandler creating new " + AonFlowHandler.WORK_QUEUE_NAME + " DBlockingQueue instance." );
+        workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
+
         sp = setupSpBuildLoadHandlers();
         
         return true;
@@ -141,8 +146,8 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     public double[][] getMulticlassAonLinkFlows () {
 
         // define data structures used to manage the distribution of work
-        logger.info( "AonFlowHandler creating new " + AonFlowHandler.WORK_QUEUE_NAME + " DBlockingQueue instance." );
-        DBlockingQueue workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
+//        logger.info( "AonFlowHandler creating new " + AonFlowHandler.WORK_QUEUE_NAME + " DBlockingQueue instance." );
+//        DBlockingQueue workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
         
         
         // distribute work into packets and put on queue
