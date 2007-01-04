@@ -100,7 +100,7 @@ public class SpBuildLoadMt implements Runnable
             // so finalize results and return.
             if ( workPacket.length == 0 ) {
                 workPacketsRemain = false;
-                logger.info( " thread " + threadId + " on " + spBuildLoadShared.getHandlerName() + " took an empty packet." );
+                logger.info( "thread " + threadId + " on " + spBuildLoadShared.getHandlerName() + " took an empty packet." );
                 continue;
             }
             

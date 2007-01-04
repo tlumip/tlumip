@@ -114,6 +114,7 @@ public class FW {
             }
 
             AonFlowHandlerIF ah = AonFlowHandler.getInstance( nh.getRpcConfigFileName() );
+            logger.info ( "FW.iterate() creating an AonFlowHandler and calling its setup()." ); 
             ah.setup( componentRb, globalRb, nh, highwayModeCharacters );
             
             
@@ -126,6 +127,7 @@ public class FW {
                 }
                 lambdas[iter] = 1.0;
 
+                logger.info( "FW iteration " + iter + " asking for AON flow vectors." );
                 long startTime = System.currentTimeMillis();
                 double[][] aonFlow = ah.getMulticlassAonLinkFlows ();
                 logger.info( ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds to build and load shortest path trees." );

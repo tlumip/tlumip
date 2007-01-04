@@ -23,7 +23,6 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 
@@ -48,10 +47,6 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
     public AonFlowHandlerRpc( String rpcConfigFileName ) {
         
         try {
-            
-            // Need a config file to initialize a Daf node
-            DafNode.getInstance().initClient(rpcConfigFileName);
-            
             rc = new RpcClient(HANDLER_NAME);
         }
         catch (MalformedURLException e) {

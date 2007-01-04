@@ -22,7 +22,6 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Vector;
 
-import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 
@@ -45,10 +44,6 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     public DemandHandlerRpc( String rpcConfigFileName ) {
         
         try {
-            
-            // Need a config file to initialize a Daf node
-            DafNode.getInstance().initClient(rpcConfigFileName);
-            
             rc = new RpcClient(HANDLER_NAME);
         }
         catch (MalformedURLException e) {

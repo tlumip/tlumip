@@ -70,9 +70,14 @@ public class SpBuildLoadCommon {
         this.nh = nh;
         this.dh = dh;
         this.numThreads = numThreads;
+        
+        logger.info( handlerName + " SpBuildLoadCommon.setup() getting number of user classes from NetworkHandler." );        
         this.numUserClasses = nh.getNumUserClasses();
+
+        logger.info( handlerName + " SpBuildLoadCommon.setup() getting number of links from NetworkHandler." );        
         this.numLinks = nh.getLinkCount();
 
+        logger.info( handlerName + " SpBuildLoadCommon.setup() calling reset()." );        
         reset();
     }
     

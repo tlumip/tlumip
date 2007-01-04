@@ -294,6 +294,7 @@ public class NetworkHandler implements NetworkHandlerIF, Serializable {
             // have been done, so build a new Network object which initialize 
             // the congested time field for computing time related skims.
             if ( networkDiskObjectFile == null ) {
+                logger.info ( "building a new Network object from " + (String)componentPropertyMap.get("d211.fileName") + " for the " + timePeriod + " period." );
                 g = new Network( componentPropertyMap, globalPropertyMap, timePeriod );
                 return true;
             }

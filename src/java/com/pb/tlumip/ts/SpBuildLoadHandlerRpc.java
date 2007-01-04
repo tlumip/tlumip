@@ -20,11 +20,10 @@ import java.util.Vector;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import org.apache.log4j.Logger;
-
-import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author   Jim Hicks  
@@ -44,10 +43,6 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
         this.handlerName = handlerName;
         
         try {
-            
-            // Need a config file to initialize a Daf node
-            DafNode.getInstance().initClient(rpcConfigFileName);
-            
             rc = new RpcClient(handlerName);
         }
         catch (MalformedURLException e) {

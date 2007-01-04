@@ -125,6 +125,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         networkNumUserClasses = nh.getNumUserClasses();
         this.timePeriod = nh.getTimePeriod();
 
+        logger.info( "requesting that demand matrices get built." );
         dh = DemandHandler.getInstance( rpcConfigFile );
         dh.setup( componentPropertyMap, globalPropertyMap, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildDemandObject();
@@ -140,12 +141,15 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     public double[][] getMulticlassAonLinkFlows () {
 
         // define data structures used to manage the distribution of work
+        logger.info( "AonFlowHandler creating new " + AonFlowHandler.WORK_QUEUE_NAME + " DBlockingQueue instance." );
         DBlockingQueue workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
         
         
         // distribute work into packets and put on queue
         try {
+            logger.info( "AonFlowHandler clearing " + AonFlowHandler.WORK_QUEUE_NAME + "." );
             workQueue.clear();
+            logger.info( "AonFlowHandler putting work on " + AonFlowHandler.WORK_QUEUE_NAME + "." );
             putWorkPacketsOnQueue( workQueue, dh.getTripTableRowSums() );
         } catch (RpcException e) {
             logger.error ("exception thrown distributing work into packets and putting on workQueue.", e);
@@ -153,6 +157,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         
         // start the distributed handlers, and combine their results when they've all finished.
+        logger.info( "AonFlowHandler starting all registered SpBuildLoadHandlers." );
         double[][] aonFlow = runSpBuildLoadHandlers();
         
         return aonFlow;
@@ -164,18 +169,21 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         // start each handler working on the new workQueue
         for ( int i=0; i < sp.length; i++ ) {
+            logger.info( "AonFlowHandler running SpBuildLoadHandler " + i + " reset()." );
             sp[i].reset();
+            logger.info( "AonFlowHandler running SpBuildLoadHandler " + i + " start()." );
             sp[i].start();
         }
 
 
         // wait for all SpBuildLoadHandlers to ave indicated they are finished.
-        waitForAllHandlers( sp );
+        logger.info( "AonFlowHandler waiting for all started SpBuildLoadHandlers to finish." );
+        waitForAllHandlers();
 
         
         // all SpBuildLoadHandlers are finished, so get results.
+        logger.info( "AonFlowHandler accumulating results from all finished SpBuildLoadHandlers." );
         double[][] aonFlow = new double[networkNumUserClasses][networkNumLinks];
-
         for ( int i=0; i < sp.length; i++ ) {
 
             double[][] handlerResults = sp[i].getResults();
@@ -208,25 +216,37 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         }
 
         // create an array of SpBuildLoadHandlers dimensioned to the number of handler names found
-        SpBuildLoadHandlerIF[] sp = new SpBuildLoadHandlerIF[spHandlerNames.length];
+        sp = new SpBuildLoadHandlerIF[spHandlerNames.length];
 
         
         // for each handler name, create a SpBuildLoadHandler, set it up, and start it running
+        int returnCount = 0;
         for ( int i=0; i < spHandlerNames.length; i++ ) {
+            logger.info( "AonFlowHandler calling SpBuildLoadHandler " + i + " setup method." );
             sp[i] = SpBuildLoadHandler.getInstance( rpcConfigFile, spHandlerNames[i] );
-            sp[i].setup( spHandlerNames[i], rpcConfigFile, nh, dh );
+            returnCount += sp[i].setup( spHandlerNames[i], rpcConfigFile, nh, dh );
         }
 
+        while ( returnCount < spHandlerNames.length ) {
+
+            try {
+                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
+            }
+            catch (InterruptedException e){
+                logger.error ( "exception thrown waiting for all SpBuildLoadHandlers to finish.", e);
+            }
+            
+        }
 
         return sp;
         
     }
     
     
-    private void waitForAllHandlers( SpBuildLoadHandlerIF[] sp ) {
+    private void waitForAllHandlers() {
         
         // wait here until all distributed handlers have indicated they are finished.
-        while ( getNumberOfHandlersCompleted ( sp ) < sp.length ) {
+        while ( getNumberOfHandlersCompleted () < sp.length ) {
 
             try {
                 Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
@@ -241,12 +261,14 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
 
     
-    private int getNumberOfHandlersCompleted ( SpBuildLoadHandlerIF[] sp ) {
+    private int getNumberOfHandlersCompleted () {
 
         int numHandlersCompleted = 0;
-        for ( int i=0; i < sp.length; i++ )
+        for ( int i=0; i < sp.length; i++ ) {
+            //logger.info( "AonFlowHandler checking to see if SpBuildLoadHandler " + i + " is finished.  numHandlersCompleted = " + numHandlersCompleted + "." );
             if ( sp[i].handlerIsFinished() )
                 numHandlersCompleted++;
+        }
 
         return numHandlersCompleted;
         

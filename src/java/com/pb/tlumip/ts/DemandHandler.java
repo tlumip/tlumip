@@ -130,6 +130,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         // load the trips from PT and CT trip lists into multiclass o/d demand matrices for assignment
         try {
 
+            logger.info ( "creating demand trip tables from " + (String)componentPropertyMap.get("pt.fileName") + " and " + (String)componentPropertyMap.get("ct.fileName") + " for the " + timePeriod + " period." );
+            
             // read in the trip lists
             multiclassTripTable = createMulticlassDemandMatrices ();
             

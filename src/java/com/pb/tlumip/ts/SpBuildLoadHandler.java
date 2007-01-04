@@ -105,18 +105,23 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     // this method is called by instances of SpBuildLoadHandlerRPC.
     public int setup( String handlerName, String rpcConfigFile ) {
 
+        logger.info( handlerName + " calling SpBuildLoadCommon.getInstance()." );
         spCommon = SpBuildLoadCommon.getInstance();
         
         // define data structures used to manage the distribution of work
+        logger.info( handlerName + " getting " + AonFlowHandler.WORK_QUEUE_NAME + " DBlockingQueue instance." );
         workQueue = new DBlockingQueue( AonFlowHandler.WORK_QUEUE_NAME );
 
         // an rpc instance made this call, so create new instances of NetworkHandler and DemandHandler, which should both also be rpc instances
         // and will be used to make remote calls to handlers loaded in other VMs.
+        logger.info( handlerName + " getting NetworkHandler instance." );
         NetworkHandlerIF nh = NetworkHandler.getInstance(rpcConfigFile);
         
+        logger.info( handlerName + " getting DemandHandler instance." );
         DemandHandlerIF dh = DemandHandler.getInstance(rpcConfigFile);
         
         // setup the singleton common to threads started in parallel by this handler
+        logger.info( handlerName + " calling SpBuildLoadCommon.setup()." );
         spCommon.setup( handlerName, numberOfThreads, nh, dh );
         
         return 1;

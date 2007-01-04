@@ -94,6 +94,7 @@ public class TS {
         
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
 
+        logger.info( "requesting that highway Network object gets built." );
         int returnValue = nh.setup( appRb, globalRb, assignmentPeriod );
 
         logger.info ("set up " + assignmentPeriod + " highway network object with " + returnValue + " links for highway assignment at: " + myDateString);
@@ -112,17 +113,17 @@ public class TS {
 		
 		// create Frank-Wolfe Algortihm Object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("creating + " + assignmentPeriod + " FW object at: " + myDateString);
+		logger.info ("creating and initializing a " + assignmentPeriod + " FW object at: " + myDateString);
 		FW fw = new FW();
 		fw.initialize( appRb, globalRb, nh, highwayModeCharacters );
 
 
 		// Compute Frank-Wolfe solution
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("starting + " + assignmentPeriod + " fw at: " + myDateString);
+		logger.info ("starting " + assignmentPeriod + " FW iterations at: " + myDateString);
 		fw.iterate ();
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("done with + " + assignmentPeriod + " fw at: " + myDateString);
+		logger.info ("end of " + assignmentPeriod + " FW iterations at: " + myDateString);
 
         logger.info( assignmentPeriod + " highway assignment finished in " +
 			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes.");
@@ -564,6 +565,7 @@ public class TS {
         long startTime = System.currentTimeMillis();
 
         // generate a NetworkHandler object to use for peak period assignments and skimming
+        logger.info( "TS.bench() getting a NetworkHandler instance and setting the config file name value." );
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
 
@@ -612,6 +614,7 @@ public class TS {
         if ( rpcConfigFileName != null ) {
             
             try {
+                logger.info( "TS.main() using DafNode.initClient() to initialize a DafNode for the objects TS creates." );
                 DafNode.getInstance().initClient(rpcConfigFileName);
             }
             catch (MalformedURLException e) {

@@ -23,13 +23,12 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
-import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.assign.Network;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author   Jim Hicks  
@@ -46,10 +45,6 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public NetworkHandlerRpc( String rpcConfigFileName ) {
         
         try {
-            
-            // Need a config file to initialize a Daf node
-            DafNode.getInstance().initClient(rpcConfigFileName);
-            
             rc = new RpcClient(HANDLER_NAME);
         }
         catch (MalformedURLException e) {
