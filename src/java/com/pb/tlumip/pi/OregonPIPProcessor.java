@@ -653,11 +653,10 @@ public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter 
         //need to initialize the occupation variable if it hasn't been already.
         if(indOccRef == null){
             indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
-            occupations = indOccRef.getOccupationLabelsByIndex();
-            Arrays.sort(occupations);
         }
 
-
+        occupations = indOccRef.getOccupationLabelsByIndex();
+        Arrays.sort(occupations);
 
         //Either occupation or SCTG county flows are requested so figure out if the
         //commodity name passed in is an occupation or an SCTG
