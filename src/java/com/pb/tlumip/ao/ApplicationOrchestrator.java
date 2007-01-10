@@ -29,8 +29,19 @@ import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.TS;
 import org.apache.log4j.Logger;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -431,12 +442,6 @@ public class ApplicationOrchestrator {
         appRunner.run();
     }
     
-    public void runPICONSTRAINEDModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
-        PIModel pi = new PIModel();
-        pi.setResourceBundles(appRb, globalRb);
-        pi.startConstrainedModel(timeInterval);
-    }
-
     public void runSPG2Model(int baseYr, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
         String baseYear = Integer.toString(baseYr);
@@ -578,9 +583,6 @@ public class ApplicationOrchestrator {
             }else if(appName.equalsIgnoreCase("PIDAF")){
                 logger.info("AO will now start PIDAF for simulation year " + (baseYear+t));
                 ao.runPIDAFModel(t,pathToAppRb,pathToGlobalRb,nodeName);
-            }else if(appName.equalsIgnoreCase("PICONSTRAINED")){
-                logger.info("AO will now start PICONSTRAINED for simulation year " + (baseYear + t));
-                ao.runPICONSTRAINEDModel(t,appRb,globalRb);
             }else if (appName.equalsIgnoreCase("SPG2")){ //not a daf application
                 logger.info("AO will now start SPG2 for simulation year " + (baseYear+t));
                 ao.runSPG2Model(baseYear,t,appRb, globalRb);
