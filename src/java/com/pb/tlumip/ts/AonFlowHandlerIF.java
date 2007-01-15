@@ -1,11 +1,10 @@
 package com.pb.tlumip.ts;
 
-import java.util.ResourceBundle;
-
 public interface AonFlowHandlerIF {
 
     public static String HANDLER_NAME = "aonFlowHandler";
     
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, NetworkHandlerIF nh, char[] highwayModeCharacters );
+    public boolean setup( String rpcConfigFile, String ptFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh );
     public double[][] getMulticlassAonLinkFlows ();
+
 }

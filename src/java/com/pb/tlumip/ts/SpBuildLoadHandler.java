@@ -23,6 +23,9 @@ package com.pb.tlumip.ts;
  */
 
 
+import java.util.List;
+import java.util.Vector;
+
 import com.pb.common.rpc.DBlockingQueue;
 import com.pb.common.rpc.DafNode;
 
@@ -88,6 +91,8 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     // this method is called by local instances of SpBuildLoadHandler.
     public int setup( String handlerName, String rpcConfigFile, NetworkHandlerIF nh, DemandHandlerIF dh ) {
 
+        logger.info( handlerName + " running SpBuildLoadHandler.setup()." );
+        
         spCommon = SpBuildLoadCommon.getInstance();
         
         // define data structures used to manage the distribution of work
@@ -103,28 +108,16 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     
 
     // this method is called by instances of SpBuildLoadHandlerRPC.
-    public int setup( String handlerName, String rpcConfigFile ) {
-
-        logger.info( handlerName + " calling SpBuildLoadCommon.getInstance()." );
-        spCommon = SpBuildLoadCommon.getInstance();
-        
-        // define data structures used to manage the distribution of work
-        logger.info( handlerName + " getting " + AonFlowHandler.WORK_QUEUE_NAME + " DBlockingQueue instance." );
-        workQueue = new DBlockingQueue( AonFlowHandler.WORK_QUEUE_NAME );
+    public int setupRpc( String handlerName, String rpcConfigFile ) {
 
         // an rpc instance made this call, so create new instances of NetworkHandler and DemandHandler, which should both also be rpc instances
         // and will be used to make remote calls to handlers loaded in other VMs.
-        logger.info( handlerName + " getting NetworkHandler instance." );
         NetworkHandlerIF nh = NetworkHandler.getInstance(rpcConfigFile);
         
-        logger.info( handlerName + " getting DemandHandler instance." );
         DemandHandlerIF dh = DemandHandler.getInstance(rpcConfigFile);
+
+        return setup( handlerName, rpcConfigFile, nh, dh );
         
-        // setup the singleton common to threads started in parallel by this handler
-        logger.info( handlerName + " calling SpBuildLoadCommon.setup()." );
-        spCommon.setup( handlerName, numberOfThreads, nh, dh );
-        
-        return 1;
     }
     
     
@@ -167,7 +160,20 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
         
     }
     
+    
+    
+    public List getResultsRpc() {
+        
+        double[][] aonFlows = getResults();
+        
+        // convert array to Vector for http protocol
+        Vector list = Util.double2Vector( aonFlows );
+        return list;
+
+    }
+    
  
+    
     public boolean handlerIsFinished() {
         // check to see if all handler threads have completed.
         boolean result = false;

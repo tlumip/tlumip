@@ -37,7 +37,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
-import java.util.ResourceBundle;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -95,7 +94,7 @@ public class SimpleAssign {
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating Highway Network object at: " + myDateString);
         NetworkHandlerIF nh = NetworkHandler.getInstance();
-        nh.setup( ResourceBundle.getBundle(tsPropertyFileName), ResourceBundle.getBundle(globalPropertyFileName), period );
+        setupNetwork( nh, tsPropertyMap, globalPropertyMap, period );
         logger.info ("done building Network object.");
 		
 		
@@ -107,8 +106,8 @@ public class SimpleAssign {
 
 		// read PT trip list into o/d trip matrix
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("reading trip list at: " + myDateString);
-		multiclassTripTable = createMulticlassDemandMatrices( period, nh.getNumUserClasses(), nh.getNumCentroids(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), nh.userClassesIncludeTruck() );
+		logger.info ("reading trip lists at: " + myDateString);
+		multiclassTripTable = createMulticlassDemandMatrices( period, nh.getNumUserClasses(), nh.getNumCentroids(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.userClassesIncludeTruck() );
 
 		//Compute Frank-Wolfe solution
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -126,8 +125,63 @@ public class SimpleAssign {
     }
     
     
+    private void setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+        
+        String networkFileName = (String)appMap.get("d211.fileName");
+        String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
+        
+        String turnTableFileName = (String)appMap.get( "d231.fileName" );
+        String networkModsFileName = (String)appMap.get( "d211Mods.fileName" );
+        
+        String vdfFileName = (String)appMap.get("vdf.fileName");
+        String vdfIntegralFileName = (String)appMap.get("vdfIntegral.fileName");
+        
+        String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
+        
+        // get peak or off-peak volume factor from properties file
+        String volumeFactor="";
+        if ( timePeriod.equalsIgnoreCase( "peak" ) )
+            volumeFactor = (String)globalMap.get("AM_PEAK_VOL_FACTOR");
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
+            volumeFactor = (String)globalMap.get("OFF_PEAK_VOL_FACTOR");
+        else {
+            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
+            System.exit(-1);
+        }
+        
+        String userClassesString = (String)appMap.get("userClass.modes");
+        String truckClass1String = (String)appMap.get( "truckClass1.modes" );
+        String truckClass2String = (String)appMap.get( "truckClass2.modes" );
+        String truckClass3String = (String)appMap.get( "truckClass3.modes" );
+        String truckClass4String = (String)appMap.get( "truckClass4.modes" );
+        String truckClass5String = (String)appMap.get( "truckClass5.modes" );
+
+        String walkSpeed = (String)globalMap.get( "WALK_MPH" );
+        
+        
+        String[] propertyValues = new String[NetworkHandler.NUMBER_OF_PROPERTY_VALUES];
+        
+        propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX] = networkFileName;
+        propertyValues[NetworkHandlerIF.NETWORK_DISKOBJECT_FILENAME_INDEX] = networkDiskObjectFileName;
+        propertyValues[NetworkHandlerIF.VDF_FILENAME_INDEX] = vdfFileName;
+        propertyValues[NetworkHandlerIF.VDF_INTEGRAL_FILENAME_INDEX] = vdfIntegralFileName;
+        propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] = a2bFileName;
+        propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX] = turnTableFileName;
+        propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX] = networkModsFileName;
+        propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
+        propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX] = truckClass2String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS3_STRING_INDEX] = truckClass3String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS4_STRING_INDEX] = truckClass4String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS5_STRING_INDEX] = truckClass5String;
+        propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
+        
+        nh.buildNetworkObject ( timePeriod, propertyValues );
+        
+    }
     
-    private double[][][] createMulticlassDemandMatrices (String timePeriod, int numUserClasses, int numCentroids, int[] nodeIndex, HashMap assignmentGroupMap, boolean userClassesIncludeTruck) {
+    private double[][][] createMulticlassDemandMatrices (String timePeriod, int numUserClasses, int numCentroids, int[] nodeIndex, char[][] assignmentGroupChars, boolean userClassesIncludeTruck) {
         
         String myDateString;
         
@@ -163,7 +217,15 @@ public class SimpleAssign {
         
         
         // read PT trip list into o/d trip matrix if auto user class was defined
-        if ( assignmentGroupMap.containsKey( String.valueOf('a') ) ) {
+        boolean assignmentGroupContainsAuto = false;
+        for (int i=0; i < assignmentGroupChars[0].length; i++) {
+            if ( assignmentGroupChars[0][i] == 'a' ) {
+                assignmentGroupContainsAuto = true;
+                break;
+            }
+        }
+                
+        if ( assignmentGroupContainsAuto ) {
             myDateString = DateFormat.getDateTimeInstance().format(new Date());
             logger.info ("reading " + timePeriod + " PT trip list at: " + myDateString);
             multiclassTripTable[0] = getAutoTripTableFromPTList ( ptFileName, startHour, endHour, numCentroids, nodeIndex );
@@ -177,7 +239,7 @@ public class SimpleAssign {
         if ( userClassesIncludeTruck ) {
             myDateString = DateFormat.getDateTimeInstance().format(new Date());
             logger.info ("reading " + timePeriod + " CT trip list at: " + myDateString);
-            double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ( ctFileName, startHour, endHour, numUserClasses, numCentroids, nodeIndex, assignmentGroupMap );
+            double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ( ctFileName, startHour, endHour, numUserClasses, numCentroids, nodeIndex, assignmentGroupChars );
 
             for(int i=0; i < truckTripTables.length - 1; i++)
                 multiclassTripTable[i+1] = truckTripTables[i];
@@ -260,7 +322,7 @@ public class SimpleAssign {
     }
     
 
-    private double[][][] getTruckAssignmentGroupTripTableFromCTList ( String fileName, int startPeriod, int endPeriod, int numUserClasses, int numCentroids, int[] nodeIndex, HashMap assignmentGroupMap ) {
+    private double[][][] getTruckAssignmentGroupTripTableFromCTList ( String fileName, int startPeriod, int endPeriod, int numUserClasses, int numCentroids, int[] nodeIndex, char[][] assignmentGroupChars ) {
 
         int orig;
         int dest;
@@ -303,7 +365,19 @@ public class SimpleAssign {
     
                     mode = Integer.parseInt( truckType.substring(3) );
                     modeChar = highwayModeCharacters[mode];
-                    group = ((Integer)assignmentGroupMap.get( String.valueOf( modeChar ) )).intValue();
+                    group = -1;
+                    for (int j=1; j < assignmentGroupChars.length; j++) {
+                        for (int k=0; k < assignmentGroupChars[j].length; k++) {
+                            if ( assignmentGroupChars[j][k] == modeChar ) {
+                                group = j;
+                                break;
+                            }
+                        }
+                    }
+                    if ( group < 0 ) {
+                        logger.error ( "modeChar = " + modeChar + " associated with CT integer mode = " + mode + " not found in any asignment group." );
+                        System.exit(-1);
+                    }
                     
                     o = nodeIndex[orig];
                     d = nodeIndex[dest];

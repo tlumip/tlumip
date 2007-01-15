@@ -34,12 +34,17 @@ import com.pb.tlumip.ts.transit.TrRoute;
 
 import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.DataWriter;
+import com.pb.common.datafile.OLD_CSVFileReader;
+import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.util.ResourceUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Arrays;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.util.Date;
@@ -54,7 +59,10 @@ public class TS {
 
 
     static final boolean CREATE_NEW_NETWORK = true;
+    
 
+    
+    
     final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
 
     ResourceBundle appRb;
@@ -72,10 +80,6 @@ public class TS {
 
     public void runHighwayAssignment( NetworkHandlerIF nh, String assignmentPeriod ) {
     	
-    	// define assignment related variables dependent on the assignment period
-    	initializeHighwayAssignment ( nh, assignmentPeriod );
-        logger.info("TS main - highway network initialized\n\n");
-
 		// run the multiclass assignment for the time period
     	multiclassEquilibriumHighwayAssignment ( nh, assignmentPeriod );
         logger.info("TS main - equilibrium assignment done\n\n");
@@ -86,21 +90,12 @@ public class TS {
     	// modify the method above to distinguish the class id in addition to period
     	// and skim types.
     	
-    }
-    
-    
-    
-    private void initializeHighwayAssignment ( NetworkHandlerIF nh, String assignmentPeriod ) {
+        logger.info ("done with " + assignmentPeriod + " highway assignment.");
         
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-
-        logger.info( "requesting that highway Network object gets built." );
-        int returnValue = nh.setup( appRb, globalRb, assignmentPeriod );
-
-        logger.info ("set up " + assignmentPeriod + " highway network object with " + returnValue + " links for highway assignment at: " + myDateString);
     }
-	
-	
+    
+    
+    
     private void multiclassEquilibriumHighwayAssignment ( NetworkHandlerIF nh, String assignmentPeriod ) {
         
 		long startTime = System.currentTimeMillis();
@@ -175,8 +170,15 @@ public class TS {
     
     
     public void checkODPairsWithTripsForNetworkConnectivity (NetworkHandlerIF nh) {
-        DemandHandler d = new DemandHandler();
-        d.setup( ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), "peak", nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        
+        String timePeriod = "peak";
+        int startHour = 600;
+        int endHour = 900;
+        
+
+        logger.info( "requesting that demand matrices get built." );
+        DemandHandlerIF d = DemandHandler.getInstance();
+        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("pt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         d.buildDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
@@ -264,21 +266,19 @@ public class TS {
     
     public void writeHighwaySkimMatrices ( NetworkHandlerIF nh, String assignmentPeriod, char modeChar ) {
 
+        long startTime = System.currentTimeMillis();
+        logger.info("Writing " + assignmentPeriod + " time and dist skim matrices for highway mode " + modeChar + " to disk...");
+
+        
         HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
         HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-
-    	String[] skimTypeArray = { "time", "dist" };
-    	
-    	
-		logger.info("Writing " + assignmentPeriod + " time and dist skim matrices for highway mode " + modeChar + " to disk...");
-        long startTime = System.currentTimeMillis();
-        
     	Skims skims = new Skims(nh, tsPropertyMap, globalPropertyMap);
-    	
+        
+        String[] skimTypeArray = { "time", "dist" };
         skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, modeChar);
 
-        logger.info("wrote the " + assignmentPeriod + " time and dist skims for mode " + modeChar + " in " +
-    			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
+        
+        logger.info("wrote the " + assignmentPeriod + " time and dist skims for mode " + modeChar + " in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 
     }
 
@@ -286,12 +286,22 @@ public class TS {
     
     private double[] runWalkTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
         
-        // define assignment related variables dependent on the assignment period
-        initializeHighwayAssignment ( nh, assignmentPeriod );
+        int startHour = 0;
+        int endHour = 0;
+        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+            // get peak period definitions from property files
+            startHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("AM_PEAK_START") );
+            endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("AM_PEAK_END") );
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+            // get off-peak period definitions from property files
+            startHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_START") );
+            endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_END") );
+        }
         
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
-        d.setup( ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("pt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         d.buildDemandObject();
         
         double[][] tripTable = d.getWalkTransitTripTable ();
@@ -305,12 +315,22 @@ public class TS {
     
     private double[] runDriveTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
         
-        // define assignment related variables dependent on the assignment period
-        initializeHighwayAssignment ( nh, assignmentPeriod );
+        int startHour = 0;
+        int endHour = 0;
+        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
+            // get peak period definitions from property files
+            startHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("AM_PEAK_START") );
+            endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("AM_PEAK_END") );
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
+            // get off-peak period definitions from property files
+            startHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_START") );
+            endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_END") );
+        }
         
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
-        d.setup( ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("pt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         d.buildDemandObject();
         
         double[][] tripTable = d.getDriveTransitTripTable ();
@@ -441,7 +461,7 @@ public class TS {
         tr.readTransitRoutes ( d221File );
             
         // associate transit segment node sequence with highway link indices
-        tr.getLinkIndices (nh.getNetwork());
+        tr.getLinkIndices (nh);
 
 
 
@@ -493,21 +513,6 @@ public class TS {
     }
     
     
-    private void assignAndSkimHighway ( NetworkHandlerIF nh, String assignmentPeriod ) {
-
-        // run peak highway assignment
-        runHighwayAssignment( nh, assignmentPeriod );
-        logger.info ("done with " + assignmentPeriod + " highway assignment.");
-
-        // write the auto time and distance highway skim matrices to disk
-        writeHighwaySkimMatrices ( nh, assignmentPeriod, 'a' );
-        logger.info ("done writing " + assignmentPeriod + " highway skims files.");
-        
-        logger.info ("done with " + assignmentPeriod + " highway skimming and loading.");
-        
-    }
-
-
     private void assignAndSkimTransit ( NetworkHandlerIF nh, String assignmentPeriod, ResourceBundle appRb, ResourceBundle globalRb ) {
 
         // generate walk transit network
@@ -560,44 +565,139 @@ public class TS {
     }
 
     
+    
+    public void loadAssignmentResults ( NetworkHandlerIF nh, ResourceBundle appRb, String assignmentPeriod ) {
+        
+        // get the filename where highway assignment total link flows and times are stored from the property file. 
+        HashMap propertyMap = ResourceUtil.changeResourceBundleIntoHashMap( appRb );
+        
+        String fileNameKey = "";
+        if ( assignmentPeriod.equalsIgnoreCase("peak") )
+            fileNameKey = "peakOutput.fileName";
+        else
+            fileNameKey = "offpeakOutput.fileName";
+                
+        String fileName = (String)propertyMap.get( fileNameKey );
+        
+        
+        
+        // read the link data from the assignment results csv file into a TableDataSet 
+        TableDataSet assignmentResults = null;
+        
+        OLD_CSVFileReader csvReader = new OLD_CSVFileReader();
+        try {
+            assignmentResults = csvReader.readFile( new File(fileName) );
+        } catch (IOException e) {
+            logger.error ( "IOException reading loaded link data from assignment results file: " + fileName, e );
+            System.exit(-1);
+        }
+
+        
+        
+        // get the column names of the userclass flow vectors in the results file.
+        String resultsString = nh.getAssignmentResultsString();
+        String[] columnNames = assignmentResults.getColumnLabels();
+        
+        ArrayList flowColumnNames = new ArrayList();
+        for (int i=0; i < columnNames.length; i++) {
+            if ( columnNames[i].startsWith( resultsString ) )
+                flowColumnNames.add( columnNames[i] );
+        }
+        int numFlowFields = flowColumnNames.size();
+        
+        
+        // update the multiclass flow fields and congested time field in NetworkHandler
+        double[][] flows = new double[numFlowFields][];
+        for (int i=0; i < numFlowFields; i++)
+            flows[i] = assignmentResults.getColumnAsDouble( (String)flowColumnNames.get(i) );
+            
+        nh.setFlows(flows);
+        
+        
+        double[] timau = assignmentResults.getColumnAsDouble( nh.getAssignmentResultsTimeString() );
+        nh.setTimau(timau);
+        
+    }
+    
+    
+    
+    public void setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+        
+        String networkFileName = (String)appMap.get("d211.fileName");
+        String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
+        
+        String turnTableFileName = (String)appMap.get( "d231.fileName" );
+        String networkModsFileName = (String)appMap.get( "d211Mods.fileName" );
+        
+        String vdfFileName = (String)appMap.get("vdf.fileName");
+        String vdfIntegralFileName = (String)appMap.get("vdfIntegral.fileName");
+        
+        String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
+        
+        // get peak or off-peak volume factor from properties file
+        String volumeFactor="";
+        if ( timePeriod.equalsIgnoreCase( "peak" ) )
+            volumeFactor = (String)globalMap.get("AM_PEAK_VOL_FACTOR");
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
+            volumeFactor = (String)globalMap.get("OFF_PEAK_VOL_FACTOR");
+        else {
+            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
+            System.exit(-1);
+        }
+        
+        String userClassesString = (String)appMap.get("userClass.modes");
+        String truckClass1String = (String)appMap.get( "truckClass1.modes" );
+        String truckClass2String = (String)appMap.get( "truckClass2.modes" );
+        String truckClass3String = (String)appMap.get( "truckClass3.modes" );
+        String truckClass4String = (String)appMap.get( "truckClass4.modes" );
+        String truckClass5String = (String)appMap.get( "truckClass5.modes" );
+
+        String walkSpeed = (String)globalMap.get( "WALK_MPH" );
+        
+        
+        String[] propertyValues = new String[NetworkHandler.NUMBER_OF_PROPERTY_VALUES];
+        Arrays.fill(propertyValues, "");
+        
+        
+        if ( networkFileName != null ) propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX] = networkFileName;
+        if ( networkDiskObjectFileName != null ) propertyValues[NetworkHandlerIF.NETWORK_DISKOBJECT_FILENAME_INDEX] = networkDiskObjectFileName;
+        if ( vdfFileName != null ) propertyValues[NetworkHandlerIF.VDF_FILENAME_INDEX] = vdfFileName;
+        if ( vdfIntegralFileName != null ) propertyValues[NetworkHandlerIF.VDF_INTEGRAL_FILENAME_INDEX] = vdfIntegralFileName;
+        if ( a2bFileName != null ) propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] = a2bFileName;
+        if ( turnTableFileName != null ) propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX] = turnTableFileName;
+        if ( networkModsFileName != null ) propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX] = networkModsFileName;
+        if ( volumeFactor != null ) propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
+        if ( userClassesString != null ) propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
+        if ( truckClass1String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
+        if ( truckClass2String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX] = truckClass2String;
+        if ( truckClass3String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS3_STRING_INDEX] = truckClass3String;
+        if ( truckClass4String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS4_STRING_INDEX] = truckClass4String;
+        if ( truckClass5String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS5_STRING_INDEX] = truckClass5String;
+        if ( walkSpeed != null ) propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
+        
+        
+        nh.buildNetworkObject ( timePeriod, propertyValues );
+        
+    }
+    
+    
+    
     public void bench ( ResourceBundle appRb, ResourceBundle globalRb, String rpcConfigFileName ) {
 
         long startTime = System.currentTimeMillis();
+        
+        String period = "peak";
 
         // generate a NetworkHandler object to use for peak period assignments and skimming
         logger.info( "TS.bench() getting a NetworkHandler instance and setting the config file name value." );
+        
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
+        setupNetwork( nhPeak, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
 
-        runHighwayAssignment(nhPeak, "peak");
+        runHighwayAssignment(nhPeak, period);
 
         logger.info ("TS.bench() finished peak highway assignment in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
-
-    }
-
-    
-
-    public void assignAndSkimAllHighwayAndTransit ( ResourceBundle appRb, ResourceBundle globalRb, String rpcConfigFileName ) {
-
-        long startTime = System.currentTimeMillis();
-
-        // generate a NetworkHandler object to use for peak period assignments and skimming
-        NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
-
-        assignAndSkimHighway ( nhPeak, "peak" );
-        assignAndSkimTransit ( nhPeak, "peak", appRb, globalRb );
- 
-        nhPeak = null;
-        
-        // generate a NetworkHandler object to use for off-peak period assignments and skimming
-        NetworkHandlerIF nhOffPeak = NetworkHandler.getInstance( rpcConfigFileName );
-
-        assignAndSkimHighway ( nhOffPeak, "offpeak" );
-        assignAndSkimTransit ( nhOffPeak, "offpeak", appRb, globalRb );
-        
-        nhOffPeak = null;
-
-        logger.info ("TS.assignAndSkimAllHighwayAndTransit() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 
     }
 
@@ -607,8 +707,14 @@ public class TS {
 
         TS tsMain = new TS( ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle (args[1]) );
 
-        String rpcConfigFileName = (args.length == 3 ? args[2] : null);
+        long startTime = System.currentTimeMillis();
+
+
         
+        // An rpc config file can be used to define a cluster and the distribution of objects to multiple machines.
+        // If this file is not specified as the 3rd command line argument, the application runs entirely in this main jvm.
+        String rpcConfigFileName = (args.length == 3 ? args[2] : null);
+
         
         // Need a DafNode instance to read a config file and initialize a DafNode.
         if ( rpcConfigFileName != null ) {
@@ -626,11 +732,39 @@ public class TS {
             
         }
 
-        // run the full set of assignment and skimming procedures
-//        tsMain.assignAndSkimAllHighwayAndTransit ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
 
+
+/*        
+        // generate a NetworkHandler object to use for peak period assignments and skimming
+        NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
+        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+
+        
+        
+        // TS Example 1 - Run a peak highway assignment:
+        
+        // run peak highway assignment
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        //nhPeak.checkForIsolatedLinks();
+
+        // write the auto time and distance highway skim matrices to disk based on attribute values in NetworkHandler after assignment
+        tsMain.writeHighwaySkimMatrices ( nhPeak, "peak", 'a' );
+*/
+        
+        
+        
+/*        
+        // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
+        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]), "peak" );
+        tsMain.assignAndSkimTransit ( nhPeak, "peak", ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+*/
+        
+        
         // run the benchmark highway assignment procedure
         tsMain.bench ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
+
+        
+        logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 
     }
 

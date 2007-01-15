@@ -23,13 +23,13 @@ package com.pb.tlumip.ts;
  */
 
 
-import java.util.HashMap;
-import java.util.ResourceBundle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 import com.pb.common.rpc.DBlockingQueue;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcException;
-import com.pb.common.util.ResourceUtil;
 
 import org.apache.log4j.Logger;
 
@@ -50,12 +50,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     static final int POLLING_FREQUENCY_IN_SECONDS = 1;
     
     static String rpcConfigFile = null;
-    
-    HashMap componentPropertyMap;
-    HashMap globalPropertyMap;
-
-    ResourceBundle componentRb;
-    ResourceBundle globalRb;
     
     int networkNumLinks;
     int networkNumUserClasses;
@@ -112,27 +106,22 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     }
     
 
-    
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, NetworkHandlerIF nh, char[] highwayModeCharacters ) {
-
-        this.componentRb = componentRb;
-        this.globalRb = globalRb;
-
-        componentPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( componentRb );
-        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap( globalRb );
+    // this setup method called by methods running in the same VM as this object
+    public boolean setup( String rpcConfigFile, String ptFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
 
         this.nh = nh;
+        
         networkNumLinks = nh.getLinkCount();
         networkNumCentroids = nh.getNumCentroids();
         networkNumUserClasses = nh.getNumUserClasses();
         this.timePeriod = nh.getTimePeriod();
 
+
         logger.info( "requesting that demand matrices get built." );
         dh = DemandHandler.getInstance( rpcConfigFile );
-        dh.setup( componentPropertyMap, globalPropertyMap, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupMap(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        dh.setup( ptFileName, ctFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildDemandObject();
         
-        logger.info( "AonFlowHandler creating new " + AonFlowHandler.WORK_QUEUE_NAME + " DBlockingQueue instance." );
         workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
 
         sp = setupSpBuildLoadHandlers();
@@ -142,19 +131,24 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     }
     
     
+    // this method called by methods running in a different VM and thus making a remote method call to setup this object
+    public boolean setupRpc( String rpcConfigFile, String ptFileName, String ctFileName, int startHour, int endHour, ArrayList highwayModeCharacterList ) {
+
+        char[] highwayModeCharacters = Util.charArray( highwayModeCharacterList );
+        
+        nh = NetworkHandler.getInstance(rpcConfigFile);
+        
+        return setup( rpcConfigFile, ptFileName, ctFileName, startHour, endHour, highwayModeCharacters, nh );        
+        
+    }
+    
+    
 
     public double[][] getMulticlassAonLinkFlows () {
 
-        // define data structures used to manage the distribution of work
-//        logger.info( "AonFlowHandler creating new " + AonFlowHandler.WORK_QUEUE_NAME + " DBlockingQueue instance." );
-//        DBlockingQueue workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
-        
-        
         // distribute work into packets and put on queue
         try {
-            logger.info( "AonFlowHandler clearing " + AonFlowHandler.WORK_QUEUE_NAME + "." );
             workQueue.clear();
-            logger.info( "AonFlowHandler putting work on " + AonFlowHandler.WORK_QUEUE_NAME + "." );
             putWorkPacketsOnQueue( workQueue, dh.getTripTableRowSums() );
         } catch (RpcException e) {
             logger.error ("exception thrown distributing work into packets and putting on workQueue.", e);
@@ -170,13 +164,22 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     }
 
     
+    public List getMulticlassAonLinkFlowsRpc () {
+
+        double[][] aonFlow = getMulticlassAonLinkFlows();
+        
+        // convert array to Vector for xml-rpc remoteMethod return type
+        Vector list = Util.double2Vector( aonFlow );
+        return list;
+        
+    }
+
+    
     private double[][] runSpBuildLoadHandlers() {
 
         // start each handler working on the new workQueue
         for ( int i=0; i < sp.length; i++ ) {
-            logger.info( "AonFlowHandler running SpBuildLoadHandler " + i + " reset()." );
             sp[i].reset();
-            logger.info( "AonFlowHandler running SpBuildLoadHandler " + i + " start()." );
             sp[i].start();
         }
 
@@ -187,7 +190,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         
         // all SpBuildLoadHandlers are finished, so get results.
-        logger.info( "AonFlowHandler accumulating results from all finished SpBuildLoadHandlers." );
         double[][] aonFlow = new double[networkNumUserClasses][networkNumLinks];
         for ( int i=0; i < sp.length; i++ ) {
 
@@ -227,7 +229,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         // for each handler name, create a SpBuildLoadHandler, set it up, and start it running
         int returnCount = 0;
         for ( int i=0; i < spHandlerNames.length; i++ ) {
-            logger.info( "AonFlowHandler calling SpBuildLoadHandler " + i + " setup method." );
             sp[i] = SpBuildLoadHandler.getInstance( rpcConfigFile, spHandlerNames[i] );
             returnCount += sp[i].setup( spHandlerNames[i], rpcConfigFile, nh, dh );
         }
@@ -270,7 +271,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         int numHandlersCompleted = 0;
         for ( int i=0; i < sp.length; i++ ) {
-            //logger.info( "AonFlowHandler checking to see if SpBuildLoadHandler " + i + " is finished.  numHandlersCompleted = " + numHandlersCompleted + "." );
             if ( sp[i].handlerIsFinished() )
                 numHandlersCompleted++;
         }

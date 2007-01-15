@@ -31,8 +31,16 @@ import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.rpc.DafNode;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Vector;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -46,16 +54,20 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
 	protected static transient Logger logger = Logger.getLogger(DemandHandler.class);
 
-	HashMap componentPropertyMap;
-    HashMap globalPropertyMap;
-
+    public static final String[] modeLabels = { "", "DA", "SR2", "SR3+", "WK", "BK", "WT", "DT" }; 
+    
     int networkNumCentroids;
     int networkNumUserClasses;
     int[] networkNodeIndexArray;
     boolean networkUserClassesIncludeTruck;
     char[] highwayModeCharacters;
-    HashMap networkAssignmentGroupMap;
+    char[][] networkAssignmentGroupChars;
+    
+    String ptFileName;
+    String ctFileName;
     String timePeriod;
+    int startHour;
+    int endHour;
     
 	double[][][] multiclassTripTable = null;
     
@@ -101,24 +113,37 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
 
    
-    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( String ptFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
-
-        this.componentPropertyMap = componentPropertyMap;
-        this.globalPropertyMap = globalPropertyMap;
-
         networkNumCentroids = numCentroids;
         networkNumUserClasses = numUserClasses;
-        networkAssignmentGroupMap = assignmentGroupMap;
+        networkAssignmentGroupChars = assignmentGroupChars;
         networkNodeIndexArray = nodeIndexArray;
         networkUserClassesIncludeTruck = userClassesIncludeTruck;
-        networkAssignmentGroupMap = assignmentGroupMap;
         this.highwayModeCharacters = highwayModeCharacters;
         this.timePeriod = timePeriod;
+        this.ptFileName = ptFileName;
+        this.ctFileName = ctFileName;
+        this.startHour = startHour;
+        this.endHour = endHour;
 
         return true;
         
     }
+
+    
+    
+    // this method called by methods running in a different VM and thus making a remote method call to setup this object
+    public boolean setupRpc( String ptFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, ArrayList nodeIndexList, ArrayList assignmentGroupCharList, ArrayList highwayModeCharacterList, boolean userClassesIncludeTruck ) {
+        
+        int[] nodeIndexArray = Util.intArray(nodeIndexList);
+        char[][] assignmentGroupChars = Util.char2Array(assignmentGroupCharList);
+        char[] highwayModeCharacters = Util.charArray(highwayModeCharacterList);
+        
+        return setup( ptFileName, ctFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
+    
+    }
+    
     
     
     public boolean buildDemandObject() {
@@ -130,7 +155,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         // load the trips from PT and CT trip lists into multiclass o/d demand matrices for assignment
         try {
 
-            logger.info ( "creating demand trip tables from " + (String)componentPropertyMap.get("pt.fileName") + " and " + (String)componentPropertyMap.get("ct.fileName") + " for the " + timePeriod + " period." );
+            logger.info ( "creating demand trip tables from " + ptFileName + " and " + ctFileName + " for the " + timePeriod + " period." );
             
             // read in the trip lists
             multiclassTripTable = createMulticlassDemandMatrices ();
@@ -169,8 +194,22 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     }
     
     
+    public List getTripTableRowRpc ( int userClass, int row ) {
+        double[] tripRow = getTripTableRow ( userClass, row );
+        Vector list = Util.doubleVector( tripRow );
+        return list;
+    }
+    
+    
     public double[][][] getMulticlassTripTables () {
         return multiclassTripTable;
+    }
+    
+    
+    public List getMulticlassTripTablesRpc () {
+        double[][][] tripTables = getMulticlassTripTables();
+        Vector list = Util.double3Vector( tripTables );
+        return list;
     }
     
     
@@ -179,27 +218,16 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     }
     
     
-
+    public List getTripTableRowSumsRpc () {
+        double[][] rowSums = getTripTableRowSums();
+        Vector list = Util.double2Vector( rowSums );
+        return list;
+    }
+    
+    
     public double[][] getWalkTransitTripTable () {
         
-        int startHour = 0;
-        int endHour = 0;
-
-        // get trip list filenames from property file
-        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
-
-        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
-        }
-        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
-        }
-
-        return getWalkTransitTripTableFromPTList ( ptFileName, startHour, endHour );
+        return getWalkTransitTripTableFromPTList ();
         
     }
 
@@ -207,24 +235,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     public double[][] getDriveTransitTripTable () {
         
-        int startHour = 0;
-        int endHour = 0;
-
-        // get trip list filenames from property file
-        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
-
-        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
-        }
-        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
-        }
-
-        return getDriveTransitTripTableFromPTList ( ptFileName, startHour, endHour );
+        return getDriveTransitTripTableFromPTList ();
         
     }
 
@@ -238,40 +249,26 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     	double[][][] multiclassTripTable = new double[networkNumUserClasses][][];
 		
 
-    	int startHour = 0;
-    	int endHour = 0;
-
-        // get trip list filenames from property file
-        String ptFileName = (String)componentPropertyMap.get("pt.fileName");
-        String ctFileName = (String)componentPropertyMap.get("ct.fileName");
-
-        
-
-        if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
-        }
-        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
-        }
-
-
 		// check that at least one valid user class has been defined
 		if ( networkNumUserClasses == 0 ) {
 			logger.error ( "No valid user classes defined in the application properties file.", new RuntimeException() );
 		}
 		
-		HashMap assignmentGroupMap = networkAssignmentGroupMap;
 		
         
 		// read PT trip list into o/d trip matrix if auto user class was defined
-		if ( assignmentGroupMap.containsKey( String.valueOf('a') ) ) {
+        boolean assignmentGroupContainsAuto = false;
+        for (int i=0; i < networkAssignmentGroupChars[0].length; i++) {
+            if ( networkAssignmentGroupChars[0][i] == 'a' ) {
+                assignmentGroupContainsAuto = true;
+                break;
+            }
+        }
+                
+		if ( assignmentGroupContainsAuto ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
 			logger.info ("reading " + timePeriod + " PT trip list at: " + myDateString);
-			multiclassTripTable[0] = getAutoTripTableFromPTList ( ptFileName, startHour, endHour );
+			multiclassTripTable[0] = getAutoTripTableFromPTList ();
 		}
 		else {
 			logger.info ("no auto class defined, so " + timePeriod + " PT trip list was not read." );
@@ -282,7 +279,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 		if ( networkUserClassesIncludeTruck ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
 			logger.info ("reading " + timePeriod + " CT trip list at: " + myDateString);
-			double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ( ctFileName, startHour, endHour );
+			double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ();
 
 			for(int i=0; i < truckTripTables.length - 1; i++)
 				multiclassTripTable[i+1] = truckTripTables[i];
@@ -296,7 +293,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 	
 
     
-    private double[][] getAutoTripTableFromPTList ( String fileName, int startPeriod, int endPeriod ) {
+    private double[][] getAutoTripTableFromPTList () {
         
         int orig;
         int dest;
@@ -306,68 +303,141 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         int d;
         int allAutoTripCount=0;
         int tripCount=0;
-        
+        int allTrips = 0;
+
+        BufferedReader in = null;
+        String fileHeader = null;
+        String s;
         
         double[][] tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
-        
+
+        TreeMap freqMap = new TreeMap();
 
         
-        // read the PT output person trip list file into a TableDataSet
-        OLD_CSVFileReader reader = new OLD_CSVFileReader();
 
-        String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
-        TableDataSet table = null;
+        // open the PT trip list file for reading
         try {
-            if ( fileName != null) {
+            if ( ptFileName != null && ! ptFileName.equals("") ) {
+                in = new BufferedReader(new FileReader(ptFileName));
+                fileHeader = in.readLine();
+            }
+            else {
+                new IOException("null input file name.");
+            }
+        }
+        catch (IOException e) {
+            logger.error ( "error opening PT person trip list: " + ptFileName, e );
+        }
+        
+        
 
-                table = reader.readFile(new File( fileName ), columnsToRead);
+        // get the field indices for the fields we want to read
+        StringTokenizer st = new StringTokenizer(fileHeader, ",\n\r");
+        int[] fieldFlags = new int[st.countTokens()];
 
-                // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
-                for (int i=0; i < table.getRowCount(); i++) {
-                    
-                    orig = (int)table.getValueAt( i+1, "origin" );
-                    dest = (int)table.getValueAt( i+1, "destination" );
-                    startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-                    mode = (int)table.getValueAt( i+1, "tripMode" );
-                    
-                    o = networkNodeIndexArray[orig];
-                    d = networkNodeIndexArray[dest];
-                    
-                    // accumulate all peak period highway mode trips
-                    if ( (mode == ModeType.AUTODRIVER || mode == ModeType.AUTOPASSENGER) ) {
-                        
-                        if ( (startTime >= startPeriod && startTime <= endPeriod) ) {
-    
-                            tripTable[o][d]++;
-                            tripCount++;
-                        
-                        }
+        int i =0;
+        while ( st.hasMoreTokens() ) {
+            s = st.nextToken();
+            if ( s.equals("origin") )
+                fieldFlags[i] = 1;
+            else if ( s.equals("destination") )
+                fieldFlags[i] = 2;
+            else if ( s.equals("tripStartTime") )
+                fieldFlags[i] = 3;
+            else if ( s.equals("tripMode") )
+                fieldFlags[i] = 4;
+            i++;
+        }
+        
+        int[] values = new int[4+1];
+                
 
-                        allAutoTripCount++;
-                    }
+        
+        // parse fields for the values we were interested in.
+        try {
+            while ( (s = in.readLine()) != null) {
                     
+                i = 0;
+                st = new StringTokenizer(s, ",\n\r");
+                while ( st.hasMoreTokens() ) {
+                    String stringValue = st.nextToken();
+                    if ( fieldFlags[i] > 0 )
+                        values[fieldFlags[i]] = Integer.parseInt(stringValue);
+                    i++;
                 }
                 
-                // done with trip list TabelDataSet
-                table = null;
+                orig = values[1];
+                dest = values[2];
+                startTime = values[3];
+                mode = values[4];
+                
+                // accumulate a frequency table of all trips within period by mode
+                if ( (startTime >= startHour && startTime <= endHour) ) {
+                    allTrips++;
+                        
+                    int value = 0;
+                    if ( freqMap.containsKey(mode) )
+                        value = (Integer)freqMap.get(mode);
+                    freqMap.put ( mode, (value+1) );
 
+                }
+                
+                
+                o = networkNodeIndexArray[orig];
+                d = networkNodeIndexArray[dest];
+                        
+                // accumulate all peak period highway mode trips
+                if ( (mode == ModeType.AUTODRIVER || mode == ModeType.AUTOPASSENGER) ) {
+                    
+                    if ( (startTime >= startHour && startTime <= endHour) ) {
+
+                        tripTable[o][d]++;
+                        tripCount++;
+                    
+                    }
+
+                    allAutoTripCount++;
+                }
+                
             }
-            
-        } catch (IOException e) {
-            logger.error ( "", e );
         }
+        catch (NumberFormatException e) {
+            logger.error ( "reading PT trip list file.", e);
+        }
+        catch (IOException e) {
+            logger.error ( "reading PT trip list file.", e);
+        }
+            
 
 
         logger.info (allAutoTripCount + " total auto network trips read from PT entire file");
-        logger.info (tripCount + " total auto network trips read from PT file for period " + startPeriod +
-                " to " + endPeriod);
-
+        logger.info (tripCount + " total auto network trips read from PT file for period " + startHour + " to " + endHour);
+        
+        Set keys = freqMap.keySet();
+        Iterator it = keys.iterator();
+        logger.info ( "");
+        logger.info ( "Frequency Table of PT " + startHour + " to " + endHour + " Period Trips by Mode");
+        logger.info ( String.format ( "%-6s %12s %16s %16s", "mode", "freq", "pct", "cumPct" ) );
+        logger.info ( "-----------------------------------------------------" );
+        double cumPct = 0.0;
+        while ( it.hasNext() ) {
+            mode = (Integer)it.next();
+            int value = (Integer)freqMap.get(mode);
+            double pct = value*100.0/allTrips;
+            cumPct += pct;
+            logger.info ( String.format ( "%-6s %12d %16.2f %16.2f", modeLabels[mode], value, pct, cumPct ) );
+        }
+        logger.info ( "-----------------------------------------------------" );
+        logger.info ( String.format ( "%-6s %12d %16.2f %16.2f", "Total", allTrips, 100.0, cumPct ) );
+        logger.info ( "");
+        
+        
         return tripTable;
             
     }
     
 
-    private double[][] getWalkTransitTripTableFromPTList ( String fileName, int startPeriod, int endPeriod ) {
+    private double[][] getWalkTransitTripTableFromPTList () {
         
         int orig;
         int dest;
@@ -389,9 +459,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
         TableDataSet table = null;
         try {
-            if ( fileName != null) {
+            if ( ptFileName != null && ! ptFileName.equals("") ) {
 
-                table = reader.readFile(new File( fileName ), columnsToRead);
+                table = reader.readFile(new File( ptFileName ), columnsToRead);
 
                 // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
                 for (int i=0; i < table.getRowCount(); i++) {
@@ -407,7 +477,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     // accumulate all peak period highway mode trips
                     if ( (mode == ModeType.WALKTRANSIT || mode == ModeType.TRANSITPASSENGER) ) {
                         
-                        if ( (startTime >= startPeriod && startTime <= endPeriod) ) {
+                        if ( (startTime >= startHour && startTime <= endHour) ) {
     
                             tripTable[o][d]++;
                             tripCount++;
@@ -430,15 +500,15 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
 
         logger.info (allTripsCount + " total walk transit trips read from PT file");
-        logger.info (tripCount + " total walk transit trips read from PT file for period " + startPeriod +
-                " to " + endPeriod);
+        logger.info (tripCount + " total walk transit trips read from PT file for period " + startHour +
+                " to " + endHour);
 
         return tripTable;
             
     }
     
 
-    private double[][] getDriveTransitTripTableFromPTList ( String fileName, int startPeriod, int endPeriod ) {
+    private double[][] getDriveTransitTripTableFromPTList () {
         
         int orig;
         int dest;
@@ -460,9 +530,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
         TableDataSet table = null;
         try {
-            if ( fileName != null) {
+            if ( ptFileName != null && ! ptFileName.equals("") ) {
 
-                table = reader.readFile(new File( fileName ), columnsToRead);
+                table = reader.readFile(new File( ptFileName ), columnsToRead);
 
                 // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
                 for (int i=0; i < table.getRowCount(); i++) {
@@ -478,7 +548,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     // accumulate all peak period highway mode trips
                     if ( (mode == ModeType.DRIVETRANSIT || mode == ModeType.PASSENGERTRANSIT) ) {
                         
-                        if ( (startTime >= startPeriod && startTime <= endPeriod) ) {
+                        if ( (startTime >= startHour && startTime <= endHour) ) {
     
                             tripTable[o][d]++;
                             tripCount++;
@@ -501,15 +571,15 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
 
         logger.info (allTripsCount + " total drive transit trips read from PT file");
-        logger.info (tripCount + " total drive transit trips read from PT file for period " + startPeriod +
-                " to " + endPeriod);
+        logger.info (tripCount + " total drive transit trips read from PT file for period " + startHour +
+                " to " + endHour);
 
         return tripTable;
             
     }
     
 
-    private double[][][] getTruckAssignmentGroupTripTableFromCTList ( String fileName, int startPeriod, int endPeriod ) {
+    private double[][][] getTruckAssignmentGroupTripTableFromCTList () {
 
         int orig;
         int dest;
@@ -536,9 +606,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 		TableDataSet table = null;
 		int tripRecord = 0;
 		try {
-			if ( fileName != null ) {
+			if ( ctFileName != null && ! ctFileName.equals("") ) {
 
-				table = reader.readFile(new File( fileName ));
+				table = reader.readFile(new File( ctFileName ));
 
 				// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
 				for (int i=0; i < table.getRowCount(); i++) {
@@ -552,13 +622,25 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 	
 					mode = Integer.parseInt( truckType.substring(3) );
 					modeChar = highwayModeCharacters[mode];
-					group = ((Integer)networkAssignmentGroupMap.get( String.valueOf( modeChar ) )).intValue();
+                    group = -1;
+                    for (int j=1; j < networkAssignmentGroupChars.length; j++) {
+                        for (int k=0; k < networkAssignmentGroupChars[j].length; k++) {
+                            if ( networkAssignmentGroupChars[j][k] == modeChar ) {
+                                group = j;
+                                break;
+                            }
+                        }
+                    }
+                    if ( group < 0 ) {
+                        logger.error ( "modeChar = " + modeChar + " associated with CT integer mode = " + mode + " not found in any asignment group." );
+                        System.exit(-1);
+                    }
 					
 					o = networkNodeIndexArray[orig];
 					d = networkNodeIndexArray[dest];
 	
 					// accumulate all peak period highway mode trips
-					if ( startTime >= startPeriod && startTime <= endPeriod ) {
+					if ( startTime >= startHour && startTime <= endHour ) {
 	
 					    tripTable[group-1][o][d] += tripFactor;
 					    tripsByUserClass[mode-1] += tripFactor;
@@ -582,12 +664,12 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
 		
         logger.info (allTruckTripCount + " total trips by all truck user classes read from CT file.");
-        logger.info ("trips by truck user class read from CT file from " + startPeriod + " to " + endPeriod + ":");
+        logger.info ("trips by truck user class read from CT file from " + startHour + " to " + endHour + ":");
 		for (int i=0; i < tripsByUserClass.length; i++)
 			if (tripsByUserClass[i] > 0)
 				logger.info ( tripsByUserClass[i] + " truck trips with user class " + highwayModeCharacters[i+1] );
 
-		logger.info ("trips by truck assignment groups read from CT file from " + startPeriod + " to " + endPeriod + ":");
+		logger.info ("trips by truck assignment groups read from CT file from " + startHour + " to " + endHour + ":");
 		for (int i=0; i < tripsByAssignmentGroup.length; i++)
 			if (tripsByAssignmentGroup[i] > 0)
 				logger.info ( tripsByAssignmentGroup[i] + " truck trips in assignment group " + (i+1) );

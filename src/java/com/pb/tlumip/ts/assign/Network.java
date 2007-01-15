@@ -38,6 +38,7 @@ import com.pb.common.datafile.D231FileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 
 /**
  * This Network class contains the link and node data tables and
@@ -51,14 +52,16 @@ public class Network implements Serializable {
 	static final float TIME_PARAMETER = 1.0f;
 	static final float COST_PARAMETER = 0.0f;
 	static final float OPERATING_COST = 0.0f;
-
+    
+    static final String OUTPUT_FLOW_FIELDS_START_WITH = "assignmentFlow";
+    static final String OUTPUT_TIME_FIELD = "assignmentTime";
 	
-	protected static transient Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.Network");
+	protected static transient Logger logger = Logger.getLogger(Network.class);
 
 	
 	HashMap userClassMap = new HashMap();
 	HashMap assignmentGroupMap = new HashMap();
-	
+    char[][] assignmentGroupChars = null;
 
 	int minCentroidLabel;
 	int maxCentroidLabel;
@@ -91,12 +94,6 @@ public class Network implements Serializable {
 	int[] ia;
 	int[] ib;
 
-	String d211File = null;
-	String d231File = null;
-	String d211ModsFile = null;
-	String hwyVdfFile = null;
-	String hwyVdfIntegralFile = null;
-
 	TableDataSet nodeTable = null;
 	TableDataSet linkTable = null;
 	TableDataSet linkModsTable = null;
@@ -114,34 +111,65 @@ public class Network implements Serializable {
     float[][] turnPenaltyArray = null;
 	float[][][] turnTable = null;
 
-    
-	HashMap tsPropertyMap = null;
-    HashMap globalPropertyMap = null;
 
 
-    public Network ( HashMap tsPropertyMap, HashMap globalPropertyMap, String period ) {
+    public Network ( String period, String[] propertyValues ) { 
+            
+        this.assignmentPeriod = period;
+        this.volumeFactor = Float.parseFloat( propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] );
+        
+        String d211File = propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX];
+        String d211ModsFile = propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX];
+        String d231File = propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX];
+        
 
-		float[][] turnDefs = null;
+        // get the filename for the alpha/beta zone correspomdence file and 
+        // create an object for defining the extent of the study area
+        String zoneIndexFile = propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX];
+        AlphaToBeta a2b = new AlphaToBeta(new File(zoneIndexFile));
+        this.numAlphazones = a2b.alphaSize();
+        this.maxCentroidLabel = a2b.getMaxAlphaZone();
+        this.minCentroidLabel = 1;
 
-        this.tsPropertyMap = tsPropertyMap;
-        this.globalPropertyMap = globalPropertyMap;
 
+        // get user classes to assign and assignment groups (which classes are combined together for assigning)
+        this.userClasses = getUserClassesFromProperties ( propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] );
+        this.numUserClasses = this.userClasses.length;
+        
+        String[] truckClassPropertyValues = new String[6];
+        truckClassPropertyValues[1] = propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX];
+        truckClassPropertyValues[2] = propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX];
+        truckClassPropertyValues[3] = propertyValues[NetworkHandlerIF.TRUCKCLASS3_STRING_INDEX];
+        truckClassPropertyValues[4] = propertyValues[NetworkHandlerIF.TRUCKCLASS4_STRING_INDEX];
+        truckClassPropertyValues[5] = propertyValues[NetworkHandlerIF.TRUCKCLASS5_STRING_INDEX];
+        
+        assignmentGroupChars = setAssignmentGroups( truckClassPropertyValues );
+        
+        
+        logger.info ( "Mode codes for user classes in multiclass assignment:" );
+        for (int i=0; i < userClasses.length; i++)
+            logger.info ( "     " + i + ": " + userClasses[i] );
+        
 
-        // read the Network.properties file into a HashMap, and get the values.
-		readPropertyFile(period);
+        if ( propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] != null && ! propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX].equals("") )
+            this.WALK_SPEED = Double.parseDouble ( propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] );
+        else
+            this.WALK_SPEED = 3.0;
 		
 
 		// read the node and link tables
+        float[][] turnDefs = null;
+
 		D211FileReader d211 = new D211FileReader();
 		D231FileReader d231 = new D231FileReader();
 		try {
 			nodeTable = d211.readNodeTable( new File(d211File) );
 			linkTable = d211.readLinkTable( new File(d211File) );
 			
-			if ( d211ModsFile != null )
+			if ( d211ModsFile != null && ! d211ModsFile.equals("") )
 			    linkModsTable = d211.readLinkTableMods( new File(d211ModsFile) );
 
-			if ( d231File != null )
+			if ( d231File != null && ! d231File.equals("") )
 			    turnDefs = d231.readTurnTable( new File(d231File) );
 		
 		}
@@ -150,8 +178,8 @@ public class Network implements Serializable {
 		}
 
 		// read link function definitions files (delay functions and integrals functions)		
-		lf = new LinkFunction ( (String)tsPropertyMap.get("vdf.fileName"), "vdf");
-		lfi = new LinkFunction ( (String)tsPropertyMap.get("vdfIntegral.fileName"), "vdf");
+		lf = new LinkFunction ( propertyValues[NetworkHandlerIF.VDF_FILENAME_INDEX], "vdf");
+		lfi = new LinkFunction ( propertyValues[NetworkHandlerIF.VDF_INTEGRAL_FILENAME_INDEX], "vdf");
 		
 		
 		// set the internal numbering for nodes and their correspondence to external numbering.
@@ -192,11 +220,8 @@ public class Network implements Serializable {
 		fdiLc = new LinkCalculator ( linkTable, lfi.getFunctionStrings( "fd" ), "vdf" );
 		fpiLc = new LinkCalculator ( linkTable, lfi.getFunctionStrings( "fp" ), "turnIndex" );
 
-		
 		ftLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "ft" ), "vdf" );
-
-		
-		
+	
     }
 
     
@@ -380,8 +405,8 @@ public class Network implements Serializable {
 		return nodeTable.getColumnAsDouble( "y" );
 	}
     	
-	public HashMap getAssignmentGroupMap () {
-		return assignmentGroupMap;
+	public char[][] getAssignmentGroupChars () {
+        return assignmentGroupChars;
 	}
 	
 	public int getUserClassIndex ( char modeChar ) {
@@ -409,6 +434,14 @@ public class Network implements Serializable {
         return validLinksForClass[userClassIndex];
     }
 
+    public String getAssignmentResultsString () {
+        return OUTPUT_FLOW_FIELDS_START_WITH;
+    }
+    
+    public String getAssignmentResultsTimeString () {
+        return OUTPUT_TIME_FIELD;
+    }
+    
     public double[] setLinkGeneralizedCost () {
     	double[] ctime = getCongestedTime();
     	double[] toll = getToll();
@@ -426,7 +459,11 @@ public class Network implements Serializable {
 
     public void setVolau ( double[] volau ) {
         this.volau = volau;
-		linkTable.setColumnAsDouble( linkTable.getColumnPosition("volau"), volau );
+        linkTable.setColumnAsDouble( linkTable.getColumnPosition("volau"), volau );
+    }
+
+    public void setTimau ( double[] timau ) {
+        linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), timau );
     }
 
     public void setVolCapRatios () {
@@ -452,10 +489,9 @@ public class Network implements Serializable {
         linkTable.setColumnAsInt( linkTable.getColumnPosition("ttf"), ttf );
     }
       
-    private char[] getUserClassesFromProperties () {
+    private char[] getUserClassesFromProperties ( String userClassPropertyString ) {
 
 		// get the mode codes that identify user classes
-		String userClassPropertyString = (String)tsPropertyMap.get("userClass.modes");
 		ArrayList userClassList = new ArrayList();
 		StringTokenizer st = new StringTokenizer(userClassPropertyString, ", |");
 		while (st.hasMoreTokens()) {
@@ -485,94 +521,89 @@ public class Network implements Serializable {
     }
     
     
+    /**
+     * The char[][] returned by this class is used by Demand handling objects to determine
+     * which truck modes are combined together into a userclass for assignment and therefore
+     * which truck mode trips get combined into a single user class o/d matrix.
+     */
+    private char[][] setAssignmentGroups ( String[] truckClassPropertyValues ) {
     
-    private void setAssignmentGroups () {
-    
-		// get the mode codes associated with each of the possible 5 truck groups and put into a HashMap
-		char tempUserClass;
-		String propertyKeyWordString = null;
-		String truckClassPropertyString = null;
-		ArrayList truckClassList = new ArrayList();
-    	for  (int i=1; i <= 5; i++ ) {
-    		propertyKeyWordString = "truckClass" + i + ".modes";
-    		truckClassPropertyString = (String)tsPropertyMap.get( propertyKeyWordString );
-    		StringTokenizer st = new StringTokenizer( truckClassPropertyString, ", |" );
-    		while (st.hasMoreTokens()) {
-    			tempUserClass = ((String)st.nextElement()).charAt(0);
-    			
-    			// if the mode code is a valid truck code, add it to the assignment group map.
-    			if ( tempUserClass == 'd' || tempUserClass == 'e' || tempUserClass == 'f' || tempUserClass == 'g' || tempUserClass == 'h' )
-    				assignmentGroupMap.put ( String.valueOf(tempUserClass), Integer.valueOf(1) );
-    		}
-    	}
+        char tempUserClass;
+        String truckClassPropertyString = null;
+        StringTokenizer st = null;
+
+        
+        // count the number of truck assignment groups defined from as many as 5 possible groups
+        int groupCount = 0;
+        for  (int i=0; i < 5; i++ ) {
+            truckClassPropertyString = truckClassPropertyValues[i+1];
+            st = new StringTokenizer( truckClassPropertyString, ", |" );
+            while (st.hasMoreTokens()) {
+                tempUserClass = ((String)st.nextElement()).charAt(0);
+                // if truck assignment group has any of the truck mode characters, count the group
+                if ( tempUserClass == 'd' || tempUserClass == 'e' || tempUserClass == 'f' || tempUserClass == 'g' || tempUserClass == 'h' ) {
+                    groupCount++;
+                    break;
+                }
+            }
+        }
+
+        
+        // allocate an array for the truck groups plus the auto group
+        char[][] assignmentGroupChars = new char[groupCount+1][];
+
+        
+        
+        // get the mode codes associated with each of the truck groups and put into a HashMap and an array
+        for  (int i=0; i < groupCount; i++ ) {
+            truckClassPropertyString = truckClassPropertyValues[i+1];
+            
+            // count mode chars in this truckClassPropertyString
+            int modeCount = 0;
+            st = new StringTokenizer( truckClassPropertyString, ", |" );
+            while (st.hasMoreTokens()) {
+                tempUserClass = ((String)st.nextElement()).charAt(0);
+
+                if ( tempUserClass == 'd' || tempUserClass == 'e' || tempUserClass == 'f' || tempUserClass == 'g' || tempUserClass == 'h' )
+                    modeCount++;
+            }
+            
+            if ( modeCount > 0 ) {
+            
+                // dimension the assignmentGroupChars array for this truck assignmentGroup and store modeChars in array and assignmentGroupMap
+                assignmentGroupChars[i+1] = new char[modeCount];
+            
+                st = new StringTokenizer( truckClassPropertyString, ", |" );
+                int k = 0;
+                while (st.hasMoreTokens()) {
+                    tempUserClass = ((String)st.nextElement()).charAt(0);
+                        
+                    // if the mode code is a valid truck code, add it to the assignment group map.
+                    if ( tempUserClass == 'd' || tempUserClass == 'e' || tempUserClass == 'f' || tempUserClass == 'g' || tempUserClass == 'h' ) {
+                        assignmentGroupMap.put ( String.valueOf(tempUserClass), Integer.valueOf(i+1) );
+                        assignmentGroupChars[i+1][k++] = tempUserClass;
+                    }
+                }
+                
+            }
+            
+        }
 
     	// if auto is in the list of user classes, add auto as assignment group 0.
-    	if ( userClassesIncludeAuto () )
+    	if ( userClassesIncludeAuto () ) {
 			assignmentGroupMap.put ( String.valueOf('a'), Integer.valueOf(0) );
-
+        
+			assignmentGroupChars[0] = new char[1];
+			assignmentGroupChars[0][0] = 'a';
+            
+        }
+        
+        return assignmentGroupChars;
+        
     }
     
     
 
-    private void readPropertyFile ( String period ) {
-        
-    	this.assignmentPeriod = period;
-    	
-        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            volumeFactor = Float.parseFloat( (String)globalPropertyMap.get("AM_PEAK_VOL_FACTOR") );
-        }
-        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            volumeFactor = Float.parseFloat( (String)globalPropertyMap.get("OFF_PEAK_VOL_FACTOR") );
-        }
-        
-
-    	// get the filename for the alpha/beta zone correspomdence file
-		String zoneIndexFile = (String) globalPropertyMap.get( "alpha2beta.file" );
-
-		// create a Halo object for defining the extent of the study area
-		AlphaToBeta a2b = new AlphaToBeta(new File(zoneIndexFile));
-
-    	// get the filename for the network node and link table
-		this.d211File = (String) tsPropertyMap.get( "d211.fileName" );
-		
-		// get the filename for the turn table
-		this.d231File = (String) tsPropertyMap.get( "d231.fileName" );
-		
-		// get the filename for the network node and link modifications table
-		this.d211ModsFile = (String) tsPropertyMap.get( "d211Mods.fileName" );
-		
-		// get the filename for the highway link volume delay function definition file
-		this.hwyVdfFile = (String) tsPropertyMap.get(	"vdf.fileName" );
-		
-		// get the filename for the highway link volume delay function integrals definition file
-		this.hwyVdfIntegralFile = (String) tsPropertyMap.get(	"vdfIntegral.fileName" );
-		
-		// get network properties
-		this.minCentroidLabel = 1;
-		this.maxCentroidLabel = a2b.getMaxAlphaZone();
-		this.numAlphazones = a2b.alphaSize();
-		
-		
-
-		// get user classes to assign and assignment groups (which classes are combined together for assigning)
-		this.userClasses = getUserClassesFromProperties ();
-        this.numUserClasses = this.userClasses.length;
-		setAssignmentGroups();
-		
-		
-		logger.info ( "Mode codes for user classes in multiclass assignment:" );
-		for (int i=0; i < userClasses.length; i++)
-			logger.info ( "     " + i + ": " + userClasses[i] );
-		
-
-		if ( (String)globalPropertyMap.get( "WALK_MPH" ) != null )
-		    this.WALK_SPEED = Double.parseDouble ( (String)globalPropertyMap.get( "WALK_MPH" ) );
-
-		
-    }
-    
 	/**
 	 * Use this method to get the largest node value
 	 */
@@ -614,7 +645,6 @@ public class Network implements Serializable {
 		double[] originalCapacity = new double[linkTable.getRowCount()];
 		double[] freeFlowSpeed = new double[linkTable.getRowCount()];
 		double[] congestedTime = new double[linkTable.getRowCount()];
-		double[] transitTime = new double[linkTable.getRowCount()];
 		double[] vdfIntegral = new double[linkTable.getRowCount()];
 		double[] freeFlowTime = new double[linkTable.getRowCount()];
 		double[] oldTime = new double[linkTable.getRowCount()];
@@ -1446,7 +1476,6 @@ public class Network implements Serializable {
 		int[] ia = getIa();
 		int[] ib = getIb();
 		double[] congestedTime = (double[])linkTable.getColumnAsDouble( "congestedTime" );
-		double[] distance = (double[])linkTable.getColumnAsDouble( "length" );
 		double[] capacity = (double[])linkTable.getColumnAsDouble( "capacity" );
 
 		double[][] flow = new double[userClasses.length][];
@@ -1465,9 +1494,9 @@ public class Network implements Serializable {
 			
 			outStream.print ("anode,bnode,capacity,assignmentTime,");
 			for (int j=0; j < userClasses.length-1; j++)
-				outStream.print( "assignmentFlow_" + j + "," );
+				outStream.print( OUTPUT_FLOW_FIELDS_START_WITH + "_" + j + "," );
 			
-			outStream.println( "assignmentFlow_" + (userClasses.length-1) );
+			outStream.println( OUTPUT_FLOW_FIELDS_START_WITH + "_" + (userClasses.length-1) );
 			
 
 			

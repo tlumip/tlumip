@@ -59,25 +59,19 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     // setup method is used.  
     public int setup( String handlerName, String rpcConfigFile, NetworkHandlerIF nh, DemandHandlerIF dh ) {
 
-        return setup( handlerName, rpcConfigFile );
-        
-    }
-    
-    
-    public int setup( String handlerName, String rpcConfigFile ) {
-
         int returnValue = -1;
         try {
             Vector params = new Vector();
             params.add(handlerName);
             params.add(rpcConfigFile);
-            returnValue = (Integer)rc.execute(handlerName+".setup", params );
+            returnValue = (Integer)rc.execute(handlerName+".setupRpc", params );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
         return returnValue;
+        
     }
     
     
@@ -108,15 +102,20 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
 
     
     public double[][] getResults() {
-        double[][] returnValue = null;
+        
+        Vector returnList = null;
         try {
-            returnValue = (double[][])rc.execute(handlerName+".getResults", new Vector() );
+            returnList = (Vector)rc.execute(handlerName+".getResultsRpc", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        // convert List to array
+        double[][] returnArray = Util.vectorDouble2( returnList );
+        return returnArray;
+
     }
     
     

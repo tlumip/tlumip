@@ -78,8 +78,9 @@ public class FW {
         // get network related variables needed in FW object
         numLinks = nh.getLinkCount();
         numAutoClasses = nh.getNumUserClasses();
-        timePeriod = nh.getTimePeriod();
         validLinksForClasses = nh.getValidLinksForAllClasses();
+
+        timePeriod = nh.getTimePeriod();
 
     }
 
@@ -113,9 +114,24 @@ public class FW {
                 }
             }
 
+            
+            int startHour = 0;
+            int endHour = 0;
+            if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
+                // get peak period definitions from property files
+                startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
+                endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+            }
+            else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
+                // get off-peak period definitions from property files
+                startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
+                endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+            }
+            
+            
             AonFlowHandlerIF ah = AonFlowHandler.getInstance( nh.getRpcConfigFileName() );
             logger.info ( "FW.iterate() creating an AonFlowHandler and calling its setup()." ); 
-            ah.setup( componentRb, globalRb, nh, highwayModeCharacters );
+            ah.setup( nh.getRpcConfigFileName(), (String)appPropertyMap.get("pt.fileName"), (String)appPropertyMap.get("ct.fileName"), startHour, endHour, highwayModeCharacters, nh );
             
             
             // loop thru FW iterations

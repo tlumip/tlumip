@@ -28,7 +28,7 @@ import com.pb.common.rpc.RpcException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ResourceBundle;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -60,16 +60,23 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
     
    
 
-    public boolean setup( ResourceBundle componentRb, ResourceBundle globalRb, NetworkHandlerIF nh, char[] highwayModeCharacters ) {
+    // when an instance of this rpc handler is used to call the setup method of an AonFlowHandler running in
+    // another VM, it is not necessary to send the NetworkHandler object handle and arrays must be converted to Lists, so the alternate  
+    // setup method is used.  
+    public boolean setup( String rpcConfigFileName, String ptFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
 
+        ArrayList highwayModeCharacterList = Util.charList( highwayModeCharacters );
+            
         boolean returnValue = false;
         try {
             Vector params = new Vector();
-            params.add(componentRb);
-            params.add(globalRb);
-            params.add(nh);
-            params.add(highwayModeCharacters);
-            returnValue = (Boolean)rc.execute(HANDLER_NAME+".setup", params);
+            params.add(rpcConfigFileName);
+            params.add(ptFileName);
+            params.add(ctFileName);
+            params.add(startHour);
+            params.add(endHour);
+            params.add(highwayModeCharacterList);
+            returnValue = (Boolean)rc.execute(HANDLER_NAME+".setupRpc", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -79,22 +86,22 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
         
     }
     
-    
-    
-    
-    public double[][] getMulticlassAonLinkFlows () {
         
-        Vector params = new Vector();
+    public double[][] getMulticlassAonLinkFlows () {
 
-        double[][] returnValue = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (double[][])rc.execute(HANDLER_NAME+".getMulticlassAonLinkFlows", params);
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getMulticlassAonLinkFlowsRpc", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        // convert List to array
+        double[][] returnArray = Util.vectorDouble2( returnList );
+        return returnArray;
         
     }
 

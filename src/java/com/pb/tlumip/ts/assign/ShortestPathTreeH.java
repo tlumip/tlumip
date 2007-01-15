@@ -30,8 +30,7 @@ import com.pb.tlumip.ts.NetworkHandlerIF;
 
 public class ShortestPathTreeH {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.ShortestPathTreeH");
-	protected static Logger unconnectedLogger = Logger.getLogger("com.pb.tlumip.ts.assign.ShortestPathTreeH");
+	protected static Logger logger = Logger.getLogger(ShortestPathTreeH.class);
 
     static final double COMPARE_EPSILON = 1.0e-07;
 

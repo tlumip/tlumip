@@ -19,7 +19,7 @@ package com.pb.tlumip.ts.assign;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
 
-import com.pb.tlumip.ts.NetworkHandler;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 
 
 /**
@@ -35,8 +35,6 @@ public class ShortestPath {
     static final double COMPARE_EPSILON = 1.0e-07;
 
 
-    //Network g;
-    
     int inOrigin;
     int inDestination;
 
@@ -62,31 +60,31 @@ public class ShortestPath {
 	int[] heapContents;
 
 
-    public ShortestPath (Network g) {
+    public ShortestPath (NetworkHandlerIF nh) {
 
-        numNodes = g.getNodeCount();
-        numZones = g.getNumCentroids();
+        numNodes = nh.getNodeCount();
+        numZones = nh.getNumCentroids();
         
         // store network fields in local arrays
-        ia = g.getIa();
-        ib = g.getIb();
-        ip = g.getIpa();
-        indexNode = g.getIndexNode();
-        nodeIndex = g.getNodeIndex();
-        centroid = g.getCentroid();
-        congestedTime = g.getCongestedTime();
-        sortedLinkIndex = g.getSortedLinkIndexA();
+        ia = nh.getIa();
+        ib = nh.getIb();
+        ip = nh.getIpa();
+        indexNode = nh.getIndexNode();
+        nodeIndex = nh.getNodeIndex();
+        centroid = nh.getCentroid();
+        congestedTime = nh.getCongestedTime();
+        sortedLinkIndex = nh.getSortedLinkIndexA();
         
         
         pathLinks = new int[MAX_PATH_LENGTH];
-        nodeLabeled = new int[g.getNodeCount()+1];
-        nodeLabels = new double[g.getNodeCount()+1];
-        aonFlow = new double[g.getLinkCount()];
-        predecessorLink = new int[g.getNodeCount()+1];
+        nodeLabeled = new int[nh.getNodeCount()+1];
+        nodeLabels = new double[nh.getNodeCount()+1];
+        aonFlow = new double[nh.getLinkCount()];
+        predecessorLink = new int[nh.getNodeCount()+1];
 
         //Create a new heap structure to sort canidate node labels
-        candidateHeap = new Heap(g.getNodeCount()+1);
-        heapContents = new int[g.getNodeCount()];
+        candidateHeap = new Heap(nh.getNodeCount()+1);
+        heapContents = new int[nh.getNodeCount()];
     }
 
     

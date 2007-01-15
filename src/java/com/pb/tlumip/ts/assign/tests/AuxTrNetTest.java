@@ -26,7 +26,6 @@ package com.pb.tlumip.ts.assign.tests;
 
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.assign.Network;
 import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.OpStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
@@ -329,13 +328,9 @@ public class AuxTrNetTest {
 	
 	private AuxTrNet createTransitNetwork ( String period, String accessMode ) {
         
-		long totalTime = 0;
-		long startTime = System.currentTimeMillis();
-		
-
 		// create a highway network oject
         NetworkHandlerIF nh = NetworkHandler.getInstance();
-        nh.setup( rb, globalRb, period );
+        setupNetwork ( nh, tsPropertyMap, globalPropertyMap, period );
         
 		logger.info (nh.getLinkCount() + " highway links");
 		logger.info (nh.getNodeCount() + " highway nodes");
@@ -349,7 +344,7 @@ public class AuxTrNetTest {
 		    
 
 		// associate transit segment node sequence with highway link indices
-		tr.getLinkIndices (nh.getNetwork());
+		tr.getLinkIndices (nh);
 
 
 
@@ -376,6 +371,62 @@ public class AuxTrNetTest {
 	}
     
 	
+    private void setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+        
+        String networkFileName = (String)appMap.get("d211.fileName");
+        String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
+        
+        String turnTableFileName = (String)appMap.get( "d231.fileName" );
+        String networkModsFileName = (String)appMap.get( "d211Mods.fileName" );
+        
+        String vdfFileName = (String)appMap.get("vdf.fileName");
+        String vdfIntegralFileName = (String)appMap.get("vdfIntegral.fileName");
+        
+        String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
+        
+        // get peak or off-peak volume factor from properties file
+        String volumeFactor="";
+        if ( timePeriod.equalsIgnoreCase( "peak" ) )
+            volumeFactor = (String)globalMap.get("AM_PEAK_VOL_FACTOR");
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
+            volumeFactor = (String)globalMap.get("OFF_PEAK_VOL_FACTOR");
+        else {
+            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
+            System.exit(-1);
+        }
+        
+        String userClassesString = (String)appMap.get("userClass.modes");
+        String truckClass1String = (String)appMap.get( "truckClass1.modes" );
+        String truckClass2String = (String)appMap.get( "truckClass2.modes" );
+        String truckClass3String = (String)appMap.get( "truckClass3.modes" );
+        String truckClass4String = (String)appMap.get( "truckClass4.modes" );
+        String truckClass5String = (String)appMap.get( "truckClass5.modes" );
+
+        String walkSpeed = (String)globalMap.get( "WALK_MPH" );
+        
+        
+        String[] propertyValues = new String[NetworkHandler.NUMBER_OF_PROPERTY_VALUES];
+        
+        propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX] = networkFileName;
+        propertyValues[NetworkHandlerIF.NETWORK_DISKOBJECT_FILENAME_INDEX] = networkDiskObjectFileName;
+        propertyValues[NetworkHandlerIF.VDF_FILENAME_INDEX] = vdfFileName;
+        propertyValues[NetworkHandlerIF.VDF_INTEGRAL_FILENAME_INDEX] = vdfIntegralFileName;
+        propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] = a2bFileName;
+        propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX] = turnTableFileName;
+        propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX] = networkModsFileName;
+        propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
+        propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX] = truckClass2String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS3_STRING_INDEX] = truckClass3String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS4_STRING_INDEX] = truckClass4String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS5_STRING_INDEX] = truckClass5String;
+        propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
+        
+        nh.buildNetworkObject ( timePeriod, propertyValues );
+        
+    }
+    
 	
 	/**
 	 *  Write the matrix out to a new zip file

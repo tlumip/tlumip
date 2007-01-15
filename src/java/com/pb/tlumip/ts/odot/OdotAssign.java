@@ -47,11 +47,8 @@ import org.apache.log4j.Logger;
 
 public class OdotAssign {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.odot");
+	protected static Logger logger = Logger.getLogger(OdotAssign.class);
 
-	protected static NetworkHandlerIF nh = null;
-
-	
 	
 	public OdotAssign() {
 	}
@@ -60,80 +57,139 @@ public class OdotAssign {
 	
     public static void main (String[] args) {
         
-       System.out.println ( assignAggregateTrips( args[0], args[1] ) );
+        OdotAssign odot = new OdotAssign();
+        System.out.println ( odot.run( args[0], args[1] ) );
 		
     }
 
     
     
-    public static String assignAggregateTrips ( String tsPropertyFileName, String globalPropertyFileName ) {
+    public String run ( String tsPropertyFileName, String globalPropertyFileName ) {
         
-		long startTime = System.currentTimeMillis();
-		
-		String period = "peak";
-		
-		HashMap tsPropertyMap;
-		String tripFileName = null;
-		double[][][] multiclassTripTable = new double[2][][];
-		
-		String loggerMessage=null;
-		
-		String myDateString;
+        long startTime = System.currentTimeMillis();
+        
+        String period = "peak";
+        
+        HashMap tsPropertyMap;
+        HashMap globalPropertyMap;
+        
+        String tripFileName = null;
+        double[][][] multiclassTripTable = new double[2][][];
+        
+        String loggerMessage=null;
+        
+        String myDateString;
 
-		// create a HashMap of ts properties values
-	    int dotIndex = tsPropertyFileName.indexOf(".");
-	    String subString = tsPropertyFileName.substring( 0, dotIndex );
-	    String appPropertyName = subString;
+        // create a HashMap of ts properties values
+        int dotIndex = tsPropertyFileName.indexOf(".");
+        String subString = tsPropertyFileName.substring( 0, dotIndex );
+        String appPropertyName = subString;
         tsPropertyMap = ResourceUtil.getResourceBundleAsHashMap( appPropertyName );
 
         // create a HashMap of global properties values
-	    dotIndex = globalPropertyFileName.indexOf(".");
-	    subString = globalPropertyFileName.substring( 0, dotIndex );
+        dotIndex = globalPropertyFileName.indexOf(".");
+        subString = globalPropertyFileName.substring( 0, dotIndex );
         String globalPropertyName = subString;
-        globalPropertyName = subString;
+        globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap( globalPropertyName );
 
 
-	    // get trip list filenames from property file
-		tripFileName = (String)tsPropertyMap.get("pt.fileName");
+        // get trip list filenames from property file
+        tripFileName = (String)tsPropertyMap.get("pt.fileName");
 
 
-		
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("creating Highway Network object at: " + myDateString);
-        nh = NetworkHandler.getInstance();
-        nh.setup( appPropertyName, globalPropertyName, period );
+        
+        myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("creating Highway Network object at: " + myDateString);
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        setupNetwork( nh, tsPropertyMap, globalPropertyMap, period );
         logger.info ("done building Network object.");
-		
-		
-		// create Frank-Wolfe Algortihm Object
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("creating FW object at: " + myDateString);
-		FW fw = new FW();
-		fw.initialize( tsPropertyMap, nh );
+        
+        
+        // create Frank-Wolfe Algortihm Object
+        myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("creating FW object at: " + myDateString);
+        FW fw = new FW();
+        fw.initialize( tsPropertyMap, nh );
 
-		// read PT trip list into o/d trip matrix
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("reading trip list at: " + myDateString);
-		multiclassTripTable[0] = getAggregateTripTableFromCsvFile ( tripFileName );
+        // read PT trip list into o/d trip matrix
+        myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("reading trip list at: " + myDateString);
+        multiclassTripTable[0] = getAggregateTripTableFromCsvFile ( tripFileName, nh );
 
-		//Compute Frank-Wolfe solution
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("starting fw at: " + myDateString);
-		fw.iterate ( multiclassTripTable );
-		myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("done with fw at: " + myDateString);
+        //Compute Frank-Wolfe solution
+        myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("starting fw at: " + myDateString);
+        fw.iterate ( multiclassTripTable );
+        myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("done with fw at: " + myDateString);
 
 
         loggerMessage = "assignAggregateTrips() finished in " + ( System.currentTimeMillis() - startTime ) / 60000.0  + " minutes";
-		logger.info( loggerMessage );
-		
-		return loggerMessage;
+        logger.info( loggerMessage );
+        
+        return loggerMessage;
 
     }
     
     
+    private void setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+        
+        String networkFileName = (String)appMap.get("d211.fileName");
+        String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
+        
+        String turnTableFileName = (String)appMap.get( "d231.fileName" );
+        String networkModsFileName = (String)appMap.get( "d211Mods.fileName" );
+        
+        String vdfFileName = (String)appMap.get("vdf.fileName");
+        String vdfIntegralFileName = (String)appMap.get("vdfIntegral.fileName");
+        
+        String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
+        
+        // get peak or off-peak volume factor from properties file
+        String volumeFactor="";
+        if ( timePeriod.equalsIgnoreCase( "peak" ) )
+            volumeFactor = (String)globalMap.get("AM_PEAK_VOL_FACTOR");
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
+            volumeFactor = (String)globalMap.get("OFF_PEAK_VOL_FACTOR");
+        else {
+            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
+            System.exit(-1);
+        }
+        
+        String userClassesString = (String)appMap.get("userClass.modes");
+        String truckClass1String = (String)appMap.get( "truckClass1.modes" );
+        String truckClass2String = (String)appMap.get( "truckClass2.modes" );
+        String truckClass3String = (String)appMap.get( "truckClass3.modes" );
+        String truckClass4String = (String)appMap.get( "truckClass4.modes" );
+        String truckClass5String = (String)appMap.get( "truckClass5.modes" );
+
+        String walkSpeed = (String)globalMap.get( "WALK_MPH" );
+        
+        
+        String[] propertyValues = new String[NetworkHandler.NUMBER_OF_PROPERTY_VALUES];
+        
+        propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX] = networkFileName;
+        propertyValues[NetworkHandlerIF.NETWORK_DISKOBJECT_FILENAME_INDEX] = networkDiskObjectFileName;
+        propertyValues[NetworkHandlerIF.VDF_FILENAME_INDEX] = vdfFileName;
+        propertyValues[NetworkHandlerIF.VDF_INTEGRAL_FILENAME_INDEX] = vdfIntegralFileName;
+        propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] = a2bFileName;
+        propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX] = turnTableFileName;
+        propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX] = networkModsFileName;
+        propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
+        propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX] = truckClass2String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS3_STRING_INDEX] = truckClass3String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS4_STRING_INDEX] = truckClass4String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS5_STRING_INDEX] = truckClass5String;
+        propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
+        
+        nh.buildNetworkObject ( timePeriod, propertyValues );
+        
+    }
     
-    private static double[][] getAggregateTripTableFromCsvFile ( String fileName ) {
+    
+    private double[][] getAggregateTripTableFromCsvFile ( String fileName, NetworkHandlerIF nh ) {
         
         int orig;
         int dest;

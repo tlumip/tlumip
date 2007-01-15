@@ -19,7 +19,7 @@ package com.pb.tlumip.ts;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import com.pb.common.rpc.RpcClient;
@@ -56,22 +56,31 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     
    
-    public boolean setup( HashMap componentPropertyMap, HashMap globalPropertyMap, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, HashMap assignmentGroupMap, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
-
-        Vector params = new Vector();
-        params.add(componentPropertyMap);
-        params.add(globalPropertyMap);
-        params.add(timePeriod);
-        params.add(numCentroids);
-        params.add(numUserClasses);
-        params.add(nodeIndexArray);
-        params.add(assignmentGroupMap);
-        params.add(highwayModeCharacters);
-        params.add(userClassesIncludeTruck);
+    public boolean setup( String ptFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
 
         boolean returnValue = false;
+
         try {
-            returnValue = (Boolean)rc.execute(HANDLER_NAME+".setup", params);
+            
+            ArrayList nodeIndexArrayList = Util.intList( nodeIndexArray );
+            ArrayList assignmentGroupCharsList = Util.char2List( assignmentGroupChars );
+            ArrayList highwayModeCharacterList = Util.charList( highwayModeCharacters );
+            
+            Vector params = new Vector();
+            params.add(ptFileName);
+            params.add(ctFileName);
+            params.add(startHour);
+            params.add(endHour);
+            params.add(timePeriod);
+            params.add(numCentroids);
+            params.add(numUserClasses);
+            params.add(nodeIndexArrayList);
+            params.add(assignmentGroupCharsList);
+            params.add(highwayModeCharacterList);
+            params.add(userClassesIncludeTruck);
+
+            returnValue = (Boolean)rc.execute(HANDLER_NAME+".setupRpc", params);
+            
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -103,48 +112,51 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         params.add(userClass);
         params.add(row);
 
-        double[] returnValue = null;
+        Vector returnList = null;
         try {
-            returnValue = (double[])rc.execute(HANDLER_NAME+".getTripTableRow", params);
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getTripTableRowRpc", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
 
-        return returnValue;
+        double[] returnArray = Util.vectorDouble( returnList );
+        return returnArray;
 
     }
     
     
     public double[][][] getMulticlassTripTables () {
 
-        double[][][] returnValue = null;
+        Vector returnList = null;
         try {
-            returnValue = (double[][][])rc.execute(HANDLER_NAME+".getMulticlassTripTables", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getMulticlassTripTablesRpc", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
 
-        return returnValue;
+        double[][][] returnArray = Util.vectorDouble3( returnList );
+        return returnArray;
 
     }
     
     
     public double[][] getTripTableRowSums () {
 
-        double[][] returnValue = null;
+        Vector returnList = null;
         try {
-            returnValue = (double[][])rc.execute(HANDLER_NAME+".getTripTableRowSums", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getTripTableRowSumsRpc", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
 
-        return returnValue;
+        double[][] returnArray = Util.vectorDouble2( returnList );
+        return returnArray;
 
     }
     

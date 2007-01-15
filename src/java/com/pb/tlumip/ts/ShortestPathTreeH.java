@@ -141,7 +141,7 @@ public class ShortestPathTreeH {
         double label;
         double turnPenalty;
 
-        
+
 		if(logger.isDebugEnabled()) {
             logger.debug ("rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)]);
         }

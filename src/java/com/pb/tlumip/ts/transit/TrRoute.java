@@ -17,7 +17,7 @@
 package com.pb.tlumip.ts.transit;
 
 
-import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.ShortestPath;
 
 
@@ -636,28 +636,23 @@ public class TrRoute implements Serializable {
 	}
 
 	
-	public void getLinkIndices (Network g) {
+	public void getLinkIndices (NetworkHandlerIF nh) {
 		int k, ia;
 		boolean linkFound;
 		double dwt, dwf, tdwt;
 		TrSegment ts;
 		TrSegment tsNew;
 
-		ShortestPath sp = new ShortestPath(g);
+		ShortestPath sp = new ShortestPath(nh);
 		
-		int[] nodeIndex = g.getNodeIndex();
-		int[] indexNode = g.getIndexNode();
-		int[] sortedLinkIndex = g.getSortedLinkIndexA();
-		int[] ip = g.getIpa();
-		int[] ib = g.getIb();
-		double[] dist = g.getDist();
+		int[] nodeIndex = nh.getNodeIndex();
+		int[] indexNode = nh.getIndexNode();
+		int[] sortedLinkIndex = nh.getSortedLinkIndexA();
+		int[] ip = nh.getIpa();
+		int[] ib = nh.getIb();
+		double[] dist = nh.getDist();
 		
 		for (int rte=0; rte < transitPath.length; rte++) {
-            
-            int dummy=0;
-            if ( rte == 161 ) {
-                dummy = 1;
-            }
             
 			for (int seg=0; seg < transitPath[rte].size(); seg++) {
 			    

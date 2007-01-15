@@ -32,7 +32,6 @@ import com.pb.common.matrix.MatrixWriter;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.ui.swing.MessageWindow;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 
@@ -40,13 +39,11 @@ import com.pb.tlumip.ts.NetworkHandlerIF;
 
 public class Skims {
 
-	protected static Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign");
+	protected static Logger logger = Logger.getLogger(Skims.class);
 
-	MessageWindow mw;
 	HashMap tsPropertyMap;
     HashMap globalPropertyMap;
 
-	boolean useMessageWindow = false;
 	
 
     NetworkHandlerIF g;
@@ -64,8 +61,9 @@ public class Skims {
     
     public Skims ( ResourceBundle tsRb, ResourceBundle globalRb, String timePeriod ) {
 
-        NetworkHandlerIF g = NetworkHandler.getInstance();
-        g.setup( tsRb, globalRb, timePeriod );
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        setupNetwork( nh, tsPropertyMap, globalPropertyMap, timePeriod );
+
 
         initSkims ();
 
@@ -84,6 +82,63 @@ public class Skims {
 
 
 
+    private void setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+        
+        String networkFileName = (String)appMap.get("d211.fileName");
+        String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
+        
+        String turnTableFileName = (String)appMap.get( "d231.fileName" );
+        String networkModsFileName = (String)appMap.get( "d211Mods.fileName" );
+        
+        String vdfFileName = (String)appMap.get("vdf.fileName");
+        String vdfIntegralFileName = (String)appMap.get("vdfIntegral.fileName");
+        
+        String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
+        
+        // get peak or off-peak volume factor from properties file
+        String volumeFactor="";
+        if ( timePeriod.equalsIgnoreCase( "peak" ) )
+            volumeFactor = (String)globalMap.get("AM_PEAK_VOL_FACTOR");
+        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
+            volumeFactor = (String)globalMap.get("OFF_PEAK_VOL_FACTOR");
+        else {
+            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
+            System.exit(-1);
+        }
+        
+        String userClassesString = (String)appMap.get("userClass.modes");
+        String truckClass1String = (String)appMap.get( "truckClass1.modes" );
+        String truckClass2String = (String)appMap.get( "truckClass2.modes" );
+        String truckClass3String = (String)appMap.get( "truckClass3.modes" );
+        String truckClass4String = (String)appMap.get( "truckClass4.modes" );
+        String truckClass5String = (String)appMap.get( "truckClass5.modes" );
+
+        String walkSpeed = (String)globalMap.get( "WALK_MPH" );
+        
+        
+        String[] propertyValues = new String[NetworkHandler.NUMBER_OF_PROPERTY_VALUES];
+        
+        propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX] = networkFileName;
+        propertyValues[NetworkHandlerIF.NETWORK_DISKOBJECT_FILENAME_INDEX] = networkDiskObjectFileName;
+        propertyValues[NetworkHandlerIF.VDF_FILENAME_INDEX] = vdfFileName;
+        propertyValues[NetworkHandlerIF.VDF_INTEGRAL_FILENAME_INDEX] = vdfIntegralFileName;
+        propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] = a2bFileName;
+        propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX] = turnTableFileName;
+        propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX] = networkModsFileName;
+        propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
+        propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX] = truckClass2String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS3_STRING_INDEX] = truckClass3String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS4_STRING_INDEX] = truckClass4String;
+        propertyValues[NetworkHandlerIF.TRUCKCLASS5_STRING_INDEX] = truckClass5String;
+        propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
+        
+        nh.buildNetworkObject ( timePeriod, propertyValues );
+        
+    }
+    
+    
     private void initSkims () {
 
         numCentroids = g.getNumCentroids();
@@ -97,8 +152,7 @@ public class Skims {
 	        alphaNumberArray = table.getColumnAsInt( 1 );
 	        betaNumberArray = table.getColumnAsInt( 2 );
         } catch (IOException e) {
-            logger.fatal("Can't get zone numbers from zonal correspondence file");
-            e.printStackTrace();
+            logger.fatal("Can't get zone numbers from zonal correspondence file", e);
         }
 
     
@@ -401,32 +455,6 @@ public class Skims {
 	    	}
 	    }
 
-//		// set the skim value to NEG_INFINITY for the entire row for external zone 2594 (disconnected)
-//    	exRow = 2594;
-//		inRow = externalToAlphaInternal[exRow];
-//        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
-//        	exCol = skimsInternalToExternal[i];
-//	    	if ( zonesToSkim[exCol] == 1 ) {
-//	    		inCol = externalToAlphaInternal[exCol];
-//	    		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
-//	    	}
-//		}
-//		// set the skim value to NEG_INFINITY for the entire column for external zone 2594 (disconnected)
-//    	exCol = 2594;
-//		inCol = externalToAlphaInternal[exCol];
-//        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
-//        	exRow = skimsInternalToExternal[i];
-//	    	if ( zonesToSkim[exRow] == 1 ) {
-//	    		inRow = externalToAlphaInternal[exRow];
-//	    		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
-//	    	}
-//		}
-//		// set the skim value to NEG_INFINITY for the intrazonal cell for external zone 2594 (disconnected)
-//		inRow = externalToAlphaInternal[2594];
-//		inCol = externalToAlphaInternal[2594];
-//   		zeroBasedFloatArray[inRow][inCol] = Float.NEGATIVE_INFINITY;
-
-   		
 		zeroBasedDoubleArray = null;
 
 	    return zeroBasedFloatArray;
@@ -581,7 +609,6 @@ public class Skims {
 		
 		
 		for (i=0; i < numCentroids; i++) {
-			if (useMessageWindow) mw.setMessage2 ( "Skimming shortest paths from zone " + (i+1) + " of " + alphaNumberArray.length + " zones." );
 
 			if (i % 500 == 0)
 				logger.info ("shortest path tree for origin zone index " + i);

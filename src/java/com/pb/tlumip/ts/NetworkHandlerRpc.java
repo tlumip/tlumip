@@ -19,14 +19,11 @@ package com.pb.tlumip.ts;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.ResourceBundle;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
-import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.ts.assign.Network;
 
 import org.apache.log4j.Logger;
 
@@ -81,18 +78,6 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
         return returnValue;
     }
     
-    public Network getNetwork() {
-        Network returnValue = null;
-        try {
-            returnValue = (Network)rc.execute(HANDLER_NAME+".getNetwork", new Vector());
-        } catch (RpcException e) {
-            logger.error( e );
-        } catch (IOException e) {
-            logger.error(  e );
-        }
-        return returnValue;
-    }
-    
     public int getNumCentroids() {
         int returnValue = -1;
         try {
@@ -118,15 +103,21 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     }
     
     public boolean[] getCentroid() {
-        boolean[] returnValue = null;
+        
+        boolean[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (boolean[])rc.execute(HANDLER_NAME+".getCentroid", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getCentroidRpc", new Vector());
+            returnArray = Util.vectorBoolean( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
     
     public int getNodeCount() {
@@ -190,109 +181,175 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     }
     
     public boolean[][] getValidLinksForAllClasses () {
-        boolean[][] returnValue = null;
+        
+        boolean[][] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (boolean[][])rc.execute(HANDLER_NAME+".getValidLinksForAllClasses", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getValidLinksForAllClassesRpc", new Vector());
+            returnArray = Util.vectorBoolean2( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public boolean[] getValidLinksForClass ( int userClass ) {
-        boolean[] returnValue = null;
+        
+        boolean[] returnArray = null;
+        Vector returnList = null;
+        
         try {
             Vector params = new Vector();
             params.add(userClass);
-            returnValue = (boolean[])rc.execute(HANDLER_NAME+".getValidLinksForClass", params);
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getValidLinksForClassRpc", params);
+            returnArray = Util.vectorBoolean( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+
+        return returnArray;
+        
     }
 
     public boolean[] getValidLinksForClass ( char modeChar ) {
-        boolean[] returnValue = null;
+        
+        boolean[] returnArray = null;
+        Vector returnList = null;
+        
         try {
             Vector params = new Vector();
             params.add(modeChar);
-            returnValue = (boolean[])rc.execute(HANDLER_NAME+".getValidLinksForClass", params);
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getValidLinksForClassRpc", params);
+            returnArray = Util.vectorBoolean( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
     
     public int[] getNodeIndex () {
-        int[] returnValue = null;
+        
+        int[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (int[])rc.execute(HANDLER_NAME+".getNodeIndex", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getNodeIndexRpc", new Vector());
+            returnArray = Util.vectorInt( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public int[] getLinkType () {
-        int[] returnValue = null;
+        
+        int[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (int[])rc.execute(HANDLER_NAME+".getLinkType", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getLinkTypeRpc", new Vector());
+            returnArray = Util.vectorInt( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
-    public HashMap getAssignmentGroupMap() {
-        HashMap returnValue = null;
+    public char[][] getAssignmentGroupChars() {
+        
+        char[][] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (HashMap)rc.execute(HANDLER_NAME+".getAssignmentGroupMap", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getAssignmentGroupCharsRpc", new Vector());
+            returnArray = Util.vectorChar2( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public double[] getTransitTime () {
-        double[] returnValue = null;
+        
+        double[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (double[])rc.execute(HANDLER_NAME+".getTransitTime", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getTransitTimeRpc", new Vector());
+            returnArray = Util.vectorDouble( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public double[] getCongestedTime () {
-        double[] returnValue = null;
+        
+        double[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (double[])rc.execute(HANDLER_NAME+".getCongestedTime", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getCongestedTimeRpc", new Vector());
+            returnArray = Util.vectorDouble( returnList );            
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public double[] getDist () {
-        double[] returnValue = null;
+        
+        double[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (double[])rc.execute(HANDLER_NAME+".getDist", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getDistRpc", new Vector());
+            returnArray = Util.vectorDouble( returnList );            
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public String getAssignmentResultsString () {
+        String returnValue = "";
+        try {
+            returnValue = (String)rc.execute(HANDLER_NAME+".getAssignmentResultsString", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -300,14 +357,11 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
         }
         return returnValue;
     }
-
-    public double getFwOfValue( boolean[] validLinks, double[][] flow ) {
-        double returnValue = -1.0;
+    
+    public String getAssignmentResultsTimeString () {
+        String returnValue = "";
         try {
-            Vector params = new Vector();
-            params.add( validLinks );
-            params.add( flow );
-            returnValue = (Double)rc.execute(HANDLER_NAME+".getFwOfValue", params);
+            returnValue = (String)rc.execute(HANDLER_NAME+".getAssignmentResultsTimeString", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -315,54 +369,92 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
         }
         return returnValue;
     }
-
+    
     public double[] setLinkGeneralizedCost () {
-        double[] returnValue = null;
+        
+        double[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (double[])rc.execute(HANDLER_NAME+".setLinkGeneralizedCost", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".setLinkGeneralizedCostRpc", new Vector());
+            returnArray = Util.vectorDouble( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public int setFlows (double[][] flow) {
+        
+        int returnValue = -1;
+        
         try {
             Vector params = new Vector();
-            params.add(flow);
-            rc.execute(HANDLER_NAME+".setFlows", params);
+            ArrayList list = Util.double2List( flow );
+            params.add( list );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setFlowsRpc", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return 1;
+        
+        return returnValue;
+        
     }
 
     public int setVolau (double[] volau) {
+        
+        int returnValue = -1;
+        
         try {
             Vector params = new Vector();
-            params.add(volau);
-            rc.execute(HANDLER_NAME+".setVolau", params);
+            ArrayList list = Util.doubleList( volau );
+            params.add( list );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setVolauRpc", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return 1;
+        
+        return returnValue;
+        
+    }
+    
+    public int setTimau (double[] timau) {
+        
+        int returnValue = -1;
+        
+        try {
+            Vector params = new Vector();
+            ArrayList list = Util.doubleList( timau );
+            params.add( list );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setTimauRpc", params);
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnValue;
+        
     }
     
     public int setVolCapRatios () {
+        int returnValue = -1;
         try {
-            rc.execute(HANDLER_NAME+".setVolCapRatios", new Vector());
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setVolCapRatios", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return 1;
+        return returnValue;
     }
     
     public double applyLinkTransitVdf (int hwyLinkIndex, int transitVdfIndex ) {
@@ -382,25 +474,27 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     
     
     public int applyVdfs () {
+        int returnValue = -1;
         try {
-            rc.execute(HANDLER_NAME+".applyVdfs", new Vector());
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".applyVdfs", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return 1;
+        return returnValue;
     }
     
     public int applyVdfIntegrals () {
+        int returnValue = -1;
         try {
-            rc.execute(HANDLER_NAME+".applyVdfIntegrals", new Vector());
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".applyVdfIntegrals", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return 1;
+        return returnValue;
     }
     
     public double getSumOfVdfIntegrals () {
@@ -417,74 +511,105 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
 
 
     public int logLinkTimeFreqs () {
+        int returnValue = -1;
         try {
-            rc.execute(HANDLER_NAME+".logLinkTimeFreqs", new Vector());
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".logLinkTimeFreqs", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return 1;
+        return returnValue;
     }
     
     public char[] getUserClasses () {
-        char[] returnValue = null;
+        
+        char[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (char[])rc.execute(HANDLER_NAME+".getUserClasses", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getUserClassesRpc", new Vector());
+            returnArray = Util.vectorChar( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
     
     public int[] getIndexNode () {
-        int[] returnValue = null;
+        
+        int[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (int[])rc.execute(HANDLER_NAME+".getIndexNode", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getIndexNodeRpc", new Vector());
+            returnArray = Util.vectorInt( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public String[] getMode () {
-        String[] returnValue = null;
+        
+        String[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (String[])rc.execute(HANDLER_NAME+".getMode", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getModeRpc", new Vector());
+            returnArray = Util.vectorString( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public double[] getNodeX () {
-        double[] returnValue = null;
+        
+        double[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (double[])rc.execute(HANDLER_NAME+".getNodeX", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getNodeXRpc", new Vector());
+            returnArray = Util.vectorDouble( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public double[] getNodeY () {
-        double[] returnValue = null;
+        
+        double[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (double[])rc.execute(HANDLER_NAME+".getNodeY", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getNodeYRpc", new Vector());
+            returnArray = Util.vectorDouble( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public double getWalkSpeed () {
@@ -500,86 +625,113 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     }
 
     public int[] getIa() {
-        int[] returnValue = null;
+        
+        int[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (int[])rc.execute(HANDLER_NAME+".getIa", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getIaRpc", new Vector());
+            returnArray = Util.vectorInt( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public int[] getIb() {
-        int[] returnValue = null;
+        
+        int[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (int[])rc.execute(HANDLER_NAME+".getIb", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getIbRpc", new Vector());
+            returnArray = Util.vectorInt( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public int[] getIpa() {
-        int[] returnValue = null;
+        
+        int[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (int[])rc.execute(HANDLER_NAME+".getIpa", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getIpaRpc", new Vector());
+            returnArray = Util.vectorInt( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public int[] getSortedLinkIndexA() {
-        int[] returnValue = null;
+        
+        int[] returnArray = null;
+        Vector returnList = null;
+        
         try {
-            returnValue = (int[])rc.execute(HANDLER_NAME+".getSortedLinkIndexA", new Vector());
+            returnList = (Vector)rc.execute(HANDLER_NAME+".getSortedLinkIndexARpc", new Vector());
+            returnArray = Util.vectorInt( returnList );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error( e );
         }
-        return returnValue;
+        
+        return returnArray;
+        
     }
 
     public int writeNetworkAttributes ( String fileName ) {
+        int returnValue = -1;
         try {
             Vector params = new Vector();
             params.add(fileName);
-            rc.execute(HANDLER_NAME+".writeNetworkAttributes", params);
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".writeNetworkAttributes", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return 1;
+        return returnValue;
     }
     
     public int checkForIsolatedLinks () {
+        int returnValue = -1;
         try {
-            rc.execute(HANDLER_NAME+".checkForIsolatedLinks", new Vector());
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".checkForIsolatedLinks", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
-        return 1;
+        return returnValue;
     }
     
-    public int setup( String appPropertyName, String globalPropertyName, String assignmentPeriod ) {
+    public int buildNetworkObject ( String timePeriod, String[] propertyValues ) {
         
         int returnValue = -1;
+        
         try {
             Vector params = new Vector();
-            params.add(ResourceUtil.getResourceBundleAsHashMap( appPropertyName ));
-            params.add(ResourceUtil.getResourceBundleAsHashMap( globalPropertyName ));
-            params.add(assignmentPeriod);
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".setup", params);
+            ArrayList list = Util.stringList( propertyValues );
+            params.add( timePeriod );
+            params.add( list );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".buildNetworkObjectRpc", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -587,25 +739,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
         }
         
         return returnValue;
-    }
-
-    
-    public int setup( ResourceBundle appRb, ResourceBundle globalRb, String assignmentPeriod ) {
         
-        int returnValue = -1;
-        try {
-            Vector params = new Vector();
-            params.add(ResourceUtil.changeResourceBundleIntoHashMap(appRb));
-            params.add(ResourceUtil.changeResourceBundleIntoHashMap(globalRb));
-            params.add(assignmentPeriod);
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".setup", params);
-        } catch (RpcException e) {
-            logger.error( e );
-        } catch (IOException e) {
-            logger.error(  e );
-        }
-        
-        return returnValue;
     }
 
 }
