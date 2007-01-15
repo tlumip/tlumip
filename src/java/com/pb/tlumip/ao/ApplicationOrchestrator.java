@@ -473,12 +473,12 @@ public class ApplicationOrchestrator {
 
         String period = "peak";
         NetworkHandlerIF nh = NetworkHandler.getInstance();
-        nh.setup( appRb, globalRb, period );
+        ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
         
 		ts.runHighwayAssignment( nh, "peak" );
         
-		//ts.runHighwayAssignment( g, "offpeak" );
+		//ts.runHighwayAssignment( nh, "offpeak" );
 
     }
     
