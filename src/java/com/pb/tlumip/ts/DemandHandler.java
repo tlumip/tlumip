@@ -31,10 +31,7 @@ import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.rpc.DafNode;
 
-import java.util.ArrayList;
-import java.util.Vector;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -134,11 +131,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String ptFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, ArrayList nodeIndexList, ArrayList assignmentGroupCharList, ArrayList highwayModeCharacterList, boolean userClassesIncludeTruck ) {
-        
-        int[] nodeIndexArray = Util.intArray(nodeIndexList);
-        char[][] assignmentGroupChars = Util.char2Array(assignmentGroupCharList);
-        char[] highwayModeCharacters = Util.charArray(highwayModeCharacterList);
+    public boolean setupRpc( String ptFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
         return setup( ptFileName, ctFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
     
@@ -194,10 +187,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     }
     
     
-    public List getTripTableRowRpc ( int userClass, int row ) {
+    public double[] getTripTableRowRpc ( int userClass, int row ) {
         double[] tripRow = getTripTableRow ( userClass, row );
-        Vector list = Util.doubleVector( tripRow );
-        return list;
+        return tripRow;
     }
     
     
@@ -206,10 +198,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     }
     
     
-    public List getMulticlassTripTablesRpc () {
+    public double[][][] getMulticlassTripTablesRpc () {
         double[][][] tripTables = getMulticlassTripTables();
-        Vector list = Util.double3Vector( tripTables );
-        return list;
+        return tripTables;
     }
     
     
@@ -218,10 +209,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     }
     
     
-    public List getTripTableRowSumsRpc () {
+    public double[][] getTripTableRowSumsRpc () {
         double[][] rowSums = getTripTableRowSums();
-        Vector list = Util.double2Vector( rowSums );
-        return list;
+        return rowSums;
     }
     
     

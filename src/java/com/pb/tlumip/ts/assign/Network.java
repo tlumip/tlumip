@@ -274,9 +274,13 @@ public class Network implements Serializable {
 		return indexNode;
 	}
 
-	public int[] getNodeIndex () {
-		return nodeIndex;
-	}
+    public int[] getNodeIndex () {
+        return nodeIndex;
+    }
+
+    public int[] getVdfIndex () {
+        return linkTable.getColumnAsInt( "vdf" );
+    }
 
 	public boolean[] getCentroid () {
 		return linkTable.getColumnAsBoolean( "centroid" );
@@ -327,9 +331,13 @@ public class Network implements Serializable {
         return sum;
     }
 
-	public double[] getFreeFlowTime () {
-		return linkTable.getColumnAsDouble( "freeFlowTime" );
-	}
+    public double[] getFreeFlowTime () {
+        return linkTable.getColumnAsDouble( "freeFlowTime" );
+    }
+
+    public double[] getFreeFlowSpeed () {
+        return linkTable.getColumnAsDouble( "freeFlowSpeed" );
+    }
 
 	public double[] getToll () {
 		return linkTable.getColumnAsDouble( "toll" );
@@ -339,9 +347,13 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsDouble( "dist" );
 	}
 
-	public int[] getLinkType () {
-		return linkTable.getColumnAsInt( "type" );
-	}
+    public int[] getLinkType () {
+        return linkTable.getColumnAsInt( "type" );
+    }
+
+    public double[] getLanes () {
+        return linkTable.getColumnAsDouble( "lanes" );
+    }
 
 	public String[] getMode () {
 		return linkTable.getColumnAsString( "mode" );
@@ -397,9 +409,17 @@ public class Network implements Serializable {
         return flows;
     }
     
-	public double[] getNodeX () {
-		return nodeTable.getColumnAsDouble( "x" );
-	}
+    public double[] getVolau() {
+        return linkTable.getColumnAsDouble( "volau" );
+    }
+    
+    public int[] getNodes () {
+        return nodeTable.getColumnAsInt( "node" );
+    }
+    
+    public double[] getNodeX () {
+        return nodeTable.getColumnAsDouble( "x" );
+    }
     
 	public double[] getNodeY () {
 		return nodeTable.getColumnAsDouble( "y" );
@@ -636,7 +656,7 @@ public class Network implements Serializable {
 	private TableDataSet deriveLinkAttributes ( float volumeFactor ) {
 
 		int[] turnPenaltyIndex = new int[linkTable.getRowCount()];
-		int[] ttf = new int[linkTable.getRowCount()];
+        int[] ttf = new int[linkTable.getRowCount()];
 		float[] length = new float[linkTable.getRowCount()];
 		double[] lanes = new double[linkTable.getRowCount()];
 		double[] totalVolCapRatio = new double[linkTable.getRowCount()];
@@ -682,8 +702,13 @@ public class Network implements Serializable {
 
 			
 			// can't have zero speed for highway links, so fix those here for now
-			if ( ul1 == 0 && mode.indexOf('a') >= 0 )
-				ul1 = 15;
+            if ( ul1 == 0  ) {
+                if ( mode.indexOf('a') >= 0 )
+                    ul1 = 15;
+                else
+                    ul1 = 5;
+            }
+            
 			
 			if ( centroid[i] )
 				capacity[i] = 9999;

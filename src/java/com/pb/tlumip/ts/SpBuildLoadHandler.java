@@ -23,9 +23,6 @@ package com.pb.tlumip.ts;
  */
 
 
-import java.util.List;
-import java.util.Vector;
-
 import com.pb.common.rpc.DBlockingQueue;
 import com.pb.common.rpc.DafNode;
 
@@ -161,18 +158,6 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     }
     
     
-    
-    public List getResultsRpc() {
-        
-        double[][] aonFlows = getResults();
-        
-        // convert array to Vector for http protocol
-        Vector list = Util.double2Vector( aonFlows );
-        return list;
-
-    }
-    
- 
     
     public boolean handlerIsFinished() {
         // check to see if all handler threads have completed.

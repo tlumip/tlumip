@@ -17,9 +17,7 @@
 package com.pb.tlumip.ts;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import com.pb.common.rpc.RpcClient;
@@ -31,7 +29,7 @@ import org.apache.log4j.Logger;
  * @author   Jim Hicks  
  * @version  Sep 20, 2005
  */
-public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
+public class NetworkHandlerRpc implements NetworkHandlerIF {
 
     protected static transient Logger logger = Logger.getLogger(NetworkHandlerRpc.class);
 
@@ -105,11 +103,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public boolean[] getCentroid() {
         
         boolean[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getCentroidRpc", new Vector());
-            returnArray = Util.vectorBoolean( returnList );
+            returnArray = (boolean[])rc.execute(HANDLER_NAME+".getCentroid", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -183,11 +179,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public boolean[][] getValidLinksForAllClasses () {
         
         boolean[][] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getValidLinksForAllClassesRpc", new Vector());
-            returnArray = Util.vectorBoolean2( returnList );
+            returnArray = (boolean[][])rc.execute(HANDLER_NAME+".getValidLinksForAllClasses", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -201,13 +195,11 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public boolean[] getValidLinksForClass ( int userClass ) {
         
         boolean[] returnArray = null;
-        Vector returnList = null;
         
         try {
             Vector params = new Vector();
             params.add(userClass);
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getValidLinksForClassRpc", params);
-            returnArray = Util.vectorBoolean( returnList );
+            returnArray = (boolean[])rc.execute(HANDLER_NAME+".getValidLinksForClass", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -221,13 +213,11 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public boolean[] getValidLinksForClass ( char modeChar ) {
         
         boolean[] returnArray = null;
-        Vector returnList = null;
         
         try {
             Vector params = new Vector();
             params.add(modeChar);
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getValidLinksForClassRpc", params);
-            returnArray = Util.vectorBoolean( returnList );
+            returnArray = (boolean[])rc.execute(HANDLER_NAME+".getValidLinksForClass", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -241,11 +231,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public int[] getNodeIndex () {
         
         int[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getNodeIndexRpc", new Vector());
-            returnArray = Util.vectorInt( returnList );
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getNodeIndex", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -259,11 +247,25 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public int[] getLinkType () {
         
         int[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getLinkTypeRpc", new Vector());
-            returnArray = Util.vectorInt( returnList );
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getLinkType", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public int[] getVdfIndex () {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getVdfIndex", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -277,11 +279,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public char[][] getAssignmentGroupChars() {
         
         char[][] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getAssignmentGroupCharsRpc", new Vector());
-            returnArray = Util.vectorChar2( returnList );
+            returnArray = (char[][])rc.execute(HANDLER_NAME+".getAssignmentGroupChars", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -295,11 +295,57 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public double[] getTransitTime () {
         
         double[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getTransitTimeRpc", new Vector());
-            returnArray = Util.vectorDouble( returnList );
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getTransitTime", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public double[] getFreeFlowTime () {
+        
+        double[] returnArray = null;
+        
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getFreeFlowTime", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public double[] getFreeFlowSpeed () {
+        
+        double[] returnArray = null;
+        
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getFreeFlowSpeed", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public double[] getLanes () {
+        
+        double[] returnArray = null;
+        
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getLanes", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -313,11 +359,25 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public double[] getCongestedTime () {
         
         double[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getCongestedTimeRpc", new Vector());
-            returnArray = Util.vectorDouble( returnList );            
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getCongestedTime", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public double[] getCapacity () {
+        
+        double[] returnArray = null;
+        
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getCapacity", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -331,11 +391,25 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public double[] getDist () {
         
         double[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getDistRpc", new Vector());
-            returnArray = Util.vectorDouble( returnList );            
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getDist", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public double[] getVolau () {
+        
+        double[] returnArray = null;
+        
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getVolau", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -373,11 +447,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public double[] setLinkGeneralizedCost () {
         
         double[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".setLinkGeneralizedCostRpc", new Vector());
-            returnArray = Util.vectorDouble( returnList );
+            returnArray = (double[])rc.execute(HANDLER_NAME+".setLinkGeneralizedCost", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -394,9 +466,8 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
         
         try {
             Vector params = new Vector();
-            ArrayList list = Util.double2List( flow );
-            params.add( list );
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".setFlowsRpc", params);
+            params.add( flow );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setFlows", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -413,9 +484,8 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
         
         try {
             Vector params = new Vector();
-            ArrayList list = Util.doubleList( volau );
-            params.add( list );
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".setVolauRpc", params);
+            params.add( volau );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setVolau", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -432,9 +502,8 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
         
         try {
             Vector params = new Vector();
-            ArrayList list = Util.doubleList( timau );
-            params.add( list );
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".setTimauRpc", params);
+            params.add( timau );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setTimau", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -525,11 +594,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public char[] getUserClasses () {
         
         char[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getUserClassesRpc", new Vector());
-            returnArray = Util.vectorChar( returnList );
+            returnArray = (char[])rc.execute(HANDLER_NAME+".getUserClasses", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -543,11 +610,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public int[] getIndexNode () {
         
         int[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getIndexNodeRpc", new Vector());
-            returnArray = Util.vectorInt( returnList );
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getIndexNode", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -561,11 +626,25 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public String[] getMode () {
         
         String[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getModeRpc", new Vector());
-            returnArray = Util.vectorString( returnList );
+            returnArray = (String[])rc.execute(HANDLER_NAME+".getMode", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public int[] getNodes () {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getNodes", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -579,11 +658,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public double[] getNodeX () {
         
         double[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getNodeXRpc", new Vector());
-            returnArray = Util.vectorDouble( returnList );
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getNodeX", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -597,11 +674,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public double[] getNodeY () {
         
         double[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getNodeYRpc", new Vector());
-            returnArray = Util.vectorDouble( returnList );
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getNodeY", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -627,11 +702,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public int[] getIa() {
         
         int[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getIaRpc", new Vector());
-            returnArray = Util.vectorInt( returnList );
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getIa", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -645,11 +718,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public int[] getIb() {
         
         int[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getIbRpc", new Vector());
-            returnArray = Util.vectorInt( returnList );
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getIb", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -663,11 +734,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public int[] getIpa() {
         
         int[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getIpaRpc", new Vector());
-            returnArray = Util.vectorInt( returnList );
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getIpa", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -681,11 +750,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
     public int[] getSortedLinkIndexA() {
         
         int[] returnArray = null;
-        Vector returnList = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getSortedLinkIndexARpc", new Vector());
-            returnArray = Util.vectorInt( returnList );
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getSortedLinkIndexA", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -728,10 +795,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF, Serializable {
         
         try {
             Vector params = new Vector();
-            ArrayList list = Util.stringList( propertyValues );
             params.add( timePeriod );
-            params.add( list );
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".buildNetworkObjectRpc", params);
+            params.add( propertyValues );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".buildNetworkObject", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {

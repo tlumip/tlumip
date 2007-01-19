@@ -28,7 +28,6 @@ import com.pb.common.rpc.RpcException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -65,8 +64,6 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
     // setup method is used.  
     public boolean setup( String rpcConfigFileName, String ptFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
 
-        ArrayList highwayModeCharacterList = Util.charList( highwayModeCharacters );
-            
         boolean returnValue = false;
         try {
             Vector params = new Vector();
@@ -75,7 +72,7 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
             params.add(ctFileName);
             params.add(startHour);
             params.add(endHour);
-            params.add(highwayModeCharacterList);
+            params.add(highwayModeCharacters);
             returnValue = (Boolean)rc.execute(HANDLER_NAME+".setupRpc", params);
         } catch (RpcException e) {
             logger.error( e );
@@ -89,10 +86,10 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
         
     public double[][] getMulticlassAonLinkFlows () {
 
-        Vector returnList = null;
+        double[][] returnArray = null;
         
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getMulticlassAonLinkFlowsRpc", new Vector());
+            returnArray = (double[][])rc.execute(HANDLER_NAME+".getMulticlassAonLinkFlowsRpc", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -100,7 +97,6 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
         }
         
         // convert List to array
-        double[][] returnArray = Util.vectorDouble2( returnList );
         return returnArray;
         
     }

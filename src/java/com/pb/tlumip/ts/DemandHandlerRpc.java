@@ -19,7 +19,6 @@ package com.pb.tlumip.ts;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import com.pb.common.rpc.RpcClient;
@@ -62,10 +61,6 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
 
         try {
             
-            ArrayList nodeIndexArrayList = Util.intList( nodeIndexArray );
-            ArrayList assignmentGroupCharsList = Util.char2List( assignmentGroupChars );
-            ArrayList highwayModeCharacterList = Util.charList( highwayModeCharacters );
-            
             Vector params = new Vector();
             params.add(ptFileName);
             params.add(ctFileName);
@@ -74,9 +69,9 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
             params.add(timePeriod);
             params.add(numCentroids);
             params.add(numUserClasses);
-            params.add(nodeIndexArrayList);
-            params.add(assignmentGroupCharsList);
-            params.add(highwayModeCharacterList);
+            params.add(nodeIndexArray);
+            params.add(assignmentGroupChars);
+            params.add(highwayModeCharacters);
             params.add(userClassesIncludeTruck);
 
             returnValue = (Boolean)rc.execute(HANDLER_NAME+".setupRpc", params);
@@ -108,20 +103,19 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     public double[] getTripTableRow ( int userClass, int row ) {
         
-        Vector params = new Vector();
-        params.add(userClass);
-        params.add(row);
-
-        Vector returnList = null;
+        double[] returnArray = null;
+        
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getTripTableRowRpc", params);
+            Vector params = new Vector();
+            params.add(userClass);
+            params.add(row);
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getTripTableRowRpc", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
 
-        double[] returnArray = Util.vectorDouble( returnList );
         return returnArray;
 
     }
@@ -129,16 +123,16 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     public double[][][] getMulticlassTripTables () {
 
-        Vector returnList = null;
+        double[][][] returnArray = null;
+        
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getMulticlassTripTablesRpc", new Vector());
+            returnArray = (double[][][])rc.execute(HANDLER_NAME+".getMulticlassTripTablesRpc", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
 
-        double[][][] returnArray = Util.vectorDouble3( returnList );
         return returnArray;
 
     }
@@ -146,16 +140,16 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     public double[][] getTripTableRowSums () {
 
-        Vector returnList = null;
+        double[][] returnArray = null;
+        
         try {
-            returnList = (Vector)rc.execute(HANDLER_NAME+".getTripTableRowSumsRpc", new Vector());
+            returnArray = (double[][])rc.execute(HANDLER_NAME+".getTripTableRowSumsRpc", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
 
-        double[][] returnArray = Util.vectorDouble2( returnList );
         return returnArray;
 
     }

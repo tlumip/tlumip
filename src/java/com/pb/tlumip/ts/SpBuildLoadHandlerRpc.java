@@ -103,17 +103,16 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     
     public double[][] getResults() {
         
-        Vector returnList = null;
+        double[][] returnArray = null;
+        
         try {
-            returnList = (Vector)rc.execute(handlerName+".getResultsRpc", new Vector());
+            returnArray = (double[][])rc.execute(handlerName+".getResults", new Vector());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
             logger.error(  e );
         }
         
-        // convert List to array
-        double[][] returnArray = Util.vectorDouble2( returnList );
         return returnArray;
 
     }

@@ -16,30 +16,31 @@
  */
 package com.pb.tlumip.ts;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.log4j.Logger;
-
 import com.pb.common.datafile.DataReader;
 import com.pb.common.rpc.DafNode;
 
 import com.pb.tlumip.ts.assign.Network;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author   Jim Hicks  
  * @version  Nov 1, 2006
  */
-public class NetworkHandler implements NetworkHandlerIF, Serializable {
+public class NetworkHandler implements NetworkHandlerIF {
 
     protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 
+    static final int port = 6003;
+    static final String dataServerName = "networkDataServer";
+    
     Network g = null;
+    NetworkDataServer ns = null;
     String rpcConfigFile = null;
 
     
     public NetworkHandler() {
+        ns = NetworkDataServer.getInstance( this, port, dataServerName );
     }
 
     
@@ -99,10 +100,6 @@ public class NetworkHandler implements NetworkHandlerIF, Serializable {
         return g.getCentroid();
     }
     
-    public List getCentroidRpc() {
-        return Util.booleanVector( g.getCentroid() );
-    }
-    
     public int getNodeCount() {
         return g.getNodeCount();
     }
@@ -115,7 +112,7 @@ public class NetworkHandler implements NetworkHandlerIF, Serializable {
         return g.getNumUserClasses();
     }
     
-    public String getTimePeriod () {
+    public String getTimePeriod() {
         return g.getTimePeriod();
     }
 
@@ -124,75 +121,63 @@ public class NetworkHandler implements NetworkHandlerIF, Serializable {
     }
     
     public boolean[][] getValidLinksForAllClasses () {
-        return g.getValidLinksForAllClasses ();
-    }
-
-    public List getValidLinksForAllClassesRpc() {
-        return Util.boolean2Vector( g.getValidLinksForAllClasses() );
+        return g.getValidLinksForAllClasses();
     }
 
     public boolean[] getValidLinksForClass ( int userClass ) {
         return g.getValidLinksForClass ( userClass );
     }
 
-    public List getValidLinksForClassRpc( int userClass ) {
-        return Util.booleanVector( g.getValidLinksForClass(userClass) );
-    }
-
     public boolean[] getValidLinksForClass ( char modeChar ) {
         return g.getValidLinksForClass ( modeChar );
-    }
-    
-    public List getValidLinksForClassRpc( char modeChar ) {
-        return Util.booleanVector( g.getValidLinksForClass(modeChar) );
     }
     
     public int[] getNodeIndex () {
         return g.getNodeIndex();
     }
 
-    public List getNodeIndexRpc() {
-        return Util.intVector( g.getNodeIndex() );
+    public int[] getVdfIndex () {
+        return g.getVdfIndex();
     }
 
     public int[] getLinkType () {
         return g.getLinkType();
     }
 
-    public List getLinkTypeRpc() {
-        return Util.intVector( g.getLinkType() );
-    }
-
     public char[][] getAssignmentGroupChars() {
         return g.getAssignmentGroupChars();
     }
 
-    public List getAssignmentGroupCharsRpc() {
-        return Util.char2Vector( g.getAssignmentGroupChars() );
+    public double[] getLanes () {
+        return g.getLanes();
+    }
+
+    public double[] getCapacity () {
+        return g.getCapacity();
     }
 
     public double[] getCongestedTime () {
         return g.getCongestedTime();
     }
 
-    public List getCongestedTimeRpc() {
-        return Util.doubleVector( g.getCongestedTime() );
-    }
-
     public double[] getTransitTime () {
         return g.getTransitTime();
     }
 
-    public List getTransitTimeRpc() {
-        return Util.doubleVector( g.getTransitTime() );
+    public double[] getFreeFlowTime () {
+        return g.getFreeFlowTime();
+    }
+
+    public double[] getFreeFlowSpeed () {
+        return g.getFreeFlowSpeed();
     }
 
     public double[] getDist () {
         return g.getDist();
     }
 
-    public List getDistRpc() {
-        return Util.doubleVector( g.getDist() );
+    public double[] getVolau () {
+        return g.getVolau();
     }
 
     public String getAssignmentResultsString () {
@@ -207,17 +192,7 @@ public class NetworkHandler implements NetworkHandlerIF, Serializable {
         return g.setLinkGeneralizedCost ();
     }
 
-    public List setLinkGeneralizedCostRpc() {
-        return Util.doubleVector( g.setLinkGeneralizedCost() );
-    }
-
     public int setFlows (double[][] flow) {
-        g.setFlows( flow );
-        return 1;
-    }
-    
-    public int setFlowsRpc(ArrayList flowList) {
-        double[][] flow = Util.double2Array(flowList);
         g.setFlows( flow );
         return 1;
     }
@@ -227,19 +202,7 @@ public class NetworkHandler implements NetworkHandlerIF, Serializable {
         return 1;
     }
     
-    public int setVolauRpc(ArrayList volauList) {
-        double[] volau = Util.doubleArray(volauList);
-        g.setVolau( volau );
-        return 1;
-    }
-    
     public int setTimau (double[] timau) {
-        g.setTimau( timau );
-        return 1;
-    }
-    
-    public int setTimauRpc(ArrayList timauList) {
-        double[] timau = Util.doubleArray(timauList);
         g.setTimau( timau );
         return 1;
     }
@@ -272,76 +235,44 @@ public class NetworkHandler implements NetworkHandlerIF, Serializable {
         return 1;
     }
     
-    public char[] getUserClasses () {
+    public char[] getUserClasses() {
         return g.getUserClasses();
     }
     
-    public List getUserClassesRpc() {
-        return Util.charVector( g.getUserClasses() );
-    }
-    
-    public String[] getMode () {
+    public String[] getMode() {
         return g.getMode();
-    }
-
-    public List getModeRpc() {
-        return Util.stringVector( g.getMode() );
     }
 
     public int[] getIndexNode () {
         return g.getIndexNode();
     }
     
-    public List getIndexNodeRpc() {
-        return Util.intVector( g.getIndexNode() );
+    public int[] getNodes() {
+        return g.getNodes();
     }
     
-    public double[] getNodeX () {
+    public double[] getNodeX() {
         return g.getNodeX();
     }
     
-    public List getNodeXRpc() {
-        return Util.doubleVector( g.getNodeX() );
-    }
-    
-    public double[] getNodeY () {
+    public double[] getNodeY() {
         return g.getNodeY();
-    }
-    
-    public List getNodeYRpc() {
-        return Util.doubleVector( g.getNodeY() );
     }
     
     public int[] getIa() {
         return g.getIa();
     }
 
-    public List getIaRpc() {
-        return Util.intVector( g.getIa() );
-    }
-
     public int[] getIb() {
         return g.getIb();
-    }
-
-    public List getIbRpc() {
-        return Util.intVector( g.getIb() );
     }
 
     public int[] getIpa() {
         return g.getIpa();
     }
 
-    public List getIpaRpc() {
-        return Util.intVector( g.getIpa() );
-    }
-
     public int[] getSortedLinkIndexA() {
         return g.getSortedLinkIndexA();
-    }
-
-    public List getSortedLinkIndexARpc() {
-        return Util.intVector( g.getSortedLinkIndexA() );
     }
 
     public double getWalkSpeed () {
@@ -391,10 +322,4 @@ public class NetworkHandler implements NetworkHandlerIF, Serializable {
         
     }
 
-    public int buildNetworkObjectRpc( String timePeriod, ArrayList propertyValuesList ) {
-
-        String[] propertyValues = Util.stringArray( propertyValuesList );
-        return buildNetworkObject ( timePeriod, propertyValues );
-        
-    }
 }

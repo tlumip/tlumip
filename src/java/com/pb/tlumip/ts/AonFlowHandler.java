@@ -23,10 +23,6 @@ package com.pb.tlumip.ts;
  */
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-
 import com.pb.common.rpc.DBlockingQueue;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.rpc.RpcException;
@@ -132,10 +128,8 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String rpcConfigFile, String ptFileName, String ctFileName, int startHour, int endHour, ArrayList highwayModeCharacterList ) {
+    public boolean setupRpc( String rpcConfigFile, String ptFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters ) {
 
-        char[] highwayModeCharacters = Util.charArray( highwayModeCharacterList );
-        
         nh = NetworkHandler.getInstance(rpcConfigFile);
         
         return setup( rpcConfigFile, ptFileName, ctFileName, startHour, endHour, highwayModeCharacters, nh );        
@@ -164,13 +158,10 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     }
 
     
-    public List getMulticlassAonLinkFlowsRpc () {
+    public double[][] getMulticlassAonLinkFlowsRpc () {
 
         double[][] aonFlow = getMulticlassAonLinkFlows();
-        
-        // convert array to Vector for xml-rpc remoteMethod return type
-        Vector list = Util.double2Vector( aonFlow );
-        return list;
+        return aonFlow;
         
     }
 
