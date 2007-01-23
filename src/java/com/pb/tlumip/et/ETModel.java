@@ -39,7 +39,7 @@ public class ETModel extends ModelComponent {
 
     }
 
-	public void startModel(int t){
+	public void startModel(int intTimeInterval){
         logger.info("Starting ET Model.");
         logger.info("Finishing ET Model.");
     }
