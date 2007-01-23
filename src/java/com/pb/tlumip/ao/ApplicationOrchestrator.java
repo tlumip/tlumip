@@ -27,6 +27,7 @@ import com.pb.tlumip.spg.SPGnew;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.TS;
+import com.pb.tlumip.et.ETModel;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -114,6 +115,8 @@ public class ApplicationOrchestrator {
 	            runLogWriter.newLine();
                 runLogWriter.write("CT_TEMPLATE_INTERVAL=0");
 	            runLogWriter.newLine();
+                runLogWriter.write("ET_TEMPLATE_INTERVAL=0");
+	            runLogWriter.newLine();
                 runLogWriter.write("PT_TEMPLATE_INTERVAL=0");
 	            runLogWriter.newLine();
                 runLogWriter.write("TS_TEMPLATE_INTERVAL=0");
@@ -129,6 +132,8 @@ public class ApplicationOrchestrator {
                 runLogWriter.write("SPG2_LAST_RUN=0");
                 runLogWriter.newLine();
                 runLogWriter.write("CT_LAST_RUN=0");
+                runLogWriter.newLine();
+                runLogWriter.write("ET_LAST_RUN=0");
                 runLogWriter.newLine();
                 runLogWriter.write("PT_LAST_RUN=0");
                 runLogWriter.newLine();
@@ -433,6 +438,12 @@ public class ApplicationOrchestrator {
         pi.startModel(baseYear, timeInterval);
     }
 
+    public void runETModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+        ETModel et = new ETModel(appRb, globalRb);
+
+        et.startModel(timeInterval);
+    }
+
     public void runPIDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb, String nodeName){
         //Since AO doesn't communicate directly with PI we need to write the absolute
         //path to the resource bundle and the time interval into a file, "RunParams.txt"
@@ -592,6 +603,9 @@ public class ApplicationOrchestrator {
             }else if(appName.equalsIgnoreCase("CT")){
                 logger.info("AO will now start CT for simulation year " + (baseYear+t));
                 ao.runCTModel(t, appRb, globalRb);
+            }else if(appName.equalsIgnoreCase("ET")){
+                logger.info("AO will now start ET for simulation year " + (baseYear+t));
+                ao.runETModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TS")){
                 logger.info("AO will now start TS for simulation year " + (baseYear+t));
                 ao.runTSModel(t, appRb, globalRb);
