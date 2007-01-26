@@ -75,9 +75,10 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
             params.add(sortedLinkIndexA);
             params.add(indexNode);
             params.add(nodeIndex);
+            params.add(centroid);
             params.add(validLinksForClasses);
             params.add(linkCost);
-            returnValue = (Integer)rc.execute(handlerName+".setupRpc", params );
+            returnValue = (Integer)rc.execute(handlerName+".setup", params );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {

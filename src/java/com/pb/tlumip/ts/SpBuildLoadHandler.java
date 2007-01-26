@@ -97,14 +97,6 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     
 
-    // this method is called by remote VMs calling methods on this SpBuildLoadHandler.
-    public void setupRpc( String handlerName, String rpcConfigFile, int[][][] workElements, double[][][] workElementsDemand, Integer numUserClasses, Integer numLinks, Integer numNodes, Integer numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost ) {
-
-        setup( handlerName, rpcConfigFile, workElements, workElementsDemand, numUserClasses, numLinks, numNodes, numZones, ia, ib, ipa, sortedLinkIndexA, indexNode, nodeIndex, centroid, validLinksForClasses, linkCost );
-
-    }
-    
-
     public int start( double[] linkCost ) {
         
         // there is an array of workElements [userclass, origin taz] for each thread for this SpBuildLoadHandler already set in spCommon. 
