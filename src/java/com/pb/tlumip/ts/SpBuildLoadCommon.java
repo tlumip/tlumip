@@ -34,20 +34,21 @@ public class SpBuildLoadCommon {
     protected static Logger logger = Logger.getLogger(SpBuildLoadCommon.class);
     
     private static SpBuildLoadCommon instance = new SpBuildLoadCommon();
+
+    ShortestPathTreeH[][] sp = null;
     
-    private String handlerName;
-
-
     private int[] packetsCompletedByThread;
     
+    private int[][][] workElements;
+    private double[][][] workElementsDemand;
     private double[][][] cumulativeBuildLoadResults;
     
-    private NetworkHandlerIF nh;
-    private DemandHandlerIF dh;
     
-    private int numLinks;
-    private int numUserClasses;
+    private String handlerName;
     private int numThreads;
+    private int numUserClasses;
+    private int numLinks;
+    
     
     private SpBuildLoadCommon () {
     }
@@ -64,24 +65,33 @@ public class SpBuildLoadCommon {
     /** setup data structures to be used by all threads
      *  working on building and loading aon link flows.
      */
-    public void setup( String handlerName, int numThreads, NetworkHandlerIF nh, DemandHandlerIF dh ) {
+    public void setup( String handlerName, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost ) {
 
         this.handlerName = handlerName;
-        this.nh = nh;
-        this.dh = dh;
-        this.numThreads = numThreads;
+        this.numThreads = workElements.length;
         
-        logger.info( handlerName + " SpBuildLoadCommon.setup() getting number of user classes from NetworkHandler." );        
-        this.numUserClasses = nh.getNumUserClasses();
+        this.workElements = workElements;
+        this.workElementsDemand = workElementsDemand;
+        
+        this.numUserClasses = numUserClasses;
+        this.numLinks = numLinks;
 
-        logger.info( handlerName + " SpBuildLoadCommon.setup() getting number of links from NetworkHandler." );        
-        this.numLinks = nh.getLinkCount();
 
+        sp = new ShortestPathTreeH[numThreads][numUserClasses];
+        
+        for (int i=0; i < numThreads; i++) {
+            for (int j=0; j < numUserClasses; j++) {
+                sp[i][j] = new ShortestPathTreeH( numLinks, numNodes, numZones, ia, ib, ipa,  sortedLinkIndexA, indexNode, nodeIndex, centroid );
+                sp[i][j].setValidLinks( validLinksForClasses[i] );
+                sp[i][j].setLinkCost( linkCost );
+            }
+        }
+        
         logger.info( handlerName + " SpBuildLoadCommon.setup() calling reset()." );        
-        reset();
+        reset( linkCost );
     }
     
-    public void reset() {
+    public void reset( double[] linkCost ) {
         
         // declare an an array to be used by all threads for accumulating loaded aon link flows.
         cumulativeBuildLoadResults = new double[numThreads][numUserClasses][numLinks];
@@ -89,6 +99,12 @@ public class SpBuildLoadCommon {
         packetsCompletedByThread = new int[numThreads];
         Arrays.fill ( packetsCompletedByThread, -1 );
         
+        for (int i=0; i < numThreads; i++) {
+            for (int j=0; j < numUserClasses; j++) {
+                sp[i][j].setLinkCost( linkCost );
+            }
+        }
+
     }
     
 
@@ -108,11 +124,47 @@ public class SpBuildLoadCommon {
     }
 
 
+    /*
+     * return the number of demand userclasses
+     */
+    public int getNumUserClasses() {
+        return numUserClasses;
+    }
+    
+    
+    /*
+     * return the number of network links
+     */
+    public int getNumLinks() {
+        return numLinks;
+    }
+    
+    
+    
+    /**
+     * A ShortestPathTreeH object for each user class is needed by each worker thread.
+     * Each thread will get its own array and can then work on any [userclass, origin taz] work element. 
+     */
+    public ShortestPathTreeH[] getShortestPathTreeHObjects(int threadId) {
+        return sp[threadId];
+    }
+    
+    
+    
+    
+    /*
+     * return the work elements array for the specified thread
+     */
+    public int[][] getWorkElements( int threadId ) {
+        return workElements[threadId];
+    }
+    
+    
     /** return the row from the trip table for the specified user class and origin zone.
      * *
      */
-    public double[] getTripTableRow( int m, int z ) {
-        double[] tripTableRow = dh.getTripTableRow(m, z);
+    public double[] getElementDemand( int threadId, int workElement ) {
+        double[] tripTableRow = workElementsDemand[threadId][workElement];
         return tripTableRow;
     }
 
@@ -149,14 +201,6 @@ public class SpBuildLoadCommon {
     
     public String getHandlerName() {
         return handlerName;
-    }
-    
-    
-    /** a NetworkHandler object is needed by the worker threads to create ShortestPathTreeH objects.
-     * 
-     */
-    public NetworkHandlerIF getNetworkHandler() {
-        return nh;
     }
     
 }

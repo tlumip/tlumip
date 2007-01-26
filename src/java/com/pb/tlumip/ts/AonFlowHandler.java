@@ -23,9 +23,7 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.common.rpc.DBlockingQueue;
 import com.pb.common.rpc.DafNode;
-import com.pb.common.rpc.RpcException;
 
 import org.apache.log4j.Logger;
 
@@ -35,11 +33,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
     protected static Logger logger = Logger.getLogger(AonFlowHandler.class);
 
-    public static final String WORK_QUEUE_NAME = "aonFlowWorkQueue";
-    
-    public static final int PACKET_SIZE = 100;
-    public static final int NUM_NULL_PACKETS_TO_QUEUE = 100;
-    
 
     // set the frequency with which the shared class is polled to see if all threads have finshed their work.
 //    static final int POLLING_FREQUENCY_IN_SECONDS = 10;
@@ -52,15 +45,11 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     int networkNumCentroids;
     String timePeriod;
 
-    double[][] tripTableRowSums = null;
-    
     NetworkHandlerIF nh;
-    DemandHandlerIF dh;
     
     SpBuildLoadHandlerIF[] sp;
     
-    DBlockingQueue workQueue;
-    
+   
 	public AonFlowHandler() {
     }
 
@@ -114,13 +103,12 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
 
         logger.info( "requesting that demand matrices get built." );
-        dh = DemandHandler.getInstance( rpcConfigFile );
+        DemandHandlerIF dh = DemandHandler.getInstance( rpcConfigFile );
         dh.setup( ptFileName, ctFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildDemandObject();
         
-        workQueue = new DBlockingQueue(WORK_QUEUE_NAME);
-
-        sp = setupSpBuildLoadHandlers();
+        logger.info( "setting up SpBuildLoadHandlers." );
+        sp = setupSpBuildLoadHandlers( dh.getTripTableRowSums(), dh.getMulticlassTripTables() );
         
         return true;
         
@@ -140,15 +128,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
     public double[][] getMulticlassAonLinkFlows () {
 
-        // distribute work into packets and put on queue
-        try {
-            workQueue.clear();
-            putWorkPacketsOnQueue( workQueue, dh.getTripTableRowSums() );
-        } catch (RpcException e) {
-            logger.error ("exception thrown distributing work into packets and putting on workQueue.", e);
-        }
-
-        
         // start the distributed handlers, and combine their results when they've all finished.
         logger.info( "AonFlowHandler starting all registered SpBuildLoadHandlers." );
         double[][] aonFlow = runSpBuildLoadHandlers();
@@ -168,10 +147,10 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     private double[][] runSpBuildLoadHandlers() {
 
+        
         // start each handler working on the new workQueue
         for ( int i=0; i < sp.length; i++ ) {
-            sp[i].reset();
-            sp[i].start();
+            sp[i].start( nh.setLinkGeneralizedCost() );
         }
 
 
@@ -196,7 +175,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     }
     
     
-    private SpBuildLoadHandlerIF[] setupSpBuildLoadHandlers() {
+    private SpBuildLoadHandlerIF[] setupSpBuildLoadHandlers( double[][] tripTableRowSums, double[][][] multiclassDemandMatrices ) {
 
         // get the specific handler names from the config file that begin with the SpBuildLoadHandler handler name.
         String[] spHandlerNames = null;
@@ -216,12 +195,31 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         // create an array of SpBuildLoadHandlers dimensioned to the number of handler names found
         sp = new SpBuildLoadHandlerIF[spHandlerNames.length];
 
+        for ( int i=0; i < spHandlerNames.length; i++ )
+            sp[i] = SpBuildLoadHandler.getInstance( rpcConfigFile, spHandlerNames[i] );
+
+        
+        // get number of threads for each handler and total number of threads over all handlers
+        int totalThreads = 0;
+        int[] handlerThreads = new int[sp.length];
+        for ( int i=0; i < sp.length; i++ ) {
+            handlerThreads[i] = sp[i].getNumberOfThreads();
+            totalThreads += handlerThreads[i]; 
+        }
+            
+        
+        // get the list of [userclass, origin taz] work elements and distribute work elements by handler and threads in handlers
+        int [][][][] workElementsArray = getWorkElementsArray( handlerThreads, totalThreads, tripTableRowSums );        
+        
+        // get the demand table row arrays associated with each work element
+        double[][][][] workElementsDemand = getWorkElementDemand ( workElementsArray, multiclassDemandMatrices );
+        
+        
         
         // for each handler name, create a SpBuildLoadHandler, set it up, and start it running
         int returnCount = 0;
         for ( int i=0; i < spHandlerNames.length; i++ ) {
-            sp[i] = SpBuildLoadHandler.getInstance( rpcConfigFile, spHandlerNames[i] );
-            returnCount += sp[i].setup( spHandlerNames[i], rpcConfigFile, nh, dh );
+            returnCount += sp[i].setup( spHandlerNames[i], rpcConfigFile, workElementsArray[i], workElementsDemand[i], nh.getNumUserClasses(), nh.getLinkCount(), nh.getNodeCount(), nh.getNumCentroids(), nh.getIa(), nh.getIb(), nh.getIpa(), nh.getSortedLinkIndexA(), nh.getIndexNode(), nh.getNodeIndex(), nh.getCentroid(), nh.getValidLinksForAllClasses(), nh.setLinkGeneralizedCost() );
         }
 
         while ( returnCount < spHandlerNames.length ) {
@@ -273,66 +271,104 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     
     // Work elements consist of a [user class, origin taz].
-    // There will by numUserClasses*numCentroids total work elements.
-    // Packets of work elements will be created  and placed on a distributed queue
-    // to be processed concurrently if possible.
-    private int putWorkPacketsOnQueue( DBlockingQueue workQueue, double[][] tripTableRowSums ) throws RpcException {
+    // There will by numUserClasses*numCentroids total potential work elements.
+    // A work element will be created only if there is demand from the origin taz for the user class.
+    // This list will be divided up among the available SpBuildLoadHandler worker threads.
+    private int[][][][] getWorkElementsArray( int[] handlerThreads, int totalThreads, double[][] tripTableRowSums ) {
 
-        int numPackets = 0;
-        
-        int[][] workElements = null;
+        // create an array of work elements to be split up and distributed to work handlers
+        int[][] workElements = new int[networkNumUserClasses*networkNumCentroids][networkNumCentroids];
 
-        // group individual work elements into packets to be retrieved by the distributed work handlers
-        int k=0;
+        int numberElements=0;
         for (int m=0; m < networkNumUserClasses; m++) {
             for (int i=0; i < networkNumCentroids; i++) {
 
-                if ( k == 0 )
-                    workElements = new int[PACKET_SIZE][2];
-
                 if (tripTableRowSums[m][i] > 0.0) {
-                    workElements[k][0] = m;
-                    workElements[k][1] = i;
-                    k++;
-
-                    if ( k == PACKET_SIZE ) {
-                        workQueue.put(workElements);
-                        numPackets++;
-                        k = 0;
-                    }
+                    workElements[numberElements][0] = m;
+                    workElements[numberElements][1] = i;
+                    numberElements++;
 
                 }
                 
             }
         }
 
-        // create a final packet with the remaining elements
-        if ( k > 0 && k < PACKET_SIZE ) {
+        
+        int numberElementsPerThread = numberElements/totalThreads;
+        int remainder = numberElements - numberElementsPerThread*totalThreads;
 
-            int[][] lastElements = new int[k][2];
-            for ( int j=0; j < k; j++) {
-                lastElements[j][0] = workElements[j][0];
-                lastElements[j][1] = workElements[j][1];
+        // return the work elements array - int[numHandlers][numThreads][numElements][2]
+        int[][][][] returnElements = new int[handlerThreads.length][][][];
+
+        int k = 0;
+        int r = 0;
+        for (int i=0; i < handlerThreads.length; i++) {
+            
+            returnElements[i] = new int[handlerThreads[i]][][];
+
+            for (int j=0; j < handlerThreads[i]; j++) {
+                int dimension = numberElementsPerThread;
+                if ( r < remainder ) {
+                    dimension++;
+                    r++;
+                }
+                returnElements[i][j] = new int[dimension][2];
+
+                for (int m=0; m < dimension; m++) {
+                    returnElements[i][j][m][0] = workElements[k][0];
+                    returnElements[i][j][m][1] = workElements[k][1];
+                    k++;
+                }
+                
             }
-
-            workQueue.put(lastElements);
-            numPackets++;
             
         }
         
-        
-        // add a number of null packets.  this number should be at least as large as the
-        // potential number of handlers drawing packets from the work queue.
-        // each thread in each worker handler will draws packets from the workQueue
-        // until it draws a null packet, at which time the thread's run() method
-        // will finalize and return.
-        int[][] nullPacket = new int[0][];
-        for (int i=0; i < NUM_NULL_PACKETS_TO_QUEUE; i++)
-            workQueue.put(nullPacket);
-            
-
-        return numPackets;
+        return returnElements;
         
     }
 
+    
+    
+    // create a ragged array of demand matrix rows of trips for each work element that will be distributed to handlers and subsequently handler threads.
+    // the work elemnts don't change, so these can be set once in the SpBuildLoadHandlers and reused each time a new shortest path tree is loaded.
+    double [][][][] getWorkElementDemand ( int[][][][] workElementArray, double[][][] multiclassDemandMatrices ) {
+    
+        double [][][][] demandPerElement = new double[workElementArray.length][][][];
+        
+        // loop over handlers
+        for (int i=0; i < workElementArray.length; i++) {
+            
+            demandPerElement[i] = new double[workElementArray[i].length][][];
+            
+            // loop over threads per handler
+            for (int j=0; j < workElementArray[i].length; j++) {
+                
+                demandPerElement[i][j] = new double[workElementArray[i][j].length][];
+
+                // loop over work elements per thread per handler
+                for (int m=0; m < workElementArray[i][j].length; m++) {
+                    
+                    int userclass =  workElementArray[i][j][m][0];
+                    int origTaz =  workElementArray[i][j][m][1];
+
+                    demandPerElement[i][j][m] = new double[multiclassDemandMatrices[userclass][origTaz].length];
+
+                    // loop over columns in the demand matrix row associated with the userclass and origin taz defined in the work element
+                    for (int c=0; c < multiclassDemandMatrices[userclass][origTaz].length; c++) {
+                    
+                        demandPerElement[i][j][m][c] = multiclassDemandMatrices[userclass][origTaz][c];
+                        
+                    }
+                    
+                }
+                
+            }
+            
+        }
+        
+        return demandPerElement;
+        
+    }
+    
 }

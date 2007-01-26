@@ -23,7 +23,6 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.common.rpc.DBlockingQueue;
 import com.pb.common.rpc.DafNode;
 
 import org.apache.log4j.Logger;
@@ -34,9 +33,6 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
 
     protected static Logger logger = Logger.getLogger(SpBuildLoadHandler.class);
 
-    
-    private DBlockingQueue workQueue;
-    
     private double[][] aonFlows = null;
     private SpBuildLoadCommon spCommon = null;
     
@@ -86,52 +82,32 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     
     
     // this method is called by local instances of SpBuildLoadHandler.
-    public int setup( String handlerName, String rpcConfigFile, NetworkHandlerIF nh, DemandHandlerIF dh ) {
+    public int setup( String handlerName, String rpcConfigFile, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost ) {
 
         logger.info( handlerName + " running SpBuildLoadHandler.setup()." );
         
         spCommon = SpBuildLoadCommon.getInstance();
         
-        // define data structures used to manage the distribution of work
-        workQueue = new DBlockingQueue( AonFlowHandler.WORK_QUEUE_NAME );
-
         // a local instance made this call and is loaded in the same VM as this instance, so NetworkHandler and DemandHandler handles are passed in
         // and can be passed on by this handler.
-        spCommon.setup( handlerName, numberOfThreads, nh, dh );
+        spCommon.setup( handlerName, workElements, workElementsDemand, numUserClasses, numLinks, numNodes, numZones, ia, ib, ipa, sortedLinkIndexA, indexNode, nodeIndex, centroid, validLinksForClasses, linkCost );
         
         return 1;
     }
 
     
 
-    // this method is called by instances of SpBuildLoadHandlerRPC.
-    public int setupRpc( String handlerName, String rpcConfigFile ) {
-
-        // an rpc instance made this call, so create new instances of NetworkHandler and DemandHandler, which should both also be rpc instances
-        // and will be used to make remote calls to handlers loaded in other VMs.
-        NetworkHandlerIF nh = NetworkHandler.getInstance(rpcConfigFile);
+    public int start( double[] linkCost ) {
         
-        DemandHandlerIF dh = DemandHandler.getInstance(rpcConfigFile);
+        // there is an array of workElements [userclass, origin taz] for each thread for this SpBuildLoadHandler already set in spCommon. 
+        spCommon.reset( linkCost );
 
-        return setup( handlerName, rpcConfigFile, nh, dh );
-        
-    }
-    
-    
-    public int reset () {
-        spCommon.reset();
-        return 1;
-    }
-
-
-    public int start() {
-        
         // start the specified number of threads to build and load shortest path trees from the workList, then return
         for (int i = 0; i < numberOfThreads; i++) {
-            SpBuildLoadMt spMt = new SpBuildLoadMt( i, spCommon, workQueue );
+            SpBuildLoadMt spMt = new SpBuildLoadMt( i, spCommon );
             new Thread(spMt).start();
         }
-        
+
         return 1;
         
     }
@@ -168,5 +144,9 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
         return result;
     }
 
+    
+    public int getNumberOfThreads () {
+        return numberOfThreads;
+    }
     
 }

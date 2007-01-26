@@ -392,14 +392,8 @@ public class Util {
     public static Vector doubleVector ( double[] array ) {
         
         Vector list = new Vector(array.length);
-        int dummy = 0;
         for ( int i=0; i < array.length; i++ ) {
-            if ( array[i] < -1.0e30 || array[i] > 1.0e30 ) {
-                dummy = 1;
-            }
-            else {
-                list.add(i,array[i]);
-            }
+            list.add(i,array[i]);
         }
         return list;
         

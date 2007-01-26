@@ -57,14 +57,28 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     // when an instance of this rpc handler is used to call the setup method of an SpBuildLoadHandler running in
     // another VM, it is not necessary to send the NetworkHandler and DemandHandler object handles, so the alternate  
     // setup method is used.  
-    public int setup( String handlerName, String rpcConfigFile, NetworkHandlerIF nh, DemandHandlerIF dh ) {
+    public int setup( String handlerName, String rpcConfigFile, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost ) {
 
         int returnValue = -1;
         try {
             Vector params = new Vector();
             params.add(handlerName);
             params.add(rpcConfigFile);
-            returnValue = (Integer)rc.execute(handlerName+".setupRpc", params );
+            params.add(workElements);
+            params.add(workElementsDemand);
+            params.add(numUserClasses);
+            params.add(numLinks);
+            params.add(numNodes);
+            params.add(numZones);
+            params.add(ia);
+            params.add(ib);
+            params.add(ipa);
+            params.add(sortedLinkIndexA);
+            params.add(indexNode);
+            params.add(nodeIndex);
+            params.add(validLinksForClasses);
+            params.add(linkCost);
+            returnValue = (Integer)rc.execute(handlerName+".setup", params );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -75,23 +89,12 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     }
     
     
-    public int reset() {
+    public int start( double[] linkCost ) {
         int returnValue = -1;
         try {
-            returnValue = (Integer)rc.execute(handlerName+".reset", new Vector() );
-        } catch (RpcException e) {
-            logger.error( e );
-        } catch (IOException e) {
-            logger.error(  e );
-        }
-        return returnValue;
-    }
-    
-    
-    public int start() {
-        int returnValue = -1;
-        try {
-            returnValue = (Integer)rc.execute(handlerName+".start", new Vector() );
+            Vector params = new Vector();
+            params.add(linkCost);
+            returnValue = (Integer)rc.execute(handlerName+".start", params );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -122,6 +125,19 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
         boolean returnValue = false;
         try {
             returnValue = (Boolean)rc.execute(handlerName+".handlerIsFinished", new Vector() );
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+    
+
+    public int getNumberOfThreads() {
+        int returnValue = -1;
+        try {
+            returnValue = (Integer)rc.execute(handlerName+".getNumberOfThreads", new Vector() );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {

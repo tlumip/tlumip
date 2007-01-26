@@ -69,23 +69,50 @@ public class ShortestPathTreeH {
         numNodes = nh.getNodeCount();
         numZones = nh.getNumCentroids();
         
-		// store network fields in local arrays
-		ia = nh.getIa();
-		ib = nh.getIb();
-		ip = nh.getIpa();
-		sortedLinkIndex = nh.getSortedLinkIndexA();
-		indexNode = nh.getIndexNode();
-		nodeIndex = nh.getNodeIndex();
-		centroid = nh.getCentroid();
-		
-		aonFlow = new double[numLinks];
+        // store network fields in local arrays
+        ia = nh.getIa();
+        ib = nh.getIb();
+        ip = nh.getIpa();
+        sortedLinkIndex = nh.getSortedLinkIndexA();
+        indexNode = nh.getIndexNode();
+        nodeIndex = nh.getNodeIndex();
+        centroid = nh.getCentroid();
+        
+        aonFlow = new double[numLinks];
         
         nodeLabeled = new int[numNodes+1];
         nodeLabels = new double[numNodes+1];
 
         //Create a new heap structure to sort candidate node labels
         candidateHeap = new Heap(numNodes+1);
-		heapContents = new int[numNodes];
+        heapContents = new int[numNodes];
+        
+    }
+
+    
+    public ShortestPathTreeH ( int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid ) {
+
+        this.numLinks = numLinks;
+        this.numNodes = numNodes;
+        this.numZones = numZones;
+        
+        // store network fields in local arrays
+        this.ia = ia;
+        this.ib = ib;
+        this.ip = ipa;
+        this.sortedLinkIndex = sortedLinkIndexA;
+        this.indexNode = indexNode;
+        this.nodeIndex = nodeIndex;
+        this.centroid = centroid;
+        
+        aonFlow = new double[numLinks];
+        
+        nodeLabeled = new int[numNodes+1];
+        nodeLabels = new double[numNodes+1];
+
+        //Create a new heap structure to sort candidate node labels
+        candidateHeap = new Heap(numNodes+1);
+        heapContents = new int[numNodes];
         
     }
 
