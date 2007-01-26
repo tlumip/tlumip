@@ -82,7 +82,7 @@ public class SpBuildLoadCommon {
         for (int i=0; i < numThreads; i++) {
             for (int j=0; j < numUserClasses; j++) {
                 sp[i][j] = new ShortestPathTreeH( numLinks, numNodes, numZones, ia, ib, ipa,  sortedLinkIndexA, indexNode, nodeIndex, centroid );
-                sp[i][j].setValidLinks( validLinksForClasses[i] );
+                sp[i][j].setValidLinks( validLinksForClasses[j] );
                 sp[i][j].setLinkCost( linkCost );
             }
         }
