@@ -222,16 +222,6 @@ public class AonFlowHandler implements AonFlowHandlerIF {
             returnCount += sp[i].setup( spHandlerNames[i], rpcConfigFile, workElementsArray[i], workElementsDemand[i], nh.getNumUserClasses(), nh.getLinkCount(), nh.getNodeCount(), nh.getNumCentroids(), nh.getIa(), nh.getIb(), nh.getIpa(), nh.getSortedLinkIndexA(), nh.getIndexNode(), nh.getNodeIndex(), nh.getCentroid(), nh.getValidLinksForAllClasses(), nh.setLinkGeneralizedCost() );
         }
 
-        while ( returnCount < spHandlerNames.length ) {
-
-            try {
-                Thread.sleep( POLLING_FREQUENCY_IN_SECONDS*1000 );
-            }
-            catch (InterruptedException e){
-                logger.error ( "exception thrown waiting for all SpBuildLoadHandlers to finish.", e);
-            }
-            
-        }
 
         return sp;
         
