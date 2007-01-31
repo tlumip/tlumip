@@ -12,15 +12,16 @@ public interface NetworkHandlerIF {
     public static int ALPHA2BETA_FILENAME_INDEX = 5;
     public static int TURNTABLE_FILENAME_INDEX = 6;
     public static int NETWORKMODS_FILENAME_INDEX = 7;
-    public static int USER_CLASSES_STRING_INDEX = 8;
-    public static int TRUCKCLASS1_STRING_INDEX = 9;
-    public static int TRUCKCLASS2_STRING_INDEX = 10;
-    public static int TRUCKCLASS3_STRING_INDEX = 11;
-    public static int TRUCKCLASS4_STRING_INDEX = 12;
-    public static int TRUCKCLASS5_STRING_INDEX = 13;
-    public static int WALK_SPEED_INDEX = 14;
+    public static int EXTRA_ATTRIBS_FILENAME_INDEX = 8;
+    public static int USER_CLASSES_STRING_INDEX = 9;
+    public static int TRUCKCLASS1_STRING_INDEX = 10;
+    public static int TRUCKCLASS2_STRING_INDEX = 11;
+    public static int TRUCKCLASS3_STRING_INDEX = 12;
+    public static int TRUCKCLASS4_STRING_INDEX = 13;
+    public static int TRUCKCLASS5_STRING_INDEX = 14;
+    public static int WALK_SPEED_INDEX = 15;
     
-    public static int NUMBER_OF_PROPERTY_VALUES = 15;
+    public static int NUMBER_OF_PROPERTY_VALUES = 16;
     
     
     public int setRpcConfigFileName(String configFile);

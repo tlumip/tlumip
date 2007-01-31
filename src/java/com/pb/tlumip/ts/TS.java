@@ -628,6 +628,7 @@ public class TS {
         
         String turnTableFileName = (String)appMap.get( "d231.fileName" );
         String networkModsFileName = (String)appMap.get( "d211Mods.fileName" );
+        String extraAtribsFileName = (String)appMap.get( "extraAttribs.fileName" );
         
         String vdfFileName = (String)appMap.get("vdf.fileName");
         String vdfIntegralFileName = (String)appMap.get("vdfIntegral.fileName");
@@ -666,6 +667,7 @@ public class TS {
         if ( a2bFileName != null ) propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] = a2bFileName;
         if ( turnTableFileName != null ) propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX] = turnTableFileName;
         if ( networkModsFileName != null ) propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX] = networkModsFileName;
+        if ( extraAtribsFileName != null ) propertyValues[NetworkHandlerIF.EXTRA_ATTRIBS_FILENAME_INDEX] = extraAtribsFileName;
         if ( volumeFactor != null ) propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
         if ( userClassesString != null ) propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
         if ( truckClass1String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
@@ -734,19 +736,20 @@ public class TS {
 
 
 
-        /*        
         
         // generate a NetworkHandler object to use for peak period assignments and skimming
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        nhPeak.checkForIsolatedLinks();
 
+/*        
         
+                
         
         // TS Example 1 - Run a peak highway assignment:
         
         // run peak highway assignment
         //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
-        //nhPeak.checkForIsolatedLinks();
 
         // write the auto time and distance highway skim matrices to disk based on attribute values in NetworkHandler after assignment
         tsMain.writeHighwaySkimMatrices ( nhPeak, "peak", 'a' );
@@ -758,13 +761,14 @@ public class TS {
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]), "peak" );
         tsMain.assignAndSkimTransit ( nhPeak, "peak", ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
-*/
+
         
         
         // run the benchmark highway assignment procedure
         tsMain.bench ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
-
         
+*/
+
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 
     }

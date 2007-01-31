@@ -35,6 +35,7 @@ import com.pb.common.calculator.LinkCalculator;
 import com.pb.common.calculator.LinkFunction;
 import com.pb.common.datafile.D211FileReader;
 import com.pb.common.datafile.D231FileReader;
+import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
@@ -85,6 +86,7 @@ public class Network implements Serializable {
     double[] volau;
     double[] totAonFlow;
 
+    String[] linkLabels = null;
     boolean[] validLinks = null;
 	boolean[][] validLinksForClass = null;
     int[] indexNode = null;
@@ -121,6 +123,7 @@ public class Network implements Serializable {
         String d211File = propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX];
         String d211ModsFile = propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX];
         String d231File = propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX];
+        String extraAttribsFile = propertyValues[NetworkHandlerIF.EXTRA_ATTRIBS_FILENAME_INDEX];
         
 
         // get the filename for the alpha/beta zone correspomdence file and 
@@ -191,6 +194,11 @@ public class Network implements Serializable {
 		sortedLinkIndexA = IndexSort.indexSort( ia );
 		ipa = setForwardStarArrays ( ia, sortedLinkIndexA );
 		
+        
+        // update linktable with extra attributes
+        readLinkAttributesCsvFile ( extraAttribsFile );
+        
+        
 		// calculate the derived link attributes for the network
 		derivedLinkTable = deriveLinkAttributes( volumeFactor );
 
@@ -486,6 +494,15 @@ public class Network implements Serializable {
         linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), timau );
     }
 
+    public void setCapacity ( double[] capacity ) {
+        linkTable.appendColumn( capacity, "capacity" );
+    }
+
+    public void setLinkLabels ( String[] labels ) {
+        linkLabels = labels;
+        linkTable.appendColumn( labels, "label" );
+    }
+
     public void setVolCapRatios () {
 		
     	double[] totalVolCapRatio = linkTable.getColumnAsDouble( "totalVolCapRatio" );
@@ -648,6 +665,52 @@ public class Network implements Serializable {
 	}
 
 
+    
+    private void readLinkAttributesCsvFile ( String filename ) {
+
+        double[] capacity = null;
+        String[] labels = null;
+        
+        // read the extra link attributes file into a TableDataSet
+        OLD_CSVFileReader reader = new OLD_CSVFileReader();
+
+        try {
+            if ( filename != null && ! filename.equals("") ) {
+
+                TableDataSet table = reader.readFile( new File(filename) );
+
+                capacity = new double[table.getRowCount()];
+                labels = new String[table.getRowCount()];
+                
+                // traverse links and store attibutes in linktable
+                for (int i=0; i < table.getRowCount(); i++) {
+                    
+                    int an = (int)table.getValueAt( i+1, "FNODE" );
+                    int bn = (int)table.getValueAt( i+1, "TNODE" );
+                    int cap = (int)table.getValueAt( i+1, "CAPACITY" );
+                    
+                    int k = getLinkIndex(an,bn);
+                    
+                    capacity[k] = cap;
+                    labels[k] = an + "_" + bn;
+                    
+                }
+                
+            }
+            
+        }
+        catch (IOException e) {
+            logger.error ( "exception causght reading extra attributes file: " + filename, e );
+        }
+                    
+        setCapacity(capacity);
+        setLinkLabels(labels);
+        
+    }
+    
+                
+    
+
 	
 	/**
 	 * Use this method to read the Emme2 d211 text file format network into
@@ -661,7 +724,6 @@ public class Network implements Serializable {
 		double[] lanes = new double[linkTable.getRowCount()];
 		double[] totalVolCapRatio = new double[linkTable.getRowCount()];
 		double[] totalCapacity = new double[linkTable.getRowCount()];
-		double[] capacity = new double[linkTable.getRowCount()];
 		double[] originalCapacity = new double[linkTable.getRowCount()];
 		double[] freeFlowSpeed = new double[linkTable.getRowCount()];
 		double[] congestedTime = new double[linkTable.getRowCount()];
@@ -679,6 +741,8 @@ public class Network implements Serializable {
         volau = new double[linkTable.getRowCount()];
         totAonFlow = new double[linkTable.getRowCount()];
 
+        double[] capacity = getCapacity();
+        
 		Arrays.fill (volad, 0.0);
 		Arrays.fill (validLinks, false);
 
@@ -710,23 +774,6 @@ public class Network implements Serializable {
             }
             
 			
-			if ( centroid[i] )
-				capacity[i] = 9999;
-			else if (ul1 > 15 && ul1 <= 30)
-				capacity[i] = 800;
-			else if (ul1 > 30 && ul1 <= 40)
-				capacity[i] = 1200;
-			else if (ul1 > 40 && ul1 <= 50)
-				capacity[i] = 1400;
-			else if (ul1 > 50 && ul1 <= 60)
-				capacity[i] = 1600;
-			else if (ul1 > 60 && ul1 <= 70)
-				capacity[i] = 1800;
-			else if (ul1 > 70)
-				capacity[i] = 2000;
-			else
-				capacity[i] = 600;
-
 			lanes[i] = linkTable.getValueAt( i+1, "lanes" );
 			
 			originalCapacity[i] = capacity[i];
@@ -737,7 +784,7 @@ public class Network implements Serializable {
 			totalCapacity[i] = 0.75 * capacity[i] * lanes[i];
 			totalVolCapRatio[i] = 0.0;
 
-			
+            
 			float dist = linkTable.getValueAt( i+1, "dist" );
 			if (dist == 0.0)
 			    dist = 0.001f;
@@ -750,7 +797,7 @@ public class Network implements Serializable {
 			}
 	        
 			
-			// The following modes are valid for TLUMIP Statewide network and multiclass assignment (6 classes).
+			// The following modes are valid for TLUMIP Statewide network and multiclass highway assignment (6 classes).
 			// Auto trips ares available on all highway links.
 			// Truck trips are classed by weight, d being lightest to h being heaviest.
 			// Lighter trucks are valid on all heavier class links 
@@ -773,6 +820,11 @@ public class Network implements Serializable {
 			}
 	        
 
+            if ( validLinks[i] && totalCapacity[i] == 0.0 ) {
+                logger.error ( "check capacity for link [" + an + "," + bn + "], capacity=" + capacity[i] + ", lanes=" + lanes[i] + "." );
+            }
+            
+            
 
 			
 
@@ -1411,6 +1463,7 @@ public class Network implements Serializable {
     }
 
 
+    
     public void linkSummaryReport ( double[][] flow ) {
         
         double totalVol;
