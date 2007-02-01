@@ -64,6 +64,26 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return returnValue;
     }
     
+    public void startDataServer() {
+        try {
+            rc.execute(HANDLER_NAME+".start", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+    }
+    
+    public void stopDataServer() {
+        try {
+            rc.execute(HANDLER_NAME+".shutdown", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+    }
+    
     public String getRpcConfigFileName() {
         String returnValue = null;
         try {
@@ -132,6 +152,21 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int returnValue = -1;
         try {
             returnValue = (Integer)rc.execute(HANDLER_NAME+".getLinkCount", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+    
+    public int getLinkIndex(int an, int bn) {
+        int returnValue = -1;
+        try {
+            Vector params = new Vector();
+            params.add(an);
+            params.add(bn);
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".getLinkIndex", params);
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {

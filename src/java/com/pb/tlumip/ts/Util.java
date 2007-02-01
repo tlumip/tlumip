@@ -393,7 +393,10 @@ public class Util {
         
         Vector list = new Vector(array.length);
         for ( int i=0; i < array.length; i++ ) {
-            list.add(i,array[i]);
+            if ( array[i] > Double.NEGATIVE_INFINITY && array[i] < Double.POSITIVE_INFINITY )
+                list.add(i,array[i]);
+            else
+                list.add(i,-999999.9);
         }
         return list;
         
@@ -410,7 +413,10 @@ public class Util {
         for ( int i=0; i < array.length; i++ ) {
             Vector tempList = new Vector(array[i].length);
             for (int j=0; j < array[i].length; j++)
-                tempList.add(j,array[i][j]);
+                if ( array[i][j] > Double.NEGATIVE_INFINITY && array[i][j] < Double.POSITIVE_INFINITY )
+                    tempList.add(j,array[i][j]);
+                else
+                    tempList.add(j,-999999.9);
             list.add(i,tempList);
         }
         return list;

@@ -78,6 +78,13 @@ public class NetworkHandler implements NetworkHandlerIF {
     
     
     
+    public void startDataServer() {
+        ns.startServer();
+    }
+    
+    public void stopDataServer() {
+        ns.stopServer();
+    }
     
     public int setRpcConfigFileName(String configFile) {
         this.rpcConfigFile = configFile;
@@ -106,6 +113,10 @@ public class NetworkHandler implements NetworkHandlerIF {
     
     public int getLinkCount() {
         return g.getLinkCount();
+    }
+    
+    public int getLinkIndex(int an, int bn) {
+        return g.getLinkIndex(an,bn);
     }
     
     public int getNumUserClasses() {

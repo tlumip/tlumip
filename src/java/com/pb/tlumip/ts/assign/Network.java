@@ -54,6 +54,8 @@ public class Network implements Serializable {
 	static final float COST_PARAMETER = 0.0f;
 	static final float OPERATING_COST = 0.0f;
     
+    static final  int NOT_USED_FLAG = 99999999;
+    
     static final String OUTPUT_FLOW_FIELDS_START_WITH = "assignmentFlow";
     static final String OUTPUT_TIME_FIELD = "assignmentTime";
 	
@@ -91,8 +93,10 @@ public class Network implements Serializable {
 	boolean[][] validLinksForClass = null;
     int[] indexNode = null;
     int[] nodeIndex = null;
-	int[] sortedLinkIndexA;
-	int[] ipa;
+    int[] sortedLinkIndexA;
+    int[] sortedLinkIndexB;
+    int[] ipa;
+    int[] ipb;
 	int[] ia;
 	int[] ib;
 
@@ -191,9 +195,13 @@ public class Network implements Serializable {
 		// define the forward star index arrays, first by anode then by bnode
 		ia = linkTable.getColumnAsInt( "ia" );
 		ib = linkTable.getColumnAsInt( "ib" );
-		sortedLinkIndexA = IndexSort.indexSort( ia );
-		ipa = setForwardStarArrays ( ia, sortedLinkIndexA );
-		
+        
+        sortedLinkIndexA = IndexSort.indexSort( ia );
+        ipa = setForwardStarArrays ( ia, sortedLinkIndexA );
+        
+        sortedLinkIndexB = IndexSort.indexSort( ib );
+        ipb = setForwardStarArrays ( ib, sortedLinkIndexB );
+        
         
         // update linktable with extra attributes
         readLinkAttributesCsvFile ( extraAttribsFile );
@@ -747,9 +755,15 @@ public class Network implements Serializable {
 		Arrays.fill (validLinks, false);
 
 		for (int i=0; i < linkTable.getRowCount(); i++) {
-		    
+
 			int an = (int)linkTable.getValueAt( i+1, "anode" );
 			int bn = (int)linkTable.getValueAt( i+1, "bnode" );
+            
+            int dummy = 0;
+            if ( an == 47450 && bn == 25387 ) {
+                dummy = 1;
+            }
+        
 			if ( isCentroid(an) || isCentroid(bn) ) {
 					centroid[i] = true;
 					centroidString[i] = "true";
@@ -821,7 +835,7 @@ public class Network implements Serializable {
 	        
 
             if ( validLinks[i] && totalCapacity[i] == 0.0 ) {
-                logger.error ( "check capacity for link [" + an + "," + bn + "], capacity=" + capacity[i] + ", lanes=" + lanes[i] + "." );
+                logger.error ( "check capacity for link " + i + ": [" + an + "," + bn + "], capacity=" + capacity[i] + ", lanes=" + lanes[i] + "." );
             }
             
             
@@ -1085,16 +1099,26 @@ public class Network implements Serializable {
 		int end;
 		int aExit;
 		int bExit;
+        
+        boolean[] centroid = getCentroid();
 		boolean errorsFound = false;
-		
-		
+
+        ArrayList msgList = new ArrayList();
+        int[] msgNodes = new int[indexNode.length];
+        int[] msgNodeUsed = new int[indexNode.length];
+        Arrays.fill(msgNodes,NOT_USED_FLAG);
+        Arrays.fill(msgNodeUsed,NOT_USED_FLAG);
+        
+        
+
+        int k = 0;
 		for (int userClass = 0; userClass < userClasses.length; userClass++) {
 			
 			logger.info ( "checking network connectivity for userClass " + userClass + " (" + userClasses[userClass] + ") subnetwork.");
 			
 			// for each anode that has only one bnode, flag links where bnode only goes back to anode.
 			for (int i=0; i < ia.length; i++) {
-				
+                
 				if ( !validLinksForClass[userClass][i] )
 					continue;
 				
@@ -1112,30 +1136,65 @@ public class Network implements Serializable {
 					start = ipa[ib[i]];
 					end = ipa[ib[i]+1];
 					
-					// if bnode has only one exiting link and 
-					if (start == end - 1) {
-						
-						bExit = sortedLinkIndexA[start];
-						
-						// if the node pair is same in each direction, this is an isolated link
-						if (ia[aExit] == ib[bExit] && ib[aExit] == ia[bExit]) {
-							logger.error ( "node pair [" + indexNode[ia[aExit]] + "," + indexNode[ib[aExit]] + "] is disconnected.");
-							errorsFound = true;
-						}
-					
-					}
-					
+                    // if bnode has only one exiting link
+                    if (start == end - 1) {
+                        
+                        bExit = sortedLinkIndexA[start];
+                        
+                        // if the node pair is same in each direction, this is an isolated link:
+                        if (ia[aExit] == ib[bExit] && ib[aExit] == ia[bExit]) {
+                            logger.error ( "link pair " + aExit + "[" + indexNode[ia[aExit]] + "," + indexNode[ib[aExit]] + "] and " + bExit + "[" + indexNode[ia[bExit]] + "," + indexNode[ib[bExit]] + "] is disconnected from network.");
+                            errorsFound = true;
+                        }
+                    
+                    }
+
+
+                    start = ipb[ia[i]];
+                    end = ipb[ia[i]+1];
+                    
+                    // if anode has only one entering link, and that link is the opposite direction of current link:
+                    if (start == end - 1) {
+                        
+                        bExit = sortedLinkIndexB[start];
+                        
+                        // if the node pair is same in each direction and links are not centroid connectors, these are hanging links
+                        if (!centroid[i] && ia[aExit] == ib[bExit] && ib[aExit] == ia[bExit]) {
+                            if ( msgNodeUsed[ia[aExit]] == NOT_USED_FLAG ) {
+                                msgList.add ( "node " + indexNode[ia[aExit]] + " is dangling from the network.  link pair " + bExit + "[" + indexNode[ia[bExit]] + "," + indexNode[ib[bExit]] + "] and " + aExit + "[" + indexNode[ia[aExit]] + "," + indexNode[ib[aExit]] + "].");
+                                msgNodes[k++] = indexNode[ia[aExit]];
+                                msgNodeUsed[ia[aExit]] = indexNode[ia[aExit]];
+                            }
+                        }
+                    
+                    }
+                    
 				}
 				
 			}
 
 		}
 			
-		if (errorsFound) {
-			logger.error ( "errors identified above in constructing the internal network representations.");
-			logger.error ( "the node pairs identified above are only connected to each other for the specified subnetwork.");
-			logger.error ( "no subnetwork paths may therefore be built through these nodes and links.\n\n");
-		}
+        if (errorsFound) {
+            logger.error ( "errors identified above in constructing the internal network representations.");
+            logger.error ( "one or more node pairs identified above are connected only to each other for the");
+            logger.error ( "specified subnetwork in which case they are isolated and no subnetwork paths may");
+            logger.error ( "be built through these nodes and links.\n\n" );
+        }
+
+        
+        
+        int[] msgIndices = IndexSort.indexSort( msgNodes );
+        
+        for (int i=0; i < msgList.size(); i++) {
+            logger.error( (String)msgList.get(msgIndices[i]) );
+        }
+        
+        if ( msgList.size() > 0 ) {
+            logger.error ( "errors identified above in constructing the internal network representations.");
+            logger.error ( "one or more dangling nodes were found where only a subnetwork path that returns");
+            logger.error ( "to the node from which it came is possible.\n\n");
+        }
 
 	}
 
@@ -1500,7 +1559,7 @@ public class Network implements Serializable {
 	    
 		int[] ia = getIa();
 		int[] ib = getIb();
-
+        
 		double[] congestedTime = (double[])linkTable.getColumnAsDouble( "congestedTime" );
 		int[] buckets = new int[8];
 
@@ -1523,13 +1582,13 @@ public class Network implements Serializable {
 				buckets[5]++;
 //				int k = sortedLinkIndexA[i];
 				int k = i;
-				logger.info ( indexNode[ia[k]] + "," + indexNode[ib[k]] + " has congested time = " + congestedTime[i] );
+				logger.info ( k + ": (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ") has congested time = " + congestedTime[i] );
 			}
 			else {
 				buckets[6]++;
 //				int k = sortedLinkIndexA[i];
 				int k = i;
-				logger.info ( indexNode[ia[k]] + "," + indexNode[ib[k]] + " has congested time = " + congestedTime[i] );
+				logger.info ( k + ": (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ") has congested time = " + congestedTime[i] );
 			}
 		}
 

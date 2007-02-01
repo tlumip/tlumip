@@ -43,12 +43,18 @@ public class NetworkDataServer {
 
         ns.server = new WebServer(port);
         ns.server.addHandler( handlerName, ns );
-        ns.server.start();
 
         return ns;
         
     }
     
+    public void startServer() {
+        server.start();
+    }
+    
+    public void stopServer() {
+        server.shutdown();
+    }
     
     public int getLinkCount() {
         return nh.getLinkCount();
@@ -59,32 +65,7 @@ public class NetworkDataServer {
     }
 
     public int getLinkId(int an, int bn) {
-        
-        if ( ipa == null )
-            ipa = nh.getIpa();
-        if ( ia == null )
-            ia = nh.getIa();
-        if ( ib == null )
-            ib = nh.getIb();
-        if ( nodeIndex == null )
-            nodeIndex = nh.getNodeIndex();
-        if ( sortedIndexArray == null )
-            sortedIndexArray = nh.getSortedLinkIndexA();
-
-        
-        int a = nodeIndex[an];
-        int b = nodeIndex[bn];
-                     
-        int linkId = -1;
-        for (int i=ipa[a]; i < ipa[a+1]; i++) {
-            int k = sortedIndexArray[i];
-            if ( ib[k] == b ) {
-                linkId = k+1;
-                break;
-            }
-        }
-        
-        return linkId;
+        return nh.getLinkIndex(an,bn);
     }
     
     public String[] getUserClassStrings () {

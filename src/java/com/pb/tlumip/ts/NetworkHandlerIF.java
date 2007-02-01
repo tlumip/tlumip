@@ -24,6 +24,8 @@ public interface NetworkHandlerIF {
     public static int NUMBER_OF_PROPERTY_VALUES = 16;
     
     
+    public void startDataServer();
+    public void stopDataServer();
     public int setRpcConfigFileName(String configFile);
     public String getRpcConfigFileName();
     public int getNumCentroids();
@@ -31,6 +33,7 @@ public interface NetworkHandlerIF {
     public boolean[] getCentroid();
     public int getNodeCount();
     public int getLinkCount();
+    public int getLinkIndex(int an, int bn);
     public int getNumUserClasses();
     public String getTimePeriod ();
     public boolean userClassesIncludeTruck();

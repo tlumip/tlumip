@@ -740,7 +740,10 @@ public class TS {
         // generate a NetworkHandler object to use for peak period assignments and skimming
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        
+        nhPeak.startDataServer();
         nhPeak.checkForIsolatedLinks();
+        nhPeak.stopDataServer();
 
 /*        
         
