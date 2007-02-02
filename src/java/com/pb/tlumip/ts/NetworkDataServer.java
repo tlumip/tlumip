@@ -27,7 +27,7 @@ public class NetworkDataServer {
     int[] ipa = null;
     int[] ia = null;
     int[] ib = null;
-    int[] sortedIndexArray = null;
+    int[] linkIndexArray = null;
     
     
     private NetworkDataServer () {
@@ -89,10 +89,23 @@ public class NetworkDataServer {
         return Util.intVector( ib );
     }
 
-    public Vector getSortedLinkIndexA() {
-        if ( sortedIndexArray == null )
-            sortedIndexArray = nh.getSortedLinkIndexA();
-        return Util.intVector( sortedIndexArray );
+    public Vector getLinkIndexArray() {
+        
+        if ( linkIndexArray == null ) {
+            if ( ia == null )
+                ia = nh.getIa();
+            if ( ib == null )
+                ib = nh.getIb();
+            if ( indexNode == null )
+                indexNode = nh.getIndexNode();
+            
+            linkIndexArray = new int[ia.length];
+            for (int i=0; i < ia.length; i++) {
+                linkIndexArray[i] = nh.getLinkIndex( indexNode[ia[i]], indexNode[ib[i]] );
+            }
+        }
+        
+        return Util.intVector( linkIndexArray );
     }
 
     public String[] getMode () {
@@ -142,7 +155,9 @@ public class NetworkDataServer {
     }
     
     public Vector getIndexNode () {
-        return Util.intVector( nh.getIndexNode() );
+        if ( indexNode == null )
+            indexNode = nh.getIndexNode();
+        return Util.intVector( indexNode );
     }
     
     public Vector getNodes () {

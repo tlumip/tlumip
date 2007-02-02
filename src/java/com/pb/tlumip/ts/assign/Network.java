@@ -203,19 +203,20 @@ public class Network implements Serializable {
         ipb = setForwardStarArrays ( ib, sortedLinkIndexB );
         
         
-        // update linktable with extra attributes
-        readLinkAttributesCsvFile ( extraAttribsFile );
-        
-        
 		// calculate the derived link attributes for the network
 		derivedLinkTable = deriveLinkAttributes( volumeFactor );
 
-		
 		// merge the derived link attributes into the linkTable TableDataSet,
 		// then we're done with the derived table.
 		linkTable.merge ( derivedLinkTable );
 		derivedLinkTable = null;
 		
+
+        
+        // update linktable with extra attributes
+        readLinkAttributesCsvFile ( extraAttribsFile );
+        
+        
         numLinks = linkTable.getRowCount();
 		
 		// calculate the congested link travel times based on the vdf functions defined
@@ -676,19 +677,16 @@ public class Network implements Serializable {
     
     private void readLinkAttributesCsvFile ( String filename ) {
 
-        double[] capacity = null;
-        String[] labels = null;
-        
-        // read the extra link attributes file into a TableDataSet
-        OLD_CSVFileReader reader = new OLD_CSVFileReader();
+        // read the extra link attributes file and update link attributes table values.
+        if ( filename != null && ! filename.equals("") ) {
 
-        try {
-            if ( filename != null && ! filename.equals("") ) {
-
+            try {
+                
+                OLD_CSVFileReader reader = new OLD_CSVFileReader();
                 TableDataSet table = reader.readFile( new File(filename) );
 
-                capacity = new double[table.getRowCount()];
-                labels = new String[table.getRowCount()];
+                double[] capacity = new double[table.getRowCount()];
+                String[] labels = new String[table.getRowCount()];
                 
                 // traverse links and store attibutes in linktable
                 for (int i=0; i < table.getRowCount(); i++) {
@@ -703,17 +701,17 @@ public class Network implements Serializable {
                     labels[k] = an + "_" + bn;
                     
                 }
+
+                setCapacity(capacity);
+                setLinkLabels(labels);
                 
             }
-            
+            catch (IOException e) {
+                logger.error ( "exception causght reading extra attributes file: " + filename, e );
+            }
+                        
         }
-        catch (IOException e) {
-            logger.error ( "exception causght reading extra attributes file: " + filename, e );
-        }
-                    
-        setCapacity(capacity);
-        setLinkLabels(labels);
-        
+
     }
     
                 
@@ -731,7 +729,8 @@ public class Network implements Serializable {
 		float[] length = new float[linkTable.getRowCount()];
 		double[] lanes = new double[linkTable.getRowCount()];
 		double[] totalVolCapRatio = new double[linkTable.getRowCount()];
-		double[] totalCapacity = new double[linkTable.getRowCount()];
+        double[] capacity = new double[linkTable.getRowCount()];
+        double[] totalCapacity = new double[linkTable.getRowCount()];
 		double[] originalCapacity = new double[linkTable.getRowCount()];
 		double[] freeFlowSpeed = new double[linkTable.getRowCount()];
 		double[] congestedTime = new double[linkTable.getRowCount()];
@@ -749,7 +748,6 @@ public class Network implements Serializable {
         volau = new double[linkTable.getRowCount()];
         totAonFlow = new double[linkTable.getRowCount()];
 
-        double[] capacity = getCapacity();
         
 		Arrays.fill (volad, 0.0);
 		Arrays.fill (validLinks, false);
@@ -759,11 +757,6 @@ public class Network implements Serializable {
 			int an = (int)linkTable.getValueAt( i+1, "anode" );
 			int bn = (int)linkTable.getValueAt( i+1, "bnode" );
             
-            int dummy = 0;
-            if ( an == 47450 && bn == 25387 ) {
-                dummy = 1;
-            }
-        
 			if ( isCentroid(an) || isCentroid(bn) ) {
 					centroid[i] = true;
 					centroidString[i] = "true";
@@ -787,6 +780,26 @@ public class Network implements Serializable {
                     ul1 = 5;
             }
             
+
+            // set default values for capacity.
+            // these will be overridden by values in an extra attributes link file, if such a file is specified.
+            if ( centroid[i] )
+                capacity[i] = 9999;
+            else if (ul1 > 15 && ul1 <= 30)
+                capacity[i] = 800;
+            else if (ul1 > 30 && ul1 <= 40)
+                capacity[i] = 1200;
+            else if (ul1 > 40 && ul1 <= 50)
+                capacity[i] = 1400;
+            else if (ul1 > 50 && ul1 <= 60)
+                capacity[i] = 1600;
+            else if (ul1 > 60 && ul1 <= 70)
+                capacity[i] = 1800;
+            else if (ul1 > 70)
+                capacity[i] = 2000;
+            else
+                capacity[i] = 600;
+
 			
 			lanes[i] = linkTable.getValueAt( i+1, "lanes" );
 			

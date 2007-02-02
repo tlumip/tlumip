@@ -743,7 +743,6 @@ public class TS {
         
         nhPeak.startDataServer();
         nhPeak.checkForIsolatedLinks();
-        nhPeak.stopDataServer();
 
 /*        
         
@@ -773,6 +772,7 @@ public class TS {
 */
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
+        nhPeak.stopDataServer();
 
     }
 
