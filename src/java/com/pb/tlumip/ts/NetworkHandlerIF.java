@@ -46,6 +46,8 @@ public interface NetworkHandlerIF {
     public char[][] getAssignmentGroupChars();
     public double[] getLanes();
     public double[] getCapacity();
+    public double[] getOriginalCapacity();
+    public double[] getTotalCapacity();
     public double[] getCongestedTime();
     public double[] getFreeFlowTime();
     public double[] getFreeFlowSpeed();

@@ -167,6 +167,14 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getCapacity();
     }
 
+    public double[] getOriginalCapacity () {
+        return g.getOriginalCapacity();
+    }
+
+    public double[] getTotalCapacity () {
+        return g.getTotalCapacity();
+    }
+
     public double[] getCongestedTime () {
         return g.getCongestedTime();
     }
@@ -205,6 +213,14 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     public int setFlows (double[][] flow) {
         g.setFlows( flow );
+
+        double[] volau = new double[g.getLinkCount()];
+        for (int i=0; i < flow.length; i++)
+            for (int j=0; j < flow[i].length; j++)
+                volau[j] += flow[i][j];
+                
+        g.setVolau(volau);
+        
         return 1;
     }
     

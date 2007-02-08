@@ -132,6 +132,14 @@ public class NetworkDataServer {
         return Util.doubleVector( nh.getCapacity() );
     }
 
+    public Vector getOriginalCapacity () {
+        return Util.doubleVector( nh.getOriginalCapacity() );
+    }
+
+    public Vector getTotalCapacity () {
+        return Util.doubleVector( nh.getTotalCapacity() );
+    }
+
     public Vector getFreeFlowTime () {
         return Util.doubleVector( nh.getFreeFlowTime() );
     }

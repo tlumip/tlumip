@@ -423,6 +423,38 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
 
+    public double[] getOriginalCapacity () {
+        
+        double[] returnArray = null;
+        
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getOriginalCapacity", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public double[] getTotalCapacity () {
+        
+        double[] returnArray = null;
+        
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getTotalCapacity", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        return returnArray;
+        
+    }
+
     public double[] getDist () {
         
         double[] returnArray = null;

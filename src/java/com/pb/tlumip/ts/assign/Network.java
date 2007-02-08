@@ -204,7 +204,7 @@ public class Network implements Serializable {
         
         
 		// calculate the derived link attributes for the network
-		derivedLinkTable = deriveLinkAttributes( volumeFactor );
+		derivedLinkTable = deriveLinkAttributes();
 
 		// merge the derived link attributes into the linkTable TableDataSet,
 		// then we're done with the derived table.
@@ -307,9 +307,13 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsDouble( "capacity" );
 	}
 
-	public double[] getOriginalCapacity () {
-		return linkTable.getColumnAsDouble( "originalCapacity" );
-	}
+    public double[] getOriginalCapacity () {
+        return linkTable.getColumnAsDouble( "originalCapacity" );
+    }
+
+    public double[] getTotalCapacity () {
+        return linkTable.getColumnAsDouble( "totalCapacity" );
+    }
 
     public double[] getCongestedTime () {
         return linkTable.getColumnAsDouble( "congestedTime" );
@@ -507,6 +511,14 @@ public class Network implements Serializable {
         linkTable.appendColumn( capacity, "capacity" );
     }
 
+    public void setOriginalCapacity ( double[] originalCapacity ) {
+        linkTable.appendColumn( originalCapacity, "originalCapacity" );
+    }
+
+    public void setTotalCapacity ( double[] totalCapacity ) {
+        linkTable.appendColumn( totalCapacity, "totalCapacity" );
+    }
+
     public void setLinkLabels ( String[] labels ) {
         linkLabels = labels;
         linkTable.appendColumn( labels, "label" );
@@ -686,6 +698,8 @@ public class Network implements Serializable {
                 TableDataSet table = reader.readFile( new File(filename) );
 
                 double[] capacity = new double[table.getRowCount()];
+                double[] originalCapacity = new double[table.getRowCount()];
+                double[] totalCapacity = new double[table.getRowCount()];
                 String[] labels = new String[table.getRowCount()];
                 
                 // traverse links and store attibutes in linktable
@@ -700,9 +714,20 @@ public class Network implements Serializable {
                     capacity[k] = cap;
                     labels[k] = an + "_" + bn;
                     
+                    int lanes = (int)linkTable.getValueAt( k+1, "lanes" );
+                    
+                    originalCapacity[k] = capacity[k];
+                    capacity[k] /= volumeFactor;
+
+                    
+                    // the following variables are needed for the VDF Integrals definitions
+                    totalCapacity[k] = 0.75 * capacity[k] * lanes;
+
                 }
 
                 setCapacity(capacity);
+                setOriginalCapacity(capacity);
+                setTotalCapacity(capacity);
                 setLinkLabels(labels);
                 
             }
@@ -722,7 +747,7 @@ public class Network implements Serializable {
 	 * Use this method to read the Emme2 d211 text file format network into
 	 * a simple data table.
 	 */
-	private TableDataSet deriveLinkAttributes ( float volumeFactor ) {
+	private TableDataSet deriveLinkAttributes () {
 
 		int[] turnPenaltyIndex = new int[linkTable.getRowCount()];
         int[] ttf = new int[linkTable.getRowCount()];
@@ -954,6 +979,7 @@ public class Network implements Serializable {
 		double[] results = fdLc.solve(validLinks);
 		
 		for (int i=0 ; i < results.length; i++) {
+            
             // if link calculater returns a negative or NaN result for a valid link, report the error
             if ( validLinks[i] ) {
                 if ( results[i] < 0 || results[i] == Double.NaN ) {
@@ -961,14 +987,13 @@ public class Network implements Serializable {
                     logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
                     System.exit(-1);
                 }
-            }
-            // use the default travel times calcualted for non-valid links.  A non-valid link might be a bus-only link that's not included in highway assignment network, for example.
-            else {
-                results[i] = congestedTime[i];
+                else {
+                    congestedTime[i] = results[i];
+                }
             }
 		}
 			
-		linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), results );
+		linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), congestedTime );
 
 	}
 		
@@ -1593,15 +1618,11 @@ public class Network implements Serializable {
 				buckets[4]++;
 			else if ( congestedTime[i] == 0.0 ) {
 				buckets[5]++;
-//				int k = sortedLinkIndexA[i];
-				int k = i;
-				logger.info ( k + ": (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ") has congested time = " + congestedTime[i] );
+				logger.info ( i + ": (" + indexNode[ia[i]] + "," + indexNode[ib[i]] + ") has congested time = " + congestedTime[i] );
 			}
 			else {
 				buckets[6]++;
-//				int k = sortedLinkIndexA[i];
-				int k = i;
-				logger.info ( k + ": (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ") has congested time = " + congestedTime[i] );
+				logger.info ( i + ": (" + indexNode[ia[i]] + "," + indexNode[ib[i]] + ") has congested time = " + congestedTime[i] );
 			}
 		}
 
