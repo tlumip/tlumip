@@ -37,9 +37,9 @@ public class TLUMIPTazManager extends TazManager {
 
 
 
-    public void setParkingCost(ResourceBundle rb, String fileName) {
-        float conversionFactor = Float.parseFloat(rb.getString("cf.1990.to.2000.dollars"));
-        TableDataSet table = loadTableDataSet(rb, fileName);
+    public void setParkingCost(ResourceBundle appRb, ResourceBundle globalRb,String fileName) {
+        float conversionFactor = Float.parseFloat(globalRb.getString("cf.1990.to.2000.dollars"));
+        TableDataSet table = loadTableDataSet(appRb, fileName);
         int workColumn = table.getColumnPosition("DayPark");
         int nonWorkColumn = table.getColumnPosition("HourPark");
         int aZoneColumn = table.getColumnPosition("TAZ");
