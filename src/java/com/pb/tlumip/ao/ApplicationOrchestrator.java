@@ -478,7 +478,7 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runTSModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runTSHwyAssign(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
 		TS ts = new TS(appRb, globalRb);
 
@@ -486,10 +486,63 @@ public class ApplicationOrchestrator {
         NetworkHandlerIF nh = NetworkHandler.getInstance();
         ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
-        
-		ts.runHighwayAssignment( nh, "peak" );
-        
-		//ts.runHighwayAssignment( nh, "offpeak" );
+
+        ts.runHighwayAssignment( nh );
+
+        period = "offpeak";
+        NetworkHandlerIF nhop = NetworkHandler.getInstance();
+        ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
+        logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
+
+		ts.runHighwayAssignment( nhop );
+
+    }
+
+    public void runTSHwySkims(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+
+        TS ts = new TS(appRb, globalRb);
+
+        String period = "peak";
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
+        logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+
+        ts.loadAssignmentResults ( nh, appRb);
+
+        ts.writeHighwaySkimMatrices ( nh, 'a' );
+
+        period = "offpeak";
+        NetworkHandlerIF nhop = NetworkHandler.getInstance();
+        ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
+        logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
+
+        ts.loadAssignmentResults ( nhop, appRb);
+
+        ts.writeHighwaySkimMatrices ( nhop, 'a' );
+
+    }
+
+    public void runTSAssignAndSkimTransit(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+
+        TS ts = new TS(appRb, globalRb);
+
+        String period = "peak";
+        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
+        logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+
+        ts.loadAssignmentResults ( nh, appRb);
+
+        ts.assignAndSkimTransit ( nh,  appRb, globalRb );
+
+        period = "offpeak";
+        NetworkHandlerIF nhop = NetworkHandler.getInstance();
+        ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
+        logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
+
+        ts.loadAssignmentResults ( nhop, appRb);
+
+        ts.assignAndSkimTransit ( nhop, appRb, globalRb );
 
     }
     
@@ -541,7 +594,6 @@ public class ApplicationOrchestrator {
             //For each t interval that the model runs in,  AO needs to create the runLogProperty file and write in the current year
             // if the file does not already exist in that year.  This file will then be updated by any application that runs.
             ao.createRunLogPropFile();
-            
             //We need to read in the runLog.properties files starting 
             //in year interval=0 and moving up to interval=t.  We will fill 
             //up a hashmap with the appropriate values. 
@@ -607,8 +659,10 @@ public class ApplicationOrchestrator {
                 logger.info("AO will now start ET for simulation year " + (baseYear+t));
                 ao.runETModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TS")){
-                logger.info("AO will now start TS for simulation year " + (baseYear+t));
-                ao.runTSModel(t, appRb, globalRb);
+                logger.info("AO will now start TS Hwy for simulation year " + (baseYear+t));
+                ao.runTSHwyAssign(t, appRb, globalRb);
+                ao.runTSHwySkims(t, appRb, globalRb);
+                ao.runTSAssignAndSkimTransit(t, appRb, globalRb);
             }else {
                 logger.fatal("AppName not recognized");
             }
