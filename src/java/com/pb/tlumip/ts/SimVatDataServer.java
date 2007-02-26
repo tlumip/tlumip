@@ -10,6 +10,8 @@ import org.apache.xmlrpc.WebServer;
 
 import org.apache.log4j.Logger;
 
+import com.pb.common.util.ObjectUtil;
+
 
 
 
@@ -455,20 +457,20 @@ public class SimVatDataServer {
         
         
         // allocate memory for the int[][][][] linkMvts array to hold all the required information.
-        logger.info( "before allocateLinkMvtArrays() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB." );
+        logger.info( "before allocateLinkMvtArrays() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvtCounts)=" + ObjectUtil.sizeOf(linkMvtCounts) +"." );
         s.linkMvts = s.allocateLinkMvtArrays( linkMvtCounts );
         linkMvtCounts = null;
         // should require approx 2GB for linkMvts array
 
         
         // re-read the sim.vat file, storing the movement information in the linkMvts array that was previously allocated.
-        logger.info( "before reReadSimVatFile() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB." );
+        logger.info( "before reReadSimVatFile() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvts)=" + ObjectUtil.sizeOf(s.linkMvts) +"." );
         s.reReadSimVatFile( fileName );
         // should add approx 100MB for local array in this method, which would then be eligible for garbage collection
         
 
         // start the server so that clients cn request data stored in linkMvts array,
-        logger.info( "before startServer() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB." );
+        logger.info( "before startServer() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvts)=" + ObjectUtil.sizeOf(s.linkMvts) +"." );
         logger.info( "linkMvts array complete, starting server ..." );
         s.startServer();
         // total memory used at this point should be approx 2GB.
