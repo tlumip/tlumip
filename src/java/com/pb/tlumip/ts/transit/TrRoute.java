@@ -47,7 +47,7 @@ public class TrRoute implements Serializable {
 	ArrayList[] transitPath;
 
 	// default segment values
-	String[] keyWords = { "dwf", "dwt", "path", "ttf", "ttf1", "ttft", "us1", "us2", "us3", "board", "alight" };
+	String[] keyWords = { "dwf", "dwt", "path", "ttfl", "ttft", "ttf", "us1", "us2", "us3", "board", "alight" };
 	String[] tkeyWords = {  "lay", "tdwt", "tus1", "tus2", "tus3" };
 	ArrayList defaults;
 	ArrayList tdefaults;
@@ -681,7 +681,14 @@ public class TrRoute implements Serializable {
 				if (! linkFound) {
 //					logger.info ("building path from " + ts.an + " to " + ts.bn);
 					sp.buildPath (nodeIndex[ts.an], nodeIndex[ts.bn]);
-					int[] nodes = sp.getNodeList (nodeIndex[ts.an], nodeIndex[ts.bn]);
+                    
+                    int[] nodes = null;
+                    try {
+                        nodes = sp.getNodeList (nodeIndex[ts.an], nodeIndex[ts.bn]);
+                    }catch ( Exception e ) {
+                        logger.error ( "path could not be built from " + ts.an + " to " + ts.bn, e );
+                        System.exit(-1);
+                    }
 
 					transitPath[rte].remove(seg);
 
