@@ -589,13 +589,14 @@ public class AuxTrNet implements Serializable {
             }
 
             
-            // if no end points were found, not drive access links will be created for this origin zone
+            // if no end points were found, no drive access links will be created for this origin zone
             if ( endPoints.size() > 0 ) {
             
                 // select MIN_DRIVE_ACCESS_LINKS drive access links randomly from the set available
+                // or all drive access links if the set available is less than MIN_DRIVE_ACCESS_LINKS.
                 int randomIndex;
                 Set indexSet = new HashSet();
-                while ( indexSet.size() < MAX_DRIVE_ACCESS_LINKS ) {
+                while ( indexSet.size() < MAX_DRIVE_ACCESS_LINKS && indexSet.size() < endPoints.size() ) {
                     
                     randomIndex = (int)(Math.random()*endPoints.size());
                     while ( indexSet.contains(randomIndex) )
@@ -669,6 +670,12 @@ public class AuxTrNet implements Serializable {
             out.format( "%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%10s%10s%10s%10s%10s%10s\n", "i", "ia", "ib", "type", "link", "an", "bn", "inB", "outB", "outI", "rte", "freq", "cost", "invT", "walkT", "layT", "hwyT" );
 
 		  	for (i=0; i < auxLinks; i++) {
+                
+                int dummy=0;
+                if ( i == 111 ) {
+                    dummy = 1;
+                }
+                
 				k = hwyLink[i];
 				
 				start = ipb[ib[i]];
