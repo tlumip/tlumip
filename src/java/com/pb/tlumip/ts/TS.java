@@ -398,27 +398,28 @@ public class TS {
    
     private AuxTrNet getTransitNetwork( NetworkHandlerIF nh, String period, String accessMode ) {
         
-        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        //HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
 
         boolean create_new_network = CREATE_NEW_NETWORK;
 
         AuxTrNet ag = null; 
-        String diskObjectFileName = null;
+        //String diskObjectFileName = null;
         
         // create a new transit network from d211 highway network file and d221 transit routes file, or read it from DiskObject.
-        String key = period + accessMode + "TransitNetwork";
-        String path = (String) tsPropertyMap.get( "diskObject.pathName" );
-        if ( path.endsWith("/") || path.endsWith("\\") )
-            diskObjectFileName = path + key + ".diskObject";
-        else
-            diskObjectFileName = path + "/" + key + ".diskObject";
+        //String key = period + accessMode + "TransitNetwork";
+        //String path = (String) tsPropertyMap.get( "diskObject.pathName" );
+        //if ( path.endsWith("/") || path.endsWith("\\") )
+            //diskObjectFileName = path + key + ".diskObject";
+       // else
+           // diskObjectFileName = path + "/" + key + ".diskObject";
         
         if ( create_new_network ) {
             ag = createTransitNetwork ( nh, period, accessMode );
-            DataWriter.writeDiskObject ( ag, diskObjectFileName, key );
+            //DataWriter.writeDiskObject ( ag, diskObjectFileName, key );
         }
         else {
-            ag = (AuxTrNet) DataReader.readDiskObject ( diskObjectFileName, key );
+            //ag = (AuxTrNet) DataReader.readDiskObject ( diskObjectFileName, key );
+            logger.error ( "reading transit network from DiskObjectArray not supported at this time.", new Exception() );
         }
 
         
@@ -484,7 +485,7 @@ public class TS {
 
     
     
-    public void logTransitBoardingsReport ( AuxTrNet ag, String periodHeadingLabel, double[] routeBoardings ) {
+    public void logTransitBoardingsReport ( AuxTrNet ag, String periodHeadingLabel, double[] walkTransitBoardings, double[] driveTransitBoardings ) {
         
         TrRoute tr = ag.getTrRoute();
         
@@ -495,15 +496,19 @@ public class TS {
                 maxStringLength = tr.getDescription(rte).length();
         String descrFormat = "%-" + (maxStringLength+4) + "s";
 
-        logger.info ( String.format("%-10s", "Count") + String.format("%-10s", "Line") + String.format(descrFormat, "Description") + String.format("%-8s", "Mode") + String.format("%18s", (periodHeadingLabel + " Boardings")) );
-        logger.info ( String.format("%-10s", "-----") + String.format("%-10s", "----") + String.format(descrFormat, "-----------") + String.format("%-8s", "----") + String.format("%18s", "-----------------") );
+        logger.info ( String.format("%-10s", "Count") + String.format("%-10s", "Line") + String.format(descrFormat, "Description") + String.format("%-8s", "Mode") + String.format("%22s", (periodHeadingLabel + " WT Boardings"))  + String.format("%22s", (periodHeadingLabel + " DT Boardings"))  + String.format("%22s", (periodHeadingLabel + " Boardings")) );
+        logger.info ( String.format("%-10s", "-----") + String.format("%-10s", "----") + String.format(descrFormat, "-----------") + String.format("%-8s", "----") + String.format("%22s", "--------------------") + String.format("%22s", "--------------------") + String.format("%22s", "--------------------") );
 
+        float totalWalk = 0.0f;
+        float totalDrive = 0.0f;
         float total = 0.0f;
         for (int rte=0; rte < tr.getLineCount(); rte++) { 
-            logger.info ( String.format("%-10s", (rte+1)) + String.format("%-10s", tr.getLine(rte)) + String.format(descrFormat, tr.getDescription(rte)) + String.format("%-8c", tr.getMode(rte)) + String.format("%18.2f", routeBoardings[rte]) );
-            total += routeBoardings[rte];
+            logger.info ( String.format("%-10s", (rte+1)) + String.format("%-10s", tr.getLine(rte)) + String.format(descrFormat, tr.getDescription(rte)) + String.format("%-8c", tr.getMode(rte)) + String.format("%22.2f", walkTransitBoardings[rte]) + String.format("%22.2f", driveTransitBoardings[rte]) + String.format("%22.2f", (walkTransitBoardings[rte] + driveTransitBoardings[rte])) );
+            totalWalk += walkTransitBoardings[rte];
+            totalDrive += driveTransitBoardings[rte];
+            total += walkTransitBoardings[rte] + driveTransitBoardings[rte];
         }
-        logger.info ( String.format("%-20s", "Total Boardings") + String.format(descrFormat, "") + String.format("%-8s", "") + String.format("%18.2f", total) );
+        logger.info ( String.format("%-20s", "Total Boardings") + String.format(descrFormat, "") + String.format("%-8s", "") + String.format("%22.2f", totalWalk) + String.format("%22.2f", totalDrive) + String.format("%22.2f", total) );
         
     }
     
@@ -554,7 +559,7 @@ public class TS {
             totalBoardings[rte] = walkTransitBoardings[rte] + driveTransitBoardings[rte];
         }
         
-        logTransitBoardingsReport ( ag, assignmentPeriod, totalBoardings );
+        logTransitBoardingsReport ( ag, assignmentPeriod, walkTransitBoardings, driveTransitBoardings );
         
         logger.info ("done with " + assignmentPeriod + " transit skimming and loading.");
         
@@ -737,7 +742,7 @@ public class TS {
 
 
 
-        
+/*        
         // generate a NetworkHandler object to use for peak period assignments and skimming
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
@@ -747,6 +752,8 @@ public class TS {
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]));
         
         nhPeak.startDataServer();
+*/
+        
 
 
 /*        
@@ -762,11 +769,13 @@ public class TS {
         
         
         
-/*        
+       
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
-        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]), "peak" );
+        NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
+        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
-*/
+
 
         
         // run the benchmark highway assignment procedure
@@ -774,7 +783,7 @@ public class TS {
         
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
-        nhPeak.stopDataServer();
+//        nhPeak.stopDataServer();
 
     }
 
