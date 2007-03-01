@@ -671,11 +671,6 @@ public class AuxTrNet implements Serializable {
 
 		  	for (i=0; i < auxLinks; i++) {
                 
-                int dummy=0;
-                if ( i == 111 ) {
-                    dummy = 1;
-                }
-                
 				k = hwyLink[i];
 				
 				start = ipb[ib[i]];

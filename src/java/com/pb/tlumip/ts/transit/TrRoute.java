@@ -656,55 +656,64 @@ public class TrRoute implements Serializable {
             
 			for (int seg=0; seg < transitPath[rte].size(); seg++) {
 			    
-				ts = (TrSegment)transitPath[rte].get(seg);
+                try {
 
-				ia = nodeIndex[ts.an];
-				linkFound = false;
-				for (int i=ip[ia]; i < ip[ia+1]; i++) {
-					k = sortedLinkIndex[i];
-					if (indexNode[ib[k]] == ts.bn) {
-						ts.link = k;
-						dwt = ts.getDwt();
-						dwf = ts.getDwf();
-						tdwt = ts.getTdwt();
-						if ( dwt < 0 )
-							ts.setDwt ( -dwt*dist[k] );
-						if ( dwf < 0 )
-							ts.setDwt ( -dwf*dist[k] );
-						if ( tdwt < 0 )
-							ts.setTdwt ( -tdwt*dist[k] );
-						linkFound = true;
-						break;
-					}
-				}
+                    ts = (TrSegment)transitPath[rte].get(seg);
 
-				if (! linkFound) {
-//					logger.info ("building path from " + ts.an + " to " + ts.bn);
-					sp.buildPath (nodeIndex[ts.an], nodeIndex[ts.bn]);
-                    
-                    int[] nodes = null;
-                    try {
-                        nodes = sp.getNodeList (nodeIndex[ts.an], nodeIndex[ts.bn]);
-                    }catch ( Exception e ) {
-                        logger.error ( "path could not be built from " + ts.an + " to " + ts.bn, e );
-                        System.exit(-1);
+                    ia = nodeIndex[ts.an];
+                    linkFound = false;
+                    for (int i=ip[ia]; i < ip[ia+1]; i++) {
+                        k = sortedLinkIndex[i];
+                        if (indexNode[ib[k]] == ts.bn) {
+                            ts.link = k;
+                            dwt = ts.getDwt();
+                            dwf = ts.getDwf();
+                            tdwt = ts.getTdwt();
+                            if ( dwt < 0 )
+                                ts.setDwt ( -dwt*dist[k] );
+                            if ( dwf < 0 )
+                                ts.setDwt ( -dwf*dist[k] );
+                            if ( tdwt < 0 )
+                                ts.setTdwt ( -tdwt*dist[k] );
+                            linkFound = true;
+                            break;
+                        }
                     }
 
-					transitPath[rte].remove(seg);
+                    if (! linkFound) {
+//                      logger.info ("building path from " + ts.an + " to " + ts.bn);
+                        sp.buildPath (nodeIndex[ts.an], nodeIndex[ts.bn]);
+                        
+                        int[] nodes = null;
+                        try {
+                            nodes = sp.getNodeList (nodeIndex[ts.an], nodeIndex[ts.bn]);
+                        }catch ( Exception e ) {
+                            logger.error ( "path could not be built from " + ts.an + " to " + ts.bn, e );
+                            System.exit(-1);
+                        }
 
-					int a = nodes[0];
-					for (int j=1; j < nodes.length; j++) {
-						int b = nodes[j];
-						tsNew = ts.segmentCopy(ts, this);
-						tsNew.an = indexNode[a];
-						tsNew.bn = indexNode[b];
-						if (j > 1 && tsNew.lay >= 0.0)
-							tsNew.lay = 0.0;
-						transitPath[rte].add(seg++, tsNew);
-						a = b;
-					}
-					seg -= (nodes.length + 1);
-				}
+                        transitPath[rte].remove(seg);
+
+                        int a = nodes[0];
+                        for (int j=1; j < nodes.length; j++) {
+                            int b = nodes[j];
+                            tsNew = ts.segmentCopy(ts, this);
+                            tsNew.an = indexNode[a];
+                            tsNew.bn = indexNode[b];
+                            if (j > 1 && tsNew.lay >= 0.0)
+                                tsNew.lay = 0.0;
+                            transitPath[rte].add(seg++, tsNew);
+                            a = b;
+                        }
+                        seg -= (nodes.length + 1);
+                    }
+                    
+                }
+                catch (Exception e) {
+                    logger.error ( "excption caught for rte=" + rte + ", seg=" + seg + ".", e );
+                    System.exit(-1);
+                }
+                
 			}
 		}
 	}
