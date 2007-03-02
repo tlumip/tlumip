@@ -18,6 +18,7 @@ package com.pb.tlumip.ao;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.rpc.DafNode;
 import com.pb.models.pecas.PIModel;
 import com.pb.tlumip.ald.ALDModel;
 import com.pb.tlumip.ct.CTModel;
@@ -45,6 +46,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.net.MalformedURLException;
 
 /**
  * 
@@ -478,19 +480,19 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runTSHwyAssign(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runTSHwyAssign(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
 
 		TS ts = new TS(appRb, globalRb);
 
         String period = "peak";
-        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
         ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
 
         ts.runHighwayAssignment( nh );
 
         period = "offpeak";
-        NetworkHandlerIF nhop = NetworkHandler.getInstance();
+        NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
         ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
 
@@ -498,12 +500,12 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runTSHwySkims(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runTSHwySkims(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
 
         TS ts = new TS(appRb, globalRb);
 
         String period = "peak";
-        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
         ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
 
@@ -512,7 +514,7 @@ public class ApplicationOrchestrator {
         ts.writeHighwaySkimMatrices ( nh, 'a' );
 
         period = "offpeak";
-        NetworkHandlerIF nhop = NetworkHandler.getInstance();
+        NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
         ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
 
@@ -522,12 +524,12 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runTSAssignAndSkimTransit(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runTSAssignAndSkimTransit(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
 
         TS ts = new TS(appRb, globalRb);
 
         String period = "peak";
-        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
         ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
 
@@ -536,7 +538,7 @@ public class ApplicationOrchestrator {
         ts.assignAndSkimTransit ( nh,  appRb, globalRb );
 
         period = "offpeak";
-        NetworkHandlerIF nhop = NetworkHandler.getInstance();
+        NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
         ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
 
@@ -578,9 +580,11 @@ public class ApplicationOrchestrator {
             logger.info("Base Year: " + baseYear);
             logger.info("Time Interval: " + t);
             String nodeName = null; //will only be passed in for daf applications
+            String configFileName = null; //will only be used for DAF3 applications.
             if(args.length == 6 ){
                 nodeName = args[5];
                 logger.info("Node to Start Cluster: "+ nodeName);
+                configFileName = nodeName;
             }
 
             //Create an ApplicationOrchestrator object that will handle creating the
@@ -659,10 +663,29 @@ public class ApplicationOrchestrator {
                 logger.info("AO will now start ET for simulation year " + (baseYear+t));
                 ao.runETModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TS")){
-                logger.info("AO will now start TS Hwy for simulation year " + (baseYear+t));
-                ao.runTSHwyAssign(t, appRb, globalRb);
-                ao.runTSHwySkims(t, appRb, globalRb);
-                ao.runTSAssignAndSkimTransit(t, appRb, globalRb);
+                logger.info("AO will now start TS for simulation year " + (baseYear+t));
+                ao.runTSHwyAssign(t, appRb, globalRb, null);
+                ao.runTSHwySkims(t, appRb, globalRb, null);
+                ao.runTSAssignAndSkimTransit(t, appRb, globalRb, null);
+            }else if(appName.equalsIgnoreCase("TSDAF")){
+                logger.info("AO will now start TS DAF for simulation year " + (baseYear+t));
+                if ( configFileName != null ) {
+                    try {
+                        DafNode.getInstance().initClient(configFileName);
+                    }
+                    catch (MalformedURLException e) {
+                        logger.error( "MalformedURLException caught initializing a DafNode.", e);
+                    }
+                    catch (Exception e) {
+                        logger.error( "Exception caught initializing a DafNode.", e);
+                    }
+
+                }
+                appRb = ao.findResourceBundle(pathToAppRb);
+                globalRb = ao.findResourceBundle(pathToGlobalRb);
+                ao.runTSHwyAssign(t, appRb, globalRb, configFileName);
+                ao.runTSHwySkims(t, appRb, globalRb, null);
+                ao.runTSAssignAndSkimTransit(t, appRb, globalRb, null);
             }else {
                 logger.fatal("AppName not recognized");
             }
