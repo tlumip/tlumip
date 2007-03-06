@@ -432,6 +432,25 @@ public class SimVatDataServer {
     
     
     public static void main ( String[] args ) {
+
+        /*
+        logger.info ( "size of int[1][1][1][1] = " + ObjectUtil.sizeOf( new int[1][1][1][1] ) + " Bytes." );
+        logger.info ( "size of int[1][1][2][1] = " + ObjectUtil.sizeOf( new int[1][1][2][1] ) + " Bytes." );
+        logger.info ( "size of int[1][1][3][1] = " + ObjectUtil.sizeOf( new int[1][1][3][1] ) + " Bytes." );
+        logger.info ( "size of int[1][1][4][1] = " + ObjectUtil.sizeOf( new int[1][1][4][1] ) + " Bytes." );
+        logger.info ( "" );
+        logger.info ( "size of int[2][1][1][1] = " + ObjectUtil.sizeOf( new int[2][1][1][1] ) + " Bytes." );
+        logger.info ( "size of int[2][1][2][1] = " + ObjectUtil.sizeOf( new int[2][1][2][1] ) + " Bytes." );
+        logger.info ( "size of int[2][1][3][1] = " + ObjectUtil.sizeOf( new int[2][1][3][1] ) + " Bytes." );
+        logger.info ( "size of int[2][1][4][1] = " + ObjectUtil.sizeOf( new int[2][1][4][1] ) + " Bytes." );
+        logger.info ( "" );
+        logger.info ( "size of int[2][2][1][1] = " + ObjectUtil.sizeOf( new int[2][2][1][1] ) + " Bytes." );
+        logger.info ( "size of int[2][2][2][1] = " + ObjectUtil.sizeOf( new int[2][2][2][1] ) + " Bytes." );
+        logger.info ( "size of int[2][2][3][1] = " + ObjectUtil.sizeOf( new int[2][2][3][1] ) + " Bytes." );
+        logger.info ( "size of int[2][2][4][1] = " + ObjectUtil.sizeOf( new int[2][2][4][1] ) + " Bytes." );
+        System.exit(-1);
+        */
+        
         
         logger.info( "start of main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB." );
 
@@ -457,20 +476,42 @@ public class SimVatDataServer {
         
         
         // allocate memory for the int[][][][] linkMvts array to hold all the required information.
-        logger.info( "before allocateLinkMvtArrays() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvtCounts)=" + ObjectUtil.sizeOf(linkMvtCounts) +"." );
+        logger.info( "before allocateLinkMvtArrays() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvtCounts)=" + ObjectUtil.sizeOf(linkMvtCounts)/(1024*1024) + "MB." );
         s.linkMvts = s.allocateLinkMvtArrays( linkMvtCounts );
         linkMvtCounts = null;
         // should require approx 2GB for linkMvts array
 
+        /*
+        for (int i=0; i < s.linkMvts.length; i++){
+            
+            for (int j=0; j < s.linkMvts[i].length; j++){
+                if ( s.linkMvts[i][j] != null ) {
+                    
+                    if ( s.linkMvts[i][j].length > 0 ) {
+                        logger.info ( i + "," + j + "  length: " + s.linkMvts[i][j].length + ", linkMvts[i][j]:" + ObjectUtil.sizeOf(s.linkMvts[i][j]) + " Bytes." );
+                        
+                        for (int k=0; k < s.linkMvts[i][j].length; k++) {
+                            logger.info ( "   k=" + k + ", linkMvts[i][j][k]: " + ObjectUtil.sizeOf(s.linkMvts[i][j][k]) + " Bytes." );
+                            for (int l=0; l < s.linkMvts[i][j][k].length; l++)
+                                logger.info ( "      l=" + l + ", linkMvts[i][j][k][l]: " + ObjectUtil.sizeOf(s.linkMvts[i][j][k][l]) + " Bytes." );
+                        }
+                            
+                        System.exit(-1);
+                    }
+                    
+                }
+            }
+        }
+        */
         
         // re-read the sim.vat file, storing the movement information in the linkMvts array that was previously allocated.
-        logger.info( "before reReadSimVatFile() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvts)=" + ObjectUtil.sizeOf(s.linkMvts) +"." );
+        logger.info( "before reReadSimVatFile() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvts)=" + ObjectUtil.sizeOf(s.linkMvts)/(1024*1024) + "MB." );
         s.reReadSimVatFile( fileName );
         // should add approx 100MB for local array in this method, which would then be eligible for garbage collection
         
 
         // start the server so that clients cn request data stored in linkMvts array,
-        logger.info( "before startServer() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvts)=" + ObjectUtil.sizeOf(s.linkMvts) +"." );
+        logger.info( "before startServer() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvts)=" + ObjectUtil.sizeOf(s.linkMvts)/(1024*1024) + "MB." );
         logger.info( "linkMvts array complete, starting server ..." );
         s.startServer();
         // total memory used at this point should be approx 2GB.
