@@ -440,11 +440,6 @@ public class ApplicationOrchestrator {
         pi.startModel(baseYear, timeInterval);
     }
 
-    public void runETModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
-        ETModel et = new ETModel(appRb, globalRb);
-
-        et.startModel(timeInterval);
-    }
 
     public void runPIDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb, String nodeName){
         //Since AO doesn't communicate directly with PI we need to write the absolute
@@ -480,7 +475,41 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runTSHwyAssign(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
+    public void runETModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+        ETModel et = new ETModel(appRb, globalRb);
+
+        et.startModel(timeInterval);
+    }
+
+    public void runTSModel(ResourceBundle appRb, ResourceBundle globalRb){
+        runTSHwyAssign(appRb, globalRb, null);
+        runTSHwySkims(appRb, globalRb, null);
+        runTSAssignAndSkimTransit(appRb, globalRb, null);
+    }
+
+    public void runTSDAFModel(String configFileName, String pathToAppRb, String pathToGlobalRb){
+
+        if ( configFileName != null ) {
+            try {
+                DafNode.getInstance().initClient(configFileName);
+            }
+            catch (MalformedURLException e) {
+                logger.error( "MalformedURLException caught initializing a DafNode.", e);
+            }
+            catch (Exception e) {
+                logger.error( "Exception caught initializing a DafNode.", e);
+            }
+
+        }
+        ResourceBundle appRb = findResourceBundle(pathToAppRb);
+        ResourceBundle globalRb = findResourceBundle(pathToGlobalRb);
+        runTSHwyAssign(appRb, globalRb, configFileName);
+        runTSHwySkims(appRb, globalRb, null);
+        runTSAssignAndSkimTransit(appRb, globalRb, null);
+
+    }
+
+    private void runTSHwyAssign(ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
 
 		TS ts = new TS(appRb, globalRb);
 
@@ -500,7 +529,7 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runTSHwySkims(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
+    private void runTSHwySkims(ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
 
         TS ts = new TS(appRb, globalRb);
 
@@ -524,7 +553,7 @@ public class ApplicationOrchestrator {
 
     }
 
-    public void runTSAssignAndSkimTransit(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
+    private void runTSAssignAndSkimTransit(ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
 
         TS ts = new TS(appRb, globalRb);
 
@@ -547,7 +576,8 @@ public class ApplicationOrchestrator {
         ts.assignAndSkimTransit ( nhop, appRb, globalRb );
 
     }
-    
+
+
     private void logAppRun(String appName){
         if (appName.endsWith("daf")) {
             appName = appName.substring(0,(appName.length()-3));
@@ -664,28 +694,10 @@ public class ApplicationOrchestrator {
                 ao.runETModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TS")){
                 logger.info("AO will now start TS for simulation year " + (baseYear+t));
-                ao.runTSHwyAssign(t, appRb, globalRb, null);
-                ao.runTSHwySkims(t, appRb, globalRb, null);
-                ao.runTSAssignAndSkimTransit(t, appRb, globalRb, null);
+                ao.runTSModel(appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TSDAF")){
                 logger.info("AO will now start TS DAF for simulation year " + (baseYear+t));
-                if ( configFileName != null ) {
-                    try {
-                        DafNode.getInstance().initClient(configFileName);
-                    }
-                    catch (MalformedURLException e) {
-                        logger.error( "MalformedURLException caught initializing a DafNode.", e);
-                    }
-                    catch (Exception e) {
-                        logger.error( "Exception caught initializing a DafNode.", e);
-                    }
-
-                }
-                appRb = ao.findResourceBundle(pathToAppRb);
-                globalRb = ao.findResourceBundle(pathToGlobalRb);
-                ao.runTSHwyAssign(t, appRb, globalRb, configFileName);
-                ao.runTSHwySkims(t, appRb, globalRb, null);
-                ao.runTSAssignAndSkimTransit(t, appRb, globalRb, null);
+                ao.runTSDAFModel(configFileName, pathToAppRb, pathToGlobalRb);
             }else {
                 logger.fatal("AppName not recognized");
             }
