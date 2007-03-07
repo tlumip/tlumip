@@ -440,7 +440,6 @@ public class ApplicationOrchestrator {
         pi.startModel(baseYear, timeInterval);
     }
 
-
     public void runPIDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb, String nodeName){
         //Since AO doesn't communicate directly with PI we need to write the absolute
         //path to the resource bundle and the time interval into a file, "RunParams.txt"
@@ -449,7 +448,7 @@ public class ApplicationOrchestrator {
         StartDafApplication appRunner = new StartDafApplication("pidaf", nodeName, timeInterval, rb);
         appRunner.run();
     }
-    
+
     public void runSPG2Model(int baseYr, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
         String baseYear = Integer.toString(baseYr);
@@ -488,7 +487,8 @@ public class ApplicationOrchestrator {
     }
 
     public void runTSDAFModel(String configFileName, String pathToAppRb, String pathToGlobalRb){
-
+        logger.info("Config file: " + configFileName);
+        logger.info("Config file exists? " + new File(configFileName).exists());
         if ( configFileName != null ) {
             try {
                 DafNode.getInstance().initClient(configFileName);
@@ -591,7 +591,7 @@ public class ApplicationOrchestrator {
             e.printStackTrace();
         }
     }
-    
+
     public static void main(String[] args) {
 
         try {
@@ -602,7 +602,7 @@ public class ApplicationOrchestrator {
             String appName = args[2];
             int baseYear = Integer.parseInt(args[3]);
             int t = Integer.parseInt(args[4]);
-            
+
 
             logger.info("Root Directory: " + rootDir);
             logger.info("Scenario Name: " + scenarioName);
@@ -628,11 +628,11 @@ public class ApplicationOrchestrator {
             //For each t interval that the model runs in,  AO needs to create the runLogProperty file and write in the current year
             // if the file does not already exist in that year.  This file will then be updated by any application that runs.
             ao.createRunLogPropFile();
-            //We need to read in the runLog.properties files starting 
-            //in year interval=0 and moving up to interval=t.  We will fill 
-            //up a hashmap with the appropriate values. 
+            //We need to read in the runLog.properties files starting
+            //in year interval=0 and moving up to interval=t.  We will fill
+            //up a hashmap with the appropriate values.
             ao.updateRunLogPropertiesHashmap(t);
-            
+
             //Create an ao.properties file for the current 't' directory
             // using the most recent aoTemplate.properties file
             String pathToAoRb = ao.createAppRb("ao");
@@ -656,7 +656,7 @@ public class ApplicationOrchestrator {
             //all patterns with values from the RunLogHashMap and write properties file
             //to the appropriate directory.
             String pathToAppRb = ao.createAppRb(appName);
-            
+
             //Unless AO is being asked to start a daf-application, it should
             //find the actual application resource bundle and pass it to the app
             //on start-up.  Daf applications will be passed a path to a runProperties file
