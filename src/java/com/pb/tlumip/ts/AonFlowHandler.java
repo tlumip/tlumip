@@ -180,6 +180,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         // get the specific handler names from the config file that begin with the SpBuildLoadHandler handler name.
         String[] spHandlerNames = null;
         if ( rpcConfigFile == null ) {
+            logger.warn("Config file is null, creating handler on local VM");
             spHandlerNames = new String[1];
             spHandlerNames[0] = SpBuildLoadHandlerIF.HANDLER_NAME;
         }
