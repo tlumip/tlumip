@@ -17,25 +17,18 @@
   <path id="tlumip.module.classpath">
     <path refid="${module.jdk.classpath.tlumip}"/>
     <pathelement location="${common-base.output.dir}"/>
-    <pathelement location="${logging-log4j-1.2.9.output.dir}"/>
     <pathelement location="${module.tlumip.basedir}/../../third-party/logging-log4j-1.2.9/log4j-1.2.9.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/junit.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/or124.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/jxl.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/xml4j.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/mysql-connector-java-3.0.10-stable-bin.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/dx.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/jds.jar"/>
     <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/dxml.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/or124.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/dx.jar"/>
     <pathelement location="${common-daf-v2.output.dir}"/>
-    <pathelement location="${jakarta-commons.output.dir}"/>
-    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-beanutils-1.6.1/commons-beanutils.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-collections-2.1/commons-collections.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-digester-1.5/commons-digester.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-logging-1.0.3/commons-logging-api.jar"/>
-    <pathelement location="${module.tlumip.basedir}/../../third-party/jakarta-commons/commons-logging-1.0.3/commons-logging.jar"/>
-    <pathelement location="${calibrator.output.dir}"/>
+    <pathelement location="${common-daf-v3.output.dir}"/>
     <pathelement location="${pecas.output.dir}"/>
+    <pathelement location="${utils.output.dir}"/>
+    <pathelement location="${reference.output.dir}"/>
+    <pathelement location="${censusdata.output.dir}"/>
+    <pathelement location="${synpop.output.dir}"/>
+    <pathelement location="${pasaat.output.dir}"/>
   </path>
   
   
@@ -53,9 +46,8 @@
   </path>
   
   
-  <target name="compile.module.tlumip" depends="compile.module.tlumip.production,compile.module.tlumip.tests" description="compile module tlumip"/>
-  
-  <target name="compile.module.tlumip.production" depends="compile.module.common-base,compile.module.common-daf-v2,compile.module.jakarta-commons,compile.module.calibrator,compile.module.pecas" description="compile module tlumip production classes">
+
+  <target name="compile.module.tlumip" depends="compile.module.common-base, compile.module.common-daf-v2, compile.module.common-daf-v3, compile.module.utils, compile.module.pecas, compile.module.reference, compile.module.censusdata, compile.module.synpop, compile.module.pasaat" description="compile module tlumip production classes">
     <mkdir dir="${tlumip.output.dir}"/>
     <javac destdir="${tlumip.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memoryMaximumSize="${compiler.max.memory}" fork="true" executable="${module.jdk.home.tlumip}/bin/javac">
       <compilerarg line="${compiler.args.tlumip}"/>
@@ -73,8 +65,7 @@
     </copy>
   </target>
   
-  <target name="compile.module.tlumip.tests" depends="compile.module.tlumip.production" description="compile module tlumip test classes" unless="skip.tests"/>
-  
+
   <target name="clean.module.tlumip" description="cleanup module">
     <delete dir="${tlumip.output.dir}"/>
     <delete dir="${tlumip.testoutput.dir}"/>
