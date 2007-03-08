@@ -515,6 +515,7 @@ public class ApplicationOrchestrator {
 
         String period = "peak";
         NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
+        nh.setRpcConfigFileName( configFileName );
         ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
 
@@ -522,6 +523,7 @@ public class ApplicationOrchestrator {
 
         period = "offpeak";
         NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
+        nhop.setRpcConfigFileName( configFileName );
         ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
 
@@ -535,6 +537,7 @@ public class ApplicationOrchestrator {
 
         String period = "peak";
         NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
+        nh.setRpcConfigFileName( configFileName );
         ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
 
@@ -544,6 +547,7 @@ public class ApplicationOrchestrator {
 
         period = "offpeak";
         NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
+        nhop.setRpcConfigFileName( configFileName );
         ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
 
@@ -559,6 +563,7 @@ public class ApplicationOrchestrator {
 
         String period = "peak";
         NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
+        nh.setRpcConfigFileName( configFileName );
         ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
 
@@ -568,6 +573,7 @@ public class ApplicationOrchestrator {
 
         period = "offpeak";
         NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
+        nhop.setRpcConfigFileName( configFileName );
         ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
 
