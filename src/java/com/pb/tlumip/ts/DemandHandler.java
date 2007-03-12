@@ -23,7 +23,7 @@ package com.pb.tlumip.ts;
  */
 
 
-import com.pb.tlumip.model.ModeType;
+import com.pb.models.pt.TripModeType;
 
 
 import com.pb.common.datafile.OLD_CSVFileReader;
@@ -31,6 +31,7 @@ import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.rpc.DafNode;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -51,7 +52,6 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
 	protected static transient Logger logger = Logger.getLogger(DemandHandler.class);
 
-    public static final String[] modeLabels = { "", "DA", "SR2", "SR3+", "WK", "BK", "WT", "DT" }; 
     
     int networkNumCentroids;
     int networkNumUserClasses;
@@ -217,16 +217,20 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     public double[][] getWalkTransitTripTable () {
         
-        return getWalkTransitTripTableFromPTList ();
-        
+        ArrayList tripModeList = new ArrayList();
+        tripModeList.add( String.valueOf(TripModeType.WK_TRAN) );
+        return getTripTableFromPTListForModes ( tripModeList );
+
     }
 
     
     
     public double[][] getDriveTransitTripTable () {
         
-        return getDriveTransitTripTableFromPTList ();
-        
+        ArrayList tripModeList = new ArrayList();
+        tripModeList.add( String.valueOf(TripModeType.DR_TRAN) );
+        return getTripTableFromPTListForModes ( tripModeList );
+
     }
 
     
@@ -258,7 +262,11 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 		if ( assignmentGroupContainsAuto ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
 			logger.info ("reading " + timePeriod + " PT trip list at: " + myDateString);
-			multiclassTripTable[0] = getAutoTripTableFromPTList ();
+            ArrayList tripModeList = new ArrayList();
+            tripModeList.add( String.valueOf(TripModeType.DA) );
+            tripModeList.add( String.valueOf(TripModeType.SR2) );
+            tripModeList.add( String.valueOf(TripModeType.SR3P) );
+			multiclassTripTable[0] = getTripTableFromPTListForModes ( tripModeList );
 		}
 		else {
 			logger.info ("no auto class defined, so " + timePeriod + " PT trip list was not read." );
@@ -283,17 +291,17 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 	
 
     
-    private double[][] getAutoTripTableFromPTList () {
+    private double[][] getTripTableFromPTListForModes ( ArrayList tripModes ) {
         
         int orig;
         int dest;
         int startTime;
-        int mode;
         int o;
         int d;
-        int allAutoTripCount=0;
-        int tripCount=0;
-        int allTrips = 0;
+        int totalValid = 0;
+        int totalPeriod = 0;
+        int total = 0;
+        String mode;
 
         BufferedReader in = null;
         String fileHeader = null;
@@ -301,7 +309,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         
         double[][] tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
 
-        TreeMap freqMap = new TreeMap();
+        TreeMap totalModeFreqMap = new TreeMap();
+        TreeMap periodModeFreqMap = new TreeMap();
 
         
 
@@ -323,23 +332,26 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
         // get the field indices for the fields we want to read
         StringTokenizer st = new StringTokenizer(fileHeader, ",\n\r");
-        int[] fieldFlags = new int[st.countTokens()];
+        int[] intFieldFlags = new int[st.countTokens()];
+        int[] stringFieldFlags = new int[st.countTokens()];
 
         int i =0;
         while ( st.hasMoreTokens() ) {
             s = st.nextToken();
             if ( s.equals("origin") )
-                fieldFlags[i] = 1;
+                intFieldFlags[i] = 1;
             else if ( s.equals("destination") )
-                fieldFlags[i] = 2;
+                intFieldFlags[i] = 2;
             else if ( s.equals("tripStartTime") )
-                fieldFlags[i] = 3;
+                intFieldFlags[i] = 3;
             else if ( s.equals("tripMode") )
-                fieldFlags[i] = 4;
+                stringFieldFlags[i] = 1;
             i++;
         }
         
-        int[] values = new int[4+1];
+        // define values arrays for 3 ints and 1 String
+        int[] intValues = new int[3+1];
+        String[] stringValues = new String[1+1];
                 
 
         
@@ -347,46 +359,66 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         try {
             while ( (s = in.readLine()) != null) {
                     
+                // get the int values
                 i = 0;
                 st = new StringTokenizer(s, ",\n\r");
                 while ( st.hasMoreTokens() ) {
                     String stringValue = st.nextToken();
-                    if ( fieldFlags[i] > 0 )
-                        values[fieldFlags[i]] = Integer.parseInt(stringValue);
+                    if ( intFieldFlags[i] > 0 )
+                        intValues[intFieldFlags[i]] = Integer.parseInt(stringValue);
                     i++;
                 }
                 
-                orig = values[1];
-                dest = values[2];
-                startTime = values[3];
-                mode = values[4];
+                // get the String values
+                i = 0;
+                st = new StringTokenizer(s, ",\n\r");
+                while ( st.hasMoreTokens() ) {
+                    String stringValue = st.nextToken();
+                    if ( stringFieldFlags[i] > 0 )
+                        stringValues[stringFieldFlags[i]] = stringValue;
+                    i++;
+                }
+                
+                orig = intValues[1];
+                dest = intValues[2];
+                startTime = intValues[3];
+                mode = stringValues[1];
+                total++;
+
+                int value = 0;
+                if ( totalModeFreqMap.containsKey(mode) )
+                    value = (Integer)totalModeFreqMap.get(mode);
+                totalModeFreqMap.put ( mode, (value+1) );
                 
                 // accumulate a frequency table of all trips within period by mode
                 if ( (startTime >= startHour && startTime <= endHour) ) {
-                    allTrips++;
                         
-                    int value = 0;
-                    if ( freqMap.containsKey(mode) )
-                        value = (Integer)freqMap.get(mode);
-                    freqMap.put ( mode, (value+1) );
+                    totalPeriod++;
+                    value = 0;
+                    if ( periodModeFreqMap.containsKey(mode) )
+                        value = (Integer)periodModeFreqMap.get(mode);
+                    periodModeFreqMap.put ( mode, (value+1) );
 
                 }
                 
                 
                 o = networkNodeIndexArray[orig];
                 d = networkNodeIndexArray[dest];
+                
+                
+                boolean validMode = false;
+                for (i=0; i < tripModes.size(); i++)
+                    if ( ((String)tripModes.get(i)).equalsIgnoreCase( mode ) ){
+                        validMode = true;
+                        break;
+                    }
                         
                 // accumulate all peak period highway mode trips
-                if ( (mode == ModeType.AUTODRIVER || mode == ModeType.AUTOPASSENGER) ) {
-                    
+                if ( validMode ) {
                     if ( (startTime >= startHour && startTime <= endHour) ) {
-
                         tripTable[o][d]++;
-                        tripCount++;
-                    
+                        totalValid++;
                     }
-
-                    allAutoTripCount++;
                 }
                 
             }
@@ -400,170 +432,50 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
             
 
 
-        logger.info (allAutoTripCount + " total auto network trips read from PT entire file");
-        logger.info (tripCount + " total auto network trips read from PT file for period " + startHour + " to " + endHour);
-        
-        Set keys = freqMap.keySet();
+        Set keys = periodModeFreqMap.keySet();
         Iterator it = keys.iterator();
         logger.info ( "");
-        logger.info ( "Frequency Table of PT " + startHour + " to " + endHour + " Period Trips by Mode");
-        logger.info ( String.format ( "%-6s %12s %16s %16s", "mode", "freq", "pct", "cumPct" ) );
+        logger.info ( "Mode Frequency Table of PT Trip File for " + startHour + " to " + endHour + " Period Trips:");
+        logger.info ( String.format ( "%-8s %12s %16s %16s", "mode", "freq", "pct", "cumPct" ) );
         logger.info ( "-----------------------------------------------------" );
         double cumPct = 0.0;
         while ( it.hasNext() ) {
-            mode = (Integer)it.next();
-            int value = (Integer)freqMap.get(mode);
-            double pct = value*100.0/allTrips;
+            mode = (String)it.next();
+            int value = (Integer)periodModeFreqMap.get(mode);
+            double pct = value*100.0/totalPeriod;
             cumPct += pct;
-            logger.info ( String.format ( "%-6s %12d %16.2f %16.2f", modeLabels[mode], value, pct, cumPct ) );
+            logger.info ( String.format ( "%-8s %12d %16.2f %16.2f", mode, value, pct, cumPct ) );
         }
         logger.info ( "-----------------------------------------------------" );
-        logger.info ( String.format ( "%-6s %12d %16.2f %16.2f", "Total", allTrips, 100.0, cumPct ) );
+        logger.info ( String.format ( "%-8s %12d %16.2f %16.2f", "Total", totalPeriod, 100.0, cumPct ) );
         logger.info ( "");
         
         
-        return tripTable;
-            
-    }
-    
-
-    private double[][] getWalkTransitTripTableFromPTList () {
         
-        int orig;
-        int dest;
-        int startTime;
-        int mode;
-        int o;
-        int d;
-        int allTripsCount=0;
-        int tripCount=0;
-        
-        
-        double[][] tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
-        
-
-        
-        // read the PT output person trip list file into a TableDataSet
-        OLD_CSVFileReader reader = new OLD_CSVFileReader();
-
-        String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
-        TableDataSet table = null;
-        try {
-            if ( ptFileName != null && ! ptFileName.equals("") ) {
-
-                table = reader.readFile(new File( ptFileName ), columnsToRead);
-
-                // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
-                for (int i=0; i < table.getRowCount(); i++) {
-                    
-                    orig = (int)table.getValueAt( i+1, "origin" );
-                    dest = (int)table.getValueAt( i+1, "destination" );
-                    startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-                    mode = (int)table.getValueAt( i+1, "tripMode" );
-                    
-                    o = networkNodeIndexArray[orig];
-                    d = networkNodeIndexArray[dest];
-                    
-                    // accumulate all peak period highway mode trips
-                    if ( (mode == ModeType.WALKTRANSIT || mode == ModeType.TRANSITPASSENGER) ) {
-                        
-                        if ( (startTime >= startHour && startTime <= endHour) ) {
-    
-                            tripTable[o][d]++;
-                            tripCount++;
-                        
-                        }
-
-                        allTripsCount++;
-                    }
-                    
-                }
-                
-                // done with trip list TableDataSet
-                table = null;
-
-            }
-            
-        } catch (IOException e) {
-            logger.error ( "", e );
+        keys = totalModeFreqMap.keySet();
+        it = keys.iterator();
+        logger.info ( "");
+        logger.info ( "Mode Frequency Table of PT Trip File for All Trips:");
+        logger.info ( String.format ( "%-8s %12s %16s %16s", "mode", "freq", "pct", "cumPct" ) );
+        logger.info ( "-----------------------------------------------------" );
+        cumPct = 0.0;
+        while ( it.hasNext() ) {
+            mode = (String)it.next();
+            int value = (Integer)totalModeFreqMap.get(mode);
+            double pct = value*100.0/total;
+            cumPct += pct;
+            logger.info ( String.format ( "%-8s %12d %16.2f %16.2f", mode, value, pct, cumPct ) );
         }
-
-
-        logger.info (allTripsCount + " total walk transit trips read from PT file");
-        logger.info (tripCount + " total walk transit trips read from PT file for period " + startHour +
-                " to " + endHour);
-
-        return tripTable;
-            
-    }
-    
-
-    private double[][] getDriveTransitTripTableFromPTList () {
+        logger.info ( "-----------------------------------------------------" );
+        logger.info ( String.format ( "%-8s %12d %16.2f %16.2f", "Total", total, 100.0, cumPct ) );
+        logger.info ( "");
         
-        int orig;
-        int dest;
-        int startTime;
-        int mode;
-        int o;
-        int d;
-        int allTripsCount=0;
-        int tripCount=0;
+        logger.info ( "");
+        logger.info ( totalPeriod + " trips read for " + startHour + " to " + endHour + " period triptable, " + totalValid + "of which were for specified modes:");
+        for (i=0; i < tripModes.size(); i++)
+            logger.info( (String)tripModes.get(i) );
         
         
-        double[][] tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
-        
-
-        
-        // read the PT output person trip list file into a TableDataSet
-        OLD_CSVFileReader reader = new OLD_CSVFileReader();
-
-        String[] columnsToRead = { "origin", "destination", "tripStartTime", "tripMode" };
-        TableDataSet table = null;
-        try {
-            if ( ptFileName != null && ! ptFileName.equals("") ) {
-
-                table = reader.readFile(new File( ptFileName ), columnsToRead);
-
-                // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
-                for (int i=0; i < table.getRowCount(); i++) {
-                    
-                    orig = (int)table.getValueAt( i+1, "origin" );
-                    dest = (int)table.getValueAt( i+1, "destination" );
-                    startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-                    mode = (int)table.getValueAt( i+1, "tripMode" );
-                    
-                    o = networkNodeIndexArray[orig];
-                    d = networkNodeIndexArray[dest];
-                    
-                    // accumulate all peak period highway mode trips
-                    if ( (mode == ModeType.DRIVETRANSIT || mode == ModeType.PASSENGERTRANSIT) ) {
-                        
-                        if ( (startTime >= startHour && startTime <= endHour) ) {
-    
-                            tripTable[o][d]++;
-                            tripCount++;
-                        
-                        }
-
-                        allTripsCount++;
-                    }
-                    
-                }
-                
-                // done with trip list TableDataSet
-                table = null;
-
-            }
-            
-        } catch (IOException e) {
-            logger.error ( "", e );
-        }
-
-
-        logger.info (allTripsCount + " total drive transit trips read from PT file");
-        logger.info (tripCount + " total drive transit trips read from PT file for period " + startHour +
-                " to " + endHour);
-
         return tripTable;
             
     }
