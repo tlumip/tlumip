@@ -31,6 +31,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.util.ResourceUtil;
+import com.pb.tlumip.ao.ApplicationOrchestrator;
 import com.pb.tlumip.ts.assign.Skims;
 import com.pb.tlumip.ts.assign.TransitSkimManager;
 import com.pb.tlumip.ts.transit.AuxTrNet;
@@ -769,17 +770,22 @@ public class TS {
         
         
         
-       
+/*       
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
 
-
         
         // run the benchmark highway assignment procedure
-//        tsMain.bench ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
+        tsMain.bench ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
+*/
+        
+
+        // run the benchmark highway assignment procedure
+        ApplicationOrchestrator ao = new ApplicationOrchestrator(null);
+        ao.runTSModel(tsMain.appRb, tsMain.globalRb);
         
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
