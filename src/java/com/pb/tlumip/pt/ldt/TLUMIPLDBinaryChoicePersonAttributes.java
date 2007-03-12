@@ -68,22 +68,9 @@ public class TLUMIPLDBinaryChoicePersonAttributes extends LDBinaryChoicePersonAt
 
         for(int i=0;i<h.persons.length;++i){
             p=h.persons[i];
-
-//            if(p.occupation== PTOccupation.AGRICULTURE)
-//                ag_farm_mine=true;
-//            else if(p.occupation==PTOccupation.ASSEMBLY)
-//                manufactur=true;
-//            else if(p.occupation==PTOccupation.TRANSPORT)
-//                trans_comm=true;
-//            else if(p.occupation==PTOccupation.NON_RETAIL_SALES)
-//                wholesale=true;
-//            else if(p.occupation==PTOccupation.BUSINESS_FINANCE)
-//                finance_re=true;
-//            else if(p.occupation==PTOccupation.PROFESSIONAL)
-//                prof_sci=true;
-//            else if(p.occupation!=PTOccupation.NONE)
-//                other=true;
-
+            
+            if (p.occupation == PTOccupation.PROFESSIONAL) prof_sci=true; 
+            
             if(p.age>=18 && p.student)
                 college=true;
         }
@@ -128,20 +115,7 @@ public class TLUMIPLDBinaryChoicePersonAttributes extends LDBinaryChoicePersonAt
         age=0;
         age_sq=0;
 
-//        if(p.occupation==PTOccupation.AGRICULTURE)
-//            occ_ag_farm_mine=1;
-//        else if(p.occupation==PTOccupation.ASSEMBLY)
-//            occ_manufactur=1;
-//        else if(p.occupation==PTOccupation.TRANSPORT)
-//            occ_trans_comm=1;
-//        else if(p.occupation==PTOccupation.NON_RETAIL_SALES)
-//            occ_wholesale=1;
-//        else if(p.occupation==PTOccupation.BUSINESS_FINANCE)
-//            occ_finance_re=1;
-//        else if(p.occupation==PTOccupation.PROFESSIONAL)
-//            occ_prof_sci=1;
-//        else if(p.occupation!=PTOccupation.NONE)
-//            occ_other=1;
+        if (p.occupation == PTOccupation.PROFESSIONAL) occ_prof_sci=1;        
 
         if(p.age>=18 && p.student)
             schtype_college=1;

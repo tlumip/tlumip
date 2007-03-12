@@ -62,12 +62,9 @@ public class TLUMIPLDInternalExternalPersonAttributes extends LDInternalExternal
         occMedical    = 0;
 
         if (p.employed) {
-//            if (p.occupation == PTOccupation.CONSTRUCTION) occConstruct  = 1;
-//            else if (p.occupation == PTOccupation.BUSINESS_FINANCE) occFinInsReal = 1;
-//            else if (p.occupation == PTOccupation.MILITARY) occPubAdmin   = 1;
-//            else if (p.occupation == PTOccupation.PRIMARY_ED) occEducation  = 1;
-//            else if (p.occupation == PTOccupation.POST_SECONDARY_ED) occEducation  = 1;
-//            else if (p.occupation == PTOccupation.HEALTH) occMedical    = 1;
+            if (p.occupation == PTOccupation.HEALTH)                 occMedical   = 1; 
+            else if (p.occupation == PTOccupation.POST_SECONDARY_ED) occEducation = 1;     
+            else if (p.occupation == PTOccupation.OTHER_ED)          occEducation = 1;                 
         }
     }
 
