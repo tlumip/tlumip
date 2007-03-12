@@ -18,7 +18,6 @@ package com.pb.tlumip.ha;
 
 import com.pb.tlumip.ld.DevelopmentType;
 import com.pb.tlumip.model.ModeChoiceLogsums;
-import com.pb.models.pecas.ChoiceModelOverflowException;
 import com.pb.models.pecas.*;
 
 import java.util.*;
@@ -134,8 +133,11 @@ public class Household extends EconomicUnit implements Cloneable {
             try {
                 chanceOfLeavingOrStaying = leaveOrStay.getChoiceProbabilities();
             } catch (ChoiceModelOverflowException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
+                throw new RuntimeException(e);
+            } catch (NoAlternativeAvailable e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         return chanceOfLeavingOrStaying[1];
