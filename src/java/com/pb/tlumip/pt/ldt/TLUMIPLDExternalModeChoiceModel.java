@@ -16,20 +16,26 @@
  */
 package com.pb.tlumip.pt.ldt;
 
+import static com.pb.tlumip.pt.ldt.LDExternalModeChoiceParameters.*;
+
 import java.util.ResourceBundle;
 
+import com.pb.common.model.ModelException;
+import com.pb.common.util.ResourceUtil;
+import com.pb.common.util.SeededRandom;
 import com.pb.models.pt.ldt.LDExternalModeChoiceModel;
 import com.pb.models.pt.ldt.LDTour;
 import com.pb.models.pt.ldt.LDTourModeType;
 
 /**
- * TODO Implement this class!!!
+ * Mode choice for long-distance tours with external destinations.  
  * 
  * @author Erhardt
  * @version 1.0 Mar 8, 2007
  *
  */
 public class TLUMIPLDExternalModeChoiceModel extends LDExternalModeChoiceModel {
+
 
     /**
      * Default constructor. 
@@ -47,27 +53,63 @@ public class TLUMIPLDExternalModeChoiceModel extends LDExternalModeChoiceModel {
      */
     public void initialize(ResourceBundle ptRb){
         super.initialize(ptRb);
+        readParameters(); 
+        
+        // read the distance matrix
+        String skimPath = ResourceUtil.getProperty(rb, "skims.path");
+        String[] fileNames = ResourceUtil.getArray(rb, "carOp.file");
+        distance = readTravelCost(skimPath + fileNames[1], "carOpDist");
     }
     
     
     /**
-     * TODO Implement this method!!!
-     *
+     * Draws a random number and monte carlo simulation chooses mode.
+     * 
+     * @param frequencies  The choice frequencies for the modes types.
+     * @return The chosen mode.
+     */
+    private LDTourModeType chooseModeFromFrequency(float[] frequencies) {
+
+        double random = SeededRandom.getRandom();
+        double culmFreq = 0;
+        LDTourModeType chosenMode = null;
+        LDTourModeType[] mode = LDTourModeType.values();
+        for (int i = 0; i < frequencies.length; ++i) {
+            culmFreq += frequencies[i];
+            if (random < culmFreq) {
+                chosenMode = mode[i];
+                break;
+            }
+        }
+
+        // Make sure a pattern was chosen
+        if (chosenMode == null) {
+            String message = "No external mode chosen with a cumulative " + "probability of " + culmFreq
+                    + " and a selector of " + random;
+            logger.error(message);
+            throw new ModelException(message);
+        }
+        return chosenMode;
+    }
+    
+    /**
+     * Choose a mode for the given tour.  
      */
     public LDTourModeType chooseMode(LDTour tour) {
 
-        LDTourModeType chosenMode = null; 
+        LDTourModeType chosenMode; 
+        chosenMode = chooseModeFromFrequency(parameters[tour.purpose.ordinal()]); 
         return chosenMode;
     }
 
     
     /**
-     * TODO Override in subclass.
      * 
      * @param tour The tour of interest.  
      * @return The distance from the home zone to the destination zone.  
      */
     public float getDistance(LDTour tour) {
-        return 0; 
+        float dist = distance.getValueAt(tour.homeTAZ, tour.destinationTAZ);
+        return dist; 
     }
 }
