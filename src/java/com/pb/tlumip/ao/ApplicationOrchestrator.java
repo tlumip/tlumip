@@ -515,10 +515,23 @@ public class ApplicationOrchestrator {
 
         String period = "peak";
         NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
-        nh.setRpcConfigFileName( configFileName );
-        ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
-        logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
-
+        
+        if ( nh.getStatus() ) {
+            logger.info ( nh.getClass().getCanonicalName() + " instance created, and handler is active." );
+        }
+        
+        try {
+            nh.setRpcConfigFileName( configFileName );
+            if ( ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
+                throw new Exception();
+            logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+        }
+        catch (Exception e) { 
+            logger.error ( "Exception caught setting up network in " + nh.getClass().getCanonicalName(), e );
+            System.exit(-1);
+        }
+        
+        
         ts.runHighwayAssignment( nh );
 
         period = "offpeak";
