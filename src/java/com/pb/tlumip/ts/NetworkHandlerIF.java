@@ -26,6 +26,7 @@ public interface NetworkHandlerIF {
     
     public void startDataServer();
     public void stopDataServer();
+    public boolean getStatus();
     public int setRpcConfigFileName(String configFile);
     public String getRpcConfigFileName();
     public int getNumCentroids();

@@ -77,6 +77,9 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     
     
+    public boolean getStatus() {
+        return true;
+    }
     
     public void startDataServer() {
         ns.startServer();
@@ -342,7 +345,7 @@ public class NetworkHandler implements NetworkHandlerIF {
         }
         catch (Exception e){
             
-            logger.info ( "error building " + timePeriod + " period highway network object in NetworkHandler.", e );
+            logger.error ( "error building " + timePeriod + " period highway network object in NetworkHandler.", e );
             return -1;
             
         }

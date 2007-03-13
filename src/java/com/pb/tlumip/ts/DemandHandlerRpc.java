@@ -92,7 +92,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         try {
             returnValue = (Boolean)rc.execute(HANDLER_NAME+".buildDemandObject", new Vector());
         } catch (RpcException e) {
-            logger.error( e );
+            logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
             logger.error(  e );
         }

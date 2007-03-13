@@ -624,7 +624,7 @@ public class TS {
     
     
     
-    public void setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+    public int setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
         
         String networkFileName = (String)appMap.get("d211.fileName");
         String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
@@ -681,7 +681,7 @@ public class TS {
         if ( walkSpeed != null ) propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
         
         
-        nh.buildNetworkObject ( timePeriod, propertyValues );
+        return nh.buildNetworkObject ( timePeriod, propertyValues );
         
     }
     
@@ -699,6 +699,7 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         setupNetwork( nhPeak, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
+        logger.info ("created " + period + " Highway NetworkHandler object: " + nhPeak.getNodeCount() + " highway nodes, " + nhPeak.getLinkCount() + " highway links." );
 
 //        nhPeak.startDataServer();
 
@@ -776,16 +777,16 @@ public class TS {
         tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+*/
 
         
         // run the benchmark highway assignment procedure
         tsMain.bench ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
-*/
         
 
         // run the benchmark highway assignment procedure
         ApplicationOrchestrator ao = new ApplicationOrchestrator(null);
-        ao.runTSModel(tsMain.appRb, tsMain.globalRb);
+//        ao.runTSModel(tsMain.appRb, tsMain.globalRb);
         
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
