@@ -654,6 +654,12 @@ public class TrRoute implements Serializable {
 		
 		for (int rte=0; rte < transitPath.length; rte++) {
             
+            int dummy = 0;
+            if ( rte == 243 ) {
+                dummy = 1;
+            }
+            
+            
 			for (int seg=0; seg < transitPath[rte].size(); seg++) {
 			    
                 try {
@@ -710,7 +716,7 @@ public class TrRoute implements Serializable {
                     
                 }
                 catch (Exception e) {
-                    logger.error ( "excption caught for rte=" + rte + ", seg=" + seg + ".", e );
+                    logger.error ( "exception caught for rte=" + rte + ", seg=" + seg + ".", e );
                     System.exit(-1);
                 }
                 
