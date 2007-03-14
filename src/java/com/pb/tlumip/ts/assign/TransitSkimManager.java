@@ -327,7 +327,20 @@ public class TransitSkimManager {
         
         // generate a set of output zip format peak walk transit skims
         Matrix[] skims = getTransitSkims ( period, accessMode );
-        for (int i=0; i < skims.length; i++) {
+        
+        if ( skims.length > transitSkimFileNames.length ) {
+            logger.warn( skims.length + " " + period + " " + accessMode + " skim tables were created, but only " + transitSkimFileNames.length + " filenames were specified in properties file:" );
+            for (int i=0; i < transitSkimFileNames.length; i++)
+                logger.warn ( "    " + transitSkimFileNames[i] );
+            logger.warn ( " using only the first " + transitSkimFileNames.length + " skim tables in Matrix[] skims." );
+        }
+        else if ( skims.length < transitSkimFileNames.length ) {
+            logger.error( "more skims files in properties file were requested than skim tables were produced." );
+            logger.error( skims.length + " " + period + " " + accessMode + " skim tables were created, but " + transitSkimFileNames.length + " filenames were specified in properties file:" );
+            System.exit(-9);
+        }
+        
+        for (int i=0; i < transitSkimFileNames.length; i++) {
             MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP, new File(transitSkimFileNames[i]));
             mw.writeMatrix( skims[i] );
         }
