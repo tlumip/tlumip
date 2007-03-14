@@ -17,18 +17,18 @@
 package com.pb.tlumip.ao;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
 import com.pb.common.rpc.DafNode;
+import com.pb.common.util.ResourceUtil;
 import com.pb.models.pecas.PIModel;
 import com.pb.tlumip.ald.ALDModel;
 import com.pb.tlumip.ct.CTModel;
 import com.pb.tlumip.ed.EDControl;
+import com.pb.tlumip.et.ETModel;
 import com.pb.tlumip.model.ModelComponent;
 import com.pb.tlumip.spg.SPGnew;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.TS;
-import com.pb.tlumip.et.ETModel;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,7 +47,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.net.MalformedURLException;
 
 /**
  * 
@@ -59,6 +59,7 @@ public class ApplicationOrchestrator {
 
     private static Logger logger = Logger.getLogger(ApplicationOrchestrator.class);
     private String rootDir;
+    private String baseScenarioName;
     private String scenarioName;
     private int t;
     private int baseYear;
@@ -72,8 +73,9 @@ public class ApplicationOrchestrator {
         this.rb = rb;
     }
 
-    public ApplicationOrchestrator(String rootDir, String scenarioName, int timeInterval, int baseYear){
+    public ApplicationOrchestrator(String rootDir, String baseScenarioName, String scenarioName, int timeInterval, int baseYear){
         this.rootDir = rootDir;
+        this.baseScenarioName = baseScenarioName;
         this.scenarioName = scenarioName;
         this.t = timeInterval;
         this.baseYear = baseYear;
@@ -96,6 +98,8 @@ public class ApplicationOrchestrator {
                 runLogWriter.write("# Filter values for properties files");
                 runLogWriter.newLine();
                 runLogWriter.write("BASEDIR=" + rootDir);
+                runLogWriter.newLine();
+                runLogWriter.write("BASE_SCENARIO_NAME=" + baseScenarioName);
                 runLogWriter.newLine();
                 runLogWriter.write("SCENARIO_NAME=" + scenarioName);
                 runLogWriter.newLine();
@@ -159,7 +163,9 @@ public class ApplicationOrchestrator {
 	            runLogWriter.newLine();
 	            runLogWriter.write("BASEDIR=" + rootDir);
 	            runLogWriter.newLine();
-	            runLogWriter.write("SCENARIO_NAME=" + scenarioName);
+                runLogWriter.write("BASE_SCENARIO_NAME=" + baseScenarioName);
+	            runLogWriter.newLine();
+                runLogWriter.write("SCENARIO_NAME=" + scenarioName);
 	            runLogWriter.newLine();
 	            runLogWriter.write("BASE_YEAR=" + baseYear);
 	            runLogWriter.newLine();
@@ -240,9 +246,9 @@ public class ApplicationOrchestrator {
         //files are spg.properties or pi.properties.  The 'findTemplateFileRecursively' method will strip off the
         //extra characters (like '1' or 'daf') and so the appPropFileName != appName but the appPropFileName
         //will be the one we want to use to locate and name the properties file.
-        String appPropFileName = appPropertyTemplateName.substring(0,appPropertyTemplateName.length()-19);  //subtract off the 'Template.properties'
+        String appPropFileName = appPropertyTemplateName.substring(0, appPropertyTemplateName.indexOf("Temp"));
         String outputPath = rootDir + "/scenario_" + scenarioName + "/t" + t + "/";
-        File appPropertyFile = null;
+        File appPropertyFile;
 
         if (appPropFileName.equalsIgnoreCase("global"))  appPropertyFile = new File(outputPath + "global.properties");
         else appPropertyFile = new File(outputPath + appPropFileName + "/" + appPropFileName + ".properties");
@@ -261,7 +267,7 @@ public class ApplicationOrchestrator {
         Iterator keys = runLogHashmap.keySet().iterator();
 	    while (keys.hasNext()) {
 	        String keyName = (String) keys.next();
-	        String hashmapValue = (String) runLogHashmap.get(keyName);
+	        String hashmapValue = runLogHashmap.get(keyName);
 	        
 	        //Build a pattern and compile it
 	        String patternStr = "@" + keyName + "@";
@@ -271,7 +277,7 @@ public class ApplicationOrchestrator {
 	        Enumeration propNames = appDefaultProps.propertyNames();
 	        while(propNames.hasMoreElements()){
 	            String propName = (String)propNames.nextElement();
-	            String tempStr = new String(appDefaultProps.getProperty(propName));
+	            String tempStr = appDefaultProps.getProperty(propName);
 	            Matcher matcher = pattern.matcher(tempStr);
 	            tempStr = matcher.replaceAll(hashmapValue);
 	            appDefaultProps.setProperty(propName, tempStr);
@@ -296,6 +302,13 @@ public class ApplicationOrchestrator {
 
 
     public File findTemplateFileRecursively(String appName) {
+        String templateSuffix;
+        if(appName.startsWith("ct") || appName.startsWith("et") || appName.startsWith("pi") || appName.startsWith("pt")){
+            if(t==1 || t==0) templateSuffix = "TemplateBase.properties";
+            else templateSuffix = "Template.properties";
+        }else{
+            templateSuffix = "Template.properties";
+        }
         File templateFile = null;
         String editedName = null;
         int i = t;  // look thru all of the tn directories for a property template file
@@ -305,23 +318,23 @@ public class ApplicationOrchestrator {
             //Deal with SPG exception (appName=spg1 or spg2 but template file is spgTemplate.properties for both)
             if(appName.startsWith("spg")){
                 editedName = "SPG";
-                templateFile = new File(templatePath + "spg/spgTemplate.properties");
+                templateFile = new File(templatePath + "spg/spg" + templateSuffix);
             //Deal with the PTDAF and PIDAF exceptions
             }else if (appName.endsWith("daf")) {
                 editedName = appName.substring(0,(appName.length()-3)).toUpperCase();
                 templateFile = new File(templatePath + appName.substring(0,(appName.length()-3)) +
-                        "/" + appName.substring(0,(appName.length()-3)) + "Template.properties");//subtract off the 'daf' part
+                        "/" + appName.substring(0,(appName.length()-3)) + templateSuffix);//subtract off the 'daf' part
             }else if (appName.endsWith("constrained")){ //for the piConstrained runs.
                 editedName = appName.substring(0,(appName.length()-11)).toUpperCase();
                 templateFile = new File(templatePath + appName.substring(0,(appName.length()-11)) +
-                        "/" + appName.substring(0,(appName.length()-11)) + "Template.properties");
+                        "/" + appName.substring(0,(appName.length()-11)) + templateSuffix);
             //Deal with the global exception
             } else if (appName.equalsIgnoreCase("global")) {
                 editedName="GLOBAL";
-                templateFile = new File(templatePath + "globalTemplate.properties");
+                templateFile = new File(templatePath + "global" + templateSuffix);
             } else{
                 editedName = appName.toUpperCase();
-                templateFile = new File(templatePath + appName + "/" + appName + "Template.properties");
+                templateFile = new File(templatePath + appName + "/" + appName + templateSuffix);
             }
 
             if(templateFile.exists()){
@@ -617,29 +630,29 @@ public class ApplicationOrchestrator {
             //Get command line arguments: Root Directory, Scenario Name, Application Name,
             //                            Time Interval and Start Node (for daf applications)
             String rootDir = args[0];
-            String scenarioName = args[1];
-            String appName = args[2];
-            int baseYear = Integer.parseInt(args[3]);
-            int t = Integer.parseInt(args[4]);
+            String baseScenarioName = args[1];
+            String scenarioName = args[2];
+            String appName = args[3];
+            int baseYear = Integer.parseInt(args[4]);
+            int t = Integer.parseInt(args[5]);
 
 
             logger.info("Root Directory: " + rootDir);
+            logger.info("Base Scenario Name: " + baseScenarioName);
             logger.info("Scenario Name: " + scenarioName);
             logger.info("App Name: " + appName);
             logger.info("Base Year: " + baseYear);
             logger.info("Time Interval: " + t);
-            String nodeName = null; //will only be passed in for daf applications
-            String configFileName = null; //will only be used for DAF3 applications.
-            if(args.length == 6 ){
-                nodeName = args[5];
-                logger.info("Node to Start Cluster: "+ nodeName);
-                configFileName = nodeName;
+            String configFileOrNodeName = null; //nodeName is for daf2, configFile is for daf3
+            if(args.length == 7 ){
+                configFileOrNodeName = args[6];
+                logger.info("Daf Property: "+ configFileOrNodeName);
             }
 
             //Create an ApplicationOrchestrator object that will handle creating the
             //resource bundle for the appropriate app, retrieve that resource bundle and
             //start the application, passing along the property bundle
-            ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,scenarioName,t,baseYear);
+            ApplicationOrchestrator ao = new ApplicationOrchestrator(rootDir,baseScenarioName, scenarioName,t,baseYear);
 
             //Before starting, AO needs to create the base year run log
             ao.createBaseYearPropFile();
@@ -698,13 +711,13 @@ public class ApplicationOrchestrator {
                 ao.runPIModel(baseYear,t,appRb,globalRb);
             }else if(appName.equalsIgnoreCase("PIDAF")){
                 logger.info("AO will now start PIDAF for simulation year " + (baseYear+t));
-                ao.runPIDAFModel(t,pathToAppRb,pathToGlobalRb,nodeName);
+                ao.runPIDAFModel(t,pathToAppRb,pathToGlobalRb,configFileOrNodeName);
             }else if (appName.equalsIgnoreCase("SPG2")){ //not a daf application
                 logger.info("AO will now start SPG2 for simulation year " + (baseYear+t));
                 ao.runSPG2Model(baseYear,t,appRb, globalRb);
             }else if(appName.equalsIgnoreCase("PTDAF")){
                 logger.info("AO will now start PTDAF for simulation year " + (baseYear+t));
-                ao.runPTDAFModel(t, pathToAppRb,pathToGlobalRb,nodeName);
+                ao.runPTDAFModel(t, pathToAppRb,pathToGlobalRb,configFileOrNodeName);
             }else if(appName.equalsIgnoreCase("CT")){
                 logger.info("AO will now start CT for simulation year " + (baseYear+t));
                 ao.runCTModel(t, appRb, globalRb);
@@ -716,7 +729,7 @@ public class ApplicationOrchestrator {
                 ao.runTSModel(appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TSDAF")){
                 logger.info("AO will now start TS DAF for simulation year " + (baseYear+t));
-                ao.runTSDAFModel(configFileName, pathToAppRb, pathToGlobalRb);
+                ao.runTSDAFModel(configFileOrNodeName, pathToAppRb, pathToGlobalRb);
             }else {
                 logger.fatal("AppName not recognized");
             }
