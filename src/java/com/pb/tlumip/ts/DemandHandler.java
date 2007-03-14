@@ -471,7 +471,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         logger.info ( "");
         
         logger.info ( "");
-        logger.info ( totalPeriod + " trips read for " + startHour + " to " + endHour + " period triptable, " + totalValid + "of which were for specified modes:");
+        logger.info ( totalPeriod + " trips read for " + startHour + " to " + endHour + " period triptable, " + totalValid + " of which were for specified modes:");
         for (i=0; i < tripModes.size(); i++)
             logger.info( (String)tripModes.get(i) );
         
