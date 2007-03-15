@@ -16,7 +16,6 @@
  */
 package com.pb.tlumip.et;
 
-import com.pb.tlumip.model.ModelComponent;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -31,7 +30,7 @@ import java.util.ResourceBundle;
  */
 public class ETModel extends ModelComponent {
 
-    Logger logger = Logger.getLogger("ETModel.class");
+    Logger logger = Logger.getLogger(ETModel.class);
 
 
     public ETModel(ResourceBundle appRb, ResourceBundle globalRb){

@@ -16,9 +16,8 @@
  */
 package com.pb.tlumip.ha;
 
-import com.pb.common.datastore.DataManager;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.tlumip.model.ModelComponent;
+import com.pb.common.datastore.DataManager;
 
 
 /**

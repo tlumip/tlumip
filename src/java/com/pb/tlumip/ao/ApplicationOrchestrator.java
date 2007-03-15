@@ -17,18 +17,15 @@
 package com.pb.tlumip.ao;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.rpc.DafNode;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pecas.PIModel;
+import com.pb.models.reference.ModelComponent;
 import com.pb.tlumip.ald.ALDModel;
 import com.pb.tlumip.ct.CTModel;
 import com.pb.tlumip.ed.EDControl;
 import com.pb.tlumip.et.ETModel;
-import com.pb.tlumip.model.ModelComponent;
 import com.pb.tlumip.spg.SPGnew;
-import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.TS;
+import com.pb.tlumip.ts.TSModelComponent;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -39,7 +36,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -310,7 +306,7 @@ public class ApplicationOrchestrator {
             templateSuffix = "Template.properties";
         }
         File templateFile = null;
-        String editedName = null;
+        String editedName;
         int i = t;  // look thru all of the tn directories for a property template file
                     // starting with the most recent t.
         while(i >= 0){
@@ -339,7 +335,7 @@ public class ApplicationOrchestrator {
 
             if(templateFile.exists()){
                 logger.info("Full Path to Template File: " + templateFile.getAbsolutePath());
-                String currentTemplate = (String) runLogHashmap.get(editedName + "_TEMPLATE_INTERVAL");
+                String currentTemplate = runLogHashmap.get(editedName + "_TEMPLATE_INTERVAL");
                 if(currentTemplate == null){ // no previous template was found.
                     runLogHashmap.put(editedName + "_TEMPLATE_INTERVAL", Integer.toString(i));
                     try {
@@ -386,7 +382,7 @@ public class ApplicationOrchestrator {
     public void writeRunParamsToPropertiesFile(String pathToAppRb, String pathToGlobalRb, String moduleName){
         File runParams = new File(rootDir + "/scenario_" + scenarioName + "/daf/RunParams.properties");
         logger.info("Writing 'scenarioName', 'baseYear, 'timeInterval', 'pathToRb' and 'pathToGlobalRb' into " + runParams.getAbsolutePath());
-        PrintWriter writer = null;
+        PrintWriter writer;
         try {
             writer = new PrintWriter(new FileWriter(runParams));
             writer.println("scenarioName=" + scenarioName);
@@ -396,7 +392,7 @@ public class ApplicationOrchestrator {
             writer.println("pathToGlobalRb=" + pathToGlobalRb);
             writer.println("pecasName=" + moduleName);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Cannot open the RunParams.txt file", e);
         }
         writer.close();
     }
@@ -404,7 +400,7 @@ public class ApplicationOrchestrator {
     public void writeRunParamsToPropertiesFile(String pathToAppRb, String pathToGlobalRb){
         File runParams = new File(rootDir + "/scenario_" + scenarioName + "/daf/RunParams.properties");
         logger.info("Writing 'scenarioName', 'baseYear, 'timeInterval', 'pathToRb' and 'pathToGlobalRb' into " + runParams.getAbsolutePath());
-        PrintWriter writer = null;
+        PrintWriter writer;
         try {
             writer = new PrintWriter(new FileWriter(runParams));
             writer.println("scenarioName=" + scenarioName);
@@ -413,33 +409,33 @@ public class ApplicationOrchestrator {
             writer.println("pathToAppRb=" + pathToAppRb);
             writer.println("pathToGlobalRb=" + pathToGlobalRb);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Cannot open the RunParams.txt file", e);
         }
         writer.close();
     }
     
     
-    public void runEDModel(int timeInterval, ResourceBundle appRb, int baseYear){
+    public void runEDModel(int baseYear, int timeInterval, ResourceBundle appRb){
 
         ModelComponent comp = new EDControl(baseYear,timeInterval,appRb);
-        comp.startModel(timeInterval);
+        comp.startModel(baseYear, timeInterval);
 
     }
 
-    public void runALDModel(int timeInterval, ResourceBundle appRb){
+    public void runALDModel(int baseYear, int timeInterval, ResourceBundle appRb){
         ModelComponent comp = new ALDModel();
         comp.setApplicationResourceBundle(appRb);
-        comp.startModel(timeInterval);
+        comp.startModel(baseYear, timeInterval);
     }
 
-    public void runSPG1Model(int baseYr, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runSPG1Model(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
-        String baseYear = Integer.toString(baseYr);
-        String currentYear = Integer.toString(baseYr + timeInterval);
+        String baseYearS = Integer.toString(baseYear);
+        String currentYear = Integer.toString(baseYear + timeInterval);
 
-        SPGnew spg = new SPGnew( appRb, globalRb, baseYear, currentYear );
+        SPGnew spg = new SPGnew( appRb, globalRb, baseYearS, currentYear );
 
-        spg.getHHAttributesFromPUMS(baseYear);
+        spg.getHHAttributesFromPUMS(baseYearS);
         spg.spg1(currentYear);
         spg.writeFrequencyTables();
         TableDataSet table = spg.sumHouseholdsByIncomeSize();
@@ -481,9 +477,9 @@ public class ApplicationOrchestrator {
         appRunner.run();
     }
 
-    public void runCTModel(int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+    public void runCTModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
         ModelComponent comp = new CTModel(appRb, globalRb);
-        comp.startModel(timeInterval);
+        comp.startModel(baseYear, timeInterval);
 
     }
 
@@ -493,121 +489,19 @@ public class ApplicationOrchestrator {
         et.startModel(timeInterval);
     }
 
-    public void runTSModel(ResourceBundle appRb, ResourceBundle globalRb){
-        runTSHwyAssign(appRb, globalRb, null);
-        runTSHwySkims(appRb, globalRb, null);
-        runTSAssignAndSkimTransit(appRb, globalRb, null);
+    public void runTSModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
+        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, null);
+        tsModel.startModel(baseYear, timeInterval);
     }
 
-    public void runTSDAFModel(String configFileName, String pathToAppRb, String pathToGlobalRb){
-        logger.info("Config file: " + configFileName);
-        logger.info("Config file exists? " + new File(configFileName).exists());
-        if ( configFileName != null ) {
-            try {
-                DafNode.getInstance().initClient(configFileName);
-            }
-            catch (MalformedURLException e) {
-                logger.error( "MalformedURLException caught initializing a DafNode.", e);
-            }
-            catch (Exception e) {
-                logger.error( "Exception caught initializing a DafNode.", e);
-            }
-
-        }
+    public void runTSDAFModel(int baseYear, int timeInterval, String pathToAppRb, String pathToGlobalRb, String configFileName){
         ResourceBundle appRb = findResourceBundle(pathToAppRb);
         ResourceBundle globalRb = findResourceBundle(pathToGlobalRb);
-        runTSHwyAssign(appRb, globalRb, configFileName);
-        runTSHwySkims(appRb, globalRb, null);
-        runTSAssignAndSkimTransit(appRb, globalRb, null);
-
+        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, configFileName);
+        tsModel.startModel(baseYear, timeInterval);
     }
 
-    private void runTSHwyAssign(ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
 
-		TS ts = new TS(appRb, globalRb);
-
-        String period = "peak";
-        NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
-        
-        if ( nh.getStatus() ) {
-            logger.info ( nh.getClass().getCanonicalName() + " instance created, and handler is active." );
-        }
-        
-        try {
-            nh.setRpcConfigFileName( configFileName );
-            if ( ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
-                throw new Exception();
-            logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
-        }
-        catch (Exception e) { 
-            logger.error ( "Exception caught setting up network in " + nh.getClass().getCanonicalName(), e );
-            System.exit(-1);
-        }
-        
-        
-        ts.runHighwayAssignment( nh );
-
-        period = "offpeak";
-        NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
-        nhop.setRpcConfigFileName( configFileName );
-        ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
-        logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
-
-		ts.runHighwayAssignment( nhop );
-
-    }
-
-    private void runTSHwySkims(ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
-
-        TS ts = new TS(appRb, globalRb);
-
-        String period = "peak";
-        NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
-        nh.setRpcConfigFileName( configFileName );
-        ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
-        logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
-
-        ts.loadAssignmentResults ( nh, appRb);
-
-        ts.writeHighwaySkimMatrices ( nh, 'a' );
-
-        period = "offpeak";
-        NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
-        nhop.setRpcConfigFileName( configFileName );
-        ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
-        logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
-
-        ts.loadAssignmentResults ( nhop, appRb);
-
-        ts.writeHighwaySkimMatrices ( nhop, 'a' );
-
-    }
-
-    private void runTSAssignAndSkimTransit(ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
-
-        TS ts = new TS(appRb, globalRb);
-
-        String period = "peak";
-        NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
-        nh.setRpcConfigFileName( configFileName );
-        ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
-        logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
-
-        ts.loadAssignmentResults ( nh, appRb);
-
-        ts.assignAndSkimTransit ( nh,  appRb, globalRb );
-
-        period = "offpeak";
-        NetworkHandlerIF nhop = NetworkHandler.getInstance(configFileName);
-        nhop.setRpcConfigFileName( configFileName );
-        ts.setupNetwork( nhop, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
-        logger.info ("created " + period + " Highway NetworkHandler object: " + nhop.getNodeCount() + " highway nodes, " + nhop.getLinkCount() + " highway links." );
-
-        ts.loadAssignmentResults ( nhop, appRb);
-
-        ts.assignAndSkimTransit ( nhop, appRb, globalRb );
-
-    }
 
 
     private void logAppRun(String appName){
@@ -699,10 +593,10 @@ public class ApplicationOrchestrator {
             }
             if(appName.equalsIgnoreCase("ED")){
                 logger.info("AO will now start ED for simulation year " + (baseYear+t));
-                ao.runEDModel(t, appRb, baseYear);
+                ao.runEDModel(baseYear, t, appRb);
             }else if(appName.equalsIgnoreCase("ALD")){
                 logger.info("AO will now start ALD for simulation year " + (baseYear+t));
-                ao.runALDModel(t, appRb);
+                ao.runALDModel(baseYear, t, appRb);
             }else if(appName.equalsIgnoreCase("SPG1")){
                 logger.info("AO will now start SPG1 for simulation year " + (baseYear+t));
                 ao.runSPG1Model(baseYear,t,appRb, globalRb);
@@ -720,16 +614,16 @@ public class ApplicationOrchestrator {
                 ao.runPTDAFModel(t, pathToAppRb,pathToGlobalRb,configFileOrNodeName);
             }else if(appName.equalsIgnoreCase("CT")){
                 logger.info("AO will now start CT for simulation year " + (baseYear+t));
-                ao.runCTModel(t, appRb, globalRb);
+                ao.runCTModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("ET")){
                 logger.info("AO will now start ET for simulation year " + (baseYear+t));
                 ao.runETModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TS")){
                 logger.info("AO will now start TS for simulation year " + (baseYear+t));
-                ao.runTSModel(appRb, globalRb);
+                ao.runTSModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TSDAF")){
                 logger.info("AO will now start TS DAF for simulation year " + (baseYear+t));
-                ao.runTSDAFModel(configFileOrNodeName, pathToAppRb, pathToGlobalRb);
+                ao.runTSDAFModel(baseYear, t, pathToAppRb, pathToGlobalRb, configFileOrNodeName);
             }else {
                 logger.fatal("AppName not recognized");
             }

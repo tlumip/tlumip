@@ -16,10 +16,6 @@
  */
 package com.pb.tlumip.pt.ldt;
 
-import static com.pb.tlumip.pt.ldt.LDExternalDestinationChoiceParameters.*;
-
-import java.util.ResourceBundle;
-
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.model.ConcreteAlternative;
@@ -30,6 +26,10 @@ import com.pb.models.pt.ldt.LDSkimsInMemory;
 import com.pb.models.pt.ldt.LDTour;
 import com.pb.models.pt.ldt.LDTourModeType;
 import com.pb.models.pt.ldt.ParameterReader;
+import static com.pb.tlumip.pt.ldt.LDExternalDestinationChoiceParameters.SIZECOUNT;
+import static com.pb.tlumip.pt.ldt.LDExternalDestinationChoiceParameters.TIME;
+
+import java.util.ResourceBundle;
 
 /**
  * 
@@ -99,7 +99,7 @@ public class TLUMIPLDExternalDestinationModel  extends LDExternalDestinationMode
         volume = new float[externalStationData.getRowCount()]; 
         model = new LogitModel("LD External Destination Choice");
 
-        for (int i = 0; i <= externalStationData.getRowCount(); i++) {
+        for (int i = 0; i < externalStationData.getRowCount(); i++) {
             Integer taz = new Integer((int) externalStationData.getValueAt(i + 1, "ID"));
             volume[i] = externalStationData.getValueAt(i + 1, "Vehicles");
             alts[i] = new ConcreteAlternative(taz.toString(), taz);

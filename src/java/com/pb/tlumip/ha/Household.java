@@ -16,12 +16,25 @@
  */
 package com.pb.tlumip.ha;
 
+import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.Alternative;
+import com.pb.models.pecas.ChoiceModelOverflowException;
+import com.pb.models.pecas.DevelopmentTypeInterface;
+import com.pb.models.pecas.DisaggregateActivity;
+import com.pb.models.pecas.EconomicUnit;
+import com.pb.models.pecas.FixedUtilityAlternative;
+import com.pb.models.pecas.LogitModel;
+import com.pb.models.pecas.NoAlternativeAvailable;
+import com.pb.models.pecas.PeakAutoSkims;
 import com.pb.tlumip.ld.DevelopmentType;
 import com.pb.tlumip.model.ModeChoiceLogsums;
-import com.pb.models.pecas.*;
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 /* import com.pb.tlumip.model.TravelPreferencesInterface;
 import com.pb.tlumip.ld.DevelopmentType;
@@ -135,7 +148,7 @@ public class Household extends EconomicUnit implements Cloneable {
             } catch (ChoiceModelOverflowException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
-            } catch (NoAlternativeAvailable e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }

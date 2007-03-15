@@ -16,7 +16,6 @@
  */
 package com.pb.tlumip.ld;
 
-import com.pb.tlumip.model.ModelComponent;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.AbstractTAZ;
 import com.pb.models.pecas.DevelopmentTypeInterface;

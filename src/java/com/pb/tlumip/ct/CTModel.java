@@ -16,13 +16,13 @@
  */
 package com.pb.tlumip.ct;
 
+import com.pb.common.util.ResourceUtil;
+import com.pb.models.reference.ModelComponent;
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.util.Date;
 import java.util.ResourceBundle;
-import org.apache.log4j.Logger;
-
-import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.model.ModelComponent;
 
 /**
  * @author donnellyr
@@ -46,7 +46,7 @@ public class CTModel extends ModelComponent {
         logger.info("random seed: " + randomSeed);
     }
 	
-	public void startModel(int t){
+	public void startModel(int baseYear, int t){
         Date start = new Date();
 
         // This translates PI output (annual dollar flows at beta zone level) to
@@ -74,7 +74,7 @@ public class CTModel extends ModelComponent {
 	
 	public static void main (String args[]){
 		CTModel ctModel = new CTModel(ResourceUtil.getResourceBundle("ct"), ResourceUtil.getResourceBundle("global"));
-		ctModel.startModel(1);	
+		ctModel.startModel(1990, 1);	
 	}
 
 }

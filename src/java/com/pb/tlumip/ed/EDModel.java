@@ -16,13 +16,11 @@
  */
 package com.pb.tlumip.ed;
 
-import com.pb.tlumip.model.ModelComponent;
 import com.pb.common.util.ResourceUtil;
-
-import java.util.Vector;
-import java.util.Hashtable;
-
 import org.apache.log4j.Logger;
+
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * EDModel implements...

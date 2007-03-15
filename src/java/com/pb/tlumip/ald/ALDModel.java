@@ -17,7 +17,7 @@
 package com.pb.tlumip.ald;
 
 import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.model.ModelComponent;
+import com.pb.models.reference.ModelComponent;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -36,7 +36,7 @@ public class ALDModel extends ModelComponent {
     Logger logger = Logger.getLogger("pb.com.tlumip.ald");
     Process process;
 
-    public void startModel(int t){
+    public void startModel(int baseYear, int t){
         
         
         /*  first we need to create the Strings that ALD uses as runtime arguments
@@ -90,7 +90,7 @@ public class ALDModel extends ModelComponent {
     public static void main(String[] args) {
         ALDModel ald = new ALDModel();
         ald.setApplicationResourceBundle(ResourceUtil.getResourceBundle("ald"));
-        ald.startModel(1);
+        ald.startModel(1990, 1);
     }
 
 }
