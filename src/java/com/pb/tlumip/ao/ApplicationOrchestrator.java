@@ -486,7 +486,7 @@ public class ApplicationOrchestrator {
     public void runETModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
         ETModel et = new ETModel(appRb, globalRb);
 
-        et.startModel(timeInterval);
+        et.startModel(baseYear, timeInterval);
     }
 
     public void runTSModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){

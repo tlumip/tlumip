@@ -16,6 +16,7 @@
  */
 package com.pb.tlumip.et;
 
+import com.pb.models.reference.ModelComponent;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -38,7 +39,7 @@ public class ETModel extends ModelComponent {
 
     }
 
-	public void startModel(int intTimeInterval){
+	public void startModel(int baseYear, int intTimeInterval){
         logger.info("Starting ET Model.");
         logger.info("Finishing ET Model.");
     }

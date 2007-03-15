@@ -20,6 +20,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.AbstractTAZ;
 import com.pb.models.pecas.DevelopmentTypeInterface;
 import com.pb.models.pecas.GridCell;
+import com.pb.models.reference.ModelComponent;
 
 /**
  * LDModel implements...
@@ -60,6 +61,6 @@ public class LDModel extends ModelComponent {
     }
 
 
-    public void startModel(int timeInterval){};
+    public void startModel(int baseYear, int timeInterval){};
 
 }

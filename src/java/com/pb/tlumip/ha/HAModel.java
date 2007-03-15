@@ -18,6 +18,7 @@ package com.pb.tlumip.ha;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datastore.DataManager;
+import com.pb.models.reference.ModelComponent;
 
 
 /**
@@ -28,8 +29,7 @@ import com.pb.common.datastore.DataManager;
  *
  */
 
-public class HAModel extends ModelComponent
-{
+public class HAModel extends ModelComponent {
     static TableDataSet reloadTableFromScratchFromTextFile(String path, String tableName) {
         //TODO rewrite this method to use com.pb.common.TableDataSet instead of Borland.TableDataSet
 //        TableDataSet table = dm.getTableDataSet(tableName);
@@ -47,5 +47,5 @@ public class HAModel extends ModelComponent
 
     static public final DataManager dm = new DataManager();
 
-    public void startModel(int timeInterval){};
+    public void startModel(int baseYear, int timeInterval){};
 }

@@ -17,6 +17,7 @@
 package com.pb.tlumip.ed;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.models.reference.ModelComponent;
 import org.apache.log4j.Logger;
 
 import java.util.Hashtable;
@@ -126,7 +127,7 @@ public class EDModel extends ModelComponent {
       }
 
 
-        public void startModel(int timeInterval){
+        public void startModel(int baseYear, int timeInterval){
             try {
                 int currentYear = (Integer.parseInt(ResourceUtil.getProperty(appRb,"baseYear"))
                         + timeInterval);
