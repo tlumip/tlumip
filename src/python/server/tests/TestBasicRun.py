@@ -21,5 +21,4 @@ def testLargeLogFileRetrieval():
     assert logInfo.startswith("15-Mar-07 14:07, INFO, com.pb.tlumip.ao.ApplicationOrchestrator, Root Directory: /models/tlumip")
     file("LargeLogfile.txt", 'w').write(logInfo)
 
-#testLargeLogFileRetrieval()
-#webbrowser.open_new("LargeLogfile.txt")
+
