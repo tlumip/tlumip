@@ -19,9 +19,6 @@ currentlyRunningCommands = {}
 
 import sys, os, GetTrueIP, subprocess
 from RequestServer import RequestServer
-
-# Test flag determined by existence of "test" file in local directory:
-test = os.path.exists("test")
 CommandExecutionDaemonServerXMLRPCPort = 8947
 
 #determine if this is a windows box or not
@@ -58,10 +55,14 @@ class CommandExecutionDaemonServer(RequestServer):
     del currentlyRunningCommands[pid]
     return result
 
-  def getPIDList(self):
-    return "unimplimented"
+  def getProcessList(self):
+    if windows:
+    	proc = ["tasklist"]
+    else:
+    	proc = ["ps"]
+    return subprocess.Popen(proc, stdout=subprocess.PIPE).communicate()[0]
 
 if __name__ == "__main__":
   ipAddress = GetTrueIP.trueIP()
-  print "Test is " + str(test)
+  print "CommandExecutionDaemonServer running"
   CommandExecutionDaemonServer(ipAddress)
