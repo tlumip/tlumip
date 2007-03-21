@@ -14,8 +14,6 @@ import mrGUI_AOServer_Communication as AOS
 import GetTrueIP_VPN
 import wx,os
 
-ID_OPENSCENARIO = 1000
-ID_NEWSCENARIO = 1001
 
 #sys.stderr = file(Globs.stdErrFile,'w')
 #sys.stdout = file(Globs.stdOutFile,'w')
@@ -74,33 +72,38 @@ class Framer(wx.Frame):
     wx.Frame.__init__(self, parent, id, title, size=size)
     self.Bind(wx.EVT_CLOSE,self.onWindowClose)
     
-    MenuBar = wx.MenuBar()
+    menuBar = wx.MenuBar()
+    scenarioMenu = wx.Menu()
     
     #a list of scenarios retrieved from AOServer
-    scenarioList = []
-    #a mapping of scenario names to wxId's
-    scenarioDict = {}
-    scenarioMenu = wx.Menu()
+    scenarioList = ['pleaseWork', 'bingBangBoom', 'oh $#%@$?!']
+    self.openSubmenu = wx.Menu()
     for scenario in scenarioList:
-      scenarioDict[scenario] = wx.NewId()
-      scenarioMenu.Append(-1, scenario)
-      wx.EVT_MENU(self, scenarioDict[scenario],setCurentScenario())
+      item = self.openSubmenu.Append(-1, scenario)
+      self.Bind(wx.EVT_MENU, self.onOpenSubmenuItem, item)
     
-      
+    new = scenarioMenu.Append(-1, "&New")
+    self.Bind(wx.EVT_MENU, self.onNew, new)
+    scenarioMenu.AppendMenu(-1, "&Open...", self.openSubmenu)
     
+    menuBar.Append(scenarioMenu,"&Scenario")
+    self.SetMenuBar(menuBar)
     
-    fileMenu = wx.Menu()
-    fileMenu.AppendMenu(ID_OPENSCENARIO, "&Open", scenarioMenu)
-    #fileMenu.Append(
-    
-    #MenuBar.Append(fileMenu,"&File")
-    
+  def onNew(self, event):
+    print "selected 'new' from Scenario menu"
+    frame = NewScenarioFrame()
+    frame.Show()
   
-  
+  def onOpenSubmenuItem(self, event):
+    item = self.openSubmenu.FindItemById(event.GetId())
+    itemText = item.GetText()
+    print "selected scenario '%s' for opening from Scenario menu" % itemText
     
   def onWindowClose(self, event):
     closeWindowActions()
     os._exit(0)
+
+
 
 def closeWindowActions():
   for name in mip.logPIDs:
@@ -138,28 +141,24 @@ class scenarioState(object):
 
 
 #############Create new scenario popup box####################
-class createNewScenarioFrame(wx.Frame):
-  def __init__(self, parent, scenarioList):  #, size = (40,70)
+class NewScenarioFrame(wx.Frame):
+  def __init__(self):  #, size = (40,70)
     wx.Frame.__init__(self, None, -1, "Create New Scenario")
     
-    
-    mip.lblnameSN = wx.StaticText(mip.basicBox, -1, 'Scenario Name',wx.Point(10,43))
-    mip.editnameSN = wx.TextCtrl(mip.basicBox, 10, '', wx.Point(88, 40), wx.Size(225,-1))  
-    wx.EVT_TEXT(mip.basicBox, 10, setScenarioName)
-    #Base year radio button
-    mip.baseYearRB = wx.RadioBox(mip.basicBox, 13, "Base Year", wx.Point(10,101), wx.DefaultSize,['1990','2000'], 2, wx.RA_SPECIFY_COLS)
-    wx.EVT_RADIOBOX(mip.basicBox, 13, setBaseYear)
-    if mip.state['baseYear'] == '':
-      mip.state['baseYear'] = '1990'
-    #Scenario years text
-    mip.scenarioYearsText = wx.StaticText(mip.basicBox, -1, 'Scenario Years',wx.Point(200,75),style=wx.ALIGN_CENTER)
-    wx.EVT_TEXT(mip.basicBox, 12, setScenarioYears)   
-  
-  def setScenarioName(event):
-    self.state['scenarioName'] = event.GetString()
-  
-  
+    panel = wx.Panel(self, -1)
 
+    #Scenario name text box    
+    wx.StaticText(panel, -1, 'Scenario Name', wx.Point(12,43))
+    self.scenarioName = wx.TextCtrl(panel, 10, '', wx.Point(88, 40), wx.Size(225,-1))
+
+    #Base year radio button
+    self.rb = wx.RadioBox(panel, -1, "Base Year", wx.Point(10,101), wx.DefaultSize, ['1990','2000'], 2, wx.RA_SPECIFY_COLS)
+    
+    #Scenario years text
+    wx.StaticText(panel, -1, 'Scenario Years', wx.Point(200,101))
+    self.sc = wx.SpinCtrl(panel, -1, '', wx.Point(200,120), wx.Size(50,-1))
+    self.sc.SetRange(1,30)
+    self.sc.SetValue(1)
 
 
 ###############################################################
