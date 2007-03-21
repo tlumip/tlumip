@@ -2,102 +2,24 @@
 """
 ApplicationOrchestratorServer.py
 
-(Description of what it does)
-
-To run in test mode, create a file or directory named "test".
-
-To do:
+    This class acts as a gateway between a user and a cluster of machines.
+    It will handle tasks such as creating a new scenario on the cluster,
+    running model components, checking on status of model runs, and
+    running sql queries on output data
 
 """
 import sys, os, GetTrueIP, subprocess, csv, glob
 from xmlrpclib import ServerProxy as ServerConnection
-from threading import Thread, Timer
-import threading
 import time
 from RequestServer import RequestServer
-# Test flag determined by existence of "test" file in local directory:
-test = os.path.exists("test")
+
+""" Global Variables """
 ApplicationOrchestratorServerXMLRPCPort = 8942
-modelRunnerIpAddress = None
-modelRunnerXmlrpcPort = None
-modelRunner = None
-modelComponentThread = None
-modelComponentReturnValue = -1
-
-isBusy = False
-isBusyDAF = False
-processID = None
-fileWatcherPID = None
-busyStatus = "NOT_BUSY"
-
-#determine if this is a windows box or not
-windows = False
-if 'OS' in os.environ:
-  windows = "windows" in os.environ['OS'].lower()
-
-#set working directory
-if windows:
-  os.chdir('Z:\\')
-
-#pythonScriptDirectory = "/model_data/TLUMIP/runtime"
 pythonScriptDirectory = "/models"
 scenarioDirectory = "/models/tlumip/scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
-#runtimeDirectory = r"Z:\models\tlumip\runtime"
 runtimeDirectory = "/models/tlumip/runtime"
-#runtimeDirectory = "c:/zshare/models/tlumip/runtime"
-#runtimeDirectory = "/model_data/TLUMIP/runtime"
 
-def processStatusChecker():
-  global modelComponentThread
-  if not modelComponentThread.isAlive():
-     #time.sleep(15)
-     #print modelRunner.simulationComplete("Process is stopped")
-     stdOutText = file('Stdout.txt')
-     antText = stdOutText.read()
-     stdOutText.close()
-     returnText =  modelRunner.simulationComplete(antText)
-  else:
-    threading.Timer(2.0, processStatusChecker).start()
-
-
-def convertRetValueToString(retVal):
-    if(retVal == 0):
-      return "SUCCEEDED"
-    else:
-      return "FAILED"
-
-
-def runApplication(rootDir, scenarioName, appName, baseYear, t):
-  global processID
-  global isBusy
-  isBusy = True
-  try:
-    global modelComponentReturnValue, modelRunnerIpAddress
-    #targetName = "run" + appName.upper()
-    targetName = "run" + appName
-    scenArg = "-DscenarioName=" + scenarioName
-    baseArg = "-DbaseYear=" + baseYear
-    tArg = "-Dt=" + str(t)
-    ipArg = "-DremoteServerIp=" + modelRunnerIpAddress
-    if windows:
-      antCallList = ["ant", "-f", os.path.normpath(os.path.join(runtimeDirectory, "tlumip.xml")),targetName, scenArg, baseArg, tArg, ipArg]
-    else:
-      antCallList = ["ant", "-f", "--noconfig", os.path.normpath(os.path.join(runtimeDirectory, "tlumip.xml")),targetName, scenArg, baseArg, tArg, ipArg]
-    #antCallList = ["ant", "-f", os.path.normpath(os.path.join(runtimeDirectory, "osmp.xml")),'runLogServerTest', scenArg]
-    print " ".join(antCallList)
-#    modelComponentReturnValue = os.system(" ".join(antCallList))
-    stdOutText = file('Stdout.txt','w')
-    modelCommand = subprocess.Popen(" ".join(antCallList),shell=True,stdout=stdOutText,stderr=subprocess.STDOUT)
-    #modelCommand = subprocess.Popen(" ".join(antCallList),stdout=stdOutText,stderr=subprocess.STDOUT)
-    processID = modelCommand.pid
-    modelCommand.wait()
-    stdOutText.close()
-    print "Application Return Value: " + str(modelComponentReturnValue)
-  except:
-    print 'Exception in runApplication!'
-  processID = None
-  isBusy = False
 
 class ApplicationOrchestratorServer(RequestServer):
   """
@@ -216,6 +138,78 @@ class ApplicationOrchestratorServer(RequestServer):
     return "unimplemented"
 
   ###################################################
+
+import threading
+global modelComponentThread
+#determine if this is a windows box or not
+windows = False
+if 'OS' in os.environ:
+  windows = "windows" in os.environ['OS'].lower()
+
+#set working directory
+if windows:
+  os.chdir('Z:\\')
+
+modelRunnerIpAddress = None
+modelRunnerXmlrpcPort = None
+modelRunner = None
+modelComponentThread = None
+modelComponentReturnValue = -1
+
+  def processStatusChecker():
+      if not modelComponentThread.isAlive():
+         #time.sleep(15)
+         #print modelRunner.simulationComplete("Process is stopped")
+         stdOutText = file('Stdout.txt')
+         antText = stdOutText.read()
+         stdOutText.close()
+         returnText =  modelRunner.simulationComplete(antText)
+      else:
+        threading.Timer(2.0, processStatusChecker).start()
+
+    def convertRetValueToString(retVal):
+        if(retVal == 0):
+            return "SUCCEEDED"
+        else:
+           return "FAILED"
+
+
+def runApplication(rootDir, scenarioName, appName, baseYear, t):
+  global processID
+  global isBusy
+  isBusy = True
+  try:
+    global modelComponentReturnValue, modelRunnerIpAddress
+    #targetName = "run" + appName.upper()
+    targetName = "run" + appName
+    scenArg = "-DscenarioName=" + scenarioName
+    baseArg = "-DbaseYear=" + baseYear
+    tArg = "-Dt=" + str(t)
+    ipArg = "-DremoteServerIp=" + modelRunnerIpAddress
+    if windows:
+      antCallList = ["ant", "-f", os.path.normpath(os.path.join(runtimeDirectory, "tlumip.xml")),targetName, scenArg, baseArg, tArg, ipArg]
+    else:
+      antCallList = ["ant", "-f", "--noconfig", os.path.normpath(os.path.join(runtimeDirectory, "tlumip.xml")),targetName, scenArg, baseArg, tArg, ipArg]
+    #antCallList = ["ant", "-f", os.path.normpath(os.path.join(runtimeDirectory, "osmp.xml")),'runLogServerTest', scenArg]
+    print " ".join(antCallList)
+#    modelComponentReturnValue = os.system(" ".join(antCallList))
+    stdOutText = file('Stdout.txt','w')
+    modelCommand = subprocess.Popen(" ".join(antCallList),shell=True,stdout=stdOutText,stderr=subprocess.STDOUT)
+    #modelCommand = subprocess.Popen(" ".join(antCallList),stdout=stdOutText,stderr=subprocess.STDOUT)
+    processID = modelCommand.pid
+    modelCommand.wait()
+    stdOutText.close()
+    print "Application Return Value: " + str(modelComponentReturnValue)
+  except:
+    print 'Exception in runApplication!'
+  processID = None
+  isBusy = False
+
+  isBusy = False
+isBusyDAF = False
+processID = None
+fileWatcherPID = None
+busyStatus = "NOT_BUSY"
 
   def killApplication(self):
     global processID,windows
