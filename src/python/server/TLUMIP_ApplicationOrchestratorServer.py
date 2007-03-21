@@ -138,7 +138,7 @@ class ApplicationOrchestratorServer(RequestServer):
     return "unimplemented"
 
   ###################################################
-
+"""
 import threading
 global modelComponentThread
 #determine if this is a windows box or not
@@ -335,13 +335,13 @@ busyStatus = "NOT_BUSY"
       elif isBusyDAF:
         busyStatus = busyStatus + ":A hanging file watcher running via Application Orchestrator Server!"
     return busyStatus
-
+"""
 if __name__ == "__main__":
   ipAddress = GetTrueIP.trueIP()
-  print "Test is " + str(test)
-  if test:
-    ipAddress = "localhost"
-    print "ApplicationOrchestratorServer in test mode"
-    runApplication("/models/osmp", "test", "spg1", "2000", 1)
-
+  #print "Test is " + str(test)
+  #if test:
+  #  ipAddress = "localhost"
+  #  print "ApplicationOrchestratorServer in test mode"
+  #  runApplication("/models/osmp", "test", "spg1", "2000", 1)
+  print "ApplicationOrchestratorServer running"
   ApplicationOrchestratorServer(ipAddress)
