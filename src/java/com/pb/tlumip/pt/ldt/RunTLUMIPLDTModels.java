@@ -17,6 +17,8 @@
 package com.pb.tlumip.pt.ldt;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.models.pt.TazManager;
+import com.pb.models.pt.TourDestinationChoiceLogsumManager;
 import com.pb.models.pt.ldt.RunLDTModels;
 import com.pb.tlumip.pt.PTOccupation;
 
@@ -64,6 +66,32 @@ public class RunTLUMIPLDTModels extends RunLDTModels {
         RunLDTModels rm = new RunTLUMIPLDTModels();
         rm.setResourceBundles(appRb, globalRb);
 
+        // initialize the taz manager and destination choice logsums
+        String tazManagerClassName = ResourceUtil.getProperty(appRb,"taz.manager.class");
+        Class tazManagerClass = null;
+        tazManager = null;
+        try {
+            tazManagerClass = Class.forName(tazManagerClassName);
+            tazManager = (TazManager) tazManagerClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            logger.fatal(tazManagerClass + " not found");
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            logger.fatal("Can't Instantiate of TazManager of type "+tazManagerClass.getName());
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            logger.fatal("Illegal Access of TazManager of type "+tazManagerClass.getName());
+            throw new RuntimeException(e);
+        }
+
+        String tazClassName = appRb.getString("taz.class");
+        tazManager.setTazClassName(tazClassName);
+        tazManager.readData(globalRb, appRb);
+
+        dcLogsums = new TourDestinationChoiceLogsumManager(tazManager
+                .getExternalNumberArrayZeroIndexed());
+        
+        // run the models
         if (runHHLevelModels)   rm.runHouseholdLevelModels(runAutoOwnership, writeOnlyLDTHH);
         if (runTourLevelModels) rm.startModel(2000, 1);
 
