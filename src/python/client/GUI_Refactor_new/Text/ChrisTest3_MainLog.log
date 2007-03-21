@@ -1,0 +1,1466 @@
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Root Directory: /models/tlumip
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Scenario Name: ChrisTest3
+25-Jan-2007 13:52:27, GAIA, [main], INFO, App Name: ed
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Base Year: 1990
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Time Interval: 1
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Looking for the run log in /models/tlumip/scenario_ChrisTest3/t1/
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Reading in Run Log from year 1 and updating the RunLog HashMap: 
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ao/aoTemplate.properties
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ao/ao.properties
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/globalTemplate.properties
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/global.properties
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ed/edTemplate.properties
+25-Jan-2007 13:52:27, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ed/ed.properties
+25-Jan-2007 13:52:27, GAIA, [main], INFO, AO will now start ED for simulation year 1991
+25-Jan-2007 13:52:28, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:52:30, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:52:30, GAIA, [main], INFO, Beginning submodel 'FinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OGSLO value: 7725999.616428201
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OGHE value: 1158857.721987944
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OGLE value: 2794245.2149330163
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OGCO value: 1448579.2997579393
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: ORI value: 1546780.161860113
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: ONRI value: 901933.5505145929
+25-Jan-2007 13:52:30, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:30, GAIA, [main], INFO, Beginning submodel 'SalesToFinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDACC value: 417.998733812773
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDAGM value: 2938.6119058676622
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDCOM value: 4039.1398237328594
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDCON value: 5928.317386449807
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDELE value: 1276.7217281830917
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDFIR value: 6055.095574417762
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDFOO value: 4270.430263529041
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDGOV value: 5289.502708135341
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDHEA value: 5720.984416899403
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDHIED value: 1304.5819878350183
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDHOME value: 70.8713370535046
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDLOED value: 2193.3664135344416
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDLUM value: 2545.08
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDOD value: 9521.311605094586
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDOND value: 2279.352452745257
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDPERS value: 4726.395391416173
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDPULP value: 2014.39365125008
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDRET value: 8651.909455369241
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDWHO value: 3582.9098733662267
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFDTRA value: 2315.478996113702
+25-Jan-2007 13:52:30, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:30, GAIA, [main], INFO, Beginning submodel 'Output_Linear' of type 'Linear'
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OACC value: 832.9977720337803
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OAGM value: 4511.551066662761
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OCOM value: 6946.739201038121
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OCON value: 8693.981884593528
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OELE value: 1934.1961479777115
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFIR value: 14194.041488737543
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OFOO value: 5733.380688455266
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OGOV value: 6702.156121823334
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OHEA value: 6762.0068250935765
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OHIED value: 1538.0060949654232
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OHOME value: 83.66731
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OLOED value: 2194.3162
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OLUM value: 11473.997601916633
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OOD value: 12842.068167443247
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OOND value: 4169.000312530219
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OPERS value: 6871.030454881582
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OPULP value: 2487.5550097855585
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: ORET value: 10431.415614549795
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OWHO value: 8657.474833454933
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OTRA value: 5324.364622756996
+25-Jan-2007 13:52:30, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:30, GAIA, [main], INFO, Beginning submodel 'Employment' of type 'SimpleFunctions'
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPACC value: 20402.288422004083
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPAGM value: 94369.82466532958
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPCOM value: 23732.56841020004
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPCON value: 78667.10224670474
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPELE value: 29375.18840526998
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPFIRP value: 174047.2897529659
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPFOO value: 25260.174135029494
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPGOV value: 120120.54780253048
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPHEA value: 101671.97156286547
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPHIED value: 45710.163927870046
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPHOME value: 14049.355309989767
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPLOED value: 90960.76538460498
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPLUM value: 62306.40523952668
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPDG value: 67007.81311713792
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPOND value: 30917.202932418437
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPPAP value: 8956.581876490318
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPPERS value: 231070.26338164715
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPRET value: 286039.1055276907
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPTRAN value: 53636.80046581726
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: OEMPWHO value: 84616.11847194906
+25-Jan-2007 13:52:30, GAIA, [main], INFO, 		variable: ON value: 1642917.5310380422
+25-Jan-2007 13:52:31, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:31, GAIA, [main], INFO, Beginning submodel 'Labor Income' of type 'SimpleFunctions'
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIACC value: 267959.23363012675
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIAGR value: 446957.66983713664
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLICOM value: 1077831.77602174
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLICON value: 2455846.1472300617
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIELE value: 1278962.0092984692
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIFIR value: 4486402.933294785
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIFOO value: 763591.801978106
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIGOV value: 4635480.495944675
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIHEA value: 3294432.406631308
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIHIED value: 960770.5907118061
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIHOM value: 80160.66821553269
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLILOED value: 2049070.1900562306
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLILUM value: 2156807.4900219347
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIOD value: 2546994.576908722
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIOND value: 913495.6622884875
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIPER value: 2317728.278137032
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIPULP value: 466707.1485684261
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIRET value: 4503638.073722442
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLITRA value: 1729422.236411024
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLIWHO value: 2871227.2745184493
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLI value: 3.9303486663426496E7
+25-Jan-2007 13:52:31, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:31, GAIA, [main], INFO, Beginning submodel 'Other Stuff' of type 'SimpleFunctions'
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OUNRT value: 6.981186400935643
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: ONLI value: 2.0232722117944114E7
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OLFPR value: 0.6132089935132897
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: ORSV value: 8.7697854E7
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: ONRSV value: 1.22336048E8
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OYP value: 5.327936815794411E7
+25-Jan-2007 13:52:31, GAIA, [main], INFO, 		variable: OPOP value: 2887068.333862634
+25-Jan-2007 13:52:31, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:31, GAIA, [main], INFO, Splitting data for application specific outputs
+25-Jan-2007 13:52:31, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPIMini.csv
+25-Jan-2007 13:52:31, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 13:52:33, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:52:33, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:52:33, GAIA, [main], INFO, Beginning submodel 'Capitalists' of type 'SimpleFunctions'
+25-Jan-2007 13:52:33, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:33, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:33, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:33, GAIA, [main], INFO, 		variable: Capitalists value: 8.103724692809734E8
+25-Jan-2007 13:52:33, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:34, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:52:34, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:52:34, GAIA, [main], INFO, Beginning submodel 'GovernmentInstitutions' of type 'SimpleFunctions'
+25-Jan-2007 13:52:34, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:34, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:34, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:34, GAIA, [main], INFO, 		variable: GovInst value: 1.6747176099980178E9
+25-Jan-2007 13:52:34, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:34, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/ConstructionSplitter.csv
+25-Jan-2007 13:52:34, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ConstructionDollarDataForALD.csv
+25-Jan-2007 13:52:36, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:52:36, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:52:36, GAIA, [main], INFO, Beginning submodel 'ResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 13:52:36, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:36, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:36, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:36, GAIA, [main], INFO, 		variable: Residential Construction value: 2.358368829787596E9
+25-Jan-2007 13:52:36, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:37, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:52:37, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:52:37, GAIA, [main], INFO, Beginning submodel 'NonResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 13:52:37, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:52:37, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:52:37, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:52:37, GAIA, [main], INFO, 		variable: Non-residential Construction value: 1.166489458078061E9
+25-Jan-2007 13:52:37, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:52:37, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPISectors.csv
+25-Jan-2007 13:52:37, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 13:52:37, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoSPGSectors.csv
+25-Jan-2007 13:52:37, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/JobDataForSPG1.csv
+25-Jan-2007 13:52:38, GAIA, [main], INFO, Writing the application name and the timeInterval for run into the run log
+25-Jan-2007 13:52:38, GAIA, [main], INFO, ed is complete
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Root Directory: /models/tlumip
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Scenario Name: ChrisTest3
+25-Jan-2007 13:55:33, GAIA, [main], INFO, App Name: ed
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Base Year: 1990
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Time Interval: 1
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Looking for the run log in /models/tlumip/scenario_ChrisTest3/t1/
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Reading in Run Log from year 1 and updating the RunLog HashMap: 
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ao/aoTemplate.properties
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ao/ao.properties
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/globalTemplate.properties
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/global.properties
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ed/edTemplate.properties
+25-Jan-2007 13:55:33, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ed/ed.properties
+25-Jan-2007 13:55:33, GAIA, [main], INFO, AO will now start ED for simulation year 1991
+25-Jan-2007 13:55:35, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:55:36, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:55:36, GAIA, [main], INFO, Beginning submodel 'FinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OGSLO value: 7725999.616428201
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OGHE value: 1158857.721987944
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OGLE value: 2794245.2149330163
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OGCO value: 1448579.2997579393
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: ORI value: 1546780.161860113
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: ONRI value: 901933.5505145929
+25-Jan-2007 13:55:36, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:36, GAIA, [main], INFO, Beginning submodel 'SalesToFinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDACC value: 417.998733812773
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDAGM value: 2938.6119058676622
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDCOM value: 4039.1398237328594
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDCON value: 5928.317386449807
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDELE value: 1276.7217281830917
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDFIR value: 6055.095574417762
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDFOO value: 4270.430263529041
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDGOV value: 5289.502708135341
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDHEA value: 5720.984416899403
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDHIED value: 1304.5819878350183
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDHOME value: 70.8713370535046
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDLOED value: 2193.3664135344416
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDLUM value: 2545.08
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDOD value: 9521.311605094586
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDOND value: 2279.352452745257
+25-Jan-2007 13:55:36, GAIA, [main], INFO, 		variable: OFDPERS value: 4726.395391416173
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OFDPULP value: 2014.39365125008
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OFDRET value: 8651.909455369241
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OFDWHO value: 3582.9098733662267
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OFDTRA value: 2315.478996113702
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Beginning submodel 'Output_Linear' of type 'Linear'
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OACC value: 832.9977720337803
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OAGM value: 4511.551066662761
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OCOM value: 6946.739201038121
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OCON value: 8693.981884593528
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OELE value: 1934.1961479777115
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OFIR value: 14194.041488737543
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OFOO value: 5733.380688455266
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OGOV value: 6702.156121823334
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OHEA value: 6762.0068250935765
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OHIED value: 1538.0060949654232
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OHOME value: 83.66731
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLOED value: 2194.3162
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLUM value: 11473.997601916633
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OOD value: 12842.068167443247
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OOND value: 4169.000312530219
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OPERS value: 6871.030454881582
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OPULP value: 2487.5550097855585
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: ORET value: 10431.415614549795
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OWHO value: 8657.474833454933
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OTRA value: 5324.364622756996
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Beginning submodel 'Employment' of type 'SimpleFunctions'
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPACC value: 20402.288422004083
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPAGM value: 94369.82466532958
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPCOM value: 23732.56841020004
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPCON value: 78667.10224670474
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPELE value: 29375.18840526998
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPFIRP value: 174047.2897529659
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPFOO value: 25260.174135029494
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPGOV value: 120120.54780253048
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPHEA value: 101671.97156286547
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPHIED value: 45710.163927870046
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPHOME value: 14049.355309989767
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPLOED value: 90960.76538460498
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPLUM value: 62306.40523952668
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPDG value: 67007.81311713792
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPOND value: 30917.202932418437
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPPAP value: 8956.581876490318
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPPERS value: 231070.26338164715
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPRET value: 286039.1055276907
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPTRAN value: 53636.80046581726
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OEMPWHO value: 84616.11847194906
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: ON value: 1642917.5310380422
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Beginning submodel 'Labor Income' of type 'SimpleFunctions'
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIACC value: 267959.23363012675
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIAGR value: 446957.66983713664
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLICOM value: 1077831.77602174
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLICON value: 2455846.1472300617
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIELE value: 1278962.0092984692
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIFIR value: 4486402.933294785
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIFOO value: 763591.801978106
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIGOV value: 4635480.495944675
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIHEA value: 3294432.406631308
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIHIED value: 960770.5907118061
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIHOM value: 80160.66821553269
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLILOED value: 2049070.1900562306
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLILUM value: 2156807.4900219347
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIOD value: 2546994.576908722
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIOND value: 913495.6622884875
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIPER value: 2317728.278137032
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIPULP value: 466707.1485684261
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIRET value: 4503638.073722442
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLITRA value: 1729422.236411024
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLIWHO value: 2871227.2745184493
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLI value: 3.9303486663426496E7
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Beginning submodel 'Other Stuff' of type 'SimpleFunctions'
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OUNRT value: 6.981186400935643
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: ONLI value: 2.0232722117944114E7
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OLFPR value: 0.6132089935132897
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: ORSV value: 8.7697854E7
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: ONRSV value: 1.22336048E8
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OYP value: 5.327936815794411E7
+25-Jan-2007 13:55:37, GAIA, [main], INFO, 		variable: OPOP value: 2887068.333862634
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Splitting data for application specific outputs
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPIMini.csv
+25-Jan-2007 13:55:37, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 13:55:38, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:55:38, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:55:38, GAIA, [main], INFO, Beginning submodel 'Capitalists' of type 'SimpleFunctions'
+25-Jan-2007 13:55:38, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:38, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:38, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:38, GAIA, [main], INFO, 		variable: Capitalists value: 8.103724692809734E8
+25-Jan-2007 13:55:38, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:39, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:55:39, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:55:39, GAIA, [main], INFO, Beginning submodel 'GovernmentInstitutions' of type 'SimpleFunctions'
+25-Jan-2007 13:55:39, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:39, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:39, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:39, GAIA, [main], INFO, 		variable: GovInst value: 1.6747176099980178E9
+25-Jan-2007 13:55:39, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:39, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/ConstructionSplitter.csv
+25-Jan-2007 13:55:39, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ConstructionDollarDataForALD.csv
+25-Jan-2007 13:55:40, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:55:40, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:55:40, GAIA, [main], INFO, Beginning submodel 'ResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 13:55:40, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:40, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:40, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:40, GAIA, [main], INFO, 		variable: Residential Construction value: 2.358368829787596E9
+25-Jan-2007 13:55:40, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:41, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:55:41, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:55:41, GAIA, [main], INFO, Beginning submodel 'NonResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 13:55:41, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:55:41, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:55:41, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:55:41, GAIA, [main], INFO, 		variable: Non-residential Construction value: 1.166489458078061E9
+25-Jan-2007 13:55:41, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:55:41, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPISectors.csv
+25-Jan-2007 13:55:41, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 13:55:41, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoSPGSectors.csv
+25-Jan-2007 13:55:41, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/JobDataForSPG1.csv
+25-Jan-2007 13:55:42, GAIA, [main], INFO, Writing the application name and the timeInterval for run into the run log
+25-Jan-2007 13:55:42, GAIA, [main], INFO, ed is complete
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Root Directory: /models/tlumip
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Scenario Name: ChrisTest3
+25-Jan-2007 13:59:37, GAIA, [main], INFO, App Name: ed
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Base Year: 1990
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Time Interval: 1
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Looking for the run log in /models/tlumip/scenario_ChrisTest3/t1/
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Reading in Run Log from year 1 and updating the RunLog HashMap: 
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ao/aoTemplate.properties
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ao/ao.properties
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/globalTemplate.properties
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/global.properties
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ed/edTemplate.properties
+25-Jan-2007 13:59:37, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ed/ed.properties
+25-Jan-2007 13:59:37, GAIA, [main], INFO, AO will now start ED for simulation year 1991
+25-Jan-2007 13:59:39, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:59:40, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:59:40, GAIA, [main], INFO, Beginning submodel 'FinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OGSLO value: 7725999.616428201
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OGHE value: 1158857.721987944
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OGLE value: 2794245.2149330163
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OGCO value: 1448579.2997579393
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: ORI value: 1546780.161860113
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: ONRI value: 901933.5505145929
+25-Jan-2007 13:59:40, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:40, GAIA, [main], INFO, Beginning submodel 'SalesToFinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDACC value: 417.998733812773
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDAGM value: 2938.6119058676622
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDCOM value: 4039.1398237328594
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDCON value: 5928.317386449807
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDELE value: 1276.7217281830917
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDFIR value: 6055.095574417762
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDFOO value: 4270.430263529041
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDGOV value: 5289.502708135341
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDHEA value: 5720.984416899403
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDHIED value: 1304.5819878350183
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDHOME value: 70.8713370535046
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDLOED value: 2193.3664135344416
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDLUM value: 2545.08
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDOD value: 9521.311605094586
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDOND value: 2279.352452745257
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDPERS value: 4726.395391416173
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDPULP value: 2014.39365125008
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDRET value: 8651.909455369241
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDWHO value: 3582.9098733662267
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFDTRA value: 2315.478996113702
+25-Jan-2007 13:59:40, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:40, GAIA, [main], INFO, Beginning submodel 'Output_Linear' of type 'Linear'
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OACC value: 832.9977720337803
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OAGM value: 4511.551066662761
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OCOM value: 6946.739201038121
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OCON value: 8693.981884593528
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OELE value: 1934.1961479777115
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFIR value: 14194.041488737543
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OFOO value: 5733.380688455266
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OGOV value: 6702.156121823334
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OHEA value: 6762.0068250935765
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OHIED value: 1538.0060949654232
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OHOME value: 83.66731
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OLOED value: 2194.3162
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OLUM value: 11473.997601916633
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OOD value: 12842.068167443247
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OOND value: 4169.000312530219
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OPERS value: 6871.030454881582
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OPULP value: 2487.5550097855585
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: ORET value: 10431.415614549795
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OWHO value: 8657.474833454933
+25-Jan-2007 13:59:40, GAIA, [main], INFO, 		variable: OTRA value: 5324.364622756996
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Beginning submodel 'Employment' of type 'SimpleFunctions'
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPACC value: 20402.288422004083
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPAGM value: 94369.82466532958
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPCOM value: 23732.56841020004
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPCON value: 78667.10224670474
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPELE value: 29375.18840526998
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPFIRP value: 174047.2897529659
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPFOO value: 25260.174135029494
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPGOV value: 120120.54780253048
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPHEA value: 101671.97156286547
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPHIED value: 45710.163927870046
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPHOME value: 14049.355309989767
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPLOED value: 90960.76538460498
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPLUM value: 62306.40523952668
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPDG value: 67007.81311713792
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPOND value: 30917.202932418437
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPPAP value: 8956.581876490318
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPPERS value: 231070.26338164715
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPRET value: 286039.1055276907
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPTRAN value: 53636.80046581726
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OEMPWHO value: 84616.11847194906
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: ON value: 1642917.5310380422
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Beginning submodel 'Labor Income' of type 'SimpleFunctions'
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIACC value: 267959.23363012675
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIAGR value: 446957.66983713664
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLICOM value: 1077831.77602174
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLICON value: 2455846.1472300617
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIELE value: 1278962.0092984692
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIFIR value: 4486402.933294785
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIFOO value: 763591.801978106
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIGOV value: 4635480.495944675
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIHEA value: 3294432.406631308
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIHIED value: 960770.5907118061
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIHOM value: 80160.66821553269
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLILOED value: 2049070.1900562306
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLILUM value: 2156807.4900219347
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIOD value: 2546994.576908722
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIOND value: 913495.6622884875
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIPER value: 2317728.278137032
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIPULP value: 466707.1485684261
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIRET value: 4503638.073722442
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLITRA value: 1729422.236411024
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLIWHO value: 2871227.2745184493
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLI value: 3.9303486663426496E7
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Beginning submodel 'Other Stuff' of type 'SimpleFunctions'
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OUNRT value: 6.981186400935643
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: ONLI value: 2.0232722117944114E7
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OLFPR value: 0.6132089935132897
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: ORSV value: 8.7697854E7
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: ONRSV value: 1.22336048E8
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OYP value: 5.327936815794411E7
+25-Jan-2007 13:59:41, GAIA, [main], INFO, 		variable: OPOP value: 2887068.333862634
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Splitting data for application specific outputs
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPIMini.csv
+25-Jan-2007 13:59:41, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 13:59:42, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:59:42, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:59:42, GAIA, [main], INFO, Beginning submodel 'Capitalists' of type 'SimpleFunctions'
+25-Jan-2007 13:59:42, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:42, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:42, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:42, GAIA, [main], INFO, 		variable: Capitalists value: 8.103724692809734E8
+25-Jan-2007 13:59:42, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:42, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:59:42, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:59:42, GAIA, [main], INFO, Beginning submodel 'GovernmentInstitutions' of type 'SimpleFunctions'
+25-Jan-2007 13:59:42, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:42, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:42, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:42, GAIA, [main], INFO, 		variable: GovInst value: 1.6747176099980178E9
+25-Jan-2007 13:59:43, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:43, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/ConstructionSplitter.csv
+25-Jan-2007 13:59:43, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ConstructionDollarDataForALD.csv
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Beginning submodel 'ResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 13:59:44, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:44, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:44, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:44, GAIA, [main], INFO, 		variable: Residential Construction value: 2.358368829787596E9
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Beginning submodel 'NonResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 13:59:44, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 13:59:44, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 13:59:44, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 13:59:44, GAIA, [main], INFO, 		variable: Non-residential Construction value: 1.166489458078061E9
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPISectors.csv
+25-Jan-2007 13:59:44, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 13:59:45, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoSPGSectors.csv
+25-Jan-2007 13:59:45, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/JobDataForSPG1.csv
+25-Jan-2007 13:59:45, GAIA, [main], INFO, Writing the application name and the timeInterval for run into the run log
+25-Jan-2007 13:59:45, GAIA, [main], INFO, ed is complete
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Root Directory: /models/tlumip
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Scenario Name: ChrisTest3
+25-Jan-2007 14:35:58, GAIA, [main], INFO, App Name: ed
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Base Year: 1990
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Time Interval: 1
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Looking for the run log in /models/tlumip/scenario_ChrisTest3/t1/
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Reading in Run Log from year 1 and updating the RunLog HashMap: 
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ao/aoTemplate.properties
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ao/ao.properties
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/globalTemplate.properties
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/global.properties
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ed/edTemplate.properties
+25-Jan-2007 14:35:58, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ed/ed.properties
+25-Jan-2007 14:35:58, GAIA, [main], INFO, AO will now start ED for simulation year 1991
+25-Jan-2007 14:35:59, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:36:01, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:36:01, GAIA, [main], INFO, Beginning submodel 'FinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OGSLO value: 7725999.616428201
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OGHE value: 1158857.721987944
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OGLE value: 2794245.2149330163
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OGCO value: 1448579.2997579393
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: ORI value: 1546780.161860113
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: ONRI value: 901933.5505145929
+25-Jan-2007 14:36:01, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:01, GAIA, [main], INFO, Beginning submodel 'SalesToFinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDACC value: 417.998733812773
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDAGM value: 2938.6119058676622
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDCOM value: 4039.1398237328594
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDCON value: 5928.317386449807
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDELE value: 1276.7217281830917
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDFIR value: 6055.095574417762
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDFOO value: 4270.430263529041
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDGOV value: 5289.502708135341
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDHEA value: 5720.984416899403
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDHIED value: 1304.5819878350183
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDHOME value: 70.8713370535046
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDLOED value: 2193.3664135344416
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDLUM value: 2545.08
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDOD value: 9521.311605094586
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDOND value: 2279.352452745257
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDPERS value: 4726.395391416173
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDPULP value: 2014.39365125008
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDRET value: 8651.909455369241
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDWHO value: 3582.9098733662267
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFDTRA value: 2315.478996113702
+25-Jan-2007 14:36:01, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:01, GAIA, [main], INFO, Beginning submodel 'Output_Linear' of type 'Linear'
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OACC value: 832.9977720337803
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OAGM value: 4511.551066662761
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OCOM value: 6946.739201038121
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OCON value: 8693.981884593528
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OELE value: 1934.1961479777115
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFIR value: 14194.041488737543
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OFOO value: 5733.380688455266
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OGOV value: 6702.156121823334
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OHEA value: 6762.0068250935765
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OHIED value: 1538.0060949654232
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OHOME value: 83.66731
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OLOED value: 2194.3162
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OLUM value: 11473.997601916633
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OOD value: 12842.068167443247
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OOND value: 4169.000312530219
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OPERS value: 6871.030454881582
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OPULP value: 2487.5550097855585
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: ORET value: 10431.415614549795
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OWHO value: 8657.474833454933
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OTRA value: 5324.364622756996
+25-Jan-2007 14:36:01, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:01, GAIA, [main], INFO, Beginning submodel 'Employment' of type 'SimpleFunctions'
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPACC value: 20402.288422004083
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPAGM value: 94369.82466532958
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPCOM value: 23732.56841020004
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPCON value: 78667.10224670474
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPELE value: 29375.18840526998
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPFIRP value: 174047.2897529659
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPFOO value: 25260.174135029494
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPGOV value: 120120.54780253048
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPHEA value: 101671.97156286547
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPHIED value: 45710.163927870046
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPHOME value: 14049.355309989767
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPLOED value: 90960.76538460498
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPLUM value: 62306.40523952668
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPDG value: 67007.81311713792
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPOND value: 30917.202932418437
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPPAP value: 8956.581876490318
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPPERS value: 231070.26338164715
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPRET value: 286039.1055276907
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPTRAN value: 53636.80046581726
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: OEMPWHO value: 84616.11847194906
+25-Jan-2007 14:36:01, GAIA, [main], INFO, 		variable: ON value: 1642917.5310380422
+25-Jan-2007 14:36:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:02, GAIA, [main], INFO, Beginning submodel 'Labor Income' of type 'SimpleFunctions'
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIACC value: 267959.23363012675
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIAGR value: 446957.66983713664
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLICOM value: 1077831.77602174
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLICON value: 2455846.1472300617
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIELE value: 1278962.0092984692
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIFIR value: 4486402.933294785
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIFOO value: 763591.801978106
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIGOV value: 4635480.495944675
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIHEA value: 3294432.406631308
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIHIED value: 960770.5907118061
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIHOM value: 80160.66821553269
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLILOED value: 2049070.1900562306
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLILUM value: 2156807.4900219347
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIOD value: 2546994.576908722
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIOND value: 913495.6622884875
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIPER value: 2317728.278137032
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIPULP value: 466707.1485684261
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIRET value: 4503638.073722442
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLITRA value: 1729422.236411024
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLIWHO value: 2871227.2745184493
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLI value: 3.9303486663426496E7
+25-Jan-2007 14:36:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:02, GAIA, [main], INFO, Beginning submodel 'Other Stuff' of type 'SimpleFunctions'
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OUNRT value: 6.981186400935643
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: ONLI value: 2.0232722117944114E7
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OLFPR value: 0.6132089935132897
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: ORSV value: 8.7697854E7
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: ONRSV value: 1.22336048E8
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OYP value: 5.327936815794411E7
+25-Jan-2007 14:36:02, GAIA, [main], INFO, 		variable: OPOP value: 2887068.333862634
+25-Jan-2007 14:36:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:02, GAIA, [main], INFO, Splitting data for application specific outputs
+25-Jan-2007 14:36:02, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPIMini.csv
+25-Jan-2007 14:36:02, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:36:03, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:36:03, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:36:03, GAIA, [main], INFO, Beginning submodel 'Capitalists' of type 'SimpleFunctions'
+25-Jan-2007 14:36:03, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:03, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:03, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:03, GAIA, [main], INFO, 		variable: Capitalists value: 8.103724692809734E8
+25-Jan-2007 14:36:03, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:04, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:36:04, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:36:04, GAIA, [main], INFO, Beginning submodel 'GovernmentInstitutions' of type 'SimpleFunctions'
+25-Jan-2007 14:36:04, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:04, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:04, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:04, GAIA, [main], INFO, 		variable: GovInst value: 1.6747176099980178E9
+25-Jan-2007 14:36:04, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:04, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/ConstructionSplitter.csv
+25-Jan-2007 14:36:04, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ConstructionDollarDataForALD.csv
+25-Jan-2007 14:36:05, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:36:05, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:36:05, GAIA, [main], INFO, Beginning submodel 'ResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:36:05, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:05, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:05, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:05, GAIA, [main], INFO, 		variable: Residential Construction value: 2.358368829787596E9
+25-Jan-2007 14:36:05, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:06, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:36:06, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:36:06, GAIA, [main], INFO, Beginning submodel 'NonResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:36:06, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:36:06, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:36:06, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:36:06, GAIA, [main], INFO, 		variable: Non-residential Construction value: 1.166489458078061E9
+25-Jan-2007 14:36:06, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:36:06, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPISectors.csv
+25-Jan-2007 14:36:06, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:36:06, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoSPGSectors.csv
+25-Jan-2007 14:36:06, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/JobDataForSPG1.csv
+25-Jan-2007 14:36:07, GAIA, [main], INFO, Writing the application name and the timeInterval for run into the run log
+25-Jan-2007 14:36:07, GAIA, [main], INFO, ed is complete
+25-Jan-2007 14:38:58, GAIA, [main], INFO, Root Directory: /models/tlumip
+25-Jan-2007 14:38:58, GAIA, [main], INFO, Scenario Name: ChrisTest3
+25-Jan-2007 14:38:58, GAIA, [main], INFO, App Name: ed
+25-Jan-2007 14:38:58, GAIA, [main], INFO, Base Year: 1990
+25-Jan-2007 14:38:58, GAIA, [main], INFO, Time Interval: 1
+25-Jan-2007 14:38:58, GAIA, [main], INFO, Looking for the run log in /models/tlumip/scenario_ChrisTest3/t1/
+25-Jan-2007 14:38:59, GAIA, [main], INFO, Reading in Run Log from year 1 and updating the RunLog HashMap: 
+25-Jan-2007 14:38:59, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ao/aoTemplate.properties
+25-Jan-2007 14:38:59, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ao/ao.properties
+25-Jan-2007 14:38:59, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/globalTemplate.properties
+25-Jan-2007 14:38:59, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/global.properties
+25-Jan-2007 14:38:59, GAIA, [main], INFO, Full Path to Template File: /models/tlumip/scenario_ChrisTest3/t0/ed/edTemplate.properties
+25-Jan-2007 14:38:59, GAIA, [main], INFO, Creating /models/tlumip/scenario_ChrisTest3/t1/ed/ed.properties
+25-Jan-2007 14:38:59, GAIA, [main], INFO, AO will now start ED for simulation year 1991
+25-Jan-2007 14:39:00, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:39:01, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:39:01, GAIA, [main], INFO, Beginning submodel 'FinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:39:01, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:01, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:01, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OGSLO value: 7725999.616428201
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OGHE value: 1158857.721987944
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OGLE value: 2794245.2149330163
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OGCO value: 1448579.2997579393
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: ORI value: 1546780.161860113
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: ONRI value: 901933.5505145929
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Beginning submodel 'SalesToFinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDACC value: 417.998733812773
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDAGM value: 2938.6119058676622
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDCOM value: 4039.1398237328594
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDCON value: 5928.317386449807
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDELE value: 1276.7217281830917
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDFIR value: 6055.095574417762
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDFOO value: 4270.430263529041
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDGOV value: 5289.502708135341
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDHEA value: 5720.984416899403
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDHIED value: 1304.5819878350183
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDHOME value: 70.8713370535046
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDLOED value: 2193.3664135344416
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDLUM value: 2545.08
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDOD value: 9521.311605094586
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDOND value: 2279.352452745257
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDPERS value: 4726.395391416173
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDPULP value: 2014.39365125008
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDRET value: 8651.909455369241
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDWHO value: 3582.9098733662267
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFDTRA value: 2315.478996113702
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Beginning submodel 'Output_Linear' of type 'Linear'
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OACC value: 832.9977720337803
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OAGM value: 4511.551066662761
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OCOM value: 6946.739201038121
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OCON value: 8693.981884593528
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OELE value: 1934.1961479777115
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFIR value: 14194.041488737543
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OFOO value: 5733.380688455266
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OGOV value: 6702.156121823334
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OHEA value: 6762.0068250935765
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OHIED value: 1538.0060949654232
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OHOME value: 83.66731
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLOED value: 2194.3162
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLUM value: 11473.997601916633
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OOD value: 12842.068167443247
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OOND value: 4169.000312530219
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OPERS value: 6871.030454881582
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OPULP value: 2487.5550097855585
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: ORET value: 10431.415614549795
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OWHO value: 8657.474833454933
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OTRA value: 5324.364622756996
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Beginning submodel 'Employment' of type 'SimpleFunctions'
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPACC value: 20402.288422004083
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPAGM value: 94369.82466532958
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPCOM value: 23732.56841020004
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPCON value: 78667.10224670474
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPELE value: 29375.18840526998
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPFIRP value: 174047.2897529659
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPFOO value: 25260.174135029494
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPGOV value: 120120.54780253048
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPHEA value: 101671.97156286547
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPHIED value: 45710.163927870046
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPHOME value: 14049.355309989767
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPLOED value: 90960.76538460498
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPLUM value: 62306.40523952668
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPDG value: 67007.81311713792
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPOND value: 30917.202932418437
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPPAP value: 8956.581876490318
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPPERS value: 231070.26338164715
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPRET value: 286039.1055276907
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPTRAN value: 53636.80046581726
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OEMPWHO value: 84616.11847194906
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: ON value: 1642917.5310380422
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Beginning submodel 'Labor Income' of type 'SimpleFunctions'
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIACC value: 267959.23363012675
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIAGR value: 446957.66983713664
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLICOM value: 1077831.77602174
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLICON value: 2455846.1472300617
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIELE value: 1278962.0092984692
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIFIR value: 4486402.933294785
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIFOO value: 763591.801978106
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIGOV value: 4635480.495944675
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIHEA value: 3294432.406631308
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIHIED value: 960770.5907118061
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIHOM value: 80160.66821553269
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLILOED value: 2049070.1900562306
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLILUM value: 2156807.4900219347
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIOD value: 2546994.576908722
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIOND value: 913495.6622884875
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIPER value: 2317728.278137032
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIPULP value: 466707.1485684261
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIRET value: 4503638.073722442
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLITRA value: 1729422.236411024
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLIWHO value: 2871227.2745184493
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLI value: 3.9303486663426496E7
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Beginning submodel 'Other Stuff' of type 'SimpleFunctions'
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OUNRT value: 6.981186400935643
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: ONLI value: 2.0232722117944114E7
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OLFPR value: 0.6132089935132897
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: ORSV value: 8.7697854E7
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: ONRSV value: 1.22336048E8
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OYP value: 5.327936815794411E7
+25-Jan-2007 14:39:02, GAIA, [main], INFO, 		variable: OPOP value: 2887068.333862634
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Splitting data for application specific outputs
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPIMini.csv
+25-Jan-2007 14:39:02, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Beginning submodel 'Capitalists' of type 'SimpleFunctions'
+25-Jan-2007 14:39:04, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:04, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:04, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:04, GAIA, [main], INFO, 		variable: Capitalists value: 8.103724692809734E8
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Beginning submodel 'GovernmentInstitutions' of type 'SimpleFunctions'
+25-Jan-2007 14:39:04, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:04, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:04, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:04, GAIA, [main], INFO, 		variable: GovInst value: 1.6747176099980178E9
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/ConstructionSplitter.csv
+25-Jan-2007 14:39:04, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ConstructionDollarDataForALD.csv
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Beginning submodel 'ResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:39:06, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:06, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:06, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:06, GAIA, [main], INFO, 		variable: Residential Construction value: 2.358368829787596E9
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Beginning submodel 'NonResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:39:06, GAIA, [main], INFO, 	Reading data
+25-Jan-2007 14:39:06, GAIA, [main], INFO, 	Solving model
+25-Jan-2007 14:39:06, GAIA, [main], INFO, 	Writing data
+25-Jan-2007 14:39:06, GAIA, [main], INFO, 		variable: Non-residential Construction value: 1.166489458078061E9
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPISectors.csv
+25-Jan-2007 14:39:06, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:39:07, GAIA, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoSPGSectors.csv
+25-Jan-2007 14:39:07, GAIA, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/JobDataForSPG1.csv
+25-Jan-2007 14:39:07, GAIA, [main], INFO, Writing the application name and the timeInterval for run into the run log
+25-Jan-2007 14:39:07, GAIA, [main], INFO, ed is complete
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Root Directory: /models/tlumip
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Scenario Name: ChrisTest3
+25-Jan-2007 14:45:03, ISIS, [main], INFO, App Name: ed
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Base Year: 1990
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Time Interval: 1
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Looking for the run log in /models/tlumip/scenario_ChrisTest3/t1/
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Reading in Run Log from year 1 and updating the RunLog HashMap: 
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\ao\aoTemplate.properties
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\ao\ao.properties
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\globalTemplate.properties
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\global.properties
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\ed\edTemplate.properties
+25-Jan-2007 14:45:03, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\ed\ed.properties
+25-Jan-2007 14:45:03, ISIS, [main], INFO, AO will now start ED for simulation year 1991
+25-Jan-2007 14:45:04, ISIS, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:45:05, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:45:05, ISIS, [main], INFO, Beginning submodel 'FinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 		variable: OGSLO value: 7725999.616428201
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 		variable: OGHE value: 1158857.721987944
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 		variable: OGLE value: 2794245.2149330163
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 		variable: OGCO value: 1448579.2997579393
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 		variable: ORI value: 1546780.161860113
+25-Jan-2007 14:45:05, ISIS, [main], INFO, 		variable: ONRI value: 901933.5505145929
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Beginning submodel 'SalesToFinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDACC value: 417.998733812773
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDAGM value: 2938.6119058676622
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDCOM value: 4039.1398237328594
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDCON value: 5928.317386449807
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDELE value: 1276.7217281830917
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDFIR value: 6055.095574417762
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDFOO value: 4270.430263529041
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDGOV value: 5289.502708135341
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDHEA value: 5720.984416899403
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDHIED value: 1304.5819878350183
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDHOME value: 70.8713370535046
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDLOED value: 2193.3664135344416
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDLUM value: 2545.08
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDOD value: 9521.311605094586
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDOND value: 2279.352452745257
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDPERS value: 4726.395391416173
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDPULP value: 2014.39365125008
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDRET value: 8651.909455369241
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDWHO value: 3582.9098733662267
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFDTRA value: 2315.478996113702
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Beginning submodel 'Output_Linear' of type 'Linear'
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OACC value: 832.9977720337803
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OAGM value: 4511.551066662761
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OCOM value: 6946.739201038121
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OCON value: 8693.981884593528
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OELE value: 1934.1961479777115
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFIR value: 14194.041488737543
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OFOO value: 5733.380688455266
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OGOV value: 6702.156121823334
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OHEA value: 6762.0068250935765
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OHIED value: 1538.0060949654232
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OHOME value: 83.66731
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLOED value: 2194.3162
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLUM value: 11473.997601916633
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OOD value: 12842.068167443247
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OOND value: 4169.000312530219
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OPERS value: 6871.030454881582
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OPULP value: 2487.5550097855585
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: ORET value: 10431.415614549795
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OWHO value: 8657.474833454933
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OTRA value: 5324.364622756996
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Beginning submodel 'Employment' of type 'SimpleFunctions'
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPACC value: 20402.288422004083
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPAGM value: 94369.82466532958
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPCOM value: 23732.56841020004
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPCON value: 78667.10224670474
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPELE value: 29375.18840526998
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPFIRP value: 174047.2897529659
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPFOO value: 25260.174135029494
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPGOV value: 120120.54780253048
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPHEA value: 101671.97156286547
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPHIED value: 45710.163927870046
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPHOME value: 14049.355309989767
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPLOED value: 90960.76538460498
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPLUM value: 62306.40523952668
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPDG value: 67007.81311713792
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPOND value: 30917.202932418437
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPPAP value: 8956.581876490318
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPPERS value: 231070.26338164715
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPRET value: 286039.1055276907
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPTRAN value: 53636.80046581726
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OEMPWHO value: 84616.11847194906
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: ON value: 1642917.5310380422
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Beginning submodel 'Labor Income' of type 'SimpleFunctions'
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIACC value: 267959.23363012675
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIAGR value: 446957.66983713664
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLICOM value: 1077831.77602174
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLICON value: 2455846.1472300617
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIELE value: 1278962.0092984692
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIFIR value: 4486402.933294785
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIFOO value: 763591.801978106
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIGOV value: 4635480.495944675
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIHEA value: 3294432.406631308
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIHIED value: 960770.5907118061
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIHOM value: 80160.66821553269
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLILOED value: 2049070.1900562306
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLILUM value: 2156807.4900219347
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIOD value: 2546994.576908722
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIOND value: 913495.6622884875
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIPER value: 2317728.278137032
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIPULP value: 466707.1485684261
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIRET value: 4503638.073722442
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLITRA value: 1729422.236411024
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLIWHO value: 2871227.2745184493
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLI value: 3.9303486663426496E7
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Beginning submodel 'Other Stuff' of type 'SimpleFunctions'
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OUNRT value: 6.981186400935643
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: ONLI value: 2.0232722117944114E7
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OLFPR value: 0.6132089935132897
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: ORSV value: 8.7697854E7
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: ONRSV value: 1.22336048E8
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OYP value: 5.327936815794411E7
+25-Jan-2007 14:45:06, ISIS, [main], INFO, 		variable: OPOP value: 2887068.333862634
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Splitting data for application specific outputs
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPIMini.csv
+25-Jan-2007 14:45:06, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:45:07, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:45:09, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:45:09, ISIS, [main], INFO, Beginning submodel 'Capitalists' of type 'SimpleFunctions'
+25-Jan-2007 14:45:09, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:09, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:09, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:09, ISIS, [main], INFO, 		variable: Capitalists value: 8.103724692809734E8
+25-Jan-2007 14:45:09, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:10, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:45:10, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:45:10, ISIS, [main], INFO, Beginning submodel 'GovernmentInstitutions' of type 'SimpleFunctions'
+25-Jan-2007 14:45:10, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:10, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:10, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:10, ISIS, [main], INFO, 		variable: GovInst value: 1.6747176099980178E9
+25-Jan-2007 14:45:10, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:10, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/ConstructionSplitter.csv
+25-Jan-2007 14:45:10, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ConstructionDollarDataForALD.csv
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Beginning submodel 'ResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:45:11, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:11, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:11, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:11, ISIS, [main], INFO, 		variable: Residential Construction value: 2.358368829787596E9
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Beginning submodel 'NonResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:45:11, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:45:11, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:45:11, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:45:11, ISIS, [main], INFO, 		variable: Non-residential Construction value: 1.166489458078061E9
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPISectors.csv
+25-Jan-2007 14:45:11, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:45:12, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoSPGSectors.csv
+25-Jan-2007 14:45:12, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/JobDataForSPG1.csv
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Root Directory: /models/tlumip
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Scenario Name: ChrisTest3
+25-Jan-2007 14:49:31, ISIS, [main], INFO, App Name: ed
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Base Year: 1990
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Time Interval: 1
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Looking for the run log in /models/tlumip/scenario_ChrisTest3/t1/
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Reading in Run Log from year 1 and updating the RunLog HashMap: 
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\ao\aoTemplate.properties
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\ao\ao.properties
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\globalTemplate.properties
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\global.properties
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\ed\edTemplate.properties
+25-Jan-2007 14:49:31, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\ed\ed.properties
+25-Jan-2007 14:49:31, ISIS, [main], INFO, AO will now start ED for simulation year 1991
+25-Jan-2007 14:49:32, ISIS, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:49:33, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:49:33, ISIS, [main], INFO, Beginning submodel 'FinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OGSLO value: 7725999.616428201
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OGHE value: 1158857.721987944
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OGLE value: 2794245.2149330163
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OGCO value: 1448579.2997579393
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: ORI value: 1546780.161860113
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: ONRI value: 901933.5505145929
+25-Jan-2007 14:49:33, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:33, ISIS, [main], INFO, Beginning submodel 'SalesToFinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDACC value: 417.998733812773
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDAGM value: 2938.6119058676622
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDCOM value: 4039.1398237328594
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDCON value: 5928.317386449807
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDELE value: 1276.7217281830917
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDFIR value: 6055.095574417762
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDFOO value: 4270.430263529041
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDGOV value: 5289.502708135341
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDHEA value: 5720.984416899403
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDHIED value: 1304.5819878350183
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDHOME value: 70.8713370535046
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDLOED value: 2193.3664135344416
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDLUM value: 2545.08
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDOD value: 9521.311605094586
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDOND value: 2279.352452745257
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDPERS value: 4726.395391416173
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDPULP value: 2014.39365125008
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDRET value: 8651.909455369241
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDWHO value: 3582.9098733662267
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFDTRA value: 2315.478996113702
+25-Jan-2007 14:49:33, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:33, ISIS, [main], INFO, Beginning submodel 'Output_Linear' of type 'Linear'
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OACC value: 832.9977720337803
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OAGM value: 4511.551066662761
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OCOM value: 6946.739201038121
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OCON value: 8693.981884593528
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OELE value: 1934.1961479777115
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFIR value: 14194.041488737543
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OFOO value: 5733.380688455266
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OGOV value: 6702.156121823334
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OHEA value: 6762.0068250935765
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OHIED value: 1538.0060949654232
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OHOME value: 83.66731
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OLOED value: 2194.3162
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OLUM value: 11473.997601916633
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OOD value: 12842.068167443247
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OOND value: 4169.000312530219
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OPERS value: 6871.030454881582
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OPULP value: 2487.5550097855585
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: ORET value: 10431.415614549795
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OWHO value: 8657.474833454933
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OTRA value: 5324.364622756996
+25-Jan-2007 14:49:33, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:33, ISIS, [main], INFO, Beginning submodel 'Employment' of type 'SimpleFunctions'
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPACC value: 20402.288422004083
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPAGM value: 94369.82466532958
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPCOM value: 23732.56841020004
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPCON value: 78667.10224670474
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPELE value: 29375.18840526998
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPFIRP value: 174047.2897529659
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPFOO value: 25260.174135029494
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPGOV value: 120120.54780253048
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPHEA value: 101671.97156286547
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPHIED value: 45710.163927870046
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPHOME value: 14049.355309989767
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPLOED value: 90960.76538460498
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPLUM value: 62306.40523952668
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPDG value: 67007.81311713792
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPOND value: 30917.202932418437
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPPAP value: 8956.581876490318
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPPERS value: 231070.26338164715
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPRET value: 286039.1055276907
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPTRAN value: 53636.80046581726
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: OEMPWHO value: 84616.11847194906
+25-Jan-2007 14:49:33, ISIS, [main], INFO, 		variable: ON value: 1642917.5310380422
+25-Jan-2007 14:49:34, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:34, ISIS, [main], INFO, Beginning submodel 'Labor Income' of type 'SimpleFunctions'
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIACC value: 267959.23363012675
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIAGR value: 446957.66983713664
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLICOM value: 1077831.77602174
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLICON value: 2455846.1472300617
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIELE value: 1278962.0092984692
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIFIR value: 4486402.933294785
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIFOO value: 763591.801978106
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIGOV value: 4635480.495944675
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIHEA value: 3294432.406631308
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIHIED value: 960770.5907118061
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIHOM value: 80160.66821553269
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLILOED value: 2049070.1900562306
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLILUM value: 2156807.4900219347
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIOD value: 2546994.576908722
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIOND value: 913495.6622884875
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIPER value: 2317728.278137032
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIPULP value: 466707.1485684261
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIRET value: 4503638.073722442
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLITRA value: 1729422.236411024
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLIWHO value: 2871227.2745184493
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLI value: 3.9303486663426496E7
+25-Jan-2007 14:49:34, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:34, ISIS, [main], INFO, Beginning submodel 'Other Stuff' of type 'SimpleFunctions'
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OUNRT value: 6.981186400935643
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: ONLI value: 2.0232722117944114E7
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OLFPR value: 0.6132089935132897
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: ORSV value: 8.7697854E7
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: ONRSV value: 1.22336048E8
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OYP value: 5.327936815794411E7
+25-Jan-2007 14:49:34, ISIS, [main], INFO, 		variable: OPOP value: 2887068.333862634
+25-Jan-2007 14:49:34, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:35, ISIS, [main], INFO, Splitting data for application specific outputs
+25-Jan-2007 14:49:35, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPIMini.csv
+25-Jan-2007 14:49:35, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:49:36, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:49:36, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:49:36, ISIS, [main], INFO, Beginning submodel 'Capitalists' of type 'SimpleFunctions'
+25-Jan-2007 14:49:36, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:36, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:36, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:36, ISIS, [main], INFO, 		variable: Capitalists value: 8.103724692809734E8
+25-Jan-2007 14:49:36, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:37, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:49:37, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:49:37, ISIS, [main], INFO, Beginning submodel 'GovernmentInstitutions' of type 'SimpleFunctions'
+25-Jan-2007 14:49:37, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:37, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:37, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:37, ISIS, [main], INFO, 		variable: GovInst value: 1.6747176099980178E9
+25-Jan-2007 14:49:37, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:37, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/ConstructionSplitter.csv
+25-Jan-2007 14:49:37, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ConstructionDollarDataForALD.csv
+25-Jan-2007 14:49:38, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:49:38, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:49:38, ISIS, [main], INFO, Beginning submodel 'ResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:49:38, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:38, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:38, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:38, ISIS, [main], INFO, 		variable: Residential Construction value: 2.358368829787596E9
+25-Jan-2007 14:49:38, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:39, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:49:39, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:49:39, ISIS, [main], INFO, Beginning submodel 'NonResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:49:39, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:49:39, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:49:39, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:49:39, ISIS, [main], INFO, 		variable: Non-residential Construction value: 1.166489458078061E9
+25-Jan-2007 14:49:39, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:49:39, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPISectors.csv
+25-Jan-2007 14:49:39, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:49:39, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoSPGSectors.csv
+25-Jan-2007 14:49:39, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/JobDataForSPG1.csv
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Root Directory: /models/tlumip
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Scenario Name: ChrisTest3
+25-Jan-2007 14:50:07, ISIS, [main], INFO, App Name: ed
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Base Year: 1990
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Time Interval: 1
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Looking for the run log in /models/tlumip/scenario_ChrisTest3/t1/
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Reading in Run Log from year 1 and updating the RunLog HashMap: 
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\ao\aoTemplate.properties
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\ao\ao.properties
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\globalTemplate.properties
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\global.properties
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Full Path to Template File: Z:\models\tlumip\scenario_ChrisTest3\t0\ed\edTemplate.properties
+25-Jan-2007 14:50:07, ISIS, [main], INFO, Creating Z:\models\tlumip\scenario_ChrisTest3\t1\ed\ed.properties
+25-Jan-2007 14:50:07, ISIS, [main], INFO, AO will now start ED for simulation year 1991
+25-Jan-2007 14:50:08, ISIS, [main], INFO, Default location:  /models/tlumip/scenario_ChrisTest3/t0/ed/model_data.csv  default year:  1991
+25-Jan-2007 14:50:09, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:50:09, ISIS, [main], INFO, Beginning submodel 'FinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 		variable: OGSLO value: 7725999.616428201
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 		variable: OGHE value: 1158857.721987944
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 		variable: OGLE value: 2794245.2149330163
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 		variable: OGCO value: 1448579.2997579393
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 		variable: ORI value: 1546780.161860113
+25-Jan-2007 14:50:09, ISIS, [main], INFO, 		variable: ONRI value: 901933.5505145929
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Beginning submodel 'SalesToFinalDemand' of type 'SimpleFunctions'
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDACC value: 417.998733812773
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDAGM value: 2938.6119058676622
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDCOM value: 4039.1398237328594
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDCON value: 5928.317386449807
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDELE value: 1276.7217281830917
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDFIR value: 6055.095574417762
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDFOO value: 4270.430263529041
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDGOV value: 5289.502708135341
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDHEA value: 5720.984416899403
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDHIED value: 1304.5819878350183
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDHOME value: 70.8713370535046
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDLOED value: 2193.3664135344416
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDLUM value: 2545.08
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDOD value: 9521.311605094586
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDOND value: 2279.352452745257
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDPERS value: 4726.395391416173
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDPULP value: 2014.39365125008
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDRET value: 8651.909455369241
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDWHO value: 3582.9098733662267
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFDTRA value: 2315.478996113702
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Beginning submodel 'Output_Linear' of type 'Linear'
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OACC value: 832.9977720337803
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OAGM value: 4511.551066662761
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OCOM value: 6946.739201038121
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OCON value: 8693.981884593528
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OELE value: 1934.1961479777115
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFIR value: 14194.041488737543
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OFOO value: 5733.380688455266
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OGOV value: 6702.156121823334
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OHEA value: 6762.0068250935765
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OHIED value: 1538.0060949654232
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OHOME value: 83.66731
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLOED value: 2194.3162
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLUM value: 11473.997601916633
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OOD value: 12842.068167443247
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OOND value: 4169.000312530219
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OPERS value: 6871.030454881582
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OPULP value: 2487.5550097855585
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: ORET value: 10431.415614549795
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OWHO value: 8657.474833454933
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OTRA value: 5324.364622756996
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Beginning submodel 'Employment' of type 'SimpleFunctions'
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPACC value: 20402.288422004083
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPAGM value: 94369.82466532958
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPCOM value: 23732.56841020004
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPCON value: 78667.10224670474
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPELE value: 29375.18840526998
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPFIRP value: 174047.2897529659
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPFOO value: 25260.174135029494
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPGOV value: 120120.54780253048
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPHEA value: 101671.97156286547
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPHIED value: 45710.163927870046
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPHOME value: 14049.355309989767
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPLOED value: 90960.76538460498
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPLUM value: 62306.40523952668
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPDG value: 67007.81311713792
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPOND value: 30917.202932418437
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPPAP value: 8956.581876490318
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPPERS value: 231070.26338164715
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPRET value: 286039.1055276907
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPTRAN value: 53636.80046581726
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OEMPWHO value: 84616.11847194906
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: ON value: 1642917.5310380422
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Beginning submodel 'Labor Income' of type 'SimpleFunctions'
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIACC value: 267959.23363012675
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIAGR value: 446957.66983713664
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLICOM value: 1077831.77602174
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLICON value: 2455846.1472300617
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIELE value: 1278962.0092984692
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIFIR value: 4486402.933294785
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIFOO value: 763591.801978106
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIGOV value: 4635480.495944675
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIHEA value: 3294432.406631308
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIHIED value: 960770.5907118061
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIHOM value: 80160.66821553269
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLILOED value: 2049070.1900562306
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLILUM value: 2156807.4900219347
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIOD value: 2546994.576908722
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIOND value: 913495.6622884875
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIPER value: 2317728.278137032
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIPULP value: 466707.1485684261
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIRET value: 4503638.073722442
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLITRA value: 1729422.236411024
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLIWHO value: 2871227.2745184493
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLI value: 3.9303486663426496E7
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Beginning submodel 'Other Stuff' of type 'SimpleFunctions'
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OUNRT value: 6.981186400935643
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: ONLI value: 2.0232722117944114E7
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OLFPR value: 0.6132089935132897
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: ORSV value: 8.7697854E7
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: ONRSV value: 1.22336048E8
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OYP value: 5.327936815794411E7
+25-Jan-2007 14:50:10, ISIS, [main], INFO, 		variable: OPOP value: 2887068.333862634
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Splitting data for application specific outputs
+25-Jan-2007 14:50:10, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPIMini.csv
+25-Jan-2007 14:50:11, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:50:12, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:50:12, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:50:13, ISIS, [main], INFO, Beginning submodel 'Capitalists' of type 'SimpleFunctions'
+25-Jan-2007 14:50:13, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:13, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:13, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:13, ISIS, [main], INFO, 		variable: Capitalists value: 8.103724692809734E8
+25-Jan-2007 14:50:13, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:13, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:50:13, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:50:13, ISIS, [main], INFO, Beginning submodel 'GovernmentInstitutions' of type 'SimpleFunctions'
+25-Jan-2007 14:50:13, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:13, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:13, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:13, ISIS, [main], INFO, 		variable: GovInst value: 1.6747176099980178E9
+25-Jan-2007 14:50:13, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:13, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/ConstructionSplitter.csv
+25-Jan-2007 14:50:13, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ConstructionDollarDataForALD.csv
+25-Jan-2007 14:50:14, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:50:14, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:50:14, ISIS, [main], INFO, Beginning submodel 'ResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:50:14, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:14, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:14, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:14, ISIS, [main], INFO, 		variable: Residential Construction value: 2.358368829787596E9
+25-Jan-2007 14:50:14, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:15, ISIS, [main], INFO, Default location:  Z:\models\tlumip\scenario_ChrisTest3\t0\ed\model_data.csv  default year:  1991
+25-Jan-2007 14:50:15, ISIS, [main], INFO, Starting ED model in year 1991
+25-Jan-2007 14:50:15, ISIS, [main], INFO, Beginning submodel 'NonResidentialConstruction' of type 'SimpleFunctions'
+25-Jan-2007 14:50:15, ISIS, [main], INFO, 	Reading data
+25-Jan-2007 14:50:15, ISIS, [main], INFO, 	Solving model
+25-Jan-2007 14:50:15, ISIS, [main], INFO, 	Writing data
+25-Jan-2007 14:50:15, ISIS, [main], INFO, 		variable: Non-residential Construction value: 1.166489458078061E9
+25-Jan-2007 14:50:15, ISIS, [main], INFO, Writing values to CSV file.
+25-Jan-2007 14:50:15, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoPISectors.csv
+25-Jan-2007 14:50:15, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/ActivityDollarDataForPI.csv
+25-Jan-2007 14:50:15, ISIS, [main], INFO, Input File: /models/tlumip/scenario_ChrisTest3/t0/ed/EDtoSPGSectors.csv
+25-Jan-2007 14:50:15, ISIS, [main], INFO, Output File: /models/tlumip/scenario_ChrisTest3/t1/ed/JobDataForSPG1.csv

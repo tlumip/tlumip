@@ -1,0 +1,24 @@
+#TLUMIP_GUI_Config.txt
+#Each entry that has a list of values should be a SPACE delimited list (preferably one space between each value)
+modules - These are the modules that can be run in the model
+ED ALD SPG1 PI SPG2 PT CT TS
+nonDAFModules - These are the subset of modules which can be run in non-daf mode
+ED ALD SPG1 PI SPG2 CT TS
+dafModules - These are the subset of modules which can be run in daf mode
+PI PT TS
+spatialNonDafModules - These are the subset of spatial items which are run in non-daf mode
+ED ALD SPG1 SPG2
+spatialDafModules - These are the subset of spatial items which are run in daf mode
+PI
+transportNonDafModules - These are the subset of transport items which are run in non-daf mode
+TS CT
+transportDafModules - These are the subset of transport items which are run in daf mode
+PT
+computerNames - This is the list of computer names
+Athena Chaos Dione Enyo Gaia Hera Isis
+computerIPList - This is the ip addresses for the computers; the order of this must match that of the computer names
+192.168.1.221 192.168.1.222 192.168.1.223 192.168.1.224 192.168.1.212 192.168.1.213 192.168.1.227
+computerOS - This says the operating system the computer is running: W means windows, L means linux
+@@computer os list@@
+baseComputer - This is the computer (from computerNames) which is considered the "master" or "base" computer
+Athena
