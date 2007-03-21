@@ -5,17 +5,18 @@ server = ServerProxy(serverConnection)
 def testGetAvailableMachines():
     """
     """
-    assert server.getAvailableMachines() == "unimplemented"
-
-def testGetAvailableMachines_Failure():
-    """
-    """
-    assert server.getAvailableMachines() == "unimplemented"
+    result = server.getAvailableMachines()
+    assert type(result) == type([])
 
 def testGetAvailableAntTargets():
     """
     """
-    assert server.getAvailableAntTargets() == "unimplemented"
+    result = server.getAvailableAntTargets()
+    for r in result:
+        print r, result[r]
+
+
+testGetAvailableAntTargets()
 
 def testGetAvailableAntTargets_Failure():
     """
