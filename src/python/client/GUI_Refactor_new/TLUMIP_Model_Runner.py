@@ -79,8 +79,39 @@ class Framer(wx.Frame):
     
     self.state = state
     self.createMenuBar()
+    self.createMainPanel()
+    self.createStatusBar()
     
     
+  def createMainPanel(self):
+    self.mainPanel = wx.Panel(self,-1,size=(862,410))  
+        
+  def createStatusBar(self):
+    self.statusBar = wx.StatusBar(self,-1)
+    self.statusBar.SetFieldsCount(5)
+    self.statusBarBaseText = {}
+    self.statusBarBaseText['scenarioName'] = 'scenarioName = '
+    self.statusBarBaseText['baseYear'] = 'base years = '
+    self.statusBarBaseText['scenarioYears'] = 't scenario years = '
+    self.statusBarBaseText['userName'] = 'user = '
+    self.statusBarBaseText['scenarioCreationTime'] = 'created = '
+    self.clearStatusBar()
+    
+  def clearStatusBar(self):
+    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioName'],0)
+    self.statusBar.SetStatusText(self.statusBarBaseText['baseYear'],1)
+    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioYears'],2)
+    self.statusBar.SetStatusText(self.statusBarBaseText['userName'],3)
+    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioCreationTime'],4)
+  
+  def populateStatusBar(self):
+    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioName'] + self.state.getScenarioName(),0)
+    self.statusBar.SetStatusText(self.statusBarBaseText['baseYear'] + self.state.getBaseYear(),1)
+    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioYears'] + self.state.getScenarioYears(),2)
+    self.statusBar.SetStatusText(self.statusBarBaseText['userName'] + self.state.getUserName(),3)
+    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioCreationTime'] + self.state.getScenarioCreationTime(),4)
+  
+  
   def createMenuBar(self):
     self.menuBar = wx.MenuBar()
     self.scenarioMenu = wx.Menu()
@@ -100,6 +131,8 @@ class Framer(wx.Frame):
     for scenario in self.existingScenarioNames:
       item = self.openSubmenu.Append(-1, scenario)
       self.Bind(wx.EVT_MENU, self.onOpenSubmenuItem, item)
+      self.Bind(wx.EVT_MENU_HIGHLIGHT, self.onOpenSubmenuMouseOver, item)
+      
     self.scenarioMenu.AppendMenu(201, "&Open...", self.openSubmenu)
 
   def destroyOpenSubmenu(self):
@@ -114,8 +147,13 @@ class Framer(wx.Frame):
   def onOpenSubmenuItem(self, event):
     item = self.openSubmenu.FindItemById(event.GetId())
     itemText = item.GetText()
-    print "selected scenario '%s' for opening from Scenario menu" % itemText
+    self.setCurrentScenario(itemText)
         
+  def onOpenSubmenuMouseOver(self,event):
+    item = self.openSubmenu.FindItemById(event.GetId())
+    itemText = item.GetText()
+    self.setCurrentScenario(itemText)
+  
   def createNewScenario(self):
     result = self.serverConnection.tempCreateScenario(self.state.getScenarioName(),self.state.getScenarioYears(),self.state.getBaseYear(),self.state.getUserName(),self.state.getScenarioDescription())
     print result
@@ -123,12 +161,14 @@ class Framer(wx.Frame):
     waitThread.start()
     
   def setCurrentScenario(self,scenarioName):
-    state.setScenarioName(self.existingScenarioProperties['scenarioName'])
-    state.setBaseYear(self.existingScenarioProperties['baseYear'])
-    state.setScenarioYears(self.existingScenarioProperties['scenarioYears'])
-    state.setUserName(self.existingScenarioProperties['userName'])
-    state.setScenarioCreationTime(self.existingScenarioProperties['scenarioCreationTime'])
-    state.setScenarioDescription(self.existingScenarioProperties['scenarioDescription'])
+    scenarioProperties = self.existingScenarioProperties[scenarioName]
+    state.setScenarioName(scenarioName)
+    state.setBaseYear(scenarioProperties['baseYear'])
+    state.setScenarioYears(scenarioProperties['scenarioYears'])
+    state.setUserName(scenarioProperties['userName'])
+    state.setScenarioCreationTime(scenarioProperties['scenarioCreationTime'])
+    state.setScenarioDescription(scenarioProperties['scenarioDescription'])
+    self.populateStatusBar()
   
   def enableFrame(self):
     self.Enable(True)
@@ -144,6 +184,7 @@ class Framer(wx.Frame):
     self.existingScenarioNames = self.existingScenarioProperties.keys()
     self.destroyOpenSubmenu()
     self.createOpenSubmenu()
+    self.setCurrentScenario(self.state.getScenarioName())
     
   
   def onWindowClose(self, event):
