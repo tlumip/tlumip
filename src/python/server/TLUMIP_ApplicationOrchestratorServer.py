@@ -52,10 +52,14 @@ class ApplicationOrchestratorServer(RequestServer):
             writer.writerow([scenarioName, userName, time.asctime(), numYears, baseYear, description])
         except Exception, val:
             return "SERVER ERROR: Temp Scenario Creator threw exception " + str(val)
-    
+
         return "scenario %s created." % scenarioName
-    
+
     def createScenario(self, scenarioName, numYears, baseYear, userName, description):
+        if not os.path.exists(createdScenariosFile):
+            writer = csv.writer(file(createdScenariosFile, "wb+"))
+            writer.writerow("scenarioName userName scenarioCreationTime scenarioYears baseYear scenarioDescription".split())
+            writer = None
         try:
             dirCreatorRetval = subprocess.call(["python", os.path.normpath(os.path.join(pythonScriptDirectory, "TLUMIP_ScenarioDirectoryCreator.py")), scenarioName, numYears, baseYear])
         except Exception, val:
@@ -121,11 +125,18 @@ class ApplicationOrchestratorServer(RequestServer):
             result.append([name, description, arguments])
         return result
 
-    def getScenarioProperties(self, scenario):
+    def getScenarioProperties_Bruce(self, scenario):
         """
-        Return as dict
+        Return as list
         """
-        return "unimplemented"
+        try:
+            reader = csv.reader(open(createdScenariosFile, "rb"))
+            for row in reader:
+                if row[0] == scenario:
+                    return row
+        except Exception, val:
+            return ("ERROR: exception thrown when reading %s " % createdScenariosFile) + str(val)
+        return "ERROR: Scenario not created"
 
     def startModelRun(self, scenario, module, year, baseYear, machineList):
         """
@@ -179,13 +190,13 @@ class ApplicationOrchestratorServer(RequestServer):
 
         allProps = {}
         keyFieldName = 'scenarioName'
-        
+
         try:
             reader = csv.reader(open(createdScenariosFile, "rb"))
             for i, row in enumerate(reader):
                 if i == 0:
                     headerNames = row
-                    
+
                     # get the field index for keyFieldName
                     for k, name in enumerate(headerNames):
                         if name.lower() == keyFieldName.lower():
@@ -194,14 +205,14 @@ class ApplicationOrchestratorServer(RequestServer):
                 else:
                     scenProps = {}
                     key = row[keyIndex]
-                    
+
                     for j, value in enumerate(row):
                         if j != keyIndex:
                             name = headerNames[j]
                             scenProps[name] = value
-                    
+
                     allProps[key] = scenProps
-                    
+
         except Exception, val:
             return ("SERVER ERROR: exception thrown when reading %s " % createdScenariosFile) + str(val)
 
