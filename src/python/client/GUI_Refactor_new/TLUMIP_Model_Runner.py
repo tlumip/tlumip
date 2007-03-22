@@ -11,6 +11,7 @@ import mrGUI_Utilities as WinUts
 import mrGUI_Model_Control as WinControl
 import mrGUI_Logging as WinLog
 import mrGUI_AOServer_Communication as AOS
+import ServerConnectionClient as Server
 import GetTrueIP_VPN
 import wx,os,time,threading
 
@@ -68,29 +69,42 @@ class mainPanel(wx.Panel):
         
 #Extend wx.Frame class so that correct actions are performed on close
 class Framer(wx.Frame):
-  def __init__(self, parent, id, title, size, state):
+  def __init__(self, parent, id, title, size, state, serverConnection):
     wx.Frame.__init__(self, parent, id, title, size=size)
     self.Bind(wx.EVT_CLOSE,self.onWindowClose)
     
-    self.state = state
+    self.serverConnection = serverConnection
+    self.existingScenarioProperties = serverConnection.getExistingScenarioProperties()
+    self.existingScenarioNames = self.existingScenarioProperties.keys()
     
-    menuBar = wx.MenuBar()
-    scenarioMenu = wx.Menu()
+    self.state = state
+    self.createMenuBar()
+    
+    
+  def createMenuBar(self):
+    self.menuBar = wx.MenuBar()
+    self.scenarioMenu = wx.Menu()
+    
+    new = self.scenarioMenu.Append(-1, "&New")
+    self.Bind(wx.EVT_MENU, self.onNew, new)
     
     #a list of scenarios retrieved from AOServer
-    scenarioList = ['pleaseWork', 'bingBangBoom', 'oh $#%@$?!']
+    self.createOpenSubmenu()
+    
+    self.menuBar.Append(self.scenarioMenu,"&Scenario")
+    self.SetMenuBar(self.menuBar)
+
+  def createOpenSubmenu(self):
     self.openSubmenu = wx.Menu()
-    for scenario in scenarioList:
+    self.existingScenarioNames.sort()
+    for scenario in self.existingScenarioNames:
       item = self.openSubmenu.Append(-1, scenario)
       self.Bind(wx.EVT_MENU, self.onOpenSubmenuItem, item)
-    
-    new = scenarioMenu.Append(-1, "&New")
-    self.Bind(wx.EVT_MENU, self.onNew, new)
-    scenarioMenu.AppendMenu(-1, "&Open...", self.openSubmenu)
-    
-    menuBar.Append(scenarioMenu,"&Scenario")
-    self.SetMenuBar(menuBar)
-    
+    self.scenarioMenu.AppendMenu(201, "&Open...", self.openSubmenu)
+
+  def destroyOpenSubmenu(self):
+    self.scenarioMenu.Remove(201)
+          
   def onNew(self, event):
     print "selected 'new' from Scenario menu"
     frame = NewScenarioFrame(self, self.state)
@@ -101,7 +115,21 @@ class Framer(wx.Frame):
     item = self.openSubmenu.FindItemById(event.GetId())
     itemText = item.GetText()
     print "selected scenario '%s' for opening from Scenario menu" % itemText
+        
+  def createNewScenario(self):
+    result = self.serverConnection.tempCreateScenario(self.state.getScenarioName(),self.state.getScenarioYears(),self.state.getBaseYear(),self.state.getUserName(),self.state.getScenarioDescription())
+    print result
+    waitThread = threading.Thread(target=lambda:self.waitForScenarioReady())
+    waitThread.start()
     
+  def setCurrentScenario(self,scenarioName):
+    state.setScenarioName(self.existingScenarioProperties['scenarioName'])
+    state.setBaseYear(self.existingScenarioProperties['baseYear'])
+    state.setScenarioYears(self.existingScenarioProperties['scenarioYears'])
+    state.setUserName(self.existingScenarioProperties['userName'])
+    state.setScenarioCreationTime(self.existingScenarioProperties['scenarioCreationTime'])
+    state.setScenarioDescription(self.existingScenarioProperties['scenarioDescription'])
+  
   def enableFrame(self):
     self.Enable(True)
     print self.state.getState()
@@ -109,6 +137,15 @@ class Framer(wx.Frame):
   def disableFrame(self):
     self.Enable(False)
     
+  def waitForScenarioReady(self):
+    while self.serverConnection.isScenarioReady(self.state.getScenarioName()) == "Scenario Not Ready":
+        time.sleep(1)
+    self.existingScenarioProperties = serverConnection.getExistingScenarioProperties()
+    self.existingScenarioNames = self.existingScenarioProperties.keys()
+    self.destroyOpenSubmenu()
+    self.createOpenSubmenu()
+    
+  
   def onWindowClose(self, event):
     closeWindowActions()
     os._exit(0)
@@ -143,6 +180,24 @@ class ScenarioState(object):
     
   def setScenarioDescription(self,value):
     self.state['scenarioDescription'] = value
+  
+  def getBaseYear(self):
+    return self.state['baseYear']
+  
+  def getScenarioYears(self):
+    return self.state['scenarioYears']
+  
+  def getScenarioName(self):
+    return self.state['scenarioName']
+    
+  def getUserName(self):
+    return self.state['userName']
+  
+  def getScenarioCreationTime(self):
+    return self.state['scenarioCreationTime']
+    
+  def getScenarioDescription(self):
+    return self.state['scenarioDescription']
   
   def getState(self):
     return self.state
@@ -225,6 +280,8 @@ class NewScenarioFrame(wx.Frame):
     state.setBaseYear(self.baseYear)
     state.setScenarioYears(self.scenarioYears)
     state.setScenarioDescription(self.scenarioDescription)
+    
+    self.callingFrame.createNewScenario()
     self.callingFrame.enableFrame()
     self.Destroy()
   
@@ -240,7 +297,8 @@ class NewScenarioFrame(wx.Frame):
   
 app = wx.PySimpleApp()
 state = ScenarioState()
-frame = Framer(None,-1," TLUMIP Model Runner",size = (870,485), state = state)
+serverConnection = Server.ServerConnection("192.168.1.141", 8942)
+frame = Framer(None,-1," TLUMIP Model Runner", (870,485), state, serverConnection)
 #sw = wx.SplitterWindow(frame,-1)
 #mip = mainPanel(sw,-1)
 #mlp = WinLog.mainLoggerPanel(sw,-1,mip)
