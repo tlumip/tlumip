@@ -195,5 +195,5 @@ def createDAFPropertiesFile(scenario, machineNames):
 if __name__ == "__main__":
     ipAddress = GetTrueIP.trueIP()
     print "ApplicationOrchestratorServer running"
-    ApplicationOrchestratorServer(ipAddress).createDAFPropertiesFile(self, "A", ["athena", "chaos"])
+    ApplicationOrchestratorServer(ipAddress)
 
