@@ -57,7 +57,7 @@ class ApplicationOrchestratorServer(RequestServer):
 
     def createScenario(self, scenarioName, numYears, baseYear, userName, description):
         if not os.path.exists(createdScenariosFile):
-            writer = csv.writer(file(createdScenariosFile, "wb+"))
+            writer = csv.writer(file(createdScenariosFile, "wb"))
             writer.writerow("scenarioName userName scenarioCreationTime scenarioYears baseYear scenarioDescription".split())
             writer = None
         try:
@@ -100,7 +100,7 @@ class ApplicationOrchestratorServer(RequestServer):
         availableMachines = []
         for machine in file("ClusterMachines.txt"):
             name, ip = machine.split()
-            if name not in ["Athena", "Chaos"] : continue
+            if name not in ["Athena", "Chaos"] : continue  ############## TEST TEST TEST
             processList = str(ServerConnection("http://" + ip + ":" + str(CommandExecutionDaemonServerXMLRPCPort)).getProcessList())
             if "python" not in processList:
                 availableMachines.append(name)
@@ -124,19 +124,6 @@ class ApplicationOrchestratorServer(RequestServer):
             arguments = [t for t in map(string.strip, arguments.split(',')) if t]
             result.append([name, description, arguments])
         return result
-
-    def getScenarioProperties_Bruce(self, scenario):
-        """
-        Return as list
-        """
-        try:
-            reader = csv.reader(open(createdScenariosFile, "rb"))
-            for row in reader:
-                if row[0] == scenario:
-                    return row
-        except Exception, val:
-            return ("ERROR: exception thrown when reading %s " % createdScenariosFile) + str(val)
-        return "ERROR: Scenario not created"
 
     def startModelRun(self, scenario, module, year, baseYear, machineList):
         """
@@ -217,6 +204,19 @@ class ApplicationOrchestratorServer(RequestServer):
             return ("SERVER ERROR: exception thrown when reading %s " % createdScenariosFile) + str(val)
 
         return allProps
+
+    def getScenarioProperties_Bruce(self, scenario):
+        """
+        Return as list
+        """
+        try:
+            reader = csv.reader(open(createdScenariosFile, "rb"))
+            for row in reader:
+                if row[0] == scenario:
+                    return row
+        except Exception, val:
+            return ("ERROR: exception thrown when reading %s " % createdScenariosFile) + str(val)
+        return "ERROR: Scenario not created"
 
     def retrieveClientState(self, scenario):
         """
