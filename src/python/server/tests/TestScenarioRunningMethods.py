@@ -13,7 +13,9 @@ def testGetAvailableAntTargets():
     """
     result = server.getAvailableAntTargets()
     for r in result:
-        print r, result[r]
+        print r
+        for e in result[r]:
+            print "\t", e
 
 
 testGetAvailableAntTargets()
