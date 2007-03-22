@@ -170,26 +170,27 @@ class ApplicationOrchestratorServer(RequestServer):
         """
         return "unimplemented"
 
-    def createDAFPropertiesFile(scenario, machineNames):
-        """
-        This is a private method that will be called prior to a daf that will
-        create the daf.properties file.
-        """
-        assert machineNames[0] == "Athena"
-        filePath = scenarioDirectory + scenario + os.sep + "daf" + os.sep
-        newDaf = file(filePath + "daf_TEMPLATE.properties").read().replace("@NODE_LIST@",
-             ",".join(["node%d" % i for i in range(len(machineNames))]))
-        machines = {}
-        for m in map(string.split, file("ClusterMachines.txt").readlines()):
-            machines[m[0]] = m[1]
-        for i, name in enumerate(machineNames[1:]):
-            tag = "@NODE_%d_ADDRESS@" % (i + 1)
-            newDaf = newDaf.replace(tag, machines[name])
-        file(filePath + "daf.properties", 'w').write(newDaf)
+############# Private functions, not part of the server class #####################
 
-        
+def createDAFPropertiesFile(scenario, machineNames):
+    """
+    This is a 'private' function that will be called prior to a daf run
+    that will create the daf.properties file.
+    """
+    assert machineNames[0] == "Athena"
+    filePath = scenarioDirectory + scenario + os.sep + "daf" + os.sep
+    newDaf = file(filePath + "daf_TEMPLATE.properties").read().replace("@NODE_LIST@",
+         ",".join(["node%d" % i for i in range(len(machineNames))]))
+    machines = {}
+    for m in map(string.split, file("ClusterMachines.txt").readlines()):
+        machines[m[0]] = m[1]
+    for i, name in enumerate(machineNames[1:]):
+        tag = "@NODE_%d_ADDRESS@" % (i + 1)
+        newDaf = newDaf.replace(tag, machines[name])
+    file(filePath + "daf.properties", 'w').write(newDaf)
 
-    ###################################################
+
+###################################################
 
 if __name__ == "__main__":
     ipAddress = GetTrueIP.trueIP()
