@@ -46,6 +46,15 @@ class ApplicationOrchestratorServer(RequestServer):
         print "Completed long test call"
         return "longTestCall completed"
 
+    def tempCreateScenario(self, scenarioName, numYears, baseYear, userName, description):
+        try:
+            writer = csv.writer(file(createdScenariosFile, "ab+"))
+            writer.writerow([scenarioName, userName, time.asctime(), numYears, baseYear, description])
+        except Exception, val:
+            return "SERVER ERROR: Temp Scenario Creator threw exception " + str(val)
+    
+        return "scenario %s created." % scenarioName
+    
     def createScenario(self, scenarioName, numYears, baseYear, userName, description):
         try:
             dirCreatorRetval = subprocess.call(["python", os.path.normpath(os.path.join(pythonScriptDirectory, "TLUMIP_ScenarioDirectoryCreator.py")), scenarioName, numYears, baseYear])
@@ -162,6 +171,41 @@ class ApplicationOrchestratorServer(RequestServer):
         Discover the scenario state information that is stored on the server.
         """
         return "unimplemented"
+
+    def getExistingScenarioProperties(self):
+        """
+        Get the properties for scenarios that already exist on the server.
+        """
+
+        allProps = {}
+        keyFieldName = 'scenarioName'
+        
+        try:
+            reader = csv.reader(open(createdScenariosFile, "rb"))
+            for i, row in enumerate(reader):
+                if i == 0:
+                    headerNames = row
+                    
+                    # get the field index for keyFieldName
+                    for k, name in enumerate(headerNames):
+                        if name.lower() == keyFieldName.lower():
+                            keyIndex = k
+                            break
+                else:
+                    scenProps = {}
+                    key = row[keyIndex]
+                    
+                    for j, value in enumerate(row):
+                        if j != keyIndex:
+                            name = headerNames[j]
+                            scenProps[name] = value
+                    
+                    allProps[key] = scenProps
+                    
+        except Exception, val:
+            return ("SERVER ERROR: exception thrown when reading %s " % createdScenariosFile) + str(val)
+
+        return allProps
 
     def retrieveClientState(self, scenario):
         """
