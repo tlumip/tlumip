@@ -8,7 +8,7 @@ ApplicationOrchestratorServer.py
         running sql queries on output data
 
 """
-import sys, os, GetTrueIP, subprocess, csv, glob, string
+import sys, os, GetTrueIP, subprocess, csv, glob, string, re
 from StringIO import StringIO
 from xmlrpclib import ServerProxy as ServerConnection
 import time
@@ -93,20 +93,23 @@ class ApplicationOrchestratorServer(RequestServer):
                 availableMachines.append(name)
         return availableMachines
 
-
     def getAvailableAntTargets(self):
         """
-        Return as dict
+        Return as list: name, description, list of arguments.
+        Description contains embedded newlines for formatting.
         """
-        tlumip_xml = r"c:\zShare\models\tlumip\runtime\tlumip_dev.xml"
-        data = file(tlumip_xml).read()
+        data = file(r"c:\zShare\models\tlumip\runtime\tlumip_dev.xml").read()
         echo = data.split('<target name="echo">')[1].split('</target>')[0]
-        messages = map(string.strip, echo.split('<echo message="'))
-        result = {}
-        for entry in [m.split('"/>')[0] for m in messages if m.startswith("run")]:
-            row = map(string.strip, csv.reader(StringIO(entry)).next())
-            row[1] = row[1].strip("'")
-            result[row[0]] = row[1:]
+        message = re.compile('<echo message="(.*?)"/>', re.DOTALL)
+        messages = [m for m in map(string.strip, message.findall(echo)) if m.startswith("run")]
+        result = []
+        for entry in messages:
+            name, description, arguments = entry.split("'")
+            name = name.split(',')[0].strip()
+            description = (" ".join(description.replace("\n", "##n").split())).replace("##n", "\n")
+            description = description.replace("\n ", "\n").strip()
+            arguments = [t for t in map(string.strip, arguments.split(',')) if t]
+            result.append([name, description, arguments])
         return result
 
     def getScenarioProperties(self, scenario):
