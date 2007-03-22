@@ -8,12 +8,13 @@ ApplicationOrchestratorServer.py
         running sql queries on output data
 
 """
-import sys, os, GetTrueIP, subprocess, csv, glob, string, re
+import sys, os, GetTrueIP, subprocess, csv, glob, string, re, time
 from StringIO import StringIO
 from xmlrpclib import ServerProxy as ServerConnection
-import time
 from RequestServer import RequestServer
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
+import TargetRules, types
+
 
 """ Global Variables """
 ApplicationOrchestratorServerXMLRPCPort = 8942
@@ -22,6 +23,28 @@ scenarioDirectory = "/models/tlumip/scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
 runtimeDirectory = "/models/tlumip/runtime"
 
+targetRules = {}
+
+for r in dir(TargetRules):
+    obj = eval("TargetRules." + r)
+    if type(obj) == types.FunctionType:
+        targetRules[r] = obj
+
+### Is there some other file where this information can be derived?
+dafTargets = """
+    runPIDAF
+    runPTDAF
+    runTSDAF
+    run1YearSpatial
+    run1YearSpatialCalibration
+    run10YearSpatial
+    run1YearTransport
+    run1YearCalibration
+    run1Year
+    run4Year
+    run16Year
+    run31Year
+""".split()
 
 class ApplicationOrchestratorServer(RequestServer):
     """
@@ -125,10 +148,27 @@ class ApplicationOrchestratorServer(RequestServer):
             result.append([name, description, arguments])
         return result
 
-    def startModelRun(self, scenario, module, year, baseYear, machineList):
+    def startModelRun(self, target, scenario, baseScenario, baseYear, year, machineList):
         """
+        test:
+          run ed
+          run pydaf
+          "ant -f targetname"
+
+        Dictionary of rules
+        Look up python replacement for switch
+
+        2. if daf, there's an ant target called startfilemonitor on each machine in the
+           machine list
+           -- Also startbootstrapserver
+           -- Create daf property file
+        3. Call the 'target'
         """
-        return "unimplemented"
+        if target in dafTargets:
+            # Create daf.prop file, call ant target
+            pass
+
+        return "Model Run Started"
 
     def verifyModelIsRunning(self, scenario):
         """
