@@ -93,11 +93,13 @@ class ApplicationOrchestratorServer(RequestServer):
                 availableMachines.append(name)
         return availableMachines
 
+
     def getAvailableAntTargets(self):
         """
         Return as dict
         """
-        data = file(r"c:\zShare\models\tlumip\runtime\tlumip.xml").read()
+        tlumip_xml = r"c:\zShare\models\tlumip\runtime\tlumip_dev.xml"
+        data = file(tlumip_xml).read()
         echo = data.split('<target name="echo">')[1].split('</target>')[0]
         messages = map(string.strip, echo.split('<echo message="'))
         result = {}
