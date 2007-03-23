@@ -112,23 +112,32 @@ def testStartModelRunPIDAF():
     print result
     assert result == r"Started: ant -f \models\tlumip\runtime\tlumip.xml runPIDAF -DscenarioName=20070315_4Year"
 
-def testFullSystem():
+scenario = "20070323_test%d" % time.time()
+def testFullSystem1():
     """
     """
-    target = "run1YearSpatial"
-    scenario = "20070323_test%d" % time.time()
+    baseScenario = ""
+    baseYear = "1990"
+    interval = "1"
+    result1 = server.createScenario(scenario, interval, baseYear, "Christi", "Test scenario")
+    #result1 = server.createDAFPropertiesFile(scenario, ["Athena", "Chaos"])
+    print result1
+
+testFullSystem1()
+
+def testFullSystem2():
+    """
+    """
+    target = "runPIDAF"
     baseScenario = ""
     baseYear = "1990"
     interval = "1"
     machineList = ["Athena", "Chaos"]
-    result1 = server.createScenario(scenario, interval, baseYear, "Christi", "Test scenario")
-    print result1
     result = server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
     #print "result:"
     print result
     #assert result == r"Started: ant -f \models\tlumip\runtime\tlumip.xml runPIDAF -DscenarioName=20070315_4Year"
-
-testFullSystem()
+testFullSystem2()
 
 def testStartModelRun_Failure():
     """
