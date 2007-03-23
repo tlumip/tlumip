@@ -354,7 +354,7 @@ def createDAFPropertiesFile(scenario, machineNames):
         newDaf = newDaf.replace(tag2, name)
     print "newDaf:", newDaf
 
-    propertyFilePath = os.path.join(filePath, "daf.random")
+    propertyFilePath = os.path.join(filePath, "daf.properties")
     print "propertyFilePath:", propertyFilePath
     file(propertyFilePath, 'w').write(newDaf)
 
