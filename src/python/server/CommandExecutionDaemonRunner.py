@@ -9,13 +9,14 @@ from xmlrpclib import ServerProxy
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
 serverConnection = "http://" + GetTrueIP.trueIP() + ":" + str(CommandExecutionDaemonServerXMLRPCPort)
 commandExecutionDaemonSourcePath = 'Z:/models/tlumip/runtime/server/'
+commandExecutionDaemonStartCommand = commandExecutionDaemonSourcePath + "CommandExecutionDaemon.py"
 
 ced = None
 
 def start():
     print "starting daemon"
     try:
-        commandExecutionDaemonStartCommand = commandExecutionDaemonSourcePath + "CommandExecutionDaemon.py"
+        
         result = {
             'date' : os.path.getmtime(commandExecutionDaemonStartCommand),
             'proc' : subprocess.Popen(["python", commandExecutionDaemonStartCommand])
