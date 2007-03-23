@@ -17,7 +17,7 @@ from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
 
 """ Global Variables """
 ApplicationOrchestratorServerXMLRPCPort = 8942
-pythonScriptDirectory = "/models"
+pythonScriptDirectory = r"Z:\models"
 scenarioDirectory = r"Z:\models\tlumip\scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
 runtimeDirectory = r"Z:\models\tlumip\runtime" + '\\'
@@ -28,7 +28,7 @@ machineProperties = []
 serverMachine = None
 clusterMachines = file("ClusterMachines.txt")
 header = clusterMachines.next().split()
-print "header:", header
+
 for machine in clusterMachines:
     vars, DESCRIPTION, trash = machine.split('"')
     NAME, IP, PROCESSORS, RAM, OS = vars.split()
@@ -44,29 +44,12 @@ for machine in clusterMachines:
         "DESCRIPTION" : DESCRIPTION,
         "STATUS" : "Unreachable"
     })
-pprint.pprint(machineProperties)
-
+#pprint.pprint(machineProperties)
 
 def sendRemoteCommand(machine, command):
     print "sendRemoteCommand:", machine, command
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
     remoteDaemon.runRemoteCommand(command)
-
-'''
-targetRules = {}
-
-for r in dir(TargetRules):
-    obj = eval("TargetRules." + r)
-    if type(obj) == types.FunctionType:
-        targetRules[r] = obj
-
-def executeRule(target, scenario, baseScenario, baseYear, interval):
-    if target in targetRules:
-        targetRules[target](scenario, baseScenario, baseYear, interval)
-    else:
-        targetRules['default'](scenario, baseScenario, baseYear, interval)
-'''
-
 
 class ApplicationOrchestratorServer(RequestServer):
     """
@@ -206,6 +189,8 @@ class ApplicationOrchestratorServer(RequestServer):
             path = "%stlumip.xml" % (runtimeDirectory)
             sendRemoteCommand("Athena", ["type", path])
             return "testFileCommand Sent"
+        print "=*=" * 80
+        print "len(machineList):", len(machineList)
         if len(machineList) > 1:
             """
             There's an ant target called startfilemonitor on each
@@ -279,6 +264,13 @@ class ApplicationOrchestratorServer(RequestServer):
         """
         return "unimplemented"
 
+    def retrieveClientState(self, scenario):
+        """
+        Client uses this to store any state information so that when the client
+        goes away and comes back, can restore itself exactly as it was before.
+        """
+        return "unimplemented"
+
     def showAvailableScenarios(self):
         """
         Discover the scenario state information that is stored on the server.
@@ -333,12 +325,6 @@ class ApplicationOrchestratorServer(RequestServer):
             return ("ERROR: exception thrown when reading %s " % createdScenariosFile) + str(val)
         return "ERROR: Scenario not created"
 
-    def retrieveClientState(self, scenario):
-        """
-        Client uses this to store any state information so that when the client
-        goes away and comes back, can restore itself exactly as it was before.
-        """
-        return "unimplemented"
 
 ############# Private functions, not part of the server class #####################
 
@@ -347,27 +333,29 @@ def createDAFPropertiesFile(scenario, machineNames):
     This is a 'private' function that will be called prior to a daf run
     that will create the daf.properties file.
     """
+    print "scenario", scenario
+    print "machineNames", machineNames
     filePath = os.path.normpath(scenarioDirectory + scenario)
     filePath = os.path.join(filePath, "daf")
     templateFilePath = os.path.join(filePath, "daf_TEMPLATE.properties")
     print "templateFilePath", templateFilePath
     newDaf = file(templateFilePath).read().replace("@NODE_LIST@",
          ",".join(["node%d" % i for i in range(len(machineNames))]))
-
-    if serverName in machineNames:
+    if serverMachine in machineNames:
         # Force it to be the first name in the list:
-        sortedMachineNames = [serverName] + machineNames.remove(serverName)
-    else:
-        sortedMachineNames = machineNames
+        machineNames.remove(serverMachine)
+        machineNames.insert(0, serverMachine)
 
-    for i, name in enumerate(sortedMachineNames):
+    print "machineNames:", machineNames
+    for i, name in enumerate(machineNames):
         tag1 = "@NODE_%d_ADDRESS@" % (i)
         tag2 = "@NODE_%d_NAME@" % (i)
         newDaf = newDaf.replace(tag1, machineIP[name])
         newDaf = newDaf.replace(tag2, name)
+    print "newDaf:", newDaf
 
-    propertyFilePath = os.path.join(filePath, "daf.properties")
-    print "propertyFilePath", propertyFilePath
+    propertyFilePath = os.path.join(filePath, "daf.random")
+    print "propertyFilePath:", propertyFilePath
     file(propertyFilePath, 'w').write(newDaf)
 
 
