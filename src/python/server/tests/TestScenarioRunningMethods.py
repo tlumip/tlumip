@@ -4,6 +4,7 @@ Things that could be automated:
 -- Test here to verify all daemons are running
 """
 from xmlrpclib import ServerProxy
+import time
 serverConnection = "http://192.168.1.221:8942"
 server = ServerProxy(serverConnection)
 
@@ -61,13 +62,73 @@ def testGetScenarioProperties_Failure():
 def testStartModelRun():
     """
     """
+    target = "testFileCommand"
+    scenario = ""
+    baseScenario = ""
+    baseYear = ""
+    interval = ""
+    machineList = ["Athena"]
+    result = server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
+    print result
+    assert result == "testFileCommand Sent"
+
+def testStartModelRunEcho():
+    """
+    """
+    target = "echo"
+    scenario = ""
+    baseScenario = ""
+    baseYear = ""
+    interval = ""
+    machineList = ["Athena"]
+    result = server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
+    print "result:", result
+    assert result == r"Started: ant -f Z:\models\tlumip\runtime\tlumip.xml echo"
+
+def testStartModelRunED():
+    """
+    """
+    target = "runED"
+    scenario = "20070315_4Year"
+    baseScenario = ""
+    baseYear = "1990"
+    interval = "1"
+    machineList = ["Athena"]
+    result = server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
+    print "result:", result
+    assert result == r"Started: ant -f Z:\models\tlumip\runtime\tlumip.xml runED -DscenarioName=20070315_4Year -DbaseYear=1990 -Dt=1"
+
+def testStartModelRunPIDAF():
+    """
+    """
     target = "runPIDAF"
     scenario = "20070315_4Year"
-    baseScenario = "None"
-    baseYear = "None"
-    year = "None"
-    machineList = ["Athena"]
-    assert server.startModelRun(target, scenario, baseScenario, baseYear, year, machineList) == "Model Run Started"
+    baseScenario = ""
+    baseYear = "1990"
+    interval = "1"
+    machineList = ["Athena", "Chaos"]
+    result = server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
+    print "result:"
+    print result
+    assert result == r"Started: ant -f \models\tlumip\runtime\tlumip.xml runPIDAF -DscenarioName=20070315_4Year"
+
+def testFullSystem():
+    """
+    """
+    target = "run1YearSpatial"
+    scenario = "20070323_test%d" % time.time()
+    baseScenario = ""
+    baseYear = "1990"
+    interval = "1"
+    machineList = ["Athena", "Chaos"]
+    result1 = server.createScenario(scenario, interval, baseYear, "Christi", "Test scenario")
+    print result1
+    result = server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
+    #print "result:"
+    print result
+    #assert result == r"Started: ant -f \models\tlumip\runtime\tlumip.xml runPIDAF -DscenarioName=20070315_4Year"
+
+testFullSystem()
 
 def testStartModelRun_Failure():
     """
@@ -76,9 +137,9 @@ def testStartModelRun_Failure():
     scenario = "None"
     baseScenario = "None"
     baseYear = "None"
-    year = "None"
+    interval = "None"
     machineList = []
-    assert server.startModelRun(target, scenario, baseScenario, baseYear, year, machineList) == "Model Run Started"
+    assert server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList) == "Model Run Started"
 
 def testVerifyModelIsRunning():
     """
