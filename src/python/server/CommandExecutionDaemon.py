@@ -14,6 +14,7 @@ legalCommands = """
   ping
   notepad
   ant
+  type
 """.split()
 
 currentlyRunningCommands = {}
@@ -42,8 +43,14 @@ class CommandExecutionDaemonServer(RequestServer):
 
   def runRemoteCommand(self, cmdlist):
     if cmdlist[0] not in legalCommands: return "ERROR: Illegal command " + cmdlist[0]
-    print "Executing", " ".join(cmdlist)
-    pid = subprocess.Popen(cmdlist).pid
+    #print "Executing", " ".join(cmdlist)
+    try:
+        pid = subprocess.Popen(cmdlist, shell=True).pid
+    except Exception, e:
+        s = "Subprocess Popen failed " + str(e)
+        print s
+        return s
+    #print "pid:", pid
     currentlyRunningCommands[str(pid)] = cmdlist
     return "Remote Command Started with pid: " + str(pid)
 

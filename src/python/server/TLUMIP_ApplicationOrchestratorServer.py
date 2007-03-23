@@ -18,9 +18,9 @@ import TargetRules, types
 """ Global Variables """
 ApplicationOrchestratorServerXMLRPCPort = 8942
 pythonScriptDirectory = "/models"
-scenarioDirectory = "Z:/models/tlumip/scenario_"
+scenarioDirectory = r"Z:\models\tlumip\scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
-runtimeDirectory = "Z:/models/tlumip/runtime/"
+runtimeDirectory = r"Z:\models\tlumip\runtime" + '\\'
 
 # Map of machine names to IP addresses:
 machineIP = {}
@@ -169,6 +169,10 @@ class ApplicationOrchestratorServer(RequestServer):
         if target == "specialCommand":
             sendRemoteCommand("Athena", ["ping", "www.google.com"])
             return "Special Command Sent"
+        if target == "testFileCommand":
+            path = "%stlumip.xml" % (runtimeDirectory)
+            sendRemoteCommand("Athena", ["type", path])
+            return "testFileCommand Sent"
         if len(machineList) > 1:
             """
             There's an ant target called startfilemonitor on each
@@ -316,7 +320,7 @@ def createDAFPropertiesFile(scenario, machineNames):
     print "templateFilePath", templateFilePath
     newDaf = file(templateFilePath).read().replace("@NODE_LIST@",
          ",".join(["node%d" % i for i in range(len(machineNames))]))
-    
+
     if serverName in machineNames:
         # Force it to be the first name in the list:
         sortedMachineNames = [serverName] + machineNames.remove(serverName)
@@ -328,7 +332,7 @@ def createDAFPropertiesFile(scenario, machineNames):
         tag2 = "@NODE_%d_NAME@" % (i)
         newDaf = newDaf.replace(tag1, machineIP[name])
         newDaf = newDaf.replace(tag2, name)
-        
+
     propertyFilePath = os.path.join(filePath, "daf.properties")
     print "propertyFilePath", propertyFilePath
     file(propertyFilePath, 'w').write(newDaf)
