@@ -112,7 +112,8 @@ def testStartModelRunPIDAF():
     print result
     assert result == r"Started: ant -f \models\tlumip\runtime\tlumip.xml runPIDAF -DscenarioName=20070315_4Year"
 
-scenario = "20070323_test%d" % time.time()
+#scenario = "20070323_test%d" % time.time()
+scenario = "20070315_4Year"
 def testFullSystem1():
     """
     """
@@ -128,7 +129,7 @@ testFullSystem1()
 def testFullSystem2():
     """
     """
-    target = "runPIDAF"
+    target = "run1YearSpatial"
     baseScenario = ""
     baseYear = "1990"
     interval = "1"
