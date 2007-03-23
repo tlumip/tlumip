@@ -6,7 +6,7 @@ ApplicationOrchestratorServer.py
         It will handle tasks such as creating a new scenario on the cluster,
         running model components, checking on status of model runs, and
         running sql queries on output data
-                                                           
+
 """
 import sys, os, GetTrueIP, subprocess, csv, glob, string, re, time
 from StringIO import StringIO
@@ -25,9 +25,9 @@ runtimeDirectory = r"Z:\models\tlumip\runtime" + '\\'
 # Map of machine names to IP addresses:
 machineIP = {}
 serverMachine = None
-for machine in file("ClusterMachines.properties"):
+for machine in file("ClusterMachines.txt"):
     name, ip = machine.split()
-    if not serverMachine: # First name in ClusterMachines.properties is defined as server
+    if not serverMachine: # First name in ClusterMachines.txt is defined as server
         serverMachine = name
     machineIP[name] = ip
 
