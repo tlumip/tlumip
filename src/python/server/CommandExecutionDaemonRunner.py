@@ -7,7 +7,7 @@ Keeps the running version up-to-date.
 import os, GetTrueIP, subprocess, time, atexit
 from xmlrpclib import ServerProxy
 from CommandExecutionDaemon import CommandExecutionDaemonRunnerXMLRPCPort
-serverConnection = "http://" + GetTrueIP.trueIP() + ":" + str(CommandExecutionDaemonServerXMLRPCPort)
+serverConnection = "http://" + GetTrueIP.trueIP() + ":" + str(CommandExecutionDaemonRunnerXMLRPCPort)
 commandExecutionDaemonSourcePath = 'C:/code/tlumip/src/python/server/'
 commandExecutionDaemonStartCommand = commandExecutionDaemonSourcePath + "CommandExecutionDaemon.py"
 
