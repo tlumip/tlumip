@@ -1,7 +1,7 @@
 import string, csv, re, pprint, sys
 from StringIO import StringIO
 
-data = file(r"\\athena\zShare\models\tlumip\runtime\tlumip_dev.xml").read()
+data = file(r"\\athena\zShare\models\tlumip\runtime\tlumip.xml").read()
 echo = data.split('<target name="echo">')[1].split('</target>')[0]
 message = re.compile('<echo message="(.*?)"/>', re.DOTALL)
 messages = [m for m in map(string.strip, message.findall(echo)) if m.startswith("run")]
