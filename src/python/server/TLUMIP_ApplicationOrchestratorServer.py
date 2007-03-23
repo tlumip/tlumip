@@ -8,12 +8,12 @@ ApplicationOrchestratorServer.py
         running sql queries on output data
 
 """
-import sys, os, GetTrueIP, subprocess, csv, glob, string, re, time
+import sys, os, GetTrueIP, subprocess, csv, glob, string, re, time, pprint
 from StringIO import StringIO
 from xmlrpclib import ServerProxy as ServerConnection
 from RequestServer import RequestServer
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
-import TargetRules, types
+#import TargetRules, types
 
 """ Global Variables """
 ApplicationOrchestratorServerXMLRPCPort = 8942
@@ -24,18 +24,35 @@ runtimeDirectory = r"Z:\models\tlumip\runtime" + '\\'
 
 # Map of machine names to IP addresses:
 machineIP = {}
+machineProperties = []
 serverMachine = None
-for machine in file("ClusterMachines.txt"):
-    name, ip = machine.split()
+clusterMachines = file("ClusterMachines.txt")
+header = clusterMachines.next().split()
+print "header:", header
+for machine in clusterMachines:
+    vars, DESCRIPTION, trash = machine.split('"')
+    NAME, IP, PROCESSORS, RAM, OS = vars.split()
     if not serverMachine: # First name in ClusterMachines.txt is defined as server
-        serverMachine = name
-    machineIP[name] = ip
+        serverMachine = NAME
+    machineIP[NAME] = IP
+    machineProperties.append( {
+        "NAME" : NAME,
+        "IP" : IP,
+        "PROCESSORS" : PROCESSORS,
+        "RAM" : RAM,
+        "OS" : OS,
+        "DESCRIPTION" : DESCRIPTION,
+        "STATUS" : "Unreachable"
+    })
+pprint.pprint(machineProperties)
+
 
 def sendRemoteCommand(machine, command):
     print "sendRemoteCommand:", machine, command
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
     remoteDaemon.runRemoteCommand(command)
 
+'''
 targetRules = {}
 
 for r in dir(TargetRules):
@@ -48,6 +65,8 @@ def executeRule(target, scenario, baseScenario, baseYear, interval):
         targetRules[target](scenario, baseScenario, baseYear, interval)
     else:
         targetRules['default'](scenario, baseScenario, baseYear, interval)
+'''
+
 
 class ApplicationOrchestratorServer(RequestServer):
     """
@@ -127,9 +146,9 @@ class ApplicationOrchestratorServer(RequestServer):
         Return a list of all the machines:
         machineName, status
         status code:
-            unreachable
-            busy
-            available
+            Unreachable
+            Busy
+            Available
 
         Create a list/table of what processes a client started
         Create a file that shows activity history
@@ -138,13 +157,19 @@ class ApplicationOrchestratorServer(RequestServer):
         process running. (call getProcessList() on each machine) First cut: if java
         is running, machine is not available
         """
-        availableMachines = []
-        for machine in machineIP:
-            if machine not in ["Athena", "Chaos"] : continue  ############## TEST TEST TEST
-            processList = str(ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort)).getProcessList())
-            if "python" not in processList:
-                availableMachines.append(machine)
-        return availableMachines
+        for machine in machineProperties:
+            #if machine not in ["Athena", "Chaos"] : continue  ############## TEST TEST TEST
+            cmdDaemon = "http://" + machine['IP'] + ":" + str(CommandExecutionDaemonServerXMLRPCPort)
+            try:
+                cmdDaemon = ServerConnection(cmdDaemon)
+                processList = cmdDaemon.getProcessList()
+                if "java" not in processList:
+                    machine['STATUS'] = "Available"
+                else:
+                    machine['STATUS'] = "Busy"
+            except:
+                machine['STATUS'] = "Unreachable"
+        return machineProperties
 
     def getAvailableAntTargets(self):
         """
