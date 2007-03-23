@@ -15,7 +15,6 @@ from RequestServer import RequestServer
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
 import TargetRules, types
 
-
 """ Global Variables """
 ApplicationOrchestratorServerXMLRPCPort = 8942
 pythonScriptDirectory = "/models"
@@ -23,12 +22,24 @@ scenarioDirectory = "/models/tlumip/scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
 runtimeDirectory = "/models/tlumip/runtime"
 
+# Map of machine names to IP addresses:
+machineIP = {}
+for machine in file("ClusterMachines.txt"):
+    name, ip = machine.split()
+    machineIP[name] = ip
+
 targetRules = {}
 
 for r in dir(TargetRules):
     obj = eval("TargetRules." + r)
     if type(obj) == types.FunctionType:
         targetRules[r] = obj
+
+def executeRule(target, scenario, baseScenario, baseYear, year):
+    if target in targetRules:
+        targetRules[target](scenario, baseScenario, baseYear, year)
+    else:
+        targetRules['default'](scenario, baseScenario, baseYear, year)
 
 ### Is there some other file where this information can be derived?
 dafTargets = """
@@ -121,12 +132,11 @@ class ApplicationOrchestratorServer(RequestServer):
         is running, machine is not available
         """
         availableMachines = []
-        for machine in file("ClusterMachines.txt"):
-            name, ip = machine.split()
-            if name not in ["Athena", "Chaos"] : continue  ############## TEST TEST TEST
-            processList = str(ServerConnection("http://" + ip + ":" + str(CommandExecutionDaemonServerXMLRPCPort)).getProcessList())
+        for machine in machineIP:
+            if machine not in ["Athena", "Chaos"] : continue  ############## TEST TEST TEST
+            processList = str(ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort)).getProcessList())
             if "python" not in processList:
-                availableMachines.append(name)
+                availableMachines.append(machine)
         return availableMachines
 
     def getAvailableAntTargets(self):
@@ -154,20 +164,26 @@ class ApplicationOrchestratorServer(RequestServer):
           run ed
           run pydaf
           "ant -f targetname"
-
-        Dictionary of rules
-        Look up python replacement for switch
-
-        2. if daf, there's an ant target called startfilemonitor on each machine in the
-           machine list
-           -- Also startbootstrapserver
-           -- Create daf property file
-        3. Call the 'target'
         """
         if target in dafTargets:
-            # Create daf.prop file, call ant target
-            pass
+            """
+            There's an ant target called startfilemonitor on each
+            machine in the machine list
+            -- Also startbootstrapserver
+            -- Create daf property file
+            """
+            for i, machine in enumerate(machineList):
+                command1 = (r"ant -f \models\tlumip\runtime\tlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d" % (scenario, i)).split()
+                command2 = (r"ant -f \models\tlumip\runtime\tlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s" % (scenario, machine)).split()
+                remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
+                print remoteDaemon
+                remoteDaemon.runRemoteCommand(["ping", "www.google.com"])
+                remoteDaemon.runRemoteCommand(command1)
+                remoteDaemon.runRemoteCommand(command2)
+            createDAFPropertiesFile(scenario, machineList)
 
+        # Call ant target, or special target if it exists
+        executeRule(target, scenario, baseScenario, baseYear, year)
         return "Model Run Started"
 
     def verifyModelIsRunning(self, scenario):
@@ -273,16 +289,22 @@ def createDAFPropertiesFile(scenario, machineNames):
     that will create the daf.properties file.
     """
     assert machineNames[0] == "Athena"
-    filePath = scenarioDirectory + scenario + os.sep + "daf" + os.sep
-    newDaf = file(filePath + "daf_TEMPLATE.properties").read().replace("@NODE_LIST@",
+    filePath = os.path.normpath(scenarioDirectory + scenario)
+    filePath = os.path.join(filePath, "daf")
+    templateFilePath = os.path.join("Z:", filePath, "daf_TEMPLATE.properties")
+    print "templateFilePath", templateFilePath
+    newDaf = file(templateFilePath).read().replace("@NODE_LIST@",
          ",".join(["node%d" % i for i in range(len(machineNames))]))
+
     machines = {}
     for m in map(string.split, file("ClusterMachines.txt").readlines()):
         machines[m[0]] = m[1]
     for i, name in enumerate(machineNames[1:]):
         tag = "@NODE_%d_ADDRESS@" % (i + 1)
         newDaf = newDaf.replace(tag, machines[name])
-    file(filePath + "daf.properties", 'w').write(newDaf)
+    propertyFilePath = os.path.join("Z:", filePath, "daf.properties")
+    print "propertyFilePath", propertyFilePath
+    file(propertyFilePath, 'w').write(newDaf)
 
 
 ###################################################
