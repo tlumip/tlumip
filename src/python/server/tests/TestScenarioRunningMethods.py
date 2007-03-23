@@ -1,6 +1,12 @@
+"""
+Things that could be automated:
+-- Start daemons on all machines (auto-restart if daemon stops)
+-- Test here to verify all daemons are running
+"""
 from xmlrpclib import ServerProxy
 serverConnection = "http://192.168.1.221:8942"
 server = ServerProxy(serverConnection)
+
 
 def testGetAvailableMachines():
     """
@@ -38,6 +44,7 @@ def testGetAvailableAntTargets():
     result = server.getAvailableAntTargets()
     assert result == targetResult
 
+'''
 def testGetScenarioProperties():
     """
     """
@@ -49,26 +56,29 @@ def testGetScenarioProperties_Failure():
     """
     scenario = "Test"
     assert server.getScenarioProperties(scenario) == "unimplemented"
+'''
 
 def testStartModelRun():
     """
     """
-    scenario = "None"
-    module = "None"
-    year = "None"
+    target = "runPIDAF"
+    scenario = "20070315_4Year"
+    baseScenario = "None"
     baseYear = "None"
-    machineList = "None"
-    assert server.startModelRun(scenario, module, year, baseYear, machineList) == "unimplemented"
+    year = "None"
+    machineList = ["Athena"]
+    assert server.startModelRun(target, scenario, baseScenario, baseYear, year, machineList) == "Model Run Started"
 
 def testStartModelRun_Failure():
     """
     """
+    target = "None"
     scenario = "None"
-    module = "None"
-    year = "None"
+    baseScenario = "None"
     baseYear = "None"
-    machineList = "None"
-    assert server.startModelRun(scenario, module, year, baseYear, machineList) == "unimplemented"
+    year = "None"
+    machineList = []
+    assert server.startModelRun(target, scenario, baseScenario, baseYear, year, machineList) == "Model Run Started"
 
 def testVerifyModelIsRunning():
     """
