@@ -18,9 +18,9 @@ import TargetRules, types
 """ Global Variables """
 ApplicationOrchestratorServerXMLRPCPort = 8942
 pythonScriptDirectory = "/models"
-scenarioDirectory = "/models/tlumip/scenario_"
+scenarioDirectory = "C:/zshare/models/tlumip/scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
-runtimeDirectory = "/models/tlumip/runtime"
+runtimeDirectory = "C:/zShare/models/tlumip/runtime"
 
 # Map of machine names to IP addresses:
 machineIP = {}
@@ -32,6 +32,9 @@ for machine in file("ClusterMachines.txt"):
     machineIP[name] = ip
 
 def sendRemoteCommand(machine, command):
+    if True: # Debug
+        print "sendRemoteCommand:", machine, command
+        return
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
     remoteDaemon.runRemoteCommand(command)
 
@@ -142,7 +145,7 @@ class ApplicationOrchestratorServer(RequestServer):
         Return as list: name, description, list of arguments.
         Description contains embedded newlines for formatting.
         """
-        data = file(r"c:\zShare\models\tlumip\runtime\tlumip_dev.xml").read()
+        data = file(os.path.join(runtimeDirectory, "tlumip.xml")).read()
         echo = data.split('<target name="echo">')[1].split('</target>')[0]
         message = re.compile('<echo message="(.*?)"/>', re.DOTALL)
         messages = [m for m in map(string.strip, message.findall(echo)) if m.startswith("run")]
@@ -190,9 +193,11 @@ class ApplicationOrchestratorServer(RequestServer):
             dlist.append("-Dt=%s" % interval)
         command3 = (r"ant -f \models\tlumip\runtime\tlumip.xml %s" % target).split().append(dlist)
         print command3
-        # If athena is in the list, send to athena, otherwise send to first machine in list
+        # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
         if serverMachine in machineList:
             sendRemoteCommand(serverMachine, command3)
+        else:
+            sendRemoteCommand(machineList[0], command3)
         return "Model Run Started"
 
     def verifyModelIsRunning(self, scenario):
@@ -299,22 +304,21 @@ def createDAFPropertiesFile(scenario, machineNames):
     """
     filePath = os.path.normpath(scenarioDirectory + scenario)
     filePath = os.path.join(filePath, "daf")
-    templateFilePath = os.path.join("Z:", filePath, "daf_TEMPLATE.properties")
+    templateFilePath = os.path.join(filePath, "daf_TEMPLATE.properties")
     print "templateFilePath", templateFilePath
     newDaf = file(templateFilePath).read().replace("@NODE_LIST@",
          ",".join(["node%d" % i for i in range(len(machineNames))]))
-        
-    sortedMachineNames = [] 
-    if machineNames.count(serverName) > 0:
-        sortedMachineNames = [serverName]
-        sortedMachineNames.extend(machineNames.remove(serverName))
-    else: 
+
+    if serverName in machineNames:
+        # Force it to be the first name in the list:
+        sortedMachineNames = [serverName] + machineNames.remove(serverName)
+    else:
         sortedMachineNames = machineNames
-   
+
     for i, name in enumerate(sortedMachineNames):
         tag = "@NODE_%d_ADDRESS@" % (i)
         newDaf = newDaf.replace(tag, machineIP[name])
-    propertyFilePath = os.path.join("Z:", filePath, "daf.properties")
+    propertyFilePath = os.path.join(filePath, "daf.properties")
     print "propertyFilePath", propertyFilePath
     file(propertyFilePath, 'w').write(newDaf)
 
