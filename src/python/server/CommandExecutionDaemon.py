@@ -46,6 +46,8 @@ class CommandExecutionDaemonServer(RequestServer):
     if cmdlist[0] not in legalCommands: return "ERROR: Illegal command " + cmdlist[0]
     #print "Executing", " ".join(cmdlist)
     try:
+        #### Careful here: is this actually spawning a subprocess,
+        #### Or is it waiting to finish before it continues????
         pid = subprocess.Popen(cmdlist, shell=True, cwd="Z:").pid
     except Exception, e:
         s = "Subprocess Popen failed " + str(e)
@@ -71,7 +73,7 @@ class CommandExecutionDaemonServer(RequestServer):
     else:
     	proc = ["ps"]
     return subprocess.Popen(proc, stdout=subprocess.PIPE).communicate()[0]
-  
+
   def terminate(self):
         """
         For restarting by CommandExecutionDaemon.py
