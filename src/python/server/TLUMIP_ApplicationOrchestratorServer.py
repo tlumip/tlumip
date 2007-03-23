@@ -25,9 +25,9 @@ runtimeDirectory = r"Z:\models\tlumip\runtime" + '\\'
 # Map of machine names to IP addresses:
 machineIP = {}
 serverMachine = None
-for machine in file("ClusterMachines.txt"):
+for machine in file("ClusterMachines.properties"):
     name, ip = machine.split()
-    if not serverMachine: # First name in ClusterMachines.txt is defined as server
+    if not serverMachine: # First name in ClusterMachines.properties is defined as server
         serverMachine = name
     machineIP[name] = ip
 
@@ -123,6 +123,14 @@ class ApplicationOrchestratorServer(RequestServer):
 
     def getAvailableMachines(self):
         """
+        TODO:
+        Return a list of all the machines:
+        machineName, status
+        status code:
+            unreachable
+            busy
+            available
+
         Create a list/table of what processes a client started
         Create a file that shows activity history
 
