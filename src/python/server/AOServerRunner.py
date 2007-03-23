@@ -13,10 +13,15 @@ aos = None
 
 def start():
     print "starting server"
-    return {
-        'date' : os.path.getmtime("TLUMIP_ApplicationOrchestratorServer.py"),
-        'proc' : subprocess.Popen(["python", "TLUMIP_ApplicationOrchestratorServer.py"])
-    }
+    try:
+        result = {
+            'date' : os.path.getmtime("TLUMIP_ApplicationOrchestratorServer.py"),
+            'proc' : subprocess.Popen(["python", "TLUMIP_ApplicationOrchestratorServer.py"])
+        }
+    except:
+        print "start failed"
+        return None
+    return result
 
 def shutdown():
     global aos

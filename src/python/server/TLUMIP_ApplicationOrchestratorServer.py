@@ -71,6 +71,13 @@ class ApplicationOrchestratorServer(RequestServer):
         """
         return "Connection OK"
 
+    def terminate(self):
+        """
+        For restarting by AOServerRunner.py
+        A hard stop (might be a better way to do this)
+        """
+        os.abort()
+
     def longTestCall(self):
         """
         Testing colliding calls
