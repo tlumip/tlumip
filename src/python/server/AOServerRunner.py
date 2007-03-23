@@ -37,8 +37,8 @@ atexit.register(shutdown)
 while True:
     if not aos or aos['proc'].returncode: # non-None means process has terminated
         aos = start()
-    time.sleep(1)
-    #server = ServerProxy(serverConnection)
-    #print server.checkConnection()
+    time.sleep(2)
+    server = ServerProxy(serverConnection)
+    print server.checkConnection()
     if os.path.getmtime("TLUMIP_ApplicationOrchestratorServer.py") != aos['date']:
         shutdown()

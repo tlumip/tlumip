@@ -24,9 +24,16 @@ runtimeDirectory = "/models/tlumip/runtime"
 
 # Map of machine names to IP addresses:
 machineIP = {}
+serverMachine = None
 for machine in file("ClusterMachines.txt"):
     name, ip = machine.split()
+    if not serverMachine: # First name in ClusterMachines.txt is defined as server
+        serverMachine = name
     machineIP[name] = ip
+
+def sendRemoteCommand(machine, command):
+    remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
+    remoteDaemon.runRemoteCommand(command)
 
 targetRules = {}
 
@@ -35,27 +42,11 @@ for r in dir(TargetRules):
     if type(obj) == types.FunctionType:
         targetRules[r] = obj
 
-def executeRule(target, scenario, baseScenario, baseYear, year):
+def executeRule(target, scenario, baseScenario, baseYear, interval):
     if target in targetRules:
-        targetRules[target](scenario, baseScenario, baseYear, year)
+        targetRules[target](scenario, baseScenario, baseYear, interval)
     else:
-        targetRules['default'](scenario, baseScenario, baseYear, year)
-
-### Is there some other file where this information can be derived?
-dafTargets = """
-    runPIDAF
-    runPTDAF
-    runTSDAF
-    run1YearSpatial
-    run1YearSpatialCalibration
-    run10YearSpatial
-    run1YearTransport
-    run1YearCalibration
-    run1Year
-    run4Year
-    run16Year
-    run31Year
-""".split()
+        targetRules['default'](scenario, baseScenario, baseYear, interval)
 
 class ApplicationOrchestratorServer(RequestServer):
     """
@@ -165,32 +156,43 @@ class ApplicationOrchestratorServer(RequestServer):
             result.append([name, description, arguments])
         return result
 
-    def startModelRun(self, target, scenario, baseScenario, baseYear, year, machineList):
+    def startModelRun(self, target, scenario, baseScenario, baseYear, interval, machineList):
         """
+        Pass empty strings for non-used extra arguments
         test:
           run ed
           run pydaf
           "ant -f targetname"
         """
-        if target in dafTargets:
+        if len(machineList) > 1:
             """
             There's an ant target called startfilemonitor on each
             machine in the machine list
             -- Also startbootstrapserver
             -- Create daf property file
             """
+            createDAFPropertiesFile(scenario, machineList)
+            # Send commands to every machine in the list:
             for i, machine in enumerate(machineList):
                 command1 = (r"ant -f \models\tlumip\runtime\tlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d" % (scenario, i)).split()
+                sendRemoteCommand(machine, command1)
                 command2 = (r"ant -f \models\tlumip\runtime\tlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s" % (scenario, machine)).split()
-                remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
-                print remoteDaemon
-                remoteDaemon.runRemoteCommand(["ping", "www.google.com"])
-                remoteDaemon.runRemoteCommand(command1)
-                remoteDaemon.runRemoteCommand(command2)
-            createDAFPropertiesFile(scenario, machineList)
+                sendRemoteCommand(machine, command2)
 
         # Call ant target, or special target if it exists
-        executeRule(target, scenario, baseScenario, baseYear, year)
+        # executeRule(target, scenario, baseScenario, baseYear, interval)
+        dlist = [ "-DscenarioName=%s" % scenario ]
+        if baseScenario:
+            dlist.append("-DbaseScenario=%s" % baseScenario)
+        if baseYear:
+            dlist.append("-DbaseYear=%s" % baseYear)
+        if interval:
+            dlist.append("-Dt=%s" % interval)
+        command3 = (r"ant -f \models\tlumip\runtime\tlumip.xml %s" % target).split().append(dlist)
+        print command3
+        # If athena is in the list, send to athena, otherwise send to first machine in list
+        if serverMachine in machineList:
+            sendRemoteCommand(serverMachine, command3)
         return "Model Run Started"
 
     def verifyModelIsRunning(self, scenario):
@@ -295,7 +297,7 @@ def createDAFPropertiesFile(scenario, machineNames):
     This is a 'private' function that will be called prior to a daf run
     that will create the daf.properties file.
     """
-    assert machineNames[0] == "Athena"
+    assert machineNames[0] == serverMachine
     filePath = os.path.normpath(scenarioDirectory + scenario)
     filePath = os.path.join(filePath, "daf")
     templateFilePath = os.path.join("Z:", filePath, "daf_TEMPLATE.properties")
