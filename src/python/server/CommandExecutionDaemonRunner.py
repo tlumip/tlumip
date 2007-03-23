@@ -8,15 +8,17 @@ import os, GetTrueIP, subprocess, time, atexit
 from xmlrpclib import ServerProxy
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
 serverConnection = "http://" + GetTrueIP.trueIP() + ":" + str(CommandExecutionDaemonServerXMLRPCPort)
+commandExecutionDaemonSourcePath = 'Z:/models/tlumip/runtime/server/'
 
 ced = None
 
 def start():
     print "starting daemon"
     try:
+        commandExecutionDaemonStartCommand = commandExecutionDaemonSourcePath + "CommandExecutionDaemon.py"
         result = {
-            'date' : os.path.getmtime("CommandExecutionDaemon.py"),
-            'proc' : subprocess.Popen(["python", "CommandExecutionDaemon.py"])
+            'date' : os.path.getmtime(commandExecutionDaemonStartCommand),
+            'proc' : subprocess.Popen(["python", commandExecutionDaemonStartCommand])
         }
     except:
         print "start failed"
@@ -44,5 +46,5 @@ while True:
     daemon = ServerProxy(serverConnection)
     if counter % 15 == 0:
         print daemon.checkConnection()
-    if os.path.getmtime("CommandExecutionDaemon.py") != ced['date']:
+    if os.path.getmtime(commandExecutionDaemonStartCommand) != ced['date']:
         shutdown()
