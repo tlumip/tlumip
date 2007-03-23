@@ -297,20 +297,23 @@ def createDAFPropertiesFile(scenario, machineNames):
     This is a 'private' function that will be called prior to a daf run
     that will create the daf.properties file.
     """
-    assert machineNames[0] == serverMachine
     filePath = os.path.normpath(scenarioDirectory + scenario)
     filePath = os.path.join(filePath, "daf")
     templateFilePath = os.path.join("Z:", filePath, "daf_TEMPLATE.properties")
     print "templateFilePath", templateFilePath
     newDaf = file(templateFilePath).read().replace("@NODE_LIST@",
          ",".join(["node%d" % i for i in range(len(machineNames))]))
-
-    machines = {}
-    for m in map(string.split, file("ClusterMachines.txt").readlines()):
-        machines[m[0]] = m[1]
-    for i, name in enumerate(machineNames[1:]):
-        tag = "@NODE_%d_ADDRESS@" % (i + 1)
-        newDaf = newDaf.replace(tag, machines[name])
+        
+    sortedMachineNames = [] 
+    if machineNames.count(serverName) > 0:
+        sortedMachineNames = [serverName]
+        sortedMachineNames.extend(machineNames.remove(serverName))
+    else: 
+        sortedMachineNames = machineNames
+   
+    for i, name in enumerate(sortedMachineNames):
+        tag = "@NODE_%d_ADDRESS@" % (i)
+        newDaf = newDaf.replace(tag, machineIP[name])
     propertyFilePath = os.path.join("Z:", filePath, "daf.properties")
     print "propertyFilePath", propertyFilePath
     file(propertyFilePath, 'w').write(newDaf)
