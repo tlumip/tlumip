@@ -18,9 +18,9 @@ import TargetRules, types
 """ Global Variables """
 ApplicationOrchestratorServerXMLRPCPort = 8942
 pythonScriptDirectory = "/models"
-scenarioDirectory = "C:/zshare/models/tlumip/scenario_"
+scenarioDirectory = "Z:/models/tlumip/scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
-runtimeDirectory = "C:/zShare/models/tlumip/runtime"
+runtimeDirectory = "Z:/models/tlumip/runtime/"
 
 # Map of machine names to IP addresses:
 machineIP = {}
@@ -32,9 +32,7 @@ for machine in file("ClusterMachines.txt"):
     machineIP[name] = ip
 
 def sendRemoteCommand(machine, command):
-    if True: # Debug
-        print "sendRemoteCommand:", machine, command
-        return
+    print "sendRemoteCommand:", machine, command
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
     remoteDaemon.runRemoteCommand(command)
 
@@ -167,6 +165,10 @@ class ApplicationOrchestratorServer(RequestServer):
           run pydaf
           "ant -f targetname"
         """
+        print "args", target, scenario, baseScenario, baseYear, interval, machineList
+        if target == "specialCommand":
+            sendRemoteCommand("Athena", ["ping", "www.google.com"])
+            return "Special Command Sent"
         if len(machineList) > 1:
             """
             There's an ant target called startfilemonitor on each
@@ -177,28 +179,34 @@ class ApplicationOrchestratorServer(RequestServer):
             createDAFPropertiesFile(scenario, machineList)
             # Send commands to every machine in the list:
             for i, machine in enumerate(machineList):
-                command1 = (r"ant -f \models\tlumip\runtime\tlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d" % (scenario, i)).split()
+                command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d" %
+                           (runtimeDirectory, scenario, i)).split()
                 sendRemoteCommand(machine, command1)
-                command2 = (r"ant -f \models\tlumip\runtime\tlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s" % (scenario, machine)).split()
+                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s" %
+                           (runtimeDirectory, scenario, machine)).split()
                 sendRemoteCommand(machine, command2)
 
         # Call ant target, or special target if it exists
         # executeRule(target, scenario, baseScenario, baseYear, interval)
-        dlist = [ "-DscenarioName=%s" % scenario ]
+        dlist = []
+        if scenario:
+            dlist = [ "-DscenarioName=%s" % scenario ]
         if baseScenario:
             dlist.append("-DbaseScenario=%s" % baseScenario)
         if baseYear:
             dlist.append("-DbaseYear=%s" % baseYear)
         if interval:
             dlist.append("-Dt=%s" % interval)
-        command3 = (r"ant -f \models\tlumip\runtime\tlumip.xml %s" % target).split().append(dlist)
-        print command3
+        command3 = (r"ant -f %stlumip.xml %s" % (runtimeDirectory, target)).split()
+        command3 = command3 + dlist
+        print "command3:", command3
         # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
         if serverMachine in machineList:
             sendRemoteCommand(serverMachine, command3)
         else:
             sendRemoteCommand(machineList[0], command3)
-        return "Model Run Started"
+        print "Started: " + " ".join(command3)
+        return "Started: " + " ".join(command3)
 
     def verifyModelIsRunning(self, scenario):
         """

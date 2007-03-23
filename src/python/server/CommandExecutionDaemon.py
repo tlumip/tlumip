@@ -42,7 +42,7 @@ class CommandExecutionDaemonServer(RequestServer):
 
   def runRemoteCommand(self, cmdlist):
     if cmdlist[0] not in legalCommands: return "ERROR: Illegal command " + cmdlist[0]
-    #print "Executing", " ".join(cmdlist)
+    print "Executing", " ".join(cmdlist)
     pid = subprocess.Popen(cmdlist).pid
     currentlyRunningCommands[str(pid)] = cmdlist
     return "Remote Command Started with pid: " + str(pid)
