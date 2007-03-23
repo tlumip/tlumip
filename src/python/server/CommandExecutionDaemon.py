@@ -45,7 +45,7 @@ class CommandExecutionDaemonServer(RequestServer):
     if cmdlist[0] not in legalCommands: return "ERROR: Illegal command " + cmdlist[0]
     #print "Executing", " ".join(cmdlist)
     try:
-        pid = subprocess.Popen(cmdlist, shell=True).pid
+        pid = subprocess.Popen(cmdlist, shell=True, cwd="Z:").pid
     except Exception, e:
         s = "Subprocess Popen failed " + str(e)
         print s
