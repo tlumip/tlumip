@@ -483,6 +483,22 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
 
+    public double[] getToll () {
+        
+        double[] returnArray = null;
+        
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getToll", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+        
+    }
+
     public double[] getVolau () {
         
         double[] returnArray = null;

@@ -187,17 +187,23 @@ public class Skims {
         	if ( skimType.equalsIgnoreCase("time") ) {
         	    fileName = (String)tsPropertyMap.get( "pkHwyTimeSkim.fileName" );
         	}
-        	else if ( skimType.equalsIgnoreCase("dist") ) {
-        	    fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
-        	}
+            else if ( skimType.equalsIgnoreCase("dist") ) {
+                fileName = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
+            }
+            else if ( skimType.equalsIgnoreCase("toll") ) {
+                fileName = (String)tsPropertyMap.get( "pkHwyTollSkim.fileName" );
+            }
         }
         else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
         	if ( skimType.equalsIgnoreCase("time") ) {
         	    fileName = (String)tsPropertyMap.get( "opHwyTimeSkim.fileName" );
         	}
-        	else if ( skimType.equalsIgnoreCase("dist") ) {
-        	    fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
-        	}
+            else if ( skimType.equalsIgnoreCase("dist") ) {
+                fileName = (String)tsPropertyMap.get( "opHwyDistSkim.fileName" );
+            }
+            else if ( skimType.equalsIgnoreCase("toll") ) {
+                fileName = (String)tsPropertyMap.get( "opHwyTollSkim.fileName" );
+            }
         }
         
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName) );
@@ -232,13 +238,20 @@ public class Skims {
 
 	        		linkAttrib[i] = g.getCongestedTime();
 	        	}
-	        	else if ( skimType[i].equalsIgnoreCase("dist") ) {
-	        	    fileName[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
-	        	    matrixName[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.matrixName" );
-	        	    matrixDescription[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.matrixDescription" );
+                else if ( skimType[i].equalsIgnoreCase("dist") ) {
+                    fileName[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.fileName" );
+                    matrixName[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.matrixName" );
+                    matrixDescription[i] = (String)tsPropertyMap.get( "pkHwyDistSkim.matrixDescription" );
 
-	        		linkAttrib[i] = g.getDist();
-	        	}
+                    linkAttrib[i] = g.getDist();
+                }
+                else if ( skimType[i].equalsIgnoreCase("toll") ) {
+                    fileName[i] = (String)tsPropertyMap.get( "pkHwyTollSkim.fileName" );
+                    matrixName[i] = (String)tsPropertyMap.get( "pkHwyTollSkim.matrixName" );
+                    matrixDescription[i] = (String)tsPropertyMap.get( "pkHwyTollSkim.matrixDescription" );
+
+                    linkAttrib[i] = g.getToll();
+                }
 	        }
 	        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
 	        	if ( skimType[i].equalsIgnoreCase("time") ) {
@@ -255,6 +268,13 @@ public class Skims {
 
 	        		linkAttrib[i] = g.getDist();
 	        	}
+                else if ( skimType[i].equalsIgnoreCase("toll") ) {
+                    fileName[i] = (String)tsPropertyMap.get( "opHwyTollSkim.fileName" );
+                    matrixName[i] = (String)tsPropertyMap.get( "opHwyTollSkim.matrixName" );
+                    matrixDescription[i] = (String)tsPropertyMap.get( "opHwyTollSkim.matrixDescription" );
+
+                    linkAttrib[i] = g.getToll();
+                }
 	        }
 			
 		}
@@ -339,12 +359,18 @@ public class Skims {
 
         		linkAttrib = g.getCongestedTime();
         	}
-        	else if ( skimType.equalsIgnoreCase("dist") ) {
-        	    matrixName = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixName" );
-        	    matrixDescription = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixDescription" );
+            else if ( skimType.equalsIgnoreCase("dist") ) {
+                matrixName = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixName" );
+                matrixDescription = (String)tsPropertyMap.get( "pkHwyTimeSkim.matrixDescription" );
 
-        		linkAttrib = g.getDist();
-        	}
+                linkAttrib = g.getDist();
+            }
+            else if ( skimType.equalsIgnoreCase("toll") ) {
+                matrixName = (String)tsPropertyMap.get( "pkHwyTollSkim.matrixName" );
+                matrixDescription = (String)tsPropertyMap.get( "pkHwyTollSkim.matrixDescription" );
+
+                linkAttrib = g.getToll();
+            }
         }
         else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
         	if ( skimType.equalsIgnoreCase("time") ) {
@@ -359,6 +385,12 @@ public class Skims {
 
         		linkAttrib = g.getDist();
         	}
+            else if ( skimType.equalsIgnoreCase("toll") ) {
+                matrixName = (String)tsPropertyMap.get( "opHwyTollSkim.matrixName" );
+                matrixDescription = (String)tsPropertyMap.get( "opHwyTollSkim.matrixDescription" );
+
+                linkAttrib = g.getToll();
+            }
         }
         
 
@@ -408,14 +440,18 @@ public class Skims {
         if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
         	if ( skimType.equalsIgnoreCase("time") )
         	    fileName = (String)tsPropertyMap.get( "pkHwyTimeBetaSkim.fileName" );
-        	else if ( skimType.equalsIgnoreCase("dist") )
-        	    fileName = (String)tsPropertyMap.get( "pkHwyDistBetaSkim.fileName" );
+            else if ( skimType.equalsIgnoreCase("dist") )
+                fileName = (String)tsPropertyMap.get( "pkHwyDistBetaSkim.fileName" );
+            else if ( skimType.equalsIgnoreCase("toll") )
+                fileName = (String)tsPropertyMap.get( "pkHwyTollBetaSkim.fileName" );
         }
         else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
         	if ( skimType.equalsIgnoreCase("time") )
         	    fileName = (String)tsPropertyMap.get( "opHwyTimeBetaSkim.fileName" );
-        	else if ( skimType.equalsIgnoreCase("dist") )
-        	    fileName = (String)tsPropertyMap.get( "opHwyDistBetaSkim.fileName" );
+            else if ( skimType.equalsIgnoreCase("dist") )
+                fileName = (String)tsPropertyMap.get( "opHwyDistBetaSkim.fileName" );
+            else if ( skimType.equalsIgnoreCase("toll") )
+                fileName = (String)tsPropertyMap.get( "opHwyTollBetaSkim.fileName" );
         }
         
 	    // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
@@ -488,7 +524,7 @@ public class Skims {
 				}
 	
 				// set intrazonal value
-	            if(minValue <= 0) {
+	            if(minValue < 0) {
 	                logger.fatal("Hwy skim min value is " + minValue + "@ rowIndex " + minI + ", colIndex " + minJ);
 	                logger.fatal("System will exit, no hwy skims have been written");
 	                System.exit(10);
@@ -565,9 +601,9 @@ public class Skims {
 		ShortestPathTreeH sp = new ShortestPathTreeH( g );
 
 
-		// build shortest path trees and get distance skims for each origin zone.
-		sp.setLinkCost( linkCost );
+		// build shortest path trees based on linkcost and summarize time, dist, and toll skims for each origin zone.		sp.setLinkCost( linkCost );
 		sp.setValidLinks( validLinks );
+        sp.setLinkCost( linkCost );
 		
 		
 		// loop through the origin zones
@@ -603,7 +639,7 @@ public class Skims {
 		ShortestPathTreeH sp = new ShortestPathTreeH( g );
 
 
-		// build shortest path trees and get distance skims for each origin zone.
+        // build shortest path trees based on linkcost and summarize time, dist, and toll skims for each origin zone.
 		sp.setLinkCost( linkCost );
 		sp.setValidLinks( validLinks );
 		

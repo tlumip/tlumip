@@ -263,18 +263,18 @@ public class TS {
 
         String assignmentPeriod = nh.getTimePeriod();
         long startTime = System.currentTimeMillis();
-        logger.info("Writing " + assignmentPeriod + " time and dist skim matrices for highway mode " + modeChar + " to disk...");
+        logger.info("Writing " + assignmentPeriod + " time, dist and toll skim matrices for highway mode " + modeChar + " to disk...");
 
         
         HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
         HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
     	Skims skims = new Skims(nh, tsPropertyMap, globalPropertyMap);
         
-        String[] skimTypeArray = { "time", "dist" };
+        String[] skimTypeArray = { "time", "dist", "toll" };
         skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, modeChar);
 
         
-        logger.info("wrote the " + assignmentPeriod + " time and dist skims for mode " + modeChar + " in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
+        logger.info("wrote the " + assignmentPeriod + " time, dist and toll skims for mode " + modeChar + " in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 
     }
 
@@ -752,21 +752,23 @@ public class TS {
         nhPeak.checkForIsolatedLinks();
 
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]));
-        
-        nhPeak.startDataServer();
-*/
+*/        
+
         
 
 
-/*        
+        
         // TS Example 1 - Run a peak highway assignment:
         
         // run peak highway assignment
-        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
+        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        nhPeak.checkForIsolatedLinks();
+        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
 
         // write the auto time and distance highway skim matrices to disk based on attribute values in NetworkHandler after assignment
         tsMain.writeHighwaySkimMatrices ( nhPeak, 'a' );
-*/
+
 
         
         
@@ -775,17 +777,19 @@ public class TS {
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
-        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+        nhPeak.startDataServer();
+//        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
 */
 
         
         // run the benchmark highway assignment procedure
-        tsMain.bench ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
+//        tsMain.bench ( tsMain.appRb, tsMain.globalRb, rpcConfigFileName );
         
 
         // run the benchmark highway assignment procedure
-        ApplicationOrchestrator ao = new ApplicationOrchestrator(null);
+//        ApplicationOrchestrator ao = new ApplicationOrchestrator(null);
 //        ao.runTSModel(tsMain.appRb, tsMain.globalRb);
         
 

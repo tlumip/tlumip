@@ -54,6 +54,7 @@ public interface NetworkHandlerIF {
     public double[] getFreeFlowSpeed();
     public double[] getTransitTime();
     public double[] getDist();
+    public double[] getToll();
     public double[] getVolau();
     public double[] setLinkGeneralizedCost ();
     public int setFlows (double[][] flow);

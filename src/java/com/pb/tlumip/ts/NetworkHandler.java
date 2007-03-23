@@ -198,6 +198,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getDist();
     }
 
+    public double[] getToll () {
+        return g.getToll();
+    }
+
     public double[] getVolau () {
         return g.getVolau();
     }
