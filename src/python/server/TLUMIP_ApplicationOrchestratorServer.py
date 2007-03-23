@@ -308,7 +308,7 @@ def createDAFPropertiesFile(scenario, machineNames):
     print "templateFilePath", templateFilePath
     newDaf = file(templateFilePath).read().replace("@NODE_LIST@",
          ",".join(["node%d" % i for i in range(len(machineNames))]))
-
+    
     if serverName in machineNames:
         # Force it to be the first name in the list:
         sortedMachineNames = [serverName] + machineNames.remove(serverName)
@@ -316,8 +316,11 @@ def createDAFPropertiesFile(scenario, machineNames):
         sortedMachineNames = machineNames
 
     for i, name in enumerate(sortedMachineNames):
-        tag = "@NODE_%d_ADDRESS@" % (i)
-        newDaf = newDaf.replace(tag, machineIP[name])
+        tag1 = "@NODE_%d_ADDRESS@" % (i)
+        tag2 = "@NODE_%d_NAME@" % (i)
+        newDaf = newDaf.replace(tag1, machineIP[name])
+        newDaf = newDaf.replace(tag2, name)
+        
     propertyFilePath = os.path.join(filePath, "daf.properties")
     print "propertyFilePath", propertyFilePath
     file(propertyFilePath, 'w').write(newDaf)
