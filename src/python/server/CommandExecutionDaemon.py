@@ -22,6 +22,7 @@ currentlyRunningCommands = {}
 import sys, os, GetTrueIP, subprocess
 from RequestServer import RequestServer
 CommandExecutionDaemonServerXMLRPCPort = 8947
+CommandExecutionDaemonRunnerXMLRPCPort = 8948
 
 #determine if this is a windows box or not
 windows = False
