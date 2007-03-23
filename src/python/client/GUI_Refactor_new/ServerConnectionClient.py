@@ -26,8 +26,29 @@ class ServerConnection(object):
         result = self.server.isScenarioReady(scenarioName)
         return result
         
+    def getAvailableAntTargets(self):
+        # get list of [name, descr, reqd args[]] for ant targets
+        result = self.server.getAvailableAntTargets()
+        return result
+        
+    def getAvailableMachines(self):
+        # get list of [name, descr, reqd args[]] for ant targets
+        result = self.server.getAvailableMachines()
+        return result
+        
+
+
         
         
-#c = ServerConnection('192.168.1.141', 8942)
+c = ServerConnection('192.168.1.221', 8942)
+list = c.getAvailableMachines()
+for i, item in enumerate(list):
+    print "%d: %s" % (i, item)
+    
+#list = c.getAvailableAntTargets()
+#for i, item in enumerate(list):
+#    print "%d: %s" % (i, item)
+#    
 #print c.getExistingScenarioProperties()
 #print c.tempCreateScenario('Jim Scenario','30','1990','Jim','my test scenario')
+

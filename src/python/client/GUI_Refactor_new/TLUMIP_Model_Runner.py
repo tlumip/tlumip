@@ -76,6 +76,10 @@ class Framer(wx.Frame):
     self.serverConnection = serverConnection
     self.existingScenarioProperties = serverConnection.getExistingScenarioProperties()
     self.existingScenarioNames = self.existingScenarioProperties.keys()
+    self.antTargetsTable = serverConnection.getAvailableAntTargets()
+    self.antTargetNames = self.getNames(self.antTargetNames)
+    self.clusterTable = serverConnection.getAvailableMachines()
+    self.clusterNames = self.getNames(self.clusterTable)
     
     self.state = state
     self.createMenuBar()
@@ -83,33 +87,38 @@ class Framer(wx.Frame):
     self.createStatusBar()
     
     
+  def getTableNames(self, table):
+    names = []
+    for item in table:
+        names.append(item[0])
+    return names
+       
   def createMainPanel(self):
     self.mainPanel = wx.Panel(self,-1,size=(862,410))  
         
   def createStatusBar(self):
     self.statusBar = wx.StatusBar(self,-1)
-    self.statusBar.SetFieldsCount(5)
-    self.statusBarBaseText = {}
-    self.statusBarBaseText['scenarioName'] = 'scenarioName = '
-    self.statusBarBaseText['baseYear'] = 'base years = '
-    self.statusBarBaseText['scenarioYears'] = 't scenario years = '
-    self.statusBarBaseText['userName'] = 'user = '
-    self.statusBarBaseText['scenarioCreationTime'] = 'created = '
-    self.clearStatusBar()
     
-  def clearStatusBar(self):
-    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioName'],0)
-    self.statusBar.SetStatusText(self.statusBarBaseText['baseYear'],1)
-    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioYears'],2)
-    self.statusBar.SetStatusText(self.statusBarBaseText['userName'],3)
-    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioCreationTime'],4)
+  def setBaseStatusBarText(self,labels):
+    self.statusBar.SetFieldsCount(len(labels))
+    self.statusBarBaseText = {}
+    for item in labels:
+        if item == '':
+            self.statusBarBaseText[item] = item
+        else:
+            self.statusBarBaseText[item] = '%s = ' % item
+    
+  def clearStatusBar(self, labels):
+    self.setBaseStatusBarText(labels)
+    for i, item in enumerate(labels):
+        self.statusBar.SetStatusText(self.statusBarBaseText[item],i)
   
-  def populateStatusBar(self):
-    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioName'] + self.state.getScenarioName(),0)
-    self.statusBar.SetStatusText(self.statusBarBaseText['baseYear'] + self.state.getBaseYear(),1)
-    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioYears'] + self.state.getScenarioYears(),2)
-    self.statusBar.SetStatusText(self.statusBarBaseText['userName'] + self.state.getUserName(),3)
-    self.statusBar.SetStatusText(self.statusBarBaseText['scenarioCreationTime'] + self.state.getScenarioCreationTime(),4)
+  def populateStatusBar(self, labels, values, widths = []):
+    self.setBaseStatusBarText(labels)
+    for i, item in enumerate(labels):
+        self.statusBar.SetStatusText(self.statusBarBaseText[item]+values[i],i)
+        if len(widths) > 0:
+            self.statusBar.SetStatusWidths(widths)
   
   
   def createMenuBar(self):
@@ -121,9 +130,14 @@ class Framer(wx.Frame):
     
     #a list of scenarios retrieved from AOServer
     self.createOpenSubmenu()
+    self.createRunMenu()
     
     self.menuBar.Append(self.scenarioMenu,"&Scenario")
+    self.menuBar.Append(self.runMenu,"&Run")
+    self.menuBar.Append(self.runMenu,"&Cluster")
     self.SetMenuBar(self.menuBar)
+
+    self.menuBar.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)
 
   def createOpenSubmenu(self):
     self.openSubmenu = wx.Menu()
@@ -132,8 +146,23 @@ class Framer(wx.Frame):
       item = self.openSubmenu.Append(-1, scenario)
       self.Bind(wx.EVT_MENU, self.onOpenSubmenuItem, item)
       self.Bind(wx.EVT_MENU_HIGHLIGHT, self.onOpenSubmenuMouseOver, item)
+    self.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)
       
     self.scenarioMenu.AppendMenu(201, "&Open...", self.openSubmenu)
+
+  def createRunMenu(self):
+    self.runMenu = wx.Menu()
+    for name in self.antTargetNames:
+      item = self.runMenu.Append(-1, name)
+      self.Bind(wx.EVT_MENU, self.onRunMenuItem, item)
+      self.Bind(wx.EVT_MENU_HIGHLIGHT, self.onRunMenuMouseOver, item)
+
+  def createClusterMenu(self):
+    self.clusterMenu = wx.Menu()
+    for name in self.clusterNames:
+      item = self.clusterMenu.Append(-1, name)
+      self.Bind(wx.EVT_MENU, self.onClusterMenuItem, item)
+      self.Bind(wx.EVT_MENU_HIGHLIGHT, self.onClusterMenuMouseOver, item)
 
   def destroyOpenSubmenu(self):
     self.scenarioMenu.Remove(201)
@@ -148,11 +177,34 @@ class Framer(wx.Frame):
     item = self.openSubmenu.FindItemById(event.GetId())
     itemText = item.GetText()
     self.setCurrentScenario(itemText)
-        
+    
+  def onRunMenuItem(self,event):
+    item = self.runMenu.FindItemById(event.GetId())
+    itemText = item.GetText()
+    self.setCurrentAntTarget(itemText)
+            
+  def onClusterMenuItem(self,event):
+    item = self.clusterMenu.FindItemById(event.GetId())
+    itemText = item.GetText()
+    self.setCurrentCluster(itemText)
+            
   def onOpenSubmenuMouseOver(self,event):
     item = self.openSubmenu.FindItemById(event.GetId())
     itemText = item.GetText()
-    self.setCurrentScenario(itemText)
+    self.setStatusBarScenarioInfo(itemText)
+  
+  def onRunMenuMouseOver(self,event):
+    item = self.runMenu.FindItemById(event.GetId())
+    itemText = item.GetText()
+    self.setStatusBarAntInfo(itemText)
+  
+  def onClusterMenuMouseOver(self,event):
+    item = self.clusterMenu.FindItemById(event.GetId())
+    itemText = item.GetText()
+    self.setStatusBarClusterInfo(itemText)
+  
+  def onMenuClose(self,event):
+    self.clearStatusBar([''])
   
   def createNewScenario(self):
     result = self.serverConnection.tempCreateScenario(self.state.getScenarioName(),self.state.getScenarioYears(),self.state.getBaseYear(),self.state.getUserName(),self.state.getScenarioDescription())
@@ -160,16 +212,104 @@ class Framer(wx.Frame):
     waitThread = threading.Thread(target=lambda:self.waitForScenarioReady())
     waitThread.start()
     
+  def setStatusBarScenarioInfo(self,scenarioName):
+    scenarioProperties = self.existingScenarioProperties[scenarioName]
+    scenarioProperties['scenarioName'] = scenarioName
+    labels = self.setStatusBarScenarioItems()
+    values = []
+    for item in labels:
+        values.append(scenarioProperties[item])
+    self.populateStatusBar(labels, values, [-1,100,110,130,270])
+    
+  def setStatusBarAntInfo(self,antName):
+    for item in self.antTargetsTable:
+        if antName == item[0]:
+            antDescription = item[1]
+            break
+    labels = self.setStatusBarAntItems()
+    values = []
+    values.append(antName)
+    values.append(antDescription)
+    self.populateStatusBar(labels, values, [200,-1])
+    
+  def setStatusBarClusterInfo(self,machineName):
+    for item in self.clusterTable:
+        if machineName == item[0]:
+            machineIp = item[1]
+            machineCpus = item[2]
+            machineRam = item[3]
+            machineOS = item[4]
+            machineDescription = item[5]
+            break
+    labels = self.setStatusBarClusterItems()
+    values = []
+    values.append(machineName)
+    values.append(machineIp)
+    values.append(machineCpus)
+    values.append(machineRam)
+    values.append(machineOS)
+    values.append(machineDescription)
+    self.populateStatusBar(labels, values, [80,80,80,80,80,-1])
+    
   def setCurrentScenario(self,scenarioName):
     scenarioProperties = self.existingScenarioProperties[scenarioName]
-    state.setScenarioName(scenarioName)
-    state.setBaseYear(scenarioProperties['baseYear'])
-    state.setScenarioYears(scenarioProperties['scenarioYears'])
-    state.setUserName(scenarioProperties['userName'])
-    state.setScenarioCreationTime(scenarioProperties['scenarioCreationTime'])
-    state.setScenarioDescription(scenarioProperties['scenarioDescription'])
-    self.populateStatusBar()
+    self.state.setScenarioName(scenarioName)
+    self.state.setBaseYear(scenarioProperties['baseYear'])
+    self.state.setScenarioYears(scenarioProperties['scenarioYears'])
+    self.state.setUserName(scenarioProperties['userName'])
+    self.state.setScenarioCreationTime(scenarioProperties['scenarioCreationTime'])
+    self.state.setScenarioDescription(scenarioProperties['scenarioDescription'])
+    #TODO setScenarioPanel method
+    print self.state.getState()
+
+  def setCurrentAntTarget(self,antName):
+    for item in self.antTargetsTable:
+        if antName == item[0]:
+            self.state.setAntTarget(item[0])
+            self.state.setAntDescription(item[1])
+            self.state.setAntReqdArgs(item[2])
+            break
+    #TODO setAntPanel method
+    print self.state.getState()
+
+  def setCurrentCluster(self,machine):
+    for item in self.clusterTable:
+        if machine == item[0]:
+            self.state.setMachineName(item[0])
+            self.state.setMachineIp(item[1])
+            self.state.setMachineCpus(item[2])
+            self.state.setMachineRam(item[2])
+            self.state.setMachineOS(item[2])
+            self.state.setMachineDescription(item[2])
+            break
+    #TODO setClusterPanel method
+    print self.state.getState()
+
+  def setStatusBarScenarioItems(self):    
+    labels = []
+    labels.append('scenarioName')
+    labels.append('baseYear')
+    labels.append('scenarioYears')
+    labels.append('userName')
+    labels.append('scenarioCreationTime')
+    return labels
   
+  def setStatusBarAntItems(self):    
+    labels = []
+    labels.append('antTarget')
+    labels.append('antDescription')
+    return labels
+  
+  def setStatusBarClusterItems(self):
+    labels = []
+    labels.append('Machine')
+    labels.append('Ip address')
+    labels.append('CPUs')
+    labels.append('RAM')
+    labels.append('OS')
+    labels.append('Description')
+    return labels
+
   def enableFrame(self):
     self.Enable(True)
     print self.state.getState()
@@ -200,7 +340,7 @@ def closeWindowActions():
   None
 
 ################State information classs######################
-class ScenarioState(object):
+class ModelRunState(object):
   def __init__(self):
     self.state = {}
   
@@ -222,6 +362,33 @@ class ScenarioState(object):
   def setScenarioDescription(self,value):
     self.state['scenarioDescription'] = value
   
+  def setAntTarget(self,value):
+    self.state['antTarget'] = value
+  
+  def setAntDescription(self,value):
+    self.state['antDescription'] = value
+  
+  def setAntReqdArgs(self,value):
+    self.state['antReqdArgs'] = value
+    
+  def setMachineName(self,value):
+    self.state['Machine'] = value
+  
+  def setMachineIp(self,value):
+    self.state['Ip address'] = value
+  
+  def setMachineCpus(self,value):
+    self.state['CPUs'] = value
+  
+  def setMachineRam(self,value):
+    self.state['RAM'] = value
+  
+  def setMachineOS(self,value):
+    self.state['OS'] = value
+  
+  def setMachineDescription(self,value):
+    self.state['Description'] = value
+  
   def getBaseYear(self):
     return self.state['baseYear']
   
@@ -240,6 +407,33 @@ class ScenarioState(object):
   def getScenarioDescription(self):
     return self.state['scenarioDescription']
   
+  def getAntTarget(self):
+    return self.state['antTarget']
+  
+  def getAntReqdArgs(self):
+    return self.state['antReqdArgs']
+  
+  def getAntDescription(self):
+    return self.state['antDescription']
+  
+  def getMachineName(self):
+    return self.state['Machine']
+  
+  def setMachineIp(self):
+    return self.state['Ip address']
+  
+  def setMachineCpus(self):
+    return self.state['CPUs']
+  
+  def setMachineRam(self):
+    return self.state['RAM']
+  
+  def setMachineOS(self):
+    return self.state['OS']
+  
+  def setMachineDescription(self):
+    return self.state['Description']
+
   def getState(self):
     return self.state
 
@@ -337,7 +531,7 @@ class NewScenarioFrame(wx.Frame):
 
   
 app = wx.PySimpleApp()
-state = ScenarioState()
+state = ModelRunState()
 serverConnection = Server.ServerConnection("192.168.1.141", 8942)
 frame = Framer(None,-1," TLUMIP Model Runner", (870,485), state, serverConnection)
 #sw = wx.SplitterWindow(frame,-1)
