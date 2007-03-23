@@ -70,6 +70,13 @@ class CommandExecutionDaemonServer(RequestServer):
     else:
     	proc = ["ps"]
     return subprocess.Popen(proc, stdout=subprocess.PIPE).communicate()[0]
+  
+  def terminate(self):
+        """
+        For restarting by CommandExecutionDaemon.py
+        A hard stop (might be a better way to do this)
+        """
+        os.abort()
 
 if __name__ == "__main__":
   ipAddress = GetTrueIP.trueIP()
