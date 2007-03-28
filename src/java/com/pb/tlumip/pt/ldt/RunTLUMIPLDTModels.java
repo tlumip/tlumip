@@ -17,6 +17,7 @@
 package com.pb.tlumip.pt.ldt;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.models.pt.PTHousehold;
 import com.pb.models.pt.ldt.RunLDTModels;
 import com.pb.tlumip.pt.PTOccupation;
 
@@ -37,20 +38,12 @@ public class RunTLUMIPLDTModels extends RunLDTModels {
 
     public static void main(String[] args) {
 
-        boolean runTourLevelModels = false;
-        boolean runHHLevelModels   = false;
         boolean runAutoOwnership   = false;
         boolean writeOnlyLDTHH     = false;
 
         if (args[0].equals("1")) {
-            runHHLevelModels = true;
-        } else if (args[0].equals("2")) {
-            runHHLevelModels = true;
             runAutoOwnership = true;
-        } else {
-            runTourLevelModels = true;
-        }
-
+        } 
         if (args[1].equals("1")) {
             writeOnlyLDTHH = true;
         }
@@ -67,8 +60,9 @@ public class RunTLUMIPLDTModels extends RunLDTModels {
         rm.readDcLogsums();
         
         // run the models
-        if (runHHLevelModels)   rm.runHouseholdLevelModels(runAutoOwnership, writeOnlyLDTHH);
-        if (runTourLevelModels) rm.startModel(2000, 1);
+        PTHousehold[] households = rm.runHouseholdLevelModels(runAutoOwnership, writeOnlyLDTHH);
+        rm.startModel(2000, 1);
+        rm.processHouseholds(households);
 
         // clock time
         long timeSeconds = (System.currentTimeMillis() - startTime) / 1000;

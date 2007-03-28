@@ -100,7 +100,7 @@ public class TLUMIPLDExternalDestinationModel  extends LDExternalDestinationMode
         model = new LogitModel("LD External Destination Choice");
 
         for (int i = 0; i < externalStationData.getRowCount(); i++) {
-            Integer taz = new Integer((int) externalStationData.getValueAt(i + 1, "ID"));
+            Integer taz = new Integer((int) externalStationData.getValueAt(i + 1, "ExSta"));
             volume[i] = externalStationData.getValueAt(i + 1, "Vehicles");
             alts[i] = new ConcreteAlternative(taz.toString(), taz);
             model.addAlternative(alts[i]);
