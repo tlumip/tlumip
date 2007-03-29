@@ -157,7 +157,7 @@ public class TLUMIPLDExternalDestinationModel  extends LDExternalDestinationMode
             ConcreteAlternative chosen = (ConcreteAlternative) model.chooseElementalAlternative();
             chosenTaz = (Integer) chosen.getAlternative(); 
         } catch (Exception e) {
-            String msg = "Error in mode choice: no modes available ";
+            String msg = "Error in external desination choice: no alts available ";
             logger.fatal(msg);
             throw new ModelException(msg);
         }
