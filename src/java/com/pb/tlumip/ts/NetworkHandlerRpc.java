@@ -257,14 +257,15 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
 
-    public boolean[] getValidLinksForClass ( char modeChar ) {
+    public boolean[] getValidLinksForClassChar ( int modeChar ) {
         
         boolean[] returnArray = null;
         
         try {
             Vector params = new Vector();
-            params.add(modeChar);
-            returnArray = (boolean[])rc.execute(HANDLER_NAME+".getValidLinksForClass", params);
+            // can't send a char with xml-rpc so cast it as int
+            params.add((int)modeChar);
+            returnArray = (boolean[])rc.execute(HANDLER_NAME+".getValidLinksForClassChar", params);
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {

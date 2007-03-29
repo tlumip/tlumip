@@ -236,7 +236,7 @@ public class Skims {
 		double[] linkCost = nh.setLinkGeneralizedCost();
 
 		// set the highway network attribute on which to skim the network - congested time in this case
-		boolean[] validLinks = nh.getValidLinksForClass( modeChar );
+		boolean[] validLinks = nh.getValidLinksForClassChar( modeChar );
 		
 
 		// get the skims as a double[][] array dimensioned to number of centroids (2984)
@@ -280,7 +280,7 @@ public class Skims {
 		linkAttrib = null;
 
 		// set the highway network attribute on which to skim the network - congested time in this case
-		validLinks = nh.getValidLinksForClass( modeChar );
+		validLinks = nh.getValidLinksForClassChar( modeChar );
 		
 
 		// initialize the necessary values based on the assignmet period and type of skim to produce

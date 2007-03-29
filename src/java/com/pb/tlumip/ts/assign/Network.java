@@ -470,7 +470,7 @@ public class Network implements Serializable {
         return validLinksForClass[userClass];
     }
 
-    public boolean[] getValidLinksForClass ( char modeChar ) {
+    public boolean[] getValidLinksForClassChar ( char modeChar ) {
 		int userClassIndex = getUserClassIndex(modeChar);
         return validLinksForClass[userClassIndex];
     }

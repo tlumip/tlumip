@@ -142,8 +142,9 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getValidLinksForClass ( userClass );
     }
 
-    public boolean[] getValidLinksForClass ( char modeChar ) {
-        return g.getValidLinksForClass ( modeChar );
+    public boolean[] getValidLinksForClassChar ( int modeChar ) {
+        // can't pass char in xml-rpc, so the remote call cast the char to int, and now we need to cast it back to char.
+        return g.getValidLinksForClassChar ( (char)modeChar );
     }
     
     public int[] getNodeIndex () {

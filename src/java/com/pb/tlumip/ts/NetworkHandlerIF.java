@@ -40,7 +40,7 @@ public interface NetworkHandlerIF {
     public boolean userClassesIncludeTruck();
     public boolean[][] getValidLinksForAllClasses ();
     public boolean[] getValidLinksForClass ( int userClass );
-    public boolean[] getValidLinksForClass ( char modeChar );
+    public boolean[] getValidLinksForClassChar ( int modeChar );
     public int[] getVdfIndex ();
     public int[] getNodeIndex ();
     public int[] getLinkType ();
