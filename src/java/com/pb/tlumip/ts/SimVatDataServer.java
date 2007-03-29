@@ -3,14 +3,13 @@ package com.pb.tlumip.ts;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.xmlrpc.WebServer;
 
 import org.apache.log4j.Logger;
-
-import com.pb.common.util.ObjectUtil;
 
 
 
@@ -28,6 +27,7 @@ public class SimVatDataServer {
 
     public static final int MAX_LINK_ID = 43000; 
     public static final int MAX_TIME_ID = 600; 
+    public static final int TIME_STEP = 6; 
     
     public static final String HANDLER_NAME = "simVatDataServer";
     public static final int HANDLER_PORT = 6010;
@@ -35,6 +35,7 @@ public class SimVatDataServer {
     WebServer server = null;
     
     int[][][][] linkMvts;
+    int[][] linkTimeStepOccups = null;
     
     String fileName;
     int recNum;
@@ -113,6 +114,22 @@ public class SimVatDataServer {
         }
 
         return mvts;
+    }
+    
+    
+    
+    public Vector getTimeStepOccupanciesForLinks ( Vector links, int timeStepId ) {
+
+        Iterator it = links.iterator();
+        Vector occups = new Vector(links.size());
+        
+        while ( it.hasNext() ) {
+            int linkId = (Integer)it.next();
+            int occ = linkTimeStepOccups[linkId][timeStepId];
+            occups.add(occ);
+        }
+        
+        return occups;
     }
     
     
@@ -222,7 +239,6 @@ public class SimVatDataServer {
                 
         logger.info("read " + i + " vehicle trajectories from " + recNum + " total sim.vat records.");
         logger.info( pairsFound + " linkId,timeId pairs have " + totalMvts + " total vehicle movements.");
-        logger.info("need additional " + (totalMvts*5*4/(1024*1024)) + "MB for link movement array." );
         
         logger.info ( "max number of vehicle movements counted = " + maxCount + " at linkId = " + maxLink + ", timeId = " + maxTime + "." );
         
@@ -243,7 +259,7 @@ public class SimVatDataServer {
             logger.error ("empty string found in record while reading sim.vat vehicle record.  Last file record number successfully read = " + recNum+1, new IOException() );
         }
 
-        //Tokenize the data record.  We know all values are numeric and separated by commas
+        //Tokenize the data record.  We know all values are numeric and separated by spaces
         StringTokenizer st = new StringTokenizer( s , " \n\r");
 
         //Read vehicle record values
@@ -271,7 +287,7 @@ public class SimVatDataServer {
             logger.error ("empty string found in record while reading sim.vat trajectory record.  Last file record number successfully read = " + recNum+1, new IOException() );
         }
 
-        //Tokenize the data record.  We know all values are numeric and separated by commas
+        //Tokenize the data record.  We know all values are numeric and separated by spaces
         StringTokenizer st = new StringTokenizer( s , " \n\r");
 
         // get number of link,arrival time pairs in the trajectory
@@ -399,7 +415,6 @@ public class SimVatDataServer {
 
                     if ( k % 1000000 == 0 ) {
                         logger.info ( "allocated " + (total*20/(1024*1024)) + " MB for " + total + " movements for " + k + " linkId,timeId pairs." );
-                        logger.info ( "while in allocateLinkMvtArrays(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB." );
                     }
                     
                     k++;
@@ -424,8 +439,6 @@ public class SimVatDataServer {
         }
 
         
-        logger.info( "done allocating " + (count*4)/(1024*1024) + "MB of memory for " + count + " element linkMvts array." );
-        
         return linkMvts;
         
     }
@@ -433,26 +446,7 @@ public class SimVatDataServer {
     
     public static void main ( String[] args ) {
 
-        /*
-        logger.info ( "size of int[1][1][1][1] = " + ObjectUtil.sizeOf( new int[1][1][1][1] ) + " Bytes." );
-        logger.info ( "size of int[1][1][2][1] = " + ObjectUtil.sizeOf( new int[1][1][2][1] ) + " Bytes." );
-        logger.info ( "size of int[1][1][3][1] = " + ObjectUtil.sizeOf( new int[1][1][3][1] ) + " Bytes." );
-        logger.info ( "size of int[1][1][4][1] = " + ObjectUtil.sizeOf( new int[1][1][4][1] ) + " Bytes." );
-        logger.info ( "" );
-        logger.info ( "size of int[2][1][1][1] = " + ObjectUtil.sizeOf( new int[2][1][1][1] ) + " Bytes." );
-        logger.info ( "size of int[2][1][2][1] = " + ObjectUtil.sizeOf( new int[2][1][2][1] ) + " Bytes." );
-        logger.info ( "size of int[2][1][3][1] = " + ObjectUtil.sizeOf( new int[2][1][3][1] ) + " Bytes." );
-        logger.info ( "size of int[2][1][4][1] = " + ObjectUtil.sizeOf( new int[2][1][4][1] ) + " Bytes." );
-        logger.info ( "" );
-        logger.info ( "size of int[2][2][1][1] = " + ObjectUtil.sizeOf( new int[2][2][1][1] ) + " Bytes." );
-        logger.info ( "size of int[2][2][2][1] = " + ObjectUtil.sizeOf( new int[2][2][2][1] ) + " Bytes." );
-        logger.info ( "size of int[2][2][3][1] = " + ObjectUtil.sizeOf( new int[2][2][3][1] ) + " Bytes." );
-        logger.info ( "size of int[2][2][4][1] = " + ObjectUtil.sizeOf( new int[2][2][4][1] ) + " Bytes." );
-        System.exit(-1);
-        */
-        
-        
-        logger.info( "start of main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB." );
+        logger.info( "start of main()." );
 
         SimVatDataServer s = SimVatDataServer.getInstance( HANDLER_PORT, HANDLER_NAME );
 
@@ -470,48 +464,46 @@ public class SimVatDataServer {
         
         // first store the count of movements for each approach link/arrival minute combination
         // read the sim.vat file, counting the number of movements that will need information recorded.
-        logger.info( "before countSimVatLinkMvts() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB." );
+        logger.info( "before countSimVatLinkMvts() in main()." );
         int[][] linkMvtCounts = s.countSimVatLinkMvts( fileName );
         // should require approx 100MB for linkMvtCounts array
         
         
         // allocate memory for the int[][][][] linkMvts array to hold all the required information.
-        logger.info( "before allocateLinkMvtArrays() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvtCounts)=" + ObjectUtil.sizeOf(linkMvtCounts)/(1024*1024) + "MB." );
+        logger.info( "before allocateLinkMvtArrays() in main()." );
         s.linkMvts = s.allocateLinkMvtArrays( linkMvtCounts );
         linkMvtCounts = null;
         // should require approx 2GB for linkMvts array
 
-        /*
-        for (int i=0; i < s.linkMvts.length; i++){
-            
-            for (int j=0; j < s.linkMvts[i].length; j++){
-                if ( s.linkMvts[i][j] != null ) {
-                    
-                    if ( s.linkMvts[i][j].length > 0 ) {
-                        logger.info ( i + "," + j + "  length: " + s.linkMvts[i][j].length + ", linkMvts[i][j]:" + ObjectUtil.sizeOf(s.linkMvts[i][j]) + " Bytes." );
-                        
-                        for (int k=0; k < s.linkMvts[i][j].length; k++) {
-                            logger.info ( "   k=" + k + ", linkMvts[i][j][k]: " + ObjectUtil.sizeOf(s.linkMvts[i][j][k]) + " Bytes." );
-                            for (int l=0; l < s.linkMvts[i][j][k].length; l++)
-                                logger.info ( "      l=" + l + ", linkMvts[i][j][k][l]: " + ObjectUtil.sizeOf(s.linkMvts[i][j][k][l]) + " Bytes." );
-                        }
-                            
-                        System.exit(-1);
-                    }
-                    
-                }
-            }
-        }
-        */
+
         
         // re-read the sim.vat file, storing the movement information in the linkMvts array that was previously allocated.
-        logger.info( "before reReadSimVatFile() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvts)=" + ObjectUtil.sizeOf(s.linkMvts)/(1024*1024) + "MB." );
+        logger.info( "before reReadSimVatFile() in main()." );
         s.reReadSimVatFile( fileName );
         // should add approx 100MB for local array in this method, which would then be eligible for garbage collection
         
 
+        
+        logger.info( "before filling linkTimeStepOccups array in main()." );
+        s.linkTimeStepOccups = new int[MAX_LINK_ID][60*MAX_TIME_ID/TIME_STEP];
+
+        for (int i=0; i < s.linkMvts.length; i++) {
+            for (int j=0; j < s.linkMvts[i].length; j++) {
+                if (s.linkMvts[i][j] != null) {
+                    for (int k=0; k < s.linkMvts[i][j].length; k++) {
+                        int id1 = (int)(s.linkMvts[i][j][k][1]/TIME_STEP);
+                        int id2 = (int)((s.linkMvts[i][j][k][1]+s.linkMvts[i][j][k][2])/TIME_STEP);
+                        // incement the occupancy count for this vehicle on link1 for each time step occupied 
+                        for (int m=id1; m < id2; m++)
+                            s.linkTimeStepOccups[i][m]++;
+                    }
+                }
+            }
+        }
+        
+        
+        
         // start the server so that clients cn request data stored in linkMvts array,
-        logger.info( "before startServer() in main(): maxMemory=" + Runtime.getRuntime().maxMemory()/(1024*1024) + "MB, totalMemory=" + Runtime.getRuntime().totalMemory()/(1024*1024) + "MB, freeMemory=" + Runtime.getRuntime().freeMemory()/(1024*1024) + "MB, ObjectUtil.sizeOf(linkMvts)=" + ObjectUtil.sizeOf(s.linkMvts)/(1024*1024) + "MB." );
         logger.info( "linkMvts array complete, starting server ..." );
         s.startServer();
         // total memory used at this point should be approx 2GB.
