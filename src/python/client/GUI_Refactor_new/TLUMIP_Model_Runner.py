@@ -77,9 +77,9 @@ class Framer(wx.Frame):
     self.existingScenarioProperties = serverConnection.getExistingScenarioProperties()
     self.existingScenarioNames = self.existingScenarioProperties.keys()
     self.antTargetsTable = serverConnection.getAvailableAntTargets()
-    self.antTargetNames = self.getNames(self.antTargetNames)
-    self.clusterTable = serverConnection.getAvailableMachines()
-    self.clusterNames = self.getNames(self.clusterTable)
+    self.antTargetNames = self.getAntTargetNames(self.antTargetsTable)
+    self.clusterDicts = serverConnection.getAvailableMachines()
+    self.clusterNames = self.getClusterNames(self.clusterDicts,'NAME')
     
     self.state = state
     self.createMenuBar()
@@ -87,10 +87,16 @@ class Framer(wx.Frame):
     self.createStatusBar()
     
     
-  def getTableNames(self, table):
+  def getAntTargetNames(self, table):
     names = []
     for item in table:
         names.append(item[0])
+    return names
+       
+  def getClusterNames(self, clusterDicts, nameKey):
+    names = []
+    for item in clusterDicts:
+        names.append(item[nameKey])
     return names
        
   def createMainPanel(self):
@@ -125,16 +131,19 @@ class Framer(wx.Frame):
     self.menuBar = wx.MenuBar()
     self.scenarioMenu = wx.Menu()
     
-    new = self.scenarioMenu.Append(-1, "&New")
+    new = self.scenarioMenu.Append(-1, "&New...")
     self.Bind(wx.EVT_MENU, self.onNew, new)
     
-    #a list of scenarios retrieved from AOServer
+    #a list of scenarios is retrieved from AOServer
     self.createOpenSubmenu()
+    #a list of ant targets is retrieved from AOServer
     self.createRunMenu()
+    #a list of cluster machines is retrieved from AOServer
+    self.createClusterMenu()
     
     self.menuBar.Append(self.scenarioMenu,"&Scenario")
     self.menuBar.Append(self.runMenu,"&Run")
-    self.menuBar.Append(self.runMenu,"&Cluster")
+    self.menuBar.Append(self.clusterMenu,"&Cluster")
     self.SetMenuBar(self.menuBar)
 
     self.menuBar.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)
@@ -148,7 +157,7 @@ class Framer(wx.Frame):
       self.Bind(wx.EVT_MENU_HIGHLIGHT, self.onOpenSubmenuMouseOver, item)
     self.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)
       
-    self.scenarioMenu.AppendMenu(201, "&Open...", self.openSubmenu)
+    self.scenarioMenu.AppendMenu(201, "&Open", self.openSubmenu)
 
   def createRunMenu(self):
     self.runMenu = wx.Menu()
@@ -159,16 +168,21 @@ class Framer(wx.Frame):
 
   def createClusterMenu(self):
     self.clusterMenu = wx.Menu()
+    item = self.clusterMenu.Append(-1, "&New...")
+    self.Bind(wx.EVT_MENU, self.onClusterMenuItem, item)
+    
+    """
+    self.clusterMenu = wx.Menu()
     for name in self.clusterNames:
       item = self.clusterMenu.Append(-1, name)
       self.Bind(wx.EVT_MENU, self.onClusterMenuItem, item)
       self.Bind(wx.EVT_MENU_HIGHLIGHT, self.onClusterMenuMouseOver, item)
+    """
 
   def destroyOpenSubmenu(self):
     self.scenarioMenu.Remove(201)
           
   def onNew(self, event):
-    print "selected 'new' from Scenario menu"
     frame = NewScenarioFrame(self, self.state)
     frame.Show()
     self.disableFrame()
@@ -184,10 +198,11 @@ class Framer(wx.Frame):
     self.setCurrentAntTarget(itemText)
             
   def onClusterMenuItem(self,event):
-    item = self.clusterMenu.FindItemById(event.GetId())
-    itemText = item.GetText()
-    self.setCurrentCluster(itemText)
-            
+    #item = self.clusterMenu.FindItemById(event.GetId())
+    #itemText = item.GetText()
+    #self.setCurrentCluster(itemText)
+    DefineClusterFrame(self,).Show()
+    
   def onOpenSubmenuMouseOver(self,event):
     item = self.openSubmenu.FindItemById(event.GetId())
     itemText = item.GetText()
@@ -202,7 +217,7 @@ class Framer(wx.Frame):
     item = self.clusterMenu.FindItemById(event.GetId())
     itemText = item.GetText()
     self.setStatusBarClusterInfo(itemText)
-  
+      
   def onMenuClose(self,event):
     self.clearStatusBar([''])
   
@@ -233,23 +248,25 @@ class Framer(wx.Frame):
     self.populateStatusBar(labels, values, [200,-1])
     
   def setStatusBarClusterInfo(self,machineName):
-    for item in self.clusterTable:
-        if machineName == item[0]:
-            machineIp = item[1]
-            machineCpus = item[2]
-            machineRam = item[3]
-            machineOS = item[4]
-            machineDescription = item[5]
+    for item in self.clusterDicts:
+        if item['NAME'] == machineName:
+            machineIp = item['IP']
+            machineCpus = item['PROCESSORS']
+            machineRam = item['RAM']
+            machineOS = item['OS']
+            machineDescription = item['DESCRIPTION']
+            machineStatus = item['STATUS']
             break
     labels = self.setStatusBarClusterItems()
     values = []
     values.append(machineName)
     values.append(machineIp)
+    values.append(machineStatus)
     values.append(machineCpus)
-    values.append(machineRam)
+    values.append(machineRam + 'GB')
     values.append(machineOS)
     values.append(machineDescription)
-    self.populateStatusBar(labels, values, [80,80,80,80,80,-1])
+    self.populateStatusBar(labels, values, [105,150,115,55,65,85,-1])
     
   def setCurrentScenario(self,scenarioName):
     scenarioProperties = self.existingScenarioProperties[scenarioName]
@@ -259,9 +276,8 @@ class Framer(wx.Frame):
     self.state.setUserName(scenarioProperties['userName'])
     self.state.setScenarioCreationTime(scenarioProperties['scenarioCreationTime'])
     self.state.setScenarioDescription(scenarioProperties['scenarioDescription'])
-    #TODO setScenarioPanel method
-    print self.state.getState()
-
+    self.showSenarioState()
+    
   def setCurrentAntTarget(self,antName):
     for item in self.antTargetsTable:
         if antName == item[0]:
@@ -272,15 +288,16 @@ class Framer(wx.Frame):
     #TODO setAntPanel method
     print self.state.getState()
 
-  def setCurrentCluster(self,machine):
-    for item in self.clusterTable:
-        if machine == item[0]:
-            self.state.setMachineName(item[0])
-            self.state.setMachineIp(item[1])
-            self.state.setMachineCpus(item[2])
-            self.state.setMachineRam(item[2])
-            self.state.setMachineOS(item[2])
-            self.state.setMachineDescription(item[2])
+  def setCurrentCluster(self,machineName):
+    for item in self.clusterDicts:
+        if item['NAME'] == machineName:
+            self.state.setMachineName(item['NAME'])
+            self.state.setMachineIp(item['IP'])
+            self.state.setMachineCpus(item['PROCESSORS'])
+            self.state.setMachineRam(item['RAM'])
+            self.state.setMachineOS(item['OS'])
+            self.state.setMachineDescription(item['DESCRIPTION'])
+            self.state.setMachineDescription(item['STATUS'])
             break
     #TODO setClusterPanel method
     print self.state.getState()
@@ -304,6 +321,7 @@ class Framer(wx.Frame):
     labels = []
     labels.append('Machine')
     labels.append('Ip address')
+    labels.append('Status')
     labels.append('CPUs')
     labels.append('RAM')
     labels.append('OS')
@@ -326,6 +344,24 @@ class Framer(wx.Frame):
     self.createOpenSubmenu()
     self.setCurrentScenario(self.state.getScenarioName())
     
+  def showSenarioState(self):
+    panelX = 600
+    panelY = 30
+    offsetX = 70
+    offsetY = 16
+    headings = ['Name:', 'Created By:', 'Created At:', 'Base Year:']
+    values = [self.state.getScenarioName(), self.state.getUserName(), self.state.getScenarioCreationTime(), self.state.getBaseYear()]
+    
+    sectionHeading = wx.StaticText(self.mainPanel, -1, 'Selected Scenario:', (panelX, panelY - 1.2*offsetY))
+    sectionHeadingFont = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
+    sectionHeading.SetFont(sectionHeadingFont)
+    for i, h in enumerate(headings):
+        wx.StaticText(self.mainPanel, -1, h, (panelX, panelY + i*offsetY))
+        wx.StaticText(self.mainPanel, -1, values[i], (panelX + offsetX, panelY + i*offsetY))
+    wx.StaticText(self.mainPanel, -1, 'Description:', (panelX, panelY + (i+1)*offsetY))
+    text = wx.StaticText(self.mainPanel, -1, self.state.getScenarioDescription(), (panelX + offsetX, panelY + (i+1)*offsetY))
+    descriptionWidth = self.mainPanel.GetSizeTuple()[0] - (panelX+ offsetX)
+    text.Wrap(descriptionWidth)
   
   def onWindowClose(self, event):
     closeWindowActions()
@@ -419,19 +455,19 @@ class ModelRunState(object):
   def getMachineName(self):
     return self.state['Machine']
   
-  def setMachineIp(self):
+  def getMachineIp(self):
     return self.state['Ip address']
   
-  def setMachineCpus(self):
+  def getMachineCpus(self):
     return self.state['CPUs']
   
-  def setMachineRam(self):
+  def getMachineRam(self):
     return self.state['RAM']
   
-  def setMachineOS(self):
+  def getMachineOS(self):
     return self.state['OS']
   
-  def setMachineDescription(self):
+  def getMachineDescription(self):
     return self.state['Description']
 
   def getState(self):
@@ -472,7 +508,7 @@ class NewScenarioFrame(wx.Frame):
     self.scenarioYears = 1
     wx.StaticText(panel, -1, 'Scenario Years', wx.Point(200,95))
     self.sc = wx.SpinCtrl(panel, 12, '', wx.Point(200,114), wx.Size(50,-1), )
-    self.sc.SetRange(1,30)
+    self.sc.SetRange(1,31)
     self.sc.SetValue(self.scenarioYears)
     wx.EVT_SPINCTRL(panel,12,self.setScenarioYears)
     wx.EVT_TEXT(self, 12, self.setScenarioYears)
@@ -523,6 +559,32 @@ class NewScenarioFrame(wx.Frame):
   def onCancel(self,event):
     self.callingFrame.enableFrame()
     self.Destroy()
+      
+
+
+#############Create cluster definition popup box####################
+class DefineClusterFrame(wx.Frame):
+  def __init__(self, callingFrame):  #, size = (40,70)
+    wx.Frame.__init__(self, callingFrame, -1, "Select Machines for Cluster", size=(300,400))
+    
+    panel = wx.Panel(self, -1)
+
+    #Machine list check boxes  
+    xOffset = 10
+    yOffset = 20
+    wx.StaticText(panel, -1, 'Check available machines to include in cluster', wx.Point(xOffset,yOffset))
+    for name in callingFrame.clusterNames:
+        for item in callingFrame.clusterDicts:
+            if item['NAME'] == name:
+                avail = False
+                if item['STATUS'] == "Available":
+                    avail = True
+                break
+                
+        yOffset = yOffset + 20
+        panelItem = wx.CheckBox(panel, -1, name, wx.Point(xOffset,yOffset), wx.Size(75,-1))
+        panelItem.Enable(avail) 
+
       
 
 ###############################################################

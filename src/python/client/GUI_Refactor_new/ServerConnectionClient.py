@@ -32,18 +32,21 @@ class ServerConnection(object):
         return result
         
     def getAvailableMachines(self):
-        # get list of [name, descr, reqd args[]] for ant targets
+        # get a list of dicts with { NAME, IP, PROCESSORS, RAM, OS, DESCRIPTION, STATUS } properties for each machine
+        # named in ClusterMachines.txt on server 
         result = self.server.getAvailableMachines()
         return result
         
 
 
         
-        
-c = ServerConnection('192.168.1.221', 8942)
+"""        
+c = ServerConnection('192.168.1.141', 8942)
 list = c.getAvailableMachines()
 for i, item in enumerate(list):
     print "%d: %s" % (i, item)
+"""
+   
     
 #list = c.getAvailableAntTargets()
 #for i, item in enumerate(list):
