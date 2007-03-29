@@ -762,6 +762,7 @@ public class TS {
         
         // run peak highway assignment
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
+        nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
         nhPeak.checkForIsolatedLinks();
         tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
@@ -780,6 +781,7 @@ public class TS {
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         nhPeak.startDataServer();
+        logger.info ("Network data server running...");
 //        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
 */
 
@@ -795,6 +797,8 @@ public class TS {
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
 //        nhPeak.stopDataServer();
+//        logger.info ("Network data server stopped.");
+        logger.info ("TS.main() exiting.");
 
     }
 
