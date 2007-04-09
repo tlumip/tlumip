@@ -41,7 +41,7 @@ STATE_INFO_OFFSET_X = 70
 STATE_INFO_OFFSET_Y = 16
 SCENARIO_STATE_TEXT_Y = 25
 ANT_STATE_TEXT_Y = STATE_INFO_OFFSET_X + 100
-CLUSTER_STATE_TEXT_Y = STATE_INFO_OFFSET_X + 220
+CLUSTER_STATE_TEXT_Y = STATE_INFO_OFFSET_X + 230
 
 
 
@@ -316,11 +316,9 @@ class Framer(wx.Frame):
             self.state.setAntDescription(item[1])
             self.state.setAntReqdArgs(item[2])
             break
-    print self.state.getState()
     self.showAntState()
 
-  def setCurrentCluster(self):
-    machines = self.clusterFrame.getSelectedMachines()
+  def setCurrentCluster(self,machines):
     self.state.setMachinesUsed(machines)
 
   def setStatusBarScenarioItems(self):    
@@ -351,7 +349,6 @@ class Framer(wx.Frame):
 
   def enableFrame(self):
     self.Enable(True)
-    print self.state.getState()
   
   def disableFrame(self):
     self.Enable(False)
@@ -427,12 +424,17 @@ class Framer(wx.Frame):
         self.antStateLabelTextItems.append(wx.StaticText(self.panelRight, -1, newValues[i], (STATE_INFO_X + STATE_INFO_OFFSET_X, ANT_STATE_TEXT_Y + i*STATE_INFO_OFFSET_Y)))
 
   def showClusterState(self):
+    # clear old entries
+    for i, v in enumerate(self.clusterStateLabelTextItems):
+        v.SetLabel('')
     self.clusterStateHeadingTextItems = []
     self.clusterStateLabelTextItems = []
+    
+    # get new entries and display them
     values = self.state.getMachinesUsed()
     for i, v in enumerate(values):
-        self.clusterStateHeadingTextItems.append(wx.StaticText(self.panelRight, -1, '', (STATE_INFO_X, ANT_STATE_TEXT_Y + i*STATE_INFO_OFFSET_Y)))
-        self.clusterStateLabelTextItems.append(wx.StaticText(self.panelRight, -1, v, (STATE_INFO_X + STATE_INFO_OFFSET_X, CLUSTER_STATE_TEXT_Y + i*STATE_INFO_OFFSET_Y)))
+        self.clusterStateHeadingTextItems.append(wx.StaticText(self.panelRight, -1, '', (STATE_INFO_X, ANT_STATE_TEXT_Y + (i+1)*STATE_INFO_OFFSET_Y)))
+        self.clusterStateLabelTextItems.append(wx.StaticText(self.panelRight, -1, v, (STATE_INFO_X + STATE_INFO_OFFSET_X, CLUSTER_STATE_TEXT_Y + (i+1)*STATE_INFO_OFFSET_Y)))
   
   def onWindowClose(self, event):
     closeWindowActions()
@@ -617,6 +619,7 @@ class DefineClusterFrame(wx.Frame):
     yOffset = 30
     
     self.panelItems = []
+    self.callingFrame.setCurrentCluster([])
     wx.StaticText(panel, -1, 'Check available machines to include in cluster', wx.Point(xOffset,yOffset))
     for name in callingFrame.clusterNames:
         for item in callingFrame.clusterDicts:
@@ -641,7 +644,9 @@ class DefineClusterFrame(wx.Frame):
 
 
   def onCreate(self, event):
-    self.callingFrame.setCurrentCluster()
+    names = self.getSelectedMachines()
+    self.callingFrame.setCurrentCluster(names)
+    self.callingFrame.showClusterState()
     self.callingFrame.enableFrame()
     self.Destroy()
     
@@ -650,23 +655,31 @@ class DefineClusterFrame(wx.Frame):
     self.Destroy()
     
   def getSelectedMachines(self):
-      checked = False
-      if self.panelItems == None or len(self.panelItems) == 0:
-          print 'no machines in list'
-          return []
-      else:
-          result = []
-          for i, p in enumerate(self.panelItems):
-            if p.IsChecked():
-              checked = True
-              result.append(self.callingFrame.clusterNames[i])
-            if checked:
-                qualifier = ''
-            else:
-                qualifier = 'not'
-            print 'machine %s is %s checked' % (self.callingFrame.clusterNames[i], qualifier)
+    checked = False
+    enabled = False
+    checkedQualifier = 'not'
+    enabledQualifier = 'not'
+    if self.panelItems == None or len(self.panelItems) == 0:
+      print 'no machines in list'
+      return []
+    else:
+      result = []
+      for i, p in enumerate(self.panelItems):
+        if p.IsEnabled():
+          enabled = True
+          enabledQualifier = '\b'
+          if p.IsChecked():
+            checked = True
+            checkedQualifier = '\b'
+            result.append(self.callingFrame.clusterNames[i])
+          else:
+            checkedQualifier = 'not'
+        else:
+          enabledQualifier = 'not'
+        print '%s is %s enabled and is %s checked' % (self.callingFrame.clusterNames[i], enabledQualifier, checkedQualifier)
+          
     
-      return result
+    return result
 
 
 ###############################################################
