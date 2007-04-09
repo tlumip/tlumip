@@ -22,30 +22,6 @@ scenarioDirectory = r"Z:\models\tlumip\scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
 runtimeDirectory = r"Z:\models\tlumip\runtime" + '\\'
 
-# Map of machine names to IP addresses:
-machineIP = {}
-machineProperties = []
-serverMachine = None
-clusterMachines = file("ClusterMachines.txt")
-header = clusterMachines.next().split()
-
-for machine in clusterMachines:
-    vars, DESCRIPTION, trash = machine.split('"')
-    NAME, IP, PROCESSORS, RAM, OS = vars.split()
-    if not serverMachine: # First name in ClusterMachines.txt is defined as server
-        serverMachine = NAME
-    machineIP[NAME] = IP
-    machineProperties.append( {
-        "NAME" : NAME,
-        "IP" : IP,
-        "PROCESSORS" : PROCESSORS,
-        "RAM" : RAM,
-        "OS" : OS,
-        "DESCRIPTION" : DESCRIPTION,
-        "STATUS" : "Unreachable"
-    })
-#pprint.pprint(machineProperties)
-
 def sendRemoteCommand(machine, command):
     print "sendRemoteCommand:", machine, command
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
@@ -123,6 +99,32 @@ class ApplicationOrchestratorServer(RequestServer):
             return ("ERROR: exception thrown when reading %s " % createdScenariosFile) + str(val)
         return "Scenario Not Ready"
 
+    def readClusterMachinesFile(self):
+        # Map of machine names to IP addresses:
+        machineIP = {}
+        machineProperties = []
+        serverMachine = None
+        clusterMachines = file("ClusterMachines.txt")
+        header = clusterMachines.next().split()
+        
+        for machine in clusterMachines:
+            vars, DESCRIPTION, trash = machine.split('"')
+            NAME, IP, PROCESSORS, RAM, OS = vars.split()
+            if not serverMachine: # First name in ClusterMachines.txt is defined as server
+                serverMachine = NAME
+            machineIP[NAME] = IP
+            machineProperties.append( {
+                "NAME" : NAME,
+                "IP" : IP,
+                "PROCESSORS" : PROCESSORS,
+                "RAM" : RAM,
+                "OS" : OS,
+                "DESCRIPTION" : DESCRIPTION,
+                "STATUS" : "Unreachable"
+            })
+        #pprint.pprint(machineProperties)
+        return machineProperties
+
     def getAvailableMachines(self):
         """
         TODO:
@@ -140,6 +142,7 @@ class ApplicationOrchestratorServer(RequestServer):
         process running. (call getProcessList() on each machine) First cut: if java
         is running, machine is not available
         """
+        machineProperties = self.readClusterMachinesFile()
         for machine in machineProperties:
             #if machine not in ["Athena", "Chaos"] : continue  ############## TEST TEST TEST
             cmdDaemon = "http://" + machine['IP'] + ":" + str(CommandExecutionDaemonServerXMLRPCPort)
@@ -150,7 +153,7 @@ class ApplicationOrchestratorServer(RequestServer):
                     machine['STATUS'] = "Available"
                 else:
                     machine['STATUS'] = "Busy"
-            except:
+            except Exception, e:
                 machine['STATUS'] = "Unreachable"
         return machineProperties
 
