@@ -120,13 +120,20 @@ public class OregonPIPProcessor extends PIPProcessor {
             logger.info("Deleted old ActivitiesZonalValuesW.csv to prepare for new file");
         }
 
+        File makeUseW = new File(currPath + "MakeUseW.csv");
+        if(makeUseW.exists()){
+            makeUseW.delete();
+            logger.info("Deleted old MakeUseW.csv to prepare for new file");
+        }
+
         createActivitiesWFile();
         createFloorspaceWFile();
         createActivitiesZonalValuesWFile();
+        createMakeUseWFile();
     }
 
     private void createActivitiesWFile(){
-        logger.info("Creating new ActivitiesW.csv using current ED and ALD data");
+        logger.info("Creating new ActivitiesW.csv using current ED and SPG data");
         boolean readSpgHHFile = (ResourceUtil.getProperty(piRb, "pi.readHouseholdsByHHCategory").equalsIgnoreCase("true"));
         boolean readEDDollarFile = (ResourceUtil.getProperty(piRb, "pi.readActivityDollarDataForPI").equalsIgnoreCase("true"));
         if(readSpgHHFile || readEDDollarFile)
@@ -426,6 +433,85 @@ public class OregonPIPProcessor extends PIPProcessor {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    private void createMakeUseWFile(){
+        logger.info("Creating new MakeUseW.csv using current ED data");
+
+        //First read in the activity dollar data for pi that ED produced
+        //and add up the total dollars of production (don't include capitalists and govt inst.)
+        TableDataSet dollars = loadTableDataSet("ActivityDollarDataForPI", "ed.input.data" );
+        double totalDollarsProduction = 0.0;
+        for(int row=1; row <= dollars.getRowCount(); row++){
+            if(!dollars.getStringValueAt(row, 1).equalsIgnoreCase("Capitalists" ) &&
+                    !dollars.getStringValueAt(row, 1).equalsIgnoreCase("GovInstitiutions")){
+                totalDollarsProduction += dollars.getValueAt(row, 2);
+            }
+        }
+        double totalDollarsProductionInMillions = totalDollarsProduction/1000000.0;
+        logger.info("TotalDollarsProductionInMillions: " + totalDollarsProductionInMillions);
+
+        //Next read in the job data for spg1 that ED produced and add up the total
+        //number of jobs
+        TableDataSet jobs = loadTableDataSet("JobDataForSPG1", "ed.input.data");
+        double totalJobs = 0.0;
+        for(int row=1; row <= jobs.getRowCount(); row++){
+            totalJobs += jobs.getValueAt(row, 2);
+        }
+        logger.info("Total jobs: " + totalJobs);
+
+        //Calculate Jobs/Dollars ratio
+        double jobsToDollars = totalJobs / totalDollarsProductionInMillions;
+        logger.info("JobsToDollars: " + jobsToDollars);
+
+        //Read the 98 ratio from the properties file
+        double jobsToDollars98 = ResourceUtil.getDoubleProperty(piRb, "pi.98.productivity.rate", 0.094129);
+        logger.info("JobsToDollars-98: " +  jobsToDollars98);
+
+        //Calculate the LaborUseScalingFactor
+        double laborUseScalor = jobsToDollars98 / jobsToDollars;
+        logger.info("LaborUseScalingFactor: " + laborUseScalor);
+
+        if(timePeriod == 8 && Math.abs(1-laborUseScalor) > .1){
+            logger.warn("WARNING: Expected LaborUseScalingFactor is 1, Actual value is " + laborUseScalor);
+        }
+
+        //Now scale minimum and the discretionary amounts of the activities that use labor commodities
+        //in the MakeUseI.csv file and write it out as MakeUseW.csv
+        TableDataSet makeUseITable = loadTableDataSet("MakeUseI","pi.base.data");
+        String activityName;
+        String commodityName;
+        String mOrU;
+        float minimum;
+        float discretionary;
+        for(int row = 1; row <= makeUseITable.getRowCount(); row++){
+            activityName = makeUseITable.getStringValueAt(row,"Activity");
+            if(!activityName.startsWith("HH")){
+                commodityName = makeUseITable.getStringValueAt(row, "Commodity");
+                if(indOccRef.getOccupationLabels().contains(commodityName)){
+                    mOrU = makeUseITable.getStringValueAt(row, "MorU");
+                    if(mOrU.equalsIgnoreCase("U")){
+                        minimum = makeUseITable.getValueAt(row, "Minimum");
+                        discretionary = makeUseITable.getValueAt(row, "Discretionary");
+                        //mulitiply by scalor
+                        minimum *= laborUseScalor;
+                        discretionary *= laborUseScalor;
+                        makeUseITable.setValueAt(row, "Minimum", minimum);
+                        makeUseITable.setValueAt(row, "Discretionary", discretionary);
+                    }
+                }
+            }
+        }
+        logger.info("Writing out the MakeUseW.csv file to the current pi directory");
+        String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
+        CSVFileWriter writer = new CSVFileWriter();
+        try {
+            writer.writeFile(makeUseITable, new File(piOutputsPath + "MakeUseW.csv"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
