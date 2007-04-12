@@ -462,15 +462,15 @@ public class OregonPIPProcessor extends PIPProcessor {
         logger.info("Total jobs: " + totalJobs);
 
         //Calculate Jobs/Dollars ratio
-        double jobsToDollars = totalJobs / totalDollarsProductionInMillions;
-        logger.info("JobsToDollars: " + jobsToDollars);
+        double dollarsToJobs = totalDollarsProductionInMillions / totalJobs;
+        logger.info("DollarsToJobs: " + dollarsToJobs);
 
         //Read the 98 ratio from the properties file
-        double jobsToDollars98 = ResourceUtil.getDoubleProperty(piRb, "pi.98.productivity.rate", 0.094129);
-        logger.info("JobsToDollars-98: " +  jobsToDollars98);
+        double dollarsToJobsTo98 = ResourceUtil.getDoubleProperty(piRb, "pi.98.productivity.rate", 0.094129);
+        logger.info("DollarsToJobs-98: " +  dollarsToJobsTo98);
 
         //Calculate the LaborUseScalingFactor
-        double laborUseScalor = jobsToDollars98 / jobsToDollars;
+        double laborUseScalor = dollarsToJobsTo98 / dollarsToJobs;
         logger.info("LaborUseScalingFactor: " + laborUseScalor);
 
         if(timePeriod == 8 && Math.abs(1-laborUseScalor) > .1){
