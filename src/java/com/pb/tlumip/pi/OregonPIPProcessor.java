@@ -450,7 +450,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
         }
         double totalDollarsProductionInMillions = totalDollarsProduction/1000000.0;
-        logger.info("TotalDollarsProductionInMillions: " + totalDollarsProductionInMillions);
+        logger.debug("TotalDollarsProductionInMillions: " + totalDollarsProductionInMillions);
 
         //Next read in the job data for spg1 that ED produced and add up the total
         //number of jobs
@@ -459,19 +459,19 @@ public class OregonPIPProcessor extends PIPProcessor {
         for(int row=1; row <= jobs.getRowCount(); row++){
             totalJobs += jobs.getValueAt(row, 2);
         }
-        logger.info("Total jobs: " + totalJobs);
+        logger.debug("Total jobs: " + totalJobs);
 
         //Calculate Jobs/Dollars ratio
         double dollarsToJobs = totalDollarsProductionInMillions / totalJobs;
-        logger.info("DollarsToJobs: " + dollarsToJobs);
+        logger.debug("DollarsToJobs: " + dollarsToJobs);
 
         //Read the 98 ratio from the properties file
         double dollarsToJobsTo98 = ResourceUtil.getDoubleProperty(piRb, "pi.98.productivity.rate", 0.094129);
-        logger.info("DollarsToJobs-98: " +  dollarsToJobsTo98);
+        logger.debug("DollarsToJobs-98: " +  dollarsToJobsTo98);
 
         //Calculate the LaborUseScalingFactor
         double laborUseScalor = dollarsToJobsTo98 / dollarsToJobs;
-        logger.info("LaborUseScalingFactor: " + laborUseScalor);
+        logger.debug("LaborUseScalingFactor: " + laborUseScalor);
 
         if(timePeriod == 8 && Math.abs(1-laborUseScalor) > .1){
             logger.warn("WARNING: Expected LaborUseScalingFactor is 1, Actual value is " + laborUseScalor);
