@@ -8,7 +8,7 @@ import os, GetTrueIP, subprocess, time, atexit
 from xmlrpclib import ServerProxy
 from CommandExecutionDaemon import CommandExecutionDaemonRunnerXMLRPCPort
 serverConnection = "http://" + GetTrueIP.trueIP() + ":" + str(CommandExecutionDaemonRunnerXMLRPCPort)
-commandExecutionDaemonSourcePath = 'C:/code/tlumip/src/python/server/'
+commandExecutionDaemonSourcePath = './'
 commandExecutionDaemonStartCommand = commandExecutionDaemonSourcePath + "CommandExecutionDaemon.py"
 
 ced = None

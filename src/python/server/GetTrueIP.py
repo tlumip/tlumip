@@ -29,5 +29,13 @@ def trueIP():
         ips.remove("127.0.0.1")
         return ips[0]
 
+def machineName():
+    if windows:
+        return os.environ['COMPUTERNAME']
+    else:
+        return os.environ['HOSTNAME']
+
+
 if __name__ == "__main__":
     print trueIP()
+    print machineName()

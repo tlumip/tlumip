@@ -19,7 +19,7 @@ legalCommands = """
 
 currentlyRunningCommands = {}
 
-import sys, os, GetTrueIP, subprocess
+import sys, os, GetTrueIP, subprocess, time
 from RequestServer import RequestServer
 CommandExecutionDaemonServerXMLRPCPort = 8947
 CommandExecutionDaemonRunnerXMLRPCPort = 8948
@@ -35,12 +35,13 @@ class CommandExecutionDaemonServer(RequestServer):
   """
   def __init__(self, ip):
     RequestServer.__init__(self, ip, port = CommandExecutionDaemonServerXMLRPCPort)
+    self.ip = ip
 
   def checkConnection(self):
     """
     For sanity checking
     """
-    return "Connection OK"
+    return "Connection to CommandExecutionDaemonServer OK"
 
   def runRemoteCommand(self, cmdlist):
     if cmdlist[0] not in legalCommands: return "ERROR: Illegal command " + cmdlist[0]
@@ -48,14 +49,30 @@ class CommandExecutionDaemonServer(RequestServer):
     try:
         #### Careful here: is this actually spawning a subprocess,
         #### Or is it waiting to finish before it continues????
-        pid = subprocess.Popen(cmdlist, shell=True, cwd="Z:").pid
+        p = subprocess.Popen(cmdlist, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, cwd="Z:")
+        pid = p.pid
     except Exception, e:
-        s = "Subprocess Popen failed " + str(e)
+        s = "EXCEPTION %s: CommandExecutionDaemon Exception caught running subprocess.Popen().\n%s\n" % (GetTrueIP.machineName(), str(e))
         print s
         return s
     #print "pid:", pid
     currentlyRunningCommands[str(pid)] = cmdlist
-    return "Remote Command Started with pid: " + str(pid)
+    
+    # for now, write stdout lines to a text file that can be read by clients.
+    try:
+        f = open('z:/models/pythonSrc/tmp/%s/stdout.txt' % GetTrueIP.machineName(), 'a+')
+        f.write('Machine: %s, PID: %d, Created: %s\n' % (GetTrueIP.machineName(), pid, time.asctime()))
+        try:
+            for line in p.stdout:
+                f.write(line)
+        finally:
+            f.close()
+    except Exception, e:
+        s = "EXCEPTION %s: CommandExecutionDaemon Exception caught writing Popen.stdout.\n%s\n" % (GetTrueIP.machineName(), str(e))
+        print s
+        return s
+
+    return (pid)
 
   def killRemoteCommand(self, pid):
     if not str(pid) in currentlyRunningCommands:

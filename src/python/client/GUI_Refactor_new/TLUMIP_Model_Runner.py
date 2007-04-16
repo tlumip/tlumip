@@ -27,22 +27,21 @@ import wx,os,time,threading
 remoteProcessRunning = False
 
 #Initial GUI Dimensions
-FRAME_WIDTH = 870
-FRAME_HEIGHT = 485
-PANEL_WIDTH = 870 - 8
-PANEL_HEIGHT = 485 - 75
-INITIAL_SASH_X = int(0.70*FRAME_WIDTH)
+FRAME_WIDTH = 950
+FRAME_HEIGHT = 600
 
-LEFT_PANEL_COLOR = "pale green"
+LEFT_PANEL_COLOR = "light blue"
 RIGHT_PANEL_COLOR = "khaki"
 
+"""
 STATE_INFO_X = 12
 STATE_INFO_OFFSET_X = 70
 STATE_INFO_OFFSET_Y = 16
 SCENARIO_STATE_TEXT_Y = 25
 ANT_STATE_TEXT_Y = STATE_INFO_OFFSET_X + 100
-CLUSTER_STATE_TEXT_Y = STATE_INFO_OFFSET_X + 230
-
+CLUSTER_STATE_TEXT_Y = STATE_INFO_OFFSET_X + 330
+"""
+TEXT_WIDTH = 150
 
 
 class mainPanel(wx.Panel):
@@ -104,24 +103,59 @@ class Framer(wx.Frame):
     self.createMenuBar()
     self.createStatusBar()
 
-    self.spw = wx.SplitterWindow(self, size=(PANEL_WIDTH,PANEL_HEIGHT))
-    self.panelLeft = wx.Panel(self.spw, size=(PANEL_WIDTH,PANEL_HEIGHT))
-    self.panelLeft.SetBackgroundColour(LEFT_PANEL_COLOR)
-    self.panelRight = wx.Panel(self.spw, size=(PANEL_WIDTH,PANEL_HEIGHT))
-    self.panelRight.SetBackgroundColour(RIGHT_PANEL_COLOR)
-    self.spw.SplitVertically(self.panelLeft, self.panelRight, sashPosition=INITIAL_SASH_X)
-    self.spw.SetMinimumPaneSize(10)
+    self.createMainPanel()
 
-    self.createScenarioStateTextItems()
-    self.antStateHeadingTextItems = []
-    self.antStateLabelTextItems = []
-    self.clusterStateHeadingTextItems = []
-    self.clusterStateLabelTextItems = []
-    self.antStateHeadings = ['Target:', "Req'd Args:", 'Description:']
-    self.createStateTextItems('Selected Ant Run Target:', self.antStateHeadings, ANT_STATE_TEXT_Y, self.antStateHeadingTextItems, self.antStateLabelTextItems)
-    self.clusterStateHeadings = ['Cluster Machines:']
-    self.createStateTextItems('Selected Cluster:', self.clusterStateHeadings, CLUSTER_STATE_TEXT_Y, self.clusterStateHeadingTextItems, self.clusterStateLabelTextItems)
+
     
+  def createMainPanel(self):
+
+    self.panel = wx.Panel(self)
+    
+    #make run target button
+    runTargetButton = wx.Button(self.panel, 20, " Run Ant Target ")
+    wx.EVT_BUTTON(self, 20, self.onRunAntTarget)        
+
+    rightSizer = wx.BoxSizer(wx.VERTICAL)
+    """
+    sizers = self.createRightPanel()
+    for s in sizers:
+        rightSizer.Add(s, 1, wx.EXPAND)
+    """
+    rightSizer.Add((20,20))
+    rightSizer.Add(runTargetButton, 1, wx.EXPAND)
+
+    #panelSizer.Add(self.nb, 0, wx.EXPAND)
+    #panelSizer.Add(rightSizer, 0, wx.EXPAND)
+    
+    #mainSizer.Add(panelSizer, 1, wx.EXPAND)
+    #mainSizer.Add(self.statusBar, 0, wx.EXPAND)
+    
+    self.panel.SetSizer(rightSizer)
+    rightSizer.Fit(self)
+    rightSizer.SetSizeHints(self)
+    #mainSizer.Fit(self)
+    #mainSizer.SetSizeHints(self)
+
+
+  def createRightPanel(self):
+    sizers = []
+    self.scenarioStateLabelItems = []
+    sizers.append(self.createStateTextLayout('Selected Scenario:', ['Name:', 'Created By:', 'Created At:', 'Base Year:', 'Description:'], self.scenarioStateLabelItems))
+    self.antStateLabelTextItems = []
+    sizers.append(self.createStateTextLayout('Selected Ant Run Target:', ['Target:', "Req'd Args:", 'Description:'], self.antStateLabelTextItems))
+    self.clusterStateLabelTextItems = []
+    sizers.append(self.createStateTextLayout('Selected Cluster:', ['Cluster Machines:'], self.clusterStateLabelTextItems))
+    return sizers
+    
+  def createLeftPanel(self, list):
+    self.nb = wx.Notebook(self.panel)
+    if len(list) == 0:
+        return
+    for item in list:
+      p = TextPanel(self.nb, 'stdout for pid=%d on %s' % (item[1], item[0]))
+      self.nb.AddPage(p, '%s, pid=%d' % (item[0], item[1]))
+      p.setPageText('z:/models/pythonSrc/tmp/%s/stdout.txt' % item[0])
+          
   def getAntTargetNames(self, table):
     names = []
     for item in table:
@@ -252,6 +286,17 @@ class Framer(wx.Frame):
   def onMenuClose(self,event):
     self.clearStatusBar([''])
   
+  def onRunAntTarget(self,event):
+    machines = self.state.getMachinesUsed()
+    print machines
+    if len(machines) == 0:
+        wx.MessageBox ("Please define a cluster with at least one machine.", "No Cluster Defined", wx.OK)
+        return
+        
+    # result is a list of tuples: (str machineName, int processId)
+    result = self.serverConnection.startModelRun("runVersions", "", "", 0, 0, machines)
+    print 'result of onRunAntTarget:', result
+    
   def createNewScenario(self):
     result = self.serverConnection.tempCreateScenario(self.state.getScenarioName(),self.state.getScenarioYears(),self.state.getBaseYear(),self.state.getUserName(),self.state.getScenarioDescription())
     print result
@@ -307,7 +352,7 @@ class Framer(wx.Frame):
     self.state.setUserName(scenarioProperties['userName'])
     self.state.setScenarioCreationTime(scenarioProperties['scenarioCreationTime'])
     self.state.setScenarioDescription(scenarioProperties['scenarioDescription'])
-    self.showSenarioState()
+    self.showScenarioState()
     
   def setCurrentAntTarget(self,antName):
     for item in self.antTargetsTable:
@@ -362,79 +407,42 @@ class Framer(wx.Frame):
     self.createOpenSubmenu()
     self.setCurrentScenario(self.state.getScenarioName())
 
-  def createScenarioStateTextItems(self):
-    self.scenarioStateHeadingItems = []
-    self.scenarioStateLabelItems = []
-    sectionHeading = wx.StaticText(self.panelRight, -1, 'Selected Scenario:', (STATE_INFO_X, SCENARIO_STATE_TEXT_Y - 1.2*STATE_INFO_OFFSET_Y))
-    sectionHeadingFont = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD)
-    sectionHeading.SetFont(sectionHeadingFont)
-    headings = ['Name:', 'Created By:', 'Created At:', 'Base Year:', 'Description:']
-    for i, h in enumerate(headings):
-        self.scenarioStateHeadingItems.append(wx.StaticText(self.panelRight, -1, h, (STATE_INFO_X, SCENARIO_STATE_TEXT_Y + i*STATE_INFO_OFFSET_Y)))
-        self.scenarioStateLabelItems.append(wx.StaticText(self.panelRight, -1, '', (STATE_INFO_X + STATE_INFO_OFFSET_X, SCENARIO_STATE_TEXT_Y + i*STATE_INFO_OFFSET_Y)))
-    
-  def createStateTextItems(self, title, headings, yOffset, headingTextItems, labelTextItems):
-    sectionHeading = wx.StaticText(self.panelRight, -1, title, (STATE_INFO_X, yOffset - 1.2*STATE_INFO_OFFSET_Y))
+  def createStateTextLayout(self, title, headings, labelTextItems):
+    sizer = wx.FlexGridSizer(cols=2, hgap=5, vgap=5)
+    sectionHeading = wx.StaticText(self.panel, -1, title)
     sectionHeading.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
+    sizer.Add(sectionHeading, 0, wx.ALIGN_RIGHT)
+    sizer.Add((10,10))
     for i, h in enumerate(headings):
-        headingTextItems.append(wx.StaticText(self.panelRight, -1, h, (STATE_INFO_X, yOffset + i*STATE_INFO_OFFSET_Y)))
-        labelTextItems.append(wx.StaticText(self.panelRight, -1, '', (STATE_INFO_X + STATE_INFO_OFFSET_X, yOffset + i*STATE_INFO_OFFSET_Y)))
+        headingItem = wx.StaticText(self.panel, -1, h)
+        labelItem = wx.StaticText(self.panel, -1, '', size=(TEXT_WIDTH,-1), style=wx.ST_NO_AUTORESIZE)
+        labelTextItems.append(labelItem)
+        sizer.Add(headingItem, 0, wx.ALIGN_RIGHT)
+        sizer.Add(labelItem, 0, wx.ALIGN_LEFT)
+    return sizer
     
-  def showSenarioState(self):
+  def showScenarioState(self):
     values = [self.state.getScenarioName(), self.state.getUserName(), self.state.getScenarioCreationTime(), self.state.getBaseYear(), self.state.getScenarioDescription()]
     for i, l in enumerate(self.scenarioStateLabelItems):
         l.SetLabel(values[i])
-    descriptionWidth = self.panelRight.GetSizeTuple()[0] - (STATE_INFO_X + STATE_INFO_OFFSET_X)
-    self.scenarioStateLabelItems[-1].Wrap(descriptionWidth)
+        l.Wrap(TEXT_WIDTH)
       
   def showAntState(self):
-    labelWidth = self.panelRight.GetSizeTuple()[0] - (STATE_INFO_X + STATE_INFO_OFFSET_X)
-
-    headings = []
-    for h in self.antStateHeadings:
-        headings.append(h)
-
     argsList = self.state.getAntReqdArgs()
     argsString = argsList[0]
     for x in argsList[1:]:
         argsString += ', %s' % x
     values = [self.state.getAntTarget(), argsString, self.state.getAntDescription()]
 
-    newValues = []
-    n = 1
-    for i, v in enumerate(values):
-        l = wx.StaticText(self.panelRight, -1, v, (-1000,-1000))
-        l.Wrap(labelWidth)
-        lines = l.GetLabel().splitlines()
-        for k, line in enumerate(lines):
-            newValues.append(line)
-            if k > 0:
-                headings.insert(n, '')
-                n += 1
-        n += 1
-
-    for i, h in enumerate(self.antStateHeadingTextItems):
-        h.SetLabel('')
-        self.antStateLabelTextItems[i].SetLabel('')
-
-    self.antStateHeadingTextItems = []        
-    self.antStateLabelTextItems = []        
-    for i, h in enumerate(headings):
-        self.antStateHeadingTextItems.append(wx.StaticText(self.panelRight, -1, h, (STATE_INFO_X, ANT_STATE_TEXT_Y + i*STATE_INFO_OFFSET_Y)))
-        self.antStateLabelTextItems.append(wx.StaticText(self.panelRight, -1, newValues[i], (STATE_INFO_X + STATE_INFO_OFFSET_X, ANT_STATE_TEXT_Y + i*STATE_INFO_OFFSET_Y)))
+    for i, l in enumerate(self.antStateLabelTextItems):
+        l.SetLabel(values[i])
+        l.Wrap(TEXT_WIDTH)
 
   def showClusterState(self):
-    # clear old entries
-    for i, v in enumerate(self.clusterStateLabelTextItems):
-        v.SetLabel('')
-    self.clusterStateHeadingTextItems = []
-    self.clusterStateLabelTextItems = []
-    
-    # get new entries and display them
     values = self.state.getMachinesUsed()
-    for i, v in enumerate(values):
-        self.clusterStateHeadingTextItems.append(wx.StaticText(self.panelRight, -1, '', (STATE_INFO_X, ANT_STATE_TEXT_Y + (i+1)*STATE_INFO_OFFSET_Y)))
-        self.clusterStateLabelTextItems.append(wx.StaticText(self.panelRight, -1, v, (STATE_INFO_X + STATE_INFO_OFFSET_X, CLUSTER_STATE_TEXT_Y + (i+1)*STATE_INFO_OFFSET_Y)))
+    for i, l in enumerate(self.clusterStateLabelTextItems):
+        l.SetLabel(values[i])
+        l.Wrap(TEXT_WIDTH)
   
   def onWindowClose(self, event):
     closeWindowActions()
@@ -511,8 +519,11 @@ class ModelRunState(object):
     return self.state['antDescription']
   
   def getMachinesUsed(self):
-    return self.state['ClusterMachinesUsed']
-  
+    result = []
+    if self.state.has_key('ClusterMachinesUsed'):
+        result = self.state['ClusterMachinesUsed']
+    return result
+    
   def getState(self):
     return self.state
 
@@ -683,6 +694,31 @@ class DefineClusterFrame(wx.Frame):
 
 
 ###############################################################
+
+class TextPanel(wx.Panel):
+  def __init__(self, parent, heading):
+    wx.Panel.__init__(self, parent)
+    
+    pageHeading = wx.StaticText(self, -1, heading)
+    pageHeading.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
+    #self.SetBackgroundColour(LEFT_PANEL_COLOR)
+    self.pageTextArea = wx.TextCtrl(self, -1, '', style=wx.TE_MULTILINE)
+    #self.pageTextArea.SetBackgroundColour(LEFT_PANEL_COLOR)
+    self.pageTextArea.SetFont(wx.Font(10, wx.MODERN, wx.NORMAL, wx.NORMAL))
+    
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(pageHeading, 0, wx.EXPAND)
+    sizer.Add(self.pageTextArea, 1, wx.EXPAND)
+    self.SetSizer(sizer)
+    
+    
+  def setPageText(self, file):
+    f = open(file)
+    try:
+      for line in f:
+        self.pageTextArea.WriteText(line)
+    finally:
+      f.close()
 
 
 

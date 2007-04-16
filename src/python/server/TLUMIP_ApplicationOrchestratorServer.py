@@ -23,9 +23,14 @@ createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
 runtimeDirectory = r"Z:\models\tlumip\runtime" + '\\'
 
 def sendRemoteCommand(machine, command):
-    print "sendRemoteCommand:", machine, command
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
-    remoteDaemon.runRemoteCommand(command)
+    result = remoteDaemon.checkConnection()
+    print "Checking connection to CommandExecutionDaemonServer:", result
+
+    print "sendRemoteCommand: %s, %s" % (machine, command)
+    result = remoteDaemon.runRemoteCommand(command)
+    print "result: %s", str(result)
+    return result
 
 class ApplicationOrchestratorServer(RequestServer):
     """
@@ -34,12 +39,13 @@ class ApplicationOrchestratorServer(RequestServer):
     def __init__(self, ip):
         RequestServer.__init__(self, ip, port = ApplicationOrchestratorServerXMLRPCPort)
         self.scenarioNameP = ''
-
+        self.readClusterMachinesFile()
+        
     def checkConnection(self):
         """
         For sanity checking
         """
-        return "Connection OK"
+        return "Connection to ApplicationOrchestratorServer OK"
 
     def terminate(self):
         """
@@ -101,6 +107,7 @@ class ApplicationOrchestratorServer(RequestServer):
 
     def readClusterMachinesFile(self):
         # Map of machine names to IP addresses:
+        global machineIP
         machineIP = {}
         machineProperties = []
         serverMachine = None
@@ -168,6 +175,7 @@ class ApplicationOrchestratorServer(RequestServer):
         messages = [m for m in map(string.strip, message.findall(echo)) if m.startswith("run")]
         result = []
         for entry in messages:
+            print entry
             name, description, arguments = entry.split("'")
             name = name.split(',')[0].strip()
             description = (" ".join(description.replace("\n", "##n").split())).replace("##n", "\n")
@@ -184,7 +192,20 @@ class ApplicationOrchestratorServer(RequestServer):
           run pydaf
           "ant -f targetname"
         """
-        print "args", target, scenario, baseScenario, baseYear, interval, machineList
+        #print "args", target, scenario, baseScenario, baseYear, interval, machineList
+        if target == "runVersions":
+            resultList = []
+            for m in machineList:
+                result = sendRemoteCommand(m, ["ant", "-f", r"%stlumip.xml" % runtimeDirectory, "runVersions"])
+                
+                # a valid result is an int pid, anything else is an exception message, so return it
+                try:
+                    int(result)
+                except ValueError:
+                    return '%s EXCEPTION: %s' (m, result)
+                    
+                resultList.append((m, result))
+            return resultList
         if target == "specialCommand":
             sendRemoteCommand("Athena", ["ping", "www.google.com"])
             return "Special Command Sent"

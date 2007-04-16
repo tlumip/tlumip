@@ -9,7 +9,7 @@ class ServerConnection(object):
             print "connecting to", serverConnection
             self.server = ServerProxy(serverConnection)
             result = self.server.checkConnection()
-            print "server", result
+            print "Checking connection to ApplicationOrchestratorServer:", result
             
         except Exception, v:
             print "ERROR", v
@@ -37,7 +37,13 @@ class ServerConnection(object):
         result = self.server.getAvailableMachines()
         return result
         
-
+    def startModelRun(self, target, scenario, baseScenario, baseYear, interval, machineList):
+        result = self.server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
+        return result
+        
+    def testVersions(self):
+        result = self.server.startModelRun("runVersions", "", "", 0, 0, ["Zufa"])
+        print str(result)
 
         
 """        
@@ -54,4 +60,8 @@ for i, item in enumerate(list):
 #    
 #print c.getExistingScenarioProperties()
 #print c.tempCreateScenario('Jim Scenario','30','1990','Jim','my test scenario')
+
+
+c = ServerConnection('192.168.1.141', 8942)
+c.testVersions()
 
