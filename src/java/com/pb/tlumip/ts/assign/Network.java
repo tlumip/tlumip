@@ -1358,32 +1358,57 @@ public class Network implements Serializable {
 	}
 	
 	
-	public int getLinkIndex( int an, int bn ) {
+    public int getLinkIndex( int an, int bn ) {
 
-		// takes external node numbers and returns link index
-		int k = 0;
-		int returnValue = 0;
-		
-		for (int i=ipa[nodeIndex[an]]; i < ipa[nodeIndex[an]+1]; i++) {
+        // takes external node numbers and returns link index
+        int k = 0;
+        int returnValue = 0;
+        
+        for (int i=ipa[nodeIndex[an]]; i < ipa[nodeIndex[an]+1]; i++) {
             
-			k = sortedLinkIndexA[i];
+            k = sortedLinkIndexA[i];
             
-			if(logger.isDebugEnabled()) {
-				logger.debug ("i=" + i + ", k=" + k + ", an=" + nodeIndex[an] + ", bn=" + nodeIndex[bn] + ", ia[k=" + k + "]=" + ia + ", ib[k=" + k + "]=" + ib );
-			}
-			
-			if ( ib[k] == nodeIndex[bn] ) {
-				returnValue = k;
-				break;
-			}
-		}
+            if(logger.isDebugEnabled()) {
+                logger.debug ("i=" + i + ", k=" + k + ", an=" + nodeIndex[an] + ", bn=" + nodeIndex[bn] + ", ia[k=" + k + "]=" + ia + ", ib[k=" + k + "]=" + ib );
+            }
+            
+            if ( ib[k] == nodeIndex[bn] ) {
+                returnValue = k;
+                break;
+            }
+        }
 
-		return returnValue;
-	    
-	}
+        return returnValue;
+        
+    }
 
-	
-	
+    
+    
+    public int[] getLinksExitingNode( int an ) {
+
+        // takes external node number and returns link indices exiting that node
+        
+        int numLinksExiting = ipa[nodeIndex[an]+1] - ipa[nodeIndex[an]];
+        int[] result = new int[numLinksExiting];
+                               
+        int count = 0;
+        for (int i=ipa[nodeIndex[an]]; i < ipa[nodeIndex[an]+1]; i++) {
+            
+            int k = sortedLinkIndexA[i];
+            
+            int bn = indexNode[ib[k]];
+            int id = getLinkIndex( an, bn );
+            result[count] = id;
+            count++;
+            
+        }
+
+        return result;
+        
+    }
+
+    
+    
     //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
     public double bisect ( int iter, double[][] aonFlow, double[][] flow ) {
         

@@ -122,6 +122,16 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getLinkIndex(an,bn);
     }
     
+    public int getLinkIndexExitingNode(int an) {
+        int[] linksExiting = g.getLinksExitingNode(an);
+        return linksExiting[0];
+    }
+    
+    public int[] getLinksExitingNode(int an) {
+        int[] linksExiting = g.getLinksExitingNode(an);
+        return linksExiting;
+    }
+    
     public int getNumUserClasses() {
         return g.getNumUserClasses();
     }

@@ -68,6 +68,15 @@ public class NetworkDataServer {
         return nh.getLinkIndex(an,bn);
     }
     
+    public int getLinkIndexExitingNode(int an) {
+        return nh.getLinkIndexExitingNode(an);
+    }
+
+    public Vector getLinksExitingNode(int an) {
+        int[] result = nh.getLinksExitingNode(an);
+        return Util.intVector( result );
+    }
+
     public String[] getUserClassStrings () {
         char[] array = nh.getUserClasses();
         String[] returnArray = new String[array.length];

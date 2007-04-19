@@ -134,6 +134,7 @@ public class TrRoute implements Serializable {
 		            }
 		            // process transit line sequence records
 		            else if (s.charAt(0) == ' ') {
+                        
 		                parseSegments(s);
 		            }
 		            //  any other record type is invalid, so exit.
@@ -197,136 +198,144 @@ public class TrRoute implements Serializable {
 		int stringPointer = 0;
 
 		while (stringPointer < s.length()) {
-			// get the next field from the input record; advance stringPointer
-			field = getSegmentField (s, stringPointer);
-			stringPointer += field.length();
-			field = field.trim();
-			if (field.length() == 0)
-				return;
+            
+            try {
+                // get the next field from the input record; advance stringPointer
+                field = getSegmentField (s, stringPointer);
+                stringPointer += field.length();
+                field = field.trim();
+                if (field.length() == 0)
+                    return;
 
-			// get the keyWord,value pair from field -- (keyWord == null means value is a node)
-			if (field.indexOf('=') == -1) {
-				keyWord = null;
-				value = field;
-				if (an == -1) {
-					an = Integer.parseInt(value);
-				}
-				else {
-					if (bn != -1)
-						an = bn;
-					bn = Integer.parseInt(value);
-				}
+                // get the keyWord,value pair from field -- (keyWord == null means value is a node)
+                if (field.indexOf('=') == -1) {
+                    keyWord = null;
+                    value = field;
+                    if (an == -1) {
+                        an = Integer.parseInt(value);
+                    }
+                    else {
+                        if (bn != -1)
+                            an = bn;
+                        bn = Integer.parseInt(value);
+                    }
 
-				if (an != -1 && bn != -1) {
-					TrSegment seg = new TrSegment(an, bn, defaults, tdefaults);
-					transitPath[lineCount].add(linkCount++, seg);
-					initTempDefaults();
-				}
-			}
-			else {
-				// check for keywords specifying default values in field
-				for (int i=0; i < keyWords.length; i++) {
-					value = keyWordScan (field, keyWords[i]);
-					if (value != null) {
-						keyWord = keyWords[i];
-						switch(i) {
-							case 0:
-							case 1:
-								if (value.indexOf('<') != -1) {
-									defaults.set(9, Boolean.valueOf("true"));
-									defaults.set(10, Boolean.valueOf("false"));
-									value = value.replace ('<', ' ');
-								}
-								else if (value.indexOf('>') != -1) {
-									defaults.set(9, Boolean.valueOf("false"));
-									defaults.set(10, Boolean.valueOf("true"));
-									value = value.replace ('>', ' ');
-								}
-								else if (value.indexOf('#') != -1) {
-									defaults.set(9, Boolean.valueOf("false"));
-									defaults.set(10, Boolean.valueOf("false"));
-									value = value.replace ('#', ' ');
-								}
-                                else if (value.indexOf('+') != -1) {
-                                    defaults.set(9, Boolean.valueOf("true"));
-                                    defaults.set(10, Boolean.valueOf("true"));
-                                    value = value.replace ('+', ' ');
+                    if (an != -1 && bn != -1) {
+                        TrSegment seg = new TrSegment(an, bn, defaults, tdefaults);
+                        transitPath[lineCount].add(linkCount++, seg);
+                        initTempDefaults();
+                    }
+                }
+                else {
+                    // check for keywords specifying default values in field
+                    for (int i=0; i < keyWords.length; i++) {
+                        value = keyWordScan (field, keyWords[i]);
+                        if (value != null) {
+                            keyWord = keyWords[i];
+                            switch(i) {
+                                case 0:
+                                case 1:
+                                    if (value.indexOf('<') != -1) {
+                                        defaults.set(9, Boolean.valueOf("true"));
+                                        defaults.set(10, Boolean.valueOf("false"));
+                                        value = value.replace ('<', ' ');
+                                    }
+                                    else if (value.indexOf('>') != -1) {
+                                        defaults.set(9, Boolean.valueOf("false"));
+                                        defaults.set(10, Boolean.valueOf("true"));
+                                        value = value.replace ('>', ' ');
+                                    }
+                                    else if (value.indexOf('#') != -1) {
+                                        defaults.set(9, Boolean.valueOf("false"));
+                                        defaults.set(10, Boolean.valueOf("false"));
+                                        value = value.replace ('#', ' ');
+                                    }
+                                    else if (value.indexOf('+') != -1) {
+                                        defaults.set(9, Boolean.valueOf("true"));
+                                        defaults.set(10, Boolean.valueOf("true"));
+                                        value = value.replace ('+', ' ');
+                                    }
+                                    else {
+                                        defaults.set(9, Boolean.valueOf("true"));
+                                        defaults.set(10, Boolean.valueOf("true"));
+                                    }
+                                    // if * is in the value field, set value to negative and it will get applied as a distance based rate later
+                                    if (value.indexOf('*') != -1) {
+                                        value = value.replace ('*', '-');
+                                    }
+                                    defaults.set(i, Double.valueOf(value));
+                                    break;
+                                case 2:
+                                    if (value.equalsIgnoreCase("yes"))
+                                        defaults.set(i, Boolean.valueOf("true"));
+                                    else
+                                        defaults.set(i, Boolean.valueOf("false"));
+                                    break;
+                                case 3:
+                                case 4:
+                                case 5:
+                                    defaults.set(i, Integer.valueOf(value));
+                                    break;
+                                case 6:
+                                case 7:
+                                case 8:
+                                    defaults.set(i, Double.valueOf(value));
+                                    break;
+                            }
+                            break;
+                        }
+                    }
+
+                    // check for keywords specifying temporary values in field
+                    if (keyWord == null) {
+                        for (int i=0; i < tkeyWords.length; i++) {
+                            value = keyWordScan (field, tkeyWords[i]);
+                            if (value != null) {
+                                keyWord = tkeyWords[i];
+                                if ( i == 0 ) {
+                                    TrSegment seg = new TrSegment(an, bn, defaults, tdefaults);
+                                    seg.layover = true;
+                                    seg.lay = Double.parseDouble(value);
+                                    transitPath[lineCount].add(linkCount++, seg);
+                                    totalLinkCount += linkCount;
                                 }
-                                else {
-                                    defaults.set(9, Boolean.valueOf("true"));
-                                    defaults.set(10, Boolean.valueOf("true"));
+                                else if ( i == 1 ) {
+                                    if (value.indexOf('<') != -1) {
+                                        defaults.set(9, Boolean.valueOf("true"));
+                                        defaults.set(10, Boolean.valueOf("false"));
+                                        value = value.replace ('<', ' ');
+                                    }
+                                    else if (value.indexOf('>') != -1) {
+                                        defaults.set(9, Boolean.valueOf("false"));
+                                        defaults.set(10, Boolean.valueOf("true"));
+                                        value = value.replace ('>', ' ');
+                                    }
+                                    else if (value.indexOf('#') != -1) {
+                                        defaults.set(9, Boolean.valueOf("false"));
+                                        defaults.set(10, Boolean.valueOf("false"));
+                                        value = value.replace ('#', ' ');
+                                    }
+                                    else if (value.indexOf('+') != -1) {
+                                        defaults.set(9, Boolean.valueOf("true"));
+                                        defaults.set(10, Boolean.valueOf("true"));
+                                        value = value.replace ('+', ' ');
+                                    }
+                                    // if * is in the value field, set value to negative and it will get applied as a distance based rate later
+                                    else if (value.indexOf('*') != -1) {
+                                        value = value.replace ('*', '-');
+                                    }
+                                    tdefaults.set(i, Double.valueOf(value));
                                 }
-								// if * is in the value field, set value to negative and it will get applied as a distance based rate later
-								if (value.indexOf('*') != -1) {
-								    value = value.replace ('*', '-');
-								}
-								defaults.set(i, Double.valueOf(value));
-								break;
-							case 2:
-								if (value.equalsIgnoreCase("yes"))
-									defaults.set(i, Boolean.valueOf("true"));
-								else
-									defaults.set(i, Boolean.valueOf("false"));
-								break;
-							case 3:
-							case 4:
-							case 5:
-								defaults.set(i, Integer.valueOf(value));
-								break;
-							case 6:
-							case 7:
-							case 8:
-								defaults.set(i, Double.valueOf(value));
-								break;
-						}
-						break;
-					}
-				}
-
-				// check for keywords specifying temporary values in field
-				if (keyWord == null) {
-					for (int i=0; i < tkeyWords.length; i++) {
-						value = keyWordScan (field, tkeyWords[i]);
-						if (value != null) {
-							keyWord = tkeyWords[i];
-							if ( i == 0 ) {
-								TrSegment seg = new TrSegment(an, bn, defaults, tdefaults);
-								seg.layover = true;
-								seg.lay = Double.parseDouble(value);
-								transitPath[lineCount].add(linkCount++, seg);
-								totalLinkCount += linkCount;
-							}
-							else if ( i == 1 ) {
-								if (value.indexOf('<') != -1) {
-									defaults.set(9, Boolean.valueOf("true"));
-									defaults.set(10, Boolean.valueOf("false"));
-									value = value.replace ('<', ' ');
-								}
-								else if (value.indexOf('>') != -1) {
-									defaults.set(9, Boolean.valueOf("false"));
-									defaults.set(10, Boolean.valueOf("true"));
-									value = value.replace ('>', ' ');
-								}
-								else if (value.indexOf('#') != -1) {
-									defaults.set(9, Boolean.valueOf("false"));
-									defaults.set(10, Boolean.valueOf("false"));
-									value = value.replace ('#', ' ');
-								}
-								else if (value.indexOf('+') != -1) {
-									defaults.set(9, Boolean.valueOf("true"));
-									defaults.set(10, Boolean.valueOf("true"));
-									value = value.replace ('+', ' ');
-								}
-								// if * is in the value field, set value to negative and it will get applied as a distance based rate later
-								else if (value.indexOf('*') != -1) {
-									value = value.replace ('*', '-');
-								}
-								tdefaults.set(i, Double.valueOf(value));
-							}
-						}
-					}
-				}
-			}
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e) {
+                logger.fatal("exception thrown parsing:");
+                logger.fatal(s);
+                logger.fatal("", e);
+            }
 		}
 	}
 
@@ -348,11 +357,13 @@ public class TrRoute implements Serializable {
 
 
 	private String keyWordScan (String field, String keyWord) {
-  	int start=0, end=0;
+	    int start=0, end=0;
 
-		start = field.indexOf(keyWord);
-		if (start != -1) {
-			start = keyWord.length() + 1;
+        int equalIndex = field.indexOf("=");
+        String keyWordPart = (field.substring(0,equalIndex)).trim();
+        
+		if (keyWordPart.equalsIgnoreCase(keyWord)) {
+			start = equalIndex + 1;
 			end =  field.length();
 			return field.substring(start,end);
 		}
@@ -655,7 +666,7 @@ public class TrRoute implements Serializable {
 		for (int rte=0; rte < transitPath.length; rte++) {
             
             int dummy = 0;
-            if ( rte == 243 ) {
+            if ( rte == 260 ) {
                 dummy = 1;
             }
             
@@ -716,7 +727,7 @@ public class TrRoute implements Serializable {
                     
                 }
                 catch (Exception e) {
-                    logger.error ( "exception caught for rte=" + rte + ", seg=" + seg + ".", e );
+                    logger.error ( "exception caught for rte=" + rte + ", " + getLine(rte) + ", seg=" + seg + ".", e );
                     System.exit(-1);
                 }
                 

@@ -454,9 +454,10 @@ public class SimVatDataServer {
         //String fileName = "//192.168.1.213/root/var/lib/vista/vista/atlanta_2030/sim.vat";
         //String fileName = "/jim/projects/source/Eckel_aug2006/smallSim.vat";
         //String fileName = "/jim/projects/atlanta/I285/data2030/sim7578.vat";
-        
-        String fileName = "/mnt/zufa/jim/projects/source/viewTlumip/sim.vat";
         //String fileName = "/jim/projects/source/viewTlumip/sim.vat";
+        
+        //String fileName = "/mnt/zufa/jim/projects/source/viewTlumip/sim.vat";
+        String fileName = "/home/jhicks/sim.vat";
         
         s.fileName = fileName;
 

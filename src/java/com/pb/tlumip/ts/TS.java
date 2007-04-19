@@ -757,7 +757,7 @@ public class TS {
         
 
 
-        
+/*        
         // TS Example 1 - Run a peak highway assignment:
         
         // run peak highway assignment
@@ -769,21 +769,22 @@ public class TS {
 
         // write the auto time and distance highway skim matrices to disk based on attribute values in NetworkHandler after assignment
         tsMain.writeHighwaySkimMatrices ( nhPeak, 'a' );
+*/
 
-
         
         
         
-/*       
+       
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
-        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
+        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         nhPeak.startDataServer();
         logger.info ("Network data server running...");
-//        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
-*/
+        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+
 
         
         // run the benchmark highway assignment procedure
@@ -796,8 +797,8 @@ public class TS {
         
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
-//        nhPeak.stopDataServer();
-//        logger.info ("Network data server stopped.");
+        nhPeak.stopDataServer();
+        logger.info ("Network data server stopped.");
         logger.info ("TS.main() exiting.");
 
     }

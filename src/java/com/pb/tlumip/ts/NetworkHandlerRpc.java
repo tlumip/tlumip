@@ -187,6 +187,34 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return returnValue;
     }
     
+    public int getLinkIndexExitingNode(int an) {
+        int returnValue = -1;
+        try {
+            Vector params = new Vector();
+            params.add(an);
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".getLinkIndexExitingNode", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        return returnValue;
+    }
+    
+    public int[] getLinksExitingNode(int an) {
+        int[] returnValue = null;
+        try {
+            Vector params = new Vector();
+            params.add(an);
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getLinksExitingNode", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        return returnValue;
+    }
+    
     public int getNumUserClasses() {
         int returnValue = -1;
         try {

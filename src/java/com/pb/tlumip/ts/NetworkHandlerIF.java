@@ -35,6 +35,8 @@ public interface NetworkHandlerIF {
     public int getNodeCount();
     public int getLinkCount();
     public int getLinkIndex(int an, int bn);
+    public int getLinkIndexExitingNode(int an);
+    public int[] getLinksExitingNode(int an);
     public int getNumUserClasses();
     public String getTimePeriod ();
     public boolean userClassesIncludeTruck();
