@@ -92,8 +92,24 @@ public class TSModelComponent extends ModelComponent {
 
 
         ts.runHighwayAssignment( nh );
-        ts.writeHighwaySkimMatrices ( nh, 'a' );
-        ts.assignAndSkimTransit ( nh,  appRb, globalRb );
+
+        //This will return a local network handler.  Jim needs to
+        //test the remote network handler for transit skim building.
+        NetworkHandlerIF nh_new = NetworkHandler.getInstance(null);
+        try {
+            if ( ts.setupNetwork( nh_new, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
+                throw new Exception();
+            logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+        }
+        catch (Exception e) {
+            logger.error ( "Exception caught setting up network in " + nh.getClass().getCanonicalName(), e );
+            System.exit(-1);
+        }
+        ts.loadAssignmentResults(nh_new, appRb);
+        ts.writeHighwaySkimMatrices ( nh_new, 'a' );
+
+
+        ts.assignAndSkimTransit ( nh_new,  appRb, globalRb );
     }
 
     
