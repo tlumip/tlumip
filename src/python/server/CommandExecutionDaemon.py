@@ -60,7 +60,7 @@ class CommandExecutionDaemonServer(RequestServer):
     
     # for now, write stdout lines to a text file that can be read by clients.
     try:
-        f = open('z:/models/pythonSrc/tmp/%s/stdout.txt' % GetTrueIP.machineName(), 'a+')
+        f = open('z:/models/pythonSrc/tmp/%s/stdout.txt' % GetTrueIP.machineName(), 'w')
         f.write('Machine: %s, PID: %d, Created: %s\n' % (GetTrueIP.machineName(), pid, time.asctime()))
         try:
             for line in p.stdout:

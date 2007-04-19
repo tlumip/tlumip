@@ -29,7 +29,7 @@ def sendRemoteCommand(machine, command):
 
     print "sendRemoteCommand: %s, %s" % (machine, command)
     result = remoteDaemon.runRemoteCommand(command)
-    print "result: %s", str(result)
+    print "result: %s" % str(result)
     return result
 
 class ApplicationOrchestratorServer(RequestServer):
