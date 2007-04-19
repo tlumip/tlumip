@@ -60,7 +60,7 @@ public class RunTLUMIPLDTModels extends RunLDTModels {
         rm.readDcLogsums();
         
         // run the models
-        PTHousehold[] households = rm.runHouseholdLevelModels(runAutoOwnership, writeOnlyLDTHH);
+        PTHousehold[] households = rm.runHouseholdLevelModels(runAutoOwnership, writeOnlyLDTHH, 1990);
         rm.startModel(2000, 1);
         rm.processHouseholds(households);
 

@@ -37,7 +37,9 @@ public class TLUMIPLongDistanceWorker extends LongDistanceWorker {
         RunLDTModels ldtRunner = new RunTLUMIPLDTModels();
 
         // read households and create tours
-        LDTour[] tours = ldtRunner.createToursFromHouseholdFile();
+        //PTDataReader needs the base year in order to parse the age field.
+        //In Ohio the default base year is 2000 but in Oregon it is 1990.
+        LDTour[] tours = ldtRunner.createToursFromHouseholdFile(1990);
 
         // call the long-distance worker
         MessageFactory mFactory = MessageFactory.getInstance();
