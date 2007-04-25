@@ -15,12 +15,25 @@ from RequestServer import RequestServer
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
 #import TargetRules, types
 
+
 """ Global Variables """
+
+#determine if this is a windows box or not
+windows = False
+if 'OS' in os.environ:
+  windows = "windows" in os.environ['OS'].lower()
+  
+if windows:
+  SHARED = '//athena/zshare'
+else:
+  SHARED = '/zshare'
+
+
 ApplicationOrchestratorServerXMLRPCPort = 8942
-pythonScriptDirectory = r"Z:\models"
-scenarioDirectory = r"Z:\models\tlumip\scenario_"
+pythonScriptDirectory = SHARED + r"/models"
+scenarioDirectory = SHARED + r"/models/tlumip/scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
-runtimeDirectory = r"Z:\models\tlumip\runtime" + '\\'
+runtimeDirectory = r"/models/tlumip/runtime/"
 
 def sendRemoteCommand(machine, command):
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
@@ -164,12 +177,22 @@ class ApplicationOrchestratorServer(RequestServer):
                 machine['STATUS'] = "Unreachable"
         return machineProperties
 
+    def getMachineSharedFolder(self, machine):
+        remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
+        try:
+            sharedFolder = remoteDaemon.getSharedFolder()
+        except Exception, e:
+            print e
+        return sharedFolder
+    
     def getAvailableAntTargets(self):
         """
         Return as list: name, description, list of arguments.
         Description contains embedded newlines for formatting.
         """
-        data = file(os.path.join(runtimeDirectory, "tlumip.xml")).read()
+        filename = SHARED + runtimeDirectory + "tlumip.xml"
+        print 'getAvailableAntTargets() filename = ',  filename
+        data = file(filename).read()
         echo = data.split('<target name="echo">')[1].split('</target>')[0]
         message = re.compile('<echo message="(.*?)"/>', re.DOTALL)
         messages = [m for m in map(string.strip, message.findall(echo)) if m.startswith("run")]
@@ -196,7 +219,8 @@ class ApplicationOrchestratorServer(RequestServer):
         if target == "runVersions":
             resultList = []
             for m in machineList:
-                result = sendRemoteCommand(m, ["ant", "-f", r"%stlumip.xml" % runtimeDirectory, "runVersions"])
+                sharedFolder = self.getMachineSharedFolder(m)
+                result = sendRemoteCommand(m, ["ant", "-f", r"%s%stlumip.xml" % (sharedFolder, runtimeDirectory), "runVersions"])
                 
                 # a valid result is an int pid, anything else is an exception message, so return it
                 try:

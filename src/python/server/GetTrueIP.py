@@ -24,7 +24,7 @@ def trueIP():
         return ipAddress
     else: # Assume some kind of *nix
         # Very hacky approach, but seems to work
-        ipInfo = os.popen("ifconfig").read()
+        ipInfo = os.popen("/sbin/ifconfig").read()
         ips = re.findall("\d+\.\d+\.\d+\.\d+", ipInfo)
         ips.remove("127.0.0.1")
         return ips[0]

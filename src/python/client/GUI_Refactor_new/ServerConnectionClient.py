@@ -42,7 +42,7 @@ class ServerConnection(object):
         return result
         
     def testVersions(self):
-        result = self.server.startModelRun("runVersions", "", "", 0, 0, ["Zufa"])
+        result = self.server.startModelRun("runVersions", "", "", 0, 0, ["Zufa", "Gaia"])
         print str(result)
 
         
