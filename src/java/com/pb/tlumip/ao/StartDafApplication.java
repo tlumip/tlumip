@@ -71,7 +71,7 @@ public class StartDafApplication {
 
         this.pathPrefix = rootDir + "scenario_" + scenarioName+ "/";
 
-        this.errorFile = new File(rootDir + LogServer.clientLogName);
+        this.errorFile = new File(rootDir + LogServer.CLIENTLOG_NAME);
     }
 
     private File getCommandFile(String cmdFilePath){
