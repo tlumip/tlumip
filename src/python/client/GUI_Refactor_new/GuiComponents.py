@@ -196,7 +196,7 @@ class TextArea(wx.Panel):
 
 class MainFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, title="Simple Notebook Example", size=(1200,900))
+        wx.Frame.__init__(self, None, title="TLUMIP", size=(1200,900))
 
         # create a menubar
         self.mb = wx.MenuBar()

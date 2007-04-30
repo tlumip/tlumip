@@ -12,6 +12,12 @@ def testGetLogFileNames():
         'fileMonitor_event.log', 'main_event.log',
         'node0_event.log', 'node1_event.log', 'node2_event.log']
 
+#startModelRun(self, target, scenario, baseScenario, baseYear, interval, machineList)
+def testStartModelRun():
+    intID = server.startModelRun("runVersions", "", "", "", "", ['Moya'])
+    print intID
+    assert intID == "Test"
+
 def testGetLogData():
     logInfo = server.getLogData(scenarioBase, 'bootstrap_client.log')
     assert logInfo.startswith("14-Mar-2007 19:45:33:711, INFO, reading config file: /models/tlumip/scenario_20070308_EverythingNew/")
@@ -21,4 +27,5 @@ def testLargeLogFileRetrieval():
     assert logInfo.startswith("15-Mar-07 14:07, INFO, com.pb.tlumip.ao.ApplicationOrchestrator, Root Directory: /models/tlumip")
     file("LargeLogfile.txt", 'w').write(logInfo)
 
-testGetLogFileNames()
+#testGetLogData()
+testStartModelRun()

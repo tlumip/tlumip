@@ -94,7 +94,7 @@ class Framer(wx.Frame):
     self.serverConnection = serverConnection
     self.existingScenarioProperties = serverConnection.getExistingScenarioProperties()
     self.existingScenarioNames = self.existingScenarioProperties.keys()
-    self.antTargetsTable = serverConnection.getAvailableAntTargets()
+    self.antTargetsTable = serverConnection.getAvailableRunTargets()
     self.antTargetNames = self.getAntTargetNames(self.antTargetsTable)
     self.clusterDicts = serverConnection.getAvailableMachines()
     self.clusterNames = self.getClusterNames(self.clusterDicts,'NAME')
@@ -725,7 +725,7 @@ class TextPanel(wx.Panel):
   
 app = wx.PySimpleApp()
 state = ModelRunState()
-serverConnection = Server.ServerConnection("192.168.1.141", 8942)
+serverConnection = Server.ServerConnection("192.168.1.108", 8942)
 frame = Framer(None,-1," TLUMIP Model Runner", (FRAME_WIDTH,FRAME_HEIGHT), state, serverConnection)
 #sw = wx.SplitterWindow(frame,-1)
 #mip = mainPanel(sw,-1)

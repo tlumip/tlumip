@@ -15,25 +15,15 @@ from RequestServer import RequestServer
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
 #import TargetRules, types
 
+SHARED = '//athena/zshare'
 
 """ Global Variables """
-
-#determine if this is a windows box or not
-windows = False
-if 'OS' in os.environ:
-  windows = "windows" in os.environ['OS'].lower()
-  
-if windows:
-  SHARED = '//athena/zshare'
-else:
-  SHARED = '/zshare'
-
-
 ApplicationOrchestratorServerXMLRPCPort = 8942
 pythonScriptDirectory = SHARED + r"/models"
 scenarioDirectory = SHARED + r"/models/tlumip/scenario_"
 createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
-runtimeDirectory = r"/models/tlumip/runtime/"
+runtimeDirectory = SHARED + r"/models/tlumip/runtime/"
+serverMachine = None
 
 def sendRemoteCommand(machine, command):
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
@@ -126,7 +116,7 @@ class ApplicationOrchestratorServer(RequestServer):
         serverMachine = None
         clusterMachines = file("ClusterMachines.txt")
         header = clusterMachines.next().split()
-        
+
         for machine in clusterMachines:
             vars, DESCRIPTION, trash = machine.split('"')
             NAME, IP, PROCESSORS, RAM, OS = vars.split()
@@ -177,22 +167,12 @@ class ApplicationOrchestratorServer(RequestServer):
                 machine['STATUS'] = "Unreachable"
         return machineProperties
 
-    def getMachineSharedFolder(self, machine):
-        remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
-        try:
-            sharedFolder = remoteDaemon.getSharedFolder()
-        except Exception, e:
-            print e
-        return sharedFolder
-    
     def getAvailableAntTargets(self):
         """
         Return as list: name, description, list of arguments.
         Description contains embedded newlines for formatting.
         """
-        filename = SHARED + runtimeDirectory + "tlumip.xml"
-        print 'getAvailableAntTargets() filename = ',  filename
-        data = file(filename).read()
+        data = file(os.path.join(runtimeDirectory, "tlumip.xml")).read()
         echo = data.split('<target name="echo">')[1].split('</target>')[0]
         message = re.compile('<echo message="(.*?)"/>', re.DOTALL)
         messages = [m for m in map(string.strip, message.findall(echo)) if m.startswith("run")]
@@ -219,8 +199,7 @@ class ApplicationOrchestratorServer(RequestServer):
         if target == "runVersions":
             resultList = []
             for m in machineList:
-                sharedFolder = self.getMachineSharedFolder(m)
-                result = sendRemoteCommand(m, ["ant", "-f", r"%s%stlumip.xml" % (sharedFolder, runtimeDirectory), "runVersions"])
+                result = sendRemoteCommand(m, ["ant", "-f", r"%stlumip.xml" % runtimeDirectory, "runVersions"])
                 
                 # a valid result is an int pid, anything else is an exception message, so return it
                 try:
@@ -270,13 +249,18 @@ class ApplicationOrchestratorServer(RequestServer):
         command3 = (r"ant -f %stlumip.xml %s" % (runtimeDirectory, target)).split()
         command3 = command3 + dlist
         print "command3:", command3
+        resultList = []
         # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
         if serverMachine in machineList:
-            sendRemoteCommand(serverMachine, command3)
+            result = sendRemoteCommand(serverMachine, command3)
+            resultList.append((serverMachine, result))
         else:
-            sendRemoteCommand(machineList[0], command3)
+            result = sendRemoteCommand(machineList[0], command3)
+            resultList.append((machineList[0], result))
+
         print "Started: " + " ".join(command3)
-        return "Started: " + " ".join(command3)
+        return resultList
+        #return "Started: " + " ".join(command3)
 
     def verifyModelIsRunning(self, scenario):
         """

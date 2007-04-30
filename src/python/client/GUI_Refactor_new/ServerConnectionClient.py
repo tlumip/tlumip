@@ -21,6 +21,10 @@ class ServerConnection(object):
     def tempCreateScenario(self, scenarioName, numYears, baseYear, userName, description):
         result = self.server.tempCreateScenario(scenarioName, numYears, baseYear, userName, description)
         return result
+
+    def createScenario(self, scenarioName, numYears, baseYear, userName, description):
+        result = self.server.createScenario(scenarioName, numYears, baseYear, userName, description)
+        return result
         
     def isScenarioReady(self, scenarioName):
         result = self.server.isScenarioReady(scenarioName)

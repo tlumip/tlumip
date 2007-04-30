@@ -30,7 +30,7 @@ SHARED = ''
 windows = False
 if 'OS' in os.environ:
   windows = "windows" in os.environ['OS'].lower()
-  
+
 if windows:
   SHARED = '//athena/zshare'
 else:
@@ -66,7 +66,7 @@ class CommandExecutionDaemonServer(RequestServer):
         return s
     print "pid:", pid
     currentlyRunningCommands[str(pid)] = cmdlist
-    
+
     # for now, write stdout lines to a text file that can be read by clients.
     try:
         print 'forming filename on %s' % GetTrueIP.machineName()
@@ -105,7 +105,7 @@ class CommandExecutionDaemonServer(RequestServer):
 
   def getSharedFolder(self):
     return SHARED
-    
+
   def terminate(self):
         """
         For restarting by CommandExecutionDaemon.py
