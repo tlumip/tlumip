@@ -12,8 +12,24 @@ FRAME_HEIGHT = 800
 LEFT_PANEL_COLOR = "light blue"
 RIGHT_PANEL_COLOR = "khaki"
 
-APP_SERVER_IP_ADDRESS = '192.168.1.221'
+APP_SERVER_IP_ADDRESS = '192.168.1.141'
+#APP_SERVER_IP_ADDRESS = '192.168.1.221'
 APP_SERVER_PORT = 8942
+
+# this is our test cluster
+CLUSTER_ADDRESSES = [ '192.168.1.141', '192.168.1.221' ]
+CLUSTER_NAMES = [ 'Zufa', 'Athena' ]
+CLUSTER_MENU_ITEMS = [ '1 node', '2 nodes' ]
+CLUSTER_NUM_NODES = [ 1, 2 ]
+
+
+# for ODOT
+#CLUSTER_ADDRESSES = [ '192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104', '192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108' ]
+#CLUSTER_NAMES = [ 'aaa', 'bbb', 'ccc', 'ddd', 'eee', 'fff', 'ggg', 'hhh' ]
+#CLUSTER_MENU_ITEMS = [ '1 node', '6 nodes', '8 nodes' ]
+#CLUSTER_NUM_NODES = [ 1, 6, 8 ]
+
+
 
 #determine if this is a windows box or not
 windows = False
@@ -51,6 +67,7 @@ class MainFrame(Gui.MainFrame):
         list.append(Gui.TextAreaWithButton(self, 'Selected Scenario:', self.scenarioData.getTextPanelScenarioLabels(), self.scenarioData.getTextPanelScenarioValues(), 'Create Scenario', self.onCreateNewScenario, hSpace=5, vSpace=5))
         list.append(Gui.TextArea(self, 'Selected Cluster:', self.clusterData.getTextPanelClusterLabels(), self.clusterData.getTextPanelClusterValues(), hSpace=5, vSpace=5))
         list.append(Gui.TextAreaWithButton(self, 'Selected Run Target:', self.runTargetData.getTextPanelRunTargetLabels(), self.runTargetData.getTextPanelRunTargetValues(), 'Run Target', self.onRunTarget, hSpace=5, vSpace=5))
+        list[0].disableButton()
         self.setTextPanels(list)
 
     def createLeftPanel(self):
@@ -99,9 +116,10 @@ class MainFrame(Gui.MainFrame):
         newScenario = self.scenarioMenu.Append(-1, "&New...")
         self.Bind(wx.EVT_MENU, self.onScenarionNew, newScenario)
 
-        newCluster = self.clusterMenu.Append(-1, "&New...")
-        self.Bind(wx.EVT_MENU, self.onClusterNew, newCluster)
-
+        #newCluster = self.clusterMenu.Append(-1, "&New...")
+        #self.Bind(wx.EVT_MENU, self.onClusterNew, newCluster)
+        self.createClusterMenu()
+        
         #a list of scenarios is retrieved from AOServer
         self.createOpenSubmenu()
         #a list of ant targets is retrieved from AOServer
@@ -134,6 +152,12 @@ class MainFrame(Gui.MainFrame):
             self.Bind(wx.EVT_MENU, self.onRunMenuItem, item)
             self.Bind(wx.EVT_MENU_HIGHLIGHT, self.onRunMenuMouseOver, item)
 
+    def createClusterMenu(self):
+        for name in self.clusterData.getClusterMenuItems():
+            item = self.clusterMenu.Append(-1, name)
+            self.Bind(wx.EVT_MENU, self.onClusterMenuItem, item)
+            self.Bind(wx.EVT_MENU_HIGHLIGHT, self.onClusterMenuMouseOver, item)
+
     def onMenuClose(self,event):
         self.clearStatusBar([''])
 
@@ -147,14 +171,24 @@ class MainFrame(Gui.MainFrame):
     def onOpenSubmenuItem(self, event):
         item = self.openSubmenu.FindItemById(event.GetId())
         itemText = item.GetText()
+        panels = self.getTextPanels()
+        panels[0].disableButton()
         self.scenarioData.setSelectedScenario(itemText)
         self.setScenarioPanelText()
 
     def onRunMenuItem(self,event):
         item = self.runMenu.FindItemById(event.GetId())
         itemText = item.GetText()
+        yearFrame = SelectTargetYearFrame(self, self.runTargetData)
+        yearFrame.Show()
         self.runTargetData.setSelectedRunTarget(itemText)
         self.setRunTargetPanelText()
+
+    def onClusterMenuItem(self,event):
+        item = self.clusterMenu.FindItemById(event.GetId())
+        itemText = item.GetText()
+        self.clusterData.setSelectedClusterItem(itemText)
+        self.setClusterPanelText()
 
     def onClusterNew(self, event):
         self.clusterNewFrame = SelectClusterFrame(self, self.clusterData)
@@ -193,10 +227,10 @@ class MainFrame(Gui.MainFrame):
         values = self.runTargetData.getStatusBarRunTargetValues(targetName)
         self.populateStatusBar(labels, values, [-1,-2,-3])
 
-    def setStatusBarClusterValues(self,machineName):
+    def setStatusBarClusterValues(self,itemText):
         labels = self.clusterData.getStatusBarClusterLabels()
-        values = self.clusterData.getMachineDetails(machineName)
-        self.populateStatusBar(labels, values, [-2,-3,-2,-1,-1,-1,-1])
+        values = self.clusterData.getStatusBarClusterValues(itemText)
+        self.populateStatusBar(labels, values, [-1,-4])
 
     def setScenarioPanelText(self):
         panels = self.getTextPanels()
@@ -248,6 +282,8 @@ class MainFrame(Gui.MainFrame):
     def onCreateNewScenario(self,event):
         #get list of scenario values: [scenarioName, baseYear, scenarioYears, userName, scenarioCreationTime, description]
         values = self.scenarioData.getSelectedScenarioValues()
+        panels = self.getTextPanels()
+        panels[0].disableButton()
         #result = self.serverConnection.tempCreateScenario(values[0],values[2],values[1],values[3],values[5])
         result = self.serverConnection.createScenario(values[0],values[2],values[1],values[3],values[5])
         print result
@@ -280,6 +316,7 @@ class SelectRunTargetData(object):
         self.selectedRunTarget = None
         # get list of [name, descr, reqd args[]] for runTarget
         self.runTargetsTable = serverConnection.getAvailableRunTargets()
+        print self.runTargetsTable[1]
         self.setStatusBarRunTargetLabels()
         self.setTextPanelRunTargetLabels()
 
@@ -322,13 +359,11 @@ class SelectRunTargetData(object):
         return self.textPanelLabels
 
     def getTRequiredValue(self):
-        if self.selectedRunTarget == None:
-            tRequired = false
-        else:
-            index = self.getRunTargetsTableIndex(self.selectedRunTarget)
-            target = self.runTargetsTable[index]
-            if target[2].count('t') > 0:
-                tRequired = True
+        tRequired = False
+        index = self.getRunTargetsTableIndex(self.selectedRunTarget)
+        target = self.runTargetsTable[index]
+        if target[2].count('t') > 0:
+            tRequired = True
         return tRequired
 
     def getTextPanelRunTargetValues(self):
@@ -374,6 +409,8 @@ class SelectRunTargetData(object):
         target = self.runTargetsTable[index]
         return target[2]
 
+    def setTargetYear(self, year):
+        print 'target year = %s set' % year
 
 
         #Data object to hold data related to scenario definition/selection
@@ -564,6 +601,8 @@ class SelectScenarioFrame(wx.Frame):
         self.callingFrame.setScenarioPanelText()
         self.callingFrame.destroyOpenSubmenu()
         self.callingFrame.createOpenSubmenu()
+        panels = self.callingFrame.getTextPanels()
+        panels[0].enableButton()
         self.callingFrame.enableFrame()
         self.Destroy()
 
@@ -658,39 +697,127 @@ class SelectTargetDataFrame(wx.Frame):
        self.Destroy()
 
 
-        #Data object to hold data related to cluster selection
+# popup box to get information about target to be run.
+class SelectTargetYearFrame(wx.Frame):
+   def __init__(self, callingFrame, targetData):
+       wx.Frame.__init__(self, None, -1, "Define Target Year", size=(200,100))
+
+       self.callingFrame = callingFrame
+       self.targetData = targetData
+
+       panel = wx.Panel(self, -1)
+
+       #target year text
+       initialValue = 1
+       self.targetYear = str(initialValue)
+       id = wx.NewId()
+       text = wx.StaticText(panel, -1, 'Set Target Year')
+       blank = wx.StaticText(panel, -1, '')
+       self.sc = wx.SpinCtrl(panel, id, '')
+       self.sc.SetRange(1,30)
+       self.sc.SetValue(initialValue)
+       id = wx.NewId()
+       wx.EVT_SPINCTRL(panel,id,self.onTargetYear)
+       wx.EVT_TEXT(self, id, self.onTargetYear)
+
+       #Cancel button
+       id = wx.NewId()
+       self.cancelButton = wx.Button(panel, id, " Cancel ")
+       wx.EVT_BUTTON(self, id, self.onCancel)
+       
+       sizer = wx.GridSizer(rows=2,cols=2)
+       sizer.Add(text, 1, wx.EXPAND)
+       sizer.Add(self.sc, 1, wx.EXPAND)
+       sizer.Add(self.cancelButton, 1, wx.EXPAND)
+       sizer.Add(blank, 1, wx.EXPAND)
+       self.SetSizer(sizer)
+       self.SetAutoLayout(1)
+       sizer.Fit(self)
+
+
+
+   def onTargetYear(self,event):
+       value = self.sc.GetValue()
+       self.targetYear = str(value)
+       self.targetData.setTargetYear(self.targetYear)
+       self.sc.SetValue(value)
+
+   def onCancel(self,event):
+       self.callingFrame.enableFrame()
+       self.Destroy()
+
+
+#Data object to hold data related to cluster selection
 class SelectClusterData(object):
     def __init__(self, serverConnection):
+        self.selectedClusterItem = None
         self.serverConnection = serverConnection
         self.selectedMachineList = []
         self.setStatusBarClusterLabels()
         self.setTextPanelClusterLabels()
-        self.updateAvavailableMachines()
+        #self.updateAvavailableMachines()
 
 
-
+    def getClusterMenuItems(self):
+        return CLUSTER_MENU_ITEMS
+    
+    def getClusterMachineNames(self):
+        return CLUSTER_NAMES
+    
+    def getClusterMachineName(self, index):
+        return CLUSTER_NAMES[index]
+    
+    def getClusterMachineAddresses(self):
+        return CLUSTER_ADDRESSES
+    
+    def getClusterMachineAddress(self, index):
+        return CLUSTER_ADDRESSES[index]
+    
+    def setSelectedClusterItem(self, itemText):
+        index = self.getClusterItemIndex(itemText)
+        self.selectedClusterItem = index
+        self.selectedMachineList = CLUSTER_NAMES[:CLUSTER_NUM_NODES[index]]
+        self.setTextPanelClusterLabels()
+    
+    
     def updateAvavailableMachines(self):
         self.clusterDicts = self.serverConnection.getAvailableMachines()
 
     def setStatusBarClusterLabels(self):
         self.statusBarLabels = []
-        self.statusBarLabels.append('Machine')
-        self.statusBarLabels.append('Ip address')
-        self.statusBarLabels.append('Status')
-        self.statusBarLabels.append('CPUs')
-        self.statusBarLabels.append('RAM')
-        self.statusBarLabels.append('OS')
+        self.statusBarLabels.append('Cluster')
         self.statusBarLabels.append('Description')
 
     def getStatusBarClusterLabels(self):
         return self.statusBarLabels
 
+    def getStatusBarClusterValues(self, itemText):
+        values = []
+        index = self.getClusterItemIndex(itemText)
+        names = CLUSTER_NAMES[:CLUSTER_NUM_NODES[index]]
+        values.append(itemText)
+        namesString = names[0]
+        for x in names[1:]:
+            namesString += ', %s' % x
+        values.append(namesString)
+        return values
+
+    def getClusterItemIndex(self, itemText):
+        index = None
+        for i, item in enumerate(CLUSTER_MENU_ITEMS):
+            if item == itemText:
+                index = i
+                break
+        if index is None:
+            print 'error getting cluster menu item index for creating status bar values'
+        else:
+            return index        
+
     def setTextPanelClusterLabels(self):
-        machines = self.getSelectedMachines()
         self.textPanelLabels = []
         self.textPanelValues = []
-        for i, m in enumerate(machines):
-            self.textPanelLabels.append('%d:' % (i+1))
+        for i, m in enumerate(self.selectedMachineList):
+            self.textPanelLabels.append('%d:' % (i))
             self.textPanelValues.append(m)
 
     def getTextPanelClusterLabels(self):

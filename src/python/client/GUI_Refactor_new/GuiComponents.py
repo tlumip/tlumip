@@ -96,6 +96,9 @@ class TextAreaWithButton(wx.Panel):
         for i, l in enumerate(labels):
             self.addTextItem(l, values[i])
 
+    def getTextAreaLabels(self):
+        return self.textLabels
+
     def layout(self):
         sizer = wx.GridBagSizer(self.hSpace, self.vSpace)
         
@@ -120,6 +123,12 @@ class TextAreaWithButton(wx.Panel):
         sizer.Layout()
         self.SetSizer(sizer)
         
+    def disableButton(self):
+        self.button.Disable()
+        
+    def enableButton(self):
+        self.button.Enable()
+        
     def infoPrint(self):
         print 'Information for TextArea = %s:' % (self.headingItem.GetLabel())
         print 'Labels = ', [x.GetLabel() for x in self.textLabels]
@@ -135,6 +144,9 @@ class TextArea(wx.Panel):
         self.hSpace = hSpace
         self.vSpace = vSpace
         self.setAreaHeading(heading)
+        self.textItems = []
+        self.textLabels = []
+        self.itemIndices = {}
         self.createTextArea(labels, values)
         self.layout()
         self.SetBackgroundColour('light blue')
@@ -145,9 +157,16 @@ class TextArea(wx.Panel):
         self.headingItem.SetFont(wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD))
 
     def createTextArea(self, labels, values):
+        # remove old items if they exist and clear item lists
+        for item in self.textItems:
+            item.Destroy()
+        for item in self.textLabels:
+            item.Destroy()
         self.textItems = []
         self.textLabels = []
         self.itemIndices = {}
+
+        # add the new items and layout
         for i, l in enumerate(labels):
             self.addTextItem(l, values[i])
         self.layout()
@@ -165,6 +184,12 @@ class TextArea(wx.Panel):
         index = self.itemIndices[label]
         self.textItems[index].SetLabel(text)
         self.layout()
+
+    def getTextAreaLabels(self):
+        list = []
+        for i in self.textLabels:
+            list.append(i.GetLabel())
+        return list
 
     def layout(self):
         sizer = wx.GridBagSizer(self.hSpace, self.vSpace)

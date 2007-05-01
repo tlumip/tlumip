@@ -178,7 +178,7 @@ class ApplicationOrchestratorServer(RequestServer):
         messages = [m for m in map(string.strip, message.findall(echo)) if m.startswith("run")]
         result = []
         for entry in messages:
-            print entry
+            #print entry
             name, description, arguments = entry.split("'")
             name = name.split(',')[0].strip()
             description = (" ".join(description.replace("\n", "##n").split())).replace("##n", "\n")

@@ -58,14 +58,35 @@ for i, item in enumerate(list):
 """
    
     
-#list = c.getAvailableAntTargets()
-#for i, item in enumerate(list):
-#    print "%d: %s" % (i, item)
-#    
-#print c.getExistingScenarioProperties()
-#print c.tempCreateScenario('Jim Scenario','30','1990','Jim','my test scenario')
+"""
+list = c.getAvailableAntTargets()
+for i, item in enumerate(list):
+    print "%d: %s" % (i, item)
+    
+print c.getExistingScenarioProperties()
+print c.tempCreateScenario('Jim Scenario','30','1990','Jim','my test scenario')
+"""
+
+"""
+c = ServerConnection('192.168.1.141', 8942)
+c.testVersions()
+"""
 
 
-#c = ServerConnection('192.168.1.141', 8942)
-#c.testVersions()
 
+"""
+# first create a new scenario for testing
+c = ServerConnection('192.168.1.141', 8942)
+c.createScenario('JimTestScenario','2','1990','Jim','scenario for testing gui, client, and server componenets.')
+"""
+
+"""
+c = ServerConnection('192.168.1.141', 8942)
+target = 'runED'
+scenario = 'JimTestScenario'
+baseScenario = '90_Base'
+baseYear = 1990
+interval = 1
+machineList = ['Athena']
+c.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
+"""
