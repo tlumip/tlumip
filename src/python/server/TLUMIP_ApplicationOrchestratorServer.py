@@ -258,6 +258,7 @@ class ApplicationOrchestratorServer(RequestServer):
             result = sendRemoteCommand(serverMachine, command3)
             resultList.append((serverMachine, result))
         else:
+            print "hi"
             result = sendRemoteCommand(machineList[0], command3)
             resultList.append((machineList[0], result))
 
