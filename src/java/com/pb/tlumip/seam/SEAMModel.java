@@ -18,28 +18,38 @@ package com.pb.tlumip.seam;
 
 import com.pb.models.reference.ModelComponent;
 import com.pb.models.seam.SimpleEconomicAllocationModel;
+import com.pb.common.util.ResourceUtil;
 import org.apache.log4j.Logger;
+
+import java.util.ResourceBundle;
+import java.io.File;
 
 /**
  * SEAMModel is a class that ...
  *
  * @author Kimberly Grommes
  * @version 1.0, Apr 30, 2007
- *          Created by IntelliJ IDEA.
+ * Created by IntelliJ IDEA.
  */
 public class SEAMModel extends ModelComponent {
 
     private static Logger logger = Logger.getLogger(SEAMModel.class);
 
     public void startModel(int BaseYear, int interval) {
-       
+
+        SimpleEconomicAllocationModel popSeam = new PopulationSEAM();
+        popSeam.run();
         
     }
 
     public void Main(String[] args) {
 
-        SimpleEconomicAllocationModel popSeam = new PopulationSEAM();
-        popSeam.run();
+        ModelComponent modelComponent = new SEAMModel();
+        ResourceBundle globalRB = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_seam/t0/global.properties"));
+        ResourceBundle appRB = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_seam/t1/seam/seam.properties"));
+
+        modelComponent.setResourceBundles(appRB, globalRB);
+        modelComponent.startModel(2000, 1);
 
     }
 }
