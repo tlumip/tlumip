@@ -228,10 +228,10 @@ class ApplicationOrchestratorServer(RequestServer):
             createDAFPropertiesFile(scenario, machineList)
             # Send commands to every machine in the list:
             for i, machine in enumerate(machineList):
-                command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d nNodes=%d" %
+                command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d -DnNodes=%d" %
                            (runtimeDirectory, scenario, i, len(machineList))).split()
                 sendRemoteCommand(machine, command1)
-                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s nNodes=%d" %
+                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
                            (runtimeDirectory, scenario, machine, len(machineList))).split()
                 sendRemoteCommand(machine, command2)
 
