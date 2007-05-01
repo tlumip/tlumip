@@ -33,8 +33,7 @@ def sendRemoteCommand(machine, command):
     print "sendRemoteCommand: %s, %s" % (machine, command)
     newThread = Thread(target=lambda:remoteDaemon.runRemoteCommand(command))
     newThread.start()
-    print "command started: " + command
-    return "command started: " + command
+    return "command started: " + str(command)
     #result = remoteDaemon.runRemoteCommand(command)
     #print "result: %s" % str(result)
     #return result
