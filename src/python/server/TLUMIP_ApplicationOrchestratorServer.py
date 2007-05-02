@@ -286,10 +286,9 @@ class ApplicationOrchestratorServer(RequestServer):
                 command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d -DnNodes=%d" %
                            (runtimeDirectory, parameters['scenarioName'], i, len(machineList))).split()
                 sendRemoteCommand(machine, command1)
-                #assume bootstrap server running on each node - probably need an ant target for setting up daf
-                #command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
-                #           (runtimeDirectory, scenario, machine, len(machineList))).split()
-                #sendRemoteCommand(machine, command2)
+                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
+                           (runtimeDirectory, scenario, machine, len(machineList))).split()
+                sendRemoteCommand(machine, command2)
         
         if parameters.has_key('scenarioName'):
             dlist = [ "-DscenarioName=%s" % parameters['scenarioName'] ]
@@ -312,6 +311,7 @@ class ApplicationOrchestratorServer(RequestServer):
             resultList.append((machineList[0], result))
 
         #kill all of the file monitors
+        #NEED CODE TO KILL THE BOOTSTRAP SERVERS
         if len(machineList) > 1:
             commandFile = open(scenarioDirectory + parameters['scenarioName'] + '/daf/commandFile.txt','w')
             commandFile.write('StopMonitor\n')
