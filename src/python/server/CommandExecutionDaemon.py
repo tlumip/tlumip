@@ -52,14 +52,18 @@ class CommandExecutionDaemonServer(RequestServer):
     """
     return "Connection to CommandExecutionDaemonServer OK"
 
-  def runRemoteCommand(self, cmdlist):
+  def runRemoteCommand(self, cmdlist, synchronous=False):
     if cmdlist[0] not in legalCommands: return "ERROR: Illegal command " + cmdlist[0]
     print "Executing", " ".join(cmdlist)
     try:
         #### Careful here: is this actually spawning a subprocess,
         #### Or is it waiting to finish before it continues????
         p = subprocess.Popen(cmdlist, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        print 'subprocess returned'
+        if synchronous:
+            p.wait()
+            print 'subprocess returned'
+        else:
+            print 'subprocess started'
         pid = p.pid
     except Exception, e:
         s = "EXCEPTION %s: CommandExecutionDaemon Exception caught running subprocess.Popen().\n%s\n" % (GetTrueIP.machineName(), str(e))
