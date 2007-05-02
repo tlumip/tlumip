@@ -20,6 +20,7 @@ legalCommands = """
 currentlyRunningCommands = {}
 
 import sys, os, GetTrueIP, subprocess, time
+from threading import Thread
 from RequestServer import RequestServer
 CommandExecutionDaemonServerXMLRPCPort = 8947
 CommandExecutionDaemonRunnerXMLRPCPort = 8948
@@ -66,17 +67,20 @@ class CommandExecutionDaemonServer(RequestServer):
         return s
     print "pid:", pid
     currentlyRunningCommands[str(pid)] = cmdlist
-
+    stdOutThread = Thread(target=lambda:self.stdOutWriter(p)).start()
+    return (pid)
+  
+  def stdOutWriter(self,process): 
     # for now, write stdout lines to a text file that can be read by clients.
+    pid = process.pid
     try:
         print 'forming filename on %s' % GetTrueIP.machineName()
-        #filename = r"%s/models/pythonSrc/tmp/%s/stdout%s.txt" % (SHARED, GetTrueIP.machineName(), str(pid))
         filename = r"%s/models/pythonSrc/tmp/%s/stdout.txt" % (SHARED, GetTrueIP.machineName())
         print filename
         f = open(filename, 'w')
         f.write('Machine: %s, PID: %d, Created: %s\n' % (GetTrueIP.machineName(), pid, time.asctime()))
         try:
-            for line in p.stdout:
+            for line in process.stdout:
                 f.write(line)
         finally:
             f.close()
@@ -84,8 +88,7 @@ class CommandExecutionDaemonServer(RequestServer):
         s = "EXCEPTION %s: CommandExecutionDaemon Exception caught writing Popen.stdout.\n%s\n" % (GetTrueIP.machineName(), str(e))
         print s
         return s
-
-    return (pid)
+    return "finished"
 
   def killRemoteCommand(self, pid):
     if not str(pid) in currentlyRunningCommands:
