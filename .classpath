@@ -13,5 +13,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/synpop"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/reference"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pasaat"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/seam"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
