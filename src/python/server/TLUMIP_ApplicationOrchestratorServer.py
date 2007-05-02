@@ -13,7 +13,7 @@ from StringIO import StringIO
 from xmlrpclib import ServerProxy as ServerConnection
 from RequestServer import RequestServer
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
-#from threading import Thread
+from threading import Thread
 #import TargetRules, types
 
 SHARED = '//athena/zshare'
