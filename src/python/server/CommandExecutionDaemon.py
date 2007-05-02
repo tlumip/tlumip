@@ -70,7 +70,7 @@ class CommandExecutionDaemonServer(RequestServer):
     # for now, write stdout lines to a text file that can be read by clients.
     try:
         print 'forming filename on %s' % GetTrueIP.machineName()
-        filename = r"%s/models/pythonSrc/tmp/%s/stdout.txt" % (SHARED, GetTrueIP.machineName())
+        filename = r"%s/models/pythonSrc/tmp/%s/stdout%s.txt" % (SHARED, GetTrueIP.machineName(), str(pid))
         print filename
         f = open(filename, 'w')
         f.write('Machine: %s, PID: %d, Created: %s\n' % (GetTrueIP.machineName(), pid, time.asctime()))
