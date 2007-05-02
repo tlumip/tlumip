@@ -3,7 +3,7 @@
 import GuiComponents as Gui
 import ServerConnectionClient as Server
 import wx, os, time, threading
-
+import wx.html
 
 #Initial GUI Dimensions
 FRAME_WIDTH = 1100
@@ -16,18 +16,13 @@ APP_SERVER_IP_ADDRESS = '192.168.1.141'
 #APP_SERVER_IP_ADDRESS = '192.168.1.221'
 APP_SERVER_PORT = 8942
 
-# this is our test cluster
-CLUSTER_ADDRESSES = [ '192.168.1.141', '192.168.1.221' ]
-CLUSTER_NAMES = [ 'Zufa', 'Athena' ]
-CLUSTER_MENU_ITEMS = [ '1 node', '2 nodes' ]
-CLUSTER_NUM_NODES = [ 1, 2 ]
+# this is our set of test clusters
+clusters = { '1 node - Zufa' : 0, '1 node - Athena' : 1, '2 node - Athena,Zufa' : 2, '3 node - Athena,Enyo,Isis' : 3 }
+CLUSTER_MENU_ITEMS = clusters.keys()
+CLUSTER_MENU_ITEMS.sort()
+CLUSTER_NAMES = [ [ 'Zufa' ], [ 'Athena' ], [ 'Athena', 'Zufa' ], [ 'Athena', 'Enyo', 'Isis' ] ]
 
 
-# for ODOT
-#CLUSTER_ADDRESSES = [ '192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104', '192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108' ]
-#CLUSTER_NAMES = [ 'aaa', 'bbb', 'ccc', 'ddd', 'eee', 'fff', 'ggg', 'hhh' ]
-#CLUSTER_MENU_ITEMS = [ '1 node', '6 nodes', '8 nodes' ]
-#CLUSTER_NUM_NODES = [ 1, 6, 8 ]
 
 
 
@@ -50,8 +45,8 @@ class MainFrame(Gui.MainFrame):
 
         self.serverConnection = Server.ServerConnection(APP_SERVER_IP_ADDRESS, APP_SERVER_PORT)
         self.scenarioData = SelectScenarioData(self.serverConnection)
-        self.runTargetData = SelectRunTargetData(self.serverConnection)
         self.clusterData = SelectClusterData(self.serverConnection)
+        self.runTargetData = SelectRunTargetData(self.serverConnection, self.scenarioData, self.clusterData)
 
         self.createMenuBar()
         self.createStatusBar()
@@ -114,14 +109,13 @@ class MainFrame(Gui.MainFrame):
         self.clusterMenu = wx.Menu()
 
         newScenario = self.scenarioMenu.Append(-1, "&New...")
-        self.Bind(wx.EVT_MENU, self.onScenarionNew, newScenario)
+        self.Bind(wx.EVT_MENU, self.onScenarioNew, newScenario)
 
-        #newCluster = self.clusterMenu.Append(-1, "&New...")
-        #self.Bind(wx.EVT_MENU, self.onClusterNew, newCluster)
-        self.createClusterMenu()
-        
         #a list of scenarios is retrieved from AOServer
         self.createOpenSubmenu()
+
+        self.createClusterMenu()
+        
         #a list of ant targets is retrieved from AOServer
         self.createRunMenu()
 
@@ -163,7 +157,7 @@ class MainFrame(Gui.MainFrame):
 
 
 
-    def onScenarionNew(self, event):
+    def onScenarioNew(self, event):
         self.scenarioNewFrame = SelectScenarioFrame(self, self.scenarioData)
         self.scenarioNewFrame.Show()
         self.disableFrame()
@@ -179,14 +173,19 @@ class MainFrame(Gui.MainFrame):
     def onRunMenuItem(self,event):
         item = self.runMenu.FindItemById(event.GetId())
         itemText = item.GetText()
-        yearFrame = SelectTargetYearFrame(self, self.runTargetData)
-        yearFrame.Show()
         self.runTargetData.setSelectedRunTarget(itemText)
+        self.runTargetData.setTargetYear(self.runTargetData.getDefaultTargetYear())
+        if self.runTargetData.getTRequiredValue():
+            self.disableFrame()
+            yearFrame = TargetYearPopup(self, self.runTargetData)
+            yearFrame.Show()
         self.setRunTargetPanelText()
+
 
     def onClusterMenuItem(self,event):
         item = self.clusterMenu.FindItemById(event.GetId())
         itemText = item.GetText()
+        print itemText
         self.clusterData.setSelectedClusterItem(itemText)
         self.setClusterPanelText()
 
@@ -263,21 +262,13 @@ class MainFrame(Gui.MainFrame):
             return
 
         targetName = self.runTargetData.getSelectedRunTargetName()
+        # scenario, baseScenario, baseYear, interval
+        parameters = self.runTargetData.getSelectedRunTargetParameters()
 
-        if self.runTargetData.getTRequiredValue() == True:
-            self.targetArgFrame = SelectTargetDataFrame(self, self.scenarioData, self.runTargetData, machines)
-            self.targetArgFrame.Show()
-            self.disableFrame()
-            return
-            # arguments for startModelRun are: targetName, scenarioName, baseScenario, baseYear, interval, machineList
-            # result is a list: tuples for each machine in cluster: (str machineName, int processId)
-        if targetName == 'runVersions':
-            result = self.serverConnection.startModelRun(targetName, '', '', '', '', machines)
-            print 'result of onRunMenuItem() for %s: ' % targetName, result
-            self.updateLeftPanel(result)
-        else:
-            wx.MessageBox ("Selected run target is not currently implemented.", "Run Target Undefined", wx.OK)
-            return
+        result = self.serverConnection.startModelRun(targetName, parameters, machines)
+        print 'result of onRunMenuItem() for %s: ' % targetName, result
+        self.updateLeftPanel(result)
+
 
     def onCreateNewScenario(self,event):
         #get list of scenario values: [scenarioName, baseYear, scenarioYears, userName, scenarioCreationTime, description]
@@ -312,19 +303,26 @@ class MainFrame(Gui.MainFrame):
 
         #Data object to hold data related to ant run target selection
 class SelectRunTargetData(object):
-    def __init__(self, serverConnection):
+    def __init__(self, serverConnection, scenarioData, clusterData):
         self.selectedRunTarget = None
+        self.defaultTargetYear = 1
+        self.targetYear = self.defaultTargetYear
+        self.scenarioData = scenarioData
+        self.clusterData = clusterData
         # get list of [name, descr, reqd args[]] for runTarget
         self.runTargetsTable = serverConnection.getAvailableRunTargets()
-        print self.runTargetsTable[1]
         self.setStatusBarRunTargetLabels()
         self.setTextPanelRunTargetLabels()
+        
 
     def setTargetYear(self, targetYear):
         self.targetYear = targetYear
 
     def getTargetYear(self):
         return self.targetYear
+
+    def getDefaultTargetYear(self):
+        return self.defaultTargetYear
 
     def setStatusBarRunTargetLabels(self):
         self.statusBarLabels = []
@@ -362,6 +360,7 @@ class SelectRunTargetData(object):
         tRequired = False
         index = self.getRunTargetsTableIndex(self.selectedRunTarget)
         target = self.runTargetsTable[index]
+        print target
         if target[2].count('t') > 0:
             tRequired = True
         return tRequired
@@ -375,11 +374,27 @@ class SelectRunTargetData(object):
             index = self.getRunTargetsTableIndex(self.selectedRunTarget)
             target = self.runTargetsTable[index]
             values.append(target[0])
+            
             argsString = 'None'
             if len(target[2]) > 0:
-                argsString = target[2][0]
-                for x in target[2][1:]:
-                    argsString += ', %s' % x
+                dataItem = target[2][0]
+                dataValue = self.scenarioData.getSelectedScenarioData(dataItem)
+                argsItem = '%s=%s' % (dataItem, dataValue)
+                argsString = argsItem
+                for x in target[2][1:-1]:
+                    dataItem = x
+                    dataValue = self.scenarioData.getSelectedScenarioData(dataItem)
+                    argsItem = '%s=%s' % (dataItem, dataValue)
+                    argsString += ', %s' % argsItem
+                dataItem = 't'
+                dataValue = self.targetYear
+                argsItem = '%s=%s' % (dataItem, dataValue)
+                argsString += ', %s' % argsItem
+                dataItem = 'machines'
+                dataValue = self.clusterData.getSelectedMachines()
+                argsItem = '%s=%s' % (dataItem, dataValue)
+                argsString += ', %s' % argsItem
+                dataItem = 'machines'
             values.append(argsString)
             values.append(target[1])
         return values
@@ -409,14 +424,23 @@ class SelectRunTargetData(object):
         target = self.runTargetsTable[index]
         return target[2]
 
-    def setTargetYear(self, year):
-        print 'target year = %s set' % year
+    def getSelectedRunTargetParameters(self):
+        params = {}
+        parameterNames = self.getSelectedRunTargetArgs()
+        for name in parameterNames:
+            if name == 't':
+                if self.getTRequiredValue():
+                    params['t'] = self.targetYear
+            else:
+                params[name] = self.scenarioData.getSelectedScenarioData(name)
+        return params
+        
 
-
-        #Data object to hold data related to scenario definition/selection
+#Data object to hold data related to scenario definition/selection
 class SelectScenarioData(object):
     def __init__(self, serverConnection):
         self.selectedScenario = None
+        self.baseScenarioName = '90_Base'
         self.serverConnection = serverConnection
         self.setStatusBarScenarioLabels()
         self.setTextPanelScenarioLabels()
@@ -456,6 +480,7 @@ class SelectScenarioData(object):
     def setTextPanelScenarioLabels(self):
         self.textPanelLabels = []
         self.textPanelLabels.append('Scenario Name:')
+        self.textPanelLabels.append('Base Scenario Name:')
         self.textPanelLabels.append('Base Year:')
         self.textPanelLabels.append('Scenario Years:')
         self.textPanelLabels.append('User Name:')
@@ -473,6 +498,7 @@ class SelectScenarioData(object):
         else:
             scenarioProperties = self.existingScenarioProperties[self.selectedScenario]
             values.append(self.selectedScenario)
+            values.append(self.baseScenarioName)
             values.append(scenarioProperties['baseYear'])
             values.append(scenarioProperties['scenarioYears'])
             values.append(scenarioProperties['userName'])
@@ -506,6 +532,15 @@ class SelectScenarioData(object):
 
     def getSelectedScenarioName(self):
         return self.selectedScenario
+
+    def getSelectedScenarioData(self, dataItem):
+        if dataItem == 'scenarioName':
+            return self.selectedScenario
+        elif dataItem == 'baseScenarioName':
+            return self.baseScenarioName
+        else:
+            scenarioProperties = self.existingScenarioProperties[self.selectedScenario]
+            return scenarioProperties[dataItem]
 
 
 
@@ -611,146 +646,73 @@ class SelectScenarioFrame(wx.Frame):
         self.Destroy()
 
 # popup box to get information about target to be run.
-class SelectTargetDataFrame(wx.Frame):
-   def __init__(self, callingFrame, scenarioData, targetData, machineList):
-       wx.Frame.__init__(self, None, -1, "Define Target Year",size = (370,305))
+class TargetYearPopup(wx.Frame):
+    def __init__(self, parent, targetData):
+        wx.Frame.__init__(self, parent, -1, "Set Target Year", style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT, pos=(parent.GetPositionTuple()[0]+300,parent.GetPositionTuple()[1]+100))
+        self.Bind(wx.EVT_CLOSE, self.onClose)
 
-       self.callingFrame = callingFrame
-       self.scenarioData = scenarioData
-       self.targetData = targetData
-       self.machineList = machineList
+        self.parent = parent 
+        self.targetData = targetData
 
-       panel = wx.Panel(self, -1)
+        self.defaultValue = self.targetData.getDefaultTargetYear()
+        self.targetYear = self.defaultValue
+        self.spinValue = self.defaultValue
+         
+        panel = wx.Panel(self, -1)
+        panel.SetBackgroundColour(LEFT_PANEL_COLOR)
 
-       #Scenario name text box
-       self.scenarioName = self.scenarioData.getSelectedScenarioName()
-       wx.StaticText(panel, -1, 'Scenario Name', wx.Point(12,23))
-       wx.StaticText(panel, -1, self.scenarioName, wx.Point(88, 20))
+        # text label 
+        label = wx.StaticText(panel, -1, 'Target Year:')
+ 
+        #spin control
+        id = wx.NewId()
+        self.sc = wx.SpinCtrl(panel, id, '', size=(50,20))
+        self.sc.SetRange(1,30)
+        self.sc.SetValue(self.defaultValue)
+        wx.EVT_SPINCTRL(panel, id, self.onSetValue)
+        wx.EVT_TEXT(panel, id, self.onSetValue)
 
+        #OK button
+        id = wx.NewId()
+        self.okButton = wx.Button(panel, id, "Ok", size=(45,20))
+        wx.EVT_BUTTON(self, id, self.onOk)
+ 
+        #Cancel button
+        id = wx.NewId()
+        self.cancelButton = wx.Button(panel, id, "Cancel", size=(55,20))
+        wx.EVT_BUTTON(self, id, self.onCancel)
+ 
+        #Sizer
+        sizer = wx.GridSizer(rows=2, cols=2)
+        sizer.Add(label, 0, wx.ALL, 10)
+        sizer.Add(self.sc, 0, wx.ALL, 8)
+        sizer.Add(self.okButton, 0, wx.ALL, 4)
+        sizer.Add(self.cancelButton, 0, wx.ALL, 4)
+        panel.SetSizer(sizer)
+        sizer.Fit(self)
+ 
+    def onSetValue(self,event):
+        value = self.sc.GetValue()
+        self.spinValue = value
+        self.sc.SetValue(value)
 
-       #Target Name text box
-       self.TargetName = self.targetData.getSelectedRunTargetName()
-       wx.StaticText(panel, -1, 'Target', wx.Point(12,63))
-       wx.StaticText(panel, -1, self.TargetName, wx.Point(88,63))
-       
-       #target year text
-       initialValue = 1
-       self.targetYear = str(initialValue)
-       id = wx.NewId()
-       wx.StaticText(panel, -1, 'Target Year', wx.Point(12,95))
-       self.sc = wx.SpinCtrl(panel, id, '', wx.Point(88,95), wx.Size(50,-1), )
-       self.sc.SetRange(1,30)
-       self.sc.SetValue(initialValue)
-       id = wx.NewId()
-       wx.EVT_SPINCTRL(panel,id,self.onTargetYear)
-       wx.EVT_TEXT(self, id, self.onTargetYear)
+    def onOk(self,event):
+        self.targetData.setTargetYear(str(self.spinValue))
+        self.onClose(event)
 
-       #run Target button
-       id = wx.NewId()
-       self.runTargetButton = wx.Button(panel, id, "Run Target", wx.Point(195, 240), wx.Size(150,25))
-       wx.EVT_BUTTON(self, id, self.onRunTarget)
+    def onCancel(self,event):
+        self.targetData.setTargetYear(str(self.defaultValue))
+        self.onClose(event)
 
-       #Cancel button
-       id = wx.NewId()
-       self.cancelButton = wx.Button(panel, id, " Cancel ", wx.Point(10, 240), wx.Size(150,25))
-       wx.EVT_BUTTON(self, id, self.onCancel)
-
-   def onTargetYear(self,event):
-       value = self.sc.GetValue()
-       self.targetYear = str(value)
-       self.sc.SetValue(value)
-
-   def onRunTarget(self,event):
-       #at some point we may need to pass a list, but for now, just a single value.
-       #newValues = []
-       #newValues.append(self.targetYear)
-
-       self.targetData.setTargetYear(self.targetYear)
-       targetName = self.targetData.getSelectedRunTargetName()
-       #self.callingFrame.setScenarioPanelText()
-
-       if targetName == 'runVersions':
-            result = self.callingFrame.serverConnection.startModelRun(targetName, '', '', '', '', machines)
-            print 'result of onRunMenuItem() for %s: ' % targetName, result
-            self.callingFrame.updateLeftPanel(result)
-       else:
-           scenarioDataValues = self.scenarioData.getSelectedScenarioValues()
-           scenarioName = scenarioDataValues[0]
-           baseScenarioName = ''
-           baseYear = scenarioDataValues[1]
-           interval = self.targetYear
-
-           result = self.callingFrame.serverConnection.startModelRun(targetName, scenarioName, baseScenarioName, baseYear, interval, self.machineList)
-           print 'result of onRunMenuItem() for %s: ' % targetName, result
-           self.callingFrame.updateLeftPanel(result)
-           # arguments for startModelRun are: targetName, scenarioName, baseScenario, baseYear, interval, machineList
-           # result is a list: tuples for each machine in cluster: (str machineName, int processId)
-           #wx.MessageBox ("Selected run target is not currently implemented.", "Run Target Undefined", wx.OK)
-           
-       self.callingFrame.destroyOpenSubmenu()
-       self.callingFrame.createOpenSubmenu()
-       self.callingFrame.enableFrame()
-       self.Destroy()
-
-   def onCancel(self,event):
-       self.callingFrame.enableFrame()
-       self.Destroy()
-
-
-# popup box to get information about target to be run.
-class SelectTargetYearFrame(wx.Frame):
-   def __init__(self, callingFrame, targetData):
-       wx.Frame.__init__(self, None, -1, "Define Target Year", size=(200,100))
-
-       self.callingFrame = callingFrame
-       self.targetData = targetData
-
-       panel = wx.Panel(self, -1)
-
-       #target year text
-       initialValue = 1
-       self.targetYear = str(initialValue)
-       id = wx.NewId()
-       text = wx.StaticText(panel, -1, 'Set Target Year')
-       blank = wx.StaticText(panel, -1, '')
-       self.sc = wx.SpinCtrl(panel, id, '')
-       self.sc.SetRange(1,30)
-       self.sc.SetValue(initialValue)
-       id = wx.NewId()
-       wx.EVT_SPINCTRL(panel,id,self.onTargetYear)
-       wx.EVT_TEXT(self, id, self.onTargetYear)
-
-       #Cancel button
-       id = wx.NewId()
-       self.cancelButton = wx.Button(panel, id, " Cancel ")
-       wx.EVT_BUTTON(self, id, self.onCancel)
-       
-       sizer = wx.GridSizer(rows=2,cols=2)
-       sizer.Add(text, 1, wx.EXPAND)
-       sizer.Add(self.sc, 1, wx.EXPAND)
-       sizer.Add(self.cancelButton, 1, wx.EXPAND)
-       sizer.Add(blank, 1, wx.EXPAND)
-       self.SetSizer(sizer)
-       self.SetAutoLayout(1)
-       sizer.Fit(self)
-
-
-
-   def onTargetYear(self,event):
-       value = self.sc.GetValue()
-       self.targetYear = str(value)
-       self.targetData.setTargetYear(self.targetYear)
-       self.sc.SetValue(value)
-
-   def onCancel(self,event):
-       self.callingFrame.enableFrame()
-       self.Destroy()
+    def onClose(self,event):
+        self.parent.enableFrame()
+        self.parent.setRunTargetPanelText()
+        self.Destroy()
 
 
 #Data object to hold data related to cluster selection
 class SelectClusterData(object):
     def __init__(self, serverConnection):
-        self.selectedClusterItem = None
         self.serverConnection = serverConnection
         self.selectedMachineList = []
         self.setStatusBarClusterLabels()
@@ -761,22 +723,10 @@ class SelectClusterData(object):
     def getClusterMenuItems(self):
         return CLUSTER_MENU_ITEMS
     
-    def getClusterMachineNames(self):
-        return CLUSTER_NAMES
-    
-    def getClusterMachineName(self, index):
-        return CLUSTER_NAMES[index]
-    
-    def getClusterMachineAddresses(self):
-        return CLUSTER_ADDRESSES
-    
-    def getClusterMachineAddress(self, index):
-        return CLUSTER_ADDRESSES[index]
-    
     def setSelectedClusterItem(self, itemText):
-        index = self.getClusterItemIndex(itemText)
-        self.selectedClusterItem = index
-        self.selectedMachineList = CLUSTER_NAMES[:CLUSTER_NUM_NODES[index]]
+        menuIndex = self.getClusterMenuItemIndex(itemText)
+        clusterIndex = clusters[itemText]
+        self.selectedMachineList = CLUSTER_NAMES[clusterIndex]
         self.setTextPanelClusterLabels()
     
     
@@ -793,8 +743,8 @@ class SelectClusterData(object):
 
     def getStatusBarClusterValues(self, itemText):
         values = []
-        index = self.getClusterItemIndex(itemText)
-        names = CLUSTER_NAMES[:CLUSTER_NUM_NODES[index]]
+        index = self.getClusterMenuItemIndex(itemText)
+        names = CLUSTER_NAMES[index]
         values.append(itemText)
         namesString = names[0]
         for x in names[1:]:
@@ -802,7 +752,7 @@ class SelectClusterData(object):
         values.append(namesString)
         return values
 
-    def getClusterItemIndex(self, itemText):
+    def getClusterMenuItemIndex(self, itemText):
         index = None
         for i, item in enumerate(CLUSTER_MENU_ITEMS):
             if item == itemText:
@@ -863,7 +813,9 @@ class SelectClusterData(object):
         return self.selectedMachineList
 
 
-        #Create cluster definition popup box
+
+
+#Create cluster definition popup box
 class SelectClusterFrame(wx.Frame):
     def __init__(self, callingFrame, clusterData):
         wx.Frame.__init__(self, callingFrame, -1, "Select Machines for Cluster", size=(300,400))

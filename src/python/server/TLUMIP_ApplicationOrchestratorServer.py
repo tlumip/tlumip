@@ -265,6 +265,38 @@ class ApplicationOrchestratorServer(RequestServer):
         return resultList
         #return "Started: " + " ".join(command3)
 
+    def startModelRun(self, target, parameters, machineList):
+        """
+        Pass empty strings for non-used extra arguments
+        test:
+          run ed
+          run pydaf
+          "ant -f targetname"
+        """
+
+        if parameters.has_key('scenarioName'):
+            dlist = [ "-DscenarioName=%s" % parameters['scenarioName'] ]
+        if parameters.has_key('baseScenarioName'):
+            dlist.append( "-DbaseScenario=%s" % parameters['baseScenarioName'] )
+        if parameters.has_key('baseYear'):
+            dlist.append("-DbaseYear=%s" % parameters['baseYear'])
+        if parameters.has_key('t'):
+            dlist.append("-Dt=%s" % parameters['t'])
+        command = (r"ant -f %stlumip.xml %s" % (runtimeDirectory, target)).split()
+        command += dlist
+        print "sending command:", command
+        resultList = []
+        # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
+        if serverMachine in machineList:
+            result = sendRemoteCommand(serverMachine, command)
+            resultList.append((serverMachine, result))
+        else:
+            result = sendRemoteCommand(machineList[0], command)
+            resultList.append((machineList[0], result))
+
+        print "Started: " + " ".join(command)
+        return resultList
+
     def verifyModelIsRunning(self, scenario):
         """
         Did the thing get going?

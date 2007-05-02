@@ -55,7 +55,7 @@ class NotebookPanel(wx.Panel):
 
 
 class TextAreaWithButton(wx.Panel):
-    def __init__(self, parent, heading, labels, values, buttonText, buttonCallback, hSpace=10, vSpace=10):
+    def __init__(self, parent, heading, labels, values, buttonText, buttonCallback, hSpace=7, vSpace=7):
         wx.Panel.__init__(self, parent)
         self.hSpace = hSpace
         self.vSpace = vSpace

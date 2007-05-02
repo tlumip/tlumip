@@ -45,6 +45,10 @@ class ServerConnection(object):
         result = self.server.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
         return result
         
+    def startModelRun(self, target, parameters, machineList):
+        result = self.server.startModelRun(target, parameters, machineList)
+        return result
+        
     def testVersions(self):
         result = self.server.startModelRun("runVersions", "", "", 0, 0, ["Zufa", "Gaia"])
         print str(result)
@@ -89,4 +93,13 @@ baseYear = 1990
 interval = 1
 machineList = ['Athena']
 c.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
+"""
+
+"""
+c = ServerConnection('192.168.1.141', 8942)
+target = 'runWebServer'
+parameterList = ['JimTestScenario']
+machineList = ['Athena']
+result = c.startModelRun(target, parameterList, machineList)
+print 'result =', result
 """
