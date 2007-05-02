@@ -13,7 +13,7 @@ from StringIO import StringIO
 from xmlrpclib import ServerProxy as ServerConnection
 from RequestServer import RequestServer
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
-from threading import Thread
+#from threading import Thread
 #import TargetRules, types
 
 SHARED = '//athena/zshare'
@@ -31,12 +31,12 @@ def sendRemoteCommand(machine, command):
     result = remoteDaemon.checkConnection()
     print "Checking connection to CommandExecutionDaemonServer:", result
     print "sendRemoteCommand: %s, %s" % (machine, command)
-    newThread = Thread(target=lambda:remoteDaemon.runRemoteCommand(command))
-    newThread.start()
-    return "command started: " + str(command)
-    #result = remoteDaemon.runRemoteCommand(command)
-    #print "result: %s" % str(result)
-    #return result
+    #newThread = Thread(target=lambda:remoteDaemon.runRemoteCommand(command))
+    #newThread.start()
+    #return "command started: " + str(command)
+    result = remoteDaemon.runRemoteCommand(command)
+    print "result: %s" % str(result)
+    return result
 
 class ApplicationOrchestratorServer(RequestServer):
     """
@@ -231,12 +231,12 @@ class ApplicationOrchestratorServer(RequestServer):
             createDAFPropertiesFile(scenario, machineList)
             # Send commands to every machine in the list:
             for i, machine in enumerate(machineList):
-                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
-                           (runtimeDirectory, scenario, machine, len(machineList))).split()
-                sendRemoteCommand(machine, command2)
                 command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d -DnNodes=%d" %
                            (runtimeDirectory, scenario, i, len(machineList))).split()
                 sendRemoteCommand(machine, command1)
+                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
+                           (runtimeDirectory, scenario, machine, len(machineList))).split()
+                sendRemoteCommand(machine, command2)
 
         # Call ant target, or special target if it exists
         # executeRule(target, scenario, baseScenario, baseYear, interval)
