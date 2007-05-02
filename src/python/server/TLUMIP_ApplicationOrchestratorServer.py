@@ -13,7 +13,6 @@ from StringIO import StringIO
 from xmlrpclib import ServerProxy as ServerConnection
 from RequestServer import RequestServer
 from CommandExecutionDaemon import CommandExecutionDaemonServerXMLRPCPort
-#from threading import Thread
 #import TargetRules, types
 
 SHARED = '//athena/zshare'
@@ -31,9 +30,6 @@ def sendRemoteCommand(machine, command):
     result = remoteDaemon.checkConnection()
     print "Checking connection to CommandExecutionDaemonServer:", result
     print "sendRemoteCommand: %s, %s" % (machine, command)
-    #newThread = Thread(target=lambda:remoteDaemon.runRemoteCommand(command))
-    #newThread.start()
-    #return "command started: " + str(command)
     result = remoteDaemon.runRemoteCommand(command)
     print "result: %s" % str(result)
     return result
@@ -190,37 +186,93 @@ class ApplicationOrchestratorServer(RequestServer):
             result.append([name, description, arguments])
         return result
 
-    def startModelRun(self, target, scenario, baseScenario, baseYear, interval, machineList):
+#    def startModelRun(self, target, scenario, baseScenario, baseYear, interval, machineList):
+#        """
+#        Pass empty strings for non-used extra arguments
+#        test:
+#          run ed
+#          run pydaf
+#          "ant -f targetname"
+#        """
+#        #print "args", target, scenario, baseScenario, baseYear, interval, machineList
+#        if target == "runVersions":
+#            resultList = []
+#            for m in machineList:
+#                result = sendRemoteCommand(m, ["ant", "-f", r"%stlumip.xml" % runtimeDirectory, "runVersions"])
+#                
+#                # a valid result is an int pid, anything else is an exception message, so return it
+#                try:
+#                    int(result)
+#                except ValueError:
+#                    return '%s EXCEPTION: %s' (m, result)
+#                    
+#                resultList.append((m, result))
+#            return resultList
+#        if target == "specialCommand":
+#            sendRemoteCommand("Athena", ["ping", "www.google.com"])
+#            return "Special Command Sent"
+#        if target == "testFileCommand":
+#            path = "%stlumip.xml" % (runtimeDirectory)
+#            sendRemoteCommand("Athena", ["type", path])
+#            return "testFileCommand Sent"
+#        print "=*=" * 80
+#        print "len(machineList):", len(machineList)
+#        if len(machineList) > 1:
+#            """
+#            There's an ant target called startfilemonitor on each
+#            machine in the machine list
+#            -- Also startbootstrapserver
+#            -- Create daf property file
+#            """
+#            createDAFPropertiesFile(scenario, machineList)
+#            # Send commands to every machine in the list:
+#            for i, machine in enumerate(machineList):
+#                command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d -DnNodes=%d" %
+#                           (runtimeDirectory, scenario, i, len(machineList))).split()
+#                sendRemoteCommand(machine, command1)
+#                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
+#                           (runtimeDirectory, scenario, machine, len(machineList))).split()
+#                sendRemoteCommand(machine, command2)
+#
+#        # Call ant target, or special target if it exists
+#        # executeRule(target, scenario, baseScenario, baseYear, interval)
+#        dlist = []
+#        if scenario:
+#            dlist = [ "-DscenarioName=%s" % scenario ]
+#        if baseScenario:
+#            dlist.append("-DbaseScenario=%s" % baseScenario)
+#        if baseYear:
+#            dlist.append("-DbaseYear=%s" % baseYear)
+#        if interval:
+#            dlist.append("-Dt=%s" % interval)
+#        command3 = (r"ant -f %stlumip.xml %s" % (runtimeDirectory, target)).split()
+#        command3 = command3 + dlist
+#        print "command3:", command3
+#        resultList = []
+#        # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
+#        if serverMachine in machineList:
+#            result = sendRemoteCommand(serverMachine, command3)
+#            resultList.append((serverMachine, result))
+#        else:
+#            result = sendRemoteCommand(machineList[0], command3)
+#            resultList.append((machineList[0], result))
+#
+#        print "Started: " + " ".join(command3)
+#        return resultList
+#        #return "Started: " + " ".join(command3)
+    
+    
+    
+
+    def startModelRun(self, target, parameters, machineList):
         """
         Pass empty strings for non-used extra arguments
         test:
           run ed
           run pydaf
           "ant -f targetname"
+        parameters should be: ['scenarioName':scenario, 'baseScenarioName':base scenario, 'baseYear': base year, 't': t year]
         """
-        #print "args", target, scenario, baseScenario, baseYear, interval, machineList
-        if target == "runVersions":
-            resultList = []
-            for m in machineList:
-                result = sendRemoteCommand(m, ["ant", "-f", r"%stlumip.xml" % runtimeDirectory, "runVersions"])
-                
-                # a valid result is an int pid, anything else is an exception message, so return it
-                try:
-                    int(result)
-                except ValueError:
-                    return '%s EXCEPTION: %s' (m, result)
-                    
-                resultList.append((m, result))
-            return resultList
-        if target == "specialCommand":
-            sendRemoteCommand("Athena", ["ping", "www.google.com"])
-            return "Special Command Sent"
-        if target == "testFileCommand":
-            path = "%stlumip.xml" % (runtimeDirectory)
-            sendRemoteCommand("Athena", ["type", path])
-            return "testFileCommand Sent"
-        print "=*=" * 80
-        print "len(machineList):", len(machineList)
         if len(machineList) > 1:
             """
             There's an ant target called startfilemonitor on each
@@ -232,48 +284,13 @@ class ApplicationOrchestratorServer(RequestServer):
             # Send commands to every machine in the list:
             for i, machine in enumerate(machineList):
                 command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d -DnNodes=%d" %
-                           (runtimeDirectory, scenario, i, len(machineList))).split()
+                           (runtimeDirectory, parameters['scenarioName'], i, len(machineList))).split()
                 sendRemoteCommand(machine, command1)
-                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
-                           (runtimeDirectory, scenario, machine, len(machineList))).split()
-                sendRemoteCommand(machine, command2)
-
-        # Call ant target, or special target if it exists
-        # executeRule(target, scenario, baseScenario, baseYear, interval)
-        dlist = []
-        if scenario:
-            dlist = [ "-DscenarioName=%s" % scenario ]
-        if baseScenario:
-            dlist.append("-DbaseScenario=%s" % baseScenario)
-        if baseYear:
-            dlist.append("-DbaseYear=%s" % baseYear)
-        if interval:
-            dlist.append("-Dt=%s" % interval)
-        command3 = (r"ant -f %stlumip.xml %s" % (runtimeDirectory, target)).split()
-        command3 = command3 + dlist
-        print "command3:", command3
-        resultList = []
-        # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
-        if serverMachine in machineList:
-            result = sendRemoteCommand(serverMachine, command3)
-            resultList.append((serverMachine, result))
-        else:
-            result = sendRemoteCommand(machineList[0], command3)
-            resultList.append((machineList[0], result))
-
-        print "Started: " + " ".join(command3)
-        return resultList
-        #return "Started: " + " ".join(command3)
-
-    def startModelRun(self, target, parameters, machineList):
-        """
-        Pass empty strings for non-used extra arguments
-        test:
-          run ed
-          run pydaf
-          "ant -f targetname"
-        """
-
+                #assume bootstrap server running on each node - probably need an ant target for setting up daf
+                #command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
+                #           (runtimeDirectory, scenario, machine, len(machineList))).split()
+                #sendRemoteCommand(machine, command2)
+        
         if parameters.has_key('scenarioName'):
             dlist = [ "-DscenarioName=%s" % parameters['scenarioName'] ]
         if parameters.has_key('baseScenarioName'):
@@ -288,13 +305,18 @@ class ApplicationOrchestratorServer(RequestServer):
         resultList = []
         # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
         if serverMachine in machineList:
-            result = sendRemoteCommand(serverMachine, command)
+            result = sendRemoteCommand(serverMachine, command, True)
             resultList.append((serverMachine, result))
         else:
-            result = sendRemoteCommand(machineList[0], command)
+            result = sendRemoteCommand(machineList[0], command, True)
             resultList.append((machineList[0], result))
 
-        print "Started: " + " ".join(command)
+        #kill all of the file monitors
+        if len(machineList) > 1:
+            commandFile = open(scenarioDirectory + parameters['scenarioName'] + '/daf/commandFile.txt','w')
+            commandFile.write('StopMonitor\n')
+            commandFile.close()
+        print "Finished: " + " ".join(command)
         return resultList
 
     def verifyModelIsRunning(self, scenario):
