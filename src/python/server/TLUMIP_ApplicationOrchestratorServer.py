@@ -31,12 +31,12 @@ def sendRemoteCommand(machine, command):
     result = remoteDaemon.checkConnection()
     print "Checking connection to CommandExecutionDaemonServer:", result
     print "sendRemoteCommand: %s, %s" % (machine, command)
-    #newThread = Thread(target=lambda:remoteDaemon.runRemoteCommand(command))
-    #newThread.start()
-    #return "command started: " + str(command)
-    result = remoteDaemon.runRemoteCommand(command)
-    print "result: %s" % str(result)
-    return result
+    newThread = Thread(target=lambda:remoteDaemon.runRemoteCommand(command))
+    newThread.start()
+    return "command started: " + str(command)
+    #result = remoteDaemon.runRemoteCommand(command)
+    #print "result: %s" % str(result)
+    #return result
 
 class ApplicationOrchestratorServer(RequestServer):
     """
