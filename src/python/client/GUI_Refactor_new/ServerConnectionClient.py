@@ -50,7 +50,7 @@ class ServerConnection(object):
         return result
         
     def testVersions(self):
-        result = self.server.startModelRun("runVersions", "", "", 0, 0, ["Zufa", "Gaia"])
+        result = self.server.startModelRun("runVersions", {}, ["Zufa"])
         print str(result)
 
         
@@ -71,10 +71,12 @@ print c.getExistingScenarioProperties()
 print c.tempCreateScenario('Jim Scenario','30','1990','Jim','my test scenario')
 """
 
+
 """
 c = ServerConnection('192.168.1.141', 8942)
 c.testVersions()
 """
+
 
 
 
