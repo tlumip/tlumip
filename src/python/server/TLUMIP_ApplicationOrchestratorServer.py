@@ -36,7 +36,6 @@ def sendRemoteCommand(machine, command):
     #return "command started: " + str(command)
     result = remoteDaemon.runRemoteCommand(command)
     print "result: %s" % str(result)
-    del remoteDaemon
     return result
 
 class ApplicationOrchestratorServer(RequestServer):
@@ -232,12 +231,12 @@ class ApplicationOrchestratorServer(RequestServer):
             createDAFPropertiesFile(scenario, machineList)
             # Send commands to every machine in the list:
             for i, machine in enumerate(machineList):
-                command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d -DnNodes=%d" %
-                           (runtimeDirectory, scenario, i, len(machineList))).split()
-                sendRemoteCommand(machine, command1)
                 command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
                            (runtimeDirectory, scenario, machine, len(machineList))).split()
                 sendRemoteCommand(machine, command2)
+                command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d -DnNodes=%d" %
+                           (runtimeDirectory, scenario, i, len(machineList))).split()
+                sendRemoteCommand(machine, command1)
 
         # Call ant target, or special target if it exists
         # executeRule(target, scenario, baseScenario, baseYear, interval)
