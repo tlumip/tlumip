@@ -25,12 +25,12 @@ createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
 runtimeDirectory = SHARED + r"/models/tlumip/runtime/"
 serverMachine = None
 
-def sendRemoteCommand(machine, command):
+def sendRemoteCommand(machine, command, syncronous=False):
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
     result = remoteDaemon.checkConnection()
     print "Checking connection to CommandExecutionDaemonServer:", result
     print "sendRemoteCommand: %s, %s" % (machine, command)
-    result = remoteDaemon.runRemoteCommand(command)
+    result = remoteDaemon.runRemoteCommand(command, syncronous)
     print "result: %s" % str(result)
     return result
 
