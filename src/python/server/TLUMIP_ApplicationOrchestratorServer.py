@@ -25,12 +25,12 @@ createdScenariosFile = "CreatedScenarios.csv"  ####### Create full path for this
 runtimeDirectory = SHARED + r"/models/tlumip/runtime/"
 serverMachine = None
 
-def sendRemoteCommand(machine, command, syncronous=False):
+def sendRemoteCommand(machine, command, synchronous=False):
     remoteDaemon = ServerConnection("http://" + machineIP[machine] + ":" + str(CommandExecutionDaemonServerXMLRPCPort))
     result = remoteDaemon.checkConnection()
     print "Checking connection to CommandExecutionDaemonServer:", result
     print "sendRemoteCommand: %s, %s" % (machine, command)
-    result = remoteDaemon.runRemoteCommand(command, syncronous)
+    result = remoteDaemon.runRemoteCommand(command, synchronous)
     print "result: %s" % str(result)
     return result
 
@@ -290,21 +290,32 @@ class ApplicationOrchestratorServer(RequestServer):
                            (runtimeDirectory, parameters['scenarioName'], machine, len(machineList))).split()
                 sendRemoteCommand(machine, command2)
         
+        # Form a parameter list from the dictionary of parameters.  Dictionary keys must match parameter names expected in tlumip.xml.
+        dlist = []
+        names = parameters.keys()
+        for n in names:
+            dlist.append( "-D%s=%s" % (n, parameters[n]) )
+            
+        """
+        # form a parameter list from a specific set:
+        dlist = []
         if parameters.has_key('scenarioName'):
-            dlist = [ "-DscenarioName=%s" % parameters['scenarioName'] ]
+            dlist.append( "-DscenarioName=%s" % parameters['scenarioName'] )
         if parameters.has_key('baseScenarioName'):
             dlist.append( "-DbaseScenario=%s" % parameters['baseScenarioName'] )
         if parameters.has_key('baseYear'):
             dlist.append("-DbaseYear=%s" % parameters['baseYear'])
         if parameters.has_key('t'):
             dlist.append("-Dt=%s" % parameters['t'])
+        """    
+            
         command = (r"ant -f %stlumip.xml %s" % (runtimeDirectory, target)).split()
         command += dlist
         print "sending command:", command
         resultList = []
         # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
         if serverMachine in machineList:
-            result = sendRemoteCommand(serverMachine, command, True)
+            result = sendRemoteCommand(serverMachine, command, False)
             resultList.append((serverMachine, result))
         else:
             result = sendRemoteCommand(machineList[0], command, True)
