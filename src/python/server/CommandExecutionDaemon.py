@@ -60,7 +60,7 @@ class CommandExecutionDaemonServer(RequestServer):
         #### Or is it waiting to finish before it continues????
         p = subprocess.Popen(cmdlist, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         if synchronous:
-            p.wait()
+            #p.wait()
             print 'subprocess returned'
         else:
             print 'subprocess started'
