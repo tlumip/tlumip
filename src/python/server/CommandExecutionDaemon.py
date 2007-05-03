@@ -86,6 +86,7 @@ class CommandExecutionDaemonServer(RequestServer):
         try:
             for line in process.stdout:
                 f.write(line)
+                f.flush()
         finally:
             f.close()
     except Exception, e:
