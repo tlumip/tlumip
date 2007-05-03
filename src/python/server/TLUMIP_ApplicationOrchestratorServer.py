@@ -288,7 +288,12 @@ class ApplicationOrchestratorServer(RequestServer):
                            (runtimeDirectory, parameters['scenarioName'], i, len(machineList))).split()
                 sendRemoteCommand(machine, command1)
                 #for the moment, assume that if a machine is being used in the cluster, then daf3 is locking it down - need to create a daf3 flag in the ant targets
-                self.copyDaf3File(parameters['scenarioName'],machine)
+                #self.copyDaf3File(parameters['scenarioName'],machine)
+                #setup daf run for each computer
+                command2 = (r"ant -f %stlumip.xml setupDaf3Node -DscenarioName=%s -DmachineName=%s -Dnode=%d -DnNodes=%d" %
+                           (runtimeDirectory, parameters['scenarioName'], machine, i, len(machineList))).split()
+                sendRemoteCommand(machine, command2, True)
+                
                 #bootstrap server starting doesn't happen now
                 #command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
                 #           (runtimeDirectory, parameters['scenarioName'], machine, len(machineList))).split()
@@ -344,8 +349,8 @@ class ApplicationOrchestratorServer(RequestServer):
         print "Finished: " + " ".join(command)
         return resultList
     
-    def copyDaf3File(self, scenario, machine):
-        shutil.copyfile(scenarioDirectory + scenario + "/daf/start" + machine + ".daf3",runtimeDirectory + "start" + machine + ".daf3")
+    #def copyDaf3File(self, scenario, machine):
+    #    shutil.copyfile(scenarioDirectory + scenario + "/daf/start" + machine + ".daf3",runtimeDirectory + "start" + machine + ".daf3")
 
     def verifyModelIsRunning(self, scenario):
         """
