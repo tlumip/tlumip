@@ -331,6 +331,8 @@ class ApplicationOrchestratorServer(RequestServer):
             resultList.append((machineList[0], result))
 
         #kill all of the file monitors and unlock daf3
+        #wait for stop node command to get processed
+        time.sleep(5)
         if len(machineList) > 1:
             commandFile = open(scenarioDirectory + parameters['scenarioName'] + '/daf/commandFile.txt','w')
             commandFile.write('StopMonitor\n')
