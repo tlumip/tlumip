@@ -8,7 +8,7 @@ ApplicationOrchestratorServer.py
         running sql queries on output data
 
 """
-import sys, os, GetTrueIP, subprocess, csv, glob, string, re, time, pprint
+import sys, os, GetTrueIP, subprocess, csv, glob, string, re, time, pprint, shutil
 from StringIO import StringIO
 from xmlrpclib import ServerProxy as ServerConnection
 from RequestServer import RequestServer
@@ -41,7 +41,7 @@ class ApplicationOrchestratorServer(RequestServer):
     def __init__(self, ip):
         RequestServer.__init__(self, ip, port = ApplicationOrchestratorServerXMLRPCPort)
         self.scenarioNameP = ''
-        self.readClusterMachinesFile()
+        self.machineProperties = self.readClusterMachinesFile()
         
     def checkConnection(self):
         """
@@ -129,7 +129,8 @@ class ApplicationOrchestratorServer(RequestServer):
                 "RAM" : RAM,
                 "OS" : OS,
                 "DESCRIPTION" : DESCRIPTION,
-                "STATUS" : "Unreachable"
+                "STATUS" : "Unreachable",
+                "DAF3_IN_USE" : False
             })
         #pprint.pprint(machineProperties)
         return machineProperties
@@ -151,8 +152,8 @@ class ApplicationOrchestratorServer(RequestServer):
         process running. (call getProcessList() on each machine) First cut: if java
         is running, machine is not available
         """
-        machineProperties = self.readClusterMachinesFile()
-        for machine in machineProperties:
+        #machineProperties = self.readClusterMachinesFile()
+        for machine in self.machineProperties:
             #if machine not in ["Athena", "Chaos"] : continue  ############## TEST TEST TEST
             cmdDaemon = "http://" + machine['IP'] + ":" + str(CommandExecutionDaemonServerXMLRPCPort)
             try:
@@ -164,7 +165,7 @@ class ApplicationOrchestratorServer(RequestServer):
                     machine['STATUS'] = "Busy"
             except Exception, e:
                 machine['STATUS'] = "Unreachable"
-        return machineProperties
+        return self.machineProperties
 
     def getAvailableAntTargets(self):
         """
@@ -271,7 +272,7 @@ class ApplicationOrchestratorServer(RequestServer):
           run ed
           run pydaf
           "ant -f targetname"
-        parameters should be: ['scenarioName':scenario, 'baseScenarioName':base scenario, 'baseYear': base year, 't': t year]
+        parameters should be: ['scenarioName':scenario, 'baseScenario':base scenario, 'baseYear': base year, 't': t year]
         """
         if len(machineList) > 1:
             """
@@ -286,9 +287,15 @@ class ApplicationOrchestratorServer(RequestServer):
                 command1 = (r"ant -f %stlumip.xml startFileMonitor -DscenarioName=%s -Dnode=%d -DnNodes=%d" %
                            (runtimeDirectory, parameters['scenarioName'], i, len(machineList))).split()
                 sendRemoteCommand(machine, command1)
-                command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
-                           (runtimeDirectory, parameters['scenarioName'], machine, len(machineList))).split()
-                sendRemoteCommand(machine, command2)
+                #for the moment, assume that if a machine is being used in the cluster, then daf3 is locking it down - need to create a daf3 flag in the ant targets
+                self.copyDaf3File(parameters['scenarioName'],machine)
+                #bootstrap server starting doesn't happen now
+                #command2 = (r"ant -f %stlumip.xml startBootstrapServer -DscenarioName=%s -DmachineName=%s -DnNodes=%d" %
+                #           (runtimeDirectory, parameters['scenarioName'], machine, len(machineList))).split()
+                #sendRemoteCommand(machine, command2)
+            for machine in self.machineProperties:
+                if machine["NAME"] in machineList:
+                    machine["DAF3_IN_USE"] = True
         
         # Form a parameter list from the dictionary of parameters.  Dictionary keys must match parameter names expected in tlumip.xml.
         dlist = []
@@ -315,20 +322,26 @@ class ApplicationOrchestratorServer(RequestServer):
         resultList = []
         # If serverMachine is in the list, send to serverMachine, otherwise send to first machine in list
         if serverMachine in machineList:
-            result = sendRemoteCommand(serverMachine, command, False)
+            result = sendRemoteCommand(serverMachine, command, True)
             resultList.append((serverMachine, result))
         else:
             result = sendRemoteCommand(machineList[0], command, True)
             resultList.append((machineList[0], result))
 
-        #kill all of the file monitors
-        #NEED CODE TO KILL THE BOOTSTRAP SERVERS
+        #kill all of the file monitors and unlock daf3
         if len(machineList) > 1:
             commandFile = open(scenarioDirectory + parameters['scenarioName'] + '/daf/commandFile.txt','w')
             commandFile.write('StopMonitor\n')
             commandFile.close()
+            for machine in self.machineProperties:
+                if machine["NAME"] in machineList:
+                    machine["DAF3_IN_USE"] = False
+            
         print "Finished: " + " ".join(command)
         return resultList
+    
+    def copyDaf3File(self, scenario, machine):
+        shutil.copyfile(scenarioDirectory + scenario + "/daf/start" + machine + ".daf3",runtimeDirectory + "start" + machine + ".daf3")
 
     def verifyModelIsRunning(self, scenario):
         """
