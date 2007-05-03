@@ -304,6 +304,7 @@ class ApplicationOrchestratorServer(RequestServer):
         names = parameters.keys()
         for n in names:
             dlist.append( "-D%s=%s" % (n, parameters[n]) )
+        print dlist
             
         """
         # form a parameter list from a specific set:
