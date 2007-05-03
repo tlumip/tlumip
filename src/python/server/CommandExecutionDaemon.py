@@ -59,8 +59,9 @@ class CommandExecutionDaemonServer(RequestServer):
         #### Careful here: is this actually spawning a subprocess,
         #### Or is it waiting to finish before it continues????
         p = subprocess.Popen(cmdlist, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        stdOutThread = Thread(target=lambda:self.stdOutWriter(p)).start()
         if synchronous:
-            #p.wait()
+            p.wait()
             print 'subprocess returned'
         else:
             print 'subprocess started'
@@ -71,7 +72,6 @@ class CommandExecutionDaemonServer(RequestServer):
         return s
     print "pid:", pid
     currentlyRunningCommands[str(pid)] = cmdlist
-    stdOutThread = Thread(target=lambda:self.stdOutWriter(p)).start()
     return (pid)
   
   def stdOutWriter(self,process): 
