@@ -296,6 +296,8 @@ class ApplicationOrchestratorServer(RequestServer):
             for machine in self.machineProperties:
                 if machine["NAME"] in machineList:
                     machine["DAF3_IN_USE"] = True
+            #give them some time to start up
+            time.sleep(2)
         
         # Form a parameter list from the dictionary of parameters.  Dictionary keys must match parameter names expected in tlumip.xml.
         dlist = []
