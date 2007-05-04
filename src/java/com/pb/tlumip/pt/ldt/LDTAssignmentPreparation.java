@@ -19,7 +19,6 @@ package com.pb.tlumip.pt.ldt;
 import java.io.File;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
@@ -28,7 +27,6 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrix;
 import com.pb.common.util.ResourceUtil;
-import com.pb.models.pt.TazManager;
 import com.pb.models.reference.ModelComponent;
 import com.pb.models.pt.ldt.LDTripModeType;
 
@@ -157,7 +155,7 @@ public class LDTAssignmentPreparation extends ModelComponent {
             tazLabels[i] = indexToTaz.get(i).toString();
         }
         trips.setLabels(0, tazLabels);
-        trips.setLabels(0, tazLabels);
+        trips.setLabels(1, tazLabels);
         
         return trips; 
     }
