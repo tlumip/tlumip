@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
@@ -32,8 +33,8 @@ import com.pb.models.reference.ModelComponent;
 import com.pb.models.pt.ldt.LDTripModeType;
 
 /**
- * After LDT is run, this class is called to aggregate the trips
- *  to I-J pairs, and write them to a file of the format:
+ * After LDT is run, this class is called to aggregate the trip list,
+ *  aggregate them to I-J pairs, and write them to a file of the format:
  * 
  * i, j, mode, period, trips
  *  
@@ -42,8 +43,8 @@ import com.pb.models.pt.ldt.LDTripModeType;
  * @version 1.0 Apr 27, 2007
  *
  */
-public class LDTTripAccumulator extends ModelComponent {
-    private static Logger logger = Logger.getLogger(LDTTripAccumulator.class);
+public class LDTAssignmentPreparation extends ModelComponent {
+    private static Logger logger = Logger.getLogger(LDTAssignmentPreparation.class);
 
     private static final String ITAZ = "origin";
     private static final String JTAZ = "destination";
@@ -64,7 +65,7 @@ public class LDTTripAccumulator extends ModelComponent {
     
     private float tripWeight; 
     
-    public LDTTripAccumulator(String appRbString) {
+    public LDTAssignmentPreparation(String appRbString) {
         appRb= ResourceBundle.getBundle(appRbString);
         globalRb= ResourceBundle.getBundle("global");      
     }
@@ -84,15 +85,15 @@ public class LDTTripAccumulator extends ModelComponent {
         logger.info("Start aggregating LDT trips ");
         initPeriods();        
         initTripWeight(); 
-        createTazEquivalency(); 
+        TableDataSet tripList = readTrips(); 
+        createTazEquivalency(tripList); 
         
-        processTrips(); 
+        processTrips(tripList); 
+        logger.info("Finished aggregating LDT trips");
     }
     
-    private void processTrips() {
-        
-        TableDataSet tripList = readTrips(); 
-        
+    private void processTrips(TableDataSet tripList) {
+                
         NDimensionalMatrix trips = createTripMatrix(); 
         
         logger.info("Tabulating " + tripList.getRowCount() + " long distance trips." );
@@ -147,15 +148,28 @@ public class LDTTripAccumulator extends ModelComponent {
         
         NDimensionalMatrix trips = new NDimensionalMatrix("LDTrips", shape.length, shape); 
         
+        // label everything
+        String[] dimensionNames = {"i", "j", "mode", "period"}; 
+        trips.setDimensionNames(dimensionNames);
+        
+        String[] tazLabels = new String[indexToTaz.size()]; 
+        for (int i=0; i<tazLabels.length; i++) {
+            tazLabels[i] = indexToTaz.get(i).toString();
+        }
+        trips.setLabels(0, tazLabels);
+        trips.setLabels(0, tazLabels);
+        
         return trips; 
     }
     
     private int getOriginIndex(float origin) {        
-        return tazToIndex.get((int)origin); 
+        Integer o = new Integer((int) origin);
+        return tazToIndex.get(o); 
     }
     
-    private int getDestinationIndex(float destination) {
-        return tazToIndex.get((int) destination); 
+    private int getDestinationIndex(float destination) {  
+        Integer d = new Integer((int) destination);
+        return tazToIndex.get(d); 
     }
            
     private int getModeIndex(String tripMode) {
@@ -200,45 +214,61 @@ public class LDTTripAccumulator extends ModelComponent {
         tripWeight = (float) ResourceUtil.getDoubleProperty(globalRb, SAMPLE_RATE_KEY);
     }
     
-    /** 
-     * Reads the TAZ data.  
-     *
-     */
-    private TazManager readTazData() {
-        logger.info("Reading TAZ data");
-
-        String tazManagerClass = ResourceUtil.getProperty(appRb,"taz.manager.class");
-        Class tazClass = null;
-        TazManager tazManager = null;
-        try {
-            tazClass = Class.forName(tazManagerClass);
-            tazManager = (TazManager) tazClass.newInstance();
-        } catch (Exception e){
-            throw new RuntimeException(e);
-        }
-
-        tazManager.readData(globalRb, appRb);
-        
-        return tazManager; 
-    }
+//    /** 
+//     * Reads the TAZ data.  
+//     *
+//     */
+//    private TazManager readTazData() {
+//        logger.info("Reading TAZ data");
+//
+//        String tazManagerClass = ResourceUtil.getProperty(appRb,"taz.manager.class");
+//        Class tazClass = null;
+//        TazManager tazManager = null;
+//        try {
+//            tazClass = Class.forName(tazManagerClass);
+//            tazManager = (TazManager) tazClass.newInstance();
+//        } catch (Exception e){
+//            throw new RuntimeException(e);
+//        }
+//
+//        String tazClassName = appRb.getString("taz.class");
+//        tazManager.setTazClassName(tazClassName);
+//        tazManager.readData(globalRb, appRb);
+//        
+//        return tazManager; 
+//    }
     
     /**
      * Creates an equivalency between the tazID, and the index
      * used in an array. 
      *
      */
-    private void createTazEquivalency() {
-        TazManager tazManager = this.readTazData();         
+    private void createTazEquivalency(TableDataSet tripList) {
+        
+        TreeSet<Integer> tazIDset = new TreeSet<Integer>(); 
+        for (int row=1; row<=tripList.getRowCount(); row++) {
+            Integer orig = (int) tripList.getValueAt(row, ITAZ);
+            Integer dest = (int) tripList.getValueAt(row, JTAZ);
+            tazIDset.add(orig);
+            tazIDset.add(dest);
+        }
+           
         tazToIndex = new Hashtable<Integer, Integer>(); 
         indexToTaz = new Hashtable<Integer, Integer>(); 
         
         int index = 0; 
-        Set<Integer> tazIDset = tazManager.getTazKeySet();
         for (Integer tazID : tazIDset) {
             tazToIndex.put(tazID, index); 
             indexToTaz.put(index, tazID); 
             index++; 
         }        
     }
-    
+    /**
+    for testing
+    **/
+
+    public static void main(String[] args){
+        LDTAssignmentPreparation ldtTrips = new LDTAssignmentPreparation("pt");
+        ldtTrips.startModel(1990, 0);
+    }
 }
