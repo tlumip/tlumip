@@ -12,7 +12,8 @@ FRAME_HEIGHT = 800
 LEFT_PANEL_COLOR = "light blue"
 RIGHT_PANEL_COLOR = "khaki"
 
-APP_SERVER_IP_ADDRESS = '192.168.1.141'
+APP_SERVER_IP_ADDRESS = '167.131.72.201'
+#APP_SERVER_IP_ADDRESS = '192.168.1.213'
 #APP_SERVER_IP_ADDRESS = '192.168.1.221'
 APP_SERVER_PORT = 8942
 
@@ -21,6 +22,12 @@ clusters = { '1 node - Zufa' : 0, '1 node - Athena' : 1, '2 node - Athena,Zufa' 
 CLUSTER_MENU_ITEMS = clusters.keys()
 CLUSTER_MENU_ITEMS.sort()
 CLUSTER_NAMES = [ [ 'Zufa' ], [ 'Athena' ], [ 'Athena', 'Zufa' ], [ 'Athena', 'Enyo', 'Isis' ] ]
+
+clusters = { '1 node - Salem Mill' : 0, '8 - Salem Mill 8 computers': 1}
+CLUSTER_MENU_ITEMS = clusters.keys()
+CLUSTER_MENU_ITEMS.sort()
+CLUSTER_NAMES = [ [ 'LX-SALEMMILL-1' ], [ 'LX-SALEMMILL-1', 'LX-SALEMMILL-2','LX-SALEMMILL-3','LX-SALEMMILL-4','LX-SALEMMILL-5','LX-SALEMMILL-6','LX-SALEMMILL-7','LX-SALEMMILL-8' ] ]
+
 
 
 
@@ -31,10 +38,10 @@ windows = False
 if 'OS' in os.environ:
     windows = "windows" in os.environ['OS'].lower()
 
-if windows:
-    SHARED = '//athena/zshare'
-else:
-    SHARED = '/zshare'
+#if windows:
+#    SHARED = '//athena/zshare'
+#else:
+#    SHARED = '/zshare'
 
 
     #Extend wx.Frame class so that correct actions are performed on close
@@ -77,7 +84,8 @@ class MainFrame(Gui.MainFrame):
             print item
             p = Gui.NotebookPage(self.nb.getNbParent(), 'stdout for pid=%s on %s' % (item[1], item[0]))
             self.nb.addPage(p, '%s, pid=%s' % (item[0], item[1]))
-            p.setPageText(SHARED + r"/models/pythonSrc/tmp/%s/stdout.txt" % item[0])
+            #p.setPageTextFromFile(SHARED + r"/models/pythonSrc/tmp/%s/stdout.txt" % item[0])
+            p.setPageText(self.serverConnection.getStartModelRunStdOut(item[0]))
 
     def setBaseStatusBarText(self,labels):
         self.statusBar.SetFieldsCount(len(labels))
@@ -911,8 +919,10 @@ class TextPanel(wx.Panel):
         sizer.Add(self.pageTextArea, 1, wx.EXPAND)
         self.SetSizer(sizer)
 
+    def setPageText(self,text):
+        self.pageTextArea.WriteText(text)
 
-    def setPageText(self, file):
+    def setPageTextFromFile(self, file):
         f = open(file)
         try:
             for line in f:

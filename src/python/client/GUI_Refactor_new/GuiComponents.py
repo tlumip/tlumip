@@ -18,8 +18,11 @@ class NotebookPage(wx.Panel):
         sizer.Add(pageHeading, 0, wx.TOP | wx.BOTTOM, 5)
         sizer.Add(self.pageTextArea, 1, wx.EXPAND)
         self.SetSizer(sizer)
+
+    def setPageText(self,text):
+        self.pageTextArea.WriteText(text)
     
-    def setPageText(self, fileName):
+    def setPageTextFromFile(self, fileName):
         f = open(fileName)
         try:
             for line in f:

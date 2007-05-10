@@ -50,8 +50,11 @@ class ServerConnection(object):
         return result
         
     def testVersions(self):
-        result = self.server.startModelRun("runVersions", {}, ["Zufa"])
+        result = self.server.startModelRun("runVersions", {}, ["LX-SALEMMILL-1"])
         print str(result)
+    
+    def getStartModelRunStdOut(self,machine):
+        return self.server.getStdOutText(machine)
 
 
 
@@ -112,15 +115,17 @@ class ServerConnectionTest(ServerConnection):
     
     def testModule(self,target,daf):
         level = "monolithic"
-        machineList = ['Athena']
+        #machineList = ['Athena']
+        machineList = ['LX-SALEMMILL-1']
         if daf:
             level = "DAF"
             machineList.append('Chaos')
             machineList.append('Dione')
         print "Testing " + level + " module: " + target
         parameters = {}
-        parameters['scenarioName'] = 'JimTestScenario'
-        parameters['baseScenarioName'] = '90_Base'
+        #parameters['scenarioName'] = 'JimTestScenario'
+        parameters['scenarioName'] = 'SalemGUITest1'
+        parameters['baseScenario'] = '90_Base'
         parameters['baseYear'] = 1990
         parameters['t'] = 1
         #self.startModelRun(target, scenario, baseScenario, baseYear, interval, machineList)
@@ -152,12 +157,17 @@ class ServerConnectionTest(ServerConnection):
         
     def testTs(self):
         self.testModule('runTSDAF',True)
+    
+    def testGetStartModelRunStdOut(self,machine):
+        result = self.getStartModelRunStdOut(machine)
+        print result
 
 
 ######
 
 #"""Run test(s)
-test = ServerConnectionTest('192.168.1.221', 8942)
+#test = ServerConnectionTest('192.168.1.221', 8942)
+#test = ServerConnectionTest('167.131.72.201', 8942)
 #test.testGetAvailableMachines()
 #test.testGetAvailableAntTargets()
 #test.testGetExistingScenarioProperties()
@@ -168,10 +178,9 @@ test = ServerConnectionTest('192.168.1.221', 8942)
 #test.testSpg1()
 #test.testPi()
 #test.testSpg2()
-test.testPt()
+#test.testPt()
 #test.testCt()
 #test.testEt()
 #test.testTs()
-#test.test
-#test.testv
+#test.testGetStartModelRunStdOut('LX-SALEMMILL-1')
 #"""
