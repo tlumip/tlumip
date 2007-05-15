@@ -23,10 +23,10 @@ CLUSTER_MENU_ITEMS = clusters.keys()
 CLUSTER_MENU_ITEMS.sort()
 CLUSTER_NAMES = [ [ 'Zufa' ], [ 'Athena' ], [ 'Athena', 'Zufa' ], [ 'Athena', 'Enyo', 'Isis' ] ]
 
-clusters = { '1 node - Salem Mill' : 0, '8 - Salem Mill 8 computers': 1}
+clusters = { '1 node - Salem Mill' : 0, '3 node - Salem Mill' : 1, '8 - Salem Mill 8 computers': 2}
 CLUSTER_MENU_ITEMS = clusters.keys()
 CLUSTER_MENU_ITEMS.sort()
-CLUSTER_NAMES = [ [ 'LX-SALEMMILL-1' ], [ 'LX-SALEMMILL-1', 'LX-SALEMMILL-2','LX-SALEMMILL-3','LX-SALEMMILL-4','LX-SALEMMILL-5','LX-SALEMMILL-6','LX-SALEMMILL-7','LX-SALEMMILL-8' ] ]
+CLUSTER_NAMES = [ [ 'LX-SALEMMILL-1' ], [ 'LX-SALEMMILL-1', 'LX-SALEMMILL-2','LX-SALEMMILL-3'], [ 'LX-SALEMMILL-1', 'LX-SALEMMILL-2','LX-SALEMMILL-3','LX-SALEMMILL-4','LX-SALEMMILL-5','LX-SALEMMILL-6','LX-SALEMMILL-7','LX-SALEMMILL-8' ] ]
 
 
 
@@ -587,11 +587,11 @@ class SelectScenarioFrame(wx.Frame):
         #Scenario years text
         initialValue = 1
         self.scenarioYears = str(initialValue)
+        id = wx.NewId()
         wx.StaticText(panel, -1, 'Scenario Years', wx.Point(200,95))
         self.sc = wx.SpinCtrl(panel, id, '', wx.Point(200,114), wx.Size(50,-1), )
         self.sc.SetRange(1,31)
         self.sc.SetValue(initialValue)
-        id = wx.NewId()
         wx.EVT_SPINCTRL(panel,id,self.onScenarioYears)
         wx.EVT_TEXT(self, id, self.onScenarioYears)
 
