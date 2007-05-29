@@ -36,6 +36,9 @@ public class TLUMIPTazManager extends TazManager {
     }
 
 
+    /**
+     * Set parking costs.  Multiply costs by 100 to convert to cents.
+     */
 
     public void setParkingCost(ResourceBundle appRb, ResourceBundle globalRb,String fileName) {
         float conversionFactor = Float.parseFloat(globalRb.getString("cf.1990.to.2000.dollars"));
@@ -47,8 +50,8 @@ public class TLUMIPTazManager extends TazManager {
         for (int i = 1; i <= table.getRowCount(); i++) {
             if (tazData.containsKey((int)table.getValueAt(i, aZoneColumn))) {
                 Taz thisTaz = tazData.get((int)table.getValueAt(i, aZoneColumn));
-                thisTaz.workParkingCost = (table.getValueAt(i, workColumn))*conversionFactor;
-                thisTaz.nonWorkParkingCost = (table.getValueAt(i, nonWorkColumn))*conversionFactor;
+                thisTaz.workParkingCost = (table.getValueAt(i, workColumn))*conversionFactor * 100;
+                thisTaz.nonWorkParkingCost = (table.getValueAt(i, nonWorkColumn))*conversionFactor * 100;
             }
         }
     }
