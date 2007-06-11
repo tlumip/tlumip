@@ -332,7 +332,7 @@ public class FreightDemand3 {
   }
   
   private void putIntoTableDataSet(String commodity, Matrix2d m){
-      int[] betazones = a2b.getBetaExternals();
+      int[] betazones = a2b.getBetaExternals1Based();
       int nBetaZones = a2b.getNumBetaZones();
       //define first 2 columns (i,j)
       if(annualDemandTable.getColumnCount()==0){

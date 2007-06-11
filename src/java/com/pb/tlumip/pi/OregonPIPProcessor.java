@@ -392,10 +392,10 @@ public class OregonPIPProcessor extends PIPProcessor {
             //Each floor name should have had 1 value for each zone so each element in the nAddsByZone array
             //should be equal to the nFlrNames.  If not, we have a problem with the Increments.csv file
             logger.info("\t\t\tEach Zone should have added up " + nFlrNames + " values");
-            int[] aZones = a2bMap.getAlphaExternals();
+            int[] aZones = a2bMap.getAlphaExternals1Based();
             for(int i=1; i< aZones.length; i++){
                 if(nAddsByZone[aZones[i]] != nFlrNames){
-                    logger.error("\t\t\t\tZone " + a2bMap.getAlphaExternals()[i] + " added up " + nAddsByZone[a2bMap.getAlphaExternals()[i]]);
+                    logger.error("\t\t\t\tZone " + a2bMap.getAlphaExternals1Based()[i] + " added up " + nAddsByZone[a2bMap.getAlphaExternals1Based()[i]]);
                     logger.error("\t\t\t\tCheck the ald/Increments.csv file - there is an error");
                 }
             }
