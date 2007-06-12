@@ -16,7 +16,7 @@
  */
 package com.pb.tlumip.ts.old;
 
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 
 /**
  * A interface defining operations expected of different ways of summarizing travel conditions
@@ -29,5 +29,5 @@ public interface SummaryOfTravelConditions   {
   /**
      * Figures out the attributes of getting from origin to destination.  Also includes info about the modes, time of day, etc that are being considered.
      */
-  public ZPAttribute retrieveZPAttribute(AbstractTAZ o, AbstractTAZ d, boolean useRouteChoice);
+  public ZPAttribute retrieveZPAttribute(AbstractZone o, AbstractZone d, boolean useRouteChoice);
 } 

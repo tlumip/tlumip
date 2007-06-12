@@ -33,7 +33,7 @@ public class HouseholdSpaceChoiceLogit extends LogitModel {
         }
     }
     Household h;
-    AbstractTAZ z;
+    AbstractZone z;
 
     class SpaceChoiceAlternative implements Alternative {
         DevelopmentTypeInterface dt;

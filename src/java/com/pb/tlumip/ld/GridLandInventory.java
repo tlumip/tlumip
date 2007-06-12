@@ -22,7 +22,7 @@ package com.pb.tlumip.ld;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.grid.GridManager;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.DevelopmentTypeInterface;
 
 /**
@@ -107,7 +107,7 @@ public class GridLandInventory extends LandInventory {
      * @see com.pb.tlumip.ld.LandInventory#isDevelopable(long, long)
      */
     public boolean isDevelopable(long id1, long id2) {
-        AbstractTAZ myTAZ = AbstractTAZ.findZoneByUserNumber(alphaZoneGrid.getCellValue((int) id1,(int) id2));
+        AbstractZone myTAZ = AbstractZone.findZoneByUserNumber(alphaZoneGrid.getCellValue((int) id1,(int) id2));
         if (myTAZ==null) return false;
         char zoning = (char) zoningGrid.getCellValue((int) id1,(int) id2);
         if (zoning == 'X') return false;
@@ -149,8 +149,8 @@ public class GridLandInventory extends LandInventory {
      */
     public double getPrice(long id1, long id2, char coverageChar) {
         DevelopmentTypeInterface dt = DevelopmentType.getAlreadyCreatedDevelopmentByCode(coverageChar);
-        AbstractTAZ t = TAZ.findZoneByUserNumber(alphaZoneGrid.getCellValue((int)id1, (int)id2));
-        AbstractTAZ.PriceVacancy pv = t.getPriceVacancySize(dt);
+        AbstractZone t = TAZ.findZoneByUserNumber(alphaZoneGrid.getCellValue((int)id1, (int)id2));
+        AbstractZone.PriceVacancy pv = t.getPriceVacancySize(dt);
         return pv.getPrice();
     }
 
@@ -159,8 +159,8 @@ public class GridLandInventory extends LandInventory {
      */
     public double getLocalVacancyRate(long id1, long id2, char coverageChar, double radius) {
         DevelopmentTypeInterface dt = DevelopmentType.getAlreadyCreatedDevelopmentByCode(coverageChar);
-        AbstractTAZ t = TAZ.findZoneByUserNumber(alphaZoneGrid.getCellValue((int)id1, (int)id2));
-        AbstractTAZ.PriceVacancy pv = t.getPriceVacancySize(dt);
+        AbstractZone t = TAZ.findZoneByUserNumber(alphaZoneGrid.getCellValue((int)id1, (int)id2));
+        AbstractZone.PriceVacancy pv = t.getPriceVacancySize(dt);
         if (pv.getTotalSize()==0) return 0;
         return pv.getVacancy()/pv.getTotalSize();
     }

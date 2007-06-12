@@ -17,7 +17,7 @@
 package com.pb.tlumip.ha;
 
 import com.pb.common.util.ResourceUtil;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.CommodityZUtility;
 import com.pb.models.pecas.LogitModel;
 import com.pb.tlumip.model.ModeChoiceLogsums;
@@ -154,7 +154,7 @@ public class Person implements PersonInterface {
                  sum+= utilities[z1];
                  if (sum>=selector) break;
              }
-             myJobTAZ=AbstractTAZ.getZone(z1).getZoneUserNumber();
+             myJobTAZ=AbstractZone.getZone(z1).getZoneUserNumber();
          }
     }
 	static final int maxOccupationCategories = 10;
@@ -201,17 +201,17 @@ public class Person implements PersonInterface {
          return occupationIndex;
     }
     
-    double journeyToWorkUtility(int occupationIndex, int workSegment, int homeZone, AbstractTAZ destinationZone) {
+    double journeyToWorkUtility(int occupationIndex, int workSegment, int homeZone, AbstractZone destinationZone) {
     	 int z = destinationZone.getZoneIndex();
          double totalEmployment = 0;
          ModeChoiceLogsums mcls = getModeChoiceLogsums(workSegment);
          for (int i=0;i<allHouseholds.commoditySizes.length;i++) {totalEmployment+=allHouseholds.commoditySizes[occupationIndex][z];}
-         return 0.54*mcls.getLogsum(homeZone, AbstractTAZ.getZone(z).getZoneUserNumber())+
+         return 0.54*mcls.getLogsum(homeZone, AbstractZone.getZone(z).getZoneUserNumber())+
          Math.log(allHouseholds.commoditySizes[occupationIndex][z]) + 
          0.1831* Math.log(totalEmployment - allHouseholds.commoditySizes[occupationIndex][z]);
     }
     
-    double journeyToWorkUtility(AbstractTAZ destinationZone) {
+    double journeyToWorkUtility(AbstractZone destinationZone) {
     	return journeyToWorkUtility(getOccupationIndex(), calcWorkerLogsumSegment(),lnkHousehold.getHomeZone().getZoneUserNumber(), destinationZone);
     }
 
@@ -240,7 +240,7 @@ public class Person implements PersonInterface {
              if (allHouseholds.commoditySizes[occupationIndex][z]<=0) {
                  utilities[z]=0;
              } else {
-                 utilities[z] = Math.exp(journeyToWorkUtility(occupationIndex,workSegment,homeZone,AbstractTAZ.getZone(z)));
+                 utilities[z] = Math.exp(journeyToWorkUtility(occupationIndex,workSegment,homeZone,AbstractZone.getZone(z)));
                  utilities[z]=Math.exp(utilities[z]);
                  sum += utilities[z];
              }
@@ -253,7 +253,7 @@ public class Person implements PersonInterface {
                  sum+= utilities[z1];
                  if (sum>=selector) break;
              }
-             myJobTAZ=AbstractTAZ.getZone(z1).getZoneUserNumber();
+             myJobTAZ=AbstractZone.getZone(z1).getZoneUserNumber();
          }
     }
 
@@ -271,7 +271,7 @@ public class Person implements PersonInterface {
          if (utilityDouble !=null) return utilityDouble.doubleValue();
          else {
          	 if (zone == -1) {
-         	 	AbstractTAZ[] zones = AbstractTAZ.getAllZones();
+         	 	AbstractZone[] zones = AbstractZone.getAllZones();
          	 	double sum = 0;
          	 	for (int i=0;i<zones.length;i++) {
          	 		sum += Math.exp(homeAnchoredJobLocationChoiceUtility(zones[i].getZoneUserNumber(),occupationIndex));
@@ -288,7 +288,7 @@ public class Person implements PersonInterface {
 		             if (allHouseholds.commoditySizes[occupationIndex][z]>0) {
 		                 double totalEmployment = 0;
 		                 for (int i=0;i<allHouseholds.commoditySizes.length;i++) {totalEmployment+=allHouseholds.commoditySizes[occupationIndex][z];}
-		                 double utility=0.54*mcls.getLogsum(homeZone, AbstractTAZ.getZone(z).getZoneUserNumber())+
+		                 double utility=0.54*mcls.getLogsum(homeZone, AbstractZone.getZone(z).getZoneUserNumber())+
 		                 Math.log(allHouseholds.commoditySizes[occupationIndex][z]) + 
 		                 0.1831* Math.log(totalEmployment - allHouseholds.commoditySizes[occupationIndex][z]);
 		                 utility=Math.exp(utility);
@@ -349,7 +349,7 @@ public class Person implements PersonInterface {
 	static final double jobChangeDispersionParameter =1.0;
     public double getJobChangeProbability() {
     	double keepU = keepJobConstant;
-    	AbstractTAZ home = lnkHousehold.getHomeZone();
+    	AbstractZone home = lnkHousehold.getHomeZone();
         int occupationIndex =getOccupationIndex();
     	if (home!=null) keepU += keepJobUtilityParameter*homeAnchoredJobLocationChoiceUtility(home.getZoneUserNumber(),occupationIndex);
          keepU += keepOccupationConstants[occupationIndex];
@@ -472,7 +472,7 @@ public class Person implements PersonInterface {
         if (myTravelPreferences instanceof ReusedTravelUtilityCalculator) {
             return ((ReusedTravelUtilityCalculator)myTravelPreferences).calcBuyingCommodityZUtilities(cm);
         } else {
-            AbstractTAZ[] zones = TAZ.getAllZones();
+            AbstractZone[] zones = TAZ.getAllZones();
             CommodityZUtilityCache[] czuc = new CommodityZUtilityCache[zones.length];
             for (int z = 0; z < zones.length; z++) {
                 TAZ azone = (TAZ)zones[z];
@@ -487,7 +487,7 @@ public class Person implements PersonInterface {
         if (myTravelPreferences instanceof ReusedTravelUtilityCalculator) {
             return ((ReusedTravelUtilityCalculator)myTravelPreferences).calcBuyingCommodityZUtilities(cm);
         } else {
-            AbstractTAZ[] zones = TAZ.getAllZones();
+            AbstractZone[] zones = TAZ.getAllZones();
             CommodityZUtilityCache[] czuc = new CommodityZUtilityCache[zones.length];
             for (int z = 0; z < zones.length; z++) {
                 TAZ azone = (TAZ)zones[z];

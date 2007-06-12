@@ -22,7 +22,7 @@ package com.pb.tlumip.ha;
 import com.pb.tlumip.ld.*;
 import com.pb.common.util.*;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.DevelopmentTypeInterface;
 
 import java.util.*;
@@ -33,7 +33,7 @@ public class PrepareHouseholdVariables {
     static int oldNumberOfHouseholds = 0;
     static int newNumberOfHouseholds = 0;
     static AllHouseholds ahh;
-    static AbstractTAZ[] zones;
+    static AbstractZone[] zones;
     static private String populationPath;
     static private String spaceTypePath;
     static private String householdCategoriesPath;
@@ -184,9 +184,9 @@ public class PrepareHouseholdVariables {
             DevelopmentTypeInterface dt = DevelopmentType.getAlreadyCreatedDevelopmentType(typeName);
             int zone = (int)tab.getValueAt(r,"Zone");
             double price = (double)tab.getValueAt(r,"Price");
-            AbstractTAZ taz = AbstractTAZ.findZoneByUserNumber(zone);
+            AbstractZone taz = AbstractZone.findZoneByUserNumber(zone);
             if (taz == null) System.out.println("Bad zone number in space prices "+zone);
-            else AbstractTAZ.findZoneByUserNumber(zone).updatePrice(dt,price);
+            else AbstractZone.findZoneByUserNumber(zone).updatePrice(dt,price);
          }
     }
     

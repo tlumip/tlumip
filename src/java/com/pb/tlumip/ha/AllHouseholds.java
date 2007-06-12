@@ -20,7 +20,7 @@ import com.pb.tlumip.ld.DevelopmentType;
 import com.pb.tlumip.ld.DynamicPricesDevelopmentType;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.models.pecas.DisaggregateActivity;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.DevelopmentTypeInterface;
 
 import java.util.*;
@@ -47,7 +47,7 @@ public class AllHouseholds extends DisaggregateActivity {
         spaceChoiceLogit = new HouseholdSpaceChoiceLogit(this);
     }
 
-    private AllHouseholds(AbstractTAZ[] allZones) {
+    private AllHouseholds(AbstractZone[] allZones) {
         super("AllHouseholds", allZones);
         tazLocations.addAlternatives(allZones);
         vacationLocations.addAlternatives(allZones);
@@ -71,7 +71,7 @@ public class AllHouseholds extends DisaggregateActivity {
     HouseholdPossibilities newHouseholdProbabilities;
 
     /** AllHouseholds is a singleton class.  This method creates the singleton if it isn't already created, then returns it */
-    public static AllHouseholds getAllHouseholds(AbstractTAZ[] allZones) {
+    public static AllHouseholds getAllHouseholds(AbstractZone[] allZones) {
         if (allHouseholds == null) {
             allHouseholds = new AllHouseholds(allZones);
         }
@@ -193,7 +193,7 @@ public class AllHouseholds extends DisaggregateActivity {
 
     public void setUpLaborPrices(String path) {
 //        try {
-//            AbstractTAZ[] abstractZones = AbstractTAZ.getAllZones();
+//            AbstractZone[] abstractZones = AbstractZone.getAllZones();
 //            TAZ[] zones = new TAZ[abstractZones.length];
 //            for (int z = 0; z < zones.length; z++) {
 //                zones[z] = (TAZ)abstractZones[z];
@@ -223,7 +223,7 @@ public class AllHouseholds extends DisaggregateActivity {
 
     public void setUpVacationSizeTerms(String path) {
 
- /*           AbstractTAZ[] abstractZones = AbstractTAZ.getAllZones();
+ /*           AbstractZone[] abstractZones = AbstractZone.getAllZones();
             TAZ[] zones = new TAZ[abstractZones.length];
             for (int z = 0; z < zones.length; z++) {
                 zones[z] = (TAZ)abstractZones[z];
@@ -565,7 +565,7 @@ public class AllHouseholds extends DisaggregateActivity {
 //        System.out.println("Assigning grid cells to households");
 //        do {
 //            int hhid = householdFile.getInt("HH_ID");
-//            AbstractTAZ t = AbstractTAZ.findZoneByUserNumber(householdFile.getInt("TAZ"));
+//            AbstractZone t = AbstractZone.findZoneByUserNumber(householdFile.getInt("TAZ"));
 //            hh = (Household)householdList.get(
 //                new Integer(hhid));
 //            if (++counter < 5 || counter % 1000 == 0) System.out.println("hhnumnum " + counter + " ID:" + hhid);
@@ -680,11 +680,11 @@ public class AllHouseholds extends DisaggregateActivity {
 //	            }
 //	            householdFile.setInt("ONEACRE",oneAcre);
 //   			}
-//            AbstractTAZ homeZone = hh.getHomeZone();
+//            AbstractZone homeZone = hh.getHomeZone();
 //            if (homeZone == null) householdFile.setInt("TAZ", 0);
 //            else
 //                householdFile.setInt("TAZ", homeZone.getZoneUserNumber());
-//            AbstractTAZ vacationZone = hh.getSecondaryZone();
+//            AbstractZone vacationZone = hh.getSecondaryZone();
 //            if (vacationZone == null) householdFile.setInt("VACATIONHOMETAZ", 0);
 //            else
 //                householdFile.setInt("VACATIONHOMETAZ", vacationZone.getZoneUserNumber());

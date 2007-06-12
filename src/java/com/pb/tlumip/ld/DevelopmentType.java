@@ -186,7 +186,7 @@ public class DevelopmentType implements DevelopmentTypeInterface{
 //    public static void writeStatusForAll(DataManager dm, float currentTime) {
 //        TableDataSet pricesAndUseHistory = getPriceUseTable(dm);
 //        TableDataSet currentPrices = getCurrentPricesTable(dm);
-//        AbstractTAZ[] zones = AbstractTAZ.getAllZones();
+//        AbstractZone[] zones = AbstractZone.getAllZones();
 //        Iterator it  = createdDevelopmentTypes.iterator();
 //        while (it.hasNext()) {
 //            DevelopmentType d = (DevelopmentType) it.next();
@@ -195,11 +195,11 @@ public class DevelopmentType implements DevelopmentTypeInterface{
 //    }
 
 //    void writeStatus(float currentTime, DataManager dm) {
-//        writeStatus(currentTime, getPriceUseTable(dm), getCurrentPricesTable(dm), AbstractTAZ.getAllZones());
+//        writeStatus(currentTime, getPriceUseTable(dm), getCurrentPricesTable(dm), AbstractZone.getAllZones());
 //    }
 
-//    void writeStatus(float currentTime, TableDataSet priceUseHistory, TableDataSet currentPrices, AbstractTAZ[] zones) {
-//        AbstractTAZ.PriceVacancy pv;
+//    void writeStatus(float currentTime, TableDataSet priceUseHistory, TableDataSet currentPrices, AbstractZone[] zones) {
+//        AbstractZone.PriceVacancy pv;
 //        for (int z = 0; z < zones.length; z++) {
 //            pv = zones[z].getPriceVacancySize(this);
 //            priceUseHistory.insertRow(false);

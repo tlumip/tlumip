@@ -17,7 +17,7 @@
 package com.pb.tlumip.ha;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.UnitOfLand;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import java.util.Iterator;
  *
  * @author J. Abraham
  */
-public class TAZ extends AbstractTAZ implements UnitOfLand {
+public class TAZ extends AbstractZone implements UnitOfLand {
 
     int zoneUserNumber;
     String zoneName;
@@ -49,7 +49,7 @@ public class TAZ extends AbstractTAZ implements UnitOfLand {
      * Creates a TAZ and puts it in the global TAZ array
      */
     public static TAZ createTaz(int zoneIndex) {
-        AbstractTAZ zones[] = getAllZones();
+        AbstractZone zones[] = getAllZones();
         if (zoneIndex >= zones.length || zoneIndex < 0)
             throw new Error("Need to index zones consecutively within the allocated array size");
         if (zones[zoneIndex] != null) throw new Error("Attempt to create zone with index" + zoneIndex + " more than once");
@@ -57,7 +57,7 @@ public class TAZ extends AbstractTAZ implements UnitOfLand {
     }
 
     public static TAZ createTaz(int zoneIndex, int zoneUserNumber, String zoneName) {
-        AbstractTAZ zones[] = getAllZones();
+        AbstractZone zones[] = getAllZones();
         if (zoneIndex >= zones.length || zoneIndex < 0)
             throw new Error("Need to index zones consecutively within the allocated array size");
         if (zones[zoneIndex] != null) throw new Error("Attempt to create zone with index" + zoneIndex + " more than once");
@@ -116,7 +116,7 @@ public class TAZ extends AbstractTAZ implements UnitOfLand {
 /*    public static void setUpExchangesAndZUtilities() {
 /*    try {  /
         Iterator comit = Commodity.getAllCommodities().iterator();
-        AbstractTAZ[] abstractZones = AbstractTAZ.getAllZones();
+        AbstractZone[] abstractZones = AbstractZone.getAllZones();
         TAZ[] zones = new TAZ[abstractZones.length];
         for (int z=0;z<zones.length;z++) {
             zones[z] = (TAZ) abstractZones[z];
@@ -210,7 +210,7 @@ public class TAZ extends AbstractTAZ implements UnitOfLand {
         final int numTestComs = 4;
         final int numGridCellsPerTypePerZone = 24;
         // set up zones
-        AbstractTAZ.createTazArray(numTestZones);
+        AbstractZone.createTazArray(numTestZones);
         for (int i = 0; i < numTestZones; i++) {
             TAZ t = new TAZ(i,i,"");
         }
@@ -226,7 +226,7 @@ public class TAZ extends AbstractTAZ implements UnitOfLand {
         // set up BuyingZUtilities, SellingZUtilities and Exchanges
 
         Commodity.setUpExchangesAndZUtilities("");
-        AbstractTAZ[] allZonesCopy = AbstractTAZ.getAllZones();
+        AbstractZone[] allZonesCopy = AbstractZone.getAllZones();
         /* change this section of code to match RunPA
         for (int c = 0; c < numTestComs; c++) {
             for (int z = 0; z < numTestZones; z++) {

@@ -22,7 +22,7 @@ import com.pb.tlumip.ld.DevelopmentType;
 import com.pb.tlumip.ld.DynamicPricesDevelopmentType;
 import com.pb.tlumip.ld.LDModel;
 import com.pb.tlumip.ld.ZoningScheme;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.DevelopmentTypeInterface;
 
 
@@ -37,7 +37,7 @@ public class TestAllHouseholds {
     static int oldNumberOfHouseholds = 0;
     static int newNumberOfHouseholds = 0;
     static AllHouseholds ahh;
-    static AbstractTAZ[] zones;
+    static AbstractZone[] zones;
     static private String populationPath;
     static private String spaceTypePath;
     static private String householdCategoriesPath;
@@ -53,9 +53,9 @@ public class TestAllHouseholds {
 //        AppProperties appProps = PropertiesManager.getAppProperties("tlumip.properties");
         //int numTestZones = Integer.valueOf(appProps.getProperty("Model.numZones")).intValue();
         DevelopmentTypeInterface dtypes[] = setUpDevelopmentTypes();
-        //TAZ.createTazArray(numTestZones);
+        //PECASZone.createTazArray(numTestZones);
         //for (int z = 0; z < numTestZones; z++) {
-        //    TAZ.createTaz(z); // automatically puts it into the array based on the zone number z
+        //    PECASZone.createTaz(z); // automatically puts it into the array based on the zone number z
         //}
 
 
@@ -229,7 +229,7 @@ public class TestAllHouseholds {
             DevelopmentTypeInterface dt = DevelopmentType.getAlreadyCreatedDevelopmentType(typeName);
             int zone = (int)tab.getValueAt(r,"Zone");
             double price = (double)tab.getValueAt(r,"Price");
-            AbstractTAZ taz = AbstractTAZ.findZoneByUserNumber(zone);
+            AbstractZone taz = AbstractZone.findZoneByUserNumber(zone);
             if (taz == null) {
             	System.out.println("ERROR: unknown zone number in FloorspaceRents.csv "+zone);
         	}  else taz.updatePrice(dt,price);

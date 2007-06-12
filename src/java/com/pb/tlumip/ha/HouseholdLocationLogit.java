@@ -18,14 +18,14 @@
 
 package com.pb.tlumip.ha;
 
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.Alternative;
 import com.pb.models.pecas.LogitModel;
 
 import java.util.Iterator;
 
 public class HouseholdLocationLogit extends LogitModel {
-    void addAlternatives(AbstractTAZ[] zones) {
+    void addAlternatives(AbstractZone[] zones) {
         for (int z=0;z<zones.length;z++) {
             Household.HouseholdLocation h = new Household.HouseholdLocation((Household) null, zones[z]);
             addAlternative(h);

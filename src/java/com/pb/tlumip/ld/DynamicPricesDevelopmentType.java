@@ -18,7 +18,7 @@
 
 package com.pb.tlumip.ld;
 
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 
 public class DynamicPricesDevelopmentType extends DevelopmentType {
     private double portionVacantMultiplier;
@@ -33,9 +33,9 @@ public class DynamicPricesDevelopmentType extends DevelopmentType {
     }
 
     public void updatePrices(double elapsedTime) {
-        AbstractTAZ[] zones = AbstractTAZ.getAllZones();
+        AbstractZone[] zones = AbstractZone.getAllZones();
         for (int z = 0; z < zones.length; z++) {
-            AbstractTAZ.PriceVacancy pv = zones[z].getPriceVacancySize(this);
+            AbstractZone.PriceVacancy pv = zones[z].getPriceVacancySize(this);
             if (pv.getTotalSize() > 0) {
                 double price = pv.getPrice();
                 if (price < minimumBasePrice) price = minimumBasePrice;

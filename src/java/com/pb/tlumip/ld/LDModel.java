@@ -17,7 +17,7 @@
 package com.pb.tlumip.ld;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.DevelopmentTypeInterface;
 import com.pb.models.pecas.GridCell;
 import com.pb.models.reference.ModelComponent;
@@ -31,7 +31,7 @@ public class LDModel extends ModelComponent {
     public static void setUpGridCells(TableDataSet gtab) {
         for(int r=1;r<=gtab.getRowCount();r++) {
             int zoneNumber = (int)gtab.getValueAt(r,"TAZ");
-            AbstractTAZ zone = AbstractTAZ.findZoneByUserNumber(zoneNumber);
+            AbstractZone zone = AbstractZone.findZoneByUserNumber(zoneNumber);
             if (zone == null) {
                 throw new Error("Grid cell has undefined zone number " + zoneNumber);
             }
@@ -53,9 +53,9 @@ public class LDModel extends ModelComponent {
     public static void writeUpdatedGridCells(TableDataSet gtab) {
         //TODO replace 'gtab.empty' with an equivalent com.pb.common.TableDataSet method.
 //          gtab.empty();
-          AbstractTAZ[] allZones = AbstractTAZ.getAllZones();
+          AbstractZone[] allZones = AbstractZone.getAllZones();
           for (int z=0;z<allZones.length; z++) {
-               AbstractTAZ taz = allZones[z];
+               AbstractZone taz = allZones[z];
                taz.writeGridCells(gtab);
           }
     }

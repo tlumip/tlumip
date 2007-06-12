@@ -21,7 +21,7 @@ package com.pb.tlumip.ld;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datastore.DataManager;
 import com.pb.common.util.ResourceUtil;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.DevelopmentTypeInterface;
 
 import java.util.ArrayList;
@@ -110,7 +110,7 @@ public class TestLD {
             DevelopmentTypeInterface dt = DevelopmentType.getAlreadyCreatedDevelopmentType(typeName);
             int zone = (int)tab.getValueAt(r,"Zone");
             double price = (double)tab.getValueAt(r,"Price");
-            AbstractTAZ taz = AbstractTAZ.findZoneByUserNumber(zone);
+            AbstractZone taz = AbstractZone.findZoneByUserNumber(zone);
             if (taz == null) {
                 System.out.println("ERROR: unknown zone number in FloorspaceRents.csv "+zone);
             }  else taz.updatePrice(dt,price);

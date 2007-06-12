@@ -20,12 +20,12 @@ package com.pb.tlumip.ha;
 
 import com.pb.models.pecas.LogitModel;
 import com.pb.models.pecas.Alternative;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 
 public class VacationLocationLogit extends LogitModel {
     
     class VacationLocation implements Alternative {
-        AbstractTAZ z;
+        AbstractZone z;
 
         /* (non-Javadoc)
          * @see com.pb.common.old.model.Alternative#getUtility()
@@ -39,7 +39,7 @@ public class VacationLocationLogit extends LogitModel {
         }
     }
     
-    void addAlternatives(AbstractTAZ[] zones) {
+    void addAlternatives(AbstractZone[] zones) {
         for (int z=0;z<zones.length;z++) {
             VacationLocation h = new VacationLocation();
             h.z = zones[z];

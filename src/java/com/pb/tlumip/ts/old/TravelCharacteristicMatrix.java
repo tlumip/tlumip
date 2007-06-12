@@ -19,7 +19,7 @@ package com.pb.tlumip.ts.old;
 import com.pb.tlumip.model.Mode;
 import com.pb.models.pecas.UnitOfLand;
 import com.pb.models.pecas.TravelUtilityCalculatorInterface;
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,7 +70,7 @@ public class TravelCharacteristicMatrix  implements SummaryOfTravelConditions {
   private int lookUpMatrixIndex(UnitOfLand l) {
         int i = Collections.binarySearch(originsAndDestinations,l);
         if (i<0) {
-            AbstractTAZ taz = AbstractTAZ.findZone(l);
+            AbstractZone taz = AbstractZone.findZone(l);
             i = Collections.binarySearch(originsAndDestinations,taz);
         }
         if (i<0) throw new Error("No data for unit of land "+l+" in "+this);
@@ -94,7 +94,7 @@ public class TravelCharacteristicMatrix  implements SummaryOfTravelConditions {
    * This function is used to get the attributes of travel
    * between two zones.  The TravelCharacteristicMatrix could retrieve the attributes from its array, or it could calculate them on the fly.  Or it could keep a cache.  Lots of flexibility is established by putting the function here.
    */
-  public ZPAttribute retrieveZPAttribute(AbstractTAZ o, AbstractTAZ d, boolean useRouteChoice) {
+  public ZPAttribute retrieveZPAttribute(AbstractZone o, AbstractZone d, boolean useRouteChoice) {
 	if (!useRouteChoice) {
 	    // eventually will go to the database
 	    ZPAttribute zp= getExistingZPData(o,d);

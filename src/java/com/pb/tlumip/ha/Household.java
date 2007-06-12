@@ -16,7 +16,7 @@
  */
 package com.pb.tlumip.ha;
 
-import com.pb.models.pecas.AbstractTAZ;
+import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.Alternative;
 import com.pb.models.pecas.ChoiceModelOverflowException;
 import com.pb.models.pecas.DevelopmentTypeInterface;
@@ -460,7 +460,7 @@ public class Household extends EconomicUnit implements Cloneable {
     /** This is the combination of a household and a TAZ zone, for inserting as an alternative into a LogitModel */
     static class HouseholdLocation implements Alternative {
         Household hh;
-        AbstractTAZ location;
+        AbstractZone location;
         //        double priceCoefficient = 1.0;
         double constantUtility = 0.0;
 
@@ -472,12 +472,12 @@ public class Household extends EconomicUnit implements Cloneable {
             return hh;
         }
 
-        HouseholdLocation(Household h, AbstractTAZ t) {
+        HouseholdLocation(Household h, AbstractZone t) {
             hh = h;
             location = t;
         }
 
-        HouseholdLocation(Household h, AbstractTAZ t,
+        HouseholdLocation(Household h, AbstractZone t,
             //              double priceCoefficient,
             double constantUtility) {
                 //   this.priceCoefficient = priceCoefficient;
@@ -493,19 +493,19 @@ public class Household extends EconomicUnit implements Cloneable {
             return bob + constantUtility;
         }
 
-        AbstractTAZ getTAZ() { return location; }
+        AbstractZone getTAZ() { return location; }
     };
 
 
-    private void takeANewSecondaryResidence() throws AbstractTAZ.CantFindRoomException {
+    private void takeANewSecondaryResidence() throws AbstractZone.CantFindRoomException {
         VacationLocationLogit vll = allHouseholds.vacationLocations;
         vll.h = this;
-        AbstractTAZ ourNewVacationCommunity = null;
+        AbstractZone ourNewVacationCommunity = null;
         try {
             VacationLocationLogit.VacationLocation vl = (VacationLocationLogit.VacationLocation) vll.monteCarloChoice();
             ourNewVacationCommunity = vl.z;
         } catch (NoAlternativeAvailable e) {
-            throw new com.pb.models.pecas.AbstractTAZ.CantFindRoomException("no TAZ's available for " + this);
+            throw new com.pb.models.pecas.AbstractZone.CantFindRoomException("no TAZ's available for " + this);
         } catch (ChoiceModelOverflowException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -515,7 +515,7 @@ public class Household extends EconomicUnit implements Cloneable {
     }
 
     /** This needs to figure out the utility of locating in a zone. */
-    private synchronized double utilityOfAvailableVacantProperties(AbstractTAZ t, double higherLevelDispersionParameter) {
+    private synchronized double utilityOfAvailableVacantProperties(AbstractZone t, double higherLevelDispersionParameter) {
         double bob = utilityOfLocationIndependentOfPriceAndAvailability(t);
         synchronized(allHouseholds.spaceChoiceLogit) {
             allHouseholds.spaceChoiceLogit.h = this;
@@ -532,8 +532,8 @@ public class Household extends EconomicUnit implements Cloneable {
     
     static int[][]ageCount = new int[5][2];
 
-    double utilityOfSpaceAndPrice(AbstractTAZ t, DevelopmentTypeInterface dt, boolean useSizeTerm, double higherLevelDispersionParameter) {
-        AbstractTAZ.PriceVacancy priceVacancy = t.getPriceVacancySize(dt);
+    double utilityOfSpaceAndPrice(AbstractZone t, DevelopmentTypeInterface dt, boolean useSizeTerm, double higherLevelDispersionParameter) {
+        AbstractZone.PriceVacancy priceVacancy = t.getPriceVacancySize(dt);
         //int[][] ageCount = new int[5][2];  // use static instead to avoid garbage collection
         double utility = 0;
         synchronized (ageCount) {
@@ -583,9 +583,9 @@ public class Household extends EconomicUnit implements Cloneable {
         } else return utility;
     }
 
- /*  LogitModel makeSpaceChoiceModel(AbstractTAZ t) {
+ /*  LogitModel makeSpaceChoiceModel(AbstractZone t) {
         final double dwellingChoiceDispersionParameter = 100;
-        AbstractTAZ.PriceVacancy priceVacancy = null;
+        AbstractZone.PriceVacancy priceVacancy = null;
         DevelopmentTypeInterface[] typesOfSpace = getAllowedInDevelopmentTypes();
         LogitModel spaceChoiceModel = new LogitModel();
         for (int dt = 0; dt < typesOfSpace.length; dt++) {
@@ -605,7 +605,7 @@ public class Household extends EconomicUnit implements Cloneable {
         return spaceChoiceModel  ;
    }      */
 
-    private synchronized double utilityOfCurrentProperty(AbstractTAZ t) {
+    private synchronized double utilityOfCurrentProperty(AbstractZone t) {
         double bob = utilityOfLocationIndependentOfPriceAndAvailability(t);
         if (primaryAndSecondaryLocation[0] == null) return bob;
         DevelopmentTypeInterface myHomeType = getHomeGridCell().getCurrentDevelopment();
@@ -658,7 +658,7 @@ public class Household extends EconomicUnit implements Cloneable {
      * ZUtility for that commodity, reflecting an assumption that the household can dispath
      * any household member to purchase/supply that commodity.
      */
-    private double utilityOfLocationIndependentOfPriceAndAvailability(AbstractTAZ t) {
+    private double utilityOfLocationIndependentOfPriceAndAvailability(AbstractZone t) {
         // use pt.AllDestinationChoiceLogSums class to get the correct destination choice logsums
         // base on the code in pt.PatternModel constructor
         // copy code from AllDestinationChoiceLogSums.setDCLogSums()
@@ -705,7 +705,7 @@ public class Household extends EconomicUnit implements Cloneable {
 		        utility += 0.4491 *  mcls.getLogsum(zoneNumber, p.myJobTAZ);
         	} 
         }
-//        AbstractTAZ.PriceVacancy priceVacancy = t.getPriceVacancySize(sfd);
+//        AbstractZone.PriceVacancy priceVacancy = t.getPriceVacancySize(sfd);
  //       da[4] = priceVacancy.getPrice();
 //        da[11] = dcLogsums.getDCLogsum('c','1',nonWorkSegment,zoneNumber);
 //        da[12] = dcLogsums.getDCLogsum('c','3',nonWorkSegment,zoneNumber);
@@ -729,7 +729,7 @@ public class Household extends EconomicUnit implements Cloneable {
     static final double vacationHomeDistanceCoefficient = -.05;
     static final double vacationHomePriceCoefficient = -1;
     
-    public double utilityOfVacationAlternative(AbstractTAZ t) {
+    public double utilityOfVacationAlternative(AbstractZone t) {
         int zoneNumber = t.getZoneUserNumber();
         if (rrsfd== null) {      	
         	rrmh = DevelopmentType.getAlreadyCreatedDevelopmentType("RRMH");
@@ -739,7 +739,7 @@ public class Household extends EconomicUnit implements Cloneable {
             mh = DevelopmentType.getAlreadyCreatedDevelopmentType("MH");
             mf = DevelopmentType.getAlreadyCreatedDevelopmentType("MF");
         }
-        AbstractTAZ homeZone = this.getHomeZone();
+        AbstractZone homeZone = this.getHomeZone();
         double size = allHouseholds.getVacationHomeSizeTerm(zoneNumber);
         double utility =0;
         if (size <=0) utility = Double.NEGATIVE_INFINITY;
@@ -760,19 +760,19 @@ public class Household extends EconomicUnit implements Cloneable {
     
     static PeakAutoSkims skims = new PeakAutoSkims();
 
-    private void takeANewResidence() throws AbstractTAZ.CantFindRoomException {
+    private void takeANewResidence() throws AbstractZone.CantFindRoomException {
        /* new way  -- avoids creating a new "logit model" object for each household */
 
         /* but doesn't support multithreading */
 
         final HouseholdLocationLogit tazLocations = allHouseholds.tazLocations;
-        AbstractTAZ ourNewCommunity = null;
+        AbstractZone ourNewCommunity = null;
         synchronized(tazLocations) {
             tazLocations.setDispersionParameter(getHomeLocationDispersionParameter());
             tazLocations.setHousehold(this);
 
             /* old way
-        AbstractTAZ[] zones = TAZ.getAllZones();
+        AbstractZone[] zones = TAZ.getAllZones();
         LogitModel tazLocations = new LogitModel();
         for (int z = 0; z < zones.length; z++) {
             HouseholdLocation hl = new HouseholdLocation(this, zones[z]);
@@ -784,7 +784,7 @@ public class Household extends EconomicUnit implements Cloneable {
             try {
                 ourNewCommunity = ((HouseholdLocation)tazLocations.monteCarloChoice()).getTAZ();
             } catch (NoAlternativeAvailable e) {
-                throw new com.pb.models.pecas.AbstractTAZ.CantFindRoomException("no TAZ's available for " + this);
+                throw new com.pb.models.pecas.AbstractZone.CantFindRoomException("no TAZ's available for " + this);
             } catch (ChoiceModelOverflowException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -807,7 +807,7 @@ public class Household extends EconomicUnit implements Cloneable {
                     throw new Error("Can't find new location --- why wasn't an exception thrown!");
                 }
                 allHouseholds.removeFromMovingPool(this);
-            } catch (com.pb.models.pecas.AbstractTAZ.CantFindRoomException e) {
+            } catch (com.pb.models.pecas.AbstractZone.CantFindRoomException e) {
                 // System.out.println("Can't find home for "+this);
                 // oh well, just leave them in the movingPool for next time
             }
@@ -819,7 +819,7 @@ public class Household extends EconomicUnit implements Cloneable {
                 allHouseholds.removeFromSecondaryLocationMovingPool(this);
                 // oops this was (mistakenly?) :
                 // allHouseholds.addToSecondaryLocationMovingPool(this);
-            } catch (com.pb.models.pecas.AbstractTAZ.CantFindRoomException e) {
+            } catch (com.pb.models.pecas.AbstractZone.CantFindRoomException e) {
                 //    System.out.println("Can't find vacation home for " + this);
                 // oh well, just leave them in the secondaryResidenceMovingPool for next time
             }
@@ -831,8 +831,8 @@ public class Household extends EconomicUnit implements Cloneable {
      * find a grid cell in the zone for a household
      * 
      */
-    void findLocationInZone(AbstractTAZ z, int primaryOrSecondary)
-        throws com.pb.models.pecas.AbstractTAZ.CantFindRoomException
+    void findLocationInZone(AbstractZone z, int primaryOrSecondary)
+        throws com.pb.models.pecas.AbstractZone.CantFindRoomException
     {
         HouseholdSpaceChoiceLogit scl = allHouseholds.spaceChoiceLogit;
         DevelopmentTypeInterface dt=null;
@@ -842,7 +842,7 @@ public class Household extends EconomicUnit implements Cloneable {
             try {
                 dt = scl.monteCarloSpaceChoice();
             } catch (NoAlternativeAvailable e) {
-                throw new com.pb.models.pecas.AbstractTAZ.CantFindRoomException(this +
+                throw new com.pb.models.pecas.AbstractZone.CantFindRoomException(this +
                     " isn't allowed in any development types in zone " + z);
             } catch (ChoiceModelOverflowException e) {
                 // TODO Auto-generated catch block
@@ -855,8 +855,8 @@ public class Household extends EconomicUnit implements Cloneable {
 		compositionChanged=true;
     }
 
-    void findLocationInZone(AbstractTAZ z, int primaryOrSecondary, DevelopmentTypeInterface dt)
-        throws com.pb.models.pecas.AbstractTAZ.CantFindRoomException
+    void findLocationInZone(AbstractZone z, int primaryOrSecondary, DevelopmentTypeInterface dt)
+        throws com.pb.models.pecas.AbstractZone.CantFindRoomException
     {
         if (primaryAndSecondaryLocation[primaryOrSecondary] != null) throw new Error("Forgot to move out of old location before moving in to new location:"+this);
         primaryAndSecondaryLocation[primaryOrSecondary] = z.assignAGridCell(this, dt);
@@ -866,7 +866,7 @@ public class Household extends EconomicUnit implements Cloneable {
 
 
 /*    private void buildZUtilities() {
-        AbstractTAZ[] zones = TAZ.getAllZones();
+        AbstractZone[] zones = TAZ.getAllZones();
         buyingZUtilities = new CommodityZUtilityCache[myConsumptionFunction.size()][myPeople.size()][zones.length];
         for (int c = 0; c < myConsumptionFunction.size(); c++) {
             Commodity cm = (Commodity) myConsumptionFunction.commodityAt(c);
@@ -932,8 +932,8 @@ public class Household extends EconomicUnit implements Cloneable {
         Iterator it = myPeople.iterator();
         while (it.hasNext()) {
             Person p = (Person)it.next();
-            if (p.myJobTAZ != 0) regact.add(AbstractTAZ.findZoneByUserNumber(p.myJobTAZ));
-            if (p.mySchoolingTAZ != 0) regact.add(AbstractTAZ.findZoneByUserNumber(p.mySchoolingTAZ));
+            if (p.myJobTAZ != 0) regact.add(AbstractZone.findZoneByUserNumber(p.myJobTAZ));
+            if (p.mySchoolingTAZ != 0) regact.add(AbstractZone.findZoneByUserNumber(p.mySchoolingTAZ));
         }
         return regact;
     }
@@ -956,7 +956,7 @@ public class Household extends EconomicUnit implements Cloneable {
 /*    public static void main(String[] args) {
         final int numTests = 100;
         TAZ.createTestTazAndExchange();
-        AbstractTAZ[] zones = TAZ.getAllZones();
+        AbstractZone[] zones = TAZ.getAllZones();
         AllHouseholds ahh = AllHouseholds.getAllHouseholds(zones);
         Household.setAllHouseholds(ahh);
         Person.setAllHouseholds(ahh);
