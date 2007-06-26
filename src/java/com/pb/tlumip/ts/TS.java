@@ -24,17 +24,15 @@ package com.pb.tlumip.ts;
 
 
 
-import com.pb.common.datafile.DataReader;
-import com.pb.common.datafile.DataWriter;
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.ao.ApplicationOrchestrator;
+import com.pb.models.pt.TripModeType;
+import com.pb.models.pt.ldt.LDTripModeType;
 import com.pb.tlumip.ts.assign.Skims;
 import com.pb.tlumip.ts.assign.TransitSkimManager;
-import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
 import org.apache.log4j.Logger;
@@ -54,10 +52,6 @@ public class TS {
 
     static final boolean CREATE_NEW_NETWORK = true;
     
-
-    
-    
-    final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
 
     ResourceBundle appRb;
     ResourceBundle globalRb;
@@ -105,7 +99,7 @@ public class TS {
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating and initializing a " + assignmentPeriod + " FW object at: " + myDateString);
 		FW fw = new FW();
-		fw.initialize( appRb, globalRb, nh, highwayModeCharacters );
+		fw.initialize( appRb, globalRb,nh, nh.getHighwayModeCharacters() );
 
 
 		// Compute Frank-Wolfe solution
@@ -173,8 +167,8 @@ public class TS {
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF d = DemandHandler.getInstance();
-        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("pt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
-        d.buildDemandObject();
+        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("sdt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ldt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.buildHighwayDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
 		checkODConnectivity(nh, multiclassTripTable);
@@ -280,7 +274,9 @@ public class TS {
 
 
     
-    private double[] runWalkTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
+    private double[] runTransitAssignment ( NetworkHandlerIF nh, String accessMode, String routeType, ArrayList tripModeList ) {
+        
+        String assignmentPeriod = nh.getTimePeriod();
         
         int startHour = 0;
         int endHour = 0;
@@ -295,56 +291,29 @@ public class TS {
             endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_END") );
         }
         
+        
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
-        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("pt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
-        d.buildDemandObject();
+        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("sdt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ldt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         
-        double[][] tripTable = d.getWalkTransitTripTable ();
+        double[][] tripTable = d.getTripTablesForModes ( tripModeList );
+        
         
         // load the triptable on walk access transit network
-        double[] rteBoardings = optimalStrategyNetworkLoading ( assignmentPeriod, "walk", nh, ag, tripTable );
+        double[] rteBoardings = optimalStrategyNetworkLoading ( nh, accessMode, routeType, tripTable );
 
         return rteBoardings;
     }
     
     
-    private double[] runDriveTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String assignmentPeriod ) {
+    private double[] optimalStrategyNetworkLoading ( NetworkHandlerIF nh, String accessMode, String routeType, double[][] tripTable ) {
         
-        int startHour = 0;
-        int endHour = 0;
-        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            startHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("AM_PEAK_END") );
-        }
-        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            startHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_END") );
-        }
-        
-        // get the transit trip table to be assigned 
-        DemandHandler d = new DemandHandler();
-        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("pt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
-        d.buildDemandObject();
-        
-        double[][] tripTable = d.getDriveTransitTripTable ();
-        
-        // load the triptable on drive access transit network
-        double[] rteBoardings = optimalStrategyNetworkLoading ( assignmentPeriod, "drive", nh, ag, tripTable );
-
-        return rteBoardings;
-        
-    }
-    
-    
-    private double[] optimalStrategyNetworkLoading ( String assignmentPeriod, String accessMode, NetworkHandlerIF nh, AuxTrNet ag, double[][] tripTable ) {
+        String assignmentPeriod = nh.getTimePeriod();
         
         // create an optimal strategy object for this highway and transit network
-        OptimalStrategy os = new OptimalStrategy( ag );
+        OptimalStrategy os = new OptimalStrategy( nh );
 
-        double[] routeBoardings = new double[ag.getMaxRoutes()];
+        double[] routeBoardings = new double[nh.getMaxRoutes()];
 
         double tripTableColumn[] = new double[tripTable[0].length];
 
@@ -396,173 +365,200 @@ public class TS {
         return routeBoardings;
     }
     
-   
-    private AuxTrNet getTransitNetwork( NetworkHandlerIF nh, String period, String accessMode ) {
+    
+    
+    public void  saveTransitBoardings ( NetworkHandlerIF nh, String accessMode, String routeType, double[] transitBoardings, HashMap routeBoardings ) {
         
-        //HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+        TrRoute tr = nh.getTrRoute();
 
-        boolean create_new_network = CREATE_NEW_NETWORK;
+        
+        int accessIndex = -1;
+        if ( accessMode.equalsIgnoreCase("walk") )
+            accessIndex = 0;
+        else if ( accessMode.equalsIgnoreCase("drive") )
+            accessIndex = 1;
+        
+        
+        int routeTypeIndex = -1;
+        if ( routeType.equalsIgnoreCase("air") )
+            routeTypeIndex = 0;
+        else if ( routeType.equalsIgnoreCase("hsr") )
+            routeTypeIndex = 1;
+        else if ( routeType.equalsIgnoreCase("intercity") )
+            routeTypeIndex = 2;
+        else if ( routeType.equalsIgnoreCase("intracity") )
+            routeTypeIndex = 3;
+        
+        
+        SavedRouteInfo savedInfo = null;
+        
+        // routeBoardings is a hashMap containg a double[] of boardings walk/drive for each routeType:
+        // wAir/dAir  wHsr/dHsr  wIc/dIc  wt/dt
+        int index = -1;
+        if ( routeTypeIndex >= 0 && accessIndex >= 0 ) {
+            
+            for (int rte=0; rte < tr.getLineCount(); rte++) {
+                String rteName = tr.getLine(rte);
+                
+                if ( routeBoardings.containsKey(rteName) )
+                    savedInfo = (SavedRouteInfo)routeBoardings.get(rteName);
+                else
+                    savedInfo = new SavedRouteInfo(tr.getDescription(rte), tr.getMode(rte));
+                
+                index = 2*routeTypeIndex + accessIndex;
+                savedInfo.boardings[index] += transitBoardings[rte];
+                
+                routeBoardings.put(rteName, savedInfo);
+            }
 
-        AuxTrNet ag = null; 
-        //String diskObjectFileName = null;
-        
-        // create a new transit network from d211 highway network file and d221 transit routes file, or read it from DiskObject.
-        //String key = period + accessMode + "TransitNetwork";
-        //String path = (String) tsPropertyMap.get( "diskObject.pathName" );
-        //if ( path.endsWith("/") || path.endsWith("\\") )
-            //diskObjectFileName = path + key + ".diskObject";
-       // else
-           // diskObjectFileName = path + "/" + key + ".diskObject";
-        
-        if ( create_new_network ) {
-            ag = createTransitNetwork ( nh, period, accessMode );
-            //DataWriter.writeDiskObject ( ag, diskObjectFileName, key );
         }
         else {
-            //ag = (AuxTrNet) DataReader.readDiskObject ( diskObjectFileName, key );
-            logger.error ( "reading transit network from DiskObjectArray not supported at this time.", new Exception() );
+            logger.error ("error trying to save boardings - invalid routeType = " + routeType + " or accessMode = " + accessMode );
+            System.exit(-1);
         }
-
-        
-        return ag;
         
     }
+
     
-    
-    private AuxTrNet createTransitNetwork ( NetworkHandlerIF nh, String period, String accessMode ) {
+   
+    public void logTransitBoardingsReport ( HashMap savedBoardings, String periodHeadingLabel ) {
         
-        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-
-        String auxTransitNetworkListingFileName = (String)tsPropertyMap.get("AUX_TRANSIT_NETWORK_LISTING");
-
-        // get the filename for the route files
-        String d221File = null;
-        if ( period.equalsIgnoreCase( "peak" ) )
-            d221File = (String) tsPropertyMap.get( "d221.pk.fileName" );
-        else if ( period.equalsIgnoreCase( "offpeak" ) )
-            d221File = (String) tsPropertyMap.get( "d221.op.fileName" );
-
-        if ( d221File == null ) {
-            RuntimeException e = new RuntimeException();
-            logger.error ( "Error reading routes file for specified " + period + " period.", e );
-            throw e;
-        }
-        
-        // read parameter for maximum number of transit routes
-        int maxRoutes = Integer.parseInt ( (String)tsPropertyMap.get("MAX_TRANSIT_ROUTES") );
-
-        // create transit routes object
-        TrRoute tr = new TrRoute ( maxRoutes );
-
-        //read transit route info from Emme/2 for d221 file for the specified time period
-        tr.readTransitRoutes ( d221File );
+        Set routeNames = null;
+        Iterator it = null; 
             
-        // associate transit segment node sequence with highway link indices
-        tr.getLinkIndices (nh);
-
-
-
-        // create an auxilliary transit network object
-        AuxTrNet ag = new AuxTrNet(nh, tr);
-
-        // build the auxilliary links for the given transit routes object
-        ag.buildAuxTrNet ( accessMode );
-        
-        // define the forward star index arrays, first by anode then by bnode
-        ag.setForwardStarArrays ();
-        ag.setBackwardStarArrays ();
+            
+        logger.info ("");
+        logger.info ("");
+        logger.info ("Transit Network Loading Report for " + periodHeadingLabel + " period Trips");
+        logger.info ("");
 
         
-//      ag.printAuxTrLinks (24, tr);
-        if ( auxTransitNetworkListingFileName != null )
-            ag.printAuxTranNetwork( auxTransitNetworkListingFileName );
-//      ag.printTransitNodePointers();
-
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info ("done creating transit network AuxTrNetTest: " + myDateString);
-
-        return ag;
-    }
-
-    
-    
-    public void logTransitBoardingsReport ( AuxTrNet ag, String periodHeadingLabel, double[] walkTransitBoardings, double[] driveTransitBoardings ) {
         
-        TrRoute tr = ag.getTrRoute();
-        
-        // construct a format string for the description field
+        // construct a format string for the description field from the longest route description
         int maxStringLength = 0;
-        for (int rte=0; rte < tr.getLineCount(); rte++)
-            if ( tr.getDescription(rte).length() > maxStringLength )
-                maxStringLength = tr.getDescription(rte).length();
+        routeNames = savedBoardings.keySet();
+        it = routeNames.iterator();
+        while ( it.hasNext() ) {
+            String name = (String)it.next();
+            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
+            if ( info.description.length() > maxStringLength )
+                maxStringLength = info.description.length();
+        }
         String descrFormat = "%-" + (maxStringLength+4) + "s";
 
-        logger.info ( String.format("%-10s", "Count") + String.format("%-10s", "Line") + String.format(descrFormat, "Description") + String.format("%-8s", "Mode") + String.format("%22s", (periodHeadingLabel + " WT Boardings"))  + String.format("%22s", (periodHeadingLabel + " DT Boardings"))  + String.format("%22s", (periodHeadingLabel + " Boardings")) );
-        logger.info ( String.format("%-10s", "-----") + String.format("%-10s", "----") + String.format(descrFormat, "-----------") + String.format("%-8s", "----") + String.format("%22s", "--------------------") + String.format("%22s", "--------------------") + String.format("%22s", "--------------------") );
 
-        float totalWalk = 0.0f;
-        float totalDrive = 0.0f;
-        float total = 0.0f;
-        for (int rte=0; rte < tr.getLineCount(); rte++) { 
-            logger.info ( String.format("%-10s", (rte+1)) + String.format("%-10s", tr.getLine(rte)) + String.format(descrFormat, tr.getDescription(rte)) + String.format("%-8c", tr.getMode(rte)) + String.format("%22.2f", walkTransitBoardings[rte]) + String.format("%22.2f", driveTransitBoardings[rte]) + String.format("%22.2f", (walkTransitBoardings[rte] + driveTransitBoardings[rte])) );
-            totalWalk += walkTransitBoardings[rte];
-            totalDrive += driveTransitBoardings[rte];
-            total += walkTransitBoardings[rte] + driveTransitBoardings[rte];
+        logger.info( String.format("%-6s %-9s " + descrFormat + " %-6c %8s %8s    %8s %8s    %8s %8s    %8s %8s    %8s %8s    %8s", "Count", "Route", "Description", "Mode", "wAir", "dAir", "wHsr", "dHsr", "wIc", "dIc", "wt", "dt", "wTot", "dTot", "Total") );
+        
+        int lineCount = 0;
+        double[] totals = new double[11];
+        it = routeNames.iterator();
+        while ( it.hasNext() ) {
+            String name = (String)it.next();
+            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
+            double wTot = info.boardings[0] + info.boardings[2] + info.boardings[4] + info.boardings[6];
+            double dTot = info.boardings[1] + info.boardings[3] + info.boardings[5] + info.boardings[7];
+            logger.info( String.format("%-6d %-9s " + descrFormat + " %-6c %8s %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f", ++lineCount, name, info.description, info.mode, "N/A", info.boardings[1], info.boardings[2], info.boardings[3], info.boardings[4], info.boardings[5], info.boardings[6], info.boardings[7], wTot, dTot, (wTot+dTot)) );
+            for (int i=0; i < 8; i++)
+                totals[i] += info.boardings[i];
+            totals[8] += wTot;
+            totals[9] += dTot;
+            totals[10] += (wTot + dTot);
         }
-        logger.info ( String.format("%-20s", "Total Boardings") + String.format(descrFormat, "") + String.format("%-8s", "") + String.format("%22.2f", totalWalk) + String.format("%22.2f", totalDrive) + String.format("%22.2f", total) );
+        
+        logger.info ( String.format("%-16s " + descrFormat + " %7s %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f", "Total Boardings", "", "", totals[0], totals[1], totals[2], totals[3], totals[4], totals[5], totals[6], totals[7], totals[8], totals[9], totals[10]));
         
     }
+    
     
     
     public void assignAndSkimTransit ( NetworkHandlerIF nh, ResourceBundle appRb, ResourceBundle globalRb ) {
 
         String assignmentPeriod = nh.getTimePeriod();
-        // generate walk transit network
-        String accessMode = "walk";
-        AuxTrNet ag = getTransitNetwork( nh, assignmentPeriod, accessMode );
-        logger.info ("done generating " + assignmentPeriod + " " + accessMode + " transit network.");
         
-        // generate walk transit skim matrices
-        TransitSkimManager tsm = new TransitSkimManager( ag, appRb, globalRb );     
-        if ( assignmentPeriod.equalsIgnoreCase("peak") )
-            tsm.writePeakWalkTransitSkims();
-        else
-            tsm.writeOffPeakWalkTransitSkims();
-        logger.info ("done writing " + assignmentPeriod + " " + accessMode + " transit skims files.");
+        double[] transitBoardings = null;
+        
+        ArrayList tripModeList = null;
+        HashMap savedBoardings = new HashMap();
+        
+        
+        // generate transit skim matrices and load trips
+        TransitSkimManager tsm = new TransitSkimManager( nh, appRb, globalRb );
 
-        // load walk transit trips
-        double[] walkTransitBoardings = runWalkTransitAssignment ( nh, ag, assignmentPeriod );
-        logger.info ("done with " + assignmentPeriod + " " + accessMode + " transit assignment.");
-        
-        
-        // generate drive transit network
-        accessMode = "drive";
-        ag = getTransitNetwork( nh, assignmentPeriod, accessMode );
-        logger.info ("done generating " + assignmentPeriod + " " + accessMode + " transit network.");
-        
-        // generate drive transit skim matrices
-        tsm = new TransitSkimManager( ag, appRb, globalRb );     
-        if ( assignmentPeriod.equalsIgnoreCase("peak") )
-            tsm.writePeakDriveTransitSkims();
-        else
-            tsm.writeOffPeakDriveTransitSkims();
-        logger.info ("done writing " + assignmentPeriod + " " + accessMode + " transit skims files.");
+/*        
+        // drive access air skims
+        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "air" );
+        tsm.writeTransitSkims( assignmentPeriod, "drive", "air" );
 
-        // load drive transit trips
-        double[] driveTransitBoardings = runDriveTransitAssignment ( nh, ag, assignmentPeriod );
-        logger.info ("done with " + assignmentPeriod + " " + accessMode + " transit assignment.");
+        // drive access air assignment
+        tripModeList = new ArrayList();
+        tripModeList.add( LDTripModeType.AIR.name() );
+        transitBoardings = runTransitAssignment ( nh, "drive", "air", tripModeList );
+        saveTransitBoardings ( nh, "drive", "air", transitBoardings, savedBoardings );
+
         
         
-        TrRoute tr = ag.getTrRoute();
-        double[] totalBoardings = new double[tr.getLineCount()]; 
+        // drive access hsr skims
+        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "hsr" );
+        tsm.writeTransitSkims( assignmentPeriod, "drive", "hsr" );
+
+        // drive access hsr assignment
+        tripModeList = new ArrayList();
+        tripModeList.add( LDTripModeType.HSR_DRIVE.name() );
+        transitBoardings = runTransitAssignment ( nh, "drive", "hsr", tripModeList );
+        saveTransitBoardings ( nh, "drive", "hsr", transitBoardings, savedBoardings );
+
         
-        for (int rte=0; rte < totalBoardings.length; rte++) { 
-            totalBoardings[rte] = walkTransitBoardings[rte] + driveTransitBoardings[rte];
-        }
         
-        logTransitBoardingsReport ( ag, assignmentPeriod, walkTransitBoardings, driveTransitBoardings );
+        // drive access intercity skims
+        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intercity" );
+        tsm.writeTransitSkims( assignmentPeriod, "drive", "intercity" );
+
+        // drive access intercity assignment
+        tripModeList = new ArrayList();
+        tripModeList.add( LDTripModeType.TRANSIT_DRIVE.name() );
+        transitBoardings = runTransitAssignment ( nh, "drive", "intercity", tripModeList );
+        saveTransitBoardings ( nh, "drive", "intercity", transitBoardings, savedBoardings );
+*/        
         
-        logger.info ("done with " + assignmentPeriod + " transit skimming and loading.");
+        
+        // drive access intracity skims
+        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intracity" );
+        tsm.writeTransitSkims( assignmentPeriod, "drive", "intracity" );
+
+        // drive access intracity assignment
+        tripModeList = new ArrayList();
+        tripModeList.add( TripModeType.DR_TRAN.name() );
+        transitBoardings = runTransitAssignment ( nh, "drive", "intracity", tripModeList );
+        saveTransitBoardings ( nh, "drive", "intracity", transitBoardings, savedBoardings );
+        
+        
+        
+        // walk access intracity skims - these are used as walk access skims for hsr, and intercity as well
+        tsm.setupTransitNetwork( nh, assignmentPeriod, "walk", "intracity" );
+        tsm.writeTransitSkims( assignmentPeriod, "walk", "intracity" );
+        
+        // load walk access transit trips - (all route types use the same network object; no walk access air)
+        tripModeList = new ArrayList();
+        tripModeList.add( LDTripModeType.HSR_WALK.name() );
+        transitBoardings = runTransitAssignment ( nh, "walk", "hsr", tripModeList );
+        saveTransitBoardings ( nh, "walk", "hsr", transitBoardings, savedBoardings );
+
+        tripModeList = new ArrayList();
+        tripModeList.add( LDTripModeType.TRANSIT_WALK.name() );
+        transitBoardings = runTransitAssignment ( nh, "walk", "intercity", tripModeList );
+        saveTransitBoardings ( nh, "walk", "intercity", transitBoardings, savedBoardings );
+
+        tripModeList = new ArrayList();
+        tripModeList.add( TripModeType.WK_TRAN.name() );
+        transitBoardings = runTransitAssignment ( nh, "walk", "intracity", tripModeList );
+        saveTransitBoardings ( nh, "walk", "intracity", transitBoardings, savedBoardings );
+
+        
+        
+        logTransitBoardingsReport ( savedBoardings, assignmentPeriod );
+        
+        
+        logger.info ("done with " + assignmentPeriod + " period transit skimming and loading.");
         
     }
 
@@ -607,8 +603,8 @@ public class TS {
                 flowColumnNames.add( columnNames[i] );
         }
         int numFlowFields = flowColumnNames.size();
-        
-        
+
+
         // update the multiclass flow fields and congested time field in NetworkHandler
         double[][] flows = new double[numFlowFields][];
         for (int i=0; i < numFlowFields; i++)
@@ -624,7 +620,7 @@ public class TS {
     
     
     
-    public int setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+    public int setupHighwayNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
         
         String networkFileName = (String)appMap.get("d211.fileName");
         String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
@@ -681,7 +677,7 @@ public class TS {
         if ( walkSpeed != null ) propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
         
         
-        return nh.buildNetworkObject ( timePeriod, propertyValues );
+        return nh.setupHighwayNetworkObject ( timePeriod, propertyValues );
         
     }
     
@@ -698,7 +694,7 @@ public class TS {
         
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
-        setupNetwork( nhPeak, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
+        setupHighwayNetwork( nhPeak, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period );
         logger.info ("created " + period + " Highway NetworkHandler object: " + nhPeak.getNodeCount() + " highway nodes, " + nhPeak.getLinkCount() + " highway links." );
 
 //        nhPeak.startDataServer();
@@ -711,6 +707,28 @@ public class TS {
 
     }
 
+    
+    
+    
+    
+    public class SavedRouteInfo {
+        
+        static final int NUM_ROUTE_TYPES = 4;
+        
+        String description;
+        char mode;
+        double[] boardings;
+        
+        private SavedRouteInfo(String description, char mode) {
+            this.description = description;
+            this.mode = mode;
+            boardings = new double[2*NUM_ROUTE_TYPES];
+        }
+        
+    }
+    
+    
+    
     
 
     public static void main (String[] args) {
@@ -778,13 +796,22 @@ public class TS {
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
-        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
         //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         nhPeak.startDataServer();
         logger.info ("Network data server running...");
+        
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
 
+        
+        // test capability to get list of highway network link ids from a transit route
+        String name = "B_1334";
+        int[] linkIds = nhPeak.getTransitRouteLinkIds( name );
+        String linksString = String.format("%d", linkIds[0]);
+        for (int i=1; i < linkIds.length; i++)
+            linksString += String.format(", %d", linkIds[i]);
+        logger.info ( String.format( "link ids for route %s : %s", name, linksString) );
 
         
         // run the benchmark highway assignment procedure

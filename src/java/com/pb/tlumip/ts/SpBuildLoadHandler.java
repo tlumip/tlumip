@@ -82,7 +82,7 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     
     
     // this method is called by local instances of SpBuildLoadHandler.
-    public int setup( String handlerName, String rpcConfigFile, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost ) {
+    public int setup( String handlerName, String rpcConfigFile, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost, int[][] turnPenaltyIndices, float[][] turnPenaltyArray ) {
 
         logger.info( handlerName + " running SpBuildLoadHandler.setup()." );
         
@@ -90,7 +90,7 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
         
         // a local instance made this call and is loaded in the same VM as this instance, so NetworkHandler and DemandHandler handles are passed in
         // and can be passed on by this handler.
-        spCommon.setup( handlerName, workElements, workElementsDemand, numUserClasses, numLinks, numNodes, numZones, ia, ib, ipa, sortedLinkIndexA, indexNode, nodeIndex, centroid, validLinksForClasses, linkCost );
+        spCommon.setup( handlerName, workElements, workElementsDemand, numUserClasses, numLinks, numNodes, numZones, ia, ib, ipa, sortedLinkIndexA, indexNode, nodeIndex, centroid, validLinksForClasses, linkCost,  turnPenaltyIndices, turnPenaltyArray );
         
         return 1;
     }

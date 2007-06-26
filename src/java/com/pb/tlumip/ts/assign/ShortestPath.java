@@ -54,6 +54,7 @@ public class ShortestPath {
 	double[] congestedTime;
     
     int numNodes;
+    int numLinks;
     int numZones;
 
     Heap candidateHeap;
@@ -63,6 +64,7 @@ public class ShortestPath {
     public ShortestPath (NetworkHandlerIF nh) {
 
         numNodes = nh.getNodeCount();
+        numLinks = nh.getLinkCount();
         numZones = nh.getNumCentroids();
         
         // store network fields in local arrays
@@ -77,14 +79,14 @@ public class ShortestPath {
         
         
         pathLinks = new int[MAX_PATH_LENGTH];
-        nodeLabeled = new int[nh.getNodeCount()+1];
-        nodeLabels = new double[nh.getNodeCount()+1];
-        aonFlow = new double[nh.getLinkCount()];
-        predecessorLink = new int[nh.getNodeCount()+1];
+        nodeLabeled = new int[numNodes+1];
+        nodeLabels = new double[numNodes+1];
+        aonFlow = new double[numLinks];
+        predecessorLink = new int[numNodes+1];
 
         //Create a new heap structure to sort canidate node labels
-        candidateHeap = new Heap(nh.getNodeCount()+1);
-        heapContents = new int[nh.getNodeCount()];
+        candidateHeap = new Heap(numNodes+1);
+        heapContents = new int[numNodes];
     }
 
     

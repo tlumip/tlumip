@@ -56,7 +56,7 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     
     // when an instance of this rpc handler is used to call the setup method of an SpBuildLoadHandler running in
     // another VM, the primitive data type arguments are placed in the params Vector as objects, so the alternate setupRpc remote method is called.  
-    public int setup( String handlerName, String rpcConfigFile, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost ) {
+    public int setup( String handlerName, String rpcConfigFile, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost, int[][] turnPenaltyIndices, float[][] turnPenaltyArray ) {
 
         int returnValue = -1;
         try {
@@ -78,6 +78,8 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
             params.add(centroid);
             params.add(validLinksForClasses);
             params.add(linkCost);
+            params.add(turnPenaltyIndices);
+            params.add(turnPenaltyArray);
             returnValue = (Integer)rc.execute(handlerName+".setup", params );
         } catch (RpcException e) {
             logger.error( e );

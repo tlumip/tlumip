@@ -423,7 +423,7 @@ public class AuxTrNetTest {
         propertyValues[NetworkHandlerIF.TRUCKCLASS5_STRING_INDEX] = truckClass5String;
         propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
         
-        nh.buildNetworkObject ( timePeriod, propertyValues );
+        nh.setupHighwayNetworkObject ( timePeriod, propertyValues );
         
     }
     

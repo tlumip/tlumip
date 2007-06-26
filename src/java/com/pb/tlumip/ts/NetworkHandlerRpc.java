@@ -22,6 +22,7 @@ import java.util.Vector;
 
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
+import com.pb.tlumip.ts.transit.TrRoute;
 
 import org.apache.log4j.Logger;
 
@@ -284,6 +285,54 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return returnArray;
         
     }
+    
+    public char[] getHighwayModeCharacters() {
+
+        char[] returnArray = null;
+        
+        try {
+            returnArray = (char[])rc.execute(HANDLER_NAME+".getHighwayModeCharacters", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+
+    }
+    
+    public char[] getTransitModeCharacters() {
+
+        char[] returnArray = null;
+        
+        try {
+            returnArray = (char[])rc.execute(HANDLER_NAME+".getTransitModeCharacters", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+
+    }
+    
+    public boolean[] getValidLinksForTransitPaths() {
+    
+        boolean[] returnArray = null;
+        
+        try {
+            returnArray = (boolean[])rc.execute(HANDLER_NAME+".getValidLinksForTransitPaths", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+
+    }
 
     public boolean[] getValidLinksForClassChar ( int modeChar ) {
         
@@ -320,6 +369,22 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
 
+    public int[] getInternalNodeToNodeTableRow() {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getInternalNodeToNodeTableRow", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+
+    }
+    
     public int[] getLinkType () {
         
         int[] returnArray = null;
@@ -542,6 +607,38 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
         return returnArray;
         
+    }
+
+    public int[][] getTurnPenaltyIndices () {
+
+        int[][] returnArray = null;
+        
+        try {
+            returnArray = (int[][])rc.execute(HANDLER_NAME+".getTurnPenaltyIndices", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+
+    }
+    
+    public float[][] getTurnPenaltyArray () {
+    
+        float[][] returnArray = null;
+        
+        try {
+            returnArray = (float[][])rc.execute(HANDLER_NAME+".getTurnPenaltyIndices", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+
     }
 
     public String getAssignmentResultsString () {
@@ -913,7 +1010,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return returnValue;
     }
     
-    public int buildNetworkObject ( String timePeriod, String[] propertyValues ) {
+    public int setupHighwayNetworkObject ( String timePeriod, String[] propertyValues ) {
         
         int returnValue = -1;
         
@@ -930,6 +1027,130 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
         return returnValue;
         
+    }
+
+    
+    
+    
+    
+    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String[] d221Files, String[] rteTypes, int maxRoutes ) {
+        return 0;
+    }
+    
+    public TrRoute getTrRoute() {
+        return null;
+    }
+    
+    public String getAccessMode() {
+        return null;
+    }
+    
+    public int getMaxRoutes() {
+        return 0;
+    }
+    
+    public String getRouteName(int rte) {
+        return null;
+    }
+    
+    public String[] getTransitRouteNames() {
+        return null;
+    }
+    
+    public String[] getTransitRouteTypes() {
+        return null;
+    }
+    
+    public int[] getTransitRouteLinkIds(String rteName) {
+        return null;
+    }
+    
+    public int getAuxNodeCount() {
+        return 0;
+    }
+    
+    public int getAuxLinkCount() {
+        return 0;
+    }
+    
+    public int[] getLinkTrRoute() {
+        return null;
+    }
+    
+    public double[] getWalkTime() {
+        return null;
+    }
+    
+    public double[] getWaitTime() {
+        return null;
+    }
+    
+    public double[] getDriveAccTime() {
+        return null;
+    }
+    
+    public double[] getDwellTime() {
+        return null;
+    }
+    
+    public double[] getLayoverTime() {
+        return null;
+    }
+    
+    public double[] getInvTime() {
+        return null;
+    }
+    
+    public double getLinkImped (int k) {
+        return 0;
+    }
+    
+    public double[] getAuxLinkFreq() {
+        return null;
+    }
+    
+    public double[] getAuxLinkFlow() {
+        return null;
+    }
+    
+    public int[] getAuxLinkType() {
+        return null;
+    }
+    
+    public int[] getAuxIa() {
+        return null;
+    }
+    
+    public int[] getAuxIb() {
+        return null;
+    }
+    
+    public int[] getAuxIpa() {
+        return null;
+    }
+    
+    public int[] getAuxIpb() {
+        return null;
+    }
+    
+    public int[] getAuxIndexa() {
+        return null;
+    }
+    
+    public int[] getAuxIndexb() {
+        return null;
+    }
+    
+    public int[] getAuxHwyLink() {
+        return null;
+    }
+    
+    public char[] getRteMode() {
+        return null;
+    }
+    
+    public int[] getStationDriveAccessNodes(int stationNode) {
+        return null;
     }
 
 }

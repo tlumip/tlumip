@@ -28,9 +28,11 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
@@ -53,12 +55,13 @@ public class AuxTrNet implements Serializable {
 
 	static final int MAX_ROUTES = 500;
 
+    static final String[] routeTypeStrings = { "air", "hsr", "intercity", "intracity" };
+
 	static final double ALPHA = 0.5;
 	static final double FARE = 0.75;
     static final double TRANSFER_FARE = 0.25;
 
 	static final double MAX_WALK_ACCESS_DIST = 1.0;   // miles
-    static final double MAX_DRIVE_ACCESS_DIST = 25.0; // miles
     static final int MAX_DRIVE_ACCESS_LINKS = 3;
 
   
@@ -94,12 +97,15 @@ public class AuxTrNet implements Serializable {
 	TrRoute tr;
 
 	private int auxLinks, auxNodes;
+    private int maxHwyInternalNode;
 
 
 	int[] hwyLink;
 	int[] trRoute;
-	int[] ia;
-	int[] ib;
+    int[] ia;
+    int[] ib;
+    int[] an;
+    int[] bn;
 	int[] linkType;
 	int[] ttf;
 	double[] freq;
@@ -112,7 +118,8 @@ public class AuxTrNet implements Serializable {
 	double[] flow;
 	double[] driveAccTime;
 	char[] rteMode;
-
+	String[] routeType;
+    
 
 	int[] ipa;
 	int[] ipb;
@@ -120,14 +127,16 @@ public class AuxTrNet implements Serializable {
 	int[] indexb;
 
 
-    boolean[] boardingNode;
+    boolean[][] boardingNode;
     
     Set[] nodeRoutes = null;
     
-	int[] indexNode;
+    int[] indexNode;
+    int[] nodeIndex;
 	int[] gia;
 	int[] gib;
 	String[] gMode;
+    int[] gInternalNodeToNodeTableRow;
     double[] gNodeX;
     double[] gNodeY;
     double[] gDist;
@@ -137,7 +146,10 @@ public class AuxTrNet implements Serializable {
 	String accessMode = null;
     String period = null;
 
+    HashMap routeTypeMap = new HashMap();
 
+    
+    
     
 	public AuxTrNet (NetworkHandlerIF nh, TrRoute tr) {
 
@@ -147,8 +159,10 @@ public class AuxTrNet implements Serializable {
 
 		hwyLink = new int[maxAuxLinks];
 		trRoute = new int[maxAuxLinks];
-		ia = new int[maxAuxLinks];
-		ib = new int[maxAuxLinks];
+        ia = new int[maxAuxLinks];
+        ib = new int[maxAuxLinks];
+        an = new int[maxAuxLinks];
+        bn = new int[maxAuxLinks];
         linkType = new int[maxAuxLinks];
         rteMode = new char[maxAuxLinks];
 		freq = new double[maxAuxLinks];
@@ -161,15 +175,20 @@ public class AuxTrNet implements Serializable {
 		flow = new double[maxAuxLinks];
 		driveAccTime = new double[maxAuxLinks];
 
-        boardingNode = new boolean[nh.getNodeCount()+1];
+        boardingNode = new boolean[routeTypeStrings.length][nh.getNodeCount()+1];
+
+        routeType = new String[maxAuxLinks];
         
         nodeRoutes = new Set[nh.getNodeCount()+1];
         
+        maxHwyInternalNode = nh.getNodeCount();
         
 		gia = nh.getIa();
 		gib = nh.getIb();
 		gMode = nh.getMode();
-		indexNode = nh.getIndexNode();
+        indexNode = nh.getIndexNode();
+        nodeIndex = nh.getNodeIndex();
+        gInternalNodeToNodeTableRow = nh.getInternalNodeToNodeTableRow();
         gNodeX = nh.getNodeX();
         gNodeY = nh.getNodeY();
 		gDist = nh.getDist();
@@ -197,21 +216,39 @@ public class AuxTrNet implements Serializable {
 		int nextNode;
 		int startNode;
 		int startAuxNode;
-		int anode=0;
-		int bnode=0;
-
+        int routeTypeIndex;
+        
+        for (int i=0; i < routeTypeStrings.length; i++)
+            routeTypeMap.put(routeTypeStrings[i], i);
+        
 
 		// add boarding, in-vehicle, and alighting transit links for each link in a transit route
-		nextNode = nh.getNodeCount() + 1;
+//        nextNode = nh.getNodeCount() + 1;
+        nextNode = nh.getNodeCount();
 		for (int rte=0; rte < tr.getLineCount(); rte++) {
 			ts = (TrSegment)tr.transitPath[rte].get(0);
+            
+            String routeType = tr.routeType[rte];
+            routeTypeIndex = (Integer)routeTypeMap.get(routeType);
+            
 			startNode = gia[ts.link];
 			startAuxNode = nextNode;
-			if (debug) logger.info ("rte=" + rte + ", startNode=" + indexNode[startNode] + ", startAuxNode=" + startAuxNode);
-			for (int seg=0; seg < tr.transitPath[rte].size(); seg++) {
+			if (debug) logger.info ("rte=" + rte + ", startNode(ia)=" + startNode + ", startNode(an)=" + ts.an + ", startAuxNode=" + startAuxNode);
+			
+            
+            int dummy=0;
+            if ( rte == 318 ) {
+                dummy = 1;
+            }
+            
+            for (int seg=0; seg < tr.transitPath[rte].size(); seg++) {
 				
 				try {
 					
+                    if ( seg == 161 ) {
+                        dummy = 2;
+                    }
+                    
 					// get the current transit segment and the following segment in this route.
 					// dwell time is determined for the following link, and added as in-vehicle time for the current in-vehicle link.
 				    ts = (TrSegment)tr.transitPath[rte].get(seg);
@@ -220,41 +257,43 @@ public class AuxTrNet implements Serializable {
 				    else
 				    	tsNext = null;
 				    
-				    anode = gia[ts.link];
-				    bnode = gib[ts.link];
 				    
 				    // Keep a list of transit lines using each network link.  Save using xxxyyy where xxx is rte and yyy is seg.
 				    // A link will therefore be able to look up all transit routes serving the link using tr.transitPaths[rte].get(seg)
 				    // for all the rteseg values stored for the link.
-				    gSegs[ts.link].add( new Integer(rte*1000 + seg) );
+                    // If link is a layover, there's no index, so skip it.
+                    if ( ts.link >= 0 )
+                        gSegs[ts.link].add( new Integer(rte*1000 + seg) );
 				    
-					if (debug) logger.info ("anode=" + indexNode[anode] + ", bnode=" + indexNode[bnode] + ", ttf=" + ts.getTtf() );
+					if (debug) logger.info ("anode=" + ts.an + ", bnode=" + ts.bn + ", ttf=" + ts.getTtf() );
 	
 					    // add auxilliary links for route segment
 				    if (ts.layover) {
-				        if (bnode == startNode) {
+				        if (nodeIndex[ts.bn] == startNode) {
 				            nextNode++;
 				        }
 				        else {
-				        	if (debug) logger.info ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				        	if (debug) logger.info ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
 				       	   	addAuxLayoverLink (aux++, nextNode, nextNode + 1, ts, tr.headway[rte], rte, tr.mode[rte]);
 							nextNode++;
 				        }
 				    }
 				    else {
 				        if (ts.board) {
-				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-				           	addAuxBoardingLink (aux++, anode, nextNode, ts, tr.headway[rte], rte, tr.mode[rte]);
-                            if ( nodeRoutes[anode] == null )
-                                nodeRoutes[anode] = new HashSet();
-                            nodeRoutes[anode].add(rte);
-                            boardingNode[anode] = true;
+                            int inA = nodeIndex[ts.an];
+				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				           	addAuxBoardingLink (aux++, inA, nextNode, ts, tr.headway[rte], rte, tr.mode[rte]);
+                            if ( nodeRoutes[inA] == null )
+                                nodeRoutes[inA] = new HashSet();
+                            nodeRoutes[inA].add(rte);
+                            boardingNode[routeTypeIndex][inA] = true;
 				        }
-				        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
 				       	addAuxInVehicleLink (aux++, nextNode, ts, tsNext, tr.headway[rte], tr.speed[rte], rte, tr.mode[rte]);
 				   	   	if (ts.alight) {
-							if (debug) logger.info ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + anode + ", bnode=" + bnode + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-							addAuxAlightingLink (aux++, nextNode, bnode, ts, tr.headway[rte], rte, tr.mode[rte]);
+							if (debug) logger.info ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+                            int inB = nodeIndex[ts.bn];
+							addAuxAlightingLink (aux++, nextNode, inB, ts, tr.headway[rte], rte, tr.mode[rte]);
 						}
 						nextNode++;
 					}
@@ -266,21 +305,31 @@ public class AuxTrNet implements Serializable {
 					logger.fatal( "      rte = " + rte);
 					logger.fatal( "      line = " + tr.getLine(rte));
 					logger.fatal( "      description = " + tr.getDescription(rte));
-					logger.fatal( "      anode = " + indexNode[anode]);
-					logger.fatal( "      bnode = " + indexNode[bnode]);
+					logger.fatal( "      anode = " + ts.an);
+                    logger.fatal( "      bnode = " + ts.bn);
+                    logger.fatal( "      linkId = " + ts.link);
+                    logger.fatal( "      alight = " + ts.alight);
+                    logger.fatal( "      board = " + ts.board);
+                    logger.fatal( "      layover = " + ts.layover);
                     logger.fatal ( "", e );
 					System.exit(1);
 				}
 			}
 		}
 
-		auxNodes = nextNode;
 		logger.info (aux + " transit links added.");
-		logger.info (auxNodes + " is max transit node.");
+
+        auxNodes = nextNode;
+        logger.info (auxNodes + " is the max transit node.");
 
         // add walk links first
-        auxLinks =  getAccessLinks( accessMode, aux );
-        logger.info ( (auxLinks-aux) + " " + accessMode + " access and walk egress links added.");
+        logger.info ( "generating transit network access links..." );
+        auxLinks =  getAuxilliaryLinks( accessMode, aux );
+        logger.info ( (auxLinks-aux) + " " + accessMode + " transit total access, walk, and egress links added.");
+        
+        // the value of auxLinks is set so it can be the next index assigned, so it is one more than it needs to be; therefore decrement it.
+        auxLinks--;
+        
         logger.info ( auxLinks + " total transit and access links.");
 
 
@@ -297,7 +346,9 @@ public class AuxTrNet implements Serializable {
 		int[] tempi2 = new int[auxLinks];
 		int[] tempi3 = new int[auxLinks];
 		int[] tempi4 = new int[auxLinks];
-		int[] tempi5 = new int[auxLinks];
+        int[] tempi5 = new int[auxLinks];
+        int[] tempi6 = new int[auxLinks];
+        int[] tempi7 = new int[auxLinks];
 		double[] tempd1 = new double[auxLinks];
 		double[] tempd2 = new double[auxLinks];
 		double[] tempd3 = new double[auxLinks];
@@ -311,6 +362,8 @@ public class AuxTrNet implements Serializable {
         System.arraycopy(trRoute, 0, tempi2, 0, auxLinks);
         System.arraycopy(ia, 0, tempi3, 0, auxLinks);
         System.arraycopy(ib, 0, tempi4, 0, auxLinks);
+        System.arraycopy(an, 0, tempi6, 0, auxLinks);
+        System.arraycopy(bn, 0, tempi7, 0, auxLinks);
         System.arraycopy(linkType, 0, tempi5, 0, auxLinks);
         System.arraycopy(freq, 0, tempd1, 0, auxLinks);
         System.arraycopy(cost, 0, tempd2, 0, auxLinks);
@@ -323,8 +376,10 @@ public class AuxTrNet implements Serializable {
 
 		hwyLink = tempi1;
 		trRoute = tempi2;
-		ia = tempi3;
-		ib = tempi4;
+        ia = tempi3;
+        ib = tempi4;
+        an = tempi6;
+        bn = tempi7;
 		linkType = tempi5;
 		freq = tempd1;
 		cost = tempd2;
@@ -339,94 +394,191 @@ public class AuxTrNet implements Serializable {
 
 	public void setForwardStarArrays () {
 	    
-		int k;
-		int old;
+        int i = -1;
+        int k = -1;
+		int old = -1;
+        
+        try {
+            
+            ipa = new int[auxNodes+1];
+            Arrays.fill (ipa, -1);
+            
+            indexa = IndexSort.indexMergeSort( ia );
+            logger.info ( "check on order of ia array returned " + IndexSort.checkAscendingOrder(ia, indexa) );
+            
+            old = ia[indexa[0]];
+            ipa[old] = 0;
+            for (i=0; i < ia.length; i++) {
+                k = indexa[i];
 
-		ipa = new int[auxNodes+1];
-		Arrays.fill (ipa, -1);
-		
-		indexa = IndexSort.indexMergeSort( ia );
-		logger.info ( "check on order of ia array returned " + IndexSort.checkAscendingOrder(ia, indexa) );
-		
-		old = ia[indexa[0]];
-		ipa[old] = 0;
-		for (int i=0; i < ia.length; i++) {
-			k = indexa[i];
+                if ( ia[k] != old ) {
+                    ipa[ia[k]] = i;
+                    old = ia[k];
+                }
+            }
 
-			if ( ia[k] != old ) {
-				ipa[ia[k]] = i;
-				old = ia[k];
-			}
-		}
+            ipa[auxNodes] = ia.length;
 
-		if ( old < auxNodes)
-			ipa[old+1] = ia.length;
-		else
-			ipa[old] = ia.length;
-		
+
+            if ( logger.isDebugEnabled() ) {
+                int count = 0;
+                for (i=0; i < ipa.length; i++)
+                    if ( ipa[i] < 0 ) {
+                        count++;
+                        logger.debug ( String.format("%-6d  node %d has no exiting links.", count, i) );
+                    }
+                
+                logger.debug( String.format("forward star pointer array ipa created with: %d  -1 values,", count) );
+            }
+            
+        }
+        catch (Exception e) {
+            logger.error (String.format("k=%d, old=%d, i=%d, auxNodes=%d, ia[k]=%s, ia.length=%d, ipa.length=%d, indexa=.length=%d", k, old, i, auxNodes, (k >= 0 && k < ia.length ? Integer.toString(ia[k]) : "index error"), ia.length, ipa.length, indexa.length), e);
+        }
+
+        
 	}
 
 	
 	public void setBackwardStarArrays () {
 	    
-		int k;
-		int old;
+		int i = -1;
+        int k = -1;
+		int old = -1;
 
-		ipb = new int[auxNodes+1];
-		Arrays.fill (ipb, -1);
+        try {
+            
+    		ipb = new int[auxNodes+1];
+    		Arrays.fill (ipb, -1);
+    
+    		indexb = IndexSort.indexMergeSort( ib );
+    		logger.info ( "check on order of ib array returned " + IndexSort.checkAscendingOrder(ib, indexb) );
+    		
+    		old = ib[indexb[0]];
+    		ipb[old] = 0;
+    		for (i=1; i < ib.length; i++) {
+                
+    			k = indexb[i];
+                
+    			if ( ib[k] != old ) {
+    				ipb[ib[k]] = i;
+    				old = ib[k];
+    			}
+    			
+    		}
+    		
+            ipb[auxNodes] = ib.length;
+            
 
-		indexb = IndexSort.indexMergeSort( ib );
-		logger.info ( "check on order of ib array returned " + IndexSort.checkAscendingOrder(ib, indexb) );
+            if ( logger.isDebugEnabled() ) {
+                int count = 0;
+                for (i=0; i < ipb.length; i++)
+                    if ( ipb[i] < 0 ) {
+                        count++;
+                        logger.debug ( String.format("%-6d  node %d has no entering links.", count, i) );
+                    }
+                
+                logger.debug( String.format("backward star pointer array ipb created with: %d  -1 values,", count) );
+            }
 		
-		old = ib[indexb[0]];
-		ipb[old] = 0;
-		for (int i=0; i < ib.length; i++) {
-
-			k = indexb[i];
-
-			if ( ib[k] != old ) {
-				ipb[ib[k]] = i;
-				old = ib[k];
-			}
-			
-		}
-		
-		if ( old < auxNodes)
-			ipb[old+1] = ib.length;
-		else
-			ipb[old] = ib.length;
-		
+        }
+        catch (Exception e) {
+            logger.error (String.format("k=%d, old=%d, i=%d, auxNodes=%d, ib[k]=%s, ib.length=%d, ipb.length=%d, indexb.length=%d", k, old, i, auxNodes, (k >= 0 && k < ib.length ? Integer.toString(ib[k]) : "index error"), ib.length, ipb.length, indexb.length), e);
+        }
+        
 	}
 
 	
-	private int getAccessLinks ( String accessMode, int aux ) {
+	private int getAuxilliaryLinks ( String accessMode, int aux ) {
 
         Iterator it;
         
         ArrayList walkAccessLinkList = null;
         ArrayList driveAccessLinkList = null;
 
-        
-        // get walk access links no matter the accessMode.
-        walkAccessLinkList = getWalkAccessLinks();
-        
-        
-        // get drive access links if the accessMode is "drive".
-        if ( accessMode.equalsIgnoreCase("drive") )
-            driveAccessLinkList = getDriveAccessLinks();
+        int startAux = aux;
         
         
         // add the access links depending on value of accessMode.
-        if ( accessMode.equalsIgnoreCase("walk") ) {
+        // if acces mode is walk, add walk access and walk egress.
+        // if acces mode is drive, add drive local access and walk egress.
+        // if acces mode is driveLdt, add drive long distance access and drive long distance egress.
+        if ( accessMode.equalsIgnoreCase("walk") || accessMode.equalsIgnoreCase("drive") ) {
 
+            // get walk access links no matter the accessMode.
+            walkAccessLinkList = getWalkAccessLinks();
+            
+            
+            if ( accessMode.equalsIgnoreCase("walk") ) {
+
+                it = walkAccessLinkList.iterator();
+                while ( it.hasNext() ) {
+                    double[] linkInfo = (double[])it.next();
+            
+                    hwyLink[aux] = -1;
+                    trRoute[aux] = -1;
+                    routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                    ia[aux] = (int)linkInfo[0];
+                    ib[aux] = (int)linkInfo[1];
+                    an[aux] = indexNode[(int)linkInfo[0]];
+                    bn[aux] = indexNode[(int)linkInfo[1]];
+                    freq[aux] = INFINITY;
+                    cost[aux] = 0.0;
+                    invTime[aux] = 0.0;
+                    walkTime[aux] = (float)(60.0*linkInfo[2]/nh.getWalkSpeed());
+                    driveAccTime[aux] = 0.0;
+                    layoverTime[aux] = 0.0;
+                    linkType[aux] = AUXILIARY_TYPE;
+                    aux++;
+            
+                }
+
+            }
+            else {
+            
+                // get drive access links if the accessMode is "drive".
+                if ( accessMode.equalsIgnoreCase("drive") )
+                    driveAccessLinkList = getDriveAccessLinks( 25.0 );      // max dist = 25 miles for drive to local transit
+
+                it = driveAccessLinkList.iterator();
+                while ( it.hasNext() ) {
+                    double[] linkInfo = (double[])it.next();
+            
+                    hwyLink[aux] = -1;
+                    trRoute[aux] = -1;
+                    routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                    ia[aux] = (int)linkInfo[0];
+                    ib[aux] = (int)linkInfo[1];
+                    an[aux] = indexNode[(int)linkInfo[0]];
+                    bn[aux] = indexNode[(int)linkInfo[1]];
+                    freq[aux] = INFINITY;
+                    cost[aux] = 0.0;
+                    invTime[aux] = 0.0;
+                    walkTime[aux] = 0.0;
+                    driveAccTime[aux] = (float)linkInfo[2];
+                    layoverTime[aux] = 0.0;
+                    linkType[aux] = AUXILIARY_TYPE;
+                    aux++;
+            
+                }
+            }
+        
+            logger.info ( (aux-startAux) + " " + accessMode + " transit access links added.");
+            startAux = aux;
+            
+            
+            // add the egress links which are walk for either accessMode.
             it = walkAccessLinkList.iterator();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
-        
+    
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
-                ia[aux] = (int)linkInfo[0];
-                ib[aux] = (int)linkInfo[1];
+                routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                ia[aux] = (int)linkInfo[1];
+                ib[aux] = (int)linkInfo[0];
+                an[aux] = indexNode[(int)linkInfo[1]];
+                bn[aux] = indexNode[(int)linkInfo[0]];
                 freq[aux] = INFINITY;
                 cost[aux] = 0.0;
                 invTime[aux] = 0.0;
@@ -435,20 +587,42 @@ public class AuxTrNet implements Serializable {
                 layoverTime[aux] = 0.0;
                 linkType[aux] = AUXILIARY_TYPE;
                 aux++;
-        
             }
 
+            logger.info ( (aux-startAux) + " " + accessMode + " transit walk egress links added.");
+
         }
-        else {
-        
+        else if ( accessMode.equalsIgnoreCase("driveLdt") ) {
+            
+            driveAccessLinkList = getDriveAccessLinks( 50.0 );      // max dist = 50 miles for drive to long distance transit
+
             it = driveAccessLinkList.iterator();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
         
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
+                routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
                 ia[aux] = (int)linkInfo[0];
                 ib[aux] = (int)linkInfo[1];
+                an[aux] = indexNode[(int)linkInfo[0]];
+                bn[aux] = indexNode[(int)linkInfo[1]];
+                freq[aux] = INFINITY;
+                cost[aux] = 0.0;
+                invTime[aux] = 0.0;
+                walkTime[aux] = 0.0;
+                driveAccTime[aux] = (float)linkInfo[2];
+                layoverTime[aux] = 0.0;
+                linkType[aux] = AUXILIARY_TYPE;
+                aux++;
+        
+                hwyLink[aux] = -1;
+                trRoute[aux] = -1;
+                routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                ia[aux] = (int)linkInfo[1];
+                ib[aux] = (int)linkInfo[0];
+                an[aux] = indexNode[(int)linkInfo[1]];
+                bn[aux] = indexNode[(int)linkInfo[0]];
                 freq[aux] = INFINITY;
                 cost[aux] = 0.0;
                 invTime[aux] = 0.0;
@@ -459,28 +633,40 @@ public class AuxTrNet implements Serializable {
                 aux++;
         
             }
+            
+            logger.info ( (aux-startAux) + " " + accessMode + " transit drive access and drive egress links added.");
+
         }
         
-            
-        // add the egress links which are walk for either accessMode.
-        it = walkAccessLinkList.iterator();
-        while ( it.hasNext() ) {
-            double[] linkInfo = (double[])it.next();
+        startAux = aux;
+        
+        // add the highway links that have mode s(sidewalk) or w(walk) to allow transfer possibilities.
+        // these are the only walk links added at this time besides access links
+        for (int k=0; k < gMode.length; k++){
+        
+            if ( gMode[k].indexOf('w') >= 0 || gMode[k].indexOf('s') >= 0 ) {
+                
+                hwyLink[aux] = k;
+                trRoute[aux] = -1;
+                routeType[aux] = "auxWalk";
+                ia[aux] = gia[k];
+                ib[aux] = gib[k];
+                an[aux] = indexNode[gia[k]];
+                bn[aux] = indexNode[gib[k]];
+                freq[aux] = INFINITY;
+                cost[aux] = 0.0;
+                invTime[aux] = 0.0;
+                walkTime[aux] = (float)(60.0*gDist[k]/nh.getWalkSpeed());
+                driveAccTime[aux] = 0.0;
+                layoverTime[aux] = 0.0;
+                linkType[aux] = AUXILIARY_TYPE;
+                aux++;
+            }
 
-            hwyLink[aux] = -1;
-            trRoute[aux] = -1;
-            ia[aux] = (int)linkInfo[1];
-            ib[aux] = (int)linkInfo[0];
-            freq[aux] = INFINITY;
-            cost[aux] = 0.0;
-            invTime[aux] = 0.0;
-            walkTime[aux] = (float)(60.0*linkInfo[2]/nh.getWalkSpeed());
-            driveAccTime[aux] = 0.0;
-            layoverTime[aux] = 0.0;
-            linkType[aux] = AUXILIARY_TYPE;
-            aux++;
         }
-            
+        
+        logger.info ( (aux-startAux) + " transfer walk links added.");
+        
 		return aux;
 
     }
@@ -507,37 +693,46 @@ public class AuxTrNet implements Serializable {
 
             Set connectedRoutes = new HashSet();
 
-            // build a shortest path tree from the origin and get a list of boarding nodes ordered by distance from origin and within walking distance or origin.
+            // build a shortest path tree from the origin.
             sp.buildTree ( origin );
-            ArrayList endPoints = sp.getNodesWithinCost ( MAX_WALK_ACCESS_DIST, boardingNode );
             
+            ArrayList[] endPoints = new ArrayList[routeTypeStrings.length];
             
-            // get a list of node pairs (origin,bnode) with shortest path distances to bnode to use to create walk access links.
-            // the node pairs will only be selected for bnodes that serve different transit routes from previously selected node pairs.
-            Iterator it = endPoints.iterator();
-            while ( it.hasNext() ) {
-                // get the node info for nodes within walk distance (ia, cumDist).
-                double[] nodeInfo = (double[])it.next();
-
-                // add each element in nodeRoutes to connectedRoutes.  The add method will only add the element to the connectedRoute set if it isn't already contained.
-                int oldSize = connectedRoutes.size();
-                Iterator rt = nodeRoutes[(int)nodeInfo[0]].iterator();
-                while ( rt.hasNext() )
-                    connectedRoutes.add( rt.next() );
+            // get a list of boarding nodes ordered by distance from the origin and within walking distance of origin.
+            // get one list for each routeType of transit routes defined
+            for ( int i=0; i < routeTypeStrings.length; i++ ) {
                 
-                // if the updated connectedRoutes set has increased in size, create new walk access links to this boarding node
-                if ( connectedRoutes.size() > oldSize ) {
-                    
-                    // make an array to hold ia, ib, dist for new walk access link, then store in ArrayList
-                    double[] linkList = new double[3];
-                    
-                    linkList[0] = origin;
-                    linkList[1] = nodeInfo[0];
-                    linkList[2] = nodeInfo[1];
-    
-                    walkAccessLinkList.add(linkList);
-                }
+                endPoints[i] = sp.getNodesWithinCost ( MAX_WALK_ACCESS_DIST, boardingNode[i] );
+                
+                // get a list of node pairs (origin,bnode) with shortest path distances to bnode to use to create walk access links.
+                // the node pairs will only be selected for bnodes that serve different transit routes from previously selected node pairs within the specified routeType.
+                Iterator it = endPoints[i].iterator();
+                while ( it.hasNext() ) {
+                    // get the node info for nodes within walk distance (ia, cumDist).
+                    double[] nodeInfo = (double[])it.next();
 
+                    // add each element in nodeRoutes to connectedRoutes.  The add method will only add the element to the connectedRoute set if it isn't already contained.
+                    int oldSize = connectedRoutes.size();
+                    Iterator rt = nodeRoutes[(int)nodeInfo[0]].iterator();
+                    while ( rt.hasNext() )
+                        connectedRoutes.add( rt.next() );
+                    
+                    // if the updated connectedRoutes set has increased in size, create new walk access links to this boarding node
+                    if ( connectedRoutes.size() > oldSize ) {
+                        
+                        // make an array to hold ia, ib, dist for new walk access link, then store in ArrayList
+                        double[] linkList = new double[4];
+                        
+                        linkList[0] = origin;
+                        linkList[1] = nodeInfo[0];
+                        linkList[2] = nodeInfo[1];
+                        linkList[3] = (Integer)routeTypeMap.get( routeTypeStrings[i] );
+        
+                        walkAccessLinkList.add(linkList);
+                    }
+
+                }
+                
             }
 
         }
@@ -547,7 +742,7 @@ public class AuxTrNet implements Serializable {
     
     
     
-    private ArrayList getDriveAccessLinks() {
+    private ArrayList getDriveAccessLinks( double maxDriveAccessDist ) {
         
         ArrayList driveAccessLinkList = new ArrayList();
         
@@ -558,9 +753,9 @@ public class AuxTrNet implements Serializable {
         // use auto userclass (m=0) for building paths
         int m = 0;
 
-        double avgSpeed = 20.0;
-        double increment = 3.0;
-        
+        double avgSpeed = 30.0;
+        double increment = 2.0;
+        double distanceIncrement = 0;
         // build shortest path tree object and set cost and valid link attributes for this user class.
         ShortestPathTreeH sp = new ShortestPathTreeH( nh );
         sp.setValidLinks( validLinksForClasses[m] );
@@ -568,52 +763,69 @@ public class AuxTrNet implements Serializable {
 
         for (int origin=0; origin < nh.getNumCentroids(); origin++) {
 
+            int dummy = 0;
+            if ( indexNode[origin] == 1000 ) {
+                dummy = 1;
+            }
+            
             sp.buildTree ( origin );
             
-            // we'll add 3 miles incrementally to MAX_WALK_ACCESS_DIST until the desired number of drive access links are found
-            double distanceIncrement = MAX_WALK_ACCESS_DIST + 3.0;
+            ArrayList[] endPoints = new ArrayList[routeTypeStrings.length];
+            Set[] indexSet = new HashSet[routeTypeStrings.length];
             
-            // determine time bands based on incremental distances and an assumed average speed.
-            // we'll get nodes from the shortest congested drive time tree that are within this band
-//            double minTime = 60.0*MAX_WALK_ACCESS_DIST/avgSpeed;
-            double minTime = 0.0;
-            double maxTime = 60.0*distanceIncrement/avgSpeed;
-            
-            // add distance incrementally until at least MIN_DRIVE_ACCESS_LINKS drive access links are found or MAX_DRIVE_ACCESS_DIST is reached
-            ArrayList endPoints = sp.getNodesWithinCosts ( minTime, maxTime, boardingNode );
-            while ( endPoints.size() < MAX_DRIVE_ACCESS_LINKS  && distanceIncrement < MAX_DRIVE_ACCESS_DIST ) {
-                distanceIncrement += increment;
-                minTime = maxTime;
-                maxTime = 60.0*distanceIncrement/avgSpeed;
-                endPoints.addAll( sp.getNodesWithinCosts ( minTime, maxTime, boardingNode ) );
-            }
+            for ( int i=0; i < routeTypeStrings.length; i++ ) {
 
+                // we'll add 3 miles incrementally to MAX_WALK_ACCESS_DIST until the desired number of drive access links are found
+                distanceIncrement = MAX_WALK_ACCESS_DIST;
+                
+                
+                // determine time bands based on incremental distances and an assumed average speed.
+                // we'll get nodes from the shortest congested drive time tree that are within this band
+                endPoints[i] = new ArrayList();
+                double maxTime = 60.0*distanceIncrement/avgSpeed;
+                double minTime = 0.0;
+                
+                // add distance incrementally until at least MIN_DRIVE_ACCESS_LINKS drive access links for this routeType
+                // are found or MAX_DRIVE_ACCESS_DIST is reached.
+                int selectedNodes = 0;
+                while ( selectedNodes < MAX_DRIVE_ACCESS_LINKS  && distanceIncrement < maxDriveAccessDist ) {
+                    distanceIncrement += increment;
+                    minTime = maxTime;
+                    maxTime = 60.0*distanceIncrement/avgSpeed;
+                    endPoints[i] = sp.getNodesWithinCosts ( minTime, maxTime, boardingNode[i] );
+                    indexSet[i] = new HashSet();
+
+                    // if no end points were found, no drive access links will be created for this origin zone
+                    if ( endPoints[i].size() > 0 ) {
+                    
+                        // select MIN_DRIVE_ACCESS_LINKS drive access links randomly from the set available
+                        // or all drive access links if the set available is less than MIN_DRIVE_ACCESS_LINKS.
+                        int randomIndex;
+                        while ( selectedNodes < MAX_DRIVE_ACCESS_LINKS && indexSet[i].size() < MAX_DRIVE_ACCESS_LINKS && indexSet[i].size() < endPoints[i].size() ) {
+                            
+                            randomIndex = (int)(Math.random()*endPoints[i].size());
+                            while ( indexSet[i].contains(randomIndex) )
+                                randomIndex = (int)(Math.random()*endPoints[i].size());
+                            indexSet[i].add(randomIndex);
+                            
+                            double[] nodeInfo = (double[])endPoints[i].get(randomIndex);
             
-            // if no end points were found, no drive access links will be created for this origin zone
-            if ( endPoints.size() > 0 ) {
-            
-                // select MIN_DRIVE_ACCESS_LINKS drive access links randomly from the set available
-                // or all drive access links if the set available is less than MIN_DRIVE_ACCESS_LINKS.
-                int randomIndex;
-                Set indexSet = new HashSet();
-                while ( indexSet.size() < MAX_DRIVE_ACCESS_LINKS && indexSet.size() < endPoints.size() ) {
-                    
-                    randomIndex = (int)(Math.random()*endPoints.size());
-                    while ( indexSet.contains(randomIndex) )
-                        randomIndex = (int)(Math.random()*endPoints.size());
-                    indexSet.add(randomIndex);
-                    
-                    double[] nodeInfo = (double[])endPoints.get(randomIndex);
-    
-                    // make an array to hold ia, ib, dist for new walk access link, then store in ArrayList
-                    double[] linkList = new double[3];
-                    linkList[0] = origin;
-                    linkList[1] = nodeInfo[0];
-                    linkList[2] = nodeInfo[1];
-                    
-                    driveAccessLinkList.add(linkList);
+                            // make an array to hold ia, ib, dist, and routeTypeIndex for new walk access link, then store in ArrayList
+                            double[] linkList = new double[4];
+                            linkList[0] = origin;
+                            linkList[1] = nodeInfo[0];
+                            linkList[2] = nodeInfo[1];
+                            linkList[3] = (Integer)routeTypeMap.get( routeTypeStrings[i] );
+                            
+                            selectedNodes++;
+                            
+                            driveAccessLinkList.add(linkList);
+                        }
+
+                    }
+
                 }
-            
+                
             }
             
         }
@@ -649,7 +861,7 @@ public class AuxTrNet implements Serializable {
 		for (i=start; i < end; i++) {
 			k = hwyLink[i];
             logger.info ( String.format( "%6d%6d%6d%6d%6d%6d%8s%8.2f%8.2f%8.2f%8.2f",
-				i, k, indexNode[gia[k]], indexNode[gib[k]],ia[i],ib[i], (freq[i] == INFINITY ? String.format("%8s", "Inf") : String.format("%8.2f", freq[i])), cost[i], invTime[i], walkTime[i], layoverTime[i] ) );
+				i, k, an[k], bn[k], ia[i] ,ib[i], (freq[i] == INFINITY ? "Inf" : String.format("%8.2f", freq[i])), cost[i], invTime[i], walkTime[i], layoverTime[i] ) );
 		}
         
 	}
@@ -657,7 +869,8 @@ public class AuxTrNet implements Serializable {
 
 	public void printAuxTranNetwork (String fileName) {
 
-		int i, j, k, start, end, inB, outB, outI;
+		int i, k, m;
+        double hwyTime;
 
 		try {
 			PrintWriter out = new PrintWriter (
@@ -667,39 +880,22 @@ public class AuxTrNet implements Serializable {
 		  	out.println ("--------------------------");
 			out.println ("Auxilliary Transit Network");
 		  	out.println ("--------------------------");
-            out.format( "%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%10s%10s%10s%10s%10s%10s\n", "i", "ia", "ib", "type", "link", "an", "bn", "inB", "outB", "outI", "rte", "freq", "cost", "invT", "walkT", "layT", "hwyT" );
+            out.format( "%8s%8s%8s%8s%8s%8s%8s%8s%8s%8s%10s%10s%10s%10s%10s\n", "i", "k", "ia", "ib", "type", "link", "an", "bn", "rte", "freq", "cost", "invT", "walkT", "layT", "hwyT" );
 
-		  	for (i=0; i < auxLinks; i++) {
+            int[] linkIndices = getTransitLinkIndices();
+		  	for (i=0; i < linkIndices.length; i++) {
                 
-				k = hwyLink[i];
-				
-				start = ipb[ib[i]];
-				j = ib[i] + 1;
-				if (j < ipb.length-1) {
-					while (ipb[j] == -1 && j < ipb.length-1)
-						j++;
-				}
-				end = ipb[j];
-				inB = end - start;
-				
-				
-				start = ipa[ib[i]];
-				j = ib[i] + 1;
-				if (j < ipa.length-1) {
-					while (ipa[j] == -1 && j < ipa.length-1)
-						j++;
-				}
-				end = ipa[j];
-				outB = end - start;
-
-				if (inB == 1 && outB == 1)
-					outI = indexa[start];
-				else
-					outI = -1;
-				
-				
-                out.format( "%8d%8d%8d%8d%8d%8s%8s%8d%8d%8d%8d%10s%10.2f%10.2f%10.2f%10.2f%10s\n",
-                        i, ia[i], ib[i], linkType[i], k, (k >= 0 ? Integer.toString(indexNode[gia[k]]) : "accA"), (k >= 0 ? Integer.toString(indexNode[gib[k]]) : "accB"), inB, outB, outI, trRoute[i], (freq[i] == INFINITY ? String.format("%10s", "Inf") : String.format("%10.2f", freq[i])), cost[i], invTime[i], walkTime[i], layoverTime[i], (k >= 0 ? String.format("%10.2f", gCongestedTime[k]) : "acc time") );
+                k = linkIndices[i];
+                m = hwyLink[k];
+                
+                // get the equivalent highway network nodes, unless they don't exist (e.g. they are for a transit in-vehicle link)
+                hwyTime = -1.0;
+                if ( m >= 0 && m < maxHwyInternalNode ) {
+                    hwyTime = gCongestedTime[m]; 
+                }
+                
+                out.format( "%8d%8d%8d%8d%8d%8d%8d%8d%8s%8s%10.2f%10.2f%10.2f%10.2f%10.2f\n",
+                        i, k, ia[k], ib[k], linkType[k], m, an[k], bn[k], trRoute[k], (freq[k] == INFINITY ? "Inf" : String.format("%10.2f", freq[k])), cost[k], invTime[k], walkTime[k], layoverTime[k], hwyTime );
 	  		}
 
 			out.close();
@@ -711,32 +907,64 @@ public class AuxTrNet implements Serializable {
 	}
 
 
-	boolean routeContainsNode (int rte, int node) {
+    boolean routeContainsNode (int rte, int node) {
 
-		int i, start=0, end;
+        int i, start=0, end;
 
-		// find first transit segment from given route in auxilliary links array
-		for (i=0; i < auxLinks; i++) {
-			if (trRoute[i] == rte) {
-				start = i;
-				break;
-			}
-		}
+        // find first transit segment from given route in auxilliary links array
+        for (i=0; i < auxLinks; i++) {
+            if (trRoute[i] == rte) {
+                start = i;
+                break;
+            }
+        }
 
-		// find last transit segment from given route in auxilliary links array
-		i = start;
-		while(trRoute[i] == rte)
-			i++;
-		end = i;
+        // find last transit segment from given route in auxilliary links array
+        i = start;
+        while(trRoute[i] == rte)
+            i++;
+        end = i;
 
-		// return true if specified node is contained in this route
-		for (i=start; i < end; i++) {
-			if (ia[i] == node || ib[i] == node)
-			  return true;
-	  }
+        // return true if specified node is contained in this route
+        for (i=start; i < end; i++) {
+            if (ia[i] == node || ib[i] == node)
+              return true;
+      }
 
-	  return false;
-	}
+      return false;
+    }
+
+
+    public int[] getRouteLinkIds (int rte) {
+        return getHwyLinkIds (rte);
+    }
+    
+    public int[] getRouteLinkIds (String rteName) {
+        int rte = tr.getId(rteName);
+        return getHwyLinkIds (rte);
+    }
+    
+    // get an array of highway neytwork linkIds for the transit route index provided
+    private int[] getHwyLinkIds (int rte) {
+
+        ArrayList segList = tr.transitPath[rte];
+        int[] tempIds = new int[segList.size()];
+        
+        int k = 0;
+        for (int i=0; i < segList.size(); i++) {
+            TrSegment ts = (TrSegment)segList.get(i);
+            
+            if ( ts.link > 0 && ts.layover == false )
+                tempIds[k++] = ts.link;
+        }
+
+        int[] linkIds = new int[k];
+        for (int i=0; i < linkIds.length; i++)
+            linkIds[i] = tempIds[i];
+        
+        return linkIds;
+        
+    }
 
 
 	void addAuxBoardingLink (int aux, int anode, int nextNode, TrSegment ts, double headway, int rte, char mode)	{
@@ -745,6 +973,8 @@ public class AuxTrNet implements Serializable {
 		trRoute[aux] = rte;
 		ia[aux] = anode;
 		ib[aux] = nextNode;
+        an[aux] = ts.an;
+        bn[aux] = ts.bn;
 		// WAIT_COEFF is assumed positive, so it is used here just to scale the link frequency
 		freq[aux] = 1.0/(WAIT_COEFF*headway);
 		cost[aux] = getLinkFare();
@@ -764,6 +994,8 @@ public class AuxTrNet implements Serializable {
 		trRoute[aux] = rte;
 		ia[aux] = nextNode;
 		ib[aux] = nextNode + 1;
+        an[aux] = ts.an;
+        bn[aux] = ts.bn;
 		freq[aux] = INFINITY;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
@@ -794,6 +1026,8 @@ public class AuxTrNet implements Serializable {
 		trRoute[aux] = rte;
 		ia[aux] = nextNode + 1;
 		ib[aux] = bnode;
+        an[aux] = ts.an;
+        bn[aux] = ts.bn;
 		freq[aux] = INFINITY;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
@@ -811,6 +1045,8 @@ public class AuxTrNet implements Serializable {
 		trRoute[aux] = rte;
 		ia[aux] = nextNode;
 		ib[aux] = layoverNode;
+        an[aux] = ts.an;
+        bn[aux] = ts.bn;
 		freq[aux] = INFINITY;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
@@ -822,19 +1058,27 @@ public class AuxTrNet implements Serializable {
 	}
 
 
-	public void printTransitNodePointers () {
+	private int[] getTransitLinkIndices () {
 
 		int i, j, k;
 		int start, end;
+        int count=0;
+        
+        boolean debug = true;
 
 
-		// print report of all transit links and their node pointer attributes
-		logger.info ("");
-		logger.info ("------------------------------------");
-		logger.info ("Transit Network Bnode Pointer Arrays");
-		logger.info ("------------------------------------");
-		logger.info ( String.format ("%10s%10s%10s%10s%10s%10s%10s", "i", "start", "end", "j", "k", "ia", "ib" ) );
-	  	for (i=1; i < auxNodes; i++) {
+		// print report of all transit links and their node pointer attributes for debugging purposes
+        if ( debug ) {
+            logger.info ("");
+            logger.info ("------------------------------------");
+            logger.info ("Transit Network Bnode Pointer Arrays");
+            logger.info ("------------------------------------");
+            logger.info ( String.format ("%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s%10s", "count", "i", "links", "start", "end", "j", "k", "ia", "ib", "an", "bn", "linkType", "rte", "rteName" ) );
+        }
+        
+        ArrayList linkIndicesList = new ArrayList();
+        
+	  	for (i=0; i < auxNodes; i++) {
 			start = ipb[i];
 			if (start >= 0) {
 				j = i + 1;
@@ -843,35 +1087,59 @@ public class AuxTrNet implements Serializable {
 				end = ipb[j];
 		  		for (j=start; j < end; j++) {
 					k = indexb[j];
-                    logger.info ( String.format ("%10d%10d%10d%10d%10d%10d%10d", i, start, end, j, k, ia[k], ib[k] ) );
+                    
+                    linkIndicesList.add(k);
+                    
+                    count++;
+                    if (debug)
+                        logger.info ( String.format ("%10d%10d%10d%10d%10d%10d%10d%10d%10d%10d%10d%10d%10d%10s", count, i, linkIndicesList.size(), start, end, j, k, ia[k], ib[k], an[k], bn[k], linkType[k], trRoute[k], (trRoute[k] >= 0 ? tr.line[trRoute[k]] : "N/A") ) );
 				}
 			}
 		}
 
-		logger.info ("-----------------------------------");
-		logger.info ("");
-		logger.info ("");
+        int[] linkIndices = new int[linkIndicesList.size()];
+        for (i=0; i < linkIndices.length; i++)
+            linkIndices[i] = (Integer)linkIndicesList.get(i);
+        
+        // the number of link indices determined should match auxLinks, so check that it does.
+        if ( linkIndices.length != auxLinks ) {
+            logger.warn( "Error detected while getting network indices." );
+            logger.warn( String.format("linkIndices[] length = %d and auxLinks = %d, but they should be equal.", linkIndices.length, auxLinks) );
+        }
+        
+        
+        if ( debug ) {
+    		logger.info ("-----------------------------------");
+    		logger.info ("");
+    		logger.info ("");
+        }
+        
+        return linkIndices;
+        
 	}
+    
 
 
-	double getLinkInVehicleTime (int k) {
+	public double getLinkInVehicleTime (int k) {
 		return gCongestedTime[k];
 	}
 
 
 	// linkImped in optimal strategy is generalized cost, not including wait time.
-	double getLinkImped (int k) {
+	public double getLinkImped (int k) {
 		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*walkTime[k] + COST_COEFF*cost[k]);
-			
 	}
 
 
 	// for debugging purposes only
 	// linkImped in optimal strategy is generalized cost, not including wait time.
 	double getLinkImped (int k, int temp) {
-		logger.info ("IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k])=" + String.format("%.4f", IVT_COEFF) + "*(" + String.format("%.4f", invTime[k]) + " + " + String.format("%.4f", dwellTime[k]) + " + " + String.format("%.4f", layoverTime[k]) + ")" );
-		logger.info ("OVT_COEFF*(walkTime[k])=" + String.format("%.4f", OVT_COEFF) + "*(" + String.format("%.4f", walkTime[k]) + ")" );
-		logger.info ("COST_COEFF*(cost[k])=" + String.format("%.4f", COST_COEFF) + "*(" + String.format("%.4f", cost[k]) + ")");
+        
+        if ( logger.isDebugEnabled() ) {
+    		logger.debug ("IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k])=" + String.format("%.4f", IVT_COEFF) + "*(" + String.format("%.4f", invTime[k]) + " + " + String.format("%.4f", dwellTime[k]) + " + " + String.format("%.4f", layoverTime[k]) + ")" );
+    		logger.debug ("OVT_COEFF*(walkTime[k])=" + String.format("%.4f", OVT_COEFF) + "*(" + String.format("%.4f", walkTime[k]) + ")" );
+    		logger.debug ("COST_COEFF*(cost[k])=" + String.format("%.4f", COST_COEFF) + "*(" + String.format("%.4f", cost[k]) + ")");
+        }
 
 		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*walkTime[k] + COST_COEFF*cost[k]);
 	}
@@ -888,12 +1156,12 @@ public class AuxTrNet implements Serializable {
 	}
 
 
-	int getAuxLinkCount () {
+	public int getAuxLinkCount () {
 		return auxLinks;
 	}
 
 
-	int getAuxNodeCount () {
+	public int getAuxNodeCount () {
 		return auxNodes;
 	}
 
@@ -927,7 +1195,289 @@ public class AuxTrNet implements Serializable {
         return MAX_ROUTES;
     }
     
+    public int getNumRoutes() {
+        return tr.getLineCount();
+    }
+    
+    public String getRouteName(int rte) {
+        return tr.getLine(rte);
+    }
+    
+    public String[] getRouteNames() {
+        return tr.getRouteNames();
+    }
+    
+    public String[] getRouteTypes() {
+        return tr.getRouteTypes();
+    }
+    
     public TrRoute getTrRoute() {
         return tr;
     }
+    
+    public int[] getLinkTrRoute() {
+        return trRoute;
+    }
+    
+    public double[] getWaitTime() {
+        return waitTime;
+    }
+    
+    public double[] getWalkTime() {
+        return walkTime;
+    }
+    
+    public double[] getDriveAccTime() {
+        return driveAccTime;
+    }
+
+    public double[] getDwellTime() {
+        return dwellTime;
+    }
+
+    public double[] getLayoverTime() {
+        return layoverTime;
+    }
+
+    public double[] getInvTime() {
+        return invTime;
+    }
+
+    public double[] getFreq() {
+        return freq;
+    }
+
+    public double[] getFlow() {
+        return flow;
+    }
+
+    public int[] getLinkType() {
+        return linkType;
+    }
+
+    public int[] getIa() {
+        return ia;
+    }
+    
+    public int[] getIb() {
+        return ib;
+    }
+    
+    public int[] getIpa() {
+        return ipa;
+    }
+    
+    public int[] getIpb() {
+        return ipb;
+    }
+    
+    public int[] getIndexa() {
+        return indexa;
+    }
+    
+    public int[] getIndexb() {
+        return indexb;
+    }
+    
+    public int[] getHwyLink() {
+        return hwyLink;
+    }
+    
+    public char[] getRteMode() {
+        return rteMode;
+    }
+    
+    public int[] getStationDriveAccessNodes(int stationNode) {
+        
+        ArrayList startNodeList = new ArrayList();
+        
+        for (int i=0; i < ib.length; i++) {
+            if ( driveAccTime[i] > 0.0 && indexNode[ib[i]] == stationNode )
+                startNodeList.add( indexNode[ia[i]] );
+        }
+        
+        int[] startNodes = new int[startNodeList.size()];
+        for (int i=0; i < startNodes.length; i++)
+            startNodes[i] = (Integer)startNodeList.get(i);
+        
+        return startNodes;
+        
+    }
+
+    public Vector getDriveAccessLinkCoords(Vector routeNames, Vector linkIds) {
+
+        int i = 0;
+        int j = 0;
+        int k = 0;
+        int m = 0;
+        int r = 0;
+        
+        Vector linkInfoList = new Vector();
+        
+        try {
+            
+            // get a list of link ids for drive access links that connect to stations with boarding allowed on routes in the names list
+            ArrayList validAccessNodeIds = new ArrayList();
+            
+            for (m=0; m < linkIds.size(); m++) {
+                int id = (Integer)linkIds.get(m);
+                
+                int inA = gia[id];
+                int start = ipa[inA];
+                
+                // node pointer array values can be -1 if node i has no links entering.
+                // this can happen if i is a hwy node in a route determined by the shortest path between 2 hwy nodes.
+                // boarding/alighting only occur at the 2 hwy node endpoints, and these are the only nodes with a direct relationship to the hwy ia and ib.
+                // the internal nodes in this case are all auxilliary transit nodes for in-vehicle links with no direct association to a hwy node in the transit network representation.
+                if ( start >= 0 ) {
+                    
+                    j = inA + 1;
+                    while ( ipa[j] < 0 )
+                        j++;
+                    
+                    int end = ipa[j];
+                        
+                    for(i=start; i < end; i++) {
+                        
+                        k = indexa[i];
+                        
+                        if ( linkType[k] == BOARDING_TYPE ) {
+                            
+                            for (r=0; r < routeNames.size(); r++) {
+                                String name = (String)routeNames.get(r);
+                                if ( tr.line[trRoute[k]].equalsIgnoreCase(name) ) {
+                                    validAccessNodeIds.add(inA);
+                                    break;
+                                }
+                            }
+
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            
+            
+            Iterator it = validAccessNodeIds.iterator();
+            while ( it.hasNext() ) {
+
+                int inA = (Integer)it.next();
+                           
+                int start = ipb[inA];
+
+                // get the start and end pointers for links ending at inA.
+                j = inA + 1;
+                while ( ipb[j] < 0 )
+                    j++;
+                
+                int end = ipb[j];
+                                    
+                for(j=start; j < end; j++) {
+                    
+                    k = indexb[j];
+                    
+                    if ( linkType[k] == AUXILIARY_TYPE && driveAccTime[k] > 0.0 ) {
+                        Vector linkInfo = new Vector();
+                        
+                        r = gInternalNodeToNodeTableRow[ia[k]];
+                        linkInfo.add(indexNode[ia[k]]);
+                        linkInfo.add(gNodeX[r]);
+                        linkInfo.add(gNodeY[r]);
+                        r = gInternalNodeToNodeTableRow[ib[k]];
+                        linkInfo.add(indexNode[ib[k]]);
+                        linkInfo.add(gNodeX[r]);
+                        linkInfo.add(gNodeY[r]);
+                        linkInfo.add(routeType[k]);
+                        
+                        linkInfoList.add(linkInfo);
+                    }
+                        
+                }
+                
+            }
+                
+        }
+        catch (Exception e) {
+            logger.error ( String.format( "Exception in AuxTrNet.getDriveAccessLinkCoords(): m=%d, i=%d, j=%d, k=%d, startA=%d, endA=%d, startB=%d, endB=%d.", m, i, j, k, ipa[i], ipa[i+1], ipb[j], ipb[j+1]) );
+            logger.error ( String.format( "     r=%d, rte=%d, rteName=%s.", r, trRoute[k], (trRoute[k] >= 0 ? tr.line[trRoute[k]] : "N/A") ) );
+            for (int n=0; n < routeNames.size(); n++)
+                logger.error ( String.format( "     %d   %-20s.", n, (String)routeNames.get(n) ) );
+            logger.error ("", e);
+        }
+            
+            
+        return linkInfoList;
+        
+    }
+    
+    public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
+        
+        // zones is a Vector of external zone centroid numbers for which to get drive access links and coords.
+
+        int j = 0;
+        int k = 0;
+        int r = 0;
+        int inA = -1;
+        int start = -1;
+        int end = -1;
+        Vector linkInfoList = new Vector();
+        
+        try {
+            
+            Iterator it = zones.iterator();
+            while ( it.hasNext() ) {
+
+                int exA = (Integer)it.next();
+                inA = nodeIndex[exA];
+                start = ipa[inA];
+
+                if ( start < 0 )
+                    continue;
+                
+                
+                // get the start and end pointers for links exiting inA.
+                j = inA + 1;
+                while ( ipa[j] < 0 )
+                    j++;
+                
+                end = ipa[j];
+                                    
+                for(j=start; j < end; j++) {
+                    
+                    k = indexa[j];
+                    
+                    if ( linkType[k] == AUXILIARY_TYPE && driveAccTime[k] > 0.0 ) {
+                        Vector linkInfo = new Vector();
+                        
+                        r = gInternalNodeToNodeTableRow[ia[k]];
+                        linkInfo.add(indexNode[ia[k]]);
+                        linkInfo.add(gNodeX[r]);
+                        linkInfo.add(gNodeY[r]);
+                        r = gInternalNodeToNodeTableRow[ib[k]];
+                        linkInfo.add(indexNode[ib[k]]);
+                        linkInfo.add(gNodeX[r]);
+                        linkInfo.add(gNodeY[r]);
+                        linkInfo.add(routeType[k]);
+                        
+                        linkInfoList.add(linkInfo);
+                    }
+                        
+                }
+                
+            }
+                
+        }
+        catch (Exception e) {
+            logger.error ( String.format( "Exception in AuxTrNet.getCentroidTransitDriveAccessLinkCoords(): j=%d, k=%d, start=%d, end=%d, inA=%d.", j, k, start, end, inA) );
+            logger.error ("", e);
+        }
+            
+            
+        return linkInfoList;
+        
+    }
+    
 }

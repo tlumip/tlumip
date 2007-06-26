@@ -92,7 +92,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
 
     // this setup method called by methods running in the same VM as this object
-    public boolean setup( String rpcConfigFile, String ptFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
+    public boolean setup( String rpcConfigFile, String sdtFileName, String ldtFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
 
         this.nh = nh;
         
@@ -104,8 +104,8 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF dh = DemandHandler.getInstance( rpcConfigFile );
-        dh.setup( ptFileName, ctFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
-        dh.buildDemandObject();
+        dh.setup( sdtFileName, ldtFileName, ctFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        dh.buildHighwayDemandObject();
         
         logger.info( "setting up SpBuildLoadHandlers." );
         sp = setupSpBuildLoadHandlers( dh.getTripTableRowSums(), dh.getMulticlassTripTables() );
@@ -116,11 +116,11 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String rpcConfigFile, String ptFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters ) {
+    public boolean setupRpc( String rpcConfigFile, String sdtFileName, String ldtFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters ) {
 
         nh = NetworkHandler.getInstance(rpcConfigFile);
         
-        return setup( rpcConfigFile, ptFileName, ctFileName, startHour, endHour, highwayModeCharacters, nh );        
+        return setup( rpcConfigFile, sdtFileName, ldtFileName, ctFileName, startHour, endHour, highwayModeCharacters, nh );        
         
     }
     
@@ -220,7 +220,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         // for each handler name, create a SpBuildLoadHandler, set it up, and start it running
         int returnCount = 0;
         for ( int i=0; i < spHandlerNames.length; i++ ) {
-            returnCount += sp[i].setup( spHandlerNames[i], rpcConfigFile, workElementsArray[i], workElementsDemand[i], nh.getNumUserClasses(), nh.getLinkCount(), nh.getNodeCount(), nh.getNumCentroids(), nh.getIa(), nh.getIb(), nh.getIpa(), nh.getSortedLinkIndexA(), nh.getIndexNode(), nh.getNodeIndex(), nh.getCentroid(), nh.getValidLinksForAllClasses(), nh.setLinkGeneralizedCost() );
+            returnCount += sp[i].setup( spHandlerNames[i], rpcConfigFile, workElementsArray[i], workElementsDemand[i], nh.getNumUserClasses(), nh.getLinkCount(), nh.getNodeCount(), nh.getNumCentroids(), nh.getIa(), nh.getIb(), nh.getIpa(), nh.getSortedLinkIndexA(), nh.getIndexNode(), nh.getNodeIndex(), nh.getCentroid(), nh.getValidLinksForAllClasses(), nh.setLinkGeneralizedCost(), nh.getTurnPenaltyIndices(), nh.getTurnPenaltyArray() );
         }
 
 

@@ -16,10 +16,16 @@
  */
 package com.pb.tlumip.ts;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Vector;
+
 import com.pb.common.datafile.DataReader;
 import com.pb.common.rpc.DafNode;
 
 import com.pb.tlumip.ts.assign.Network;
+import com.pb.tlumip.ts.transit.AuxTrNet;
+import com.pb.tlumip.ts.transit.TrRoute;
 
 import org.apache.log4j.Logger;
 
@@ -35,6 +41,7 @@ public class NetworkHandler implements NetworkHandlerIF {
     static final String dataServerName = "networkDataServer";
     
     Network g = null;
+    AuxTrNet ag = null;
     NetworkDataServer ns = null;
     String rpcConfigFile = null;
 
@@ -144,12 +151,24 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.userClassesIncludeTruck();
     }
     
+    public char[] getHighwayModeCharacters() {
+        return g.getHighwayModeCharacters();
+    }
+    
+    public char[] getTransitModeCharacters() {
+        return g.getTransitModeCharacters();
+    }
+    
     public boolean[][] getValidLinksForAllClasses () {
         return g.getValidLinksForAllClasses();
     }
 
     public boolean[] getValidLinksForClass ( int userClass ) {
         return g.getValidLinksForClass ( userClass );
+    }
+
+    public boolean[] getValidLinksForTransitPaths() {
+        return g.getValidLinksForTransitPaths();
     }
 
     public boolean[] getValidLinksForClassChar ( int modeChar ) {
@@ -217,6 +236,14 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getVolau();
     }
 
+    public int[][] getTurnPenaltyIndices () {
+        return g.getTurnPenaltyIndices();
+    }
+    
+    public float[][] getTurnPenaltyArray () {
+        return g.getTurnPenaltyArray();
+    }
+    
     public String getAssignmentResultsString () {
         return g.getAssignmentResultsString();
     }
@@ -304,6 +331,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getNodeY();
     }
     
+    public int[] getInternalNodeToNodeTableRow () {
+        return g.getInternalNodeToNodeTableRow();
+    }
+    
     public int[] getIa() {
         return g.getIa();
     }
@@ -334,7 +365,7 @@ public class NetworkHandler implements NetworkHandlerIF {
         return 1;
     }
     
-    public int buildNetworkObject ( String timePeriod, String[] propertyValues  ) {
+    public int setupHighwayNetworkObject ( String timePeriod, String[] propertyValues  ) {
         
         try {
             
@@ -367,4 +398,187 @@ public class NetworkHandler implements NetworkHandlerIF {
         
     }
 
+
+
+
+    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String[] d221Files, String[] rteTypes, int maxRoutes ) {
+        
+        // create transit routes object
+        TrRoute tr = new TrRoute ( maxRoutes );
+
+        //read transit route info from Emme/2 for d221 file for the specified time period
+        tr.readTransitRoutes ( d221Files, rteTypes );
+            
+        // associate transit segment node sequence with highway link indices
+        tr.getLinkIndices (this);
+
+
+
+        // create an auxilliary transit network object
+        AuxTrNet ag = new AuxTrNet(this, tr);
+
+        // build the auxilliary links for the given transit routes object
+        ag.buildAuxTrNet ( accessMode );
+        
+        // define the forward star index arrays, first by anode then by bnode
+        logger.info( "creating forward star representation for transit network.");
+        ag.setForwardStarArrays ();
+        logger.info( "creating backward star representation for transit network.");
+        ag.setBackwardStarArrays ();
+
+        
+//      ag.printAuxTrLinks (24, tr);
+        if ( auxTransitNetworkListingFileName != null )
+            ag.printAuxTranNetwork( auxTransitNetworkListingFileName );
+//      ag.printTransitNodePointers();
+
+        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
+        logger.info ("done creating transit network AuxTrNetTest: " + myDateString);
+
+        setTransitNetwork( ag );
+        
+        return 1;
+    }
+    
+    
+    
+    
+    private void setTransitNetwork( AuxTrNet ag) {
+        this.ag = ag;
+    }
+
+    // Transit Network handling methods
+
+    public TrRoute getTrRoute() {
+        return ag.getTrRoute();
+    }
+    
+    public String getAccessMode() {
+        return ag.getAccessMode();
+    }
+
+    public int getMaxRoutes() {
+        return ag.getMaxRoutes();
+    }
+    
+    public String getRouteName(int rte) {
+        return ag.getRouteName(rte);
+    }
+    
+    public String[] getTransitRouteNames() {
+        String[] names = new String[ag.getNumRoutes()];
+        String[] tempNames = ag.getRouteNames();
+        for (int i=0; i < names.length; i++)
+            names[i] = tempNames[i];
+        return names;
+    }
+    
+    public String[] getTransitRouteTypes() {
+        String[] types = new String[ag.getNumRoutes()];
+        String[] tempTypes = ag.getRouteTypes();
+        for (int i=0; i < types.length; i++)
+            types[i] = tempTypes[i];
+        return types;
+    }
+    
+    public int[] getTransitRouteLinkIds(String rteName) {
+        return ag.getRouteLinkIds (rteName);
+    }
+    
+    public int getAuxNodeCount() {
+        return ag.getAuxNodeCount();
+    }
+
+    public int getAuxLinkCount() {
+        return ag.getAuxLinkCount();
+    }
+
+    public int[] getLinkTrRoute() {
+        return ag.getLinkTrRoute();
+    }
+    
+    public double[] getWalkTime() {
+        return ag.getWalkTime();
+    }
+    
+    public double[] getWaitTime() {
+        return ag.getWaitTime();
+    }
+    
+    public double[] getDriveAccTime() {
+        return ag.getDriveAccTime();
+    }
+    
+    public double[] getDwellTime() {
+        return ag.getDwellTime();
+    }
+
+    public double[] getLayoverTime() {
+        return ag.getLayoverTime();
+    }
+
+    public double[] getInvTime() {
+        return ag.getInvTime();
+    }
+
+    public double getLinkImped (int k) {
+        return ag.getLinkImped(k);
+    }
+    
+    public double[] getAuxLinkFreq() {
+        return ag.getFreq();
+    }
+
+    public double[] getAuxLinkFlow() {
+        return ag.getFlow();
+    }
+
+    public int[] getAuxLinkType() {
+        return ag.getLinkType();
+    }
+
+    public int[] getAuxIa() {
+        return ag.getIa();
+    }
+    
+    public int[] getAuxIb() {
+        return ag.getIb();
+    }
+    
+    public int[] getAuxIpa() {
+        return ag.getIpa();
+    }
+    
+    public int[] getAuxIpb() {
+        return ag.getIpb();
+    }
+    
+    public int[] getAuxIndexa() {
+        return ag.getIndexa();
+    }
+    
+    public int[] getAuxIndexb() {
+        return ag.getIndexb();
+    }
+    
+    public int[] getAuxHwyLink() {
+        return ag.getHwyLink();
+    }
+
+    public char[] getRteMode() {
+        return ag.getRteMode();
+    }
+
+    public int[] getStationDriveAccessNodes(int stationNode) {
+        return ag.getStationDriveAccessNodes(stationNode);
+    }
+
+    public Vector getDriveAccessLinkCoords(Vector routeNames, Vector linkIds) {
+        return ag.getDriveAccessLinkCoords(routeNames, linkIds);
+    }
+    
+    public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
+        return ag.getCentroidTransitDriveAccessLinkCoords(zones);       
+    }
+    
 }

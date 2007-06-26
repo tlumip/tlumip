@@ -59,6 +59,13 @@ public class Network implements Serializable {
     static final String OUTPUT_FLOW_FIELDS_START_WITH = "assignmentFlow";
     static final String OUTPUT_TIME_FIELD = "assignmentTime";
 	
+    final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
+    final char[] transitModeCharacters = { 'b', 'i', 'k', 'l', 'm', 'p', 'r', 's', 't', 'w', 'x' };
+    final char[] hsrModeCharacters = { 't' };
+    final char[] airModeCharacters = { 'n' };
+    
+    
+    
 	protected static transient Logger logger = Logger.getLogger(Network.class);
 
 	
@@ -93,6 +100,7 @@ public class Network implements Serializable {
 	boolean[][] validLinksForClass = null;
     int[] indexNode = null;
     int[] nodeIndex = null;
+    int[] internalNodeToNodeTableRow = null;
     int[] sortedLinkIndexA;
     int[] sortedLinkIndexB;
     int[] ipa;
@@ -239,6 +247,17 @@ public class Network implements Serializable {
 
 		ftLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "ft" ), "vdf" );
 	
+        int[] externalNodes = getNodes();
+        internalNodeToNodeTableRow = new int[externalNodes.length];
+        for (int i=0; i < externalNodes.length; i++) {
+            int extNode = externalNodes[i];
+            int intNode = nodeIndex[extNode];
+            
+            // there may be nodes in the node table that are not in the link table
+            if ( intNode >= 0 )
+                internalNodeToNodeTableRow[intNode] = i;
+        }
+        
     }
 
     
@@ -446,6 +465,10 @@ public class Network implements Serializable {
 		return nodeTable.getColumnAsDouble( "y" );
 	}
     	
+    public int[] getInternalNodeToNodeTableRow () {
+        return internalNodeToNodeTableRow;
+    }
+    
 	public char[][] getAssignmentGroupChars () {
         return assignmentGroupChars;
 	}
@@ -462,6 +485,28 @@ public class Network implements Serializable {
         return turnPenaltyArray;
     }
     
+    public char[] getHighwayModeCharacters() {
+        return highwayModeCharacters;
+    }
+    
+    public char[] getTransitModeCharacters() {
+        return transitModeCharacters;
+    }
+    
+    public boolean[] getValidLinksForTransitPaths () {
+        boolean[] validLinks = new boolean[numLinks];
+        String[] linkModes = linkTable.getColumnAsString( "mode" );
+        
+        for (int k=0; k < numLinks; k++) {
+            for (int i=0; i < transitModeCharacters.length; i++) {
+                if ( linkModes[k].indexOf( transitModeCharacters[i] ) >= 0 )
+                    validLinks[k] = true;
+            }
+        }
+        
+        return validLinks;
+    }
+
     public boolean[][] getValidLinksForAllClasses () {
         return validLinksForClass;
     }
@@ -1050,7 +1095,7 @@ public class Network implements Serializable {
 		int[] usedNodes = new int[maxNode+1];
         
 		Arrays.fill ( indexNode, 0 );
-		Arrays.fill ( nodeIndex, 0 );
+		Arrays.fill ( nodeIndex, -1 );
 		Arrays.fill ( usedNodes, -1 );
 
 		int[] an = linkTable.getColumnAsInt( "anode" );

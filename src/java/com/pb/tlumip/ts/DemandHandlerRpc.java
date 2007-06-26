@@ -19,6 +19,7 @@ package com.pb.tlumip.ts;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import com.pb.common.rpc.RpcClient;
@@ -55,14 +56,15 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     
    
-    public boolean setup( String ptFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( String sdtFileName, String ldtFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
 
         boolean returnValue = false;
 
         try {
             
             Vector params = new Vector();
-            params.add(ptFileName);
+            params.add(sdtFileName);
+            params.add(ldtFileName);
             params.add(ctFileName);
             params.add(startHour);
             params.add(endHour);
@@ -86,7 +88,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     }
     
     
-    public boolean buildDemandObject() {
+    public boolean buildHighwayDemandObject() {
         
         boolean returnValue = false;
         try {
@@ -154,4 +156,22 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
 
     }
     
+
+    public double[][] getTripTablesForModes ( ArrayList tripModes ) {
+    
+        double[][] returnArray = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add(tripModes);
+            returnArray = (double[][])rc.execute(HANDLER_NAME+".getTripTablesForModes", params);
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+
+        return returnArray;
+
+    }
 }

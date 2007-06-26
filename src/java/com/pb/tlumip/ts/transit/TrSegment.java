@@ -47,7 +47,7 @@ public class TrSegment implements Serializable {
 		tus2   =  ((Double)tdefaults.get(3)).doubleValue();
 		tus3   =  ((Double)tdefaults.get(4)).doubleValue();
 
-		link = 0;
+		link = -1;
 
 		this.an = an;
 		this.bn = bn;
@@ -76,7 +76,7 @@ public class TrSegment implements Serializable {
 		tsNew.tus2    = ts.tus2;
 		tsNew.tus3    = ts.tus3;
 
-		tsNew.link = 0;
+		tsNew.link = -1;
 
 		return tsNew;
 	}

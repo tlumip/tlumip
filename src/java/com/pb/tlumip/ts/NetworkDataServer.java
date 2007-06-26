@@ -1,9 +1,7 @@
 package com.pb.tlumip.ts;
 
 import java.util.Vector;
-
 import org.apache.xmlrpc.WebServer;
-
 import org.apache.log4j.Logger;
 
 
@@ -20,7 +18,7 @@ public class NetworkDataServer {
     protected static Logger logger = Logger.getLogger(NetworkDataServer.class);
     
     WebServer server = null;
-    NetworkHandlerIF nh = null;
+    NetworkHandler nh = null;
     
     int[] nodeIndex = null;
     int[] indexNode = null;
@@ -35,7 +33,7 @@ public class NetworkDataServer {
     
     
     // Factory Method to return instance only
-    public static NetworkDataServer getInstance( NetworkHandlerIF nh, int port, String handlerName ) {
+    public static NetworkDataServer getInstance( NetworkHandler nh, int port, String handlerName ) {
         
         NetworkDataServer ns =  new NetworkDataServer();
         
@@ -187,6 +185,31 @@ public class NetworkDataServer {
     
     public Vector getNodeY () {
         return Util.doubleVector( nh.getNodeY() );
+    }
+    
+    public Vector getTransitRouteLinkIds(String rteName) {
+        return Util.intVector( nh.getTransitRouteLinkIds(rteName) );
+    }
+    
+    public String[] getTransitRouteNames() {
+        String[] names = nh.getTransitRouteNames();
+        return names;
+    }
+    
+    public String[] getTransitRouteTypes() {
+        return nh.getTransitRouteTypes();
+    }
+    
+    public Vector getStationDriveAccessNodes(int stationNode) {
+        return Util.intVector( nh.getStationDriveAccessNodes(stationNode) );
+    }
+
+    public Vector getDriveAccessLinkCoords( Vector routeNames, Vector linkIds ) {
+        return nh.getDriveAccessLinkCoords( routeNames, linkIds );
+    }
+
+    public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
+        return nh.getCentroidTransitDriveAccessLinkCoords(zones);       
     }
     
 }

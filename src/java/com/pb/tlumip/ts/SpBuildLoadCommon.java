@@ -65,7 +65,7 @@ public class SpBuildLoadCommon {
     /** setup data structures to be used by all threads
      *  working on building and loading aon link flows.
      */
-    public void setup( String handlerName, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost ) {
+    public void setup( String handlerName, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost, int[][] turnPenaltyIndices, float[][] turnPenaltyArray ) {
 
         this.handlerName = handlerName;
         this.numThreads = workElements.length;
@@ -81,7 +81,7 @@ public class SpBuildLoadCommon {
         
         for (int i=0; i < numThreads; i++) {
             for (int j=0; j < numUserClasses; j++) {
-                sp[i][j] = new ShortestPathTreeH( numLinks, numNodes, numZones, ia, ib, ipa,  sortedLinkIndexA, indexNode, nodeIndex, centroid );
+                sp[i][j] = new ShortestPathTreeH( numLinks, numNodes, numZones, ia, ib, ipa,  sortedLinkIndexA, indexNode, nodeIndex, centroid, turnPenaltyIndices, turnPenaltyArray );
                 sp[i][j].setValidLinks( validLinksForClasses[j] );
                 sp[i][j].setLinkCost( linkCost );
             }

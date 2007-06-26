@@ -82,9 +82,13 @@ public class ShortestPathTreeH {
 		
 		aonFlow = new double[nh.getLinkCount()];
         
+        turnPenaltyIndices = nh.getTurnPenaltyIndices();
+        turnPenaltyArray = nh.getTurnPenaltyArray();
+        
+        
         nodeLabeled = new int[numNodes+1];
         nodeLabels = new double[numNodes+1];
-
+        
         //Create a new heap structure to sort candidate node labels
         candidateHeap = new Heap(numNodes+1);
 		heapContents = new int[numNodes];
@@ -118,14 +122,14 @@ public class ShortestPathTreeH {
 		
         initData();
 
-        // set labels for links eminating from the origin node
-        setRootLabels ( inOrigin );
+        // set labels for links eminating from the origin node.
+        setTreeRootLabels ( inOrigin );
 
         // continue labeling until candidateHeap is empty
 		int k;
         while ((k = candidateHeap.remove()) >= 0) {
 
-            setRootLabels ( ib[k] );
+            setTreeRootLabels ( ib[k] );
 			nodeLabeled[ib[k]] = 1;
 			if(logger.isDebugEnabled()) {
                 candidateHeap.dataPrint();
@@ -135,18 +139,62 @@ public class ShortestPathTreeH {
         buildTime += (System.currentTimeMillis() - start);
     }
 
+    
+    
+    public boolean buildPath(int inOrigin, int inDestination) {
+        int k;
+        boolean debug = false;
 
-    private void setRootLabels ( int rootNode ) {
+        this.inOrigin = inOrigin;
+
+        if (debug) System.out.println ("building path from " + inOrigin + "(" + indexNode[inOrigin] + ")" + " to " + inDestination + "(" + indexNode[inDestination] + ")");
+        initData();
+
+        // set labels for links eminating from the origin node
+        setPathRootLabels (inOrigin, inDestination);
+        if (debug) candidateHeap.dataPrint();
+
+        // continue labeling until candidateHeap is empty
+        k = candidateHeap.remove();
+        if (debug) System.out.println ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
+        while (ib[k] != inDestination) {
+            setPathRootLabels (ib[k], inDestination);
+            if (debug) candidateHeap.dataPrint();
+            nodeLabeled[ib[k]] = 1;
+            k = candidateHeap.remove();
+            if (k == -1)
+                return false;
+            if (debug) System.out.println ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
+        }
+
+        return true;
+    }
+
+    
+    private void setTreeRootLabels ( int rootNode ) {
+        // not setting a destination node will cause a shortest path tree to be built
+        setRootLabels ( rootNode, -99999 );
+    }
+    
+    
+    private void setPathRootLabels ( int rootNode, int destNode ) {
+        // setting an origin node and destination node will cause a shortest path to be built between them.
+        // note that neither origin node or destination node is required to be a centroid node.
+        setRootLabels ( rootNode, destNode );
+    }
+    
+    
+    private void setRootLabels ( int rootNode, int destNode ) {
 
         int k;
         double label;
         double turnPenalty;
 
         
-		if(logger.isDebugEnabled()) {
+        if(logger.isDebugEnabled()) {
             logger.debug ("rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)]);
         }
-		
+        
         for (int i=ip[rootNode]; i < ip[rootNode+1]; i++) {
             
             k = sortedLinkIndex[i];
@@ -156,16 +204,16 @@ public class ShortestPathTreeH {
             if ( turnPenaltyIndices != null && predecessorLink[ia[k]] >= 0 )
                 turnPenalty = getTurnPenalty( k, predecessorLink[ia[k]] );
 
-			if(logger.isDebugEnabled()) {
-				logger.debug ("i=" + i + ", k=" + k + ", ia[k=" + k + "]=" + ia[k] + ", ib[k=" + k + "]=" + ib[k] + ", an[k=" + k + "]=" + indexNode[ia[k]] + ", bn[k=" + k + "]=" + indexNode[ib[k]] + ", linkCost[k=" + k + "]=" + linkCost[k] +  ", nodeLabeled[ib[k]=" + ib[k] + "]=" +  nodeLabeled[ib[k]] +  ", nodeLabels[ib[k]=" + ib[k] + "]=" + nodeLabels[ib[k]] + ", validLink[k=" + k + "]=" + validLink[k] + ", turnPenalty=" + turnPenalty);
-			}
+            if(logger.isDebugEnabled()) {
+                logger.debug ("i=" + i + ", k=" + k + ", ia[k=" + k + "]=" + ia[k] + ", ib[k=" + k + "]=" + ib[k] + ", an[k=" + k + "]=" + indexNode[ia[k]] + ", bn[k=" + k + "]=" + indexNode[ib[k]] + ", linkCost[k=" + k + "]=" + linkCost[k] +  ", nodeLabeled[ib[k]=" + ib[k] + "]=" +  nodeLabeled[ib[k]] +  ", nodeLabels[ib[k]=" + ib[k] + "]=" + nodeLabels[ib[k]] + ", validLink[k=" + k + "]=" + validLink[k] + ", turnPenalty=" + turnPenalty);
+            }
             
-			if ( validLink[k] && turnPenalty >= 0 ) {
+            if ( validLink[k] && turnPenalty >= 0 ) {
                 if (nodeLabeled[ib[k]] == 0) {
                     label = linkCost[k] + nodeLabels[ia[k]] + turnPenalty;
                     if (label - nodeLabels[ib[k]] < -COMPARE_EPSILON) {
                         nodeLabels[ib[k]] = label;
-                        if (!centroid[k] || rootNode == inOrigin) {
+                        if (!centroid[k] || rootNode == inOrigin || ib[k] == destNode) {
                             candidateHeap.add(k);
                         }
                         predecessorLink[ib[k]] = k;
@@ -350,8 +398,10 @@ public class ShortestPathTreeH {
 
     
     
-    // return an ArrayList of arrays containing (internal node id, shortest path cost), for links where one of the nodes has a nodeLabel
-    // less than the threshold value, and the node is valid.
+    /**
+     * Returns an ArrayList of arrays containing (internal node id, shortest path cost), for links where one of the nodes has a nodeLabel
+     * less than the threshold value, and the node is valid.
+     */
     public ArrayList getNodesWithinCost ( double costThreshold, boolean[] validNode ) {
 
         ArrayList tempList = new ArrayList();

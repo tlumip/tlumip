@@ -1,5 +1,9 @@
 package com.pb.tlumip.ts;
 
+import java.util.Vector;
+
+import com.pb.tlumip.ts.transit.TrRoute;
+
 public interface NetworkHandlerIF {
 
     public static final String HANDLER_NAME = "networkHandler";
@@ -40,11 +44,15 @@ public interface NetworkHandlerIF {
     public int getNumUserClasses();
     public String getTimePeriod ();
     public boolean userClassesIncludeTruck();
+    public char[] getHighwayModeCharacters();
+    public char[] getTransitModeCharacters();
+    public boolean[] getValidLinksForTransitPaths();
     public boolean[][] getValidLinksForAllClasses ();
     public boolean[] getValidLinksForClass ( int userClass );
     public boolean[] getValidLinksForClassChar ( int modeChar );
     public int[] getVdfIndex ();
     public int[] getNodeIndex ();
+    public int[] getInternalNodeToNodeTableRow();
     public int[] getLinkType ();
     public char[][] getAssignmentGroupChars();
     public double[] getLanes();
@@ -58,6 +66,8 @@ public interface NetworkHandlerIF {
     public double[] getDist();
     public double[] getToll();
     public double[] getVolau();
+    public int[][] getTurnPenaltyIndices ();
+    public float[][] getTurnPenaltyArray ();
     public double[] setLinkGeneralizedCost ();
     public int setFlows (double[][] flow);
     public int setVolau (double[] volau);
@@ -81,7 +91,40 @@ public interface NetworkHandlerIF {
     public double getWalkSpeed ();
     public int writeNetworkAttributes ( String fileName );
     public int checkForIsolatedLinks ();
-    public int buildNetworkObject ( String timePeriod, String[] propertyValues  );
     public String getAssignmentResultsString ();
     public String getAssignmentResultsTimeString ();
+    
+    public int setupHighwayNetworkObject ( String timePeriod, String[] propertyValues  );
+    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String[] d221Files, String[] rteTypes, int maxRoutes );
+    
+    public TrRoute getTrRoute();
+    public String getAccessMode();
+    public int getMaxRoutes();
+    public String getRouteName(int rte);
+    public String[] getTransitRouteNames();
+    public String[] getTransitRouteTypes();
+    public int[] getTransitRouteLinkIds(String rteName);
+    public int getAuxNodeCount();
+    public int getAuxLinkCount();
+    public int[] getLinkTrRoute();
+    public double[] getWalkTime();
+    public double[] getWaitTime();
+    public double[] getDriveAccTime();
+    public double[] getDwellTime();
+    public double[] getLayoverTime();
+    public double[] getInvTime();
+    public double getLinkImped (int k);
+    public double[] getAuxLinkFreq();
+    public double[] getAuxLinkFlow();
+    public int[] getAuxLinkType();
+    public int[] getAuxIa();
+    public int[] getAuxIb();
+    public int[] getAuxIpa();
+    public int[] getAuxIpb();
+    public int[] getAuxIndexa();
+    public int[] getAuxIndexb();
+    public int[] getAuxHwyLink();
+    public char[] getRteMode();
+    public int[] getStationDriveAccessNodes(int stationNode);
+    
 }

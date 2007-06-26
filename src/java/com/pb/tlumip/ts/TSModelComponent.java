@@ -81,7 +81,7 @@ public class TSModelComponent extends ModelComponent {
 
         try {
             nh.setRpcConfigFileName( configFileName );
-            if ( ts.setupNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
+            if ( ts.setupHighwayNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
                 throw new Exception();
             logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
         }
@@ -97,7 +97,7 @@ public class TSModelComponent extends ModelComponent {
         //test the remote network handler for transit skim building.
         NetworkHandlerIF nh_new = NetworkHandler.getInstance(null);
         try {
-            if ( ts.setupNetwork( nh_new, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
+            if ( ts.setupHighwayNetwork( nh_new, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
                 throw new Exception();
             logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
         }

@@ -23,13 +23,8 @@ package com.pb.tlumip.ts.assign;
  */
 
 
-import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.OptimalStrategy;
-import com.pb.tlumip.ts.transit.TrRoute;
-import com.pb.common.datafile.DataReader;
-import com.pb.common.datafile.DataWriter;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
@@ -37,12 +32,9 @@ import com.pb.common.util.ResourceUtil;
 
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 import java.io.File;
-import java.text.DateFormat;
 import org.apache.log4j.Logger;
 
 
@@ -54,291 +46,297 @@ public class TransitSkimManager {
     static final boolean CREATE_NEW_NETWORK = true;
 	
 	
-    AuxTrNet ag = null;
+    NetworkHandlerIF nh = null;
 	
 	HashMap tsPropertyMap = null;
     HashMap globalPropertyMap = null;
 	
+    ResourceBundle appRb = null;
+    ResourceBundle globalRb = null;
+    
+    String ivtString;
+    String fwtString;
+    String twtString;
+    String accString;
+    String egrString;
+    String auxString;
+    String brdString;
+    String farString;
+    String frqString;
+    
+    HashMap skimTablesOrder = null;
+    
 	
-	
-    public TransitSkimManager( String period, String walkAccessMode ) {
-
-        // default constructor used if object is created from an object that did not run an assignment first and dose not have a loaded highway network.
-        
-        
-        // get the items in the properties file
-        ResourceBundle appRb = ResourceUtil.getPropertyBundle( new File( "ts" ) );
-        ResourceBundle globalRb = ResourceUtil.getPropertyBundle( new File( "global" ) );
-        
-        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-
-        
-        // generate a NetworkHandler object to use for skimming
-        NetworkHandlerIF nh = NetworkHandler.getInstance();
-        setupNetwork( nh, tsPropertyMap, globalPropertyMap, period );
-        logger.info ("TransitSkimManager created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
-        
-        // generate a transit network using the highway network just created
-        ag = getTransitNetwork( nh, period, walkAccessMode );
-        logger.info ("\nTransitSkimManager created  " + period + " " + walkAccessMode + " transit network.");
-        
-    }
-    
-    
-    private void setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
-        
-        String networkFileName = (String)appMap.get("d211.fileName");
-        String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
-        
-        String turnTableFileName = (String)appMap.get( "d231.fileName" );
-        String networkModsFileName = (String)appMap.get( "d211Mods.fileName" );
-        
-        String vdfFileName = (String)appMap.get("vdf.fileName");
-        String vdfIntegralFileName = (String)appMap.get("vdfIntegral.fileName");
-        
-        String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
-        
-        // get peak or off-peak volume factor from properties file
-        String volumeFactor="";
-        if ( timePeriod.equalsIgnoreCase( "peak" ) )
-            volumeFactor = (String)globalMap.get("AM_PEAK_VOL_FACTOR");
-        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
-            volumeFactor = (String)globalMap.get("OFF_PEAK_VOL_FACTOR");
-        else {
-            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
-            System.exit(-1);
-        }
-        
-        String userClassesString = (String)appMap.get("userClass.modes");
-        String truckClass1String = (String)appMap.get( "truckClass1.modes" );
-        String truckClass2String = (String)appMap.get( "truckClass2.modes" );
-        String truckClass3String = (String)appMap.get( "truckClass3.modes" );
-        String truckClass4String = (String)appMap.get( "truckClass4.modes" );
-        String truckClass5String = (String)appMap.get( "truckClass5.modes" );
-
-        String walkSpeed = (String)globalMap.get( "WALK_MPH" );
-        
-        
-        String[] propertyValues = new String[NetworkHandler.NUMBER_OF_PROPERTY_VALUES];
-        
-        propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX] = networkFileName;
-        propertyValues[NetworkHandlerIF.NETWORK_DISKOBJECT_FILENAME_INDEX] = networkDiskObjectFileName;
-        propertyValues[NetworkHandlerIF.VDF_FILENAME_INDEX] = vdfFileName;
-        propertyValues[NetworkHandlerIF.VDF_INTEGRAL_FILENAME_INDEX] = vdfIntegralFileName;
-        propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] = a2bFileName;
-        propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX] = turnTableFileName;
-        propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX] = networkModsFileName;
-        propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
-        propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
-        propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
-        propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX] = truckClass2String;
-        propertyValues[NetworkHandlerIF.TRUCKCLASS3_STRING_INDEX] = truckClass3String;
-        propertyValues[NetworkHandlerIF.TRUCKCLASS4_STRING_INDEX] = truckClass4String;
-        propertyValues[NetworkHandlerIF.TRUCKCLASS5_STRING_INDEX] = truckClass5String;
-        propertyValues[NetworkHandlerIF.WALK_SPEED_INDEX] = walkSpeed;
-        
-        nh.buildNetworkObject ( timePeriod, propertyValues );
-        
-    }
-    
-    
-    public TransitSkimManager(AuxTrNet ag, ResourceBundle appRb, ResourceBundle globalRb) {
+    public TransitSkimManager(NetworkHandlerIF nh, ResourceBundle appRb, ResourceBundle globalRb) {
 
         // get the items in the properties file
         tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap ( appRb );
         globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap ( globalRb );
 
-        this.ag = ag;
+        this.nh = nh;
+        this.appRb = appRb;
+        this.globalRb = globalRb;
+        
+        ivtString = (String)tsPropertyMap.get("invehtime.identifier");
+        fwtString = (String)tsPropertyMap.get("firstwait.identifier");
+        twtString = (String)tsPropertyMap.get("totalwait.identifier");
+        accString = (String)tsPropertyMap.get("accesswalk.identifier");
+        egrString = (String)tsPropertyMap.get("egresswalk.identifier");
+        auxString = (String)tsPropertyMap.get("otherwalk.identifier");
+        brdString = (String)tsPropertyMap.get("boardings.identifier");
+        farString = (String)tsPropertyMap.get("fare.identifier");
+        frqString = (String)tsPropertyMap.get("freq.identifier");
+
+        skimTablesOrder = new HashMap();
+        skimTablesOrder.put(ivtString, 0);
+        skimTablesOrder.put(fwtString, 1);
+        skimTablesOrder.put(twtString, 2);
+        skimTablesOrder.put(accString, 3);
+        skimTablesOrder.put(egrString, 4);
+        skimTablesOrder.put(auxString, 5);
+        skimTablesOrder.put(brdString, 6);
+        skimTablesOrder.put(farString, 7);
+        skimTablesOrder.put(frqString, 8);
+        
+    }    
+    
+
+    
+    public int setupTransitNetwork ( NetworkHandlerIF nh, String period, String accessMode, String routeType ) {
+        
+        // get some information from the properties file
+        String transitRoutesDirectory = (String)tsPropertyMap.get("transitRoutes.directory");
+        int maxRoutes = Integer.parseInt ( (String)tsPropertyMap.get("MAX_TRANSIT_ROUTES") );
+
+        // construct a network listing output filename for the transit network being setup
+        String listingName = (String)tsPropertyMap.get("transitNetworkListings.directory") + period + "_" + accessMode + "_" + routeType + ".listing";
+        
+
+        // construct a list of d211 files to combine and convert to an array
+        ArrayList d221FileList = new ArrayList();
+        ArrayList routeTypeList = new ArrayList();
+        if ( period.equalsIgnoreCase("peak") ) {
+            d221FileList.add( transitRoutesDirectory + (String)tsPropertyMap.get("intracity.pk.fileName") );
+            routeTypeList.add( "intracity" );
+            d221FileList.add( transitRoutesDirectory + (String)tsPropertyMap.get("intercity.pk.fileName") );
+            routeTypeList.add( "intercity" );
+            d221FileList.add( transitRoutesDirectory + (String)tsPropertyMap.get("hsr.pk.fileName") );
+            routeTypeList.add( "hsr" );
+        }
+        else if ( period.equalsIgnoreCase("offpeak") ) {
+            d221FileList.add( transitRoutesDirectory + (String)tsPropertyMap.get("intracity.op.fileName") );
+            routeTypeList.add( "intracity" );
+            d221FileList.add( transitRoutesDirectory + (String)tsPropertyMap.get("intercity.op.fileName") );
+            routeTypeList.add( "intercity" );
+            d221FileList.add( transitRoutesDirectory + (String)tsPropertyMap.get("hsr.op.fileName") );
+            routeTypeList.add( "hsr" );
+        }
+        else {
+            invalidArgs ( period, accessMode, routeType );
+        }
+
+        
+        // use this if transit network is to be built with combined route files
+        String[] d221Files = new String[d221FileList.size()];
+        String[] rteTypes = new String[routeTypeList.size()];
+        for (int i=0; i < d221Files.length; i++) {
+            d221Files[i] = (String)d221FileList.get(i);
+            rteTypes[i] = (String)routeTypeList.get(i);
+        }
+        
+
+        // use this if transit network is to be built with single route file
+        String[] d221File = new String[1];
+        String[] rteType = new String[1];
+
+        // set this to whichever string was determined by combination of arguments
+        String[] routeFiles = null;
+        String[] routeTypes = null;
+        
+        
+        
+        // determine routes to used based on method argument values
+        if ( accessMode.equalsIgnoreCase("walk")) {
+
+            if ( routeType.equalsIgnoreCase("air") ) {
+                invalidArgs ( period, accessMode, routeType );
+            }
+            else if ( routeType.equalsIgnoreCase("hsr") ) {
+                routeFiles = d221Files;
+                routeTypes = rteTypes;
+            }
+            else if ( routeType.equalsIgnoreCase("intercity") ) {
+                routeFiles = d221Files;
+                routeTypes = rteTypes;
+            }
+            else if ( routeType.equalsIgnoreCase("intracity") ) {
+                routeFiles = d221Files;
+                routeTypes = rteTypes;
+            }
+            else {
+                invalidArgs ( period, accessMode, routeType );
+            }
+            
+        }        
+        else if ( accessMode.equalsIgnoreCase("drive")) {
+            
+            if ( routeType.equalsIgnoreCase("air") ) {
+                accessMode = "driveLdt";
+                if ( period.equalsIgnoreCase("peak") ) {
+                    d221File[0] = transitRoutesDirectory + (String)tsPropertyMap.get("air.pk.fileName");
+                    rteType[0] = "air";
+                }
+                else if ( period.equalsIgnoreCase("offpeak") ) {
+                    d221File[0] = transitRoutesDirectory + (String)tsPropertyMap.get("air.op.fileName");
+                    rteType[0] = "air";
+                }
+                else {
+                    invalidArgs ( period, accessMode, routeType );
+                }
+                routeFiles = d221File;
+            }
+            else if ( routeType.equalsIgnoreCase("hsr") ) {
+                accessMode = "driveLdt";
+                if ( period.equalsIgnoreCase("peak") ) {
+                    d221File[0] = transitRoutesDirectory + (String)tsPropertyMap.get("hsr.pk.fileName");
+                    rteType[0] = "hsr";
+                }
+                else if ( period.equalsIgnoreCase("offpeak") ) {
+                    d221File[0] = transitRoutesDirectory + (String)tsPropertyMap.get("hsr.op.fileName");
+                    rteType[0] = "hsr";
+                }
+                else {
+                    invalidArgs ( period, accessMode, routeType );
+                }
+                routeFiles = d221File;
+            }
+            else if ( routeType.equalsIgnoreCase("intercity") ) {
+                accessMode = "driveLdt";
+                if ( period.equalsIgnoreCase("peak") ) {
+                    d221File[0] = transitRoutesDirectory + (String)tsPropertyMap.get("intercity.pk.fileName");
+                    rteType[0] = "intercity";
+                }
+                else if ( period.equalsIgnoreCase("offpeak") ) {
+                    d221File[0] = transitRoutesDirectory + (String)tsPropertyMap.get("intercity.op.fileName");
+                    rteType[0] = "intercity";
+                }
+                else {
+                    invalidArgs ( period, accessMode, routeType );
+                }
+                routeFiles = d221File;
+            }
+            else if ( routeType.equalsIgnoreCase("intracity") ) {
+                routeFiles = d221Files;
+                routeTypes = rteTypes;
+            }
+            else {
+                invalidArgs ( period, accessMode, routeType );
+            }
+
+        }
+           
+
+        // check that all the route files to be used exist and can be read.
+        for ( int i=0; i < routeFiles.length; i++ ) {
+            try {
+                if ( routeFiles[i] == null ) {
+                    throw new RuntimeException();
+                }
+                else {
+                    File check = new File(routeFiles[i]);
+                    if ( ! check.canRead() )
+                        throw new RuntimeException();
+                }
+            }
+            catch ( RuntimeException e ) {
+                logger.error ( "Error while checking existence of route files specified for:");
+                logger.error ( String.format( "period=%s, accessMode=%s, routeType=%s", period, accessMode, routeType) );
+                logger.error ( "", e );
+                System.exit(-1);
+            }
+        }
+
+        
+        
+        return nh.setupTransitNetworkObject ( period, accessMode, listingName, routeFiles, routeTypes, maxRoutes );
+        
     }
+
     
+
+    private void invalidArgs ( String period, String accessMode, String routeType ) {
+        
+        logger.error ( "Skims cannot be built for the combination of arguments specified:");
+        logger.error ( String.format( "period=%s, accessMode=%s, routeType=%s", period, accessMode, routeType) );
+        System.exit(-1);
+        
+    }
+        
     
-	/*
-	 * return a peak period walk-transit skims Matrix[] including the following elements:
-	 * 
-	 * 0: in-vehicle time Matrix
-	 * 1: first wait Matrix
-	 * 2: total wait Matrix
-     * 3: access time Matrix
-     * 4: walk time Matrix
-	 * 5: boardings Matrix
-     * 6: cost Matrix
-     * 7: high-speed/Amtrak rail ivt Matrix
-	 */
-	public Matrix[] getPeakWalkTransitSkims () {
-		return getTransitSkims ( "peak", "Walk" );
-	}
-	
-	
-	/*
-	 * write a set of peak period walk-transit skims in zip format to the
-	 * files specified in the properties file.
-	 * 
-	 */
-	public void writePeakWalkTransitSkims () {
+    /*
+     * write a set of zip fomrmat transit skim matrices to the file names determined by the set of arguments.
+     */
+    public void writeTransitSkims ( String period, String accessMode, String routeType ) {
+        
+        // get the filenames for the period, accessMode, and type of routes (hsr, air, intercity, or intracity)
+        String[] skimFileNames = getTransitSkimsFileNames( period, accessMode, routeType );
 
-		String variableString;
-		ArrayList variableList;
-		StringTokenizer st;
-		
-		// get the filenames for the peak walk transit output skims files
-		variableString = (String)tsPropertyMap.get("pkWtSkim.fileNames");
-		variableList = new ArrayList();
-		st = new StringTokenizer(variableString, ", |");
-		while (st.hasMoreTokens()) {
-			variableList.add(st.nextElement());
-		}
-		String[] skimFileNames = new String[variableList.size()];
-		for (int i=0; i < skimFileNames.length; i++)
-		    skimFileNames[i] = (String)variableList.get(i);
-
-		writeZipTransitSkims( "peak", "Walk", skimFileNames );
-	}
-	
-	
-	
-	/*
-	 * return a peak period drive-transit skims Matrix[] including the following elements:
-	 * 
-	 * 0: in-vehicle time Matrix
-	 * 1: first wait Matrix
-	 * 2: total wait Matrix
-	 * 3: access time Matrix
-	 * 4: boardings Matrix
-	 * 5: cost Matrix
-	 */
-	public Matrix[] getPeakDriveTransitSkims () {
-		return getTransitSkims ( "peak", "Drive" );
-	}
-	
-	
-	/*
-	 * write a set of peak period walk-transit skims in zip format to the
-	 * files specified in the properties file.
-	 * 
-	 */
-	public void writePeakDriveTransitSkims () {
-
-		String variableString;
-		ArrayList variableList;
-		StringTokenizer st;
-		
-		// get the filenames for the peak walk transit output skims files
-		variableString = (String)tsPropertyMap.get("pkDtSkim.fileNames");
-		variableList = new ArrayList();
-		st = new StringTokenizer(variableString, ", |");
-		while (st.hasMoreTokens()) {
-			variableList.add(st.nextElement());
-		}
-		String[] skimFileNames = new String[variableList.size()];
-		for (int i=0; i < skimFileNames.length; i++)
-			skimFileNames[i] = (String)variableList.get(i);
-
-		writeZipTransitSkims( "peak", "Drive", skimFileNames );
-	}
-	
-	
-	
-	/*
-	 * return a offpeak period walk-transit skims Matrix[] including the following elements:
-	 * 
-	 * 0: in-vehicle time Matrix
-	 * 1: first wait Matrix
-	 * 2: total wait Matrix
-	 * 3: access time Matrix
-	 * 4: boardings Matrix
-	 * 5: cost Matrix
-	 */
-	public Matrix[] getOffPeakWalkTransitSkims () {
-		return getTransitSkims ( "offpeak", "Walk" );
-	}
-	
-	
-	/*
-	 * write a set of offpeak period walk-transit skims in zip format to the
-	 * files specified in the properties file.
-	 * 
-	 */
-	public void writeOffPeakWalkTransitSkims () {
-
-		String variableString;
-		ArrayList variableList;
-		StringTokenizer st;
-		
-		// get the filenames for the offpeak walk transit output skims files
-		variableString = (String)tsPropertyMap.get("opWtSkim.fileNames");
-		variableList = new ArrayList();
-		st = new StringTokenizer(variableString, ", |");
-		while (st.hasMoreTokens()) {
-			variableList.add(st.nextElement());
-		}
-		String[] skimFileNames = new String[variableList.size()];
-		for (int i=0; i < skimFileNames.length; i++)
-		skimFileNames[i] = (String)variableList.get(i);
-
-		writeZipTransitSkims( "offpeak", "Walk", skimFileNames );
-	}
-	
-	
-	
-	/*
-	 * return a offpeak period drive-transit skims Matrix[] including the following elements:
-	 * 
-	 * 0: in-vehicle time Matrix
-	 * 1: first wait Matrix
-	 * 2: total wait Matrix
-	 * 3: access time Matrix
-	 * 4: boardings Matrix
-	 * 5: cost Matrix
-	 */
-	public Matrix[] getOffPeakDriveTransitSkims () {
-		return getTransitSkims ( "offpeak", "Drive" );
-	}
-	
-	
-	/*
-	 * write a set of offpeak period walk-transit skims in zip format to the
-	 * files specified in the properties file.
-	 * 
-	 */
-	public void writeOffPeakDriveTransitSkims () {
-
-		String variableString;
-		ArrayList variableList;
-		StringTokenizer st;
-		
-		// get the filenames for the offpeak walk transit output skims files
-		variableString = (String)tsPropertyMap.get("opDtSkim.fileNames");
-		variableList = new ArrayList();
-		st = new StringTokenizer(variableString, ", |");
-		while (st.hasMoreTokens()) {
-			variableList.add(st.nextElement());
-		}
-		String[] skimFileNames = new String[variableList.size()];
-		for (int i=0; i < skimFileNames.length; i++)
-			skimFileNames[i] = (String)variableList.get(i);
-
-		writeZipTransitSkims( "offpeak", "Drive", skimFileNames );
-	}
-	
-	
-	
-    private void writeZipTransitSkims ( String period, String accessMode, String[] transitSkimFileNames ) {
         
         // generate a set of output zip format peak walk transit skims
         Matrix[] skims = getTransitSkims ( period, accessMode );
         
-        if ( skims.length > transitSkimFileNames.length ) {
-            logger.warn( skims.length + " " + period + " " + accessMode + " skim tables were created, but only " + transitSkimFileNames.length + " filenames were specified in properties file:" );
-            for (int i=0; i < transitSkimFileNames.length; i++)
-                logger.warn ( "    " + transitSkimFileNames[i] );
-            logger.warn ( " using only the first " + transitSkimFileNames.length + " skim tables in Matrix[] skims." );
-        }
-        else if ( skims.length < transitSkimFileNames.length ) {
-            logger.error( "more skims files in properties file were requested than skim tables were produced." );
-            logger.error( skims.length + " " + period + " " + accessMode + " skim tables were created, but " + transitSkimFileNames.length + " filenames were specified in properties file:" );
+        if ( skims.length > skimFileNames.length ) {
+            logger.error( "fewer skims filenames were generated than skim tables were produced." );
+            logger.error( skims.length + " " + period + " " + accessMode + " " + routeType + " skim tables were created, but only " + skimFileNames.length + " filenames were generated:" );
+            for (int i=0; i < skimFileNames.length; i++)
+                logger.error ( "    " + skimFileNames[i] );
             System.exit(-9);
         }
+        else if ( skims.length < skimFileNames.length ) {
+            logger.error( "more skims filenames were generated than skim tables were produced." );
+            logger.error( skims.length + " " + period + " " + accessMode + " " + routeType + " skim tables were created, but " + skimFileNames.length + " filenames were generated:" );
+            for (int i=0; i < skimFileNames.length; i++)
+                logger.error ( "    " + skimFileNames[i] );
+            System.exit(-9);
+        }
+        
+        
+        writeZipTransitSkims( skimFileNames, skims );
+        logger.info ("done writing " + period + " " + accessMode + " " + routeType + " transit skims files.");
+        
+    }
+    
+    
+    
+    
+    
+    /*
+     * construct the skim filenames from the directory and skim identifiers specified in the properties file and the arguments passed in.
+     * 
+     */
+    private String[] getTransitSkimsFileNames ( String period, String accessMode, String routeType ) {
+
+        String firstPart = (String)tsPropertyMap.get("transitSkims.directory") + period + accessMode + routeType;
+        
+        String[] skimFileNames = new String[9];
+        skimFileNames[0] = firstPart + ivtString + ".zip";
+        skimFileNames[1] = firstPart + fwtString + ".zip";
+        skimFileNames[2] = firstPart + twtString + ".zip";
+        skimFileNames[3] = firstPart + accString + ".zip";
+        skimFileNames[4] = firstPart + egrString + ".zip";
+        skimFileNames[5] = firstPart + auxString + ".zip";
+        skimFileNames[6] = firstPart + brdString + ".zip";
+        skimFileNames[7] = firstPart + farString + ".zip";
+        skimFileNames[8] = firstPart + frqString + ".zip";
+        
+
+        return skimFileNames;
+        
+    }
+    
+    
+    
+    private void writeZipTransitSkims ( String[] transitSkimFileNames, Matrix[] skims ) {
         
         for (int i=0; i < transitSkimFileNames.length; i++) {
             MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP, new File(transitSkimFileNames[i]));
@@ -351,95 +349,17 @@ public class TransitSkimManager {
         
 		
 		// create an optimal strategy object for this highway and transit network
-		OptimalStrategy os = new OptimalStrategy( ag );
+		OptimalStrategy os = new OptimalStrategy( nh );
 
-        os.initSkimMatrices ( (String)globalPropertyMap.get("alpha2beta.file") );
+        os.initSkimMatrices ( (String)globalPropertyMap.get("alpha2beta.file"), skimTablesOrder );
         
-		Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
+        os.computeOptimalStrategySkimMatrices();
+        
+        Matrix[] transitSkims = os.getSkimMatrices();
 		
-		String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("done with getTransitSkims(): " + myDateString);
-
 		return transitSkims;
         
 	}
     
 
-    private AuxTrNet getTransitNetwork( NetworkHandlerIF nh, String period, String accessMode ) {
-        
-        boolean create_new_network = CREATE_NEW_NETWORK;
-
-        AuxTrNet ag = null; 
-        String diskObjectFileName = null;
-        
-        // create a new transit network from d211 highway network file and d221 transit routes file, or read it from DiskObject.
-        String key = period + accessMode + "TransitNetwork";
-        String path = (String) tsPropertyMap.get( "diskObject.pathName" );
-        if ( path.endsWith("/") || path.endsWith("\\") )
-            diskObjectFileName = path + key + ".diskObject";
-        else
-            diskObjectFileName = path + "/" + key + ".diskObject";
-        
-        if ( create_new_network ) {
-            ag = createTransitNetwork ( nh, period, accessMode );
-            DataWriter.writeDiskObject ( ag, diskObjectFileName, key );
-        }
-        else {
-            ag = (AuxTrNet) DataReader.readDiskObject ( diskObjectFileName, key );
-        }
-
-        return ag;
-        
-    }
-    
-    
-	private AuxTrNet createTransitNetwork ( NetworkHandlerIF nh, String period, String accessMode ) {
-        
-        logger.info (nh.getLinkCount() + " highway links");
-		logger.info (nh.getNodeCount() + " highway nodes");
-
-
-		// get the filenames for the peak and off-peak route files
-		String d221PeakFile = (String) tsPropertyMap.get( "d221.pk.fileName" );
-		String d221OffPeakFile = (String) tsPropertyMap.get( "d221.op.fileName" );
-
-		
-		// read parameter for maximum number of transit routes
-		int maxRoutes = Integer.parseInt ( (String)tsPropertyMap.get("MAX_TRANSIT_ROUTES") );
-
-		
-		
-		// create transit routes object with max 50 routes
-		TrRoute tr = new TrRoute (maxRoutes);
-
-		//read transit route info from Emme/2 for d221 file for the specified time period
-	    tr.readTransitRoutes ( period.equalsIgnoreCase("peak") ? d221PeakFile : d221OffPeakFile );
-		    
-
-		// associate transit segment node sequence with highway link indices
-		tr.getLinkIndices (nh);
-
-
-
-		// create an auxilliary transit network object
-		ag = new AuxTrNet( nh, tr);
-
-		
-		// build the auxilliary links for the given transit routes object
-		ag.buildAuxTrNet ( accessMode );
-		
-		
-		// define the forward star index arrays, first by anode then by bnode
-		ag.setForwardStarArrays ();
-		ag.setBackwardStarArrays ();
-
-
-		String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("done creating transit network AuxTrNetTest: " + myDateString);
-
-		return ag;
-	}
-    
-	
-	
 }

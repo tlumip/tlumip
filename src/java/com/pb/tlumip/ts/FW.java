@@ -131,7 +131,7 @@ public class FW {
             
             AonFlowHandlerIF ah = AonFlowHandler.getInstance( nh.getRpcConfigFileName() );
             logger.info ( "FW.iterate() creating an AonFlowHandler and calling its setup()." ); 
-            ah.setup( nh.getRpcConfigFileName(), (String)appPropertyMap.get("pt.fileName"), (String)appPropertyMap.get("ct.fileName"), startHour, endHour, highwayModeCharacters, nh );
+            ah.setup( nh.getRpcConfigFileName(), (String)appPropertyMap.get("sdt.fileName"), (String)appPropertyMap.get("ldt.fileName"), (String)appPropertyMap.get("ct.fileName"), startHour, endHour, highwayModeCharacters, nh );
             
             
             // loop thru FW iterations
