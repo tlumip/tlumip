@@ -7,7 +7,6 @@
 	<classpathentry kind="src" path="/logging-log4j-1.2.9"/>
 	<classpathentry kind="src" path="/pecas"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jakarta-commons"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common-daf-v3"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/censusdata"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/synpop"/>
