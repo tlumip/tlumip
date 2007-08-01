@@ -19,6 +19,7 @@ package com.pb.tlumip.ct;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.ZipMatrixReader;
 import com.pb.common.util.ResourceUtil;
+import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -30,6 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -45,14 +47,17 @@ public class DiscreteShipments2 {
     Commodities cp;
     Random randomNumber;
     ZoneMap zoneMap;
+    WorldZoneExternalZoneUtil wzUtil;
+    ResourceBundle globalRb;
 
    DiscreteShipments2(ResourceBundle appRb, ResourceBundle globalRb, String ctInputs, long seed) {
        this.ctRb = appRb;
-        File alpha2betaFile = new File(ResourceUtil.getProperty(globalRb,"alpha2beta.file"));
-        zoneMap = new ZoneMap(alpha2betaFile, seed);
-        File commodityPropertiesFile = new File(ctInputs + "CommodityProperties.txt");
-        this.cp = new Commodities(commodityPropertiesFile);
-        this.randomNumber = new Random(seed);
+       File alpha2betaFile = new File(ResourceUtil.getProperty(globalRb,"alpha2beta.file"));
+       zoneMap = new ZoneMap(alpha2betaFile, seed);
+       File commodityPropertiesFile = new File(ctInputs + "CommodityProperties.txt");
+       this.cp = new Commodities(commodityPropertiesFile);
+       this.randomNumber = new Random(seed);
+       wzUtil = new WorldZoneExternalZoneUtil(globalRb);
     }
 
    private double[] getShipmentList (String c, double weeklyTons) {
@@ -87,7 +92,7 @@ public class DiscreteShipments2 {
      return result;
    }
 
-   private int getTransShipmentZone (String c, int origin, int destination, double distance) {
+   private int getTransShipmentZone (String c, int destination, double distance) {
      int transShipmentZone = -1;    // transshipment doesn't occur
      double d = cp.getTransShipmentProbability(c)*CTHelper.tanh(distance*0.01); 
      if (randomNumber.nextDouble()<=d) transShipmentZone = destination;
@@ -101,82 +106,152 @@ public class DiscreteShipments2 {
      return s;
    }
 
-   public void run (File f) {
-       logger.info("Starting the beta zone demand to alpha zone demand conversion process " +
+    public void run (File f) {
+        //The flows also include flows to the "world zones" so beta = beta + world zones
+        //and alpha = alpha + external stations.
+        logger.info("Starting the beta zone demand to alpha zone demand conversion process " +
                "(DiscreteShipments)");
-       Date start = new Date();
-      int weeklyShipments = 0;
-     //Get the beta distance matrix so that we can get distances
-       String distanceFile = ResourceUtil.getProperty(ctRb, "betapkdist.skim.file");
+        Date start = new Date();
+        int weeklyShipments = 0;
+        //Get the beta distance matrix so that we can get distances
+        //Note: the beta skims also include the world zones so you can
+        //get distances from beta to beta, or beta to world zone
+        String distanceFile = ResourceUtil.getProperty(ctRb, "beta.pk.dist.skim");
         ZipMatrixReader zr = new ZipMatrixReader(new File(distanceFile));
-        Matrix distMatrix = zr.readMatrix();
-     // Read each record from the weekly demand and process it
-     try {
-       DataInputStream di = new DataInputStream(new FileInputStream(f));
-       String commodity, transShipmentPattern;
-       int originAlpha, originBeta, destinationAlpha, destinationBeta, intWeeklyTons, transShipmentAlpha,
-         transShipmentBeta;
-       double weeklyTons, value = 0.0;
-         float betaDist = 0.0f;
+        Matrix betaDistMatrix = zr.readMatrix();
 
-       boolean eof = false, transShipped = false;
-       double[] shipmentList;
-       try {
-         while (!eof) {
-           commodity = commodityToString(di.readInt());
-           originBeta = di.readInt();
-           destinationBeta = di.readInt();
-           weeklyTons = di.readDouble();
-           betaDist = distMatrix.getValueAt(originBeta,destinationBeta);
+        //Note: the alpha skims also include the external zones so you can
+        //get distances from alpha to alpha, or alpha to external zone
+        distanceFile = ctRb.getString("alpha.pk.dist.skim");
+        zr = new ZipMatrixReader(new File(distanceFile));
+        Matrix alphaDistMatrix = zr.readMatrix();
 
-// We have a pathological case where commodity 00 is found. We need to fix FreightDemand, but for now
-// just ignore them
-           if (commodity.equals("00")) continue;
+        // Read each record from the weekly demand and process it
+        try {
+            DataInputStream di = new DataInputStream(new FileInputStream(f));
+            String commodity, transShipmentPattern;
+            int originAlpha, originBeta, destinationAlpha, destinationBeta, transShipmentAlpha,
+                transShipmentBeta;
+            double weeklyTons, value = 0.0;
 
-           shipmentList = getShipmentList(commodity, weeklyTons);
-           for (int i=0; i<shipmentList.length; i++) {
-             ++weeklyShipments;
-             // Will it ship today?
-             if (randomNumber.nextDouble()<=cp.getShipmentThreshold(commodity)) {
-               //(1) Reset default non-attributed shipment properties
-               transShipped = false;
-               transShipmentPattern = "OD";
+            boolean eof = false, transShipped;
+            double[] shipmentList;
+            try {
+                while (!eof) {
+                    commodity = commodityToString(di.readInt());
+                    originBeta = di.readInt();
+                    destinationBeta = di.readInt();
+                    weeklyTons = di.readDouble();
 
-               //(2) Allocate the shipment to alpha zones within the given beta zones
-               originAlpha = zoneMap.getAlphaZone(originBeta, commodity);
-               destinationAlpha = zoneMap.getAlphaZone(destinationBeta, commodity);
 
-               //(3) Determine whether transshipment occurs and if so, where
-               transShipmentBeta = getTransShipmentZone(commodity, originBeta, destinationBeta, betaDist);
 
-               if (transShipmentBeta>0) {
-                 transShipmentAlpha = destinationBeta;   // Replace with search function
-                 // Generate the trip from the transshipment point to final destination
-                 transShipped = true;
-                 transShipmentPattern = "XD";
-                 shipments.add(new Shipment(commodity, transShipmentBeta, transShipmentAlpha,
-                   destinationBeta, destinationAlpha, shipmentList[i], value, "STK", transShipped,
-                   transShipmentPattern));
-                 // Specify the destination end to be the transshipment point
-                 destinationBeta = transShipmentBeta;
-                 destinationAlpha = transShipmentAlpha;
-                 transShipmentPattern = "OX";
-               }
-               // And finally, add the leg from origin to either ultimate destination or transshipment point
-               shipments.add(new Shipment(commodity, originBeta, originAlpha, destinationBeta, destinationAlpha,
-                 shipmentList[i], value, "STK", transShipped, transShipmentPattern));
-             }
-           }
-         }
-       } catch (EOFException e) { eof = true; }
-       di.close();
+                    shipmentList = getShipmentList(commodity, weeklyTons);
+                    for (int i=0; i<shipmentList.length; i++) {
+                        ++weeklyShipments;
+                        // Will it ship today?
+                        if (randomNumber.nextDouble()<= cp.getShipmentThreshold(commodity)) {
+                            //(1) Reset default non-attributed shipment properties
+                            transShipped = false;
+                            transShipmentPattern = "OD";
 
-     } catch (IOException e) { e.printStackTrace(); }
-     int dailyShipments = shipments.size();
-     double percent = ((double)dailyShipments/(double)weeklyShipments)*100.0;
-     logger.info(dailyShipments + " daily shipments created (" + percent + "%  of " + weeklyShipments + " weekly shipments)");
-       logger.info("total runtime for Discrete Shipments: "+CTHelper.elapsedTime(start, new Date()));
-   }
+                            //(2) Allocate the shipment to alpha zones within the given beta zones
+                            if(wzUtil.isWorldZone(originBeta) || wzUtil.isWorldZone(destinationBeta)){  //must be an originWZ
+                                //one of the ends is a world zone and therefore you have to determine
+                                //the internal alpha zone first (either alphaOrigin or alphaDestination) before
+                                //you can determine the appropriate external zone because it depends on distance
+                                //to the alpha zone.
+                                int[] aOaD = chooseAlphaODs(originBeta, destinationBeta, alphaDistMatrix, commodity);
+                                originAlpha = aOaD[0];
+                                destinationAlpha = aOaD[1];
+                            }else{
+                                originAlpha = zoneMap.getAlphaZone(originBeta, commodity);
+                                destinationAlpha = zoneMap.getAlphaZone(destinationBeta, commodity);
+                            }
+
+
+
+                            float betaODDist = betaDistMatrix.getValueAt(originBeta,destinationBeta);
+
+                            //(3) Determine whether transshipment occurs and if so, where
+                            transShipmentBeta = getTransShipmentZone(commodity, destinationBeta, betaODDist);
+
+                            if (transShipmentBeta>0) {
+                                //TODO - Ask Rick about this change.  1.  is it supposed to be alpha and
+                                //TODO 2.  if the transShipmentBeta is a world zone is it ok to move the
+                                //TODO transShipment location to an external zone.
+                                transShipmentAlpha = destinationAlpha;   // Replace with search function
+                                // Generate the trip from the transshipment point to final destination
+                                transShipped = true;
+                                transShipmentPattern = "XD";
+                                shipments.add(new Shipment(commodity, transShipmentBeta, transShipmentAlpha,
+                                                destinationBeta, destinationAlpha, shipmentList[i], value, "STK", transShipped,
+                                                transShipmentPattern));
+                                // Specify the destination end to be the transshipment point
+                                destinationBeta = transShipmentBeta;
+                                destinationAlpha = transShipmentAlpha;
+                                transShipmentPattern = "OX";
+                            }
+
+                            // And finally, add the leg from origin to either ultimate destination or transshipment point
+                            shipments.add(new Shipment(commodity, originBeta, originAlpha, destinationBeta, destinationAlpha,
+                                            shipmentList[i], value, "STK", transShipped, transShipmentPattern));
+                        }
+                    }
+                }
+            } catch (EOFException e) { eof = true; }
+            di.close();
+
+        } catch (IOException e) { e.printStackTrace(); }
+
+        int dailyShipments = shipments.size();
+        double percent = ((double)dailyShipments/(double)weeklyShipments)*100.0;
+        logger.info(dailyShipments + " daily shipments created (" + percent + "%  of " + weeklyShipments + " weekly shipments)");
+        logger.info("total runtime for Discrete Shipments: "+CTHelper.elapsedTime(start, new Date()));
+    }
+
+    /*
+    The user will pass in a world zone and the algorithm will decide which external
+    zone to pick based on the distance from the world zone to the eligible external zones
+     */
+    public int[] chooseAlphaODs(int originBeta, int destinationBeta, Matrix alphaDistMatrix, String commodity){
+        //first let's do a little sanity check
+        if(wzUtil.isWorldZone(originBeta) && wzUtil.isWorldZone(destinationBeta))
+            throw new RuntimeException("CT module does not handle flows from world zone " + originBeta + " to world zone " + destinationBeta);
+
+        int alphaO = -1;
+        int alphaD = -1;
+        //Next figure out which end of the flow is a world zone and handle the other end first.
+        if(wzUtil.isWorldZone(originBeta)){ //this means the origin is a world zone so deal with dest zone first
+            alphaD = zoneMap.getAlphaZone(destinationBeta, commodity);
+            List<Integer> eligibleZones = wzUtil.getExternalZonesConnectedTo(originBeta); //remember that originBeta = WZ
+            float min = Float.MAX_VALUE;
+            float dist;
+            for(int zone : eligibleZones){ //find min distance from WZ to possible externals + external to alpha
+                dist = wzUtil.getDistanceFromWorldZoneToEZone(originBeta, zone) + alphaDistMatrix.getValueAt(zone, alphaD);
+                if(dist < min){
+                    min = dist;
+                    alphaO = zone;
+                }
+            }
+            return new int[] {alphaO, alphaD};
+        } else{  //this means the destination is a world zone so deal with the origin zone first
+            alphaO = zoneMap.getAlphaZone(originBeta, commodity);
+            List<Integer> eligibleZones = wzUtil.getExternalZonesConnectedTo(destinationBeta); //remember that destinationBeta = WZ
+            float min = Float.MAX_VALUE;
+            float dist;
+            for(int zone : eligibleZones){ //find min distance from alpha to possible externals and then external to WZ
+                dist = alphaDistMatrix.getValueAt(alphaO, zone) + wzUtil.getDistanceFromEZoneToWorldZone(zone, destinationBeta);
+                if(dist < min){
+                    min = dist;
+                    alphaD = zone;
+                }
+            }
+            return new int[] {alphaO, alphaD};
+        }
+
+    }
+
+    
 
    public void writeShipments (File f) {
      try {
@@ -195,8 +270,8 @@ public class DiscreteShipments2 {
 
    public static void main (String[] args) {
        Date start = new Date();
-       ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/ct/ct.properties"));
-       ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/global.properties"));
+       ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/ct/ct.properties"));
+       ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/global.properties"));
        String inputPath = ResourceUtil.getProperty(rb,"ct.base.data");
        String outputPath = ResourceUtil.getProperty(rb,"ct.current.data");
        long randomSeed = Long.parseLong(ResourceUtil.getProperty(rb, "randomSeed"));

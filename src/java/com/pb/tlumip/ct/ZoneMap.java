@@ -26,17 +26,18 @@ package com.pb.tlumip.ct;
 // @author "Rick Donnelly <rdonnelly@pbtfsc.com>"
 // @version "0.9, 15/08/04"
 
-import com.pb.common.matrix.AlphaToBeta;
-import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.CSVFileReader;
-
-import java.util.Random;
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.matrix.AlphaToBeta;
 import org.apache.log4j.Logger;
-import java.io.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
 
 public class ZoneMap {
     protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
-    private static int HIGHEST_ALPHA_ZONENUMBER,
+    public static int HIGHEST_ALPHA_ZONENUMBER,
                        HIGHEST_BETA_ZONENUMBER ; //initialized after reading alphaToBeta.csv
     float[][] intensityMap;   // rows=beta zones, columns = alpha zones
     Random rn;
