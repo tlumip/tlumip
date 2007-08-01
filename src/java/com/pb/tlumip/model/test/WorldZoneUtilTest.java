@@ -85,9 +85,14 @@ public class WorldZoneUtilTest extends TestCase {
             e.printStackTrace();
         }
 
+        //Now read in the prop file that was just written out and create
+        //the Utility class (which will read in the distance file)
         ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("global.properties"));
         wzUtil = new WorldZoneExternalZoneUtil(globalRb);
 
+
+        //Create a beta5000s matrix for testing
+        //We might want to update with real values when I get a matrix from Jim
         int[] externals = new int[]{0,1,17,19,5001,5002,5003,5004,5005,5006,5007,5008,5009,5010,5011,5012};
         float[][] values = new float[][]{{10,20,30,0,200,300,400,0,0,0,0,0,0,0,0},
                                          {3,6,9,0,100,200,300,0,0,0,0,0,0,0,0},
