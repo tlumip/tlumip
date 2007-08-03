@@ -337,21 +337,25 @@ public class FreightDemand3 {
       // And finally, let's write the data out to binary file that can be used later. We'll
       // store the demand matrices in semi-permanent file because we'll probably want to
       // create off-line queries and summaries later.
-      writeWeeklyTons(commodity, m);
+      int commodityNumber = Integer.parseInt(commodity.substring(4));
+      System.out.println("Printing weekly tons for commodity: " + commodityNumber);
+      writeWeeklyTons(commodityNumber, m);
       putIntoTableDataSet(commodity, m);
     }
 
   }
 
-  public void writeWeeklyTons (String commodity, Matrix2d m) {
+  public void writeWeeklyTons (int index, Matrix2d m) {
+    boolean append = true;
+    if (index==1) append = false;
     String filename = outputPath+"WeeklyDemand.binary";
     try {
       DataOutputStream ds = new DataOutputStream(new BufferedOutputStream
-        (new FileOutputStream(filename, true)));
+        (new FileOutputStream(filename, append)));
       for (int p=0; p<m.getRowSize(); p++)
         for (int q=0; q<m.getColumnSize(); q++)
           if (m.cell[p][q]>0.0) {
-            ds.writeChars(commodity);
+            ds.writeInt(index);
             ds.writeInt(p);
             ds.writeInt(q);
             ds.writeDouble(m.cell[p][q]);

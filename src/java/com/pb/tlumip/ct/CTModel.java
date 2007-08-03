@@ -73,7 +73,9 @@ public class CTModel extends ModelComponent {
 	}
 	
 	public static void main (String args[]){
-		CTModel ctModel = new CTModel(ResourceUtil.getResourceBundle("ct"), ResourceUtil.getResourceBundle("global"));
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/ct/ct.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/global.properties"));
+        CTModel ctModel = new CTModel(rb, globalRb);
 		ctModel.startModel(1990, 1);	
 	}
 

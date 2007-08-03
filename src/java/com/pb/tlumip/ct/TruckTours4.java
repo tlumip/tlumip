@@ -19,10 +19,20 @@ package com.pb.tlumip.ct;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.ZipMatrixReader;
 import com.pb.common.util.ResourceUtil;
-
-import java.io.*;
-import java.util.*;
 import org.apache.log4j.Logger;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Random;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 class TruckTours4 {
     protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
@@ -84,7 +94,7 @@ class TruckTours4 {
       TruckSelector ts = new TruckSelector(randomNumberSeed,new File (inputPath + "VehicleTypeAttributes.txt"),   // yet more parameters
                                 new File(inputPath + "CommodityVehicleTypes.txt") );   // even more parameters
 
-      String offPeakTimeFile = ResourceUtil.getProperty(rb, "optime.skim.file");
+      String offPeakTimeFile = ResourceUtil.getProperty(rb, "alpha.op.time.skim");
       ZipMatrixReader zr = new ZipMatrixReader(new File(offPeakTimeFile));
       Matrix offPeakSkim = zr.readMatrix();
 
@@ -157,7 +167,7 @@ class TruckTours4 {
   public static void main (String[] args) {
     boolean collapseIntrazonalTrips = true;
     Date start = new Date();
-    ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_pleaseWork/t1/ct/ct.properties"));
+    ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/ct/ct.properties"));
     String inputPath = ResourceUtil.getProperty(rb, "ct.base.data");
       logger.info("input path: " + inputPath);
     String outputPath = ResourceUtil.getProperty(rb, "ct.current.data");
