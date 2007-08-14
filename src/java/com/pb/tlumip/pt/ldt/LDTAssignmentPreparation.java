@@ -16,19 +16,18 @@
  */
 package com.pb.tlumip.pt.ldt;
 
-import java.io.File;
-import java.util.Hashtable;
-import java.util.ResourceBundle;
-import java.util.TreeSet;
-
-import org.apache.log4j.Logger;
-
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.NDimensionalMatrix;
 import com.pb.common.util.ResourceUtil;
-import com.pb.models.reference.ModelComponent;
 import com.pb.models.pt.ldt.LDTripModeType;
+import com.pb.models.reference.ModelComponent;
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.util.Hashtable;
+import java.util.ResourceBundle;
+import java.util.TreeSet;
 
 /**
  * After LDT is run, this class is called to aggregate the trip list,
@@ -48,7 +47,7 @@ public class LDTAssignmentPreparation extends ModelComponent {
     private static final String JTAZ = "destination";
     private static final String MODE = "tripMode";    
     private static final String TIME = "tripStartTime";
-    private static final String TRIP_TABLE_PROPERTIES_KEY="ldt.vehicle.trip.table";    
+    private static final String TRIP_TABLE_PROPERTIES_KEY="ldt.vehicle.trips";    
     private static final String OUTPUT_TABLE_PROPERTIES_KEY="ldt.vehicle.trip.matrix";    
     private static final String SAMPLE_RATE_KEY="pt.sample.rate";
 
