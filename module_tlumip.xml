@@ -21,6 +21,7 @@
     <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/dxml.jar"/>
     <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/or124.jar"/>
     <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/dx.jar"/>
+    <pathelement location="${module.tlumip.basedir}/../../cmf/common-base/lib/junit-4.1.jar"/>
     <pathelement location="${common-daf-v2.output.dir}"/>
     <pathelement location="${common-daf-v3.output.dir}"/>
     <pathelement location="${pecas.output.dir}"/>

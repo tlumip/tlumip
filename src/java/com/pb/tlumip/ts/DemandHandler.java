@@ -24,11 +24,14 @@ package com.pb.tlumip.ts;
 
 
 import com.pb.models.pt.TripModeType;
+import com.pb.models.pt.ldt.LDTripModeType;
 
 
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
+import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.MatrixReader;
 import com.pb.common.rpc.DafNode;
 
 import java.util.ArrayList;
@@ -61,6 +64,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     boolean networkUserClassesIncludeTruck;
     char[] highwayModeCharacters;
     char[][] networkAssignmentGroupChars;
+    
+    double ptSampleRate;
     
     String sdtFileName;
     String ldtFileName;
@@ -113,7 +118,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
 
    
-    public boolean setup( String sdtFileName, String ldtFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
         networkNumCentroids = numCentroids;
         networkNumUserClasses = numUserClasses;
@@ -127,6 +132,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         this.ctFileName = ctFileName;
         this.startHour = startHour;
         this.endHour = endHour;
+        this.ptSampleRate = ptSampleRate;
 
         return true;
         
@@ -135,9 +141,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String sdtFileName, String ldtFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setupRpc( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
-        return setup( sdtFileName, ldtFileName, ctFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
+        return setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
     
     }
     
@@ -218,8 +224,6 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         return rowSums;
     }
     
-    
-
     private double[][][] createMulticlassDemandMatrices () {
         
 		String myDateString;
@@ -250,6 +254,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
             tripModeList.add( String.valueOf(TripModeType.DA) );
             tripModeList.add( String.valueOf(TripModeType.SR2) );
             tripModeList.add( String.valueOf(TripModeType.SR3P) );
+            
 			multiclassTripTable[0] = getTripTablesForModes ( tripModeList );
 		}
 		else {
@@ -301,6 +306,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         int totalPeriod = 0;
         int total = 0;
         String mode;
+        double totalVehicle = 0;
 
         BufferedReader in = null;
         String fileHeader = null;
@@ -364,7 +370,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                 while ( st.hasMoreTokens() ) {
                     String stringValue = st.nextToken();
                     if ( intFieldFlags[i] > 0 )
-                        intValues[intFieldFlags[i]] = Integer.parseInt(stringValue);
+                        intValues[intFieldFlags[i]] = (int)Float.parseFloat(stringValue);
                     i++;
                 }
                 
@@ -388,27 +394,24 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                 if ( totalModeFreqMap.containsKey(mode) )
                     value = (Integer)totalModeFreqMap.get(mode);
                 totalModeFreqMap.put ( mode, (value+1) );
+
                 
-                // accumulate a frequency table of all trips within period by mode
+                o = networkNodeIndexArray[orig];
+                d = networkNodeIndexArray[dest];
+                
+                
                 if ( (startTime >= startHour && startTime <= endHour) ) {
                         
+                    // accumulate a frequency table of all trips within period by mode
                     totalPeriod++;
                     value = 0;
                     if ( periodModeFreqMap.containsKey(mode) )
                         value = (Integer)periodModeFreqMap.get(mode);
                     periodModeFreqMap.put ( mode, (value+1) );
 
-                }
                 
-                
-                o = networkNodeIndexArray[orig];
-                d = networkNodeIndexArray[dest];
-                
-                
-                // accumulate all specified period and mode person trips.
-                // highway trips are accumulated as vehicle trips
-                if ( (startTime >= startHour && startTime <= endHour) ) {
-                    
+                    // accumulate all specified period and mode person trips.
+                    // highway trips are accumulated as vehicle trips
                     for (i=0; i < tripModes.size(); i++) {
                         if ( ((String)tripModes.get(i)).equalsIgnoreCase( mode ) ) {
                             
@@ -420,10 +423,12 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                             else
                                 trips = 1.0;
                             
-                            tripTable[o][d] += trips;
+                            tripTable[o][d] += trips*ptSampleRate;
                             totalValid++;
+
+                            break;
                         }
-                        break;
+                        
                     }
                     
                 }
@@ -445,7 +450,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         Iterator it = keys.iterator();
         logger.info ( "");
         logger.info ( String.format ("Mode Frequency Table of %s Trip File for %d to %d Period Trips:", fileName, startHour, endHour) );
-        logger.info ( String.format ( "%-8s %12s %16s %16s", "mode", "freq", "pct", "cumPct" ) );
+        logger.info ( String.format ( "%-12s %8s %16s %16s", "mode", "freq", "pct", "cumPct" ) );
         logger.info ( "-----------------------------------------------------" );
         double cumPct = 0.0;
         while ( it.hasNext() ) {
@@ -453,10 +458,10 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
             int value = (Integer)periodModeFreqMap.get(mode);
             double pct = value*100.0/totalPeriod;
             cumPct += pct;
-            logger.info ( String.format ( "%-8s %12d %16.2f %16.2f", mode, value, pct, cumPct ) );
+            logger.info ( String.format ( "%-12s %8d %16.2f %16.2f", mode, value, pct, cumPct ) );
         }
         logger.info ( "-----------------------------------------------------" );
-        logger.info ( String.format ( "%-8s %12d %16.2f %16.2f", "Total", totalPeriod, 100.0, cumPct ) );
+        logger.info ( String.format ( "%-12s %8d %16.2f %16.2f", "Total", totalPeriod, 100.0, cumPct ) );
         logger.info ( "");
         
         
@@ -465,7 +470,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         it = keys.iterator();
         logger.info ( "");
         logger.info ( String.format ("Mode Frequency Table of %s Trip File for All Trips:", fileName) );
-        logger.info ( String.format ( "%-8s %12s %16s %16s", "mode", "freq", "pct", "cumPct" ) );
+        logger.info ( String.format ( "%-12s %8s %16s %16s", "mode", "freq", "pct", "cumPct" ) );
         logger.info ( "-----------------------------------------------------" );
         cumPct = 0.0;
         while ( it.hasNext() ) {
@@ -473,10 +478,10 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
             int value = (Integer)totalModeFreqMap.get(mode);
             double pct = value*100.0/total;
             cumPct += pct;
-            logger.info ( String.format ( "%-8s %12d %16.2f %16.2f", mode, value, pct, cumPct ) );
+            logger.info ( String.format ( "%-12s %8d %16.2f %16.2f", mode, value, pct, cumPct ) );
         }
         logger.info ( "-----------------------------------------------------" );
-        logger.info ( String.format ( "%-8s %12d %16.2f %16.2f", "Total", total, 100.0, cumPct ) );
+        logger.info ( String.format ( "%-12s %8d %16.2f %16.2f", "Total", total, 100.0, cumPct ) );
         logger.info ( "");
         
         logger.info ( "");
@@ -484,6 +489,14 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         for (i=0; i < tripModes.size(); i++)
             logger.info( (String)tripModes.get(i) );
         
+
+        totalVehicle = 0.0;
+        for(i=0; i < tripTable.length; i++)
+            for(int j=0; j < tripTable[i].length; j++)
+                totalVehicle += tripTable[i][j];
+        
+        logger.info ( "");
+        logger.info ( String.format( "%.0f total vehicle trips read from %s for %d to %d period triptable:", totalVehicle, fileName, startHour, endHour) );
         
         return tripTable;
             
@@ -585,6 +598,16 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 			if (tripsByAssignmentGroup[i] > 0)
 				logger.info ( tripsByAssignmentGroup[i] + " truck trips in assignment group " + (i+1) );
 
+        
+        double totalVehicle = 0.0;
+        for(int i=0; i < tripTable.length; i++)
+            for(int j=0; j < tripTable[i].length; j++)
+                for(int k=0; k < tripTable[i][j].length; k++)
+                    totalVehicle += tripTable[i][j][k];
+        
+        logger.info ( "");
+        logger.info ( String.format( "%.0f total vehicle trips read from %s for %d to %d period triptable:", totalVehicle, ctFileName, startHour, endHour) );
+        
 		return tripTable;
 
     }

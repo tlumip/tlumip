@@ -129,9 +129,18 @@ public class FW {
             }
             
             
+            
+            double ptSampleRate;
+            String ptSampleRateProperty = (String)globalPropertyMap.get("pt.sample.rate");
+            if ( ptSampleRateProperty != null )
+                ptSampleRate = Double.parseDouble( ptSampleRateProperty );
+            else
+                ptSampleRate = 1.0;
+            
+            
             AonFlowHandlerIF ah = AonFlowHandler.getInstance( nh.getRpcConfigFileName() );
             logger.info ( "FW.iterate() creating an AonFlowHandler and calling its setup()." ); 
-            ah.setup( nh.getRpcConfigFileName(), (String)appPropertyMap.get("sdt.fileName"), (String)appPropertyMap.get("ldt.fileName"), (String)appPropertyMap.get("ct.fileName"), startHour, endHour, highwayModeCharacters, nh );
+            ah.setup( nh.getRpcConfigFileName(), (String)appPropertyMap.get("sdt.fileName"), (String)appPropertyMap.get("ldt.fileName"), ptSampleRate, (String)appPropertyMap.get("ct.fileName"), startHour, endHour, highwayModeCharacters, nh );
             
             
             // loop thru FW iterations

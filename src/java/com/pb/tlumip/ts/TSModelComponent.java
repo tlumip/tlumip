@@ -84,6 +84,7 @@ public class TSModelComponent extends ModelComponent {
             if ( ts.setupHighwayNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
                 throw new Exception();
             logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+            
         }
         catch (Exception e) {
             logger.error ( "Exception caught setting up network in " + nh.getClass().getCanonicalName(), e );
@@ -106,10 +107,13 @@ public class TSModelComponent extends ModelComponent {
             System.exit(-1);
         }
         ts.loadAssignmentResults(nh_new, appRb);
-        ts.writeHighwaySkimMatrices ( nh_new, 'a' );
+        char[] hwyModeChars = { 'a' };        
+        ts.writeHighwaySkimMatrices ( nh_new, hwyModeChars );
 
 
         ts.assignAndSkimTransit ( nh_new,  appRb, globalRb );
+        
+        
     }
 
     

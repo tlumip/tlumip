@@ -201,7 +201,7 @@ public class ShortestPathTreeH {
             
             
             turnPenalty = 0.0;
-            if ( turnPenaltyIndices != null && predecessorLink[ia[k]] >= 0 )
+            if ( turnPenaltyIndices != null && turnPenaltyIndices.length > 0 && predecessorLink[ia[k]] >= 0 )
                 turnPenalty = getTurnPenalty( k, predecessorLink[ia[k]] );
 
             if(logger.isDebugEnabled()) {

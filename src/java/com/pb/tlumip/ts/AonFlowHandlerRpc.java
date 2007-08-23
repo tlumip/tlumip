@@ -62,7 +62,7 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
     // when an instance of this rpc handler is used to call the setup method of an AonFlowHandler running in
     // another VM, it is not necessary to send the NetworkHandler object handle and arrays must be converted to Lists, so the alternate  
     // setup method is used.  
-    public boolean setup( String rpcConfigFileName, String sdtFileName, String ldtFileName, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
+    public boolean setup( String rpcConfigFileName, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
 
         boolean returnValue = false;
         try {
@@ -70,6 +70,7 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
             params.add(rpcConfigFileName);
             params.add(sdtFileName);
             params.add(ldtFileName);
+            params.add(ptSampleRate);
             params.add(ctFileName);
             params.add(startHour);
             params.add(endHour);

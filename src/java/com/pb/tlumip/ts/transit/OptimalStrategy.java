@@ -24,10 +24,8 @@ import com.pb.common.matrix.Matrix;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.SortedSet;
@@ -217,17 +215,26 @@ public class OptimalStrategy {
             e.printStackTrace();
         }
 
+        // get the list of externals from the NetworkHandler.
+        int[] externals = nh.getExternalZoneLabels();
+
     
         // define which of the total set of centroids are within the Halo area and should have skim trees built
+        // include external zones (5000s)
         zonesToSkim = new int[nh.getMaxCentroid()+1];
         externalToAlphaInternal = new int[nh.getMaxCentroid()+1];
-        alphaExternalNumbers = new int[alphaNumberArray.length+1];
+        alphaExternalNumbers = new int[nh.getNumCentroids()+1];
         Arrays.fill ( zonesToSkim, 0 );
         Arrays.fill ( externalToAlphaInternal, -1 );
         for (int i=0; i < alphaNumberArray.length; i++) {
             zonesToSkim[alphaNumberArray[i]] = 1;
             externalToAlphaInternal[alphaNumberArray[i]] = i;
             alphaExternalNumbers[i+1] = alphaNumberArray[i];
+        }
+        for (int i=0; i < externals.length; i++) {
+            zonesToSkim[alphaNumberArray.length+i] = 1;
+            externalToAlphaInternal[externals[i]] = alphaNumberArray.length+i;
+            alphaExternalNumbers[alphaNumberArray.length+i+1] = externals[i];
         }
 
     }
@@ -283,16 +290,16 @@ public class OptimalStrategy {
     			}
     			
     			
-    			// get the highway network link index for the given transit network link index
-    			m = hwyLink[k];
-			
-
 				linkImped = nh.getLinkImped(k);
 				
 				// log some information about the starting condition of the candidate link being examined
 				if ( debug ) {
 					logger.info ("");
 					
+                    // get the highway network link index for the given transit network link index
+                    m = hwyLink[k];
+                
+
 					logger.info ("k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", trRoute=" + trRoute[k] + "(" + (trRoute[k] >= 0 ? nh.getRouteName(trRoute[k]) : "aux") + ")" );
 					logger.info ("nodeLabel[ag.ia=" + ia[k] + "]=" + nodeLabel[ia[k]]);
 					logger.info ("nodeLabel[ag.ib=" + ib[k] + "]=" + nodeLabel[ib[k]]);
@@ -390,6 +397,10 @@ public class OptimalStrategy {
 				// log some information about the ending condition of the candidate link being examined
 				if ( debug && inStrategy[k] ) {
 					
+                    // get the highway network link index for the given transit network link index
+                    m = hwyLink[k];
+                
+
 					logger.info ("");
 					logger.info ("k=" + k + ", linkType=" + linkType[k] + ", trRoute=" + trRoute[k]);
 					logger.info ("ag.ia[k]=" + ia[k] + "(g.an=" + (m >= 0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + ( m>=0 ? indexNode[gib[m]] : -1) + ")");
@@ -447,7 +458,6 @@ public class OptimalStrategy {
         }
         for (i=start; i < end; i++) {
             k = indexb[i];
-            m = hwyLink[k];
 
             // if link k is a boarding link, but the in-vehicle link that follows it (link k+1) is not in the strategy,
             // don't add link k to the heap.
@@ -462,8 +472,10 @@ public class OptimalStrategy {
             if ( nodeLabel[ia[k]] < (nodeLabel[ib[k]] + linkImped) )
                 continue;
 
-            if (debug)
+            if (debug) {
+                m = hwyLink[k];
                 logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + linkType[k] + ", ia=" + ia[k] + "(" + (m>=0 ? indexNode[gia[m]] : -1) + "), ib=" + ib[k] + "(" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkLabel[k]=" + String.format("%15.6f", linkLabel[k]) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ib[k]] + ", linkImped=" + linkImped);
+            }
 
             HeapElement he = new HeapElement(k, linkType[k], linkLabel[k]);
             
@@ -1113,7 +1125,7 @@ public class OptimalStrategy {
 
 
 
-	public void computeOptimalStrategySkimMatrices () {
+	public void computeOptimalStrategySkimMatrices (String period, String accessMode, String routeType) {
 
         // get skim values into 0-based double[][] dimensioned to number of actual zones including externals (2983)
         float[][][] zeroBasedFloatArrays = new float[NUM_SKIMS][][];
@@ -1123,7 +1135,7 @@ public class OptimalStrategy {
 		for (int dest=0; dest < nh.getNumCentroids(); dest++) {
 		    
 		    if ( dest % 100 == 0 ) {
-		        logger.info ( "generating skims to zone " + dest + " at " + DateFormat.getDateTimeInstance().format(new Date()) );
+		        logger.info ( "generating " + period + " " + accessMode + " " + routeType + " skims to zone " + dest + "." );
 		    }
 		    
 		    
@@ -1202,9 +1214,9 @@ public class OptimalStrategy {
 
         int[] skimsInternalToExternal = indexNode;
 
-        // convert the zero-based double[2983][2983] produced by the skimming procedure
-        // to a zero-based float[2950][2950] for alpha zones to be written to skims file.
-        float[][] zeroBasedFloatArray = new float[alphaNumberArray.length][alphaNumberArray.length];
+        // convert the zero-based double[alphas+externals][alphas+externals] produced by the skimming procedure, with network centroid/zone index mapping
+        // to a zero-based float[alphas+externals][alphas+externals] with indexZone mapping to be written to skims file.
+        float[][] zeroBasedFloatArray = new float[nh.getNumCentroids()][nh.getNumCentroids()];
         
         int exRow;
         int exCol;

@@ -83,11 +83,20 @@ public class HwyDistSkimsTest {
 
 		logger.info ("done building Network object.");
         
-        Skims sk = new Skims( nh, tsPropertyMap, globalPropertyMap );
+        Skims sk = new Skims( nh, rb, globalRb );
 		logger.info ("done building Skims object.");
 
 
-		Matrix distSkimMatrix = sk.getHwySkimMatrix( period, "dist", 'a' );
+        double[][] linkAttribs = new double[1][];
+        linkAttribs[0] = nh.getDist();
+        
+        String[] matrixName = new String[1];
+        matrixName[0] = "dist";
+        
+        String[] matrixDescription = new String[1];
+        matrixDescription[0] = "Skims.main() test dist matrix";
+        
+        Matrix[] distSkimMatrix = sk.getHwySkimMatrices ( "peak", linkAttribs, matrixName, matrixDescription, 'a' );
 		logger.info ("done computing peak sov distance skims.");
 
 		
@@ -96,7 +105,7 @@ public class HwyDistSkimsTest {
 		logger.info ("done reading peak sov distance skims from databank.");
 		
 		
-		test.writeSkimsToCsv ( distSkimMatrix, databankMatrix );
+		test.writeSkimsToCsv ( distSkimMatrix[0], databankMatrix );
 		
 
 		

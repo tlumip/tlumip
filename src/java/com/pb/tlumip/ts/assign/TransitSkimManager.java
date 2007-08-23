@@ -194,6 +194,7 @@ public class TransitSkimManager {
                     invalidArgs ( period, accessMode, routeType );
                 }
                 routeFiles = d221File;
+                routeTypes = rteType;
             }
             else if ( routeType.equalsIgnoreCase("hsr") ) {
                 accessMode = "driveLdt";
@@ -209,6 +210,7 @@ public class TransitSkimManager {
                     invalidArgs ( period, accessMode, routeType );
                 }
                 routeFiles = d221File;
+                routeTypes = rteType;
             }
             else if ( routeType.equalsIgnoreCase("intercity") ) {
                 accessMode = "driveLdt";
@@ -224,6 +226,7 @@ public class TransitSkimManager {
                     invalidArgs ( period, accessMode, routeType );
                 }
                 routeFiles = d221File;
+                routeTypes = rteType;
             }
             else if ( routeType.equalsIgnoreCase("intracity") ) {
                 routeFiles = d221Files;
@@ -283,7 +286,7 @@ public class TransitSkimManager {
 
         
         // generate a set of output zip format peak walk transit skims
-        Matrix[] skims = getTransitSkims ( period, accessMode );
+        Matrix[] skims = getTransitSkims ( period, accessMode, routeType );
         
         if ( skims.length > skimFileNames.length ) {
             logger.error( "fewer skims filenames were generated than skim tables were produced." );
@@ -345,7 +348,7 @@ public class TransitSkimManager {
         
     }
         
-	private Matrix[] getTransitSkims ( String period, String accessMode ) {
+	private Matrix[] getTransitSkims ( String period, String accessMode, String routeType ) {
         
 		
 		// create an optimal strategy object for this highway and transit network
@@ -353,7 +356,7 @@ public class TransitSkimManager {
 
         os.initSkimMatrices ( (String)globalPropertyMap.get("alpha2beta.file"), skimTablesOrder );
         
-        os.computeOptimalStrategySkimMatrices();
+        os.computeOptimalStrategySkimMatrices( period, accessMode, routeType );
         
         Matrix[] transitSkims = os.getSkimMatrices();
 		

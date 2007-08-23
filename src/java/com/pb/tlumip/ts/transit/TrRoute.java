@@ -729,11 +729,6 @@ public class TrRoute implements Serializable {
 
 		for (int rte=0; rte < transitPath.length; rte++) {
             
-            int dummy=0;
-            if ( rte == 318 ) {
-                dummy = 1;
-            }
-            
 			for (int seg=0; seg < transitPath[rte].size(); seg++) {
 			    
                 try {
@@ -792,7 +787,8 @@ public class TrRoute implements Serializable {
                             
                             int[] nodes = null;
                             try {
-                                nodes = sp.getNodeList (nodeIndex[ts.an], nodeIndex[ts.bn]);
+                                // get the node list (in external node numbers) for the current shortest path in ShortestPathTreeH.
+                                nodes = sp.getNodeList ();
                             }catch ( Exception e ) {
                                 logger.error ( "path could not be built from " + ts.an + " to " + ts.bn + " in route " + rte + ", " + getLine(rte), e );
                                 System.exit(-1);
@@ -805,30 +801,30 @@ public class TrRoute implements Serializable {
                             // ts.alight refers to alighting at bnode of segment
                             
                             // first segment replaces the one just removed and allows boarding only (bnode is an intermediate node in the path and therefore has no alighting)
-                            int a = nodes[0];
-                            int b = nodes[1];
-                            String newPathString = String.format("%d", indexNode[a]);
+                            int an = nodes[0];
+                            int bn = nodes[1];
+                            String newPathString = String.format("%d", an);
                             
                             tsNew = ts.segmentCopy(ts, this);
-                            tsNew.an = indexNode[a];
-                            tsNew.bn = indexNode[b];
+                            tsNew.an = an;
+                            tsNew.bn = bn;
                             if ( ! ts.layover )
                                 tsNew.lay = 0.0;
                             tsNew.board = true;
                             tsNew.alight = false;
                             transitPath[rte].add(seg++, tsNew);
                             
-                            newPathString += String.format("  %d", indexNode[b]);
+                            newPathString += String.format("  %d", bn);
                             
                             // intermediate segments up to and including the last node allows neither boarding or alighting at anode
                             for (int j=2; j < nodes.length - 1; j++) {
-                                a = b;
-                                b = nodes[j];
-                                newPathString += String.format("  %d", indexNode[b]);
+                                an = bn;
+                                bn = nodes[j];
+                                newPathString += String.format("  %d", bn);
 
                                 tsNew = ts.segmentCopy(ts, this);
-                                tsNew.an = indexNode[a];
-                                tsNew.bn = indexNode[b];
+                                tsNew.an = an;
+                                tsNew.bn = bn;
                                 tsNew.lay = 0.0;
                                 tsNew.board = false;
                                 tsNew.alight = false;
@@ -836,13 +832,13 @@ public class TrRoute implements Serializable {
                             }
 
                             // last segment allows alighting
-                            a = b;
-                            b = nodes[nodes.length - 1];
-                            newPathString += String.format("  %d", indexNode[b]);
+                            an = bn;
+                            bn = nodes[nodes.length - 1];
+                            newPathString += String.format("  %d", bn);
 
                             tsNew = ts.segmentCopy(ts, this);
-                            tsNew.an = indexNode[a];
-                            tsNew.bn = indexNode[b];
+                            tsNew.an = an;
+                            tsNew.bn = bn;
                             if ( ! ts.layover )
                                 tsNew.lay = 0.0;
                             tsNew.board = false;
@@ -852,7 +848,7 @@ public class TrRoute implements Serializable {
                             // reset the seg index number so the next original segment will be processed afetr the new ones are added
                             seg -= nodes.length;
                             
-                            //if (logger.isDebugEnabled())
+                            if (logger.isDebugEnabled())
                                 logger.info ("building path from " + ts.an + " to " + ts.bn + " for route " + rte + ", " + getLine(rte) + ": " + newPathString);
 
                         }
@@ -887,6 +883,10 @@ public class TrRoute implements Serializable {
 		return headway[rte];
 	}
 
+    public String getRouteType(int rte) {
+        return routeType[rte];
+    }
+    
     public String[] getRouteTypes() {
         return routeType;
     }

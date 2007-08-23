@@ -83,7 +83,6 @@ public class Network implements Serializable {
 	double WALK_SPEED;
 
 	
-	int numAlphazones;
 	int maxCentroid;
 	int numCentroids;
 	int maxNode;
@@ -97,7 +96,8 @@ public class Network implements Serializable {
 
     String[] linkLabels = null;
     boolean[] validLinks = null;
-	boolean[][] validLinksForClass = null;
+    boolean[][] validLinksForClass = null;
+    int[][] onewayLinksForClass = null;
     int[] indexNode = null;
     int[] nodeIndex = null;
     int[] internalNodeToNodeTableRow = null;
@@ -107,6 +107,7 @@ public class Network implements Serializable {
     int[] ipb;
 	int[] ia;
 	int[] ib;
+    int[] uniqueIds;
 
 	TableDataSet nodeTable = null;
 	TableDataSet linkTable = null;
@@ -124,6 +125,8 @@ public class Network implements Serializable {
     int[][] turnPenaltyIndices = null;
     float[][] turnPenaltyArray = null;
 	float[][][] turnTable = null;
+    
+    int[] externalZoneLabels = null;
 
 
 
@@ -138,12 +141,8 @@ public class Network implements Serializable {
         String extraAttribsFile = propertyValues[NetworkHandlerIF.EXTRA_ATTRIBS_FILENAME_INDEX];
         
 
-        // get the filename for the alpha/beta zone correspomdence file and 
-        // create an object for defining the extent of the study area
-        String zoneIndexFile = propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX];
-        AlphaToBeta a2b = new AlphaToBeta(new File(zoneIndexFile));
-        this.numAlphazones = a2b.alphaSize();
-        this.maxCentroidLabel = a2b.getMaxAlphaZone();
+        this.maxCentroidLabel = getMaxCentroid( propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] );
+
         this.minCentroidLabel = 1;
 
 
@@ -189,7 +188,7 @@ public class Network implements Serializable {
 		
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.error ( "", e );
 		}
 
 		// read link function definitions files (delay functions and integrals functions)		
@@ -239,6 +238,11 @@ public class Network implements Serializable {
 			fpLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "fp" ), "turnIndex" );
 			setTurnPenalties( turnDefs );
 		}
+        else {
+            turnTable = new float[0][0][0];
+            turnPenaltyIndices = new int[0][0];
+            turnPenaltyArray = new float[0][0];
+        }
 
 
 		// define link calculators for use in computing objective function and lambda vales
@@ -257,6 +261,10 @@ public class Network implements Serializable {
             if ( intNode >= 0 )
                 internalNodeToNodeTableRow[intNode] = i;
         }
+        
+        
+        // set the link oneway attribute values
+        setOnewayLinks();
         
     }
 
@@ -306,9 +314,17 @@ public class Network implements Serializable {
 		return sortedLinkIndexA;
 	}
 
-	public int[] getIndexNode () {
-		return indexNode;
-	}
+    public int[] getIndexNode () {
+        return indexNode;
+    }
+
+    public int getExternalNode (int internalNode) {
+        return indexNode[internalNode];
+    }
+
+    public int getInternalNode (int externalNode) {
+        return nodeIndex[externalNode];
+    }
 
     public int[] getNodeIndex () {
         return nodeIndex;
@@ -391,6 +407,14 @@ public class Network implements Serializable {
         return linkTable.getColumnAsInt( "type" );
     }
 
+    public int[] getTaz () {
+        return linkTable.getColumnAsInt( "taz" );
+    }
+
+    public int[] getUniqueIds () {
+        return linkTable.getColumnAsInt( "uniqueIds" );
+    }
+
     public double[] getLanes () {
         return linkTable.getColumnAsDouble( "lanes" );
     }
@@ -451,6 +475,10 @@ public class Network implements Serializable {
     
     public double[] getVolau() {
         return linkTable.getColumnAsDouble( "volau" );
+    }
+    
+    public double[] getVolad() {
+        return linkTable.getColumnAsDouble( "volad" );
     }
     
     public int[] getNodes () {
@@ -520,6 +548,10 @@ public class Network implements Serializable {
         return validLinksForClass[userClassIndex];
     }
 
+    public int[] getOnewayLinksForClass ( int userClass ) {
+        return onewayLinksForClass[userClass];
+    }
+
     public String getAssignmentResultsString () {
         return OUTPUT_FLOW_FIELDS_START_WITH;
     }
@@ -552,21 +584,30 @@ public class Network implements Serializable {
         linkTable.setColumnAsDouble( linkTable.getColumnPosition("congestedTime"), timau );
     }
 
-    public void setCapacity ( double[] capacity ) {
-        linkTable.appendColumn( capacity, "capacity" );
-    }
-
-    public void setOriginalCapacity ( double[] originalCapacity ) {
-        linkTable.appendColumn( originalCapacity, "originalCapacity" );
-    }
-
-    public void setTotalCapacity ( double[] totalCapacity ) {
-        linkTable.appendColumn( totalCapacity, "totalCapacity" );
+    public void setTaz ( int[] taz ) {
+        linkTable.appendColumn( taz, "taz" );
     }
 
     public void setLinkLabels ( String[] labels ) {
         linkLabels = labels;
         linkTable.appendColumn( labels, "label" );
+    }
+
+    public void setUniqueIds ( int[] ids ) {
+        uniqueIds = ids;
+        linkTable.appendColumn( ids, "uniqueIds" );
+    }
+
+    public void setOriginalCapacity ( double[] originalCapacity ) {
+        linkTable.setColumnAsDouble( linkTable.getColumnPosition("originalCapacity"), originalCapacity );
+    }
+
+    public void setCapacity ( double[] capacity ) {
+        linkTable.setColumnAsDouble( linkTable.getColumnPosition("capacity"), capacity );
+    }
+
+    public void setTotalCapacity ( double[] totalCapacity ) {
+        linkTable.setColumnAsDouble( linkTable.getColumnPosition("totalCapacity"), totalCapacity );
     }
 
     public void setVolCapRatios () {
@@ -742,6 +783,8 @@ public class Network implements Serializable {
                 OLD_CSVFileReader reader = new OLD_CSVFileReader();
                 TableDataSet table = reader.readFile( new File(filename) );
 
+                int[] tazs = new int[table.getRowCount()];
+                int[] uniqueIds = new int[table.getRowCount()];
                 double[] capacity = new double[table.getRowCount()];
                 double[] originalCapacity = new double[table.getRowCount()];
                 double[] totalCapacity = new double[table.getRowCount()];
@@ -752,32 +795,34 @@ public class Network implements Serializable {
                     
                     int an = (int)table.getValueAt( i+1, "FNODE" );
                     int bn = (int)table.getValueAt( i+1, "TNODE" );
+                    int uniqueId = (int)table.getValueAt( i+1, "UNIQID" );
                     int cap = (int)table.getValueAt( i+1, "CAPACITY" );
+                    int taz = (int)table.getValueAt( i+1, "NEWTAZ" );
                     
                     int k = getLinkIndex(an,bn);
                     
-                    capacity[k] = cap;
-                    labels[k] = an + "_" + bn;
-                    
-                    int lanes = (int)linkTable.getValueAt( k+1, "lanes" );
-                    
-                    originalCapacity[k] = capacity[k];
-                    capacity[k] /= volumeFactor;
+                    tazs[k] = taz;
 
-                    
+                    int lanes = (int)linkTable.getValueAt( k+1, "lanes" );
+                    originalCapacity[k] = cap;
+                    capacity[k] = cap / volumeFactor;
                     // the following variables are needed for the VDF Integrals definitions
                     totalCapacity[k] = 0.75 * capacity[k] * lanes;
 
+                    labels[k] = an + "_" + bn;
+                    uniqueIds[k] = uniqueId;
                 }
 
+                setTaz(tazs);
                 setCapacity(capacity);
-                setOriginalCapacity(capacity);
-                setTotalCapacity(capacity);
+                setOriginalCapacity(originalCapacity);
+                setTotalCapacity(totalCapacity);
                 setLinkLabels(labels);
+                setUniqueIds(uniqueIds);
                 
             }
             catch (IOException e) {
-                logger.error ( "exception causght reading extra attributes file: " + filename, e );
+                logger.error ( "exception caught reading extra attributes file: " + filename, e );
             }
                         
         }
@@ -1226,7 +1271,7 @@ public class Network implements Serializable {
                         
                         // if the node pair is same in each direction, this is an isolated link:
                         if (ia[aExit] == ib[bExit] && ib[aExit] == ia[bExit]) {
-                            logger.error ( "link pair " + aExit + "[" + indexNode[ia[aExit]] + "," + indexNode[ib[aExit]] + "] and " + bExit + "[" + indexNode[ia[bExit]] + "," + indexNode[ib[bExit]] + "] is disconnected from network.");
+                            logger.error ( "link pair " + aExit + "[" + indexNode[ia[aExit]] + "," + indexNode[ib[aExit]] + "], UNIQID=" + uniqueIds[aExit] + " and " + bExit + "[" + indexNode[ia[bExit]] + "," + indexNode[ib[bExit]] + "], UNIQID=" + uniqueIds[bExit] + " is disconnected from network.");
                             errorsFound = true;
                         }
                     
@@ -1244,7 +1289,7 @@ public class Network implements Serializable {
                         // if the node pair is same in each direction and links are not centroid connectors, these are hanging links
                         if (!centroid[i] && ia[aExit] == ib[bExit] && ib[aExit] == ia[bExit]) {
                             if ( msgNodeUsed[ia[aExit]] == NOT_USED_FLAG ) {
-                                msgList.add ( "node " + indexNode[ia[aExit]] + " is dangling from the network.  link pair " + bExit + "[" + indexNode[ia[bExit]] + "," + indexNode[ib[bExit]] + "] and " + aExit + "[" + indexNode[ia[aExit]] + "," + indexNode[ib[aExit]] + "].");
+                                msgList.add ( "node " + indexNode[ia[aExit]] + " is dangling from the network.  link pair " + bExit + "[" + indexNode[ia[bExit]] + "," + indexNode[ib[bExit]] + "] and " + aExit + "[" + indexNode[ia[aExit]] + "," + indexNode[ib[aExit]] + "], UNIQIDs=" + uniqueIds[bExit] + "," + uniqueIds[aExit] + ".");
                                 msgNodes[k++] = indexNode[ia[aExit]];
                                 msgNodeUsed[ia[aExit]] = indexNode[ia[aExit]];
                             }
@@ -1283,7 +1328,47 @@ public class Network implements Serializable {
 
 	
 	
+	private void setOnewayLinks () {
+        
+        onewayLinksForClass = new int[userClasses.length][ia.length];
+        
+        for (int userClass=0; userClass < userClasses.length; userClass++) {
+            
+            for (int i=0; i < ia.length; i++) {
+                
+                // mark ia and ib value of link
+                int iaTemp = ia[i];
+                int ibTemp = ib[i];
 
+                // initialize link to oneway to 0 (false), the default value in case it's not a valid link for the userclass. 
+                int oneway = 0;
+                
+                if ( !validLinksForClass[userClass][i] )
+                    continue;
+                
+                // set its oneway value to 1, the asserted value, which will be changed to 0 if an opposite drection link is found.
+                oneway = 1;
+                
+                // loop over links exiting bnode of link i
+                for (int j=ipa[ibTemp]; j < ipa[ibTemp+1]; j++) {
+                    
+                    int k = sortedLinkIndexA[j];
+                    
+                    // if the ia and ib of this link equals the ib and ia of the original link, then link i is two-way.
+                    if ( ia[k] == ibTemp && ib[k] == iaTemp ) {
+                        oneway = 0;
+                        break;
+                    }
+                    
+                }
+                
+                onewayLinksForClass[userClass][i] = oneway;
+                
+            }
+
+        }
+
+    }
 
 
 
@@ -1424,6 +1509,31 @@ public class Network implements Serializable {
         }
 
         return returnValue;
+        
+    }
+
+    
+    
+    public int[] getLinksEnteringNode( int n ) {
+
+        // takes external node number and returns link indices entering that node
+        
+        int numLinksEntering = ipb[nodeIndex[n]+1] - ipb[nodeIndex[n]];
+        int[] result = new int[numLinksEntering];
+                               
+        int count = 0;
+        for (int i=ipb[nodeIndex[n]]; i < ipb[nodeIndex[n]+1]; i++) {
+            
+            int k = sortedLinkIndexB[i];
+            
+            int an = indexNode[ia[k]];
+            int id = getLinkIndex( an, n );
+            result[count] = id;
+            count++;
+            
+        }
+
+        return result;
         
     }
 
@@ -1761,8 +1871,7 @@ public class Network implements Serializable {
 		
 		}
 		catch (IOException e) {
-			logger.fatal ("I/O exception writing network attributes file.");
-			e.printStackTrace();
+			logger.fatal ("I/O exception writing network attributes file.", e);
 		}
 
 	}
@@ -1770,6 +1879,36 @@ public class Network implements Serializable {
 
     private boolean isValidDoubleValue( double value ) {
         return ( value >= -Double.MAX_VALUE && value <= Double.MAX_VALUE );
+    }
+
+    
+    public int[] getExternalZoneLabels () {
+     
+        //TODO: get this list from the correspondence file between 5000 zones and 6000 zones
+        int[] externalNumbers = { 5001, 5002, 5003, 5004, 5005, 5006, 5007, 5008, 5009, 5010, 5011, 5012 };
+        
+        return externalNumbers;
+        
+    }
+
+
+    private int getMaxCentroid( String zoneIndexFile ) {
+        
+        // get the filename for the alpha/beta zone correspomdence file and 
+        // create an object for defining the extent of the study area
+        AlphaToBeta a2b = new AlphaToBeta(new File(zoneIndexFile));
+        int maxAlphaZone = a2b.getMaxAlphaZone();
+        
+        int[] externals = getExternalZoneLabels();
+        int maxExternalZone = 0;
+        for (int i=0; i < externals.length; i++)
+            if ( externals[i] > maxExternalZone)
+                maxExternalZone = externals[i];
+        
+        int maxCentroid = Math.max(maxAlphaZone, maxExternalZone);
+        
+        return maxCentroid;
+        
     }
 
 }

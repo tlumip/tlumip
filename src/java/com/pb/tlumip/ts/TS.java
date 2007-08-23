@@ -37,8 +37,11 @@ import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.util.*;
@@ -131,6 +134,9 @@ public class TS {
         nh.writeNetworkAttributes( assignmentResultsFileName );
 
 		
+        logger.info("Checking network connectivity and computing TLDs after " + assignmentPeriod + " period assignment.");
+        checkODPairsWithTripsForNetworkConnectivity(nh);
+        
         
         logger.info( "\ndone with " + assignmentPeriod + " period assignment."); 
         
@@ -152,7 +158,7 @@ public class TS {
 				Arrays.fill(dummyTripTable[i][j], 1.0);
 			}
 		}
-		checkODConnectivity(nh, dummyTripTable);
+		checkODConnectivity(nh, dummyTripTable, "peak");
 
     }
     
@@ -160,39 +166,57 @@ public class TS {
     
     public void checkODPairsWithTripsForNetworkConnectivity (NetworkHandlerIF nh) {
         
-        String timePeriod = "peak";
-        int startHour = 600;
-        int endHour = 900;
+        HashMap globalMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
+
+        String timePeriod = nh.getTimePeriod();
+        int startHour = -1;
+        int endHour = -1;
+        
+        if ( timePeriod.equalsIgnoreCase("peak")) {
+            startHour = Integer.parseInt( (String)globalMap.get("AM_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalMap.get("AM_PEAK_END") );
+        }
+        else {
+            startHour = Integer.parseInt( (String)globalMap.get("OFF_PEAK_START") );
+            endHour = Integer.parseInt( (String)globalMap.get("OFF_PEAK_END") );
+        }
         
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF d = DemandHandler.getInstance();
-        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("sdt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ldt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("sdt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ldt.fileName"), Double.parseDouble((String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("pt.sample.rate")), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         d.buildHighwayDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
-		checkODConnectivity(nh, multiclassTripTable);
+		checkODConnectivity(nh, multiclassTripTable, timePeriod);
     }
 
     
     
     
-    public void checkODConnectivity ( NetworkHandlerIF nh, double[][][] trips ) {
+    public void checkODConnectivity ( NetworkHandlerIF nh, double[][][] trips, String timePeriod ) {
 
-        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-
-        String timePeriod = "peak";
-        
         double[][] linkAttributes = new double[2][];
         linkAttributes[0] = nh.getDist();
         linkAttributes[1] = nh.getCongestedTime();
         
+        String[] names = new String[2];
+        names[0] = "test1";
+        names[1] = "test1";
+
+        String[] description = new String[2];
+        description[0] = "checkODConnectivity dist matrix";
+        description[1] = "checkODConnectivity time matrix";
+
         char[] userClasses = nh.getUserClasses();
 
-        Skims skims = new Skims( nh, tsPropertyMap, globalPropertyMap );
+        Skims skims = new Skims( nh, appRb, globalRb );
 
+        double[] distFreqs = null;
+        double[] timeFreqs = null;
         
+        
+            
         for (int m=0; m < userClasses.length; m++) {
 
             double total = 0.0;
@@ -206,19 +230,56 @@ public class TS {
             
             if (total > 0.0) {
 
-                Matrix[] skimMatrices = skims.getHwySkimMatrices( timePeriod, linkAttributes, userClasses[m] );
+                Matrix[] skimMatrices = skims.getHwySkimMatrices( timePeriod, linkAttributes, names, description, userClasses[m] );
 
                 logger.info( "Total " + timePeriod + " demand for subnetwork " + userClasses[m] + " (class " + m + ") = " + total + " trips."); 
 
-                double[] distSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[0] );
+                double[] distSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[0], nh.getIndexNode() );
+                distFreqs = skims.getSkimTripFreqs();
                 
                 logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + timePeriod + " trip travel distance = " + distSummaries[0] + " miles."); 
                 logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on distance = " + distSummaries[1]);
 
-                double[] timeSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[1] );
+                double[] timeSummaries = skims.getAvgTripSkims ( trips[m], skimMatrices[1], nh.getIndexNode() );
+                timeFreqs = skims.getSkimTripFreqs();
                 
-                logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + timePeriod + " trip travel time = " + timeSummaries[1] + " minutes."); 
+                logger.info( "Average subnetwork " + userClasses[m] + " (class " + m + ") " + timePeriod + " trip travel time = " + timeSummaries[0] + " minutes."); 
                 logger.info( "Number of disconnected O/D pairs in subnetwork " + userClasses[m] + " (class " + m + ") based on time = " + timeSummaries[1]);
+
+                
+                
+                HashMap appMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+                String fileName = (String)appMap.get("timeDistTripFreqs.fileName");
+                
+                if ( fileName != null ) {
+
+                    int index = fileName.indexOf(".csv");
+                    if ( index < 0 )
+                        fileName += "_" + String.valueOf(userClasses[m]) + "_" + timePeriod;
+                    else {
+                        fileName = fileName.substring(0, index);
+                        fileName += "_" + String.valueOf(userClasses[m]) + "_" + timePeriod + ".csv";
+                    }
+                    
+
+                    try {
+                        
+                        PrintWriter outStream =  new PrintWriter(new BufferedWriter( new FileWriter( fileName ) ) );
+
+                        outStream.println( "interval,minuteTrips,mileTrips" );
+                        
+                        for (int i=0; i < Math.max( timeFreqs.length, distFreqs.length); i++) {
+                            String record = String.format("%d,%.1f,%.1f", i, ( i < timeFreqs.length ? timeFreqs[i] : 0.0 ), ( i < distFreqs.length ? distFreqs[i] : 0.0 ) );
+                            outStream.println( record );
+                        }
+                            
+                        outStream.close();
+
+                    }
+                    catch (IOException e) {
+                        logger.fatal("IO Exception writing trip length frequencies for time and distance to file: " + fileName, e );
+                    }
+                }
                 
             }
             else {
@@ -234,41 +295,17 @@ public class TS {
     
     
     
-    public void writeHighwaySkimMatrix ( NetworkHandlerIF nh, String assignmentPeriod, String skimType, char modeChar ) {
-
-        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-
-		logger.info("Writing " + assignmentPeriod + " time skim matrix for highway mode " + modeChar + " to disk...");
-        long startTime = System.currentTimeMillis();
+    public void writeHighwaySkimMatrices ( NetworkHandlerIF nh, char[] hwyModeChars ) {
         
-    	Skims skims = new Skims(nh, tsPropertyMap, globalPropertyMap);
-    	
-        skims.writeHwySkimMatrix ( assignmentPeriod, skimType, modeChar);
-
-        logger.info("wrote the " + assignmentPeriod + " " + skimType + " skims for mode " + modeChar + " in " +
-    			((System.currentTimeMillis() - startTime) / 1000.0) + " seconds");
-
-    }
-
-
-    
-    public void writeHighwaySkimMatrices ( NetworkHandlerIF nh, char modeChar ) {
-
+        Skims skims = new Skims(nh, appRb, globalRb);
+        
         String assignmentPeriod = nh.getTimePeriod();
-        long startTime = System.currentTimeMillis();
-        logger.info("Writing " + assignmentPeriod + " time, dist and toll skim matrices for highway mode " + modeChar + " to disk...");
 
-        
-        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-        HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-    	Skims skims = new Skims(nh, tsPropertyMap, globalPropertyMap);
-        
-        String[] skimTypeArray = { "time", "dist", "toll" };
-        skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, modeChar);
-
-        
-        logger.info("wrote the " + assignmentPeriod + " time, dist and toll skims for mode " + modeChar + " in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
+        for ( char mode : hwyModeChars ) {
+            logger.info( String.format("Compute shortest generalized cost trees for skimming %s time, dist and toll skim matrices for highway mode '%c' ...", assignmentPeriod, mode) );
+            String[] skimTypeArray = { "time", "dist", "toll" };
+            skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, mode );
+        }
 
     }
 
@@ -294,7 +331,11 @@ public class TS {
         
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
-        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("sdt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ldt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        double sampleRate = 1.0;
+        String rateString = (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("pt.sample.rate");
+        if ( rateString != null )
+            sampleRate = Double.parseDouble( rateString );
+        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("sdt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ldt.fileName"), sampleRate, (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         
         double[][] tripTable = d.getTripTablesForModes ( tripModeList );
         
@@ -323,7 +364,7 @@ public class TS {
         for ( int d=0; d < nh.getNumCentroids(); d++ ) {
             
             if ( d % 100 == 0 )
-                logger.info( "loading " + assignmentPeriod + " period " + accessMode + " transit trips for destination zone " + d);
+                logger.info( "loading " + assignmentPeriod + " " + accessMode + " " + routeType + " transit trips for destination zone " + d + "." );
             
             os.buildStrategy( d );
             
@@ -403,7 +444,7 @@ public class TS {
                 if ( routeBoardings.containsKey(rteName) )
                     savedInfo = (SavedRouteInfo)routeBoardings.get(rteName);
                 else
-                    savedInfo = new SavedRouteInfo(tr.getDescription(rte), tr.getMode(rte));
+                    savedInfo = new SavedRouteInfo(tr.getDescription(rte), tr.getMode(rte), tr.getRouteType(rte) );
                 
                 index = 2*routeTypeIndex + accessIndex;
                 savedInfo.boardings[index] += transitBoardings[rte];
@@ -420,24 +461,121 @@ public class TS {
     }
 
     
-   
-    public void logTransitBoardingsReport ( HashMap savedBoardings, String periodHeadingLabel ) {
+    private ArrayList formatLogHeaderLines( String periodHeadingLabel, String routeType, String descrFormat ) {
+     
+        ArrayList outputLines = new ArrayList();
         
-        Set routeNames = null;
-        Iterator it = null; 
-            
-            
-        logger.info ("");
-        logger.info ("");
-        logger.info ("Transit Network Loading Report for " + periodHeadingLabel + " period Trips");
-        logger.info ("");
+        String title = String.format ( "Transit Network Boardings Report for %s Period %s Trips\n", periodHeadingLabel, routeType );
+        String dashes = "";
+        for (int i=0; i < title.length(); i++)
+            dashes += "-";
+        dashes += "\n";
+        
+        outputLines.add( dashes );
+        outputLines.add( title );
+        outputLines.add( dashes );
+        outputLines.add( "\n" );
+        outputLines.add( "\n" );
+        
+        String outputString = String.format("%-6s %-9s " + descrFormat + " %-10s %-6s %8s %8s    %8s %8s    %8s %8s    %8s %8s    %8s %8s    %8s\n", "Count", "Route", "Description", "RouteType", "Mode", "wAir", "dAir", "wHsr", "dHsr", "wIc", "dIc", "wt", "dt", "wTot", "dTot", "Total") ;
+
+        dashes = "";
+        for (int i=0; i < outputString.length(); i++)
+            dashes += "-";
+        dashes += "\n";
+        
+        outputLines.add( outputString );
+        outputLines.add( dashes );
+        
+        return outputLines;
+    }
+
+
+    private String formatLogRecord( String name, SavedRouteInfo info, String descrFormat, int lineCount ) {
+        double wTot = info.boardings[0] + info.boardings[2] + info.boardings[4] + info.boardings[6];
+        double dTot = info.boardings[1] + info.boardings[3] + info.boardings[5] + info.boardings[7];
+        String outputString = String.format("%-6d %-9s " + descrFormat + " %-10s  %-6c %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f\n", lineCount, name, info.description, info.routeType, info.mode, info.boardings[0], info.boardings[1], info.boardings[2], info.boardings[3], info.boardings[4], info.boardings[5], info.boardings[6], info.boardings[7], wTot, dTot, (wTot+dTot));
+        return outputString;
+    }
+
+    
+    private String formatLogTotalsRecord( double[] totals, String descrFormat ) {
+        String outputString = String.format("%-16s " + descrFormat + " %-10s  %-6s %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f\n", "Total Boardings", "", "", "", totals[0], totals[1], totals[2], totals[3], totals[4], totals[5], totals[6], totals[7], totals[8], totals[9], totals[10]) ;
+        return outputString;
+    }
 
         
+    private ArrayList formatCsvHeaderLines() {
+        ArrayList outputLines = new ArrayList();
+        outputLines.add("Count,Route,Description,RouteType,Mode,wAir,dAir,wHsr,dHsr,wIc,dIc,wt,dt,wTot,dTot,Total\n");
+        return outputLines;
+    }
+
+    
+    private String formatCsvRecord( String name, SavedRouteInfo info, int lineCount ) {
+        double wTot = info.boardings[0] + info.boardings[2] + info.boardings[4] + info.boardings[6];
+        double dTot = info.boardings[1] + info.boardings[3] + info.boardings[5] + info.boardings[7];
+        String outputString = String.format("%d,%s,%s,%s,%c,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", lineCount, name, info.description, info.routeType, info.mode, info.boardings[0], info.boardings[1], info.boardings[2], info.boardings[3], info.boardings[4], info.boardings[5], info.boardings[6], info.boardings[7], wTot, dTot, (wTot+dTot));
+        return outputString;
+    }
+
+
+    private double[] updateTotals( SavedRouteInfo info, double[] totals ) {
+    
+        double wTot = info.boardings[0] + info.boardings[2] + info.boardings[4] + info.boardings[6];
+        double dTot = info.boardings[1] + info.boardings[3] + info.boardings[5] + info.boardings[7];
+
+        for (int i=0; i < 8; i++)
+            totals[i] += info.boardings[i];
         
-        // construct a format string for the description field from the longest route description
+        totals[8] += wTot;
+        totals[9] += dTot;
+        totals[10] += (wTot + dTot);
+        
+        return totals;
+        
+    }
+    
+    
+    private ArrayList getCsvOutputLines ( HashMap savedBoardings, String type, int lineCount ) {
+        
+        ArrayList outputLines = new ArrayList();
+        double[] totals = new double[11];
+
+        // get the subset of route names that match type in sorted order
+        SortedSet< String > nameSet = new TreeSet< String >();
+        Iterator it = savedBoardings.keySet().iterator();
+        while ( it.hasNext() ) {
+            String name = (String)it.next();
+            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
+            if ( info.routeType.equalsIgnoreCase( type ) )
+                nameSet.add(name);
+        }
+        
+
+        // generate an output record for each route in the selected subset
+        it = nameSet.iterator();
+        while ( it.hasNext() ) {
+            String name = (String)it.next();
+            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
+            String outputString = formatCsvRecord( name, info, ++lineCount );
+            totals = updateTotals( info, totals );
+            outputLines.add( outputString );
+        }
+
+        return outputLines;
+        
+    }
+    
+    
+    private ArrayList getLogOutputLines ( HashMap savedBoardings, String type, String periodHeadingLabel, int lineCount ) {
+        
+        double[] totals = new double[11];
+
+
+        // construct a format string for the description field from the longest route description of any route
         int maxStringLength = 0;
-        routeNames = savedBoardings.keySet();
-        it = routeNames.iterator();
+        Iterator it = savedBoardings.keySet().iterator();
         while ( it.hasNext() ) {
             String name = (String)it.next();
             SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
@@ -446,27 +584,155 @@ public class TS {
         }
         String descrFormat = "%-" + (maxStringLength+4) + "s";
 
-
-        logger.info( String.format("%-6s %-9s " + descrFormat + " %-6c %8s %8s    %8s %8s    %8s %8s    %8s %8s    %8s %8s    %8s", "Count", "Route", "Description", "Mode", "wAir", "dAir", "wHsr", "dHsr", "wIc", "dIc", "wt", "dt", "wTot", "dTot", "Total") );
         
-        int lineCount = 0;
-        double[] totals = new double[11];
-        it = routeNames.iterator();
+
+        
+        // add header lines to output list
+        ArrayList outputLines = formatLogHeaderLines( periodHeadingLabel, type, descrFormat );
+
+
+        // get the subset of route names that match type in sorted order
+        SortedSet< String > nameSet = new TreeSet< String >();
+        it = savedBoardings.keySet().iterator();
         while ( it.hasNext() ) {
             String name = (String)it.next();
             SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
-            double wTot = info.boardings[0] + info.boardings[2] + info.boardings[4] + info.boardings[6];
-            double dTot = info.boardings[1] + info.boardings[3] + info.boardings[5] + info.boardings[7];
-            logger.info( String.format("%-6d %-9s " + descrFormat + " %-6c %8s %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f", ++lineCount, name, info.description, info.mode, "N/A", info.boardings[1], info.boardings[2], info.boardings[3], info.boardings[4], info.boardings[5], info.boardings[6], info.boardings[7], wTot, dTot, (wTot+dTot)) );
-            for (int i=0; i < 8; i++)
-                totals[i] += info.boardings[i];
-            totals[8] += wTot;
-            totals[9] += dTot;
-            totals[10] += (wTot + dTot);
+            if ( info.routeType.equalsIgnoreCase( type ) )
+                nameSet.add(name);
         }
         
-        logger.info ( String.format("%-16s " + descrFormat + " %7s %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f", "Total Boardings", "", "", totals[0], totals[1], totals[2], totals[3], totals[4], totals[5], totals[6], totals[7], totals[8], totals[9], totals[10]));
+
+        // generate an output record for each route in the selected subset and add to output list
+        it = nameSet.iterator();
+        while ( it.hasNext() ) {
+            String name = (String)it.next();
+            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
+            String outputString = formatLogRecord( name, info, descrFormat, ++lineCount );
+            totals = updateTotals( info, totals );
+            outputLines.add( outputString );
+        }
+
+        // add the summary totals record to output list
+        String outputString = formatLogTotalsRecord( totals, descrFormat );
+        String dashes = "";
+        for (int i=0; i < outputString.length(); i++)
+            dashes += "-";
+        dashes += "\n";
+
+        outputLines.add( dashes );
+        outputLines.add( outputString );
+
+        // add some white space to report
+        outputLines.add( "\n" );
+        outputLines.add( "\n" );
+        outputLines.add( "\n" );
+
+        return outputLines;
         
+    }
+    
+    
+    public void logTransitBoardingsReport ( HashMap savedBoardings, String periodHeadingLabel ) {
+        
+        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+            
+        String csvFileName = null;
+        String repFileName = null;
+
+        if ( periodHeadingLabel.equalsIgnoreCase( "peak" ) ) {
+            // get peak period definitions from property files
+            csvFileName = (String)tsPropertyMap.get("peakTransitLoadings.fileName");
+            repFileName = (String)tsPropertyMap.get("peakTransitReport.fileName");
+        }
+        else if ( periodHeadingLabel.equalsIgnoreCase( "offpeak" ) ) {
+            // get off-peak period definitions from property files
+            csvFileName = (String)tsPropertyMap.get("offpeakTransitLoadings.fileName");
+            repFileName = (String)tsPropertyMap.get("offpeakTransitReport.fileName");
+        }
+        
+        
+        
+        
+        // write results to csv file, if one was named in properties file
+        if ( csvFileName != null ) {
+        
+            // open csv file for saving transit assignment route boardings summary information 
+            PrintWriter outStream = null;
+            try {
+                outStream = new PrintWriter (new BufferedWriter( new FileWriter(csvFileName) ) );
+            }
+            catch (IOException e) {
+                logger.fatal ( String.format("I/O exception opening transit boardings csv file=%s.", csvFileName), e);
+                System.exit(-1);
+            }
+
+            
+            // write formatted lines to file here as first line in csv file
+            ArrayList outputLines = formatCsvHeaderLines();
+            Iterator it = outputLines.iterator();
+            while ( it.hasNext() ) {
+                outStream.write( (String)it.next() );
+            }                
+
+
+            // get set of route boardings results for all route types
+            int lineCount = 0;
+            String[] typeList = { "air", "hsr", "intercity", "intracity" };
+            for ( String type : typeList ) {
+
+                outputLines = getCsvOutputLines ( savedBoardings, type, ++lineCount );
+                
+                // write formatted lines to file
+                it = outputLines.iterator();
+                while ( it.hasNext() ) {
+                    outStream.write( (String)it.next() );
+                }                
+                
+            }
+            
+            outStream.close();
+
+        }   
+
+
+        
+        
+        
+        // likewise for a report file, if one was named in properties file
+        if ( repFileName != null ) {
+        
+            // open log file for saving transit assignment route boardings summary information 
+            PrintWriter outStream = null;
+            try {
+                outStream = new PrintWriter (new BufferedWriter( new FileWriter(repFileName) ) );
+            }
+            catch (IOException e) {
+                logger.fatal ( String.format("I/O exception opening transit boardings report file=%s.", csvFileName), e);
+                System.exit(-1);
+            }
+
+            
+            
+            
+            // get set of route boardings results for all route types
+            int lineCount = 0;
+            String[] typeList = { "air", "hsr", "intercity", "intracity" };
+            for ( String type : typeList ) {
+
+                ArrayList outputLines = getLogOutputLines ( savedBoardings, type, periodHeadingLabel, ++lineCount );
+                
+                // write formatted lines to file
+                Iterator it = outputLines.iterator();
+                while ( it.hasNext() ) {
+                    outStream.write( (String)it.next() );
+                }                
+                
+            }
+            
+            outStream.close();
+
+        }   
+
     }
     
     
@@ -484,7 +750,7 @@ public class TS {
         // generate transit skim matrices and load trips
         TransitSkimManager tsm = new TransitSkimManager( nh, appRb, globalRb );
 
-/*        
+        
         // drive access air skims
         tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "air" );
         tsm.writeTransitSkims( assignmentPeriod, "drive", "air" );
@@ -507,7 +773,7 @@ public class TS {
         transitBoardings = runTransitAssignment ( nh, "drive", "hsr", tripModeList );
         saveTransitBoardings ( nh, "drive", "hsr", transitBoardings, savedBoardings );
 
-        
+      
         
         // drive access intercity skims
         tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intercity" );
@@ -518,7 +784,7 @@ public class TS {
         tripModeList.add( LDTripModeType.TRANSIT_DRIVE.name() );
         transitBoardings = runTransitAssignment ( nh, "drive", "intercity", tripModeList );
         saveTransitBoardings ( nh, "drive", "intercity", transitBoardings, savedBoardings );
-*/        
+        
         
         
         // drive access intracity skims
@@ -715,11 +981,13 @@ public class TS {
         
         static final int NUM_ROUTE_TYPES = 4;
         
+        String routeType;
         String description;
         char mode;
         double[] boardings;
         
-        private SavedRouteInfo(String description, char mode) {
+        private SavedRouteInfo(String description, char mode, String routeType) {
+            this.routeType = routeType;
             this.description = description;
             this.mode = mode;
             boardings = new double[2*NUM_ROUTE_TYPES];
@@ -775,24 +1043,28 @@ public class TS {
         
 
 
-/*        
+        
         // TS Example 1 - Run a peak highway assignment:
         
         // run peak highway assignment
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
-        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
         nhPeak.checkForIsolatedLinks();
-        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+//        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
+        nhPeak.startDataServer();
 
         // write the auto time and distance highway skim matrices to disk based on attribute values in NetworkHandler after assignment
-        tsMain.writeHighwaySkimMatrices ( nhPeak, 'a' );
-*/
+//        char[] hwyModeChars = nhPeak.getHighwayModeCharacters();
+        char[] hwyModeChars = { 'a', 'd' };
+        tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
+
 
         
         
         
-       
+/*      
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
@@ -803,15 +1075,17 @@ public class TS {
         logger.info ("Network data server running...");
         
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
-
+*/      
+       
+        
         
         // test capability to get list of highway network link ids from a transit route
-        String name = "B_1334";
-        int[] linkIds = nhPeak.getTransitRouteLinkIds( name );
-        String linksString = String.format("%d", linkIds[0]);
-        for (int i=1; i < linkIds.length; i++)
-            linksString += String.format(", %d", linkIds[i]);
-        logger.info ( String.format( "link ids for route %s : %s", name, linksString) );
+//        String name = "B_1334";
+//        int[] linkIds = nhPeak.getTransitRouteLinkIds( name );
+//        String linksString = String.format("%d", linkIds[0]);
+//        for (int i=1; i < linkIds.length; i++)
+//            linksString += String.format(", %d", linkIds[i]);
+//        logger.info ( String.format( "link ids for route %s : %s", name, linksString) );
 
         
         // run the benchmark highway assignment procedure

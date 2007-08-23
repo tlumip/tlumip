@@ -16,6 +16,7 @@
  */
 package com.pb.tlumip.ts;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
@@ -33,6 +34,7 @@ public class ShortestPathTreeH {
     static final int MAX_PATH_LENGTH = 500;
 
     int inOrigin;
+    int inDestination;
 
 	int[] ia;
 	int[] ib;
@@ -175,6 +177,7 @@ public class ShortestPathTreeH {
         boolean debug = false;
 
         this.inOrigin = inOrigin;
+        this.inDestination = inDestination;
 
         if (debug) logger.debug ("building path from " + inOrigin + "(" + indexNode[inOrigin] + ")" + " to " + inDestination + "(" + indexNode[inDestination] + ")");
         initData();
@@ -230,7 +233,7 @@ public class ShortestPathTreeH {
             
             
             turnPenalty = 0.0;
-            if ( turnPenaltyIndices != null && predecessorLink[ia[k]] >= 0 )
+            if ( turnPenaltyIndices != null && turnPenaltyIndices.length > 0 && predecessorLink[ia[k]] >= 0 )
                 turnPenalty = getTurnPenalty( k, predecessorLink[ia[k]] );
 
             if(logger.isDebugEnabled()) {
@@ -491,7 +494,7 @@ public class ShortestPathTreeH {
     }
 
     
-    public int[] getNodeList (int inOrigin, int inDestination) {
+    public int[] getNodeList () {
 
         int i, j, k, count;
         boolean debug = false;
@@ -529,11 +532,34 @@ public class ShortestPathTreeH {
         j = 0;
         for (i=count-1; i >= 0; i--) {
             k = pathLinks[i];
-            nodes[j++] = ia[k];
+            nodes[j++] = indexNode[ia[k]];
         }
-        nodes[j] = ib[k];
+        nodes[j] = indexNode[ib[k]];
 
         return nodes;
+    }
+    
+    
+
+    public int[] getLinkIdList () {
+
+        int k;
+
+        ArrayList pathLinksList = new ArrayList(MAX_PATH_LENGTH);
+        
+        k = predecessorLink[inDestination];
+        while (ia[k] != inOrigin) {
+            pathLinksList.add(k);
+            k = predecessorLink[ia[k]];
+        }
+        pathLinksList.add(k);
+
+        int[] pathLinks = new int[pathLinksList.size()];
+        for ( int i=0; i < pathLinks.length; i++ )
+            pathLinks[i] = (Integer)pathLinksList.get(i);
+        
+        return pathLinks;
+
     }
     
     

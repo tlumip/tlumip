@@ -149,6 +149,22 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
     
+    public int[] getExternalZoneLabels() {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getExternalZoneLabels", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+        
+    }
+    
     public int getNodeCount() {
         int returnValue = -1;
         try {
@@ -353,6 +369,25 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
     
+    public int[] getOnewayLinksForClass ( int modeChar ) {
+        
+        int[] returnArray = null;
+        
+        try {
+            Vector params = new Vector();
+            // can't send a char with xml-rpc so cast it as int
+            params.add((int)modeChar);
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getOnewayLinksForClass", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+        
+    }
+    
     public int[] getNodeIndex () {
         
         int[] returnArray = null;
@@ -391,6 +426,38 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
         try {
             returnArray = (int[])rc.execute(HANDLER_NAME+".getLinkType", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public int[] getTaz () {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getTaz", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public int[] getUniqueIds () {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getUniqueIds", new Vector());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
@@ -630,7 +697,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         float[][] returnArray = null;
         
         try {
-            returnArray = (float[][])rc.execute(HANDLER_NAME+".getTurnPenaltyIndices", new Vector());
+            returnArray = (float[][])rc.execute(HANDLER_NAME+".getTurnPenaltyArray", new Vector());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
@@ -844,6 +911,40 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
 
+    public int getExternalNode (int internalNode) {
+        
+        int returnValue = -1;
+        
+        try {
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".getExternalNode", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+        
+        
+    }
+        
+    public int getInternalNode (int externalNode) {
+        
+        int returnValue = -1;
+        
+        try {
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".getInternalNode", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+        
+        
+    }
+    
     public String[] getMode () {
         
         String[] returnArray = null;
@@ -1018,7 +1119,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
             Vector params = new Vector();
             params.add( timePeriod );
             params.add( propertyValues );
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".buildNetworkObject", params);
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setupHighwayNetworkObject", params);
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {

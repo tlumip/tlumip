@@ -1,6 +1,5 @@
 package com.pb.tlumip.ts;
 
-import java.util.Vector;
 
 import com.pb.tlumip.ts.transit.TrRoute;
 
@@ -36,6 +35,7 @@ public interface NetworkHandlerIF {
     public int getNumCentroids();
     public int getMaxCentroid();
     public boolean[] getCentroid();
+    public int[] getExternalZoneLabels ();
     public int getNodeCount();
     public int getLinkCount();
     public int getLinkIndex(int an, int bn);
@@ -50,10 +50,13 @@ public interface NetworkHandlerIF {
     public boolean[][] getValidLinksForAllClasses ();
     public boolean[] getValidLinksForClass ( int userClass );
     public boolean[] getValidLinksForClassChar ( int modeChar );
+    public int[] getOnewayLinksForClass ( int userClass );
     public int[] getVdfIndex ();
     public int[] getNodeIndex ();
     public int[] getInternalNodeToNodeTableRow();
-    public int[] getLinkType ();
+    public int[] getLinkType();
+    public int[] getTaz();
+    public int[] getUniqueIds();
     public char[][] getAssignmentGroupChars();
     public double[] getLanes();
     public double[] getCapacity();
@@ -81,6 +84,8 @@ public interface NetworkHandlerIF {
     public char[] getUserClasses ();
     public String[] getMode ();
     public int[] getIndexNode ();
+    public int getExternalNode (int internalNode);
+    public int getInternalNode (int externalNode);
     public int[] getNodes ();
     public double[] getNodeX ();
     public double[] getNodeY ();

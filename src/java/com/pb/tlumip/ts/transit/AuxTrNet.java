@@ -400,7 +400,9 @@ public class AuxTrNet implements Serializable {
         
         try {
             
-            ipa = new int[auxNodes+1];
+            // auxNodes is the value of the highest internal node number, so auxNodes+1 is the number of internal node numbers
+            // dimension ipa to the number of internal nodes + 1. i.e. auxNodes+2.
+            ipa = new int[auxNodes+2];
             Arrays.fill (ipa, -1);
             
             indexa = IndexSort.indexMergeSort( ia );
@@ -417,7 +419,8 @@ public class AuxTrNet implements Serializable {
                 }
             }
 
-            ipa[auxNodes] = ia.length;
+            // set ipa of the highest node number + 1 to the number of links
+            ipa[auxNodes+1] = ia.length;
 
 
             if ( logger.isDebugEnabled() ) {
@@ -448,7 +451,9 @@ public class AuxTrNet implements Serializable {
 
         try {
             
-    		ipb = new int[auxNodes+1];
+            // auxNodes is the value of the highest internal node number, so auxNodes+1 is the number of internal node numbers
+            // dimension ipb to the number of internal nodes + 1. i.e. auxNodes+2.
+    		ipb = new int[auxNodes+2];
     		Arrays.fill (ipb, -1);
     
     		indexb = IndexSort.indexMergeSort( ib );
@@ -466,8 +471,9 @@ public class AuxTrNet implements Serializable {
     			}
     			
     		}
-    		
-            ipb[auxNodes] = ib.length;
+
+            // set ipb of the highest node number + 1 to the number of links
+            ipb[auxNodes+1] = ib.length;
             
 
             if ( logger.isDebugEnabled() ) {
@@ -1064,7 +1070,7 @@ public class AuxTrNet implements Serializable {
 		int start, end;
         int count=0;
         
-        boolean debug = true;
+        boolean debug = false;
 
 
 		// print report of all transit links and their node pointer attributes for debugging purposes
@@ -1078,7 +1084,8 @@ public class AuxTrNet implements Serializable {
         
         ArrayList linkIndicesList = new ArrayList();
         
-	  	for (i=0; i < auxNodes; i++) {
+        // auxNodes is the max internal node number
+	  	for (i=0; i <= auxNodes; i++) {
 			start = ipb[i];
 			if (start >= 0) {
 				j = i + 1;
@@ -1162,7 +1169,7 @@ public class AuxTrNet implements Serializable {
 
 
 	public int getAuxNodeCount () {
-		return auxNodes;
+		return auxNodes+1;
 	}
 
 

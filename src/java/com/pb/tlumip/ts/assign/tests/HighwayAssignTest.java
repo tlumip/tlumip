@@ -104,12 +104,22 @@ public class HighwayAssignTest {
 		// create highway skims object
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating hwy skims object at: " + myDateString);
-		Skims highwaySkims = new Skims( nh, tsPropertyMap, globalPropertyMap );
+		Skims highwaySkims = new Skims( nh, rb, globalRb );
 
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("generating trips with gravity model at: " + myDateString);
-		Matrix m = highwaySkims.getHwySkimMatrix( period, "dist", 'a' );
-		TripDataGenerator tdm = new TripDataGenerator ( m.getValues() );
+        double[][] linkAttribs = new double[1][];
+        linkAttribs[0] = nh.getCongestedTime();
+        
+        String[] matrixName = new String[1];
+        matrixName[0] = "time";
+        
+        String[] matrixDescription = new String[1];
+        matrixDescription[0] = "Skims.main() test time matrix";
+        
+        Matrix[] m = highwaySkims.getHwySkimMatrices ( "peak", linkAttribs, matrixName, matrixDescription, 'a' );
+
+        TripDataGenerator tdm = new TripDataGenerator ( m[0].getValues() );
 
 
 		//Compute Frank-Wolfe solution

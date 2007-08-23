@@ -56,7 +56,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     
    
-    public boolean setup( String sdtFileName, String ldtFileName, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
 
         boolean returnValue = false;
 
@@ -65,6 +65,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
             Vector params = new Vector();
             params.add(sdtFileName);
             params.add(ldtFileName);
+            params.add(ptSampleRate);
             params.add(ctFileName);
             params.add(startHour);
             params.add(endHour);
@@ -92,7 +93,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         
         boolean returnValue = false;
         try {
-            returnValue = (Boolean)rc.execute(HANDLER_NAME+".buildDemandObject", new Vector());
+            returnValue = (Boolean)rc.execute(HANDLER_NAME+".buildHighwayDemandObject", new Vector());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {

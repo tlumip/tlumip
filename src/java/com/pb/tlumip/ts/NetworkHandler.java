@@ -42,6 +42,7 @@ public class NetworkHandler implements NetworkHandlerIF {
     
     Network g = null;
     AuxTrNet ag = null;
+    ShortestPathTreeH sp = null;
     NetworkDataServer ns = null;
     String rpcConfigFile = null;
 
@@ -117,6 +118,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getCentroid();
     }
     
+    public int[] getExternalZoneLabels () {
+        return g.getExternalZoneLabels();
+    }
+    
     public int getNodeCount() {
         return g.getNodeCount();
     }
@@ -132,6 +137,11 @@ public class NetworkHandler implements NetworkHandlerIF {
     public int getLinkIndexExitingNode(int an) {
         int[] linksExiting = g.getLinksExitingNode(an);
         return linksExiting[0];
+    }
+    
+    public int[] getLinksEnteringNode(int an) {
+        int[] linksExiting = g.getLinksEnteringNode(an);
+        return linksExiting;
     }
     
     public int[] getLinksExitingNode(int an) {
@@ -167,6 +177,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getValidLinksForClass ( userClass );
     }
 
+    public int[] getOnewayLinksForClass ( int userClass ) {
+        return g.getOnewayLinksForClass ( userClass );
+    }
+
     public boolean[] getValidLinksForTransitPaths() {
         return g.getValidLinksForTransitPaths();
     }
@@ -186,6 +200,14 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     public int[] getLinkType () {
         return g.getLinkType();
+    }
+
+    public int[] getTaz () {
+        return g.getTaz();
+    }
+
+    public int[] getUniqueIds () {
+        return g.getUniqueIds();
     }
 
     public char[][] getAssignmentGroupChars() {
@@ -234,6 +256,10 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     public double[] getVolau () {
         return g.getVolau();
+    }
+
+    public double[] getVolad () {
+        return g.getVolad();
     }
 
     public int[][] getTurnPenaltyIndices () {
@@ -317,6 +343,14 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     public int[] getIndexNode () {
         return g.getIndexNode();
+    }
+    
+    public int getExternalNode (int internalNode) {
+        return g.getExternalNode(internalNode);
+    }
+    
+    public int getInternalNode (int externalNode) {
+        return g.getInternalNode(externalNode);
     }
     
     public int[] getNodes() {
@@ -466,6 +500,9 @@ public class NetworkHandler implements NetworkHandlerIF {
     }
     
     public String[] getTransitRouteNames() {
+        if ( ag == null)
+            return new String[0];
+        
         String[] names = new String[ag.getNumRoutes()];
         String[] tempNames = ag.getRouteNames();
         for (int i=0; i < names.length; i++)
@@ -579,6 +616,43 @@ public class NetworkHandler implements NetworkHandlerIF {
     
     public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
         return ag.getCentroidTransitDriveAccessLinkCoords(zones);       
+    }
+    
+    public int[] getShortestPathNodes(int startNode, int endNode) {
+        
+        if ( sp == null ) {
+            sp = new ShortestPathTreeH( getLinkCount(), getNodeCount(), getNumCentroids(), getIa(), getIb(), getIpa(), getSortedLinkIndexA(), getIndexNode(), getNodeIndex(), getCentroid(), getTurnPenaltyIndices(), getTurnPenaltyArray() );
+
+            // set the highway network attribute on which to skim the network
+            sp.setLinkCost( setLinkGeneralizedCost() );
+            
+            // set the highway network valid links attribute for links which may appear in paths between unconnected highway network nodes in transit routes.
+            sp.setValidLinks( getValidLinksForTransitPaths() );
+        }
+        
+        sp.buildPath( startNode, endNode );
+        int[] nodeList = sp.getNodeList();
+        
+        return nodeList;
+    }
+    
+    public int[] getShortestPathLinks(int startNode, int endNode) {
+        
+        if ( sp == null ) {
+            sp = new ShortestPathTreeH( getLinkCount(), getNodeCount(), getNumCentroids(), getIa(), getIb(), getIpa(), getSortedLinkIndexA(), getIndexNode(), getNodeIndex(), getCentroid(), getTurnPenaltyIndices(), getTurnPenaltyArray() );
+
+            // set the highway network attribute on which to skim the network
+            sp.setLinkCost( setLinkGeneralizedCost() );
+            
+            // set the highway network valid links attribute for links which may appear in paths between unconnected highway network nodes in transit routes.
+            sp.setValidLinks( getValidLinksForTransitPaths() );
+        }
+        
+        int[] nodeIndex = getNodeIndex();
+        sp.buildPath( nodeIndex[startNode], nodeIndex[endNode] );
+        int[] linkIdList = sp.getLinkIdList();
+        
+        return linkIdList;
     }
     
 }

@@ -70,6 +70,11 @@ public class NetworkDataServer {
         return nh.getLinkIndexExitingNode(an);
     }
 
+    public Vector getLinksEnteringNode(int an) {
+        int[] result = nh.getLinksEnteringNode(an);
+        return Util.intVector( result );
+    }
+
     public Vector getLinksExitingNode(int an) {
         int[] result = nh.getLinksExitingNode(an);
         return Util.intVector( result );
@@ -127,12 +132,24 @@ public class NetworkDataServer {
         return Util.doubleVector( nh.getVolau() );
     }
 
+    public Vector getVolad () {
+        return Util.doubleVector( nh.getVolad() );
+    }
+
     public Vector getCongestedTime () {
         return Util.doubleVector( nh.getCongestedTime() );
     }
 
     public Vector getLanes () {
         return Util.doubleVector( nh.getLanes() );
+    }
+
+    public Vector getTaz () {
+        return Util.intVector( nh.getTaz() );
+    }
+
+    public Vector getUniqueIds () {
+        return Util.intVector( nh.getUniqueIds() );
     }
 
     public Vector getCapacity () {
@@ -163,6 +180,10 @@ public class NetworkDataServer {
         return Util.intVector( nh.getVdfIndex() );
     }
 
+    public Vector getOnewayLinksForClass () {
+        return Util.intVector( nh.getOnewayLinksForClass(0) );
+    }
+    
     public Vector getNodeIndex () {
         if ( nodeIndex == null )
             nodeIndex = nh.getNodeIndex();
@@ -210,6 +231,14 @@ public class NetworkDataServer {
 
     public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
         return nh.getCentroidTransitDriveAccessLinkCoords(zones);       
+    }
+    
+    public Vector getSpNodeList(int startNode, int endNode) {
+        return Util.intVector( nh.getShortestPathNodes(startNode, endNode) );
+    }
+    
+    public Vector getSpLinkIdList(int startNode, int endNode) {
+        return Util.intVector( nh.getShortestPathLinks(startNode, endNode) );
     }
     
 }
