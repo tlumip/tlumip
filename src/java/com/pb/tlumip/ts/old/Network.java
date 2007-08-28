@@ -25,7 +25,6 @@ import java.util.Vector;
 public class Network {
     /**
      * @associates <{LinkInterface}>
-     * @link aggregation
      * @supplierCardinality 1..*
      */
     protected Vector links;

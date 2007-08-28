@@ -27,7 +27,6 @@ package com.pb.tlumip.ts.old;
  * FatZPAttribute to invistigate the paths, then use the supplied constructor to create a lightweight version.  An alternative
  * would be to to store the numbers (cost, times) directly in arrays.  This would save on memory and processing but would make
  * code maintenance and debugging harder. <p> Responsibilities: C:1 - find the path for a given zone pair.
- * @see <{com.pb.tlumip.ts.FatZPAttribute}>
  * @author J. Abraham
  */
 public class ZPAttribute implements Cloneable {

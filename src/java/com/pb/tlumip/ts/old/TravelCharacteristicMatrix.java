@@ -141,7 +141,6 @@ public class TravelCharacteristicMatrix  implements SummaryOfTravelConditions {
   /**
    * "What is theMatrix?"  theMatrix is the array of zpAttributes.
    * associates <{com.pb.tlumip.ts.ZPAttribute}>
-   * @link aggregation
    * supplierCardinality n^2
    */
   protected ZPAttribute[][] theMatrix;

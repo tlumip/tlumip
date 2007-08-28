@@ -184,7 +184,7 @@ public class Util {
     
     /**
      * return a list of the values in the int[].
-     * @param int[]
+     * @param array
      * @return list
      */
     public static ArrayList intList ( int[] array ) {
@@ -199,7 +199,7 @@ public class Util {
     
     /**
      * return a list of the values in the int[][].
-     * @param int[][]
+     * @param array
      * @return list
      */
     public static ArrayList int2List ( int[][] array ) {
@@ -217,7 +217,7 @@ public class Util {
     
     /**
      * return a list of the values in the double[].
-     * @param double[]
+     * @param array
      * @return list
      */
     public static ArrayList doubleList ( double[] array ) {
@@ -232,7 +232,7 @@ public class Util {
     
     /**
      * return a list of the values in the double[][].
-     * @param double[][]
+     * @param array
      * @return list
      */
     public static ArrayList double2List ( double[][] array ) {
@@ -250,7 +250,7 @@ public class Util {
     
     /**
      * return a list of the values in the double[][][].
-     * @param double[][][]
+     * @param array
      * @return list
      */
     public static ArrayList double3List ( double[][][] array ) {
@@ -272,7 +272,7 @@ public class Util {
     
     /**
      * return a list of the values in the char[].
-     * @param char[]
+     * @param array
      * @return list
      */
     public static ArrayList charList ( char[] array ) {
@@ -287,7 +287,7 @@ public class Util {
     
     /**
      * return a list of the values in the char[][].
-     * @param char[][]
+     * @param array
      * @return list
      */
     public static ArrayList char2List ( char[][] array ) {
@@ -305,7 +305,7 @@ public class Util {
     
     /**
      * return a list of the values in the boolean[].
-     * @param boolean[]
+     * @param array
      * @return list
      */
     public static ArrayList booleanList ( boolean[] array ) {
@@ -320,7 +320,7 @@ public class Util {
     
     /**
      * return a list of the values in the boolean[][].
-     * @param boolean[][]
+     * @param array
      * @return list
      */
     public static ArrayList boolean2List ( boolean[][] array ) {
@@ -338,7 +338,7 @@ public class Util {
 
     /**
      * return a list of the values in the String[].
-     * @param String[]
+     * @param array
      * @return list
      */
     public static ArrayList stringList ( String[] array ) {
@@ -353,7 +353,7 @@ public class Util {
     
     /**
      * return a Vector of the values in the int[].
-     * @param int[]
+     * @param array
      * @return Vector
      */
     public static Vector intVector ( int[] array ) {
@@ -368,7 +368,7 @@ public class Util {
     
     /**
      * return a Vector of Vectors of the values in the int[][].
-     * @param int[][]
+     * @param array
      * @return Vector
      */
     public static Vector int2Vector ( int[][] array ) {
@@ -386,7 +386,7 @@ public class Util {
    
     /**
      * return a Vector of the values in the double[].
-     * @param double[]
+     * @param array
      * @return Vector
      */
     public static Vector doubleVector ( double[] array ) {
@@ -404,7 +404,7 @@ public class Util {
     
     /**
      * return a Vector of Vectors of the values in the double[][].
-     * @param double[][]
+     * @param array
      * @return Vector
      */
     public static Vector double2Vector ( double[][] array ) {
@@ -425,7 +425,7 @@ public class Util {
    
     /**
      * return a Vector of Vectors of Vectors of the values in the double[][][].
-     * @param double[][][]
+     * @param array
      * @return Vector
      */
     public static Vector double3Vector ( double[][][] array ) {
@@ -447,7 +447,7 @@ public class Util {
 
     /**
      * return a Vector of the values in the char[].
-     * @param char[]
+     * @param array
      * @return Vector
      */
     public static Vector charVector ( char[] array ) {
@@ -462,7 +462,7 @@ public class Util {
     
     /**
      * return a Vector of Vectors of the values in the char[][].
-     * @param char[][]
+     * @param array
      * @return Vector
      */
     public static Vector char2Vector ( char[][] array ) {
@@ -480,7 +480,7 @@ public class Util {
     
     /**
      * return a Vector of the values in the boolean[].
-     * @param boolean[]
+     * @param array
      * @return Vector
      */
     public static Vector booleanVector ( boolean[] array ) {
@@ -495,7 +495,7 @@ public class Util {
     
     /**
      * return a Vector of Vectors of the values in the boolean[][].
-     * @param boolean[][]
+     * @param array
      * @return Vector
      */
     public static Vector boolean2Vector ( boolean[][] array ) {
@@ -513,7 +513,7 @@ public class Util {
 
     /**
      * return a Vector of the values in the String[].
-     * @param String[]
+     * @param array
      * @return Vector
      */
     public static Vector stringVector ( String[] array ) {

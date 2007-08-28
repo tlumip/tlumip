@@ -176,7 +176,6 @@ public class Household extends EconomicUnit implements Cloneable {
      * array of numbers that describe all the people.
      * associates <{com.pb.tlumip.ha.Person}>
      * supplierCardinality 1..*
-     * @link aggregation
      */
     private ArrayList myPeople;
 
