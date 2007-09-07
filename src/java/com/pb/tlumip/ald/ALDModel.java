@@ -78,7 +78,8 @@ public class ALDModel extends ModelComponent {
                     Thread.sleep(2000);
                 //Will wait for the .RData file to appear before signaling 
                 //that ALD is done.
-                logger.info("ALD is done");
+                if(doneFile.exists()) logger.info("ALD is done");
+                else logger.info("The ALD run was NOT successful, check the ald.Rout file for details");
             } catch (InterruptedException e) {
                 throw new RuntimeException("InterruptedException: ", e);
             }

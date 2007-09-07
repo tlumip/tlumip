@@ -79,7 +79,7 @@ public class TLUMIPLDExternalDestinationModel  extends LDExternalDestinationMode
         
         logger.info("Reading LDInternalDestinationChoiceParameters");
         parameters = ParameterReader.readParameters(ptRb,
-                "LDExternalDestinationChoiceParameters.file");
+                "ldt.external.destination.choice.parameters");
         
     }
     
@@ -94,7 +94,7 @@ public class TLUMIPLDExternalDestinationModel  extends LDExternalDestinationMode
         time = LDSkimsInMemory.getOffPeakMatrix(LDTourModeType.AUTO, "Time");
 
         TableDataSet externalStationData = ParameterReader.readParametersAsTable(ptRb,
-                "ExternalStationVolumes.file");
+                "ldt.external.station.volumes");
         alts = new ConcreteAlternative[externalStationData.getRowCount()];
         volume = new float[externalStationData.getRowCount()]; 
         model = new LogitModel("LD External Destination Choice");
