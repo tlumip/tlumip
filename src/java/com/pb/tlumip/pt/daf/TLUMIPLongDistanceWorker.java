@@ -16,16 +16,25 @@
  */
 package com.pb.tlumip.pt.daf;
 
+import java.util.ResourceBundle;
+
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageFactory;
+import com.pb.common.util.ResourceUtil;
+import com.pb.models.pt.PTHousehold;
 import com.pb.models.pt.daf.LongDistanceWorker;
 import com.pb.models.pt.daf.MessageID;
 import com.pb.models.pt.ldt.LDTour;
 import com.pb.models.pt.ldt.RunLDTModels;
-import com.pb.tlumip.pt.ldt.RunTLUMIPLDTModels;
+import com.pb.tlumip.pt.PTOccupation;
 
 /**
- * This class is used for ...
+ * This a class that runs LDT as a stand-alone model
+ * for the purpose of offline calibration.  
+ * 
+ * @arg binary flag indicating whether or not to run household level models
+ * @arg name of resource bundle
+ * 
  * Author: Christi Willison
  * Date: Mar 14, 2007
  * Email: willison@pbworld.com
@@ -34,13 +43,32 @@ import com.pb.tlumip.pt.ldt.RunTLUMIPLDTModels;
 public class TLUMIPLongDistanceWorker extends LongDistanceWorker {
 
     public static void main(String[] args) {
-        RunLDTModels ldtRunner = new RunTLUMIPLDTModels();
 
-        // read households and create tours
-        //PTDataReader needs the base year in order to parse the age field.
-        //In Ohio the default base year is 2000 but in Oregon it is 1990.
-        LDTour[] tours = ldtRunner.createToursFromHouseholdFile(1990);
-
+        boolean runHouseholdLevelModels = false;
+        if (args.length>0 && args[0].equals("1")) {
+            runHouseholdLevelModels = true;
+        } 
+        
+        String rbName = args[1];
+        ResourceBundle rb = ResourceUtil.getResourceBundle(rbName); 
+                
+        RunLDTModels ldtRunner = new RunLDTModels(PTOccupation.NONE);
+        ldtRunner.setResourceBundle(rb); 
+        LDTour[] tours; 
+        
+        // run the household level models
+        if (runHouseholdLevelModels) {
+            ldtRunner.readTazData(); 
+            ldtRunner.readDcLogsums();
+            PTHousehold[] households = ldtRunner.runHouseholdLevelModels(true, true, 2000);
+            tours = RunLDTModels.createLDTours(households); 
+        } else {
+            //read households and create tours
+            //PTDataReader needs the base year in order to parse the age field.
+            //In Ohio the default base year is 2000 but in Oregon it is 1990.
+            tours = ldtRunner.createToursFromHouseholdFile(1990);
+        }
+        
         // call the long-distance worker
         MessageFactory mFactory = MessageFactory.getInstance();
         Message msg = mFactory.createMessage();

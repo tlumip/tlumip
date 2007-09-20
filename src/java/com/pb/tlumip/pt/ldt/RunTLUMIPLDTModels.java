@@ -36,40 +36,40 @@ public class RunTLUMIPLDTModels extends RunLDTModels {
         super(PTOccupation.NONE);
     }
 
-    public static void main(String[] args) {
-
-        boolean runAutoOwnership   = false;
-        boolean writeOnlyLDTHH     = false;
-
-        if (args[0].equals("1")) {
-            runAutoOwnership = true;
-        } 
-        if (args[1].equals("1")) {
-            writeOnlyLDTHH = true;
-        }
-
-        // info
-        logger.info("\n\nStarting LDT model run.");
-        long startTime = System.currentTimeMillis();
-
-        ResourceBundle appRb = ResourceUtil.getResourceBundle("pt");
-        ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
-        RunLDTModels rm = new RunTLUMIPLDTModels();
-        rm.setResourceBundles(appRb, globalRb);
-        rm.readTazData(); 
-        rm.readDcLogsums();
-        
-        // run the models
-        PTHousehold[] households = rm.runHouseholdLevelModels(runAutoOwnership, writeOnlyLDTHH, 1990);
-        rm.startModel(2000, 1);
-        rm.processHouseholds(households);
-
-        // clock time
-        long timeSeconds = (System.currentTimeMillis() - startTime) / 1000;
-        long timeMinutes = timeSeconds / 60;
-        long leftoverSeconds = timeSeconds - timeMinutes*60;
-        logger.info("Finished running LDT models in: "
-                + timeMinutes + ":" + leftoverSeconds + " minutes\n\n");
-    }
+//    public static void main(String[] args) {
+//
+//        boolean runAutoOwnership   = false;
+//        boolean writeOnlyLDTHH     = false;
+//
+//        if (args[0].equals("1")) {
+//            runAutoOwnership = true;
+//        } 
+//        if (args[1].equals("1")) {
+//            writeOnlyLDTHH = true;
+//        }
+//
+//        // info
+//        logger.info("\n\nStarting LDT model run.");
+//        long startTime = System.currentTimeMillis();
+//
+//        ResourceBundle appRb = ResourceUtil.getResourceBundle("pt");
+//        ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
+//        RunLDTModels rm = new RunTLUMIPLDTModels();
+//        rm.setResourceBundles(appRb, globalRb);
+//        rm.readTazData(); 
+//        rm.readDcLogsums();
+//        
+//        // run the models
+//        PTHousehold[] households = rm.runHouseholdLevelModels(runAutoOwnership, writeOnlyLDTHH, 1990);
+//        rm.startModel(2000, 1);
+//        rm.processHouseholds(households);
+//
+//        // clock time
+//        long timeSeconds = (System.currentTimeMillis() - startTime) / 1000;
+//        long timeMinutes = timeSeconds / 60;
+//        long leftoverSeconds = timeSeconds - timeMinutes*60;
+//        logger.info("Finished running LDT models in: "
+//                + timeMinutes + ":" + leftoverSeconds + " minutes\n\n");
+//    }
     
 }
