@@ -138,6 +138,10 @@ public class WorldZoneExternalZoneUtil {
         }else return MAX_WORLD_ZONE;
     }
 
+    public int[] getWorldZones(){
+        return worldZones;
+    }
+
     public int getNumberOfWorldZones(){
         return nWorldZones;
     }
