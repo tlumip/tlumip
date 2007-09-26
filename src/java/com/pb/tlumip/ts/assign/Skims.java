@@ -16,26 +16,23 @@
  */
 package com.pb.tlumip.ts.assign;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.ResourceBundle;
-import org.apache.log4j.Logger;
-
-
+import com.pb.common.datafile.OLD_CSVFileReader;
+import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
-
-import com.pb.common.datafile.OLD_CSVFileReader;
-import com.pb.common.datafile.TableDataSet;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
+import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.ResourceBundle;
 
 
 public class Skims {
@@ -217,8 +214,9 @@ public class Skims {
         String[] matrixName = new String[skimType.length];
         String[] matrixDescription = new String[skimType.length];
 		
-        // get the directory in which to write the skims files
+        // get the directory in which to write the skims files and the extension to use
         String skimsDirectory = (String)tsPropertyMap.get( "highwaySkims.directory" );
+        String matrixExtension = (String) globalPropertyMap.get("matrix.extension");
         
         String tempName;
         String tempMatrixDescription;
@@ -275,7 +273,8 @@ public class Skims {
             
 
             // use tempName for both the file name and the matrix name
-            fileName[i] = skimsDirectory + tempName + ".zip";
+
+            fileName[i] = skimsDirectory + tempName + matrixExtension;
             matrixName[i] = tempName;
             matrixDescription[i] = tempMatrixDescription;
             if ( skimType[i].equalsIgnoreCase("time") ) {
@@ -295,7 +294,7 @@ public class Skims {
 		
 		for (int i=0; i < skimType.length; i++) {
 			
-            logger.info( String.format( "writing %s.zip skim matrix file.", matrixName[i] ) );
+            logger.info( String.format( "writing %s" + matrixExtension+ " skim matrix file.", matrixName[i] ) );
             
 			// write alpha zone skim matrix
 	        MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName[i]) );
@@ -304,13 +303,13 @@ public class Skims {
 
             if ( modeChar == 'd' || modeChar == 'e' || modeChar == 'f' || modeChar == 'g' || modeChar == 'h' ) {
                 
-                logger.info( String.format( "writing beta%s.zip skim matrix file.", matrixName[i] ) );
+                logger.info( String.format( "writing beta%s" + matrixExtension + " skim matrix file.", matrixName[i] ) );
 
                 int truckIndex = 1 + (modeChar - 'd');
                 String periodIdentifierString = assignmentPeriod + ".identifier";
                 tempName = (String)tsPropertyMap.get( periodIdentifierString );
                 
-                String betaFileName = skimsDirectory + "beta" + tempName + "trk" + String.valueOf(truckIndex) + skimType[i] + ".zip";
+                String betaFileName = skimsDirectory + "beta" + tempName + "trk" + String.valueOf(truckIndex) + skimType[i] + matrixExtension;
                 writeBetaSkimMatrix ( newSkimMatrices[i], betaFileName );
                 
             }
