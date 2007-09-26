@@ -23,20 +23,18 @@ package com.pb.tlumip.ts.assign;
  */
 
 
-import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
+import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.transit.OptimalStrategy;
+import org.apache.log4j.Logger;
 
-
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.io.File;
-import org.apache.log4j.Logger;
-
 
 
 public class TransitSkimManager {
@@ -318,19 +316,19 @@ public class TransitSkimManager {
      * 
      */
     private String[] getTransitSkimsFileNames ( String period, String accessMode, String routeType ) {
-
+        String extension = (String)globalPropertyMap.get("matrix.extension");
         String firstPart = (String)tsPropertyMap.get("transitSkims.directory") + period + accessMode + routeType;
         
         String[] skimFileNames = new String[9];
-        skimFileNames[0] = firstPart + ivtString + ".zip";
-        skimFileNames[1] = firstPart + fwtString + ".zip";
-        skimFileNames[2] = firstPart + twtString + ".zip";
-        skimFileNames[3] = firstPart + accString + ".zip";
-        skimFileNames[4] = firstPart + egrString + ".zip";
-        skimFileNames[5] = firstPart + auxString + ".zip";
-        skimFileNames[6] = firstPart + brdString + ".zip";
-        skimFileNames[7] = firstPart + farString + ".zip";
-        skimFileNames[8] = firstPart + frqString + ".zip";
+        skimFileNames[0] = firstPart + ivtString + extension;
+        skimFileNames[1] = firstPart + fwtString + extension;
+        skimFileNames[2] = firstPart + twtString + extension;
+        skimFileNames[3] = firstPart + accString + extension;
+        skimFileNames[4] = firstPart + egrString + extension;
+        skimFileNames[5] = firstPart + auxString + extension;
+        skimFileNames[6] = firstPart + brdString + extension;
+        skimFileNames[7] = firstPart + farString + extension;
+        skimFileNames[8] = firstPart + frqString + extension;
         
 
         return skimFileNames;
