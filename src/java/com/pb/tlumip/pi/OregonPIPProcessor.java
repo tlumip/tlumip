@@ -28,6 +28,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
+import com.pb.models.pecas.AbstractCommodity;
 import com.pb.models.pecas.Commodity;
 import com.pb.models.pecas.LaborProductionAndConsumption;
 import com.pb.models.pecas.PIPProcessor;
@@ -35,20 +36,20 @@ import com.pb.models.pecas.SomeSkims;
 import com.pb.models.pecas.TransportKnowledge;
 import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
 import com.pb.tlumip.model.IncomeSize;
+import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * @author John Abraham
@@ -73,7 +74,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     public OregonPIPProcessor(int timePeriod, ResourceBundle piRb, ResourceBundle globalRb) {
         
         super(timePeriod, piRb, globalRb);
-        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
+        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "industry.occupation.to.split.industry.correspondence"));
         this.year = timePeriod < 10 ? "1990" : "2000";
         
     }
@@ -87,7 +88,13 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     public void doProjectSpecificInputProcessing() {
-        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
+        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "industry.occupation.to.split.industry.correspondence"));
+
+        
+        //create PECASZonesI and FloorspaceZonesI.csv file for PI to use
+        createZoneFiles();
+
+        //set up calibration params.
         String calibrationMetaParameters = ResourceUtil.getProperty(piRb,"pi.readMetaParameters");
         if (calibrationMetaParameters.equalsIgnoreCase("true")) {
             setUpMetaParameters();
@@ -100,44 +107,121 @@ public class OregonPIPProcessor extends PIPProcessor {
                 doIntegratedModuleRun = true;
             }
         }
-        if (!doIntegratedModuleRun) return;
-        String currPath = ResourceUtil.getProperty(piRb,"pi.current.data");
-        File actW = new File(currPath + "ActivitiesW.csv");
-        if(actW.exists()){
+
+        if (doIntegratedModuleRun) {
+            String currPath = ResourceUtil.getProperty(piRb,"pi.current.data");
+            File actW = new File(currPath + "ActivitiesW.csv");
+            if(actW.exists()){
             actW.delete();
             logger.info("Deleted old ActivitiesW.csv to prepare for new file");
-        }
+            }
 
-        File flrW = new File(currPath + "FloorspaceW.csv");
-        if(flrW.exists()){
+            File flrW = new File(currPath + "FloorspaceW.csv");
+            if(flrW.exists()){
             flrW.delete();
             logger.info("Deleted old FloorspaceW.csv to prepare for new file");
-        }
+            }
 
-        File zoneW = new File(currPath + "ActivitiesZonalValuesW.csv");
-        if(zoneW.exists()){
+            File zoneW = new File(currPath + "ActivitiesZonalValuesW.csv");
+            if(zoneW.exists()){
             zoneW.delete();
             logger.info("Deleted old ActivitiesZonalValuesW.csv to prepare for new file");
-        }
+            }
 
-        File makeUseW = new File(currPath + "MakeUseW.csv");
-        if(makeUseW.exists()){
+            File makeUseW = new File(currPath + "MakeUseW.csv");
+            if(makeUseW.exists()){
             makeUseW.delete();
             logger.info("Deleted old MakeUseW.csv to prepare for new file");
+            }
+
+            createActivitiesWFile();
+            createFloorspaceWFile();
+            createActivitiesZonalValuesWFile();
+            createMakeUseWFile();
+        }
+    }
+
+    private void createZoneFiles(){
+        logger.info("Creating PECASZonesI and FloorspaceZonesI");
+        TableDataSet a2b = loadTableDataSet("alpha2beta","reference.data");
+        WorldZoneExternalZoneUtil wZEZUtil = new WorldZoneExternalZoneUtil(globalRb);
+        int[] worldZones = wZEZUtil.getWorldZones();
+
+        //First create FloorspaceZone file
+        //get array of alpha internals and add the world zones to it.
+        int[] internals = a2b.getColumnAsInt("Azone");
+        int[] alphas = new int[internals.length + worldZones.length];
+        System.arraycopy(internals,0,alphas,0,internals.length);
+        System.arraycopy(worldZones,0, alphas,internals.length,worldZones.length);
+        //now get the array of beta internals and add the world zones to it.
+        int[] internalBetas = a2b.getColumnAsInt("Bzone");
+        int[] betas = new int[internalBetas.length + worldZones.length];
+        System.arraycopy(internalBetas,0,betas,0,internalBetas.length);
+        System.arraycopy(worldZones,0, betas, internalBetas.length,worldZones.length);
+        //finally get the FIPS code and add the world zones to the bottom of that
+        //The FIPS is a concatenation of 2 columns from a2b.
+        int[] stateFIPS = a2b.getColumnAsInt("STATEFIPS");
+        int[] countyFIPS = a2b.getColumnAsInt("COUNTYFIPS");
+        int[] fips = new int[stateFIPS.length + worldZones.length];
+        for(int i=0; i<stateFIPS.length; i++){
+            fips[i] = stateFIPS[i]*1000 + countyFIPS[i];
+        }
+        System.arraycopy(worldZones,0,fips,stateFIPS.length,worldZones.length);
+        
+        TableDataSet floorspaceZonesI = new TableDataSet();
+        floorspaceZonesI.appendColumn(alphas, "AlphaZone");
+        floorspaceZonesI.appendColumn(betas, "PecasZone");
+        floorspaceZonesI.appendColumn(fips, "FIPS");
+
+        //Now do the PECASZones file
+        //The beta zone column is already done from above
+        //but we also need the ZoneName column
+        String[] internalNames = a2b.getColumnAsString("PECASName");
+        String[] names = new String[internalNames.length + worldZones.length];
+        System.arraycopy(internalNames, 0, names, 0, internalNames.length);
+        for(int i=0; i<worldZones.length; i++){
+            names[i+internalNames.length] = "Z" + worldZones[i] + "ImportExport";
         }
 
-        createActivitiesWFile();
-        createFloorspaceWFile();
-        createActivitiesZonalValuesWFile();
-        createMakeUseWFile();
+        //these arrays have repeats so we have to eliminate them
+        //do that with a TreeMap which will sort and only store the
+        //first of each pair
+        TreeMap<Integer, String> map = new TreeMap<Integer,String>();
+        for(int i=0; i< betas.length; i++){
+            map.put(betas[i],names[i]);
+        }
+        //Now put the values back into an array
+        betas = new int[map.size()];
+        names = new String[map.size()];
+        int index = 0;
+        for(Integer zone : map.keySet()){
+            betas[index] = zone;
+            names[index] = map.get(zone);
+            index++;
+        }
+
+        TableDataSet pecasZonesI = new TableDataSet();
+        pecasZonesI.appendColumn(betas, "ZoneNumber");
+        pecasZonesI.appendColumn(names, "ZoneName");
+
+        // write the updated PI input file
+        String referencePath = ResourceUtil.getProperty(piRb, "reference.data");
+        CSVFileWriter writer = new CSVFileWriter();
+        try {
+            writer.writeFile(floorspaceZonesI, new File(referencePath + "FloorspaceZonesI.csv"),0,new GeneralDecimalFormat("0.#####E0",100000,.01));
+            writer.writeFile(pecasZonesI, new File(referencePath + "PECASZonesI.csv"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void createActivitiesWFile(){
         logger.info("Creating new ActivitiesW.csv using current ED and SPG data");
         boolean readSpgHHFile = (ResourceUtil.getProperty(piRb, "pi.readHouseholdsByHHCategory").equalsIgnoreCase("true"));
         boolean readEDDollarFile = (ResourceUtil.getProperty(piRb, "pi.readActivityDollarDataForPI").equalsIgnoreCase("true"));
-        if(readSpgHHFile || readEDDollarFile)
-        {
+        boolean updateImportsAndExports = ResourceUtil.getBooleanProperty(piRb, "pi.updateImportsAndExports", true);
+        if(readSpgHHFile || readEDDollarFile || updateImportsAndExports) {
+
             CSVFileReader reader = new CSVFileReader();
             // read the PI intput file into a TableDataSet
             String piInputsPath = ResourceUtil.getProperty(piRb, "pi.base.data");
@@ -151,7 +235,8 @@ public class OregonPIPProcessor extends PIPProcessor {
             int activityColumnPosition = actI.checkColumnPosition("Activity");
 
             // the SPG1 File has HHCategory as rows and Size as columns
-            if (readSpgHHFile) {
+            int[] householdsByIncomeSize = null;                         //needed to update imports and exports.
+            if (readSpgHHFile || updateImportsAndExports) {
                 String hhPath = ResourceUtil.getProperty(piRb, "spg.input.data");
                 //read the SPG input file and put the data into an array by hhIndex
                 TableDataSet hh = null;
@@ -160,24 +245,28 @@ public class OregonPIPProcessor extends PIPProcessor {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
                 IncomeSize inc = new IncomeSize();
-                int[] householdsByIncomeSize = new int[hh.getRowCount()];
+                householdsByIncomeSize = new int[hh.getRowCount()];
                 for (int r = 0; r < hh.getRowCount(); r++) {
                     int incomeSize = inc.getIncomeSizeIndex(hh.getStringValueAt(r + 1, 1)); //HHCategory
                     householdsByIncomeSize[incomeSize] = (int) hh.getValueAt(r + 1, 2); //Size
                 }
-                // update the values in the actI TableDataSet using the SPG1 results
-                for (int r = 0; r < actI.getRowCount(); r++) {
 
-                    int incomeSize = inc.getIncomeSizeIndex(actI.getStringValueAt(r + 1, activityColumnPosition));
-
-                    if (incomeSize >= 0) {
-                        actI.setValueAt(r + 1, sizeColumnPosition, householdsByIncomeSize[incomeSize]);
+                if (readSpgHHFile) {
+                    // update the values in the actI TableDataSet using the SPG1 results
+                    for (int r = 0; r < actI.getRowCount(); r++) {
+                        int incomeSize = inc.getIncomeSizeIndex(actI.getStringValueAt(r + 1, activityColumnPosition));
+                        if (incomeSize >= 0) {
+                            actI.setValueAt(r + 1, sizeColumnPosition, householdsByIncomeSize[incomeSize]);
+                        }
                     }
                 }
             }
+
             //The ED File has 2 columns, Activity and Dollar Amounts
-            if(readEDDollarFile){
+            HashMap<String, Float> dollarsByIndustry = new HashMap<String, Float>(); //needed to updateImportsAndExports
+            if(readEDDollarFile || updateImportsAndExports){
                 String dollarPath = ResourceUtil.getProperty(piRb,"ed.input.data");
                 //read the ED input file and put the data into a hashmap by industry
                 TableDataSet dollars = null;
@@ -187,19 +276,73 @@ public class OregonPIPProcessor extends PIPProcessor {
                     throw new RuntimeException("Can't find ActivityDollarDataForPI.csv file");
                 }
 
-                HashMap<String, Float> dollarsByIndustry = new HashMap<String, Float>(); //header row does not count in row count
+                 //header row does not count in row count
                 for(int r = 0; r < dollars.getRowCount(); r++){
                     String splitIndustryLabel = dollars.getStringValueAt(r + 1, 1);//Activity Name
                     dollarsByIndustry.put(splitIndustryLabel, dollars.getValueAt(r + 1, 2)); //Total Dollars
                 }
+
+                if (readEDDollarFile) {
                 //update the values in the actI TableDataSet using the ED results
-                for(int r=0; r< actI.getRowCount(); r++){
-                    String key = actI.getStringValueAt(r+1,activityColumnPosition);
-                    if (dollarsByIndustry.containsKey(key)){
-                        actI.setValueAt(r+1,sizeColumnPosition, dollarsByIndustry.get(key));
+                    for(int r=0; r< actI.getRowCount(); r++){
+                        String key = actI.getStringValueAt(r+1,activityColumnPosition);
+                        if (dollarsByIndustry.containsKey(key)){
+                            actI.setValueAt(r+1,sizeColumnPosition, dollarsByIndustry.get(key));
+                        }
                     }
                 }
             }
+
+            if(updateImportsAndExports){
+                TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodity", "pi.base.data");
+                TableDataSet makeUse = loadTableDataSet("MakeUseI","pi.base.data");
+                HashMap<String, Float> importExportSize = new HashMap<String, Float>();
+                IncomeSize inc = new IncomeSize();
+
+                //Get the list of commodities that will be processed.
+                String commodity;
+                float importShare;
+                float imports;
+                float exports;
+                //for each commodity
+                for(int row = 1; row <= importShareByComm.getRowCount(); row++){
+                    importShare = importShareByComm.getValueAt(row, "98ImportShareOfModelwideUse");
+                    commodity = importShareByComm.getStringValueAt(row, "SCTG");
+
+                    //go thru the MakeUseI file and figure out the total amount
+                    //of the commodity that is made and used.
+                    String makeUseCommodity;
+                    String industry;
+                    float[] makeUseAmts = new float[2]; //0-make, 1=use
+                    for(int rowInMUFile = 1; rowInMUFile <= makeUse.getRowCount(); rowInMUFile++){
+                        makeUseCommodity = makeUse.getStringValueAt(rowInMUFile, "Commodity");
+                        if(makeUseCommodity.equals(commodity)){
+                            //figure out if it is make or use and what industry is involved.
+                            int index = makeUse.getStringValueAt(rowInMUFile, "MorU").equals("U")?1:0;
+                            industry = makeUse.getStringValueAt(rowInMUFile, "Activity");
+                            if(indOccRef.isSplitIndustryLabelValid(industry)){
+                                makeUseAmts[index] += dollarsByIndustry.get(industry) * makeUse.getValueAt(rowInMUFile, "Minimum");
+                            }else if(industry.contains("HH")){
+                                makeUseAmts[index] += householdsByIncomeSize[inc.getIncomeSizeIndex(industry)]*makeUse.getValueAt(rowInMUFile, "Minimum");
+                            }
+                        } //else go to the next line in the MakeUseI file.
+                    } //next row in MakeUseI
+                    imports = makeUseAmts[1] * importShare;
+                    exports = makeUseAmts[0] - makeUseAmts[1] + imports;
+                    System.out.println("Commodity: " + commodity + " Import Share: " + importShare + " Use: " + makeUseAmts[1] + " Make: " + makeUseAmts[0]);
+                    importExportSize.put((commodity + " Importers"), imports);
+                    importExportSize.put((commodity + " Exporters"), exports);
+                } //next commodity
+
+                for(int r=0; r< actI.getRowCount(); r++){
+                    String key = actI.getStringValueAt(r+1,activityColumnPosition);
+                    if (importExportSize.containsKey(key)){
+                        actI.setValueAt(r+1,sizeColumnPosition, (float)importExportSize.get(key));
+                    }
+                }
+            }  //done updating the imports and exports
+
+
             // write the updated PI input file
             String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
             CSVFileWriter writer = new CSVFileWriter();
@@ -326,8 +469,8 @@ public class OregonPIPProcessor extends PIPProcessor {
         //Next read in the alpha2beta.csv file from the reference directory.  This will set
         //up a look-up array so that we know which alphazones are in which beta zones
         //It will also set the max alpha and max beta zone which we can "get" from a2bMap.
-        TableDataSet alpha2betaTable = loadTableDataSet("alpha2beta","reference.data");
-        AlphaToBeta a2bMap = new AlphaToBeta(alpha2betaTable);
+        TableDataSet alpha2betaTable = loadTableDataSet("FloorspaceZonesI","reference.data");
+        AlphaToBeta a2bMap = new AlphaToBeta(alpha2betaTable, "AlphaZone", "PecasZone");
 
         //Next read in the previous year's pi/ActivityLocations.csv file.
         // ( if this file doesn't exist we will assume that it is year 1 and we do not
@@ -679,17 +822,13 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     public void writeLaborConsumptionAndProductionFiles() {
-        boolean writeTheseOutputs = false;
-        String oregonOutputsString = ResourceUtil.getProperty(piRb, "pi.oregonOutputs");
-        if (oregonOutputsString != null) {
-            if (oregonOutputsString.equalsIgnoreCase("true")) {
-                writeTheseOutputs = true;
-            }
-        }
-        if (!writeTheseOutputs) {
+        boolean writeOregonOutputs = ResourceUtil.getBooleanProperty(piRb, "pi.oregonOutputs", false);
+
+        if (!writeOregonOutputs) {
             logger.info("Not writing Oregon-Specific Outputs (labour consumption and production)");
             return;
         }
+        logger.info("Writing LaborDollarProduction and Consumption file");
         //Need several things to pass to the LaborProductionAndConsumption method
         //in order for it to write the output files:
         //1.  a2b table
@@ -697,7 +836,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         //3.  String[] occupations
         //4.  String[] hhCategories
         //5.  String[] activities (not including the households)
-        TableDataSet alphaToBeta = loadTableDataSet("alpha2beta","reference.data");
+
         
         TableDataSet householdQuantity = loadTableDataSet("ActivityLocations2","pi.current.data");
         
@@ -718,77 +857,157 @@ public class OregonPIPProcessor extends PIPProcessor {
         
         
         Set activities = indOccRef.getSplitIndustryLabels();
+
+//        TableDataSet alphaToBeta = loadTableDataSet("alpha2beta","reference.data");
+//        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AZone","BZone",householdQuantity,occupations,hhCategories,activities);
         
-        
-        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AZone","BZone",householdQuantity,occupations,hhCategories,activities);
+        TableDataSet alphaToBeta = loadTableDataSet("FloorspaceZonesI","reference.data");
+        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AlphaZone","PecasZone",householdQuantity,occupations,hhCategories,activities);
         labor.writeAllFiles(getOutputPath());
     }
-    
-public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter pctFile) {
-    
-    //first check to see if county outputs are requested of either occupations or SCTGs
-    if((ResourceUtil.getProperty(piRb, "pi.writeCountyOccupationFlows") != null 
-            && ResourceUtil.getBooleanProperty(piRb, "pi.writeCountyOccupationFlows")) ||
-       (ResourceUtil.getProperty(piRb, "pi.writeCountySCTGFlows") != null 
-                    && ResourceUtil.getBooleanProperty(piRb, "pi.writeCountySCTGFlows"))){
-        
-        Commodity com = Commodity.retrieveCommodity(name);
-        Matrix s = com.getSellingFlowMatrix();
-        Matrix b = com.getBuyingFlowMatrix();
-        
-        //need to initialize the occupation variable if it hasn't been already.
-        if(indOccRef == null){
-            indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "sw_ind_occ_split.correspondence.fileName"));
-        }
 
-        occupations = indOccRef.getOccupationLabelsByIndex();
-        Arrays.sort(occupations);
+    public void writeAllFlowRelatedFiles() {
+        //Set up the Histogram Specifications.
+        readInHistogramSpecifications();
 
-        //Either occupation or SCTG county flows are requested so figure out if the
-        //commodity name passed in is an occupation or an SCTG
-        if( Arrays.binarySearch(occupations,com.name) >= 0){  //commodity is an occupation
-            if(ResourceUtil.getBooleanProperty(piRb, "pi.writeCountyOccupationFlows")){
-                //write out the selling county flows for the labor commodities
-                if( Arrays.binarySearch(occupations,com.name) >= 0){
-                    if(compressor == null){
-                        String filePath = ResourceUtil.getProperty(globalRb,"alpha2beta.file");
-                        File a2bFile = new File(filePath);
-                        beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
-                        compressor = new MatrixCompression(beta2CountyMap);
-                    }
-                
-                    Matrix countySqueeze = compressor.getCompressedMatrix(s,"SUM");
-                
-                    File output = new File(getOutputPath() + "CountyFlows_Selling_"+ com.name+".csv");
-                    MatrixWriter writer = new CSVMatrixWriter(output);
-                    writer.writeMatrix(countySqueeze);
-                }
-            } 
-        }else if(name.startsWith("SCTG")){
-            if(ResourceUtil.getBooleanProperty(piRb, "pi.writeCountySCTGFlows")){
-                if(compressor == null){
-                  String filePath = ResourceUtil.getProperty(piRb,"reference.data") + "alpha2beta.csv";
-                  File a2bFile = new File(filePath);
-                  beta2CountyMap = new AlphaToBeta(a2bFile,"Bzone","FIPS");
-                  compressor = new MatrixCompression(beta2CountyMap);
-                }
-                Matrix countySqueeze = compressor.getCompressedMatrix(b,"SUM");
-              
-                File output = new File(getOutputPath() + "CountyFlows_Value_"+ com.name+".csv");
-                MatrixWriter writer = new CSVMatrixWriter(output);
-                writer.writeMatrix(countySqueeze);
+        //Next get some properties from the properties file that will determine which flow matrices
+        //to write out.  FLR commodities will never be written out.  If flows are written out, then
+        //the PctIntrazonal.csv file will also be written to for that commodity.
+        boolean writeBuyingGoodFlows = ResourceUtil.getBooleanProperty(piRb, "pi.write.buying.good.flows", true);
+        boolean writeSellingGoodFlows = ResourceUtil.getBooleanProperty(piRb, "pi.write.selling.good.flows", false);
+
+        boolean writeBuyingServiceFlows = ResourceUtil.getBooleanProperty(piRb, "pi.write.buying.service.flows", false);
+        boolean writeSellingServiceFlows = ResourceUtil.getBooleanProperty(piRb, "pi.write.selling.service.flows", false);
+
+        boolean writeBuyingLaborFlows = ResourceUtil.getBooleanProperty(piRb, "pi.write.buying.labor.flows", false);
+        boolean writeSellingLaborFlows = ResourceUtil.getBooleanProperty(piRb, "pi.write.selling.labor.flows", true);
+
+        //Regardless of whether we write out the flows, we will always write out a histogram file that looks
+        //only at internal zones for all commodities except FLR and a histogram file that looks at all zones
+        //for the goods commodities.
+        //Set up the files
+        try {
+        	logger.info("Creating Histograms_InternalZones.csv and Histograms_AllZones.csv");
+            BufferedWriter internalHistogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "Histograms_InternalZones.csv"));
+            internalHistogramFile.write("Commodity,BuyingSelling,BandNumber,LowerBound,Quantity,AverageLength\n");
+
+            BufferedWriter allHistogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "Histograms_AllZones.csv"));
+            allHistogramFile.write("Commodity,BuyingSelling,BandNumber,LowerBound,Quantity,AverageLength\n");
+
+            //if any of the flows are written out then we will write out the PctIntrazonal file for those flows
+            //as well.
+            PrintWriter pctFile = null;
+            if ((writeBuyingGoodFlows && writeSellingGoodFlows) || (writeBuyingServiceFlows && writeSellingServiceFlows)
+                    || (writeBuyingLaborFlows && writeSellingLaborFlows)) {
+                pctFile = new PrintWriter(new BufferedWriter(new FileWriter(getOutputPath() + "PctIntrazonalxCommodityxBzone.csv")));
+                pctFile.println("Bzone,Commodity,BuyIntra,BuyFrom,BuyTo,BuyPctIntraFrom,BuyPctIntraTo,SellIntra,SellFrom,SellTo,SellPctIntraFrom,SellPctIntraTo");
             }
-        }
-        //Write intrazonal numbers to calculate percentages
-        writePctIntrazonalFile(pctFile,name,b,s);
 
-        writeFlowHistograms(histogramFile,name,b,s);
-        
-        
-    }else {
-        super.writeFlowZipMatrices(name, histogramFile, pctFile);
+            Commodity commodity;
+            Matrix buyAllZns = null;
+            Matrix sellAllZns = null;
+            Matrix buyInternalZns;
+            Matrix sellInternalZns;
+            for (AbstractCommodity abstComm : Commodity.getAllCommodities()) {
+                commodity = (Commodity) abstComm;
+                if(commodity.name.contains("FLR")) continue;       //skip over the floorspace commodities
+                if(commodity.name.equalsIgnoreCase("Import")) continue;
+                if(commodity.name.equalsIgnoreCase("Export")) continue;
+
+                //We want internal and all zone histograms and only all zone flows (if requested)
+                if(commodity.name.contains("SCTG") || commodity.name.contains("GOODS")){
+                    buyAllZns = commodity.getBuyingFlowMatrix();
+                    sellAllZns = commodity.getSellingFlowMatrix();
+                    writeFlowHistograms(allHistogramFile, commodity.name, buyAllZns, sellAllZns);
+
+                    if(writeBuyingGoodFlows) writeFlowZipMatrix(commodity.name, buyAllZns, "buying");
+                    if(writeSellingGoodFlows) writeFlowZipMatrix(commodity.name, sellAllZns, "selling");
+                    if(writeBuyingGoodFlows && writeSellingGoodFlows){
+                        writePctIntrazonalFile(pctFile, commodity.name, buyAllZns, sellAllZns);
+                    }
+
+                    //Now do the internal stuff
+                    buyInternalZns = buyAllZns.getSubMatrix(internalBetaZones);
+                    sellInternalZns = sellAllZns.getSubMatrix(internalBetaZones);
+                    writeFlowHistograms(internalHistogramFile, commodity.name, buyInternalZns, sellInternalZns);
+
+                    boolean writeCountyLabor = ResourceUtil.getBooleanProperty(piRb, "pi.writeCountyOccupationFlows", false);
+                    if(writeCountyLabor) writeCountyOutputs(commodity.name, buyInternalZns, null, "goods");
+
+                } else {
+                    try {
+                        //For labor commodities we want internal histograms only and internal flows
+                        //only (if requested)
+                        Integer.parseInt(commodity.name.substring(0,1));
+                        //if the above line executed correctly than the commodity is a TLUMIP labor
+                        //category, if not it will be caught in the exception and treated as a service
+                        buyInternalZns = commodity.getBuyingFlowMatrix().getSubMatrix(internalBetaZones);
+                        sellInternalZns = commodity.getSellingFlowMatrix().getSubMatrix(internalBetaZones);
+                        writeFlowHistograms(internalHistogramFile, commodity.name, buyInternalZns, sellInternalZns);
+
+                        if(writeBuyingLaborFlows) writeFlowZipMatrix(commodity.name, buyInternalZns, "buying");
+                        if(writeSellingLaborFlows) writeFlowZipMatrix(commodity.name, sellInternalZns, "selling");
+                        if(writeBuyingLaborFlows && writeSellingLaborFlows)
+                            writePctIntrazonalFile(pctFile, commodity.name, buyInternalZns, sellInternalZns);
+
+                        boolean writeCountyLabor = ResourceUtil.getBooleanProperty(piRb, "pi.writeCountyOccupationFlows", false);
+                        if(writeCountyLabor) writeCountyOutputs(commodity.name, null, sellInternalZns, "labor");
+
+
+                    } catch (NumberFormatException e) {  //implies that the commodity is a service
+                      //In the case of service commodities, we want internal histograms only but all zone
+                        //flows (if requested)
+                        if(writeBuyingServiceFlows) {
+                            buyAllZns = commodity.getBuyingFlowMatrix();
+                            writeFlowZipMatrix(commodity.name, buyAllZns, "buying");
+                        }
+                        if(writeSellingServiceFlows) {
+                            sellAllZns = commodity.getSellingFlowMatrix();
+                            writeFlowZipMatrix(commodity.name, sellAllZns, "selling");
+                        }
+                        if(writeBuyingServiceFlows && writeSellingServiceFlows)
+                           writePctIntrazonalFile(pctFile, commodity.name, buyAllZns, sellAllZns);
+
+                        buyInternalZns = commodity.getBuyingFlowMatrix().getSubMatrix(internalBetaZones);
+                        sellInternalZns = commodity.getSellingFlowMatrix().getSubMatrix(internalBetaZones);
+                        writeFlowHistograms(internalHistogramFile, commodity.name, buyInternalZns, sellInternalZns);
+
+                    }
+                }
+
+            }
+            internalHistogramFile.close();
+            allHistogramFile.close();
+            if(pctFile != null) pctFile.close();
+            logger.info("\tHistograms_InternalZones.csv and Histograms_AllZones.csv have been written");
+            logger.info("Flow matrices have been written by request - see pi.properties file");
+        } catch (IOException e) {
+            logger.fatal("Problems writing flow related files (histograms, flow matrices and pctIntrazonal) "+e);
+            e.printStackTrace();
+         }
     }
-}
+    
+    public void writeCountyOutputs(String name, Matrix buy, Matrix sell, String goodsOrLabor) {
+
+        if(compressor == null){
+            String a2bFilePath = ResourceUtil.getProperty(globalRb,"alpha2beta.file");
+            beta2CountyMap = new AlphaToBeta(new File(a2bFilePath),"Bzone","FIPS");
+            compressor = new MatrixCompression(beta2CountyMap);
+        }
+
+        if(goodsOrLabor.equals("labor")){
+            Matrix countySqueeze = compressor.getCompressedMatrix(sell,"SUM");
+            File output = new File(getOutputPath() + "CountyFlows_Selling_"+ name+".csv");
+            MatrixWriter writer = new CSVMatrixWriter(output);
+            writer.writeMatrix(countySqueeze);
+
+        } else {
+            Matrix countySqueeze = compressor.getCompressedMatrix(buy,"SUM");
+            File output = new File(getOutputPath() + "CountyFlows_Value_"+ name+".csv");
+            MatrixWriter writer = new CSVMatrixWriter(output);
+            writer.writeMatrix(countySqueeze);
+        }
+    }
     
     
 
@@ -798,7 +1017,7 @@ public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter 
      * want to go back to SCTG county flows.  We need to organize all of the outputs better.
      */
 
-//    public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter pctFile) {
+//    public void writeFlowsPercentIntrazonalsAndHistogramFiles(String name, Writer histogramFile, PrintWriter pctFile) {
 //        Commodity com = Commodity.retrieveCommodity(name);
 //        
 //        ZipMatrixWriter  zmw = new ZipMatrixWriter(new File(getOutputPath()+"buying_"+com.name+".zipMatrix"));
@@ -832,78 +1051,15 @@ public void writeFlowZipMatrices(String name, Writer histogramFile, PrintWriter 
 //        writeFlowHistograms(histogramFile, name,b,s);
 //    }
     
-    protected void writePctIntrazonalFile(PrintWriter writer,String name,Matrix b, Matrix s){
-        boolean closePctFile = false;
-        try {
-          /* for daf version, we have to write out a file for each commodity so
-           * we create a new file each time this routine is called, write to the
-           * file and then close it.  In the monolithic version, we just write lines
-           * to a single file as we iterate over the commodities and the file
-           * will be closed by the calling method.
-           */ 
-            if (writer == null) { 
-                writer = new PrintWriter(new BufferedWriter(new FileWriter(getOutputPath() + "PctIntrazonalxBetazone_"+name+".csv")));
-                writer.println("Bzone,Commodity,BuyIntra,BuyFrom,BuyTo,BuyPctIntraFrom,BuyPctIntraTo,SellIntra,SellFrom,SellTo,SellPctIntraFrom,SellPctIntraTo");
-                closePctFile = true;
-            }   
-            
-            float buyIntra = 0;
-            float buyFrom = 0;
-            float buyTo = 0;
-            float buyPctFrom = 0;
-            float buyPctTo = 0;
-            float sellIntra = 0;
-            float sellFrom = 0;
-            float sellTo = 0;
-            float sellPctFrom = 0;
-            float sellPctTo = 0;
-                
-            for(int i=0; i<b.getRowCount(); i++){
-                int betaZone = b.getExternalNumber(i);
-                buyIntra = b.getValueAt(betaZone,betaZone);
-                buyFrom = b.getRowSum(betaZone);
-                buyTo = b.getColumnSum(betaZone);
-                buyPctFrom = buyIntra/buyFrom;
-                buyPctTo = buyIntra/buyTo;
-                sellIntra = s.getValueAt(betaZone,betaZone);
-                sellFrom = s.getRowSum(betaZone);
-                sellTo = s.getColumnSum(betaZone);
-                sellPctFrom = sellIntra/sellFrom;
-                sellPctTo = sellIntra/sellTo;
-                writer.print(betaZone + ",");
-                writer.print(name + ",");
-                writer.print(buyIntra +","); //buyIntra
-                writer.print(buyFrom +","); //buyFrom
-                writer.print(buyTo + ","); //buyTo
-                writer.print(buyPctFrom + ","); //buyPctFrom
-                writer.print(buyPctTo + ","); //buyPctTo
-                writer.print(sellIntra +","); //sellIntra
-                writer.print(sellFrom +","); //sellFrom
-                writer.print(sellTo + ","); //sellTo
-                writer.print(sellPctFrom + ","); //sellPctFrom
-                writer.println(sellPctTo); //sellPctTo
-            }
-            
-            /* close the file if we are running the DAF version of pi
-             * otherwise the file will be closed after we have iterated
-             * thru all the commodities.
-             */
-            if (writer !=null && closePctFile == true) {
-                writer.close();
-            }
-            
-        } catch (Exception e) {
-            logger.fatal("Error writing to file " + e);
-            System.exit(1);
-        }    
-    }
+
     
     public static void main(String[] args) {
-        ResourceBundle piRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/pi/pi.properties"));
-        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_PleaseWork/t1/global.properties"));
+        ResourceBundle piRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_testNewActivitiesW/t8/pi/pi.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_testNewActivitiesW/t8/global.properties"));
 
-        OregonPIPProcessor pProcessor =  new OregonPIPProcessor(1,piRb, globalRb);
-        pProcessor.createFloorspaceWFile();
+        OregonPIPProcessor pProcessor =  new OregonPIPProcessor(8,piRb, globalRb);
+//        pProcessor.createActivitiesWFile();
+        pProcessor.createZoneFiles();
     }
     
 }
