@@ -980,7 +980,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             allHistogramFile.close();
             if(pctFile != null) pctFile.close();
             logger.info("\tHistograms_InternalZones.csv and Histograms_AllZones.csv have been written");
-            logger.info("Flow matrices have been written by request - see pi.properties file");
+            logger.info("\tFlow matrices have been written by request - see pi.properties file");
         } catch (IOException e) {
             logger.fatal("Problems writing flow related files (histograms, flow matrices and pctIntrazonal) "+e);
             e.printStackTrace();
