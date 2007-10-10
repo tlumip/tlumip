@@ -16,16 +16,13 @@
  */
 package com.pb.tlumip.ha;
 
-import com.pb.common.util.ResourceUtil;
 import com.pb.models.pecas.AbstractZone;
 import com.pb.models.pecas.CommodityZUtility;
 import com.pb.models.pecas.LogitModel;
-import com.pb.tlumip.model.ModeChoiceLogsums;
 import com.pb.tlumip.model.PersonInterface;
 import com.pb.tlumip.model.SimulationDays;
 
 import java.util.Hashtable;
-import java.util.ResourceBundle;
 
 /**
  * A class that represents a person
@@ -185,7 +182,7 @@ public class Person implements PersonInterface {
     }
 
 
-   static final ModeChoiceLogsums allWorkModeChoiceLogsums[] = new ModeChoiceLogsums[100];
+//   static final ModeChoiceLogsums allWorkModeChoiceLogsums[] = new ModeChoiceLogsums[100];
 
 
     int getOccupationIndex() {
@@ -204,11 +201,12 @@ public class Person implements PersonInterface {
     double journeyToWorkUtility(int occupationIndex, int workSegment, int homeZone, AbstractZone destinationZone) {
     	 int z = destinationZone.getZoneIndex();
          double totalEmployment = 0;
-         ModeChoiceLogsums mcls = getModeChoiceLogsums(workSegment);
+//         ModeChoiceLogsums mcls = getModeChoiceLogsums(workSegment);
          for (int i=0;i<allHouseholds.commoditySizes.length;i++) {totalEmployment+=allHouseholds.commoditySizes[occupationIndex][z];}
-         return 0.54*mcls.getLogsum(homeZone, AbstractZone.getZone(z).getZoneUserNumber())+
-         Math.log(allHouseholds.commoditySizes[occupationIndex][z]) + 
-         0.1831* Math.log(totalEmployment - allHouseholds.commoditySizes[occupationIndex][z]);
+//         return 0.54*mcls.getLogsum(homeZone, AbstractZone.getZone(z).getZoneUserNumber())+
+//         Math.log(allHouseholds.commoditySizes[occupationIndex][z]) +
+//         0.1831* Math.log(totalEmployment - allHouseholds.commoditySizes[occupationIndex][z]);
+        return 0;
     }
     
     double journeyToWorkUtility(AbstractZone destinationZone) {
@@ -216,16 +214,16 @@ public class Person implements PersonInterface {
     }
 
     
-    static ModeChoiceLogsums getModeChoiceLogsums(int workSegment) {
-        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
-         ModeChoiceLogsums mcls =  allWorkModeChoiceLogsums[workSegment];
-         if (mcls == null) {
-             mcls = new ModeChoiceLogsums(rb);
-             mcls.readLogsums('w',workSegment);
-             allWorkModeChoiceLogsums[workSegment]= mcls;
-         }
-         return mcls;
-    }
+//    static ModeChoiceLogsums getModeChoiceLogsums(int workSegment) {
+//        ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
+//         ModeChoiceLogsums mcls =  allWorkModeChoiceLogsums[workSegment];
+//         if (mcls == null) {
+//             mcls = new ModeChoiceLogsums(rb);
+//             mcls.readLogsums('w',workSegment);
+//             allWorkModeChoiceLogsums[workSegment]= mcls;
+//         }
+//         return mcls;
+//    }
     	
 
     void homeAnchoredJobLocationChoice() {
@@ -233,7 +231,7 @@ public class Person implements PersonInterface {
         int occupationIndex =getOccupationIndex();
          double utilities[] = new double[allHouseholds.commodityPrices[occupationIndex].length];
          int workSegment= calcWorkerLogsumSegment();
-         ModeChoiceLogsums mcls = getModeChoiceLogsums(workSegment);
+//         ModeChoiceLogsums mcls = getModeChoiceLogsums(workSegment);
          double sum =0;
          int homeZone = lnkHousehold.getHomeZone().getZoneUserNumber();
          for (int z=0;z<utilities.length;z++){
@@ -281,18 +279,18 @@ public class Person implements PersonInterface {
 	         	 		
 		         int length = allHouseholds.commodityPrices[occupationIndex].length;
 		         int workSegment= calcWorkerLogsumSegment();
-		         ModeChoiceLogsums mcls = getModeChoiceLogsums(workSegment);
+//		         ModeChoiceLogsums mcls = getModeChoiceLogsums(workSegment);
 		         double sum =0;
 		         int homeZone = zone;
 		         for (int z=0;z<length;z++){
 		             if (allHouseholds.commoditySizes[occupationIndex][z]>0) {
 		                 double totalEmployment = 0;
 		                 for (int i=0;i<allHouseholds.commoditySizes.length;i++) {totalEmployment+=allHouseholds.commoditySizes[occupationIndex][z];}
-		                 double utility=0.54*mcls.getLogsum(homeZone, AbstractZone.getZone(z).getZoneUserNumber())+
-		                 Math.log(allHouseholds.commoditySizes[occupationIndex][z]) + 
-		                 0.1831* Math.log(totalEmployment - allHouseholds.commoditySizes[occupationIndex][z]);
-		                 utility=Math.exp(utility);
-		                 sum += utility;
+//		                 double utility=0.54*mcls.getLogsum(homeZone, AbstractZone.getZone(z).getZoneUserNumber())+
+//		                 Math.log(allHouseholds.commoditySizes[occupationIndex][z]) +
+//		                 0.1831* Math.log(totalEmployment - allHouseholds.commoditySizes[occupationIndex][z]);
+//		                 utility=Math.exp(utility);
+//		                 sum += utility;
 		             }
 		         }
 		         utilityDouble = new Double(Math.log(sum));

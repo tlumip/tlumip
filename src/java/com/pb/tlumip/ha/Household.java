@@ -27,7 +27,6 @@ import com.pb.models.pecas.LogitModel;
 import com.pb.models.pecas.NoAlternativeAvailable;
 import com.pb.models.pecas.PeakAutoSkims;
 import com.pb.tlumip.ld.DevelopmentType;
-import com.pb.tlumip.model.ModeChoiceLogsums;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -697,11 +696,11 @@ public class Household extends EconomicUnit implements Cloneable {
   //      	ia[12+pnum*5] = p.myJobTAZ;
         	if(p.myJobTAZ!=0) {
         		jobs ++;
-        		ModeChoiceLogsums mcls = Person.getModeChoiceLogsums(workSegment);
+//        		ModeChoiceLogsums mcls = Person.getModeChoiceLogsums(workSegment);
     
 //        		da[5+pnum] = skims.getDistance(zoneNumber,p.myJobTAZ);
         		// TODO: fix NaN in skims
-		        utility += 0.4491 *  mcls.getLogsum(zoneNumber, p.myJobTAZ);
+//		        utility += 0.4491 *  mcls.getLogsum(zoneNumber, p.myJobTAZ);
         	} 
         }
 //        AbstractZone.PriceVacancy priceVacancy = t.getPriceVacancySize(sfd);
