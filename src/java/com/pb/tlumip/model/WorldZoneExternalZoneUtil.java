@@ -23,11 +23,7 @@ import com.pb.common.util.ResourceUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * This class is used for ...
@@ -83,7 +79,7 @@ public class WorldZoneExternalZoneUtil {
             worldZones[index] = zone;
             index++;
         }
-        
+
 
         set.clear();
         for(int wz : tblWZEZDistances.getColumnAsInt(EZ_COL_NAME)){
@@ -103,7 +99,7 @@ public class WorldZoneExternalZoneUtil {
         externalZonesConnectedToWorldZone = new HashMap<Integer, List<Integer>>();
         worldZonesConnectedToExternalZone = new HashMap<Integer, List<Integer>>();
         distanceEzoneFromToWzone = new HashMap<Integer, HashMap<Integer, float[]>>();
-        for(int r=1; r<tblWZEZDistances.getRowCount(); r++){
+        for(int r=1; r<=tblWZEZDistances.getRowCount(); r++){
             Integer key = (int) tblWZEZDistances.getValueAt(r,WZ_COL_NAME);
             //map 1
             if(!externalZonesConnectedToWorldZone.containsKey(key)){
@@ -162,6 +158,22 @@ public class WorldZoneExternalZoneUtil {
         return wzs;
     }
 
+    public int[] getExternalZonesForET() {
+        int[] externalZonesForET = new int[externalZones.length-1];
+        List<Integer> externalZoneList = new ArrayList<Integer>();
+        for (int zone: externalZones) {
+            if (zone != 5012) {
+               externalZoneList.add(zone);
+            }
+        }
+
+        for (int i = 0; i < externalZoneList.size(); i++) {
+            externalZonesForET[i] = externalZoneList.get(i);
+        }
+
+        return externalZonesForET;
+    }
+
     public int getNumberOfExternalZones(){
         return nExternalZones;
     }
@@ -210,7 +222,7 @@ public class WorldZoneExternalZoneUtil {
         int row, col;
         Matrix mtxBeta6000s = new Matrix("beta6000s","distanceMtx", externalNumbers.length-1, externalNumbers.length-1 );
         mtxBeta6000s.setExternalNumbers(externalNumbers);
-        
+
         //Set the values in the new matrix
         float distance;
         for(int r = 1; r < externalNumbers.length; r++){
