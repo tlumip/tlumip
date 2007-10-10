@@ -189,6 +189,9 @@ public class WorldZoneUtilTest extends TestCase {
         assertEquals(1201.0f, beta6000s.getValueAt(6002, 1));
     }
 
+    public void testNumberOfZonesForET() {
+        assertEquals(11, wzUtil.getExternalZonesForET());
+    }
 
 
     public static void main(String[] args) {
