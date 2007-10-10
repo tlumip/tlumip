@@ -42,7 +42,7 @@ public class ZoneMap {
     float[][] intensityMap;   // rows=beta zones, columns = alpha zones
     Random rn;
 
-    ZoneMap (File f, long randomSeed) {
+    public ZoneMap (File f, long randomSeed) {
         rn = new Random(randomSeed);
         AlphaToBeta a2b= new AlphaToBeta(f);
         HIGHEST_ALPHA_ZONENUMBER = a2b.getMaxAlphaZone();
