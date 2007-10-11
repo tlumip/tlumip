@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.util.Random;
 
 public class ZoneMap {
-    protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
+    protected static Logger logger = Logger.getLogger(ZoneMap.class);
     public static int HIGHEST_ALPHA_ZONENUMBER,
                        HIGHEST_BETA_ZONENUMBER ; //initialized after reading alphaToBeta.csv
     float[][] intensityMap;   // rows=beta zones, columns = alpha zones
