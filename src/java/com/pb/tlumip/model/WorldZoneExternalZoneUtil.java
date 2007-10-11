@@ -23,7 +23,11 @@ import com.pb.common.util.ResourceUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.TreeSet;
 
 /**
  * This class is used for ...
@@ -99,7 +103,7 @@ public class WorldZoneExternalZoneUtil {
         externalZonesConnectedToWorldZone = new HashMap<Integer, List<Integer>>();
         worldZonesConnectedToExternalZone = new HashMap<Integer, List<Integer>>();
         distanceEzoneFromToWzone = new HashMap<Integer, HashMap<Integer, float[]>>();
-        for(int r=1; r<=tblWZEZDistances.getRowCount(); r++){
+        for(int r=1; r<tblWZEZDistances.getRowCount(); r++){
             Integer key = (int) tblWZEZDistances.getValueAt(r,WZ_COL_NAME);
             //map 1
             if(!externalZonesConnectedToWorldZone.containsKey(key)){
@@ -156,6 +160,10 @@ public class WorldZoneExternalZoneUtil {
             }
         }
         return wzs;
+    }
+
+    public int[] getExternalZones(){
+        return externalZones;
     }
 
     public int[] getExternalZonesForET() {
