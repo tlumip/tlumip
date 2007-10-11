@@ -59,6 +59,8 @@ public class EIModel {
 
     private double dblSmallestAllowableTonnage;
 
+    String strMatrixExtension;
+
     //private ArrayList<ShipmentDetail> alTrucks;
 
     //convert dollar flows/year to trucks/year
@@ -118,7 +120,7 @@ public class EIModel {
         float gamma = (float) ResourceUtil.getDoubleProperty(appRb, "ei.gravitymodel.gamma");
         float beta = (float) ResourceUtil.getDoubleProperty(appRb, "ei.gravitymodel.beta");
 
-        Matrix mtxDistanceSkim = readMatrix(ResourceUtil.getProperty(appRb, "distance.skim"), "Distance_Skim");
+        Matrix mtxDistanceSkim = readMatrix((ResourceUtil.getProperty(appRb, "distance.skim")+ strMatrixExtension), "Distance_Skim");
 
         ZoneMap zones = new ZoneMap(new File(ResourceUtil.getProperty(globalRb, "alpha2beta.file")), 1990);
 
@@ -129,7 +131,7 @@ public class EIModel {
         for (String strCommodity: strsCommodities) {
             Matrix mtxOriginalCommodityFlow;
             String strFileName = ResourceUtil.getProperty(appRb, "pi.output.dir") +
-                        "buying_" + strCommodity + ".zipMatrix";
+                        "buying_" + strCommodity + strMatrixExtension;
             try {
 
                 mtxOriginalCommodityFlow = readMatrix(strFileName, strCommodity);
@@ -275,7 +277,7 @@ public class EIModel {
     }
 
     private void defineModel() {
-
+        strMatrixExtension = ResourceUtil.getProperty(globalRb, "matrix.extension");
         wzUtil = new WorldZoneExternalZoneUtil(globalRb);
         //AlphaToBeta a2b = new AlphaToBeta(new File(ResourceUtil.getProperty(globalRb, "alpha2beta.file")));
         int[] intsBetaZones = a2b.getBetaExternals0Based();

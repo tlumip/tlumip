@@ -68,6 +68,8 @@ public class EEModel {
     int[] intsExternalStations;
     int[] intsExternalStationsZeroBased;
 
+    String strMatrixExtension;
+
     public EEModel(ResourceBundle appRb, ResourceBundle globalRb) {
         this.appRb = appRb;
         this.globalRb = globalRb;
@@ -97,7 +99,9 @@ public class EEModel {
 
     private void defineModel() {
 
-        dblRelativeError = ResourceUtil.getDoubleProperty(appRb, "relative.error");
+        dblRelativeError = ResourceUtil.getDoubleProperty(appRb, "ee.relative.error");
+        intMaxIterations = ResourceUtil.getIntegerProperty(appRb, "ee.max.iterations");
+        strMatrixExtension = ResourceUtil.getProperty(globalRb, "matrix.extension");
 
         WorldZoneExternalZoneUtil wzUtil = new WorldZoneExternalZoneUtil(globalRb);
         intsExternalStations = wzUtil.getExternalZonesForET();
