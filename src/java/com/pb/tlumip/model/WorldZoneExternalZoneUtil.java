@@ -39,6 +39,7 @@ import java.util.TreeSet;
 public class WorldZoneExternalZoneUtil {
 
     public final int LOCAL_MARKET_WORLD_ZONE;
+    public final int PORT_OF_PORTLAND_ZONE;
     static final String WZ_COL_NAME = "WorldMarket";
     static final String EZ_COL_NAME = "ExternalStation";
     static final String FROM_DIST = "DistanceFromWorldMarket";
@@ -61,7 +62,7 @@ public class WorldZoneExternalZoneUtil {
     public WorldZoneExternalZoneUtil(ResourceBundle rb){
 
         LOCAL_MARKET_WORLD_ZONE = ResourceUtil.getIntegerProperty(rb, "local.market.world.zone",6006);
-
+        PORT_OF_PORTLAND_ZONE = ResourceUtil.getIntegerProperty(rb, "port.of.portland.zone",5012);
         CSVFileReader reader = new CSVFileReader();
         try {
             tblWZEZDistances = reader.readFile(new File(rb.getString("world.to.external.distances")));
@@ -170,7 +171,7 @@ public class WorldZoneExternalZoneUtil {
         int[] externalZonesForET = new int[externalZones.length-1];
         List<Integer> externalZoneList = new ArrayList<Integer>();
         for (int zone: externalZones) {
-            if (zone != 5012) {
+            if (zone != PORT_OF_PORTLAND_ZONE) {
                externalZoneList.add(zone);
             }
         }
