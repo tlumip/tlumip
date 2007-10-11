@@ -24,8 +24,8 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixException;
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.ct.ZoneMap;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
+import com.pb.tlumip.model.ZoneMap;
 import org.apache.log4j.Logger;
 
 import java.io.File;
