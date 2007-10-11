@@ -20,6 +20,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.ZipMatrixReader;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
+import com.pb.tlumip.model.ZoneMap;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -79,7 +80,7 @@ public class DiscreteShipments2 {
        totalShipmentSize += d;
        workspace.add(new Double(d));
      }
-     // Now we've generated a list of shipments but their total weight should be greater than the
+     // Now we've generated a list of shipments but their total weight should not be greater than the
      // given tonnage. So scale the weights we've generated to exactly conserve to OD flows.
      double scalingFactor = pounds/totalShipmentSize;
      double[] result = new double[workspace.size()];
@@ -143,8 +144,6 @@ public class DiscreteShipments2 {
                     destinationBeta = di.readInt();
                     weeklyTons = di.readDouble();
 
-
-
                     shipmentList = getShipmentList(commodity, weeklyTons);
                     for (int i=0; i<shipmentList.length; i++) {
                         ++weeklyShipments;
@@ -176,23 +175,31 @@ public class DiscreteShipments2 {
                             transShipmentBeta = getTransShipmentZone(commodity, destinationBeta, betaODDist);
 
                             if (transShipmentBeta>0) {
-                                //TODO - Ask Rick about this change.  1.  is it supposed to be alpha and
-                                //TODO 2.  if the transShipmentBeta is a world zone is it ok to move the
-                                //TODO transShipment location to an external zone.
-                                transShipmentAlpha = destinationAlpha;   // Replace with search function
-                                // Generate the trip from the transshipment point to final destination
+                                //Set "Record indicator for the commodity being transshipped.
                                 transShipped = true;
-                                transShipmentPattern = "XD";
-                                shipments.add(new Shipment(commodity, transShipmentBeta, transShipmentAlpha,
-                                                destinationBeta, destinationAlpha, shipmentList[i], value, "STK", transShipped,
-                                                transShipmentPattern));
-                                // Specify the destination end to be the transshipment point
-                                destinationBeta = transShipmentBeta;
-                                destinationAlpha = transShipmentAlpha;
-                                transShipmentPattern = "OX";
+
+                                //If the transShipmentBeta is a world zone (i.e. the destination zone is a world zone)
+                                //then the record is still labeled OD but transShipped=true.  The transhipment center is
+                                //presumed to be at the World market end of the shipment.
+                                //If the destination is not a world zone, then add 2 trips to the trip file, the
+                                //first from the transShipment Zone to the Destination zone and then the
+                                //Origin zone to the transShipment Zone.
+                                if(!wzUtil.isWorldZone(transShipmentBeta)){
+                                    transShipmentAlpha = destinationAlpha;   // Replace with search function
+                                    // Generate the trip from the transshipment point to final destination
+                                    transShipmentPattern = "XD";
+                                    shipments.add(new Shipment(commodity, transShipmentBeta, transShipmentAlpha,
+                                                    destinationBeta, destinationAlpha, shipmentList[i], value, "STK", transShipped,
+                                                    transShipmentPattern));
+                                    // Specify the destination end to be the transshipment point
+                                    destinationBeta = transShipmentBeta;
+                                    destinationAlpha = transShipmentAlpha;
+                                    transShipmentPattern = "OX";
+                                }
                             }
 
                             // And finally, add the leg from origin to either ultimate destination or transshipment point
+                            //This code is used for the case of internal to worldZone with transShipment as well.
                             shipments.add(new Shipment(commodity, originBeta, originAlpha, destinationBeta, destinationAlpha,
                                             shipmentList[i], value, "STK", transShipped, transShipmentPattern));
                         }

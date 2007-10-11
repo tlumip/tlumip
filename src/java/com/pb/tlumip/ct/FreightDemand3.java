@@ -159,8 +159,8 @@ public class FreightDemand3 {
             }
         }
 
-        //For each element in the commodity list, we need to read in the buying_$commName.zipMatrix
-        //and the selling_$commName.zipMatrix file.  The zip files will have the flows
+        //For each element in the commodity list, we need to read in the buying_$commName matrix
+        //and the selling_$commName matrix file.  The zip files will have the flows
         // in a matrix so we need to get the origin zone, the destination zone and the flow
         // We also need to read in the betapkdist so that we can determine the distance between the OD
         // pair.  Once we read in this info we will determine the mode of transport and then
