@@ -32,14 +32,14 @@ import java.util.ResourceBundle;
  */
 public class TLUMIPLDInternalExternalModel extends LDInternalExternalModel {
 
-    public TLUMIPLDInternalExternalModel(ResourceBundle rb, TazManager tazManager){
-        super(rb, tazManager);
+    public TLUMIPLDInternalExternalModel(ResourceBundle rb, ResourceBundle globalRb, TazManager tazManager){
+        super(rb, globalRb, tazManager);
     }
 
     public void readExternalStations(){
         externalStations = new ArrayList<Integer>();
 
-        WorldZoneExternalZoneUtil wzUtil = new WorldZoneExternalZoneUtil(rb);
+        WorldZoneExternalZoneUtil wzUtil = new WorldZoneExternalZoneUtil(globalRb);
         int[] externalZones = wzUtil.getExternalZones();
         for(int zone : externalZones){
             externalStations.add(zone);    
