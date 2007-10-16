@@ -26,6 +26,7 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.models.pt.PTOccupationReferencer;
 import com.pb.models.pt.tests.PTOccupation;
 import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
+import com.pb.tlumip.pt.LaborFlows;
 import org.apache.log4j.Logger;
 
 import java.io.File;
