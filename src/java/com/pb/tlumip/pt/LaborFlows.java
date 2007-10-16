@@ -105,7 +105,7 @@ public class LaborFlows {
         }
 
         this.occRef = occRef;
-        matrixFormat = rb.getString("matrix.extension");
+        matrixFormat = globalRb.getString("matrix.extension");
 
         this.wzUtil = new WorldZoneExternalZoneUtil(globalRb);
     }

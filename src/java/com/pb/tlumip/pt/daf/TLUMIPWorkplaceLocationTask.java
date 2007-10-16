@@ -24,7 +24,6 @@ import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pt.ActivityPurpose;
-import com.pb.models.pt.LaborFlows;
 import com.pb.models.pt.PTDataReader;
 import com.pb.models.pt.PTOccupationReferencer;
 import com.pb.models.pt.PTPerson;
@@ -33,6 +32,7 @@ import com.pb.models.pt.WorkplaceLocationModel;
 import com.pb.models.pt.daf.MessageID;
 import com.pb.models.pt.util.SkimsInMemory;
 import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
+import com.pb.tlumip.pt.LaborFlows;
 import com.pb.tlumip.pt.PTOccupation;
 import org.apache.log4j.Logger;
 
