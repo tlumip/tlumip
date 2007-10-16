@@ -41,7 +41,6 @@ public class TLUMIPMCLogsumCalculatorTask extends MCLogsumCalculatorTask {
 
     protected static final Object localLock = new Object();
     protected static boolean localInitialized = false;
-    protected static String collapsedSuffix;
     protected static boolean runningSEAM;
     protected static ArrayList matricesToCollapse;
     protected static AlphaToBeta a2bCorrespondence;
@@ -54,7 +53,6 @@ public class TLUMIPMCLogsumCalculatorTask extends MCLogsumCalculatorTask {
         synchronized (localLock) {
             if (!localInitialized) {
                 mcLogger.info(getName() + ", Initializing TLUMIP version of object");
-                collapsedSuffix = globalRb.getString("beta.name");
                 matricesToCollapse = ResourceUtil.getList(ptRb,
                         "sdt.matrices.for.pecas");
 
@@ -94,8 +92,8 @@ public class TLUMIPMCLogsumCalculatorTask extends MCLogsumCalculatorTask {
             Message collapsedMessage = createMessage();
             collapsedMessage.setId(MessageID.MC_LOGSUMS_COLLAPSED);
             collapsedMessage.setValue("matrix", squeezed);
-            mcLogger.info(getName() + ", Sending " + squeezed.getName() + matrixWriterQueue);
-            sendTo(matrixWriterQueue, msg);
+            mcLogger.info(getName() + ", Sending " + squeezed.getName() + " to " +  matrixWriterQueue);
+            sendTo(matrixWriterQueue, collapsedMessage);
         }
 
 
@@ -114,12 +112,42 @@ public class TLUMIPMCLogsumCalculatorTask extends MCLogsumCalculatorTask {
         // Need to do a little work to get only the purpose/segment part out of
         // the name
         String newName = m.getName();
-        newName = newName.replaceAll("ls", ("ls" + collapsedSuffix));
+        newName = newName.replaceAll("ls", "ls_beta");
 
-        Matrix beta5000s = matrixCompression.getCompressedMatrix(m, "MEAN");
-        Matrix beta6000s = wzEzUtil.createBeta6000Matrix(beta5000s);
+        Matrix betaMatrix = matrixCompression.getCompressedMatrix(m, "MEAN");
+        int[] betaExternals = betaMatrix.getExternalNumbers();
 
+        int[] newExternalNumbers = new int[betaExternals.length + wzEzUtil.getNumberOfWorldZones()];
+        System.arraycopy(betaExternals, 1, newExternalNumbers, 1, betaExternals.length-1);
+        int index = 0;
+        for(int zone : wzEzUtil.getWorldZones()){
+            newExternalNumbers[betaExternals.length + index] = zone;
+            index++;
+        }
+
+
+        Matrix beta6000s = new Matrix(newName, "beta mclogsums", newExternalNumbers.length-1, newExternalNumbers.length-1);
+        beta6000s.setExternalNumbers(newExternalNumbers);
         beta6000s.setName(newName);
+
+        //first copy over the internal values
+        int originZone;
+        int destinationZone;
+        for(int zRowIndex = 1; zRowIndex < betaExternals.length; zRowIndex++){
+            for(int zColIndex = 1; zColIndex < betaExternals.length; zColIndex++){
+                originZone = betaExternals[zRowIndex];
+                destinationZone = betaExternals[zColIndex];
+                beta6000s.setValueAt(originZone, destinationZone, betaMatrix.getValueAt(originZone, destinationZone));
+            }
+        }
+
+        //next fill the worldzone entries with NEG.INFINITY
+        for(int oZone : wzEzUtil.getWorldZones()){
+            for(int dZone : wzEzUtil.getWorldZones()){
+                beta6000s.setValueAt(oZone, dZone, Float.NEGATIVE_INFINITY);
+            }
+        }
+
         return beta6000s;
      }
 

@@ -16,16 +16,19 @@
  */
 package com.pb.tlumip.spg;
 
-import com.pb.common.util.ResourceUtil;
+import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.models.synpop.SPG;
-import com.pb.models.censusdata.SwOccupation;
+import com.pb.common.util.ResourceUtil;
 import com.pb.models.censusdata.SwIndustry;
+import com.pb.models.censusdata.SwOccupation;
 import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
+import com.pb.models.synpop.SPG;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.Industry;
-import com.pb.tlumip.model.Occupation;
+import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
@@ -42,11 +45,14 @@ import java.util.ResourceBundle;
  */
 
 public class SPGnew extends SPG {
+    WorldZoneExternalZoneUtil wzUtil;
 
     public SPGnew ( String spgPropertyFileName, String globalPropertyFileName, String baseYear, String currentYear ) {
 		
         super();
-        
+
+        wzUtil = new WorldZoneExternalZoneUtil(ResourceUtil.getResourceBundle(globalPropertyFileName));
+
         HashMap spgPropertyMap = ResourceUtil.getResourceBundleAsHashMap( spgPropertyFileName );
         HashMap globalPropertyMap = ResourceUtil.getResourceBundleAsHashMap(globalPropertyFileName);
 
@@ -58,7 +64,9 @@ public class SPGnew extends SPG {
     public SPGnew ( ResourceBundle appRb, ResourceBundle globalRb, String baseYear, String currentYear ) {
         
         super();
-        
+
+        wzUtil = new WorldZoneExternalZoneUtil(globalRb);
+
         HashMap spgPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
         HashMap globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
@@ -68,7 +76,7 @@ public class SPGnew extends SPG {
 
 	
     private void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String baseYear, String currentYear ) {
-        IndustryOccupationSplitIndustryReference ref = new IndustryOccupationSplitIndustryReference((String) globalPropertyMap.get("sw_ind_occ_split.correspondence.fileName"));
+        IndustryOccupationSplitIndustryReference ref = new IndustryOccupationSplitIndustryReference((String) globalPropertyMap.get("industry.occupation.to.split.industry.correspondence"));
         IncomeSize incSize = new IncomeSize( Double.parseDouble( (String)spgPropertyMap.get("convertTo2000Dollars") ) );
         SwIndustry ind = new Industry( (String)globalPropertyMap.get("sw_pums_industry.correspondence.fileName"), baseYear, ref );
         SwOccupation occ = new SwOccupation( (String)globalPropertyMap.get("sw_pums_occupation.correspondence.fileName"), baseYear, ref );
@@ -123,6 +131,63 @@ public class SPGnew extends SPG {
             logger.info("writing SynPop files finished in " + ((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
 
         }
+    }
+
+    public double[][][] readPiLaborDollars ( String fileName ) {
+
+        int index;
+        int zone;
+        int occup;
+        double dollars;
+
+
+
+
+        // read the PI output file into a TableDataSet
+        OLD_CSVFileReader reader = new OLD_CSVFileReader();
+
+        TableDataSet table = null;
+        try {
+            table = reader.readFile(new File( fileName ));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read PI Labor Dollars file: " + fileName, e);
+        }
+
+
+        // get values from TableDataSet into array to return
+        double[][][] laborDollars = new double[halo.getNumberOfZones()][occ.getNumberOccupations()][incSize.getNumberIncomeSizes()];
+
+
+
+        for (int r=0; r < table.getRowCount(); r++) {
+
+            try {
+                zone = (int)table.getValueAt(r+1, 1);
+                if (!wzUtil.isWorldZone(zone)) {
+                    occup = occ.getOccupationIndexFromLabel( table.getStringValueAt(r+1, 2) );
+
+
+                    index = halo.getZoneIndex(zone);
+
+                    if (index < 0)
+                        continue;
+
+                    for (int c=0; c < incSize.getNumberIncomeSizes(); c++) {
+                        dollars = table.getValueAt(r+1, c+3);
+                        laborDollars[index][occup][c] = dollars;
+                        regionLaborDollars[occup][c] += dollars;
+                    }
+                }
+            }
+            catch (Exception e) {
+                String msg = "Error processing file " + fileName + " in row: " + r;
+                throw new RuntimeException(msg, e);
+            }
+
+        }
+
+        return laborDollars;
+
     }
 
 }

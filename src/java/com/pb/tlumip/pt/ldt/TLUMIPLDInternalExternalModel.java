@@ -16,12 +16,10 @@
  */
 package com.pb.tlumip.pt.ldt;
 
-import com.pb.models.pt.TazManager;
 import com.pb.models.pt.ldt.LDInternalExternalModel;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 
 /**
  * This class is used for ...
@@ -32,9 +30,11 @@ import java.util.ResourceBundle;
  */
 public class TLUMIPLDInternalExternalModel extends LDInternalExternalModel {
 
-    public TLUMIPLDInternalExternalModel(ResourceBundle rb, ResourceBundle globalRb, TazManager tazManager){
-        super(rb, globalRb, tazManager);
+    public TLUMIPLDInternalExternalModel(){
+        super();
     }
+
+
 
     public void readExternalStations(){
         externalStations = new ArrayList<Integer>();

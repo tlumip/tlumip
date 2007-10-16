@@ -55,4 +55,7 @@ public class TLUMIPTazManager extends TazManager {
             }
         }
     }
+
+    public void addExternalZones(ResourceBundle globalRb){
+    }
 }

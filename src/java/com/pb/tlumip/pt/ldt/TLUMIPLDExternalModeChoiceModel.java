@@ -16,16 +16,14 @@
  */
 package com.pb.tlumip.pt.ldt;
 
-import static com.pb.tlumip.pt.ldt.LDExternalModeChoiceParameters.*;
-
-import java.util.ResourceBundle;
-
 import com.pb.common.model.ModelException;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
 import com.pb.models.pt.ldt.LDExternalModeChoiceModel;
 import com.pb.models.pt.ldt.LDTour;
 import com.pb.models.pt.ldt.LDTourModeType;
+
+import java.util.ResourceBundle;
 
 /**
  * Mode choice for long-distance tours with external destinations.  
@@ -56,8 +54,8 @@ public class TLUMIPLDExternalModeChoiceModel extends LDExternalModeChoiceModel {
         readParameters(); 
         
         // read the distance matrix
-        String skimPath = ResourceUtil.getProperty(rb, "skims.path");
-        String[] fileNames = ResourceUtil.getArray(rb, "carOp.file");
+        String skimPath = ResourceUtil.getProperty(rb, "assign.previous.skim.path");
+        String[] fileNames = ResourceUtil.getArray(rb, "pt.car.offpeak.skims");
         distance = readTravelCost(skimPath + fileNames[1], "carOpDist");
     }
     

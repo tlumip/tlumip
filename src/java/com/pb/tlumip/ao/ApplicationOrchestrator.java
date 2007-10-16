@@ -437,7 +437,7 @@ public class ApplicationOrchestrator {
 
         spg.getHHAttributesFromPUMS(baseYearS);
         spg.spg1(currentYear);
-        spg.writeFrequencyTables();
+        //spg.writeFrequencyTables();
         TableDataSet table = spg.sumHouseholdsByIncomeSize();
         spg.writePiInputFile(table);
         
@@ -529,7 +529,6 @@ public class ApplicationOrchestrator {
             String appName = args[3];
             int baseYear = Integer.parseInt(args[4]);
             int t = Integer.parseInt(args[5]);
-
 
             logger.info("Root Directory: " + rootDir);
             logger.info("Base Scenario Name: " + baseScenarioName);
