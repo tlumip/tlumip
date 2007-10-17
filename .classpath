@@ -12,5 +12,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pasaat"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/seam"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pecas"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/utils"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
