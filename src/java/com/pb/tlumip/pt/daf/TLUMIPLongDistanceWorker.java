@@ -16,8 +16,6 @@
  */
 package com.pb.tlumip.pt.daf;
 
-import java.util.ResourceBundle;
-
 import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageFactory;
 import com.pb.common.util.ResourceUtil;
@@ -27,6 +25,8 @@ import com.pb.models.pt.daf.MessageID;
 import com.pb.models.pt.ldt.LDTour;
 import com.pb.models.pt.ldt.RunLDTModels;
 import com.pb.tlumip.pt.PTOccupation;
+
+import java.util.ResourceBundle;
 
 /**
  * This a class that runs LDT as a stand-alone model
@@ -49,11 +49,14 @@ public class TLUMIPLongDistanceWorker extends LongDistanceWorker {
             runHouseholdLevelModels = true;
         } 
         
-        String rbName = args[1];
-        ResourceBundle rb = ResourceUtil.getResourceBundle(rbName); 
+        String appRbName = args[1];
+        ResourceBundle rb = ResourceUtil.getResourceBundle(appRbName);
+
+        String globalRbName = args[2];
+        ResourceBundle globalRb = ResourceUtil.getResourceBundle(globalRbName);
                 
         RunLDTModels ldtRunner = new RunLDTModels(PTOccupation.NONE);
-        ldtRunner.setResourceBundle(rb); 
+        ldtRunner.setResourceBundles(rb, globalRb); 
         LDTour[] tours; 
         
         // run the household level models
