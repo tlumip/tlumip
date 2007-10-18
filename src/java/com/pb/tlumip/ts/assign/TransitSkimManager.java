@@ -23,18 +23,20 @@ package com.pb.tlumip.ts.assign;
  */
 
 
+import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
-import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.transit.OptimalStrategy;
-import org.apache.log4j.Logger;
 
-import java.io.File;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
+import java.io.File;
+import org.apache.log4j.Logger;
+
 
 
 public class TransitSkimManager {
@@ -58,9 +60,11 @@ public class TransitSkimManager {
     String accString;
     String egrString;
     String auxString;
-    String brdString;
-    String farString;
-    String frqString;
+    String hsr$String;
+    String air$String;
+    String rail$String;
+    String bus$String;
+    String tran$String;
     
     HashMap skimTablesOrder = null;
     
@@ -81,9 +85,11 @@ public class TransitSkimManager {
         accString = (String)tsPropertyMap.get("accesswalk.identifier");
         egrString = (String)tsPropertyMap.get("egresswalk.identifier");
         auxString = (String)tsPropertyMap.get("otherwalk.identifier");
-        brdString = (String)tsPropertyMap.get("boardings.identifier");
-        farString = (String)tsPropertyMap.get("fare.identifier");
-        frqString = (String)tsPropertyMap.get("freq.identifier");
+        hsr$String = (String)tsPropertyMap.get("hsr$.identifier");
+        air$String = (String)tsPropertyMap.get("air$.identifier");
+        rail$String = (String)tsPropertyMap.get("rail$.identifier");
+        bus$String = (String)tsPropertyMap.get("bus$.identifier");
+        tran$String = (String)tsPropertyMap.get("tran$.identifier");
 
         skimTablesOrder = new HashMap();
         skimTablesOrder.put(ivtString, 0);
@@ -92,9 +98,11 @@ public class TransitSkimManager {
         skimTablesOrder.put(accString, 3);
         skimTablesOrder.put(egrString, 4);
         skimTablesOrder.put(auxString, 5);
-        skimTablesOrder.put(brdString, 6);
-        skimTablesOrder.put(farString, 7);
-        skimTablesOrder.put(frqString, 8);
+        skimTablesOrder.put(hsr$String, 6);
+        skimTablesOrder.put(air$String, 7);
+        skimTablesOrder.put(rail$String, 8);
+        skimTablesOrder.put(bus$String, 9);
+        skimTablesOrder.put(tran$String, 10);
         
     }    
     
@@ -258,8 +266,9 @@ public class TransitSkimManager {
         }
 
         
+        String transitRouteDataFilesDirectory = (String)tsPropertyMap.get("transitRouteDataFiles.directory");
         
-        return nh.setupTransitNetworkObject ( period, accessMode, listingName, routeFiles, routeTypes, maxRoutes );
+        return nh.setupTransitNetworkObject ( period, accessMode, listingName, transitRouteDataFilesDirectory, routeFiles, routeTypes, maxRoutes );
         
     }
 
@@ -316,19 +325,21 @@ public class TransitSkimManager {
      * 
      */
     private String[] getTransitSkimsFileNames ( String period, String accessMode, String routeType ) {
-        String extension = (String)globalPropertyMap.get("matrix.extension");
+
         String firstPart = (String)tsPropertyMap.get("transitSkims.directory") + period + accessMode + routeType;
         
         String[] skimFileNames = new String[9];
-        skimFileNames[0] = firstPart + ivtString + extension;
-        skimFileNames[1] = firstPart + fwtString + extension;
-        skimFileNames[2] = firstPart + twtString + extension;
-        skimFileNames[3] = firstPart + accString + extension;
-        skimFileNames[4] = firstPart + egrString + extension;
-        skimFileNames[5] = firstPart + auxString + extension;
-        skimFileNames[6] = firstPart + brdString + extension;
-        skimFileNames[7] = firstPart + farString + extension;
-        skimFileNames[8] = firstPart + frqString + extension;
+        skimFileNames[0] = firstPart + ivtString + ".zip";
+        skimFileNames[1] = firstPart + fwtString + ".zip";
+        skimFileNames[2] = firstPart + twtString + ".zip";
+        skimFileNames[3] = firstPart + accString + ".zip";
+        skimFileNames[4] = firstPart + egrString + ".zip";
+        skimFileNames[5] = firstPart + auxString + ".zip";
+        skimFileNames[6] = firstPart + hsr$String + ".zip";
+        skimFileNames[7] = firstPart + air$String + ".zip";
+        skimFileNames[8] = firstPart + rail$String + ".zip";
+        skimFileNames[9] = firstPart + bus$String + ".zip";
+        skimFileNames[10] = firstPart + tran$String + ".zip";
         
 
         return skimFileNames;
