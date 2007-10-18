@@ -294,7 +294,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
 
             if(updateImportsAndExports){
-                TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodityJust", "pi.base.data");
+                TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodity", "pi.base.data");
                 TableDataSet makeUse = loadTableDataSet("MakeUseI","pi.base.data");
                 HashMap<String, Float> importExportSize = new HashMap<String, Float>();
                 IncomeSize inc = new IncomeSize();
@@ -320,7 +320,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                             //figure out if it is make or use and what industry is involved.
                             int index = makeUse.getStringValueAt(rowInMUFile, "MorU").equals("U")?1:0;
                             industry = makeUse.getStringValueAt(rowInMUFile, "Activity");
-                            if(indOccRef.isSplitIndustryLabelValid(industry)){
+                            if(indOccRef.isSplitIndustryLabelValid(industry) || industry.equals("Capitalists") || industry.equals("GovInstitutions")){
                                 makeUseAmts[index] += dollarsByIndustry.get(industry) * makeUse.getValueAt(rowInMUFile, "Minimum");
                             }else if(industry.contains("HH")){
                                 makeUseAmts[index] += householdsByIncomeSize[inc.getIncomeSizeIndex(industry)]*makeUse.getValueAt(rowInMUFile, "Minimum");
