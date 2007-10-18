@@ -18,7 +18,6 @@ package com.pb.tlumip.et;
 
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
 import com.pb.models.reference.ModelComponent;
 import org.apache.log4j.Logger;
 
@@ -131,12 +130,14 @@ public class ETModel extends ModelComponent {
         tblOutput.appendColumn(strsStartTime, "StartTime");
         tblOutput.appendColumn(intsTruckClass, "TruckClass");
 
-        String strOutputPath = ResourceUtil.getProperty(appRb, "et.current.data");
-        String strFileName = ResourceUtil.getProperty(appRb, "ET.file.prefix") + "TruckTrips" + ".csv";
+//        String strOutputPath = ResourceUtil.getProperty(appRb, "et.current.data");
+//        String strFileName = ResourceUtil.getProperty(appRb, "ET.file.prefix") + "TruckTrips" + ".csv";
+        //Christi commented out about lines when integrating ET with TS.
+        String strOutputFile = globalRb.getString("et.truck.trips"); //need to share property with TS
 
         try{
             CSVFileWriter cfwWriter = new CSVFileWriter();
-            cfwWriter.writeFile(tblOutput, new File(strOutputPath + strFileName));
+            cfwWriter.writeFile(tblOutput, new File(strOutputFile));
             cfwWriter.close();
         }
         catch (IOException e) {
