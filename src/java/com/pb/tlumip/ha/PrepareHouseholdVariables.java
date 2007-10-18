@@ -73,7 +73,7 @@ public class PrepareHouseholdVariables {
         ZoningScheme.setUpZoningSchemes(HAModel.reloadTableFromScratchFromTextFile(spaceTypePath,"ZoningSchemes"));
 
     //    TableDataSet gridCellTable = HAModel.reloadTableFromScratchFromTextFile(spaceTypePath,"GridCells");
-    //    LDModel.setUpGridCells(gridCellTable);
+    //    SDModel.setUpGridCells(gridCellTable);
         
         readInSpacePrices();
         ahh.setUpLaborPrices(spaceTypePath);

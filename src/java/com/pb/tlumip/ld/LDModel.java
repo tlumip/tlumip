@@ -23,7 +23,7 @@ import com.pb.models.pecas.GridCell;
 import com.pb.models.reference.ModelComponent;
 
 /**
- * LDModel implements...
+ * SDModel implements...
  * @author    John Abraham
  * @version   1.0, 3/31/2000
  */
