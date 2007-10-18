@@ -326,20 +326,21 @@ public class TransitSkimManager {
      */
     private String[] getTransitSkimsFileNames ( String period, String accessMode, String routeType ) {
 
+        String extension = (String)globalPropertyMap.get("matrix.extension");
         String firstPart = (String)tsPropertyMap.get("transitSkims.directory") + period + accessMode + routeType;
         
-        String[] skimFileNames = new String[9];
-        skimFileNames[0] = firstPart + ivtString + ".zip";
-        skimFileNames[1] = firstPart + fwtString + ".zip";
-        skimFileNames[2] = firstPart + twtString + ".zip";
-        skimFileNames[3] = firstPart + accString + ".zip";
-        skimFileNames[4] = firstPart + egrString + ".zip";
-        skimFileNames[5] = firstPart + auxString + ".zip";
-        skimFileNames[6] = firstPart + hsr$String + ".zip";
-        skimFileNames[7] = firstPart + air$String + ".zip";
-        skimFileNames[8] = firstPart + rail$String + ".zip";
-        skimFileNames[9] = firstPart + bus$String + ".zip";
-        skimFileNames[10] = firstPart + tran$String + ".zip";
+        String[] skimFileNames = new String[11];
+        skimFileNames[0] = firstPart + ivtString + extension;
+        skimFileNames[1] = firstPart + fwtString + extension;
+        skimFileNames[2] = firstPart + twtString + extension;
+        skimFileNames[3] = firstPart + accString + extension;
+        skimFileNames[4] = firstPart + egrString + extension;
+        skimFileNames[5] = firstPart + auxString + extension;
+        skimFileNames[6] = firstPart + hsr$String + extension;
+        skimFileNames[7] = firstPart + air$String + extension;
+        skimFileNames[8] = firstPart + rail$String + extension;
+        skimFileNames[9] = firstPart + bus$String + extension;
+        skimFileNames[10] = firstPart + tran$String + extension;
         
 
         return skimFileNames;
