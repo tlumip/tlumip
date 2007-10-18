@@ -294,7 +294,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
 
             if(updateImportsAndExports){
-                TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodityJustSCTG41", "pi.base.data");
+                TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodityJust", "pi.base.data");
                 TableDataSet makeUse = loadTableDataSet("MakeUseI","pi.base.data");
                 HashMap<String, Float> importExportSize = new HashMap<String, Float>();
                 IncomeSize inc = new IncomeSize();
