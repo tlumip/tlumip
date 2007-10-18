@@ -37,6 +37,7 @@ import java.util.StringTokenizer;
 class TruckTours4 {
     protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
     ResourceBundle rb;
+    ResourceBundle globalRb;
     String inputPath;
     ArrayList shipments;
     ArrayList trucks;
@@ -44,8 +45,9 @@ class TruckTours4 {
     long randomNumberSeed;
 
 
-    TruckTours4 (ResourceBundle rb, String ctInputPath, long rns) {
+    TruckTours4 (ResourceBundle rb, ResourceBundle globalRb, String ctInputPath, long rns) {
         this.rb = rb;
+        this.globalRb = globalRb;
         this.inputPath = ctInputPath;
         this.shipments = new ArrayList();
         this.trucks = new ArrayList();
@@ -95,7 +97,7 @@ class TruckTours4 {
                                 new File(inputPath + "CommodityVehicleTypes.txt") );   // even more parameters
 
       String offPeakTimeFile = ResourceUtil.getProperty(rb, "alpha.op.time.skim");
-      ZipMatrixReader zr = new ZipMatrixReader(new File(offPeakTimeFile));
+      ZipMatrixReader zr = new ZipMatrixReader(new File(offPeakTimeFile + globalRb.getString("matrix.extension")));
       Matrix offPeakSkim = zr.readMatrix();
 
       // Generate the first truck (because everyone knows the chicken came before
@@ -168,13 +170,14 @@ class TruckTours4 {
     boolean collapseIntrazonalTrips = true;
     Date start = new Date();
     ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/ct/ct.properties"));
-    String inputPath = ResourceUtil.getProperty(rb, "ct.base.data");
+    ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/global.properties"));
+        String inputPath = ResourceUtil.getProperty(rb, "ct.base.data");
       logger.info("input path: " + inputPath);
     String outputPath = ResourceUtil.getProperty(rb, "ct.current.data");
       logger.info("output path: " + outputPath);
     long randomSeed = Long.parseLong(ResourceUtil.getProperty(rb, "randomSeed"));
       logger.info("random seed: " + randomSeed);
-    TruckTours4 truckTours = new TruckTours4(rb,inputPath,randomSeed);
+    TruckTours4 truckTours = new TruckTours4(rb,globalRb, inputPath,randomSeed);
     truckTours.run(new File(outputPath + "DailyShipments.txt"));
     truckTours.writeTours(new File(outputPath + "TruckTrips.txt"), collapseIntrazonalTrips);
     logger.info("total time: "+CTHelper.elapsedTime(start, new Date()));

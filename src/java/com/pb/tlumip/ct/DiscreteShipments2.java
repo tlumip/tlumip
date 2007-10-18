@@ -53,6 +53,7 @@ public class DiscreteShipments2 {
 
    DiscreteShipments2(ResourceBundle appRb, ResourceBundle globalRb, String ctInputs, long seed) {
        this.ctRb = appRb;
+       this.globalRb = globalRb;
        File alpha2betaFile = new File(ResourceUtil.getProperty(globalRb,"alpha2beta.file"));
        zoneMap = new ZoneMap(alpha2betaFile, seed);
        File commodityPropertiesFile = new File(ctInputs + "CommodityProperties.txt");
@@ -118,13 +119,13 @@ public class DiscreteShipments2 {
         //Note: the beta skims also include the world zones so you can
         //get distances from beta to beta, or beta to world zone
         String distanceFile = ResourceUtil.getProperty(ctRb, "beta.pk.dist.skim");
-        ZipMatrixReader zr = new ZipMatrixReader(new File(distanceFile));
+        ZipMatrixReader zr = new ZipMatrixReader(new File(distanceFile + globalRb.getString("matrix.extension")));
         Matrix betaDistMatrix = zr.readMatrix();
 
         //Note: the alpha skims also include the external zones so you can
         //get distances from alpha to alpha, or alpha to external zone
         distanceFile = ctRb.getString("alpha.pk.dist.skim");
-        zr = new ZipMatrixReader(new File(distanceFile));
+        zr = new ZipMatrixReader(new File(distanceFile  + globalRb.getString("matrix.extension")));
         Matrix alphaDistMatrix = zr.readMatrix();
 
         // Read each record from the weekly demand and process it

@@ -65,7 +65,7 @@ public class CTModel extends ModelComponent {
         // their itinerary, and writes to a CSV file in format required by TS
         // Next line prevents writing intrazonal (at alpha level) trips
         boolean collapseIntrazonalTrips = true;
-        TruckTours4 truckTours = new TruckTours4(appRb,inputPath,randomSeed);
+        TruckTours4 truckTours = new TruckTours4(appRb, globalRb, inputPath,randomSeed);
         truckTours.run(new File(outputPath + "DailyShipments.csv"));   // input from DiscreteShipments
         truckTours.writeTours(new File(outputPath + "TruckTrips.csv"), collapseIntrazonalTrips);  //output
 
