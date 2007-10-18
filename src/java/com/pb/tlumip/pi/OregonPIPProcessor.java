@@ -294,7 +294,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
 
             if(updateImportsAndExports){
-                TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodity", "pi.base.data");
+                TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodityJustSCTG41", "pi.base.data");
                 TableDataSet makeUse = loadTableDataSet("MakeUseI","pi.base.data");
                 HashMap<String, Float> importExportSize = new HashMap<String, Float>();
                 IncomeSize inc = new IncomeSize();
@@ -1058,8 +1058,8 @@ public class OregonPIPProcessor extends PIPProcessor {
         ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_testNewActivitiesW/t8/global.properties"));
 
         OregonPIPProcessor pProcessor =  new OregonPIPProcessor(8,piRb, globalRb);
-//        pProcessor.createActivitiesWFile();
-        pProcessor.createZoneFiles();
+        pProcessor.createActivitiesWFile();
+        //pProcessor.createZoneFiles();
     }
     
 }

@@ -282,12 +282,14 @@ public class LaborFlows {
         // convert the TableDataSet to RowVectors
         for (int rowNumber = 1; rowNumber <= consumption.getRowCount(); rowNumber++) {
             taz = (int) consumption.getValueAt(rowNumber, tazColumn);
-            for (int col = 2; col <= consumption.getColumnCount(); ++col) {
-                String label = consumption.getColumnLabel(col);
-                Enum occupation = occRef.getOccupation(label);
+            if (!wzUtil.isWorldZone(taz)) {
+                for (int col = 2; col <= consumption.getColumnCount(); ++col) {
+                    String label = consumption.getColumnLabel(col);
+                    Enum occupation = occRef.getOccupation(label);
 
-                alphaConsumption[occupation.ordinal()].setValueAt(taz,
-                        consumption.getValueAt(rowNumber, label));
+                    alphaConsumption[occupation.ordinal()].setValueAt(taz,
+                            consumption.getValueAt(rowNumber, label));
+                }
             }
         }
     }

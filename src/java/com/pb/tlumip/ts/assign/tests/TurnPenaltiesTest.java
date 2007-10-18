@@ -23,18 +23,16 @@ package com.pb.tlumip.ts.assign.tests;
  */
 
 
+import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.ShortestPathTreeH;
-import com.pb.common.util.ResourceUtil;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-
-import org.apache.log4j.Logger;
-
 
 
 public class TurnPenaltiesTest {
@@ -98,9 +96,9 @@ public class TurnPenaltiesTest {
         // get peak or off-peak volume factor from properties file
         String volumeFactor="";
         if ( timePeriod.equalsIgnoreCase( "peak" ) )
-            volumeFactor = (String)globalMap.get("AM_PEAK_VOL_FACTOR");
+            volumeFactor = (String)globalMap.get("am.peak.volume.factor");
         else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
-            volumeFactor = (String)globalMap.get("OFF_PEAK_VOL_FACTOR");
+            volumeFactor = (String)globalMap.get("offpeak.volume.factor");
         else {
             logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
             System.exit(-1);
@@ -113,7 +111,7 @@ public class TurnPenaltiesTest {
         String truckClass4String = (String)appMap.get( "truckClass4.modes" );
         String truckClass5String = (String)appMap.get( "truckClass5.modes" );
 
-        String walkSpeed = (String)globalMap.get( "WALK_MPH" );
+        String walkSpeed = (String)globalMap.get( "sdt.walk.mph" );
         
         
         String[] propertyValues = new String[NetworkHandler.NUMBER_OF_PROPERTY_VALUES];
