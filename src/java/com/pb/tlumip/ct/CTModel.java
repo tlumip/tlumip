@@ -67,7 +67,7 @@ public class CTModel extends ModelComponent {
         boolean collapseIntrazonalTrips = true;
         TruckTours4 truckTours = new TruckTours4(appRb, globalRb, inputPath,randomSeed);
         truckTours.run(new File(outputPath + "DailyShipments.csv"));   // input from DiscreteShipments
-        truckTours.writeTours(new File(outputPath + "TruckTrips.csv"), collapseIntrazonalTrips);  //output
+        truckTours.writeTours(new File(outputPath + "CTTruckTrips.csv"), collapseIntrazonalTrips);  //output
 
         logger.info("total time of CT: "+CTHelper.elapsedTime(start, new Date()));
 	}
