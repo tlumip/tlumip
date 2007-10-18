@@ -108,6 +108,7 @@ public class Network implements Serializable {
 	int[] ia;
 	int[] ib;
     int[] uniqueIds;
+    int[] drops;
 
 	TableDataSet nodeTable = null;
 	TableDataSet linkTable = null;
@@ -266,6 +267,9 @@ public class Network implements Serializable {
         // set the link oneway attribute values
         setOnewayLinks();
         
+        
+        setDroppedLinks();
+        
     }
 
     
@@ -411,6 +415,10 @@ public class Network implements Serializable {
         return linkTable.getColumnAsInt( "taz" );
     }
 
+    public int[] getDrops () {
+        return linkTable.getColumnAsInt( "drops" );
+    }
+
     public int[] getUniqueIds () {
         return linkTable.getColumnAsInt( "uniqueIds" );
     }
@@ -495,6 +503,15 @@ public class Network implements Serializable {
     	
     public int[] getInternalNodeToNodeTableRow () {
         return internalNodeToNodeTableRow;
+    }
+    
+    public double[] getCoordsForLink(int k) {
+        int r = internalNodeToNodeTableRow[ia[k]];
+        int s = internalNodeToNodeTableRow[ib[k]];
+        double[] nodeX = getNodeX();
+        double[] nodeY = getNodeY();
+        double[] returnValue = { nodeX[r], nodeY[r], nodeX[s], nodeY[s] };
+        return returnValue;
     }
     
 	public char[][] getAssignmentGroupChars () {
@@ -588,9 +605,21 @@ public class Network implements Serializable {
         linkTable.appendColumn( taz, "taz" );
     }
 
+    public void setDrops ( int[] drops ) {
+        this.drops = drops;
+        linkTable.appendColumn( drops, "drops" );
+    }
+
     public void setLinkLabels ( String[] labels ) {
         linkLabels = labels;
         linkTable.appendColumn( labels, "label" );
+    }
+
+    public void setRevisedModes ( String[] revMode ) {
+        int column = linkTable.getColumnPosition("mode");
+        for (int i=0; i < linkTable.getRowCount(); i++) {
+            linkTable.setStringValueAt( i+1, column, revMode[i] );
+       }
     }
 
     public void setUniqueIds ( int[] ids ) {
@@ -784,11 +813,16 @@ public class Network implements Serializable {
                 TableDataSet table = reader.readFile( new File(filename) );
 
                 int[] tazs = new int[table.getRowCount()];
+                int[] drops = new int[table.getRowCount()];
                 int[] uniqueIds = new int[table.getRowCount()];
                 double[] capacity = new double[table.getRowCount()];
                 double[] originalCapacity = new double[table.getRowCount()];
                 double[] totalCapacity = new double[table.getRowCount()];
                 String[] labels = new String[table.getRowCount()];
+                String[] revMode = new String[table.getRowCount()];
+                
+                boolean tableContainsDropsColumn = ( table.getColumnPosition("DROPLINK") >= 0 );
+                boolean tableContainsRevisedModeColumn = ( table.getColumnPosition("REVISED_MODES") >= 0 );
                 
                 // traverse links and store attibutes in linktable
                 for (int i=0; i < table.getRowCount(); i++) {
@@ -799,10 +833,17 @@ public class Network implements Serializable {
                     int cap = (int)table.getValueAt( i+1, "CAPACITY" );
                     int taz = (int)table.getValueAt( i+1, "NEWTAZ" );
                     
+                    int drop = 0;
+                    if ( tableContainsDropsColumn )
+                        drop = (int)table.getValueAt( i+1, "DROPLINK" );
+    
                     int k = getLinkIndex(an,bn);
                     
                     tazs[k] = taz;
 
+                    if ( tableContainsRevisedModeColumn )
+                        revMode[k] = table.getStringValueAt( i+1, "REVISED_MODES" );
+                    
                     int lanes = (int)linkTable.getValueAt( k+1, "lanes" );
                     originalCapacity[k] = cap;
                     capacity[k] = cap / volumeFactor;
@@ -810,6 +851,7 @@ public class Network implements Serializable {
                     totalCapacity[k] = 0.75 * capacity[k] * lanes;
 
                     labels[k] = an + "_" + bn;
+                    drops[k] = drop;
                     uniqueIds[k] = uniqueId;
                 }
 
@@ -819,6 +861,10 @@ public class Network implements Serializable {
                 setTotalCapacity(totalCapacity);
                 setLinkLabels(labels);
                 setUniqueIds(uniqueIds);
+                setDrops(drops);
+
+                if ( tableContainsRevisedModeColumn )
+                    setRevisedModes(revMode);
                 
             }
             catch (IOException e) {
@@ -984,33 +1030,33 @@ public class Network implements Serializable {
 		}
 	    
 	    
-		// apply any link mods for ul3 as done for PT (see times.mac)
-		if (linkModsTable != null) {
+        // apply any link mods for ul3 as done for PT (see times.mac)
+        if (linkModsTable != null) {
 
-		    for (int i=0; i < linkModsTable.getRowCount(); i++) {
-		    
-			    int[] ib = getIb();
-				int an = (int)linkModsTable.getValueAt( i+1, "anode" );
-				int bn = (int)linkModsTable.getValueAt( i+1, "bnode" );
-				int ia = nodeIndex[an];
-				float ul3 = linkModsTable.getValueAt( i+1, "ul3" );
-				
-				for (int j=ipa[ia]; j < ipa[ia+1]; j++) {
-					int k = sortedLinkIndexA[j];
-					if (indexNode[ib[k]] == bn) {
-						linkTable.setValueAt( k+1, linkTable.getColumnPosition("ul3"), ul3);
-						linkTable.setValueAt( k+1, linkTable.getColumnPosition("vdf"), 3);
-						congestedTime[k] = ul3;
-					    break;
-					}
-				}
-	
-			}
-			
-			linkModsTable = null;
-		
-		}
-		
+            for (int i=0; i < linkModsTable.getRowCount(); i++) {
+            
+                int[] ib = getIb();
+                int an = (int)linkModsTable.getValueAt( i+1, "anode" );
+                int bn = (int)linkModsTable.getValueAt( i+1, "bnode" );
+                int ia = nodeIndex[an];
+                float ul3 = linkModsTable.getValueAt( i+1, "ul3" );
+                
+                for (int j=ipa[ia]; j < ipa[ia+1]; j++) {
+                    int k = sortedLinkIndexA[j];
+                    if (indexNode[ib[k]] == bn) {
+                        linkTable.setValueAt( k+1, linkTable.getColumnPosition("ul3"), ul3);
+                        linkTable.setValueAt( k+1, linkTable.getColumnPosition("vdf"), 3);
+                        congestedTime[k] = ul3;
+                        break;
+                    }
+                }
+    
+            }
+            
+            linkModsTable = null;
+        
+        }
+        
 
 
 		TableDataSet derivedTable = new TableDataSet();
@@ -1328,7 +1374,7 @@ public class Network implements Serializable {
 
 	
 	
-	private void setOnewayLinks () {
+    private void setOnewayLinks () {
         
         onewayLinksForClass = new int[userClasses.length][ia.length];
         
@@ -1366,6 +1412,20 @@ public class Network implements Serializable {
                 
             }
 
+        }
+
+    }
+
+
+
+    private void setDroppedLinks () {
+        
+        for (int i=0; i < ia.length; i++) {
+            
+            if ( drops[i] == 1 )
+                for (int m=0; m < validLinksForClass.length; m++)
+                    validLinksForClass[m][i] = false;
+            
         }
 
     }

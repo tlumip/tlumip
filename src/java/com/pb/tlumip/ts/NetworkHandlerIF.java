@@ -54,8 +54,10 @@ public interface NetworkHandlerIF {
     public int[] getVdfIndex ();
     public int[] getNodeIndex ();
     public int[] getInternalNodeToNodeTableRow();
+    public double[] getCoordsForLink(int k);
     public int[] getLinkType();
     public int[] getTaz();
+    public int[] getDrops();
     public int[] getUniqueIds();
     public char[][] getAssignmentGroupChars();
     public double[] getLanes();
@@ -100,7 +102,7 @@ public interface NetworkHandlerIF {
     public String getAssignmentResultsTimeString ();
     
     public int setupHighwayNetworkObject ( String timePeriod, String[] propertyValues  );
-    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String[] d221Files, String[] rteTypes, int maxRoutes );
+    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes );
     
     public TrRoute getTrRoute();
     public String getAccessMode();
@@ -112,6 +114,7 @@ public interface NetworkHandlerIF {
     public int getAuxNodeCount();
     public int getAuxLinkCount();
     public int[] getLinkTrRoute();
+    public double[] getCost();
     public double[] getWalkTime();
     public double[] getWaitTime();
     public double[] getDriveAccTime();

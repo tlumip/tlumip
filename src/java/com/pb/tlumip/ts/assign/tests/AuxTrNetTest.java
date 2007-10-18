@@ -336,11 +336,11 @@ public class AuxTrNetTest {
 		TrRoute tr = new TrRoute (MAX_ROUTES);
 
 		//read transit route info from Emme/2 for d221 file for the specified time period
-	    tr.readTransitRoutes ( period.equalsIgnoreCase("peak") ? d221PeakFile : d221OffPeakFile );
+	    tr.readTransitRoutes ( nh, period.equalsIgnoreCase("peak") ? d221PeakFile : d221OffPeakFile );
 		    
 
 		// associate transit segment node sequence with highway link indices
-		tr.getLinkIndices (nh);
+//		tr.getLinkIndices (nh);
 
 
 

@@ -208,6 +208,10 @@ public class NetworkDataServer {
         return Util.doubleVector( nh.getNodeY() );
     }
     
+    public Vector getCoordsForLink(int k) {
+        return Util.doubleVector( nh.getCoordsForLink(k) );
+    }
+    
     public Vector getTransitRouteLinkIds(String rteName) {
         return Util.intVector( nh.getTransitRouteLinkIds(rteName) );
     }

@@ -179,10 +179,10 @@ public class OpStrategyTest {
 		TrRoute tr = new TrRoute ( maxRoutes );
 
 		//read transit route info from Emme/2 for d221 file for the specified time period
-	    tr.readTransitRoutes ( d221File );
+	    tr.readTransitRoutes ( nh, d221File );
 		    
 		// associate transit segment node sequence with highway link indices
-		tr.getLinkIndices (nh);
+//		tr.getLinkIndices (nh);
 
 
 

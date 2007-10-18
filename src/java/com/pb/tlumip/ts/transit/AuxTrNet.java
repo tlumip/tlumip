@@ -111,7 +111,7 @@ public class AuxTrNet implements Serializable {
 	double[] freq;
 	double[] cost;
 	double[] invTime;
-	double[] dwellTime;
+    double[] dwellTime;
 	double[] walkTime;
 	double[] waitTime;
 	double[] layoverTime;
@@ -168,7 +168,7 @@ public class AuxTrNet implements Serializable {
 		freq = new double[maxAuxLinks];
 		cost = new double[maxAuxLinks];
 		invTime = new double[maxAuxLinks];
-		dwellTime = new double[maxAuxLinks];
+        dwellTime = new double[maxAuxLinks];
 		walkTime = new double[maxAuxLinks];
 		waitTime = new double[maxAuxLinks];
 		layoverTime = new double[maxAuxLinks];
@@ -236,19 +236,10 @@ public class AuxTrNet implements Serializable {
 			if (debug) logger.info ("rte=" + rte + ", startNode(ia)=" + startNode + ", startNode(an)=" + ts.an + ", startAuxNode=" + startAuxNode);
 			
             
-            int dummy=0;
-            if ( rte == 318 ) {
-                dummy = 1;
-            }
-            
             for (int seg=0; seg < tr.transitPath[rte].size(); seg++) {
 				
 				try {
 					
-                    if ( seg == 161 ) {
-                        dummy = 2;
-                    }
-                    
 					// get the current transit segment and the following segment in this route.
 					// dwell time is determined for the following link, and added as in-vehicle time for the current in-vehicle link.
 				    ts = (TrSegment)tr.transitPath[rte].get(seg);
@@ -282,7 +273,7 @@ public class AuxTrNet implements Serializable {
 				        if (ts.board) {
                             int inA = nodeIndex[ts.an];
 				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
-				           	addAuxBoardingLink (aux++, inA, nextNode, ts, tr.headway[rte], rte, tr.mode[rte]);
+				           	addAuxBoardingLink (aux++, inA, nextNode, ts, tr.headway[rte], tr.ut1[rte], rte, tr.mode[rte]);
                             if ( nodeRoutes[inA] == null )
                                 nodeRoutes[inA] = new HashSet();
                             nodeRoutes[inA].add(rte);
@@ -769,11 +760,6 @@ public class AuxTrNet implements Serializable {
 
         for (int origin=0; origin < nh.getNumCentroids(); origin++) {
 
-            int dummy = 0;
-            if ( indexNode[origin] == 1000 ) {
-                dummy = 1;
-            }
-            
             sp.buildTree ( origin );
             
             ArrayList[] endPoints = new ArrayList[routeTypeStrings.length];
@@ -973,7 +959,7 @@ public class AuxTrNet implements Serializable {
     }
 
 
-	void addAuxBoardingLink (int aux, int anode, int nextNode, TrSegment ts, double headway, int rte, char mode)	{
+	void addAuxBoardingLink (int aux, int anode, int nextNode, TrSegment ts, double headway, double fare, int rte, char mode)	{
 		// add boarding link to auxilliary link table
 		hwyLink[aux] = ts.link;
 		trRoute[aux] = rte;
@@ -983,7 +969,7 @@ public class AuxTrNet implements Serializable {
         bn[aux] = ts.bn;
 		// WAIT_COEFF is assumed positive, so it is used here just to scale the link frequency
 		freq[aux] = 1.0/(WAIT_COEFF*headway);
-		cost[aux] = getLinkFare();
+		cost[aux] = fare;
 		invTime[aux] = 0.0;
 		walkTime[aux] = 0.0;
 		waitTime[aux] = 0.0;
@@ -996,33 +982,42 @@ public class AuxTrNet implements Serializable {
 	void addAuxInVehicleLink (int aux, int nextNode, TrSegment ts, TrSegment tsNext, double headway, double speed, int rte, char mode) {
 		// add in-vehicle link to auxilliary link table
 		
-		hwyLink[aux] = ts.link;
-		trRoute[aux] = rte;
-		ia[aux] = nextNode;
-		ib[aux] = nextNode + 1;
-        an[aux] = ts.an;
-        bn[aux] = ts.bn;
-		freq[aux] = INFINITY;
-		cost[aux] = 0.0;
-		walkTime[aux] = 0.0;
-		waitTime[aux] = 0.0;
-		
-		if (ts.ttf > 0)
-			invTime[aux] = nh.applyLinkTransitVdf( ts.link, ts.ttf );
-		else
-			invTime[aux] = (60.0*gDist[ts.link]/speed);
-		
-		layoverTime[aux] = 0.0;
-		linkType[aux] = IN_VEHICLE_TYPE;
-		
-		if (tsNext != null ) {
-			dwellTime[aux] = tsNext.getDwt();
-		}
-		else {
-			dwellTime[aux] = -ts.getDwt()/gDist[ts.link];
-		}
-		
-        rteMode[aux] = mode;
+        try {
+            
+            hwyLink[aux] = ts.link;
+            trRoute[aux] = rte;
+            ia[aux] = nextNode;
+            ib[aux] = nextNode + 1;
+            an[aux] = ts.an;
+            bn[aux] = ts.bn;
+            freq[aux] = INFINITY;
+            cost[aux] = 0.0;
+            walkTime[aux] = 0.0;
+            waitTime[aux] = 0.0;
+            
+            if (ts.ttf > 0)
+                invTime[aux] = nh.applyLinkTransitVdf( ts.link, ts.ttf );
+            else
+                invTime[aux] = (60.0*gDist[ts.link]/speed);
+            
+            layoverTime[aux] = 0.0;
+            linkType[aux] = IN_VEHICLE_TYPE;
+            
+            if (tsNext != null ) {
+                dwellTime[aux] = tsNext.getDwt();
+            }
+            else {
+                dwellTime[aux] = -ts.getDwt()/gDist[ts.link];
+            }
+            
+            rteMode[aux] = mode;
+
+        }
+        catch (RuntimeException e) {
+            logger.error ("Exception in AuxTrNet adding in-vehicle link.");
+            logger.error ( String.format("ts.an=%d, ts.bn=%d, ts.link=%d, aux=%d, nextNode=%d, rte=%d.", ts.an, ts.bn, ts.link, aux, nextNode, rte) );
+            throw e;
+        }
 	}
 
 
@@ -1240,6 +1235,10 @@ public class AuxTrNet implements Serializable {
 
     public double[] getDwellTime() {
         return dwellTime;
+    }
+
+    public double[] getCost() {
+        return cost;
     }
 
     public double[] getLayoverTime() {

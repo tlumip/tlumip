@@ -206,6 +206,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getTaz();
     }
 
+    public int[] getDrops () {
+        return g.getDrops();
+    }
+
     public int[] getUniqueIds () {
         return g.getUniqueIds();
     }
@@ -369,6 +373,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getInternalNodeToNodeTableRow();
     }
     
+    public double[] getCoordsForLink(int k) {
+        return g.getCoordsForLink(k);
+    }
+    
     public int[] getIa() {
         return g.getIa();
     }
@@ -435,17 +443,20 @@ public class NetworkHandler implements NetworkHandlerIF {
 
 
 
-    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String[] d221Files, String[] rteTypes, int maxRoutes ) {
+    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes ) {
         
         // create transit routes object
         TrRoute tr = new TrRoute ( maxRoutes );
 
         //read transit route info from Emme/2 for d221 file for the specified time period
-        tr.readTransitRoutes ( d221Files, rteTypes );
+        tr.readTransitRoutes ( this, d221Files, rteTypes );
             
-        // associate transit segment node sequence with highway link indices
-        tr.getLinkIndices (this);
+//        // associate transit segment node sequence with highway link indices
+//        tr.getLinkIndices (this);
 
+
+        if ( transitRouteDataFilesDirectory != null )
+            tr.printTransitRouteFile ( transitRouteDataFilesDirectory);
 
 
         // create an auxilliary transit network object
@@ -548,6 +559,10 @@ public class NetworkHandler implements NetworkHandlerIF {
     
     public double[] getDwellTime() {
         return ag.getDwellTime();
+    }
+
+    public double[] getCost() {
+        return ag.getCost();
     }
 
     public double[] getLayoverTime() {

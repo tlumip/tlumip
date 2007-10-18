@@ -40,16 +40,18 @@ public class OptimalStrategy {
 
 	protected static Logger logger = Logger.getLogger(OptimalStrategy.class);
 
-	int IVT = -1;
-	int FWT = -1;
-	int TWT = -1;
-    int ACC = -1;
-    int AUX = -1;
-    int EGR = -1;
-	int BRD = -1;
-    int FAR = -1;
-    int FRQ = -1;
-	int NUM_SKIMS = 9;
+	int IVT = -1;      // in-vehicle time
+	int FWT = -1;      // first wait
+	int TWT = -1;      // total wait
+    int ACC = -1;      // access time
+    int AUX = -1;      // transfer time
+    int EGR = -1;      // egress time
+    int HSR$ = -1;      // hsr fare
+    int AIR$ = -1;      // air fare
+    int RAIL$ = -1;     // intercity rail fare
+    int BUS$ = -1;      // intercity bus fare
+    int TRAN$ = -1;     // intracity transit fare
+	int NUM_SKIMS = 10;
 
 	static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -63,6 +65,9 @@ public class OptimalStrategy {
 	static final double LONGITUDE_PER_FEET = 1.0;
 
 
+    HashMap railFareLookupTable;
+    HashMap transitFareLookupTable;
+    
 	NetworkHandlerIF nh;
 
     Matrix[] skimMatrices = new Matrix[NUM_SKIMS];
@@ -96,6 +101,7 @@ public class OptimalStrategy {
     int[] indexb = null;
     int[] hwyLink = null;
     int[] trRoute = null;
+    double[] cost = null;
     double[] accessTime = null;
     double[] walkTime = null;
     double[] waitTime = null;
@@ -154,6 +160,7 @@ public class OptimalStrategy {
         trRoute = nh.getLinkTrRoute();
         rteMode = nh.getRteMode();
         linkType = nh.getAuxLinkType();
+        cost = nh.getCost();
         dwellTime = nh.getDwellTime();
         layoverTime = nh.getLayoverTime();
         waitTime = nh.getWaitTime(); 
@@ -199,9 +206,11 @@ public class OptimalStrategy {
         ACC = (Integer)skimTablesOrder.get("acc");
         AUX = (Integer)skimTablesOrder.get("egr");
         EGR = (Integer)skimTablesOrder.get("aux");
-        BRD = (Integer)skimTablesOrder.get("brd");
-        FAR = (Integer)skimTablesOrder.get("far");
-        FRQ = (Integer)skimTablesOrder.get("frq");
+        HSR$ = (Integer)skimTablesOrder.get("hsr$");
+        AIR$ = (Integer)skimTablesOrder.get("air$");
+        RAIL$ = (Integer)skimTablesOrder.get("rail$");
+        BUS$ = (Integer)skimTablesOrder.get("bus$");
+        TRAN$ = (Integer)skimTablesOrder.get("tran$");
         
         
         // take a column of alpha zone numbers from a TableDataSet and puts them into an array for
@@ -493,93 +502,6 @@ public class OptimalStrategy {
 
 
 
-    private double sumBoardingFlow (int inA) {
-        // add up the flow allocated to boarding links exiting this internally numbered transit network node.
-
-        int i, j, k;
-        int start, end;
-        double boardingFlow = 0.0;
-        boolean debug = classDebug;
-
-
-        // start is the pointer array index for links exiting ia.
-        start = ipa[inA];
-        if (start == -1) {
-            return -1;
-        }
-        if (debug)
-            logger.info ("start=" + start + ", ia=" + ia[indexa[start]] + ", ib=" + ib[indexa[start]] + ", an=" + (ia[indexa[start]] < indexNode.length ? indexNode[ia[indexa[start]]] : 0) + ", bn=" + (ib[indexa[start]] < indexNode.length ? indexNode[ib[indexa[start]]] : 0));
-
-
-        j = inA + 1;
-        while (ipa[j] == -1)
-            j++;
-        end = ipa[j];
-        if (debug) {
-            logger.info ("end=" + end + ", j=" + j);
-            logger.info ("end=" + end + ", indexa[end]=" + (end < indexa.length ? Integer.toString(indexa[end]) : "null") + ", ia=" + (end < indexa.length ? Integer.toString(ia[indexa[end]]) : "null") + ", ib=" + (end < indexa.length ? Integer.toString(ib[indexa[end]]) : "null"));
-            logger.info ("");
-        }
-        
-        
-        for (i=start; i < end; i++) {
-
-            k = indexa[i];
-
-            // if link k is a boarding link and it is in the strategy, sum its link flow.
-            if ( linkType[k] == AuxTrNet.BOARDING_TYPE && inStrategy[k] )
-                boardingFlow += flow[k];
-                
-        }
-
-        return boardingFlow;
-        
-    }
-
-
-
-    private double sumAlightingFlow (int inB) {
-        // add up the flow allocated to alighting links entering this internally numbered transit network node.
-
-        int i, j, k;
-        int start, end;
-        double alightingFlow = 0.0;
-        boolean debug = classDebug;
-
-
-        // start is the pointer array index for links exiting ia.
-        start = ipb[inB];
-        if (start == -1) {
-            return -1;
-        }
-        if (debug)
-            logger.info ("start=" + start + ", ia=" + ia[indexb[start]] + ", ib=" + ib[indexb[start]] + ", an=" + (ia[indexb[start]] < indexNode.length ? indexNode[ia[indexb[start]]] : 0) + ", bn=" + (ib[indexb[start]] < indexNode.length ? indexNode[ib[indexb[start]]] : 0));
-
-
-        j = inB + 1;
-        while (ipb[j] == -1)
-            j++;
-        end = ipb[j];
-        if (debug) {
-            logger.info ("end=" + end + ", j=" + j);
-            logger.info ("end=" + end + ", indexb[end]=" + (end < indexb.length ? Integer.toString(indexb[end]) : "null") + ", ia=" + (end < indexb.length ? Integer.toString(ia[indexb[end]]) : "null") + ", ib=" + (end < indexb.length ? Integer.toString(ib[indexb[end]]) : "null"));
-            logger.info ("");
-        }
-        
-        
-        for (i=start; i < end; i++) {
-
-            k = indexb[i];
-
-            // if link k is a boarding link and it is in the strategy, sum its link flow.
-            if ( linkType[k] == AuxTrNet.ALIGHTING_TYPE && inStrategy[k] )
-                alightingFlow += flow[k];
-                
-        }
-
-        return alightingFlow;
-        
-    }
 
 
     public double[] loadOptimalStrategyDest (double[] tripColumn) {
@@ -912,11 +834,13 @@ public class OptimalStrategy {
         int k, m;
         int count;
         
-        //double flow = 0.0;
-        
         boolean debug = classDebug;
         
 
+        // create temp arrays to hold rail ivt, bus dist, and tran ivt - to be used by fare calculation methods for fare tables
+        double[] railIvt = new double[auxNodeCount];
+        double[] busDist = new double[auxNodeCount];
+        double[] tranIvt = new double[auxNodeCount];
         
         
         double[][] nodeSkims = new double[NUM_SKIMS][auxNodeCount];
@@ -925,12 +849,6 @@ public class OptimalStrategy {
             Arrays.fill (nodeSkims[k], AuxTrNet.UNCONNECTED);
             Arrays.fill (skimResults[k], AuxTrNet.UNCONNECTED);
         }
-
-//        Arrays.fill (flow, 0.0);
-//        for (int i=0; i < nh.getNumCentroids(); i++)
-//            nodeFlow[i] = 1.0;
-//        nodeFlow[dest] = 0.0;
-        
 
         
         
@@ -958,34 +876,7 @@ public class OptimalStrategy {
         
         
         
-        // loop through links in optimal strategy in reverse order and propagate 1 trip from each accessible origin through the optimal strategy to the destination. 
-//        for (int i=inStrategyCount; i >= 0; i--) {
-//            
-//            k = orderInStrategy[i];
-//            m = ag.hwyLink[k];
-//            
-//
-//            if (nodeFlow[ag.ia[k]] > 0.0) {
-//                
-//                if ( linkType[k] == AuxTrNet.BOARDING_TYPE ) {
-//                    flow = (ag.freq[k]/nodeFreq[ag.ia[k]])*nodeFlow[ag.ia[k]];
-//                    flow[k] = flow;
-//                    nodeFlow[ag.ib[k]] += flow;
-//                }
-//                else {
-//                    flow = nodeFlow[ag.ia[k]];
-//                    if ( nodeLabel[ag.ib[k]] != AuxTrNet.INFINITY ) {
-//                        flow[k] += flow;
-//                        nodeFlow[ag.ib[k]] += flow;
-//                    }
-//                }
-//
-//            }
-//            
-//        }            
             
-            
-
         // loop through links in optimal strategy in ascending order and accumulate skim component values at nodes weighted by link flows
         count = 0;
         for (int i=0; i < inStrategyCount; i++) {
@@ -1003,21 +894,22 @@ public class OptimalStrategy {
                 if ( nodeSkims[FWT][ib[k]] == 0.0 ) {
                     nodeSkims[FWT][ia[k]] = freq[k]*(AuxTrNet.ALPHA/nodeFreq[ia[k]])/nodeFreq[ia[k]];
                     nodeSkims[TWT][ia[k]] = freq[k]*(AuxTrNet.ALPHA/nodeFreq[ia[k]])/nodeFreq[ia[k]];
-                    nodeSkims[BRD][ia[k]] = freq[k]/nodeFreq[ia[k]];
-                    nodeSkims[FAR][ia[k]] = freq[k]*AuxTrNet.FARE/nodeFreq[ia[k]];
+                    
+                    // if link mode is air or hsr, accumulate fare.
+                    if ( rteMode[k] == 'n' )
+                        nodeSkims[AIR$][ia[k]] = cost[k];
+                    else if ( rteMode[k] == 't' )
+                        nodeSkims[HSR$][ia[k]] = cost[k];
+                    
                 }
                 else {
                     nodeSkims[FWT][ia[k]] = nodeSkims[FWT][ib[k]] + freq[k]*AuxTrNet.ALPHA/nodeFreq[ia[k]];
                     nodeSkims[TWT][ia[k]] = nodeSkims[TWT][ib[k]] + freq[k]*AuxTrNet.ALPHA/nodeFreq[ia[k]];
-                    nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]] + freq[k]/nodeFreq[ia[k]];
-                    nodeSkims[FAR][ia[k]] = nodeSkims[FAR][ib[k]] + freq[k]*AuxTrNet.TRANSFER_FARE/nodeFreq[ia[k]];
                 }
                 nodeSkims[IVT][ia[k]] = nodeSkims[IVT][ib[k]];
                 nodeSkims[ACC][ia[k]] = nodeSkims[ACC][ib[k]];
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
-                
-//                nodeSkims[HSR][ia[k]] = nodeSkims[HSR][ib[k]];
                 
             }
             else if ( linkType[k] == AuxTrNet.IN_VEHICLE_TYPE ) {
@@ -1028,13 +920,25 @@ public class OptimalStrategy {
                 nodeSkims[ACC][ia[k]] = nodeSkims[ACC][ib[k]];
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
-                nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
-                nodeSkims[FAR][ia[k]] = nodeSkims[FAR][ib[k]];
                 
-//                if ( rteMode[k] == 'm' )
-//                    nodeSkims[HSR][ia[k]] = nodeSkims[HSR][ib[k]] + invTime[k];
-//                else
-//                    nodeSkims[HSR][ia[k]] = nodeSkims[HSR][ib[k]];
+                // if link mode is intercity rail, accumulate ivt.
+                if ( rteMode[k] == 'm' ) {
+                    railIvt[ia[k]] = railIvt[ib[k]] + invTime[k];
+                    busDist[ia[k]] = busDist[ib[k]];
+                    tranIvt[ia[k]] = tranIvt[ib[k]];
+                }
+                // if link mode is intercity bus, accumulate dist.
+                else if ( rteMode[k] == 'i' ) {
+                    railIvt[ia[k]] = railIvt[ib[k]];
+                    busDist[ia[k]] = busDist[ib[k]] + gDist[m];
+                    tranIvt[ia[k]] = tranIvt[ib[k]];
+                }
+                // if link mode is local bus, express bus, light rail, or commuter rail, accumulate ivt.
+                else if ( rteMode[k] == 'b' || rteMode[k] == 'x' || rteMode[k] == 'l' || rteMode[k] == 'r' ) {
+                    railIvt[ia[k]] = railIvt[ib[k]];
+                    busDist[ia[k]] = busDist[ib[k]];
+                    tranIvt[ia[k]] = tranIvt[ib[k]] + invTime[m];
+                }
                     
             }
             else if ( linkType[k] == AuxTrNet.LAYOVER_TYPE ) {
@@ -1045,8 +949,6 @@ public class OptimalStrategy {
                 nodeSkims[ACC][ia[k]] = nodeSkims[ACC][ib[k]];
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
-                nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
-                nodeSkims[FAR][ia[k]] = nodeSkims[FAR][ib[k]];
                     
             }
             else if ( linkType[k] == AuxTrNet.ALIGHTING_TYPE ) {
@@ -1057,9 +959,6 @@ public class OptimalStrategy {
                 nodeSkims[ACC][ia[k]] = nodeSkims[ACC][ib[k]];
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
-                nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
-                nodeSkims[FAR][ia[k]] = nodeSkims[FAR][ib[k]];
-//                nodeSkims[HSR][ia[k]] = nodeSkims[HSR][ib[k]];
                 
             }
             else if ( linkType[k] == AuxTrNet.AUXILIARY_TYPE ) {
@@ -1072,9 +971,6 @@ public class OptimalStrategy {
                     nodeSkims[ACC][ia[k]] = 0.0;
                     nodeSkims[AUX][ia[k]] = 0.0;
                     nodeSkims[EGR][ia[k]] = walkTime[k];
-                    nodeSkims[BRD][ia[k]] = 0.0;
-                    nodeSkims[FAR][ia[k]] = 0.0;
-//                    nodeSkims[HSR][ia[k]] = 0.0;
                 }
                 // anode is an origin node, set final skim values for that origin and add the access time
                 else if ( ia[k] < nh.getNumCentroids() ) {
@@ -1084,9 +980,6 @@ public class OptimalStrategy {
                     skimResults[ACC][ia[k]] = nodeSkims[ACC][ib[k]] + accessTime[k];
                     skimResults[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                     skimResults[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
-                    skimResults[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
-                    skimResults[FAR][ia[k]] = nodeSkims[FAR][ib[k]];
-//                    skimResults[HSR][ia[k]] = nodeSkims[HSR][ib[k]];
                 }
                 // link is a walk link, not connected to a centroid
                 else {
@@ -1096,9 +989,6 @@ public class OptimalStrategy {
                     nodeSkims[ACC][ia[k]] = nodeSkims[ACC][ib[k]];
                     nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]] + walkTime[k];
                     nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
-                    nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
-                    nodeSkims[FAR][ia[k]] = nodeSkims[FAR][ib[k]];
-//                    nodeSkims[HSR][ia[k]] = nodeSkims[HSR][ib[k]];
                 }
                 
             }
@@ -1117,7 +1007,12 @@ public class OptimalStrategy {
         }
 
         
-        
+
+        for (int i=0; i < nh.getNumCentroids(); i++) {
+            skimResults[RAIL$][i] = getSkimTableLookupFareMatrix ( i, railIvt, railFareLookupTable );
+            skimResults[BUS$][i] = getIcBusFareMatrix ( i, busDist );
+            skimResults[TRAN$][i] = getSkimTableLookupFareMatrix ( i, tranIvt, transitFareLookupTable );
+        }
 
         return skimResults;
         
@@ -1161,11 +1056,6 @@ public class OptimalStrategy {
         
 
         
-        for (int o=0; o < nh.getNumCentroids(); o++)
-            for (int d=0; d < nh.getNumCentroids(); d++)
-                zeroBasedFloatArrays[FRQ][o][d] = 1.0f;
-        
-        
         String nameQualifier = null;
         String descQualifier = null;
         if ( nh.getTimePeriod().equalsIgnoreCase("peak") ) {
@@ -1193,10 +1083,11 @@ public class OptimalStrategy {
         skimMatrices[ACC] = new Matrix( nameQualifier + "acc", descQualifier + " access time skims", zeroBasedFloatArrays[ACC] );
         skimMatrices[AUX] = new Matrix( nameQualifier + "aux", descQualifier + " other walk time skims", zeroBasedFloatArrays[AUX] );
         skimMatrices[EGR] = new Matrix( nameQualifier + "egr", descQualifier + " egress walk time skims", zeroBasedFloatArrays[EGR] );
-        skimMatrices[BRD] = new Matrix( nameQualifier + "brd", descQualifier + " boardings skims", zeroBasedFloatArrays[BRD] );
-        skimMatrices[FAR] = new Matrix( nameQualifier + "far", descQualifier + " fare skims", zeroBasedFloatArrays[FAR] );
-//        skimMatrices[HSR] = new Matrix( nameQualifier + "hsr", descQualifier + " high speed rail ivt skims", zeroBasedFloatArrays[HSR] );
-        skimMatrices[FRQ] = new Matrix( nameQualifier + "hsr", descQualifier + " high speed rail ivt skims", zeroBasedFloatArrays[FRQ] );
+        skimMatrices[HSR$] = new Matrix( nameQualifier + "hsr$", descQualifier + " hsr fare skims", zeroBasedFloatArrays[HSR$] );
+        skimMatrices[AIR$] = new Matrix( nameQualifier + "air$", descQualifier + " air fare skims", zeroBasedFloatArrays[AIR$] );
+        skimMatrices[RAIL$] = new Matrix( nameQualifier + "rail$", descQualifier + " ic rail fare skims", zeroBasedFloatArrays[RAIL$] );
+        skimMatrices[BUS$] = new Matrix( nameQualifier + "bus$", descQualifier + " ic bus fare skims", zeroBasedFloatArrays[BUS$] );
+        skimMatrices[TRAN$] = new Matrix( nameQualifier + "tran$", descQualifier + " local transit fare skims", zeroBasedFloatArrays[TRAN$] );
         
         for (int k=0; k < NUM_SKIMS; k++)
             skimMatrices[k].setExternalNumbers( alphaExternalNumbers );
@@ -1242,6 +1133,40 @@ public class OptimalStrategy {
 
     }
 
+    
+    
+    private double getSkimTableLookupFareMatrix ( int i, double[] skimTable, HashMap tazFareLookupTable ) {
+        
+        double fare = 0.0;
+        
+        // if skim OD pair is connected by rail service, lookup fare for OD pair
+        if ( skimTable[i] > 0 ) {
+            
+            // get the external origin and destination centroid numbers for the skim matrix indices
+            int extOrigCent = indexNode[i];
+            int extDestCent = indexNode[dest];
+            String key = String.format("%d_%d", extOrigCent, extDestCent);
+            fare = (Double)tazFareLookupTable.get(key);
+        
+        }
+        
+        return fare;
+
+    }
+
+
+    private double getIcBusFareMatrix ( int i, double[] busDist ) {
+        
+        double fare = 0.0;
+
+        // if skim OD pair is connected by rail service, lookup fare for OD pair
+        if ( busDist[i] > 0 ) {
+            fare = 1.9694*Math.pow(busDist[i], -0.4994); 
+        }
+        
+        return fare;
+        
+    }
 
 
 	double airlineDistance(int fromNode, int toNode) {

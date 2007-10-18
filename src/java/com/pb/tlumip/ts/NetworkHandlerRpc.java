@@ -420,6 +420,24 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
 
     }
     
+    public double[] getCoordsForLink(int k) {
+        
+        double[] returnArray = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add(k);
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getCoordsForLink", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+
+    }
+    
     public int[] getLinkType () {
         
         int[] returnArray = null;
@@ -442,6 +460,22 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
         try {
             returnArray = (int[])rc.execute(HANDLER_NAME+".getTaz", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public int[] getDrops () {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getDrops", new Vector());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
@@ -1134,7 +1168,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
     
     
     
-    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String[] d221Files, String[] rteTypes, int maxRoutes ) {
+    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes ) {
         return 0;
     }
     

@@ -761,72 +761,72 @@ public class TS {
         tsm.writeTransitSkims( assignmentPeriod, "drive", "air" );
 
         // drive access air assignment
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.AIR.name() );
-        transitBoardings = runTransitAssignment ( nh, "drive", "air", tripModeList );
-        saveTransitBoardings ( nh, "drive", "air", transitBoardings, savedBoardings );
+//        tripModeList = new ArrayList();
+//        tripModeList.add( LDTripModeType.AIR.name() );
+//        transitBoardings = runTransitAssignment ( nh, "drive", "air", tripModeList );
+//        saveTransitBoardings ( nh, "drive", "air", transitBoardings, savedBoardings );
 
         
         
         // drive access hsr skims
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "hsr" );
-        tsm.writeTransitSkims( assignmentPeriod, "drive", "hsr" );
+//        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "hsr" );
+//        tsm.writeTransitSkims( assignmentPeriod, "drive", "hsr" );
 
         // drive access hsr assignment
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.HSR_DRIVE.name() );
-        transitBoardings = runTransitAssignment ( nh, "drive", "hsr", tripModeList );
-        saveTransitBoardings ( nh, "drive", "hsr", transitBoardings, savedBoardings );
+//        tripModeList = new ArrayList();
+//        tripModeList.add( LDTripModeType.HSR_DRIVE.name() );
+//        transitBoardings = runTransitAssignment ( nh, "drive", "hsr", tripModeList );
+//        saveTransitBoardings ( nh, "drive", "hsr", transitBoardings, savedBoardings );
 
       
         
         // drive access intercity skims
         tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intercity" );
-        tsm.writeTransitSkims( assignmentPeriod, "drive", "intercity" );
+//        tsm.writeTransitSkims( assignmentPeriod, "drive", "intercity" );
 
         // drive access intercity assignment
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.TRANSIT_DRIVE.name() );
-        transitBoardings = runTransitAssignment ( nh, "drive", "intercity", tripModeList );
-        saveTransitBoardings ( nh, "drive", "intercity", transitBoardings, savedBoardings );
+//        tripModeList = new ArrayList();
+//        tripModeList.add( LDTripModeType.TRANSIT_DRIVE.name() );
+//        transitBoardings = runTransitAssignment ( nh, "drive", "intercity", tripModeList );
+//        saveTransitBoardings ( nh, "drive", "intercity", transitBoardings, savedBoardings );
         
         
         
         // drive access intracity skims
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intracity" );
-        tsm.writeTransitSkims( assignmentPeriod, "drive", "intracity" );
+//        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intracity" );
+//        tsm.writeTransitSkims( assignmentPeriod, "drive", "intracity" );
 
         // drive access intracity assignment
-        tripModeList = new ArrayList();
-        tripModeList.add( TripModeType.DR_TRAN.name() );
-        transitBoardings = runTransitAssignment ( nh, "drive", "intracity", tripModeList );
-        saveTransitBoardings ( nh, "drive", "intracity", transitBoardings, savedBoardings );
+//        tripModeList = new ArrayList();
+//        tripModeList.add( TripModeType.DR_TRAN.name() );
+//        transitBoardings = runTransitAssignment ( nh, "drive", "intracity", tripModeList );
+//        saveTransitBoardings ( nh, "drive", "intracity", transitBoardings, savedBoardings );
         
         
         
         // walk access intracity skims - these are used as walk access skims for hsr, and intercity as well
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "walk", "intracity" );
-        tsm.writeTransitSkims( assignmentPeriod, "walk", "intracity" );
+//        tsm.setupTransitNetwork( nh, assignmentPeriod, "walk", "intracity" );
+//        tsm.writeTransitSkims( assignmentPeriod, "walk", "intracity" );
         
         // load walk access transit trips - (all route types use the same network object; no walk access air)
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.HSR_WALK.name() );
-        transitBoardings = runTransitAssignment ( nh, "walk", "hsr", tripModeList );
-        saveTransitBoardings ( nh, "walk", "hsr", transitBoardings, savedBoardings );
-
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.TRANSIT_WALK.name() );
-        transitBoardings = runTransitAssignment ( nh, "walk", "intercity", tripModeList );
-        saveTransitBoardings ( nh, "walk", "intercity", transitBoardings, savedBoardings );
-
-        tripModeList = new ArrayList();
-        tripModeList.add( TripModeType.WK_TRAN.name() );
-        transitBoardings = runTransitAssignment ( nh, "walk", "intracity", tripModeList );
-        saveTransitBoardings ( nh, "walk", "intracity", transitBoardings, savedBoardings );
+//        tripModeList = new ArrayList();
+//        tripModeList.add( LDTripModeType.HSR_WALK.name() );
+//        transitBoardings = runTransitAssignment ( nh, "walk", "hsr", tripModeList );
+//        saveTransitBoardings ( nh, "walk", "hsr", transitBoardings, savedBoardings );
+//
+//        tripModeList = new ArrayList();
+//        tripModeList.add( LDTripModeType.TRANSIT_WALK.name() );
+//        transitBoardings = runTransitAssignment ( nh, "walk", "intercity", tripModeList );
+//        saveTransitBoardings ( nh, "walk", "intercity", transitBoardings, savedBoardings );
+//
+//        tripModeList = new ArrayList();
+//        tripModeList.add( TripModeType.WK_TRAN.name() );
+//        transitBoardings = runTransitAssignment ( nh, "walk", "intracity", tripModeList );
+//        saveTransitBoardings ( nh, "walk", "intracity", transitBoardings, savedBoardings );
 
         
         
-        logTransitBoardingsReport ( savedBoardings, assignmentPeriod );
+//        logTransitBoardingsReport ( savedBoardings, assignmentPeriod );
         
         
         logger.info ("done with " + assignmentPeriod + " period transit skimming and loading.");
@@ -1048,14 +1048,14 @@ public class TS {
         
 
 
-        
+/*        
         // TS Example 1 - Run a peak highway assignment:
         
         // run peak highway assignment
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
-        nhPeak.checkForIsolatedLinks();
+//        nhPeak.checkForIsolatedLinks();
 //        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         nhPeak.startDataServer();
@@ -1064,12 +1064,12 @@ public class TS {
 //        char[] hwyModeChars = nhPeak.getHighwayModeCharacters();
         char[] hwyModeChars = { 'a', 'd' };
         tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
+*/
 
-
         
         
         
-/*      
+      
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
@@ -1080,7 +1080,7 @@ public class TS {
         logger.info ("Network data server running...");
         
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
-*/      
+      
        
         
         

@@ -79,10 +79,10 @@ public class TrRouteTest {
 		TrRoute tr = new TrRoute (500);
 
 		//read transit route info from Emme/2 for d221 file
-		tr.readTransitRoutes ( PK_TRANSIT_ROUTES_D221 );
+		tr.readTransitRoutes ( nh, PK_TRANSIT_ROUTES_D221 );
 
 		// associate transit segment node sequence with highway link indices
-		tr.getLinkIndices (nh);
+//		tr.getLinkIndices (nh);
 
 		// print route summary file
 		tr.printTransitRoutes ( ROUTE_REPORT_FILE );

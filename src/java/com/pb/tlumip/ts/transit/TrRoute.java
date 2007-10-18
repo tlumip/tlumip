@@ -36,6 +36,16 @@ public class TrRoute implements Serializable {
 
 	protected static transient Logger logger = Logger.getLogger(TrRoute.class);
 
+    static int filenum=0;
+    static final boolean WRITE_NEW_ROUTE_FILES = false;
+    static final char CHANGE_MODE_CHARACTER_FROM = 'b';
+    static final char CHANGE_MODE_CHARACTER_TO = 'i';
+//    static final char CHANGE_MODE_CHARACTER_FROM = 'z';
+//    static final char CHANGE_MODE_CHARACTER_TO = 'z';
+    
+    String newRouteFileName = "";
+    
+    
     int maxRoutes=0;
 	int lineCount= -1, linkCount=0, totalLinkCount=0;
 	int an, bn;
@@ -99,13 +109,20 @@ public class TrRoute implements Serializable {
 	}
 
 
-    public void readTransitRoutes (String fileName) {
+    public void readTransitRoutes ( NetworkHandlerIF nh, String fileName ) {
         int recNumber = 0;
-
+        PrintWriter newRoutesWriter = null;
+        
         // assume routes are for intracity service if this method is used because of a single route file.
         String routeType = "intracity";
         
         try {
+            
+            if ( WRITE_NEW_ROUTE_FILES ) {
+                newRouteFileName = fileName.substring(0, fileName.indexOf('.')) + "_" + "new" + fileName.substring(fileName.indexOf('.'));
+                newRoutesWriter = new PrintWriter ( new BufferedWriter ( new FileWriter (newRouteFileName) ) ) ;
+            }
+            
             BufferedReader in = new BufferedReader( new FileReader(fileName) );
             String s = new String();
             while ((s = in.readLine()) != null) {
@@ -115,9 +132,13 @@ public class TrRoute implements Serializable {
                 if (s.length() > 0) {
                     // skip comment records and the data type record
                     if (s.charAt(0) == 'c' || s.charAt(0) == 't') {
+                        if ( WRITE_NEW_ROUTE_FILES )
+                            newRoutesWriter.printf("%s\n", s);
                     }
                     // process transit line header records
                     else if (s.charAt(0) == 'a') {
+                        if ( WRITE_NEW_ROUTE_FILES )
+                            newRoutesWriter.printf("%s\n", s);
 
                         initDefaults();
                         initTempDefaults();
@@ -132,19 +153,36 @@ public class TrRoute implements Serializable {
                     // process transit line sequence records
                     else if (s.charAt(0) == ' ') {
                         
-                        parseSegments(s);
+                        parseSegments(nh, s, newRoutesWriter);
+                        
+                        if ( WRITE_NEW_ROUTE_FILES ) {
+                            if ( ! (Boolean)defaults.get(2) )
+                                newRoutesWriter.printf("%s\n", s);
+                        }
+                            
                     }
                     //  any other record type is invalid, so exit.
                     else {
-                        System.out.println ("Transit line file record number " + recNumber + " has an invalid " + s.charAt(0) + " first character.");
+                        logger.error ("Transit line file record number " + recNumber + " has an invalid " + s.charAt(0) + " first character.");
                         if (s.charAt(0) == 'd' || s.charAt(0) == 'm')
-                            System.out.println (s.charAt(0) + " is not a supported update code.");
-                        System.out.println ("Records may only begin with c, t, a, or blank.");
-                        System.out.println ("Program exiting while reading transit line file");
-                        System.exit(-1);
+                            logger.error (s.charAt(0) + " is not a supported update code.");
+                        logger.error ("Records may only begin with c, t, a, or blank.");
+                        logger.error ("Program exiting while reading transit line file");
+                        throw new RuntimeException();
                     }
                 }
+                else {
+                    
+                    if ( WRITE_NEW_ROUTE_FILES ) {
+                        newRoutesWriter.printf("\n");
+                    }
+
+                }
             }
+            
+            if ( WRITE_NEW_ROUTE_FILES )
+                newRoutesWriter.close();
+            
         } catch (Exception e) {
             logger.error ("IO Exception caught reading transit route file: " + fileName + ", record number=" + recNumber, e);
         }
@@ -160,14 +198,25 @@ public class TrRoute implements Serializable {
     /**
      * use this method if two or more route files should be combined to build transit network.
      */
-    public void readTransitRoutes (String[] fileNames, String[] rteTypes) {
+    public void readTransitRoutes ( NetworkHandlerIF nh, String[] fileNames, String[] rteTypes ) {
         
+        PrintWriter newRoutesWriter = null;
+
+        String s1 = String.format(" %c ", CHANGE_MODE_CHARACTER_FROM); 
+        String s2 = String.format(" %c ", CHANGE_MODE_CHARACTER_TO);
+
         for ( int i=0; i < fileNames.length; i++ ) {
             
             int recNumber = 0;
             int tempLineCount = 0;
 
             try {
+                
+                if ( WRITE_NEW_ROUTE_FILES ) {
+                    newRouteFileName = fileNames[i].substring(0, fileNames[i].indexOf('.')) + "_" + "new" + fileNames[i].substring(fileNames[i].indexOf('.'));
+                    newRoutesWriter = new PrintWriter ( new BufferedWriter ( new FileWriter (newRouteFileName) ) ) ;
+                }
+                
                 BufferedReader in = new BufferedReader( new FileReader(fileNames[i]) );
                 String s = new String();
                 while ((s = in.readLine()) != null) {
@@ -177,9 +226,16 @@ public class TrRoute implements Serializable {
                     if (s.length() > 0) {
                         // skip comment records and the data type record
                         if (s.charAt(0) == 'c' || s.charAt(0) == 't') {
+                            if ( WRITE_NEW_ROUTE_FILES )
+                                newRoutesWriter.printf("%s\n", s);
                         }
                         // process transit line header records
                         else if (s.charAt(0) == 'a') {
+                            if ( WRITE_NEW_ROUTE_FILES ) {
+                                if ( s1 != s2 && s.indexOf(s1) >= 0 )
+                                    s = s.replaceFirst( s1, s2 ); 
+                                newRoutesWriter.printf("%s\n", s);
+                            }
 
                             initDefaults();
                             initTempDefaults();
@@ -195,7 +251,13 @@ public class TrRoute implements Serializable {
                         // process transit line sequence records
                         else if (s.charAt(0) == ' ') {
                             
-                            parseSegments(s);
+                            parseSegments(nh, s, newRoutesWriter);
+                            
+                            if ( WRITE_NEW_ROUTE_FILES ) {
+                                if ( ! (Boolean)defaults.get(2) )
+                                    newRoutesWriter.printf("%s\n", s);
+                            }
+                                
                         }
                         //  any other record type is invalid, so exit.
                         else {
@@ -204,10 +266,22 @@ public class TrRoute implements Serializable {
                             if (s.charAt(0) == 'd' || s.charAt(0) == 'm')
                                 logger.error (s.charAt(0) + " is not a supported update code.");
                             logger.error ("First character of records may only be c, t, a, or blank.");
-                            System.exit(-1);
+                            throw new RuntimeException();
                         }
                     }
+                    else {
+                        
+                        if ( WRITE_NEW_ROUTE_FILES ) {
+                            newRoutesWriter.printf("\n");
+                        }
+
+                    }
+                    
                 }
+
+                if ( WRITE_NEW_ROUTE_FILES )
+                    newRoutesWriter.close();
+                
             } catch (Exception e) {
                 logger.error ("IO Exception caught reading transit route file: " + fileNames[i] + ", record number=" + recNumber, e);
             }
@@ -248,11 +322,13 @@ public class TrRoute implements Serializable {
 
 
 	// parse the transit line segment data for the transit line itinerary
-	private void parseSegments (String s) {
+	private void parseSegments ( NetworkHandlerIF nh, String s, PrintWriter newRoutesWriter ) {
 	    
 		String keyWord=null, value=null, field=null;
 		int stringPointer = 0;
 
+        SegmentChecker segChecker = new SegmentChecker ( nh);
+        
 		while (stringPointer < s.length()) {
             
             try {
@@ -269,17 +345,32 @@ public class TrRoute implements Serializable {
                     value = field;
                     if (an == -1) {
                         an = Integer.parseInt(value);
+                        if ( WRITE_NEW_ROUTE_FILES && (Boolean)defaults.get(2) )
+                            newRoutesWriter.printf("dwt=+0.0 %s ", Integer.toString(an));
                     }
                     else {
                         if (bn != -1)
                             an = bn;
                         bn = Integer.parseInt(value);
+
                     }
 
                     if (an != -1 && bn != -1) {
-                        TrSegment seg = new TrSegment(an, bn, defaults, tdefaults);
+                        TrSegment seg = new TrSegment(lineCount, an, bn, defaults, tdefaults);
                         transitPath[lineCount].add(linkCount++, seg);
                         initTempDefaults();
+                        
+                        String returnString = segChecker.checkSegment(this, seg, linkCount-1);
+                        
+                        if ( WRITE_NEW_ROUTE_FILES && (Boolean)defaults.get(2) ) {
+                            if ( returnString == "" ) {
+                                newRoutesWriter.printf("  %d", bn );
+                            }
+                            else {
+                                newRoutesWriter.printf(" %s\n", returnString);
+                            }
+                        }
+                        
                     }
                 }
                 else {
@@ -338,6 +429,13 @@ public class TrRoute implements Serializable {
                                     defaults.set(i, Double.valueOf(value));
                                     break;
                             }
+                            
+                            if ( WRITE_NEW_ROUTE_FILES ) {
+                                if ( keyWord.equalsIgnoreCase("path") && value.equalsIgnoreCase("yes") )
+                                    value = "no";
+                                newRoutesWriter.printf(" %s=%s ", keyWord, value);
+                            }
+
                             break;
                         }
                     }
@@ -349,11 +447,20 @@ public class TrRoute implements Serializable {
                             if (value != null) {
                                 keyWord = tkeyWords[i];
                                 if ( i == 0 ) {
-                                    TrSegment seg = new TrSegment(an, bn, defaults, tdefaults);
+                                    TrSegment seg = new TrSegment(lineCount, an, bn, defaults, tdefaults);
                                     seg.layover = true;
                                     seg.lay = Double.parseDouble(value);
                                     transitPath[lineCount].add(linkCount++, seg);
                                     totalLinkCount += linkCount;
+
+                                    String returnString = segChecker.checkSegment(this, seg, linkCount-1);
+                                    
+                                    if ( WRITE_NEW_ROUTE_FILES && (Boolean)defaults.get(2) ) {
+                                        if ( returnString != "" ) {
+                                            newRoutesWriter.printf(" %s\n", returnString);
+                                        }
+                                    }
+                                    
                                 }
                                 else if ( i == 1 ) {
                                     if (value.indexOf('<') != -1) {
@@ -381,6 +488,10 @@ public class TrRoute implements Serializable {
                                         value = value.replace ('*', '-');
                                     }
                                     tdefaults.set(i, Double.valueOf(value));
+
+                                    if ( WRITE_NEW_ROUTE_FILES )
+                                        newRoutesWriter.printf(" %s=%s ", keyWord, value);
+
                                 }
                             }
                         }
@@ -391,6 +502,7 @@ public class TrRoute implements Serializable {
                 logger.fatal("exception thrown parsing:");
                 logger.fatal(s);
                 logger.fatal("", e);
+                throw new RuntimeException();
             }
 		}
 	}
@@ -654,8 +766,8 @@ public class TrRoute implements Serializable {
 			out.close();
 
 		} catch (IOException e) {
-			System.out.println ("Transit route file could not be opened for writing,");
-			System.out.println ("or some other IO exception ocurred");
+			logger.error ("Transit route file could not be opened for writing, or some other IO exception ocurred.", e);
+            throw new RuntimeException();
 		}
 	}
 
@@ -672,24 +784,24 @@ public class TrRoute implements Serializable {
 		out.println (underLine);
 		out.println (outputRecord);
 
-		out.printf ( "%6d%6d%6s%9d%9d%7d%2s%22s%6.2f%6.2f%6.2f", rte+1, line[rte], String.valueOf(mode[rte]), vehType[rte], headway[rte], speed[rte], "  ", description[rte], ut1[rte], ut2[rte], ut3[rte] );
+		out.printf ( "%6d%6s%6s%9d%9.0f%7.0f%2s%22s%6.2f%6.2f%6.2f", rte+1, line[rte], String.valueOf(mode[rte]), vehType[rte], headway[rte], speed[rte], "  ", description[rte], ut1[rte], ut2[rte], ut3[rte] );
 	}
 
 
-	// print a table of transit line segments information
-	public void printLineSegments (PrintWriter out, int rte) {
-   	
+    // print a table of transit line segments information
+    public void printLineSegments (PrintWriter out, int rte) {
+    
 
-		TrSegment ts;
+        TrSegment ts;
 
-		String outputRecord = String.format ( "%4s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s", "seq", "link", "an", "bn", "dwf", "dwt", "path", "ttf", "ttf1", "ttft", "us1", "us2", "us3", "brd", "alt", "lay", "tdwt", "tus1", "tus2", "tus3" );
+        String outputRecord = String.format ( "%4s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s", "seq", "link", "an", "bn", "dwf", "dwt", "path", "ttf", "ttf1", "ttft", "us1", "us2", "us3", "brd", "alt", "lay", "tdwt", "tus1", "tus2", "tus3" );
 
-		String underLine = "-";
-		for (int i=0; i < outputRecord.length() - 1; i++)
-			underLine += "-";
+        String underLine = "-";
+        for (int i=0; i < outputRecord.length() - 1; i++)
+            underLine += "-";
 
-		out.println (underLine);
-		out.println (outputRecord);
+        out.println (underLine);
+        out.println (outputRecord);
 
 
         for (int i=0; i < transitPath[rte].size(); i++) {
@@ -697,178 +809,218 @@ public class TrRoute implements Serializable {
             out.printf( "%4d%6d%6d%6d%6.2f%6.2f%6s%6d%6d%6d%6.2f%6.2f%6.2f%6s%6s%6.2f%6.2f%6.2f%6.2f%6.2f", i+1, ts.link, ts.an, ts.bn, ts.dwf, ts.dwt, String.valueOf(ts.path), ts.ttf, ts.ttf1, ts.ttft, ts.us1, ts.us2, ts.us3, String.valueOf(ts.board), String.valueOf(ts.alight), ts.lay, ts.tdwt, ts.tus1, ts.tus2, ts.tus3 );
         }
 
-		out.println (underLine);
-		out.println ("");
-		out.println ("");
-	}
+        out.println (underLine);
+        out.println ("");
+        out.println ("");
+    }
 
-	
-	public void getLinkIndices (NetworkHandlerIF nh) {
-		int k, ia;
-		boolean linkFound;
-		double dwt, dwf, tdwt;
-		TrSegment ts;
-		TrSegment tsNew;
+    
+    // print a data table of transit line segments information
+    public void printTransitRouteFile ( String transitRouteDataFilesDirectory ) {
 
-		
-		int[] nodeIndex = nh.getNodeIndex();
-		int[] indexNode = nh.getIndexNode();
-		int[] sortedLinkIndex = nh.getSortedLinkIndexA();
-		int[] ip = nh.getIpa();
-		int[] ib = nh.getIb();
-		double[] dist = nh.getDist();
-
+        TrSegment ts;
+        PrintWriter out = null;
         
-        ShortestPathTreeH sp = new ShortestPathTreeH(nh);
-
-        // set the highway network attribute on which to skim the network
-        sp.setLinkCost( nh.setLinkGeneralizedCost() );
+        String fileName = String.format("%s/routes_%d", transitRouteDataFilesDirectory, filenum);
         
-        // set the highway network valid links attribute for links which may appear in paths between unconnected highway network nodes in transit routes.
-        sp.setValidLinks( nh.getValidLinksForTransitPaths() );
+        try {
+            out = new PrintWriter ( new BufferedWriter ( new FileWriter (fileName) ) ) ;
+            filenum++;
+        }
+        catch (IOException e) {
+            logger.fatal ( String.format("Transit route data file %s could not be opened for writing or some other IO exception ocurred", fileName), e);
+        }
 
-		for (int rte=0; rte < transitPath.length; rte++) {
+        out.printf( "%s,%s,%s,%s,%s,%s\n", "rteIndex", "rteName", "segmentIndex", "an", "bn", "linkId" );
+        
+        for ( int rte=0; rte < transitPath.length; rte++ ) {
             
-			for (int seg=0; seg < transitPath[rte].size(); seg++) {
-			    
-                try {
+            for (int i=0; i < transitPath[rte].size(); i++) {
+                ts = (TrSegment)transitPath[rte].get(i);
+                if ( ! ts.layover )
+                    out.printf( "%d,%s,%d,%d,%d,%d\n", rte, line[rte].trim(), i+1, ts.an, ts.bn, ts.link );
+            }
 
-                    ts = (TrSegment)transitPath[rte].get(seg);
+        }
+        
+        out.close();
 
-                    ia = nodeIndex[ts.an];
-                    
-                    // if ia < 0, the node in the route description does not exist in the highway network
-                    if ( ia < 0 ) {
-                        logger.error ( String.format("node %d in route %d: %s does not exist in highway network.", ts.an, rte, line[rte]) );
-                        continue;
-                    }
-                    
-                    linkFound = false;
-                    for (int i=ip[ia]; i < ip[ia+1]; i++) {
-                        k = sortedLinkIndex[i];
-                        if (indexNode[ib[k]] == ts.bn) {
-                            ts.link = k;
-                            dwt = ts.getDwt();
-                            dwf = ts.getDwf();
-                            tdwt = ts.getTdwt();
-                            if ( dwt < 0 )
-                                ts.setDwt ( -dwt*dist[k] );
-                            if ( dwf < 0 )
-                                ts.setDwt ( -dwf*dist[k] );
-                            if ( tdwt < 0 )
-                                ts.setTdwt ( -tdwt*dist[k] );
-                            linkFound = true;
-                            break;
-                        }
-                    }
+    }
 
-                    if ( linkFound == false && ts.layover == false ) {
-                            
-                        if ( ts.path ) {
-
-                            if ( ts.an < 0 ) {
-                                logger.error ( "invalid node read from route file " + ts.an + " in route " + rte + ", " + getLine(rte) );
-                                System.exit(-1);
-                            }
-                            if ( ts.bn < 0 ) {
-                                logger.error ( "invalid node read from route file " + ts.bn + " in route " + rte + ", " + getLine(rte) );
-                                System.exit(-1);
-                            }
-                            if ( nodeIndex[ts.an] < 0 ) {
-                                logger.error ( "node " + ts.an + " in route file in route " + rte + ", " + getLine(rte) + " not found in highway network.");
-                                System.exit(-1);
-                            }
-                            if ( nodeIndex[ts.bn] < 0 ) {
-                                logger.error ( "node " + ts.bn + " in route file in route " + rte + ", " + getLine(rte) + " not found in highway network.");
-                                System.exit(-1);
-                            }
-                            
-                            sp.buildPath (nodeIndex[ts.an], nodeIndex[ts.bn]);
-                            
-                            int[] nodes = null;
-                            try {
-                                // get the node list (in external node numbers) for the current shortest path in ShortestPathTreeH.
-                                nodes = sp.getNodeList ();
-                            }catch ( Exception e ) {
-                                logger.error ( "path could not be built from " + ts.an + " to " + ts.bn + " in route " + rte + ", " + getLine(rte), e );
-                                System.exit(-1);
-                            }
-
-                            transitPath[rte].remove(seg);
-
-                            
-                            // ts.board refers to boarding at anode of segment
-                            // ts.alight refers to alighting at bnode of segment
-                            
-                            // first segment replaces the one just removed and allows boarding only (bnode is an intermediate node in the path and therefore has no alighting)
-                            int an = nodes[0];
-                            int bn = nodes[1];
-                            String newPathString = String.format("%d", an);
-                            
-                            tsNew = ts.segmentCopy(ts, this);
-                            tsNew.an = an;
-                            tsNew.bn = bn;
-                            if ( ! ts.layover )
-                                tsNew.lay = 0.0;
-                            tsNew.board = true;
-                            tsNew.alight = false;
-                            transitPath[rte].add(seg++, tsNew);
-                            
-                            newPathString += String.format("  %d", bn);
-                            
-                            // intermediate segments up to and including the last node allows neither boarding or alighting at anode
-                            for (int j=2; j < nodes.length - 1; j++) {
-                                an = bn;
-                                bn = nodes[j];
-                                newPathString += String.format("  %d", bn);
-
-                                tsNew = ts.segmentCopy(ts, this);
-                                tsNew.an = an;
-                                tsNew.bn = bn;
-                                tsNew.lay = 0.0;
-                                tsNew.board = false;
-                                tsNew.alight = false;
-                                transitPath[rte].add(seg++, tsNew);
-                            }
-
-                            // last segment allows alighting
-                            an = bn;
-                            bn = nodes[nodes.length - 1];
-                            newPathString += String.format("  %d", bn);
-
-                            tsNew = ts.segmentCopy(ts, this);
-                            tsNew.an = an;
-                            tsNew.bn = bn;
-                            if ( ! ts.layover )
-                                tsNew.lay = 0.0;
-                            tsNew.board = false;
-                            tsNew.alight = true;
-                            transitPath[rte].add(seg++, tsNew);
-                            
-                            // reset the seg index number so the next original segment will be processed afetr the new ones are added
-                            seg -= nodes.length;
-                            
-                            if (logger.isDebugEnabled())
-                                logger.info ("building path from " + ts.an + " to " + ts.bn + " for route " + rte + ", " + getLine(rte) + ": " + newPathString);
-
-                        }
-                        else {
-                            
-                            logger.error ( "no highway network link exists from " + ts.an + " to " + ts.bn + " on route " + rte + ", " + getLine(rte) + ", and path=yes was not defined for route." );
-
-                        }
-                        
-                    }
-                    
-                }
-                catch (Exception e) {
-                    logger.error ( "exception caught for rte=" + rte + ", " + getLine(rte) + ", seg=" + seg + ".", e );
-                    System.exit(-1);
-                }
-                
-			}
-		}
-	}
+    
+//	public void getLinkIndices (NetworkHandlerIF nh) {
+//		int k, ia;
+//		boolean linkFound;
+//		double dwt, dwf, tdwt;
+//		TrSegment ts;
+//		TrSegment tsNew;
+//
+//		
+//		int[] nodeIndex = nh.getNodeIndex();
+//		int[] indexNode = nh.getIndexNode();
+//		int[] sortedLinkIndex = nh.getSortedLinkIndexA();
+//		int[] ip = nh.getIpa();
+//		int[] ib = nh.getIb();
+//        int[] drops = nh.getDrops();
+//		double[] dist = nh.getDist();
+//
+//        
+//        ShortestPathTreeH sp = new ShortestPathTreeH(nh);
+//
+//        // set the highway network attribute on which to skim the network
+//        sp.setLinkCost( nh.setLinkGeneralizedCost() );
+//        
+//        // set the highway network valid links attribute for links which may appear in paths between unconnected highway network nodes in transit routes.
+//        sp.setValidLinks( nh.getValidLinksForTransitPaths() );
+//
+//		for (int rte=0; rte < transitPath.length; rte++) {
+//            
+//			for (int seg=0; seg < transitPath[rte].size(); seg++) {
+//			    
+//                try {
+//
+//                    ts = (TrSegment)transitPath[rte].get(seg);
+//
+//                    ia = nodeIndex[ts.an];
+//                    
+//                    // if ia < 0, the node in the route description does not exist in the highway network
+//                    if ( ia < 0 ) {
+//                        logger.error ( String.format("node %d in route %d: %s does not exist in highway network.", ts.an, rte, line[rte]) );
+//                        continue;
+//                    }
+//                    
+//                    linkFound = false;
+//                    for (int i=ip[ia]; i < ip[ia+1]; i++) {
+//                        k = sortedLinkIndex[i];
+//
+//                        if (indexNode[ib[k]] == ts.bn) {
+//                            ts.link = k;
+//                            dwt = ts.getDwt();
+//                            dwf = ts.getDwf();
+//                            tdwt = ts.getTdwt();
+//                            if ( dwt < 0 )
+//                                ts.setDwt ( -dwt*dist[k] );
+//                            if ( dwf < 0 )
+//                                ts.setDwt ( -dwf*dist[k] );
+//                            if ( tdwt < 0 )
+//                                ts.setTdwt ( -tdwt*dist[k] );
+//                            linkFound = true;
+//
+//                            if ( drops[k] == 1 ) {
+//                                logger.error ( String.format("link from node %d to node %d in route %d: %s has a 'dropped from network' value.", ts.an, ts.bn, rte, line[rte]) );
+//                            }
+//                            
+//                            break;
+//                        }
+//                    }
+//
+//                    if ( linkFound == false && ts.layover == false ) {
+//                            
+//                        if ( ts.path ) {
+//
+//                            if ( ts.an < 0 ) {
+//                                logger.error ( "invalid node read from route file " + ts.an + " in route " + rte + ", " + getLine(rte) );
+//                                throw new RuntimeException();
+//                            }
+//                            if ( ts.bn < 0 ) {
+//                                logger.error ( "invalid node read from route file " + ts.bn + " in route " + rte + ", " + getLine(rte) );
+//                                throw new RuntimeException();
+//                            }
+//                            if ( nodeIndex[ts.an] < 0 ) {
+//                                logger.error ( "node " + ts.an + " in route file in route " + rte + ", " + getLine(rte) + " not found in highway network.");
+//                                throw new RuntimeException();
+//                            }
+//                            if ( nodeIndex[ts.bn] < 0 ) {
+//                                logger.error ( "node " + ts.bn + " in route file in route " + rte + ", " + getLine(rte) + " not found in highway network.");
+//                                throw new RuntimeException();
+//                            }
+//                            
+//                            sp.buildPath (nodeIndex[ts.an], nodeIndex[ts.bn]);
+//                            
+//                            int[] nodes = null;
+//                            try {
+//                                // get the node list (in external node numbers) for the current shortest path in ShortestPathTreeH.
+//                                nodes = sp.getNodeList ();
+//                            }catch ( Exception e ) {
+//                                logger.error ( "path could not be built from " + ts.an + " to " + ts.bn + " in route " + rte + ", " + getLine(rte), e );
+//                                throw new RuntimeException();
+//                            }
+//
+//                            transitPath[rte].remove(seg);
+//
+//                            
+//                            // ts.board refers to boarding at anode of segment
+//                            // ts.alight refers to alighting at bnode of segment
+//                            
+//                            // first segment replaces the one just removed and allows boarding only (bnode is an intermediate node in the path and therefore has no alighting)
+//                            int an = nodes[0];
+//                            int bn = nodes[1];
+//                            String newPathString = String.format("%d", an);
+//                            
+//                            tsNew = ts.segmentCopy(ts, this);
+//                            tsNew.an = an;
+//                            tsNew.bn = bn;
+//                            if ( ! ts.layover )
+//                                tsNew.lay = 0.0;
+//                            tsNew.board = true;
+//                            tsNew.alight = false;
+//                            transitPath[rte].add(seg++, tsNew);
+//                            
+//                            newPathString += String.format("  %d", bn);
+//                            
+//                            // intermediate segments up to and including the last node allows neither boarding or alighting at anode
+//                            for (int j=2; j < nodes.length - 1; j++) {
+//                                an = bn;
+//                                bn = nodes[j];
+//                                newPathString += String.format("  %d", bn);
+//
+//                                tsNew = ts.segmentCopy(ts, this);
+//                                tsNew.an = an;
+//                                tsNew.bn = bn;
+//                                tsNew.lay = 0.0;
+//                                tsNew.board = false;
+//                                tsNew.alight = false;
+//                                transitPath[rte].add(seg++, tsNew);
+//                            }
+//
+//                            // last segment allows alighting
+//                            an = bn;
+//                            bn = nodes[nodes.length - 1];
+//                            newPathString += String.format("  %d", bn);
+//
+//                            tsNew = ts.segmentCopy(ts, this);
+//                            tsNew.an = an;
+//                            tsNew.bn = bn;
+//                            if ( ! ts.layover )
+//                                tsNew.lay = 0.0;
+//                            tsNew.board = false;
+//                            tsNew.alight = true;
+//                            transitPath[rte].add(seg++, tsNew);
+//                            
+//                            // reset the seg index number so the next original segment will be processed afetr the new ones are added
+//                            seg -= nodes.length;
+//                            
+//                            if (logger.isDebugEnabled())
+//                                logger.info ("building path from " + ts.an + " to " + ts.bn + " for route " + rte + ", " + getLine(rte) + ": " + newPathString);
+//
+//                        }
+//                        else {
+//                            
+//                            logger.error ( "no highway network link exists from " + ts.an + " to " + ts.bn + " on route " + rte + ", " + getLine(rte) + ", and path=yes was not defined for route." );
+//
+//                        }
+//                        
+//                    }
+//                    
+//                }
+//                catch (Exception e) {
+//                    logger.error ( "exception caught for rte=" + rte + ", " + getLine(rte) + ", seg=" + seg + ".", e );
+//                    throw new RuntimeException();
+//                }
+//                
+//			}
+//		}
+//	}
 
     
 	public int getTotalLinkCount() {
@@ -920,6 +1072,216 @@ public class TrRoute implements Serializable {
     
     public int getMaxRoutes() {
         return this.maxRoutes;
+    }
+
+
+
+
+
+    public class SegmentChecker {
+
+        NetworkHandlerIF nh = null;
+        
+        TrRoute tr = null;
+        TrSegment ts = null;
+        int rteSeg = 0;
+        
+        // get highway network index arrays 
+        int[] nodeIndex = null;
+        int[] indexNode = null;
+        int[] sortedLinkIndex = null;
+        int[] ip = null;
+        int[] ib = null;
+        int[] drops = null;
+        double[] dist = null;
+
+        ShortestPathTreeH sp = null;
+        
+        public SegmentChecker ( NetworkHandlerIF nh ) {
+            
+            this.nh = nh;
+            
+            // get highway network index arrays 
+            nodeIndex = nh.getNodeIndex();
+            indexNode = nh.getIndexNode();
+            sortedLinkIndex = nh.getSortedLinkIndexA();
+            ip = nh.getIpa();
+            ib = nh.getIb();
+            drops = nh.getDrops();
+            dist = nh.getDist();
+
+            
+            // get ShortestPathTreeH object to build path between disconnected highway nodes
+            sp = new ShortestPathTreeH(nh);
+
+            // set the highway network attribute on which to skim the network
+            sp.setLinkCost( nh.setLinkGeneralizedCost() );
+            
+            // set the highway network valid links attribute for links which may appear in paths between unconnected highway network nodes in transit routes.
+            sp.setValidLinks( nh.getValidLinksForTransitPaths() );
+
+        }
+        
+        private String checkSegment ( TrRoute tr, TrSegment ts, int rteSeg ) {
+            
+            int k, ia, rte;
+            boolean linkFound;
+            double dwt, dwf, tdwt;
+            TrSegment tsNew;
+
+            this.ts = ts;
+            this.tr = tr;
+            this.rteSeg = rteSeg;
+            
+            rte = ts.rteIndex;
+
+            String newPathString = "";
+            
+            try {
+
+                ia = nodeIndex[ts.an];
+                
+                // if ia < 0, the node in the route description does not exist in the highway network
+                if ( ia < 0 ) {
+                    logger.error ( String.format("node %d in route %d: %s does not exist in highway network.", ts.an, rte, line[rte]) );
+                    throw new RuntimeException();
+                }
+                
+                linkFound = false;
+                for (int i=ip[ia]; i < ip[ia+1]; i++) {
+                    k = sortedLinkIndex[i];
+
+                    if (indexNode[ib[k]] == ts.bn) {
+                        ts.link = k;
+                        dwt = ts.getDwt();
+                        dwf = ts.getDwf();
+                        tdwt = ts.getTdwt();
+                        if ( dwt < 0 )
+                            ts.setDwt ( -dwt*dist[k] );
+                        if ( dwf < 0 )
+                            ts.setDwt ( -dwf*dist[k] );
+                        if ( tdwt < 0 )
+                            ts.setTdwt ( -tdwt*dist[k] );
+                        linkFound = true;
+
+                        if ( drops[k] == 1 ) {
+                            logger.error ( String.format("link from node %d to node %d in route %d: %s has a 'dropped from network' value.", ts.an, ts.bn, rte, line[rte]) );
+                        }
+                        
+                        break;
+                    }
+                }
+
+                if ( linkFound == false && ts.layover == false ) {
+                        
+                    if ( ts.path ) {
+
+                        if ( ts.an < 0 ) {
+                            logger.error ( "invalid node read from route file " + ts.an + " in route " + rte + ", " + getLine(rte) );
+                            throw new RuntimeException();
+                        }
+                        if ( ts.bn < 0 ) {
+                            logger.error ( "invalid node read from route file " + ts.bn + " in route " + rte + ", " + getLine(rte) );
+                            throw new RuntimeException();
+                        }
+                        if ( nodeIndex[ts.an] < 0 ) {
+                            logger.error ( "node " + ts.an + " in route file in route " + rte + ", " + getLine(rte) + " not found in highway network.");
+                            throw new RuntimeException();
+                        }
+                        if ( nodeIndex[ts.bn] < 0 ) {
+                            logger.error ( "node " + ts.bn + " in route file in route " + rte + ", " + getLine(rte) + " not found in highway network.");
+                            throw new RuntimeException();
+                        }
+                        
+                        sp.buildPath (nodeIndex[ts.an], nodeIndex[ts.bn]);
+                        
+                        int[] nodes = null;
+                        try {
+                            // get the node list (in external node numbers) for the current shortest path in ShortestPathTreeH.
+                            nodes = sp.getNodeList ();
+                        }catch ( Exception e ) {
+                            logger.error ( "path could not be built from " + ts.an + " to " + ts.bn + " in route " + rte + ", " + getLine(rte), e );
+                            throw new RuntimeException();
+                        }
+
+                        transitPath[rte].remove(rteSeg);
+
+                        
+                        // ts.board refers to boarding at anode of segment
+                        // ts.alight refers to alighting at bnode of segment
+                        
+                        // first segment replaces the one just removed and allows boarding only (bnode is an intermediate node in the path and therefore has no alighting)
+                        int an = nodes[0];
+                        int bn = nodes[1];
+                        
+                        tsNew = ts.segmentCopy(ts, tr);
+                        tsNew.an = an;
+                        tsNew.bn = bn;
+                        tsNew.link = nh.getLinkIndex(an, bn); 
+                        if ( ! ts.layover )
+                            tsNew.lay = 0.0;
+                        tsNew.board = true;
+                        tsNew.alight = false;
+                        transitPath[rte].add(rteSeg++, tsNew);
+                        
+                        newPathString += String.format(" dwt=#0.0 %d", bn);
+                        
+                        // intermediate segments up to and including the last node allows neither boarding or alighting at anode
+                        for (int j=2; j < nodes.length - 1; j++) {
+                            an = bn;
+                            bn = nodes[j];
+                            newPathString += String.format(" %d", bn);
+
+                            tsNew = ts.segmentCopy(ts, tr);
+                            tsNew.an = an;
+                            tsNew.bn = bn;
+                            tsNew.link = nh.getLinkIndex(an, bn); 
+                            tsNew.lay = 0.0;
+                            tsNew.board = false;
+                            tsNew.alight = false;
+                            transitPath[rte].add(rteSeg++, tsNew);
+                        }
+
+                        // last segment allows alighting
+                        an = bn;
+                        bn = nodes[nodes.length - 1];
+                        newPathString += String.format(" dwt=+0.0 %d", bn);
+
+                        tsNew = ts.segmentCopy(ts, tr);
+                        tsNew.an = an;
+                        tsNew.bn = bn;
+                        tsNew.link = nh.getLinkIndex(an, bn); 
+                        if ( ! ts.layover )
+                            tsNew.lay = 0.0;
+                        tsNew.board = false;
+                        tsNew.alight = true;
+                        transitPath[rte].add(rteSeg++, tsNew);
+                        
+                        // reset the seg index number so the next original segment will be processed afetr the new ones are added
+                        rteSeg -= nodes.length;
+                        
+                        if (logger.isDebugEnabled())
+                            logger.info ("building path from " + ts.an + " to " + ts.bn + " for route " + rte + ", " + getLine(rte) + ": " + newPathString);
+
+                    }
+                    else {
+                        
+                        logger.error ( "no highway network link exists from " + ts.an + " to " + ts.bn + " on route " + rte + ", " + getLine(rte) + ", and path=yes was not defined for route." );
+
+                    }
+                    
+                }
+                
+                return newPathString;
+                
+            }
+            catch (Exception e) {
+                logger.error ( "exception caught for rte=" + rte + ", " + getLine(rte) + ", seg=" + rteSeg + ".", e );
+                throw new RuntimeException();
+            }
+                    
+        }
+
     }
 
 }

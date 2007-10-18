@@ -22,13 +22,13 @@ import java.util.ArrayList;
 
 
 public class TrSegment implements Serializable {
-	int link, an, bn;
+	int rteIndex, link, an, bn;
 	int ttf, ttf1, ttft;
 	double dwf, dwt, us1, us2, us3;
 	double lay, tdwt, tus1, tus2, tus3;
 	boolean path, board, alight, layover;
 
-	TrSegment (int an, int bn, ArrayList defaults, ArrayList tdefaults) {
+	TrSegment (int rteIndex, int an, int bn, ArrayList defaults, ArrayList tdefaults) {
 		dwf    =  ((Double)defaults.get(0)).doubleValue();
 		dwt    =  ((Double)defaults.get(1)).doubleValue();
 		path   =  ((Boolean)defaults.get(2)).booleanValue();
@@ -51,12 +51,13 @@ public class TrSegment implements Serializable {
 
 		this.an = an;
 		this.bn = bn;
+        this.rteIndex = rteIndex;
 	}
 
 
 	public TrSegment segmentCopy (TrSegment ts, TrRoute tr) {
 
-		TrSegment tsNew = new TrSegment (ts.an, ts.bn, tr.defaults, tr.tdefaults);
+		TrSegment tsNew = new TrSegment (ts.rteIndex, ts.an, ts.bn, tr.defaults, tr.tdefaults);
 
 		tsNew.dwf     = ts.dwf;
 		tsNew.dwt     = ts.dwt;
