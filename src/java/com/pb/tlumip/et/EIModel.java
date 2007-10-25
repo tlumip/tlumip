@@ -88,8 +88,8 @@ public class EIModel {
         int intLightTruckClass = ResourceUtil.getIntegerProperty(appRb, "LT.truck.class");
         int intHeavyTruckClass = ResourceUtil.getIntegerProperty(appRb, "HT.truck.class");
 
-        String strAMTime = ResourceUtil.getProperty(globalRb, "AM_PEAK_START");
-        String strMDTime = ResourceUtil.getProperty(globalRb, "OFF_PEAK_START");
+        String strAMTime = ResourceUtil.getProperty(globalRb, "am.peak.start");
+        String strMDTime = ResourceUtil.getProperty(globalRb, "offpeak.start");
 
         String strExternalStationFile = ResourceUtil.getProperty(appRb, "external.station.parameter.file");
         TableDataSet tblExternalStationParameters = null;

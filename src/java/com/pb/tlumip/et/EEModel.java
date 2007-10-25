@@ -133,9 +133,9 @@ public class EEModel {
         int intTruckClass;
 
         if (strTripType.startsWith("AM")) {
-            strStartTime = ResourceUtil.getProperty(globalRb, "AM_PEAK_START");
+            strStartTime = ResourceUtil.getProperty(globalRb, "am.peak.start");
         } else {
-            strStartTime = ResourceUtil.getProperty(globalRb, "OFF_PEAK_START");
+            strStartTime = ResourceUtil.getProperty(globalRb, "offpeak.start");
         }
 
         if (strTripType.endsWith("LT")) {
