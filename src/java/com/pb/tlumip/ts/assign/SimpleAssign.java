@@ -196,13 +196,13 @@ public class SimpleAssign {
 
         if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
             // get peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("am.peak.start") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("am.peak.end") );
         }
         else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
             // get off-peak period definitions from property files
-            startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+            startHour = Integer.parseInt( (String)globalPropertyMap.get("offpeak.start") );
+            endHour = Integer.parseInt( (String)globalPropertyMap.get("offpeak.end") );
         }
 
 

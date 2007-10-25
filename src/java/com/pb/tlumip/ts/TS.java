@@ -178,18 +178,18 @@ public class TS {
         int endHour = -1;
         
         if ( timePeriod.equalsIgnoreCase("peak")) {
-            startHour = Integer.parseInt( (String)globalMap.get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalMap.get("AM_PEAK_END") );
+            startHour = Integer.parseInt((String)globalMap.get("am.peak.start"));
+            endHour = Integer.parseInt( (String)globalMap.get("am.peak.end") );
         }
         else {
-            startHour = Integer.parseInt( (String)globalMap.get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)globalMap.get("OFF_PEAK_END") );
+            startHour = Integer.parseInt((String)globalMap.get("offpeak.start"));
+            endHour = Integer.parseInt( (String)globalMap.get("offpeak.end") );
         }
         
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF d = DemandHandler.getInstance();
-        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("sdt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ldt.fileName"), Double.parseDouble((String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("pt.sample.rate")), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         d.buildHighwayDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
@@ -318,29 +318,31 @@ public class TS {
     
     private double[] runTransitAssignment ( NetworkHandlerIF nh, String accessMode, String routeType, ArrayList tripModeList ) {
         
+        HashMap globalMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
+
         String assignmentPeriod = nh.getTimePeriod();
         
         int startHour = 0;
         int endHour = 0;
         if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
             // get peak period definitions from property files
-            startHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("AM_PEAK_START") );
-            endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("AM_PEAK_END") );
+            startHour = Integer.parseInt((String)globalMap.get("am.peak.start"));
+            endHour = Integer.parseInt( (String)globalMap.get("am.peak.end") );
         }
         else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
             // get off-peak period definitions from property files
-            startHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_START") );
-            endHour = Integer.parseInt( (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("OFF_PEAK_END") );
+            startHour = Integer.parseInt((String)globalMap.get("offpeak.start"));
+            endHour = Integer.parseInt( (String)globalMap.get("offpeak.end") );
         }
         
         
         // get the transit trip table to be assigned 
         DemandHandler d = new DemandHandler();
         double sampleRate = 1.0;
-        String rateString = (String)ResourceUtil.changeResourceBundleIntoHashMap(globalRb).get("pt.sample.rate");
+        String rateString = (String)globalMap.get("pt.sample.rate");
         if ( rateString != null )
             sampleRate = Double.parseDouble( rateString );
-        d.setup( (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("sdt.fileName"), (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ldt.fileName"), sampleRate, (String)ResourceUtil.changeResourceBundleIntoHashMap(appRb).get("ct.fileName"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), sampleRate, (String)globalMap.get("ct.truck.trips"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         
         double[][] tripTable = d.getTripTablesForModes ( tripModeList );
         

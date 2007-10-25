@@ -119,13 +119,13 @@ public class FW {
             int endHour = 0;
             if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
                 // get peak period definitions from property files
-                startHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_START") );
-                endHour = Integer.parseInt( (String)globalPropertyMap.get("AM_PEAK_END") );
+                startHour = Integer.parseInt((String)globalPropertyMap.get("am.peak.start"));
+                endHour = Integer.parseInt( (String)globalPropertyMap.get("am.peak.end") );
             }
             else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
                 // get off-peak period definitions from property files
-                startHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_START") );
-                endHour = Integer.parseInt( (String)globalPropertyMap.get("OFF_PEAK_END") );
+                startHour = Integer.parseInt((String)globalPropertyMap.get("offpeak.start"));
+                endHour = Integer.parseInt( (String)globalPropertyMap.get("offpeak.end") );
             }
             
             
@@ -140,7 +140,7 @@ public class FW {
             
             AonFlowHandlerIF ah = AonFlowHandler.getInstance( nh.getRpcConfigFileName() );
             logger.info ( "FW.iterate() creating an AonFlowHandler and calling its setup()." ); 
-            ah.setup( nh.getRpcConfigFileName(), (String)appPropertyMap.get("sdt.fileName"), (String)appPropertyMap.get("ldt.fileName"), ptSampleRate, (String)appPropertyMap.get("ct.fileName"), startHour, endHour, highwayModeCharacters, nh );
+            ah.setup( nh.getRpcConfigFileName(), (String)globalPropertyMap.get("sdt.person.trips"), (String)globalPropertyMap.get("ldt.person.trips"), ptSampleRate, (String)globalPropertyMap.get("ct.truck.trips"), startHour, endHour, highwayModeCharacters, nh );
             
             
             // loop thru FW iterations
