@@ -1236,6 +1236,10 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return null;
     }
     
+    public double[] getCost() {
+        return null;
+    }
+    
     public double getLinkImped (int k) {
         return 0;
     }

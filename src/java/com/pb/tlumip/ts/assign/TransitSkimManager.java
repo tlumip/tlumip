@@ -25,6 +25,8 @@ package com.pb.tlumip.ts.assign;
 
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.transit.OptimalStrategy;
+import com.pb.common.datafile.OLD_CSVFileReader;
+import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
@@ -35,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 import java.io.File;
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
 
 
@@ -67,6 +71,9 @@ public class TransitSkimManager {
     String tran$String;
     
     HashMap skimTablesOrder = null;
+    
+    HashMap intracityFareTable = null;
+
     
 	
     public TransitSkimManager(NetworkHandlerIF nh, ResourceBundle appRb, ResourceBundle globalRb) {
@@ -103,6 +110,8 @@ public class TransitSkimManager {
         skimTablesOrder.put(rail$String, 8);
         skimTablesOrder.put(bus$String, 9);
         skimTablesOrder.put(tran$String, 10);
+        
+        intracityFareTable = readIntracityTransitFareCsvFile();
         
     }    
     
@@ -366,6 +375,8 @@ public class TransitSkimManager {
 
         os.initSkimMatrices ( (String)globalPropertyMap.get("alpha2beta.file"), skimTablesOrder );
         
+        os.setTransitFareTables ( intracityFareTable );
+        
         os.computeOptimalStrategySkimMatrices( period, accessMode, routeType );
         
         Matrix[] transitSkims = os.getSkimMatrices();
@@ -375,4 +386,52 @@ public class TransitSkimManager {
 	}
     
 
+    private HashMap readIntracityTransitFareCsvFile () {
+
+        final String OrigDistLabel = "OFareDistrict";
+        final String DestDistLabel = "DFareDistrict";
+        final String Fare2007Label = "Fare_2007$";
+        final String Fare1990Label = "Fare_1990$";
+
+        HashMap fareTable = null;
+
+        String filename = (String)tsPropertyMap.get("fareZoneFares.file");
+        
+        // read the extra link attributes file and update link attributes table values.
+        if ( filename != null && ! filename.equals("") ) {
+
+            try {
+                
+                OLD_CSVFileReader reader = new OLD_CSVFileReader();
+                TableDataSet table = reader.readFile( new File(filename) );
+
+                fareTable = new HashMap();
+                
+                for (int i=0; i < table.getRowCount(); i++) {
+                    
+                    String oDist = table.getStringValueAt( i+1, OrigDistLabel );
+                    String dDist = table.getStringValueAt( i+1, DestDistLabel );
+                    float fare = (float)table.getValueAt( i+1, Fare1990Label );
+                    
+                    String key = String.format( "%s_%s", oDist, dDist );
+                    fareTable.put( key, fare );
+                }
+
+            }
+            catch (IOException e) {
+                logger.error ( "exception caught intracity transit fare district fares file: " + filename );
+                throw new RuntimeException(e);
+            }
+                        
+        }
+        
+        return fareTable;
+
+    }
+
+
+    public HashMap getIntracityTransitTable() {
+        return intracityFareTable;
+    }
+    
 }

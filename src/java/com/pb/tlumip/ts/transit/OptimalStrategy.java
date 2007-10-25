@@ -51,7 +51,7 @@ public class OptimalStrategy {
     int RAIL$ = -1;     // intercity rail fare
     int BUS$ = -1;      // intercity bus fare
     int TRAN$ = -1;     // intracity transit fare
-	int NUM_SKIMS = 10;
+	int NUM_SKIMS = 11;
 
 	static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -65,7 +65,6 @@ public class OptimalStrategy {
 	static final double LONGITUDE_PER_FEET = 1.0;
 
 
-    HashMap railFareLookupTable;
     HashMap transitFareLookupTable;
     
 	NetworkHandlerIF nh;
@@ -88,6 +87,8 @@ public class OptimalStrategy {
 	
 	double[] nodeFlow;
 
+    HashMap fareZones = null;
+    
     int[] alphaNumberArray = null;
     int[] zonesToSkim = null;
     int[] externalToAlphaInternal = null;
@@ -212,6 +213,7 @@ public class OptimalStrategy {
         BUS$ = (Integer)skimTablesOrder.get("bus$");
         TRAN$ = (Integer)skimTablesOrder.get("tran$");
         
+        String[] fareZoneLabels = null;
         
         // take a column of alpha zone numbers from a TableDataSet and puts them into an array for
         // purposes of setting external numbers.         */
@@ -219,6 +221,7 @@ public class OptimalStrategy {
             CSVFileReader reader = new CSVFileReader();
             TableDataSet table = reader.readFile(new File(zoneCorrespondenceFile));
             alphaNumberArray = table.getColumnAsInt( 1 );
+            fareZoneLabels = table.getColumnAsString( "Fare" );
         } catch (IOException e) {
             logger.fatal("Can't get zone numbers from zonal correspondence file");
             e.printStackTrace();
@@ -246,6 +249,12 @@ public class OptimalStrategy {
             alphaExternalNumbers[alphaNumberArray.length+i+1] = externals[i];
         }
 
+        
+        fareZones = new HashMap();
+        for (int i=0; i < alphaNumberArray.length; i++ ) {
+            fareZones.put(alphaNumberArray[i], fareZoneLabels[i]);
+        }
+        
     }
 
 
@@ -838,7 +847,7 @@ public class OptimalStrategy {
         
 
         // create temp arrays to hold rail ivt, bus dist, and tran ivt - to be used by fare calculation methods for fare tables
-        double[] railIvt = new double[auxNodeCount];
+        double[] railDist = new double[auxNodeCount];
         double[] busDist = new double[auxNodeCount];
         double[] tranIvt = new double[auxNodeCount];
         
@@ -911,6 +920,9 @@ public class OptimalStrategy {
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 
+                railDist[ia[k]] = railDist[ib[k]];
+                busDist[ia[k]] = busDist[ib[k]];
+                tranIvt[ia[k]] = tranIvt[ib[k]];
             }
             else if ( linkType[k] == AuxTrNet.IN_VEHICLE_TYPE ) {
                 
@@ -921,23 +933,23 @@ public class OptimalStrategy {
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 
-                // if link mode is intercity rail, accumulate ivt.
+                // if link mode is intercity rail, accumulate dist.
                 if ( rteMode[k] == 'm' ) {
-                    railIvt[ia[k]] = railIvt[ib[k]] + invTime[k];
+                    railDist[ia[k]] = railDist[ib[k]] + gDist[m];
                     busDist[ia[k]] = busDist[ib[k]];
                     tranIvt[ia[k]] = tranIvt[ib[k]];
                 }
                 // if link mode is intercity bus, accumulate dist.
                 else if ( rteMode[k] == 'i' ) {
-                    railIvt[ia[k]] = railIvt[ib[k]];
+                    railDist[ia[k]] = railDist[ib[k]];
                     busDist[ia[k]] = busDist[ib[k]] + gDist[m];
                     tranIvt[ia[k]] = tranIvt[ib[k]];
                 }
                 // if link mode is local bus, express bus, light rail, or commuter rail, accumulate ivt.
                 else if ( rteMode[k] == 'b' || rteMode[k] == 'x' || rteMode[k] == 'l' || rteMode[k] == 'r' ) {
-                    railIvt[ia[k]] = railIvt[ib[k]];
+                    railDist[ia[k]] = railDist[ib[k]];
                     busDist[ia[k]] = busDist[ib[k]];
-                    tranIvt[ia[k]] = tranIvt[ib[k]] + invTime[m];
+                    tranIvt[ia[k]] = tranIvt[ib[k]] + invTime[k];
                 }
                     
             }
@@ -950,6 +962,9 @@ public class OptimalStrategy {
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                     
+                railDist[ia[k]] = railDist[ib[k]];
+                busDist[ia[k]] = busDist[ib[k]];
+                tranIvt[ia[k]] = tranIvt[ib[k]];
             }
             else if ( linkType[k] == AuxTrNet.ALIGHTING_TYPE ) {
                 
@@ -960,6 +975,9 @@ public class OptimalStrategy {
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 
+                railDist[ia[k]] = railDist[ib[k]];
+                busDist[ia[k]] = busDist[ib[k]];
+                tranIvt[ia[k]] = tranIvt[ib[k]];
             }
             else if ( linkType[k] == AuxTrNet.AUXILIARY_TYPE ) {
 
@@ -971,6 +989,10 @@ public class OptimalStrategy {
                     nodeSkims[ACC][ia[k]] = 0.0;
                     nodeSkims[AUX][ia[k]] = 0.0;
                     nodeSkims[EGR][ia[k]] = walkTime[k];
+
+                    railDist[ia[k]] = 0.0;
+                    busDist[ia[k]] = 0.0;
+                    tranIvt[ia[k]] = 0.0;
                 }
                 // anode is an origin node, set final skim values for that origin and add the access time
                 else if ( ia[k] < nh.getNumCentroids() ) {
@@ -980,6 +1002,10 @@ public class OptimalStrategy {
                     skimResults[ACC][ia[k]] = nodeSkims[ACC][ib[k]] + accessTime[k];
                     skimResults[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                     skimResults[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
+
+                    railDist[ia[k]] = railDist[ib[k]];
+                    busDist[ia[k]] = busDist[ib[k]];
+                    tranIvt[ia[k]] = tranIvt[ib[k]];
                 }
                 // link is a walk link, not connected to a centroid
                 else {
@@ -989,6 +1015,10 @@ public class OptimalStrategy {
                     nodeSkims[ACC][ia[k]] = nodeSkims[ACC][ib[k]];
                     nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]] + walkTime[k];
                     nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
+
+                    railDist[ia[k]] = railDist[ib[k]];
+                    busDist[ia[k]] = busDist[ib[k]];
+                    tranIvt[ia[k]] = tranIvt[ib[k]];
                 }
                 
             }
@@ -1009,9 +1039,9 @@ public class OptimalStrategy {
         
 
         for (int i=0; i < nh.getNumCentroids(); i++) {
-            skimResults[RAIL$][i] = getSkimTableLookupFareMatrix ( i, railIvt, railFareLookupTable );
+            skimResults[RAIL$][i] = getIcRailFareMatrix ( i, railDist );
             skimResults[BUS$][i] = getIcBusFareMatrix ( i, busDist );
-            skimResults[TRAN$][i] = getSkimTableLookupFareMatrix ( i, tranIvt, transitFareLookupTable );
+            skimResults[TRAN$][i] = getSkimTableLookupFare ( i, tranIvt, transitFareLookupTable );
         }
 
         return skimResults;
@@ -1135,19 +1165,25 @@ public class OptimalStrategy {
 
     
     
-    private double getSkimTableLookupFareMatrix ( int i, double[] skimTable, HashMap tazFareLookupTable ) {
+    private double getSkimTableLookupFare ( int i, double[] skimTable, HashMap tazFareLookupTable ) {
         
         double fare = 0.0;
         
-        // if skim OD pair is connected by rail service, lookup fare for OD pair
-        if ( skimTable[i] > 0 ) {
+        if ( tazFareLookupTable != null ) {
             
-            // get the external origin and destination centroid numbers for the skim matrix indices
-            int extOrigCent = indexNode[i];
-            int extDestCent = indexNode[dest];
-            String key = String.format("%d_%d", extOrigCent, extDestCent);
-            fare = (Double)tazFareLookupTable.get(key);
-        
+            // if skim OD pair is connected by rail service, lookup fare for OD pair
+            if ( skimTable[i] > 0 ) {
+                
+                // get the external origin and destination centroid numbers for the skim matrix indices
+                int extOrigCent = indexNode[i];
+                String origFareZone = (String)fareZones.get(extOrigCent);
+                int extDestCent = indexNode[dest];
+                String destFareZone = (String)fareZones.get(extDestCent);
+                String key = String.format("%s_%s", origFareZone, destFareZone);
+                fare = (Float)tazFareLookupTable.get(key);
+            
+            }
+            
         }
         
         return fare;
@@ -1159,7 +1195,7 @@ public class OptimalStrategy {
         
         double fare = 0.0;
 
-        // if skim OD pair is connected by rail service, lookup fare for OD pair
+        // if skim OD pair is connected by rail service, calculate distance based bus fare for OD pair
         if ( busDist[i] > 0 ) {
             fare = 1.9694*Math.pow(busDist[i], -0.4994); 
         }
@@ -1168,7 +1204,27 @@ public class OptimalStrategy {
         
     }
 
+    
+    //TODO: implement function for rail
+    private double getIcRailFareMatrix ( int i, double[] railDist ) {
+        
+        double fare = 0.0;
 
+        // if skim OD pair is connected by rail service, calculate distance based rail fare for OD pair
+        if ( railDist[i] > 0 ) {
+            fare = 1.9694*Math.pow(railDist[i], -0.4994); 
+        }
+        
+        return fare;
+        
+    }
+
+    
+    public void setTransitFareTables ( HashMap intracityFareTable ) {
+        transitFareLookupTable = intracityFareTable;
+    }
+
+    
 	double airlineDistance(int fromNode, int toNode) {
 
 	  double horizMiles, vertMiles, distMiles;

@@ -757,8 +757,8 @@ public class TS {
 
         
         // drive access air skims
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "air" );
-        tsm.writeTransitSkims( assignmentPeriod, "drive", "air" );
+//        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "air" );
+//        tsm.writeTransitSkims( assignmentPeriod, "drive", "air" );
 
         // drive access air assignment
 //        tripModeList = new ArrayList();
@@ -781,7 +781,7 @@ public class TS {
       
         
         // drive access intercity skims
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intercity" );
+//        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intercity" );
 //        tsm.writeTransitSkims( assignmentPeriod, "drive", "intercity" );
 
         // drive access intercity assignment
@@ -805,8 +805,8 @@ public class TS {
         
         
         // walk access intracity skims - these are used as walk access skims for hsr, and intercity as well
-//        tsm.setupTransitNetwork( nh, assignmentPeriod, "walk", "intracity" );
-//        tsm.writeTransitSkims( assignmentPeriod, "walk", "intracity" );
+        tsm.setupTransitNetwork( nh, assignmentPeriod, "walk", "intracity" );
+        tsm.writeTransitSkims( assignmentPeriod, "walk", "intracity" );
         
         // load walk access transit trips - (all route types use the same network object; no walk access air)
 //        tripModeList = new ArrayList();
