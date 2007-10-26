@@ -269,6 +269,7 @@ public class TransitSkimManager {
             catch ( RuntimeException e ) {
                 logger.error ( "Error while checking existence of route files specified for:");
                 logger.error ( String.format( "period=%s, accessMode=%s, routeType=%s", period, accessMode, routeType) );
+                logger.error ( String.format( "Filename for file not found=%s", routeFiles[i]) );
                 logger.error ( "", e );
                 System.exit(-1);
             }

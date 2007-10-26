@@ -1180,7 +1180,14 @@ public class OptimalStrategy {
                 int extDestCent = indexNode[dest];
                 String destFareZone = (String)fareZones.get(extDestCent);
                 String key = String.format("%s_%s", origFareZone, destFareZone);
-                fare = (Float)tazFareLookupTable.get(key);
+                
+                try {
+                    fare = (Float)tazFareLookupTable.get(key);
+                }
+                catch (RuntimeException e) {
+                    logger.error( String.format("exception caught looking up intracity fare for,"));
+                    logger.error( String.format("extOrigCent=%d, origFareZone=%s, extDestCent=%d, destFareZone=%s, key=%s", extOrigCent, origFareZone, extDestCent, destFareZone, key));
+                }
             
             }
             
