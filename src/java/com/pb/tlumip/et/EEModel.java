@@ -64,8 +64,7 @@ public class EEModel {
     //private ArrayList alSmallRoads;
 
     private int[] intsExternalStations;
-    private int[] intsExternalStationsZeroBased;
-
+    
     private int intTimeInterval;
     private ExternalStationParameters externalStationParameters;
    String strMatrixExtension;
@@ -108,10 +107,6 @@ public class EEModel {
 
         WorldZoneExternalZoneUtil wzUtil = new WorldZoneExternalZoneUtil(globalRb);
         intsExternalStations = wzUtil.getExternalZonesForET();
-
-        intsExternalStationsZeroBased = new int[intsExternalStations.length + 1];
-        intsExternalStationsZeroBased[0] = 0;
-        System.arraycopy(intsExternalStations, 0, intsExternalStationsZeroBased, 1, intsExternalStations.length);
 
         dblLargeRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "large.road.growth.rate");
         dblSmallRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "small.road.growth.rate");
@@ -183,7 +178,7 @@ public class EEModel {
         }
 
         mtxSeed = new Matrix(strTripType, "", fltsTripData);
-        mtxSeed.setExternalNumbers(intsExternalStationsZeroBased);
+        mtxSeed.setExternalNumbersZeroBased(intsExternalStations);
 
 
     }
@@ -205,10 +200,10 @@ public class EEModel {
             strTruckSuffix = "Heavy";
         }
 
-        rvColumnTargets = new RowVector(intsExternalStations.length + 1);
-        cvRowTargets = new ColumnVector(intsExternalStations.length + 1);
-        rvColumnTargets.setExternalNumbers(intsExternalStationsZeroBased);
-        cvRowTargets.setExternalNumbers(intsExternalStationsZeroBased);
+        rvColumnTargets = new RowVector(intsExternalStations.length);
+        cvRowTargets = new ColumnVector(intsExternalStations.length);
+        rvColumnTargets.setExternalNumbersZeroBased(intsExternalStations);
+        cvRowTargets.setExternalNumbersZeroBased(intsExternalStations);
 
         for (int intExternalStation: intsExternalStations) {
 
