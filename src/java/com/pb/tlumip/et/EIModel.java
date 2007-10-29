@@ -380,10 +380,13 @@ public class EIModel {
 
     }
 
-    private Matrix readMatrix(String strFilePath, String strName) {
-        //logger.info("Reading matrix at " + strFilePath);
+    private Matrix readMatrix(String strFilePath, String strName) {        
         return MatrixReader.readMatrix(new File(strFilePath), strName);
     }
+
+    //The following is commented out because it was very useful for debugging during development,
+    // but it's not actually needed for production. I'm expecting that there will be some additional debugging work
+    // so I don't want to just delete this.
 /*
     private void outputFile() {
 

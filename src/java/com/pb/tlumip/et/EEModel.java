@@ -35,7 +35,7 @@ import java.util.ResourceBundle;
 
 
 /**
- * EEModel is a class that ...
+ * EEModel is a class that generates the Thru trips for the ET model.
  *
  * @author Kimberly Grommes
  * @version 1.0, Jul 3, 2007
@@ -61,7 +61,7 @@ public class EEModel {
     private Double dblSmallRoadGrowthRate;
 
     private ArrayList alLargeRoads;
-    private ArrayList alSmallRoads;
+    //private ArrayList alSmallRoads;
 
     private int[] intsExternalStations;
     private int[] intsExternalStationsZeroBased;
@@ -117,7 +117,7 @@ public class EEModel {
         dblSmallRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "small.road.growth.rate");
 
         alLargeRoads = ResourceUtil.getList(appRb, "large.roads");
-        alSmallRoads = ResourceUtil.getList(appRb, "small.roads");
+        //alSmallRoads = ResourceUtil.getList(appRb, "small.roads");
 
     }
 
@@ -246,6 +246,33 @@ public class EEModel {
 
     }
 
+    private void outputFile(String strTripType) {
+
+        TableDataSet tblOutput = new TableDataSet();
+        tblOutput.appendColumn(intsExternalStations, "TAZ");
+        for (int intZone: intsExternalStations) {
+            tblOutput.appendColumn(mtxOutput.getColumn(intZone).copyValues1D(), Integer.toString(intZone));
+        }
+
+        String strOutputPath = ResourceUtil.getProperty(appRb, "et.current.data");
+        String strFileName = ResourceUtil.getProperty(appRb, "EE.file.prefix") + strTripType + ".csv";
+
+        try{
+            CSVFileWriter cfwWriter = new CSVFileWriter();
+            cfwWriter.writeFile(tblOutput, new File(strOutputPath + strFileName));
+            cfwWriter.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+    }
+
+    //The following is commented out because it was very useful for debugging during development,
+    // but it's not actually needed for production. I'm expecting that there will be some additional debugging work
+    // so I don't want to just delete this.
+
     /*
     private void writeMatrix(Matrix mtxOutput, String strTripType) {
         //simply for diagnostic purposes.
@@ -342,27 +369,6 @@ public class EEModel {
 
     }
     */
-    private void outputFile(String strTripType) {
 
-        TableDataSet tblOutput = new TableDataSet();
-        tblOutput.appendColumn(intsExternalStations, "TAZ");
-        for (int intZone: intsExternalStations) {
-            tblOutput.appendColumn(mtxOutput.getColumn(intZone).copyValues1D(), Integer.toString(intZone));
-        }
-
-        String strOutputPath = ResourceUtil.getProperty(appRb, "et.current.data");
-        String strFileName = ResourceUtil.getProperty(appRb, "EE.file.prefix") + strTripType + ".csv";
-
-        try{
-            CSVFileWriter cfwWriter = new CSVFileWriter();
-            cfwWriter.writeFile(tblOutput, new File(strOutputPath + strFileName));
-            cfwWriter.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-    }
 
 }

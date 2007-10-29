@@ -30,8 +30,7 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 /**
- * ETModel is a class that ...
- * This is currently just a place holder for the real class.
+ * ETModel is a class that generates the external trips for the TLUMIP model, primarily by calling EIModel and EEModel.
  *
  * @author Kimberly Grommes
  * @version 1.0, Jan 23, 2007
@@ -154,10 +153,8 @@ public class ETModel extends ModelComponent {
         tblOutput.appendColumn(strsStartTime, "StartTime");
         tblOutput.appendColumn(intsTruckClass, "TruckClass");
 
-//        String strOutputPath = ResourceUtil.getProperty(appRb, "et.current.data");
-//        String strFileName = ResourceUtil.getProperty(appRb, "ET.file.prefix") + "TruckTrips" + ".csv";
-        //Christi commented out about lines when integrating ET with TS.
-        String strOutputFile = globalRb.getString("et.truck.trips"); //need to share property with TS
+        //need to share property with TS
+        String strOutputFile = globalRb.getString("et.truck.trips");
 
         try{
             CSVFileWriter cfwWriter = new CSVFileWriter();
