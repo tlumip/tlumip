@@ -16,8 +16,11 @@
  */
 package com.pb.tlumip.et;
 
+import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.CSVFileWriter;
+import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.ResourceUtil;
 import com.pb.models.reference.ModelComponent;
 import org.apache.log4j.Logger;
 
@@ -38,6 +41,8 @@ public class ETModel extends ModelComponent {
 
     Logger logger = Logger.getLogger(ETModel.class);
 
+    private ExternalStationParameters externalStationParameters;
+
     private ArrayList<ShipmentDetail> alTrucks;
 
 
@@ -46,16 +51,35 @@ public class ETModel extends ModelComponent {
 
     }
 
-	public void startModel(int baseYear, int intTimeInterval){
+    private void defineExternalStationParameters() {
+        String strExternalStationFile = ResourceUtil.getProperty(appRb, "external.station.parameter.file");
+        TableDataSet tblExternalStationParameters = null;
+        TableDataFileReader rdrReader = CSVFileReader.createReader(new File(strExternalStationFile));
+
+        try {
+            tblExternalStationParameters = rdrReader.readFile(new File(strExternalStationFile));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        externalStationParameters = new ExternalStationParameters(tblExternalStationParameters);
+    }
+
+    public void startModel(int baseYear, int intTimeInterval){
         logger.info("Starting ET Model.");
 
+        defineExternalStationParameters();
+
         alTrucks = new ArrayList<ShipmentDetail> ();
+
         logger.info("Starting Thru-Trips Model.");
-        EEModel eeModel = new EEModel(appRb, globalRb);
+        EEModel eeModel = new EEModel(appRb, globalRb, intTimeInterval, externalStationParameters);
         eeModel.runModel(alTrucks);
 
         logger.info("Starting ExternalInternal Model.");
-        EIModel eiModel = new EIModel(appRb, globalRb);
+        EIModel eiModel = new EIModel(appRb, globalRb, externalStationParameters);
         eiModel.runModel(alTrucks);
 
         outputFile();

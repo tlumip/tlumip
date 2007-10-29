@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.ResourceBundle;
 
 /**
- * EIModel is a class that ...
+ * EIModel is a class that converts PI $/yr by commodity to trucks/year.
  *
  * @author Kimberly Grommes
  * @version 1.0, Aug 8, 2007
@@ -62,8 +62,31 @@ public class EIModel {
     String strMatrixExtension;
 
     //private ArrayList<ShipmentDetail> alTrucks;
+    private float fltAMLightPercentage;
+        private float fltAMHeavyPercentage;
+        private float fltMDLightPercentage;
+        private float fltMDHeavyPercentage;
 
-    //convert dollar flows/year to trucks/year
+
+    private int intLightTruckClass;
+    private int intHeavyTruckClass;
+
+    private String strAMTime;
+    private String strMDTime;
+
+    private float alpha;
+    private  float gamma;
+    private  float beta;
+
+    private Matrix mtxDistanceSkim;
+
+    private ZoneMap zones;
+
+    private int intLightTonsPerTruck;
+    private int intHeavyTonsPerTruck;
+
+    private ExternalStationParameters externalStationParameters;
+
 
     // take beta to 6006 (and vice versa) dollar flows and convert them to alpha to 5000 (and vice versa) zone truck flows.
     // to pick the alpha flow from the beta flow, I need to use the intensity map stuff from CT.
@@ -74,61 +97,34 @@ public class EIModel {
 
 
 
-    public EIModel(ResourceBundle appRb, ResourceBundle globalRb) {
+    public EIModel(ResourceBundle appRb, ResourceBundle globalRb, ExternalStationParameters externalStationParameters) {
         this.appRb = appRb;
         this.globalRb = globalRb;
         a2b = new AlphaToBeta(new File(ResourceUtil.getProperty(globalRb, "alpha2beta.file")),
                 ResourceUtil.getProperty(globalRb, "alpha.name"), ResourceUtil.getProperty(globalRb, "beta.name"));
+        this.externalStationParameters = externalStationParameters;
+    }
+
+    private void defineStationParameters() {
+
+        //TODO: if I'm only using this table here for a few values, maybe it would be better to put these values into a properties file.
+        // They don't really belong in the external station file in any case.
+        fltAMLightPercentage = externalStationParameters.getValue(9999, "AM_OBLightTruckFactor") +
+                externalStationParameters.getValue(9999, "AM_IBLightTruckFactor");
+        fltAMHeavyPercentage = externalStationParameters.getValue(9999, "AM_OBHeavyTruckFactor") +
+                externalStationParameters.getValue(9999, "AM_IBHeavyTruckFactor");
+        fltMDLightPercentage = externalStationParameters.getValue(9999, "MD_OBLightTruckFactor") +
+                externalStationParameters.getValue(9999, "MD_IBLightTruckFactor");
+        fltMDHeavyPercentage = externalStationParameters.getValue(9999, "MD_OBHeavyTruckFactor") +
+                externalStationParameters.getValue(9999, "MD_IBHeavyTruckFactor");
     }
 
     public void runModel(ArrayList<ShipmentDetail> alTrucks) {
 
         defineModel();
 
-        int intLightTruckClass = ResourceUtil.getIntegerProperty(appRb, "LT.truck.class");
-        int intHeavyTruckClass = ResourceUtil.getIntegerProperty(appRb, "HT.truck.class");
-
-        String strAMTime = ResourceUtil.getProperty(globalRb, "am.peak.start");
-        String strMDTime = ResourceUtil.getProperty(globalRb, "offpeak.start");
-
-        String strExternalStationFile = ResourceUtil.getProperty(appRb, "external.station.parameter.file");
-        TableDataSet tblExternalStationParameters = null;
-        TableDataFileReader rdrReader = CSVFileReader.createReader(new File(strExternalStationFile));
-
-        try {
-            tblExternalStationParameters = rdrReader.readFile(new File(strExternalStationFile));
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        tblExternalStationParameters.buildIndex(1);
-
-        //TODO: if I'm only using this table here for a few values, maybe it would be better to put these values into a properties file.
-        // They don't really belong in the external station file in any case.
-        float fltAMLightPercentage = tblExternalStationParameters.getIndexedValueAt(9999, "AM_OBLightTruckFactor") +
-                tblExternalStationParameters.getIndexedValueAt(9999, "AM_IBLightTruckFactor");
-        float fltAMHeavyPercentage = tblExternalStationParameters.getIndexedValueAt(9999, "AM_OBHeavyTruckFactor") +
-                tblExternalStationParameters.getIndexedValueAt(9999, "AM_IBHeavyTruckFactor");
-        float fltMDLightPercentage = tblExternalStationParameters.getIndexedValueAt(9999, "MD_OBLightTruckFactor") +
-                tblExternalStationParameters.getIndexedValueAt(9999, "MD_IBLightTruckFactor");
-        float fltMDHeavyPercentage = tblExternalStationParameters.getIndexedValueAt(9999, "MD_OBHeavyTruckFactor") +
-                tblExternalStationParameters.getIndexedValueAt(9999, "MD_IBHeavyTruckFactor");
-
-        float alpha = (float) ResourceUtil.getDoubleProperty(appRb, "ei.gravitymodel.alpha");
-        float gamma = (float) ResourceUtil.getDoubleProperty(appRb, "ei.gravitymodel.gamma");
-        float beta = (float) ResourceUtil.getDoubleProperty(appRb, "ei.gravitymodel.beta");
-
-        Matrix mtxDistanceSkim = readMatrix((ResourceUtil.getProperty(appRb, "distance.skim")+ strMatrixExtension), "Distance_Skim");
-
-        ZoneMap zones = new ZoneMap(new File(ResourceUtil.getProperty(globalRb, "alpha2beta.file")), 1990);
-
-        int intLightTonsPerTruck = ResourceUtil.getIntegerProperty(appRb, "light.tons.per.truck");
-        int intHeavyTonsPerTruck = ResourceUtil.getIntegerProperty(appRb, "heavy.tons.per.truck");
-
-
         for (String strCommodity: strsCommodities) {
+
             Matrix mtxOriginalCommodityFlow;
             String strFileName = ResourceUtil.getProperty(appRb, "pi.output.dir") +
                         "buying_" + strCommodity + strMatrixExtension;
@@ -226,54 +222,59 @@ public class EIModel {
                     }
                 }
             }
+            convertTonsPerWeektoTrucksPerPeak(mtxUpdatedCommodityImportFlow, mtxUpdatedCommodityExportFlow, strCommodity, alTrucks);
 
-            //this third loop converts the tons/week amount to trucks/peak period
-            for (int intAlphaZone: a2b.getAlphaExternals0Based()) {
-                for (int intExternalZone: wzUtil.getExternalZonesForET()) {
 
-                    float fltImportTonsPerWeek = mtxUpdatedCommodityImportFlow.getValueAt(intExternalZone, intAlphaZone);
-                    float fltExportTonsPerWeek = mtxUpdatedCommodityExportFlow.getValueAt(intExternalZone, intAlphaZone);
-
-                    float fltLightCommodityPercentage = hshCommodityVehicleType.get(strCommodity + "_Light")/100f;
-                    float fltHeavyCommodityPercentage = hshCommodityVehicleType.get(strCommodity + "_Heavy")/100f;
-
-                    float fltImportLightTrucksPerWeek = (fltImportTonsPerWeek * fltLightCommodityPercentage)/intLightTonsPerTruck;
-                    float fltExportLightTrucksPerWeek = (fltExportTonsPerWeek * fltLightCommodityPercentage)/intLightTonsPerTruck;
-                    float fltImportHeavyTrucksPerWeek = (fltImportTonsPerWeek * fltHeavyCommodityPercentage)/intHeavyTonsPerTruck;
-                    float fltExportHeavyTrucksPerWeek = (fltExportTonsPerWeek * fltHeavyCommodityPercentage)/intHeavyTonsPerTruck;
-
-                    float fltAMImportLightTrucksPerWeek = fltImportLightTrucksPerWeek * fltAMLightPercentage;
-                    float fltMDImportLightTrucksPerWeek = fltImportLightTrucksPerWeek * fltMDLightPercentage;
-                    float fltAMExportLightTrucksPerWeek = fltExportLightTrucksPerWeek * fltAMLightPercentage;
-                    float fltMDExportLightTrucksPerWeek = fltExportLightTrucksPerWeek * fltMDLightPercentage;
-                    float fltAMImportHeavyTrucksPerWeek = fltImportHeavyTrucksPerWeek * fltAMHeavyPercentage;
-                    float fltMDImportHeavyTrucksPerWeek = fltImportHeavyTrucksPerWeek * fltMDHeavyPercentage;
-                    float fltAMExportHeavyTrucksPerWeek = fltExportHeavyTrucksPerWeek * fltAMHeavyPercentage;
-                    float fltMDExportHeavyTrucksPerWeek = fltExportHeavyTrucksPerWeek * fltMDHeavyPercentage;
-
-                    if (fltAMImportLightTrucksPerWeek > 0)
-                        alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strAMTime, fltAMImportLightTrucksPerWeek/7, intLightTruckClass));
-                    if (fltMDImportLightTrucksPerWeek > 0)
-                        alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strMDTime, fltMDImportLightTrucksPerWeek/7, intLightTruckClass));
-                    if (fltAMExportLightTrucksPerWeek > 0)
-                        alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strAMTime, fltAMExportLightTrucksPerWeek/7, intLightTruckClass));
-                    if (fltMDExportLightTrucksPerWeek > 0)
-                        alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strMDTime, fltMDExportLightTrucksPerWeek/7, intLightTruckClass));
-                    if (fltAMImportHeavyTrucksPerWeek > 0)
-                        alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strAMTime, fltAMImportHeavyTrucksPerWeek/7, intHeavyTruckClass));
-                    if (fltMDImportHeavyTrucksPerWeek > 0)
-                        alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strMDTime, fltMDImportHeavyTrucksPerWeek/7, intHeavyTruckClass));
-                    if (fltAMExportHeavyTrucksPerWeek > 0)
-                        alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strAMTime, fltAMExportHeavyTrucksPerWeek/7, intHeavyTruckClass));
-                    if (fltMDExportHeavyTrucksPerWeek > 0)
-                        alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strMDTime, fltMDExportHeavyTrucksPerWeek/7, intHeavyTruckClass));
-                }
-            }
         }
 
         //outputDiagnosticFile();
         //outputFile();
 
+    }
+
+    private void convertTonsPerWeektoTrucksPerPeak(Matrix mtxUpdatedCommodityImportFlow, Matrix mtxUpdatedCommodityExportFlow, String strCommodity, ArrayList<ShipmentDetail> alTrucks) {
+        //this third loop converts the tons/week amount to trucks/peak period
+        for (int intAlphaZone: a2b.getAlphaExternals0Based()) {
+            for (int intExternalZone: wzUtil.getExternalZonesForET()) {
+
+                float fltImportTonsPerWeek = mtxUpdatedCommodityImportFlow.getValueAt(intExternalZone, intAlphaZone);
+                float fltExportTonsPerWeek = mtxUpdatedCommodityExportFlow.getValueAt(intExternalZone, intAlphaZone);
+
+                float fltLightCommodityPercentage = hshCommodityVehicleType.get(strCommodity + "_Light")/100f;
+                float fltHeavyCommodityPercentage = hshCommodityVehicleType.get(strCommodity + "_Heavy")/100f;
+
+                float fltImportLightTrucksPerWeek = (fltImportTonsPerWeek * fltLightCommodityPercentage)/intLightTonsPerTruck;
+                float fltExportLightTrucksPerWeek = (fltExportTonsPerWeek * fltLightCommodityPercentage)/intLightTonsPerTruck;
+                float fltImportHeavyTrucksPerWeek = (fltImportTonsPerWeek * fltHeavyCommodityPercentage)/intHeavyTonsPerTruck;
+                float fltExportHeavyTrucksPerWeek = (fltExportTonsPerWeek * fltHeavyCommodityPercentage)/intHeavyTonsPerTruck;
+
+                float fltAMImportLightTrucksPerWeek = fltImportLightTrucksPerWeek * fltAMLightPercentage;
+                float fltMDImportLightTrucksPerWeek = fltImportLightTrucksPerWeek * fltMDLightPercentage;
+                float fltAMExportLightTrucksPerWeek = fltExportLightTrucksPerWeek * fltAMLightPercentage;
+                float fltMDExportLightTrucksPerWeek = fltExportLightTrucksPerWeek * fltMDLightPercentage;
+                float fltAMImportHeavyTrucksPerWeek = fltImportHeavyTrucksPerWeek * fltAMHeavyPercentage;
+                float fltMDImportHeavyTrucksPerWeek = fltImportHeavyTrucksPerWeek * fltMDHeavyPercentage;
+                float fltAMExportHeavyTrucksPerWeek = fltExportHeavyTrucksPerWeek * fltAMHeavyPercentage;
+                float fltMDExportHeavyTrucksPerWeek = fltExportHeavyTrucksPerWeek * fltMDHeavyPercentage;
+
+                if (fltAMImportLightTrucksPerWeek > 0)
+                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strAMTime, fltAMImportLightTrucksPerWeek/7, intLightTruckClass));
+                if (fltMDImportLightTrucksPerWeek > 0)
+                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strMDTime, fltMDImportLightTrucksPerWeek/7, intLightTruckClass));
+                if (fltAMExportLightTrucksPerWeek > 0)
+                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strAMTime, fltAMExportLightTrucksPerWeek/7, intLightTruckClass));
+                if (fltMDExportLightTrucksPerWeek > 0)
+                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strMDTime, fltMDExportLightTrucksPerWeek/7, intLightTruckClass));
+                if (fltAMImportHeavyTrucksPerWeek > 0)
+                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strAMTime, fltAMImportHeavyTrucksPerWeek/7, intHeavyTruckClass));
+                if (fltMDImportHeavyTrucksPerWeek > 0)
+                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strMDTime, fltMDImportHeavyTrucksPerWeek/7, intHeavyTruckClass));
+                if (fltAMExportHeavyTrucksPerWeek > 0)
+                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strAMTime, fltAMExportHeavyTrucksPerWeek/7, intHeavyTruckClass));
+                if (fltMDExportHeavyTrucksPerWeek > 0)
+                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strMDTime, fltMDExportHeavyTrucksPerWeek/7, intHeavyTruckClass));
+            }
+        }
     }
 
     private void defineModel() {
@@ -291,6 +292,29 @@ public class EIModel {
         defineCommodityTruckData();
 
         defineCommodityVehicleTypes();
+
+        defineStationParameters();
+
+        intLightTruckClass = ResourceUtil.getIntegerProperty(appRb, "LT.truck.class");
+        intHeavyTruckClass = ResourceUtil.getIntegerProperty(appRb, "HT.truck.class");
+
+        strAMTime = ResourceUtil.getProperty(globalRb, "AM_PEAK_START");
+        strMDTime = ResourceUtil.getProperty(globalRb, "OFF_PEAK_START");
+
+        defineGravityModelParameters();
+
+        mtxDistanceSkim = readMatrix(ResourceUtil.getProperty(appRb, "distance.skim"), "Distance_Skim");
+
+        zones = new ZoneMap(new File(ResourceUtil.getProperty(globalRb, "alpha2beta.file")), 1990);
+
+        intLightTonsPerTruck = ResourceUtil.getIntegerProperty(appRb, "light.tons.per.truck");
+        intHeavyTonsPerTruck = ResourceUtil.getIntegerProperty(appRb, "heavy.tons.per.truck");
+    }
+
+    private void defineGravityModelParameters() {
+        alpha = (float) ResourceUtil.getDoubleProperty(appRb, "ei.gravitymodel.alpha");
+        gamma = (float) ResourceUtil.getDoubleProperty(appRb, "ei.gravitymodel.gamma");
+        beta = (float) ResourceUtil.getDoubleProperty(appRb, "ei.gravitymodel.beta");
     }
 
     private void defineCommodityTruckData() {

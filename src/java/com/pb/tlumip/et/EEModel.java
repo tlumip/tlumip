@@ -16,7 +16,7 @@
  */
 package com.pb.tlumip.et;
 
-import com.pb.common.datafile.CSVFileReader;
+import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.FileType;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -45,34 +45,36 @@ public class EEModel {
 
     Logger logger = Logger.getLogger(EEModel.class);
 
-    ResourceBundle appRb;
-    ResourceBundle globalRb;
+    private ResourceBundle appRb;
+    private ResourceBundle globalRb;
 
-    Matrix mtxSeed;
-    Matrix mtxOutput;
+    private Matrix mtxSeed;
+    private Matrix mtxOutput;
 
-    RowVector rvColumnTargets;
-    ColumnVector cvRowTargets;
+    private RowVector rvColumnTargets;
+    private ColumnVector cvRowTargets;
 
-    double dblRelativeError;
-    int intMaxIterations;
+    private double dblRelativeError;
+    private int intMaxIterations;
 
-    int intNumberOfYears;
+    private Double dblLargeRoadGrowthRate;
+    private Double dblSmallRoadGrowthRate;
 
-    Double dblLargeRoadGrowthRate;
-    Double dblSmallRoadGrowthRate;
+    private ArrayList alLargeRoads;
+    private ArrayList alSmallRoads;
 
-    ArrayList alLargeRoads;
-    ArrayList alSmallRoads;
+    private int[] intsExternalStations;
+    private int[] intsExternalStationsZeroBased;
 
-    int[] intsExternalStations;
-    int[] intsExternalStationsZeroBased;
-
-    String strMatrixExtension;
-
-    public EEModel(ResourceBundle appRb, ResourceBundle globalRb) {
+    private int intTimeInterval;
+    private ExternalStationParameters externalStationParameters;
+   String strMatrixExtension;
+    
+    public EEModel(ResourceBundle appRb, ResourceBundle globalRb, int intTimeInterval, ExternalStationParameters externalStationParameters) {
         this.appRb = appRb;
         this.globalRb = globalRb;
+        this.intTimeInterval = intTimeInterval;
+        this.externalStationParameters = externalStationParameters;
     }
 
     public void runModel(ArrayList<ShipmentDetail> alTrucks) {
@@ -90,8 +92,9 @@ public class EEModel {
 
             addShipments(strTripType, alTrucks);
 
-            //writeMatrix(mtxOutput, strOutputPath + strTripType + ".zmx");
-            //outputFiles(strTripType);
+            //writeMatrix(mtxOutput, strTripType);
+            //outputDiagnosticFile(strTripType);
+            outputFile(strTripType);
         }
 
     }
@@ -113,8 +116,6 @@ public class EEModel {
         dblLargeRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "large.road.growth.rate");
         dblSmallRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "small.road.growth.rate");
 
-        intNumberOfYears = ResourceUtil.getIntegerProperty(appRb, "number.of.years");
-
         alLargeRoads = ResourceUtil.getList(appRb, "large.roads");
         alSmallRoads = ResourceUtil.getList(appRb, "small.roads");
 
@@ -125,7 +126,7 @@ public class EEModel {
         defineSeed(strTripType);
         defineTargets(strTripType);
 
-    }    
+    }
 
     private void addShipments(String strTripType, ArrayList<ShipmentDetail> alTrucks) {
 
@@ -189,20 +190,6 @@ public class EEModel {
 
     private void defineTargets(String strTripType) {
 
-        String strExternalStationFile = ResourceUtil.getProperty(appRb, "external.station.parameter.file");
-        TableDataSet tblExternalStationParameters = null;
-        TableDataFileReader rdrReader = CSVFileReader.createReader(new File(strExternalStationFile));
-
-        try {
-            tblExternalStationParameters = rdrReader.readFile(new File(strExternalStationFile));
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        tblExternalStationParameters.buildIndex(1);
-
         String strTimePrefix;
         String strTruckSuffix;
 
@@ -229,14 +216,14 @@ public class EEModel {
             float fltInTimeFactor;
             float fltOutTimeFactor;
 
-            float fltInboundTraffic = tblExternalStationParameters.getIndexedValueAt(intExternalStation, "IBTruck" + strTruckSuffix);
-            float fltInThruFactor = tblExternalStationParameters.getIndexedValueAt(intExternalStation, "IBThruFactor_" + strTruckSuffix + "Truck");
+            float fltInboundTraffic = externalStationParameters.getValue(intExternalStation, "IBTruck" + strTruckSuffix);
+            float fltInThruFactor = externalStationParameters.getValue(intExternalStation, "IBThruFactor_" + strTruckSuffix + "Truck");
 
-            float fltOutboundTraffic = tblExternalStationParameters.getIndexedValueAt(intExternalStation, "OBTruck" + strTruckSuffix);
-            float fltOutThruFactor = tblExternalStationParameters.getIndexedValueAt(intExternalStation, "OBThruFactor_" + strTruckSuffix + "Truck");
+            float fltOutboundTraffic = externalStationParameters.getValue(intExternalStation, "OBTruck" + strTruckSuffix);
+            float fltOutThruFactor = externalStationParameters.getValue(intExternalStation, "OBThruFactor_" + strTruckSuffix + "Truck");
 
-            fltInTimeFactor = tblExternalStationParameters.getIndexedValueAt(intExternalStation, strTimePrefix + "IB" + strTruckSuffix + "TruckFactor");
-            fltOutTimeFactor = tblExternalStationParameters.getIndexedValueAt(intExternalStation, strTimePrefix + "OB" + strTruckSuffix + "TruckFactor");
+            fltInTimeFactor = externalStationParameters.getValue(intExternalStation, strTimePrefix + "IB" + strTruckSuffix + "TruckFactor");
+            fltOutTimeFactor = externalStationParameters.getValue(intExternalStation, strTimePrefix + "OB" + strTruckSuffix + "TruckFactor");
 
             double dblGrowthFactor;
             if (alLargeRoads.contains(intExternalStation)) {
@@ -254,25 +241,23 @@ public class EEModel {
 
     private float calculateValue(float fltInputValue, double dblGrowthRate) {
 
-        double value = fltInputValue * Math.pow(1f + (dblGrowthRate/100f), intNumberOfYears);
+        double value = fltInputValue * Math.pow(1f + (dblGrowthRate/100f), intTimeInterval);
         return (float) value;
 
     }
 
     /*
     private void writeMatrix(Matrix mtxOutput, String strTripType) {
-        //don't actually need to write out the matrices, this is for debugging purposes
+        //simply for diagnostic purposes.
         String strOutputPath = ResourceUtil.getProperty(appRb, "et.current.data");
-        String strOutputFileName = strOutputPath + strTripType + ".zmx";
+        String strOutputFileName = strOutputPath + strTripType + ".csv";
         logger.info("Writing output file (" + strOutputFileName + ").");
         MatrixWriter writer = MatrixWriter.createWriter(strOutputFileName);
         writer.writeMatrix(mtxOutput);
 
     }
-    */
 
-    /*
-    private void outputFiles(String strTripType) {
+    private void outputDiagnosticFile(String strTripType) {
 
         ArrayList<Integer> alOrigin = new ArrayList<Integer>();
         ArrayList<Integer> alDestination = new ArrayList<Integer>();
@@ -357,6 +342,27 @@ public class EEModel {
 
     }
     */
+    private void outputFile(String strTripType) {
 
+        TableDataSet tblOutput = new TableDataSet();
+        tblOutput.appendColumn(intsExternalStations, "TAZ");
+        for (int intZone: intsExternalStations) {
+            tblOutput.appendColumn(mtxOutput.getColumn(intZone).copyValues1D(), Integer.toString(intZone));
+        }
+
+        String strOutputPath = ResourceUtil.getProperty(appRb, "et.current.data");
+        String strFileName = ResourceUtil.getProperty(appRb, "EE.file.prefix") + strTripType + ".csv";
+
+        try{
+            CSVFileWriter cfwWriter = new CSVFileWriter();
+            cfwWriter.writeFile(tblOutput, new File(strOutputPath + strFileName));
+            cfwWriter.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+    }
 
 }
