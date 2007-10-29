@@ -190,6 +190,7 @@ public class EIModel {
                         mtxUpdatedCommodityExportFlow.setValueAt(intExternalZone, intAlphaZone, fltExportAmount);
                     }
                 }
+                //TODO: should the double loop below be moved inside this loop?
             }
 
             float fltTotalImports = 0f;
@@ -222,6 +223,7 @@ public class EIModel {
                     }
                 }
             }
+
             convertTonsPerWeektoTrucksPerPeak(mtxUpdatedCommodityImportFlow, mtxUpdatedCommodityExportFlow, strCommodity, alTrucks);
 
 
@@ -232,7 +234,8 @@ public class EIModel {
 
     }
 
-    private void convertTonsPerWeektoTrucksPerPeak(Matrix mtxUpdatedCommodityImportFlow, Matrix mtxUpdatedCommodityExportFlow, String strCommodity, ArrayList<ShipmentDetail> alTrucks) {
+    private void convertTonsPerWeektoTrucksPerPeak(Matrix mtxUpdatedCommodityImportFlow, Matrix mtxUpdatedCommodityExportFlow,
+                                                   String strCommodity, ArrayList<ShipmentDetail> alTrucks) {
         //this third loop converts the tons/week amount to trucks/peak period
         for (int intAlphaZone: a2b.getAlphaExternals0Based()) {
             for (int intExternalZone: wzUtil.getExternalZonesForET()) {
