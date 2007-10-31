@@ -39,6 +39,7 @@ import java.util.ResourceBundle;
 public class ETModel extends ModelComponent {
 
     Logger logger = Logger.getLogger(ETModel.class);
+    Logger statusLogger = Logger.getLogger("status");
 
     private ExternalStationParameters externalStationParameters;
 
@@ -81,9 +82,11 @@ public class ETModel extends ModelComponent {
         EIModel eiModel = new EIModel(appRb, globalRb, externalStationParameters);
         eiModel.runModel(alTrucks);
 
+        statusLogger.info("et.status,Writing output file");
         outputFile();
 
         logger.info("Finishing ET Model.");
+        statusLogger.info("et.status,et done");
     }
 
     private void outputFile() {
