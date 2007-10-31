@@ -20,14 +20,15 @@
  */
 package com.pb.tlumip.ed;
 
+import org.apache.log4j.Logger;
+
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 
 public class Model {
-  protected static Logger logger = Logger.getLogger(Model.class); 
+  protected static Logger logger = Logger.getLogger(Model.class);
+  protected static Logger statusLogger = Logger.getLogger("status");
   private Vector submodels;
   private Hashtable errors;
   private boolean hasErrors;
@@ -86,6 +87,8 @@ public class Model {
         s.solve();
         logger.info("\tWriting data");
         s.setData();
+        statusLogger.info("ed.submodel," + s.getName() + " finished");
+
       } catch(Exception e) {
         hasErrors = true;
         logger.error(e.toString());
