@@ -306,7 +306,7 @@ public class EIModel {
 
         defineGravityModelParameters();
 
-        mtxDistanceSkim = readMatrix(ResourceUtil.getProperty(appRb, "distance.skim"), "Distance_Skim");
+        mtxDistanceSkim = readMatrix((ResourceUtil.getProperty(appRb, "distance.skim")+strMatrixExtension), "Distance_Skim");
 
         zones = new ZoneMap(new File(ResourceUtil.getProperty(globalRb, "alpha2beta.file")), 1990);
 
