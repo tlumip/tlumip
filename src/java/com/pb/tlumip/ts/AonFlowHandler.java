@@ -104,8 +104,9 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF dh = DemandHandler.getInstance( rpcConfigFile );
-        dh.setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        dh.setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildHighwayDemandObject();
+        dh.logDistrictReport();
         
         logger.info( "setting up SpBuildLoadHandlers." );
         sp = setupSpBuildLoadHandlers( dh.getTripTableRowSums(), dh.getMulticlassTripTables() );

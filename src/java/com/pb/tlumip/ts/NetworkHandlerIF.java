@@ -83,6 +83,7 @@ public interface NetworkHandlerIF {
     public int applyVdfIntegrals ();
     public double getSumOfVdfIntegrals ();
     public int logLinkTimeFreqs ();
+    public int linkSummaryReport ( double[][] flow );    
     public char[] getUserClasses ();
     public String[] getMode ();
     public int[] getIndexNode ();
@@ -134,5 +135,7 @@ public interface NetworkHandlerIF {
     public int[] getAuxHwyLink();
     public char[] getRteMode();
     public int[] getStationDriveAccessNodes(int stationNode);
+    public String[] getDistrictNames ();
+    public int[] getAlphaDistrictIndex ();
     
 }

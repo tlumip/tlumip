@@ -337,6 +337,11 @@ public class NetworkHandler implements NetworkHandlerIF {
         return 1;
     }
     
+    public int linkSummaryReport ( double[][] flow ) {
+        g.linkSummaryReport( flow );
+        return 1;
+    }
+    
     public char[] getUserClasses() {
         return g.getUserClasses();
     }
@@ -669,5 +674,15 @@ public class NetworkHandler implements NetworkHandlerIF {
         
         return linkIdList;
     }
+
+    
+    public int[] getAlphaDistrictIndex () {
+        return g.getAlphaDistrictArray();
+    }
+    
+    public String[] getDistrictNames () {
+        return g.getDistrictNames();
+    }
+    
     
 }

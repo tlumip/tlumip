@@ -24,14 +24,11 @@ package com.pb.tlumip.ts;
 
 
 import com.pb.models.pt.TripModeType;
-import com.pb.models.pt.ldt.LDTripModeType;
 
 
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.MatrixReader;
 import com.pb.common.rpc.DafNode;
 
 import java.util.ArrayList;
@@ -58,6 +55,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     static final double AVERAGE_SR3P_AUTO_OCCUPANCY = 3.33;
     
     
+    int maxDistrict;
+    String[] districtNames;
+    int[] alphaDistrictIndex;
     int networkNumCentroids;
     int networkNumUserClasses;
     int[] networkNodeIndexArray;
@@ -78,7 +78,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     double[][] multiclassVehicleTripTableRowSums = null;
 
-	
+	double[][][] multiclassVehicleDistrictTable = null;
+    
 
 
     public DemandHandler() {
@@ -118,7 +119,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
 
    
-    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+        
         
         networkNumCentroids = numCentroids;
         networkNumUserClasses = numUserClasses;
@@ -134,6 +136,14 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         this.endHour = endHour;
         this.ptSampleRate = ptSampleRate;
 
+        alphaDistrictIndex = alphaDistrictArray;
+        districtNames = alphaDistrictNames;
+
+        maxDistrict = 0;
+        for (int i=0; i < alphaDistrictArray.length; i++)
+            if ( alphaDistrictArray[i] > maxDistrict )
+                maxDistrict = alphaDistrictArray[i];
+        
         return true;
         
     }
@@ -141,9 +151,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setupRpc( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
-        return setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
+        return setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, alphaDistrictArray, alphaDistrictNames, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
     
     }
     
@@ -159,6 +169,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         try {
 
             logger.info ( "creating demand trip tables from " + sdtFileName + ", " + ldtFileName + ", and " + ctFileName + " for the " + timePeriod + " period." );
+            
+            
+            multiclassVehicleDistrictTable = new double[networkNumUserClasses][maxDistrict+1][maxDistrict+1];
             
             // read in the trip lists
             multiclassVehicleTripTable = createMulticlassDemandMatrices ();
@@ -399,7 +412,6 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                 o = networkNodeIndexArray[orig];
                 d = networkNodeIndexArray[dest];
                 
-                
                 if ( (startTime >= startHour && startTime <= endHour) ) {
                         
                     // accumulate a frequency table of all trips within period by mode
@@ -426,11 +438,14 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                             tripTable[o][d] += trips*ptSampleRate;
                             totalValid++;
 
+                            // accumulate district/district trip summaries by user class
+                            multiclassVehicleDistrictTable[0][alphaDistrictIndex[orig]][alphaDistrictIndex[dest]] += trips*ptSampleRate;
+                            
                             break;
                         }
                         
                     }
-                    
+
                 }
                         
                 
@@ -562,14 +577,18 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 					
 					o = networkNodeIndexArray[orig];
 					d = networkNodeIndexArray[dest];
-	
+
+                    
 					// accumulate all peak period highway mode trips
 					if ( startTime >= startHour && startTime <= endHour ) {
 	
 					    tripTable[group-1][o][d] += tripFactor;
 					    tripsByUserClass[mode-1] += tripFactor;
 					    tripsByAssignmentGroup[group-1] += tripFactor;
-	
+
+                        // accumulate district/district trip summaries by user class
+                        multiclassVehicleDistrictTable[group][alphaDistrictIndex[orig]][alphaDistrictIndex[dest]] += tripFactor;
+                        
 					}
                     
                     allTruckTripCount += tripFactor;
@@ -612,4 +631,63 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
     }
     
+    
+    
+    
+    public int logDistrictReport () {
+        
+        double[] rowTotals = new double[districtNames.length];
+        double[] colTotals = new double[districtNames.length];
+        double total = 0.0;
+        
+        String record = null;
+        
+        for (int m=0; m < networkNumUserClasses; m++) {
+
+            logger.info ( String.format("District - District Summary of vehicle trips for class %c:", highwayModeCharacters[m]) );
+            logger.info ( "" );
+            
+            record = String.format("%-18s", "District");
+            for (int i=0; i < districtNames.length; i++)
+                record += String.format("%18s", districtNames[i]);
+            record += String.format("%18s", "Total");
+
+            logger.info ( record );
+
+            total = 0.0;
+            for (int i=0; i < districtNames.length; i++) {
+                rowTotals[i] =  0.0;
+                colTotals[i] =  0.0;
+            }
+            
+            for (int i=0; i < districtNames.length; i++) {
+
+                record = String.format("%-18s", districtNames[i]);
+                for (int j=0; j < districtNames.length; j++) {
+                    record += String.format("%18.1f", multiclassVehicleDistrictTable[m][i][j]);
+                    rowTotals[i] +=  multiclassVehicleDistrictTable[m][i][j];
+                    colTotals[j] +=  multiclassVehicleDistrictTable[m][i][j];
+                    total +=  multiclassVehicleDistrictTable[m][i][j];
+                }
+                record += String.format("%18.1f", rowTotals[i]);
+                
+                logger.info ( record );
+
+            }
+            
+            record = String.format("%-18s", "Total");
+            for (int i=0; i < districtNames.length; i++)
+                record += String.format("%18.1f", colTotals[i]);
+            record += String.format("%18.1f", total);
+
+            logger.info ( record );
+            logger.info ( "" );
+            logger.info ( "" );
+            logger.info ( "" );
+
+        }
+        
+        return 1;
+        
+    }
 }

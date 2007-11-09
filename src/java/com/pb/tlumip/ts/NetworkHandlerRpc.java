@@ -165,6 +165,30 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
     
+    public String[] getDistrictNames () {
+        String[] returnValue = null;
+        try {
+            returnValue = (String[])rc.execute(HANDLER_NAME+".getDistrictNames", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        return returnValue;
+    }
+
+    public int[] getAlphaDistrictIndex () {
+        int[] returnValue = null;
+        try {
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAlphaDistrictIndex", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        return returnValue;
+    }
+
     public int getNodeCount() {
         int returnValue = -1;
         try {
@@ -913,6 +937,20 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return returnValue;
     }
     
+    public int linkSummaryReport ( double[][] flow ) {
+        int returnValue = -1;
+        try {
+            Vector params = new Vector();
+            params.add(flow);
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".linkSummaryReport", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        return returnValue;
+    }
+    
     public char[] getUserClasses () {
         
         char[] returnArray = null;
@@ -1291,5 +1329,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
     public int[] getStationDriveAccessNodes(int stationNode) {
         return null;
     }
+
+    
 
 }

@@ -189,7 +189,7 @@ public class TS {
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF d = DemandHandler.getInstance();
-        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         d.buildHighwayDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
@@ -342,7 +342,7 @@ public class TS {
         String rateString = (String)globalMap.get("pt.sample.rate");
         if ( rateString != null )
             sampleRate = Double.parseDouble( rateString );
-        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), sampleRate, (String)globalMap.get("ct.truck.trips"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), sampleRate, (String)globalMap.get("ct.truck.trips"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         
         double[][] tripTable = d.getTripTablesForModes ( tripModeList );
         
@@ -1076,8 +1076,8 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
-        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
-        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
+        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        //tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         nhPeak.startDataServer();
         logger.info ("Network data server running...");
         

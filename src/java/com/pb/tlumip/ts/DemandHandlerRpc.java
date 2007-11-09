@@ -56,7 +56,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     
    
-    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictIndex, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
 
         boolean returnValue = false;
 
@@ -73,6 +73,8 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
             params.add(numCentroids);
             params.add(numUserClasses);
             params.add(nodeIndexArray);
+            params.add(alphaDistrictIndex);
+            params.add(alphaDistrictNames);
             params.add(assignmentGroupChars);
             params.add(highwayModeCharacters);
             params.add(userClassesIncludeTruck);
@@ -81,6 +83,21 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
             
         } catch (RpcException e) {
             logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+        
+    }
+    
+    
+    public int logDistrictReport() {
+        
+        int returnValue = -1;
+        try {
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".logDistrictReport", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
             logger.error(  e );
         }

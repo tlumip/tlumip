@@ -211,7 +211,9 @@ public class FW {
                 nh.applyVdfs();
 
                 
-                //nh.logLinkTimeFreqs ();
+                nh.logLinkTimeFreqs ();
+                nh.linkSummaryReport(flow);
+                
                 
                 iterationsCompleted++;
                 

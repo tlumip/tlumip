@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -129,6 +131,8 @@ public class Network implements Serializable {
     
     int[] externalZoneLabels = null;
 
+    int[] alphaDistrictIndex = null;
+    String[] districtNames = null;
 
 
     public Network ( String period, String[] propertyValues ) { 
@@ -142,7 +146,8 @@ public class Network implements Serializable {
         String extraAttribsFile = propertyValues[NetworkHandlerIF.EXTRA_ATTRIBS_FILENAME_INDEX];
         
 
-        this.maxCentroidLabel = getMaxCentroid( propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX] );
+        String zoneIndexFile = propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX];
+        this.maxCentroidLabel = getMaxCentroid( zoneIndexFile );
 
         this.minCentroidLabel = 1;
 
@@ -269,6 +274,8 @@ public class Network implements Serializable {
         
         
         setDroppedLinks();
+        
+        createAlphaDistrictArray( zoneIndexFile );
         
     }
 
@@ -1118,10 +1125,11 @@ public class Network implements Serializable {
             
             // if link calculater returns a negative or NaN result for a valid link, report the error
             if ( validLinks[i] ) {
+
                 if ( results[i] < 0 || results[i] == Double.NaN ) {
                     logger.error ( "invalid result in Network.applyVdfs(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
                     logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
-                    System.exit(-1);
+                    throw new RuntimeException();
                 }
                 else {
                     congestedTime[i] = results[i];
@@ -1805,27 +1813,56 @@ public class Network implements Serializable {
         
         double totalVol;
         double[][] volumeSum = new double[numUserClasses][Constants.MAX_LINK_TYPE];
-        int[] linkType = getLinkType();
+        int[] typeFreq = new int[Constants.MAX_LINK_TYPE];
+        double[] typeTime1 = new double[Constants.MAX_LINK_TYPE];
+        double[] typeTime2 = new double[Constants.MAX_LINK_TYPE];
+        double[] typeTime3 = new double[Constants.MAX_LINK_TYPE];
 
-        for (int k=0; k < numLinks; k++)
+        //String indexString = "Link Type";
+        //int[] linkType = getLinkType();
+        String indexString = "Link VDF";
+        int[] linkType = getVdfIndex();
+
+        double[] congestedTime = (double[])linkTable.getColumnAsDouble( "congestedTime" );
+        double[] freeFlowSpeed = (double[])linkTable.getColumnAsDouble( "freeFlowSpeed" );
+        double[] capacity = (double[])linkTable.getColumnAsDouble( "capacity" );
+        
+
+        for (int k=0; k < numLinks; k++) {
+            typeFreq[linkType[k]]++;
+            typeTime1[linkType[k]] += congestedTime[k];
+            typeTime2[linkType[k]] += freeFlowSpeed[k];
+            typeTime3[linkType[k]] += capacity[k];
             for (int m=0; m < numUserClasses; m++)
                 volumeSum[m][linkType[k]] += flow[m][k];
+        }
 
         logger.info("");
         logger.info("");
         logger.info("");
-        String logRecord = String.format("%-8s", "LinkType");
+        String logRecord = String.format("%-10s", indexString);
         for (int m=0; m < numUserClasses; m++)
-            logRecord.concat ( String.format("%12s", ("class " + userClasses[m])) );
+            logRecord += String.format("      class %c", userClasses[m]);
+        logRecord += "        total";
+        logRecord += "        avgTime";
+        logRecord += "        avgFfspd";
+        logRecord += "        avgCapacity";
         logger.info( logRecord );
         for (int i=0; i < Constants.MAX_LINK_TYPE; i++) {
             totalVol = 0.0;
             for (int m=0; m < numUserClasses; m++)
                 totalVol += volumeSum[m][i];
             if (totalVol > 0.0) {
+                double avg1 = typeTime1[i]/typeFreq[i];
+                double avg2 = typeTime2[i]/typeFreq[i];
+                double avg3 = typeTime3[i]/typeFreq[i];
                 logRecord = String.format("%-8d", i);
                 for (int m=0; m < numUserClasses; m++)
-                    logRecord.concat ( String.format("%12.2f", volumeSum[m][i]) );
+                    logRecord += String.format("   %12.2f", volumeSum[m][i]);
+                logRecord += String.format("   %12.2f", totalVol);
+                logRecord += String.format("   %12.2f", avg1);
+                logRecord += String.format("   %12.2f", avg2);
+                logRecord += String.format("   %12.2f", avg3);
                 logger.info( logRecord );
             }
         }
@@ -1951,10 +1988,86 @@ public class Network implements Serializable {
         
     }
 
+    
+    
+    public int[] getAlphaDistrictArray() {
+        return alphaDistrictIndex;
+    }
+    
+
+    public String[] getDistrictNames() {
+        return districtNames;
+    }
+    
+
+    private void createAlphaDistrictArray( String zoneIndexFile ) {
+        
+        int districtIndex = 0;
+        HashMap districtNameIndex = new HashMap();
+
+        
+        alphaDistrictIndex = new int[maxCentroid+1];
+        
+        // get the filename for the alpha/beta zone correspondence file and 
+        // create an object for defining the extent of the study area
+        try {
+            
+            OLD_CSVFileReader reader = new OLD_CSVFileReader();
+            reader.setDelimSet( "," + reader.getDelimSet() );
+            TableDataSet a2b = reader.readFile(new File(zoneIndexFile));
+
+            int tazPosition = a2b.getColumnPosition("Azone");
+            if (tazPosition <= 0) {
+                logger.fatal( String.format("%s was not a field in the alpha/beta zone correspondence file: %s.", "Azone", zoneIndexFile));
+                throw new RuntimeException();
+            }
+
+            int districtPosition = a2b.getColumnPosition("MPOmodeledzones");
+            if (districtPosition <= 0) {
+                logger.fatal( String.format("%s was not a field in the alpha/beta zone correspondence file: %s.", "MPOmodeledzones", zoneIndexFile));
+                throw new RuntimeException();
+            }
+
+            for (int j = 1; j <= a2b.getRowCount(); j++) {
+                int taz = (int)a2b.getValueAt(j, tazPosition);
+                String districtName = a2b.getStringValueAt(j, districtPosition);
+                
+                if ( districtNameIndex.containsKey( districtName ) ) {
+                    int index = (Integer)districtNameIndex.get(districtName);
+                    alphaDistrictIndex[taz] = index;
+                }
+                else {
+                    districtNameIndex.put(districtName, districtIndex);
+                    alphaDistrictIndex[taz] = districtIndex;
+                    districtIndex++;
+                }
+                
+            }
+
+            districtNames = new String[districtIndex];
+            
+            Set keys = districtNameIndex.keySet();
+            Iterator it = keys.iterator();
+            while ( it.hasNext() ) {
+                String key = (String)it.next();
+                int index = (Integer)districtNameIndex.get(key);
+                districtNames[index] = key;
+            }
+            
+        }
+        catch (IOException e) {
+            logger.fatal( String.format("exception caught reading alpha/beta zone correspondence file: %s", zoneIndexFile), e);
+        }
+
+    }
+
+    
+    
+    
 
     private int getMaxCentroid( String zoneIndexFile ) {
         
-        // get the filename for the alpha/beta zone correspomdence file and 
+        // get the filename for the alpha/beta zone correspondence file and 
         // create an object for defining the extent of the study area
         AlphaToBeta a2b = new AlphaToBeta(new File(zoneIndexFile));
         int maxAlphaZone = a2b.getMaxAlphaZone();
