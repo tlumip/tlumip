@@ -316,158 +316,6 @@ public class TS {
 
 
     
-    private double[] runTransitAssignment ( NetworkHandlerIF nh, String accessMode, String routeType, ArrayList tripModeList ) {
-        
-        HashMap globalMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-
-        String assignmentPeriod = nh.getTimePeriod();
-        
-        int startHour = 0;
-        int endHour = 0;
-        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            startHour = Integer.parseInt((String)globalMap.get("am.peak.start"));
-            endHour = Integer.parseInt( (String)globalMap.get("am.peak.end") );
-        }
-        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            startHour = Integer.parseInt((String)globalMap.get("offpeak.start"));
-            endHour = Integer.parseInt( (String)globalMap.get("offpeak.end") );
-        }
-        
-        
-        // get the transit trip table to be assigned 
-        DemandHandler d = new DemandHandler();
-        double sampleRate = 1.0;
-        String rateString = (String)globalMap.get("pt.sample.rate");
-        if ( rateString != null )
-            sampleRate = Double.parseDouble( rateString );
-        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), sampleRate, (String)globalMap.get("ct.truck.trips"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
-        
-        double[][] tripTable = d.getTripTablesForModes ( tripModeList );
-        
-        
-        // load the triptable on walk access transit network
-        double[] rteBoardings = optimalStrategyNetworkLoading ( nh, accessMode, routeType, tripTable );
-
-        return rteBoardings;
-    }
-    
-    
-    private double[] optimalStrategyNetworkLoading ( NetworkHandlerIF nh, String accessMode, String routeType, double[][] tripTable ) {
-        
-        String assignmentPeriod = nh.getTimePeriod();
-        
-        // create an optimal strategy object for this highway and transit network
-        OptimalStrategy os = new OptimalStrategy( nh );
-
-        double[] routeBoardings = new double[nh.getMaxRoutes()];
-
-        double tripTableColumn[] = new double[tripTable[0].length];
-
-        double intrazonal = 0;
-        double totalTrips = 0;
-        double notLoadedTrips = 0;
-        for ( int d=0; d < nh.getNumCentroids(); d++ ) {
-            
-            if ( d % 100 == 0 )
-                logger.info( "loading " + assignmentPeriod + " " + accessMode + " " + routeType + " transit trips for destination zone " + d + "." );
-            
-            os.buildStrategy( d );
-            
-            double tripSum = 0.0;
-            for (int o=0; o < tripTable.length; o++) {
-
-                // don't assign intra-zonal trips
-                if ( o == d ) {
-                    intrazonal += tripTable[o][d];
-                    tripTableColumn[o] = 0.0; 
-                    continue;
-                }
-                else {
-                    tripTableColumn[o] = tripTable[o][d]; 
-                    tripSum += tripTable[o][d];
-                }
-                
-            }
-                
-            double destBoardings = 0.0;
-            if ( tripSum > 0 ) {
-
-                double[] routeBoardingsToDest = os.loadOptimalStrategyDest( tripTableColumn );
-                
-                for (int r=0; r < routeBoardings.length; r++) {
-                    routeBoardings[r] += routeBoardingsToDest[r];
-                    destBoardings += routeBoardingsToDest[r];
-                }
-                
-                totalTrips += tripSum;
-                notLoadedTrips += os.getTripsNotLoaded();
-                
-            }
-            
-        }
-
-        logger.info( intrazonal + " " + assignmentPeriod + " period intrazonal " + accessMode + " transit trips, " + totalTrips + " total, " + notLoadedTrips + " not loaded." );
-        
-        return routeBoardings;
-    }
-    
-    
-    
-    public void  saveTransitBoardings ( NetworkHandlerIF nh, String accessMode, String routeType, double[] transitBoardings, HashMap routeBoardings ) {
-        
-        TrRoute tr = nh.getTrRoute();
-
-        
-        int accessIndex = -1;
-        if ( accessMode.equalsIgnoreCase("walk") )
-            accessIndex = 0;
-        else if ( accessMode.equalsIgnoreCase("drive") )
-            accessIndex = 1;
-        
-        
-        int routeTypeIndex = -1;
-        if ( routeType.equalsIgnoreCase("air") )
-            routeTypeIndex = 0;
-        else if ( routeType.equalsIgnoreCase("hsr") )
-            routeTypeIndex = 1;
-        else if ( routeType.equalsIgnoreCase("intercity") )
-            routeTypeIndex = 2;
-        else if ( routeType.equalsIgnoreCase("intracity") )
-            routeTypeIndex = 3;
-        
-        
-        SavedRouteInfo savedInfo = null;
-        
-        // routeBoardings is a hashMap containg a double[] of boardings walk/drive for each routeType:
-        // wAir/dAir  wHsr/dHsr  wIc/dIc  wt/dt
-        int index = -1;
-        if ( routeTypeIndex >= 0 && accessIndex >= 0 ) {
-            
-            for (int rte=0; rte < tr.getLineCount(); rte++) {
-                String rteName = tr.getLine(rte);
-                
-                if ( routeBoardings.containsKey(rteName) )
-                    savedInfo = (SavedRouteInfo)routeBoardings.get(rteName);
-                else
-                    savedInfo = new SavedRouteInfo(tr.getDescription(rte), tr.getMode(rte), tr.getRouteType(rte) );
-                
-                index = 2*routeTypeIndex + accessIndex;
-                savedInfo.boardings[index] += transitBoardings[rte];
-                
-                routeBoardings.put(rteName, savedInfo);
-            }
-
-        }
-        else {
-            logger.error ("error trying to save boardings - invalid routeType = " + routeType + " or accessMode = " + accessMode );
-            System.exit(-1);
-        }
-        
-    }
-
-    
     private ArrayList formatLogHeaderLines( String periodHeadingLabel, String routeType, String descrFormat ) {
      
         ArrayList outputLines = new ArrayList();
@@ -748,92 +596,19 @@ public class TS {
 
         String assignmentPeriod = nh.getTimePeriod();
         
-        double[] transitBoardings = null;
-        
-        ArrayList tripModeList = null;
-        HashMap savedBoardings = new HashMap();
-        
-        
-        // generate transit skim matrices and load trips
+        // generate transit load and skim manager object, then load and skim all networks
         TransitSkimManager tsm = new TransitSkimManager( nh, appRb, globalRb );
+        tsm.assignAndSkimTransit ( assignmentPeriod );
 
         
-        // drive access air skims
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "air" );
-        tsm.writeTransitSkims( assignmentPeriod, "drive", "air" );
-
-        // drive access air assignment
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.AIR.name() );
-        transitBoardings = runTransitAssignment ( nh, "drive", "air", tripModeList );
-        saveTransitBoardings ( nh, "drive", "air", transitBoardings, savedBoardings );
-
-        
-        
-        // drive access hsr skims
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "hsr" );
-        tsm.writeTransitSkims( assignmentPeriod, "drive", "hsr" );
-
-        // drive access hsr assignment
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.HSR_DRIVE.name() );
-        transitBoardings = runTransitAssignment ( nh, "drive", "hsr", tripModeList );
-        saveTransitBoardings ( nh, "drive", "hsr", transitBoardings, savedBoardings );
-
-      
-        
-        // drive access intercity skims
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intercity" );
-        tsm.writeTransitSkims( assignmentPeriod, "drive", "intercity" );
-
-        // drive access intercity assignment
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.TRANSIT_DRIVE.name() );
-        transitBoardings = runTransitAssignment ( nh, "drive", "intercity", tripModeList );
-        saveTransitBoardings ( nh, "drive", "intercity", transitBoardings, savedBoardings );
-        
-        
-        
-        // drive access intracity skims
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "drive", "intracity" );
-        tsm.writeTransitSkims( assignmentPeriod, "drive", "intracity" );
-
-        // drive access intracity assignment
-        tripModeList = new ArrayList();
-        tripModeList.add( TripModeType.DR_TRAN.name() );
-        transitBoardings = runTransitAssignment ( nh, "drive", "intracity", tripModeList );
-        saveTransitBoardings ( nh, "drive", "intracity", transitBoardings, savedBoardings );
-        
-        
-        
-        // walk access intracity skims - these are used as walk access skims for hsr, and intercity as well
-        tsm.setupTransitNetwork( nh, assignmentPeriod, "walk", "intracity" );
-        tsm.writeTransitSkims( assignmentPeriod, "walk", "intracity" );
-        
-        // load walk access transit trips - (all route types use the same network object; no walk access air)
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.HSR_WALK.name() );
-        transitBoardings = runTransitAssignment ( nh, "walk", "hsr", tripModeList );
-        saveTransitBoardings ( nh, "walk", "hsr", transitBoardings, savedBoardings );
-
-        tripModeList = new ArrayList();
-        tripModeList.add( LDTripModeType.TRANSIT_WALK.name() );
-        transitBoardings = runTransitAssignment ( nh, "walk", "intercity", tripModeList );
-        saveTransitBoardings ( nh, "walk", "intercity", transitBoardings, savedBoardings );
-
-        tripModeList = new ArrayList();
-        tripModeList.add( TripModeType.WK_TRAN.name() );
-        transitBoardings = runTransitAssignment ( nh, "walk", "intracity", tripModeList );
-        saveTransitBoardings ( nh, "walk", "intracity", transitBoardings, savedBoardings );
-
-        
-        
-        logTransitBoardingsReport ( savedBoardings, assignmentPeriod );
+        logTransitBoardingsReport ( tsm.getSavedBoardings(), assignmentPeriod );
         
         
         logger.info ("done with " + assignmentPeriod + " period transit skimming and loading.");
         
     }
+
+    
 
     
     

@@ -17,13 +17,8 @@
 package com.pb.tlumip.ts.transit;
 
 import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.assign.TransitSkimManager;
 
-import com.pb.common.datafile.CSVFileReader;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,18 +35,18 @@ public class OptimalStrategy {
 
 	protected static Logger logger = Logger.getLogger(OptimalStrategy.class);
 
-	int IVT = -1;      // in-vehicle time
-	int FWT = -1;      // first wait
-	int TWT = -1;      // total wait
-    int ACC = -1;      // access time
-    int AUX = -1;      // transfer time
-    int EGR = -1;      // egress time
-    int HSR$ = -1;      // hsr fare
-    int AIR$ = -1;      // air fare
-    int RAIL$ = -1;     // intercity rail fare
-    int BUS$ = -1;      // intercity bus fare
-    int TRAN$ = -1;     // intracity transit fare
-	int NUM_SKIMS = 11;
+	int IVT = TransitSkimManager.SkimType.IVT.ordinal();      // in-vehicle time
+	int FWT = TransitSkimManager.SkimType.FWT.ordinal();      // first wait
+	int TWT = TransitSkimManager.SkimType.TWT.ordinal();      // total wait
+    int ACC = TransitSkimManager.SkimType.ACC.ordinal();      // access time
+    int AUX = TransitSkimManager.SkimType.AUX.ordinal();      // transfer time
+    int EGR = TransitSkimManager.SkimType.EGR.ordinal();      // egress time
+    int HSR$ = TransitSkimManager.SkimType.HSR$.ordinal();      // hsr fare
+    int AIR$ = TransitSkimManager.SkimType.AIR$.ordinal();      // air fare
+    int RAIL$ = TransitSkimManager.SkimType.RAIL$.ordinal();     // intercity rail fare
+    int BUS$ = TransitSkimManager.SkimType.BUS$.ordinal();      // intercity bus fare
+    int TRAN$ = TransitSkimManager.SkimType.TRAN$.ordinal();     // intracity transit fare
+	public static final int NUM_SKIMS = 11;
 
 	static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -65,13 +60,11 @@ public class OptimalStrategy {
 	static final double LONGITUDE_PER_FEET = 1.0;
 
 
+    HashMap fareZones;
     HashMap transitFareLookupTable;
     
 	NetworkHandlerIF nh;
 
-    Matrix[] skimMatrices = new Matrix[NUM_SKIMS];
-    HashMap skimTablesOrder = null;
-    
 	int dest;
     
     int auxNodeCount;
@@ -87,13 +80,6 @@ public class OptimalStrategy {
 	
 	double[] nodeFlow;
 
-    HashMap fareZones = null;
-    
-    int[] alphaNumberArray = null;
-    int[] zonesToSkim = null;
-    int[] externalToAlphaInternal = null;
-    int[] alphaExternalNumbers = null;
-    
     int[] ia = null;
     int[] ib = null;
     int[] ipa = null;
@@ -194,68 +180,6 @@ public class OptimalStrategy {
 		candidateHeap.clear();
 	}
 
-
-
-    
-    public void initSkimMatrices ( String zoneCorrespondenceFile, HashMap skimTablesOrder ) {
-
-        this.skimTablesOrder = skimTablesOrder;
-
-        IVT = (Integer)skimTablesOrder.get("ivt");
-        FWT = (Integer)skimTablesOrder.get("fwt");
-        TWT = (Integer)skimTablesOrder.get("twt");
-        ACC = (Integer)skimTablesOrder.get("acc");
-        AUX = (Integer)skimTablesOrder.get("egr");
-        EGR = (Integer)skimTablesOrder.get("aux");
-        HSR$ = (Integer)skimTablesOrder.get("hsr$");
-        AIR$ = (Integer)skimTablesOrder.get("air$");
-        RAIL$ = (Integer)skimTablesOrder.get("rail$");
-        BUS$ = (Integer)skimTablesOrder.get("bus$");
-        TRAN$ = (Integer)skimTablesOrder.get("tran$");
-        
-        String[] fareZoneLabels = null;
-        
-        // take a column of alpha zone numbers from a TableDataSet and puts them into an array for
-        // purposes of setting external numbers.         */
-        try {
-            CSVFileReader reader = new CSVFileReader();
-            TableDataSet table = reader.readFile(new File(zoneCorrespondenceFile));
-            alphaNumberArray = table.getColumnAsInt( 1 );
-            fareZoneLabels = table.getColumnAsString( "Fare" );
-        } catch (IOException e) {
-            logger.fatal("Can't get zone numbers from zonal correspondence file");
-            e.printStackTrace();
-        }
-
-        // get the list of externals from the NetworkHandler.
-        int[] externals = nh.getExternalZoneLabels();
-
-    
-        // define which of the total set of centroids are within the Halo area and should have skim trees built
-        // include external zones (5000s)
-        zonesToSkim = new int[nh.getMaxCentroid()+1];
-        externalToAlphaInternal = new int[nh.getMaxCentroid()+1];
-        alphaExternalNumbers = new int[nh.getNumCentroids()+1];
-        Arrays.fill ( zonesToSkim, 0 );
-        Arrays.fill ( externalToAlphaInternal, -1 );
-        for (int i=0; i < alphaNumberArray.length; i++) {
-            zonesToSkim[alphaNumberArray[i]] = 1;
-            externalToAlphaInternal[alphaNumberArray[i]] = i;
-            alphaExternalNumbers[i+1] = alphaNumberArray[i];
-        }
-        for (int i=0; i < externals.length; i++) {
-            zonesToSkim[alphaNumberArray.length+i] = 1;
-            externalToAlphaInternal[externals[i]] = alphaNumberArray.length+i;
-            alphaExternalNumbers[alphaNumberArray.length+i+1] = externals[i];
-        }
-
-        
-        fareZones = new HashMap();
-        for (int i=0; i < alphaNumberArray.length; i++ ) {
-            fareZones.put(alphaNumberArray[i], fareZoneLabels[i]);
-        }
-        
-    }
 
 
     
@@ -1050,121 +974,6 @@ public class OptimalStrategy {
 
 
 
-	public void computeOptimalStrategySkimMatrices (String period, String accessMode, String routeType) {
-
-        // get skim values into 0-based double[][] dimensioned to number of actual zones including externals (2983)
-        float[][][] zeroBasedFloatArrays = new float[NUM_SKIMS][][];
-        double[][][] zeroBasedDoubleArray = new double[NUM_SKIMS][nh.getNumCentroids()][nh.getNumCentroids()];
-
-		
-		for (int dest=0; dest < nh.getNumCentroids(); dest++) {
-		    
-		    if ( dest % 100 == 0 ) {
-		        logger.info ( "generating " + period + " " + accessMode + " " + routeType + " skims to zone " + dest + "." );
-		    }
-		    
-		    
-			// build an optimal strategy for the specified destination node.
-			if ( buildStrategy(dest) >= 0 ) {
-			    
-			    double[][] odSkimValues = getOptimalStrategySkimsDest();
-                    
-                for (int k=0; k < NUM_SKIMS; k++) {
-                    for (int orig=0; orig < nh.getNumCentroids(); orig++)
-                        zeroBasedDoubleArray[k][orig][dest] = odSkimValues[k][orig];
-                    
-				}
-				
-			}
-			
-		}
-        
-
-        for (int k=0; k < NUM_SKIMS; k++) {
-            zeroBasedFloatArrays[k] = getZeroBasedFloatArray ( zeroBasedDoubleArray[k] );
-        }
-        
-
-        
-        String nameQualifier = null;
-        String descQualifier = null;
-        if ( nh.getTimePeriod().equalsIgnoreCase("peak") ) {
-            nameQualifier = "p";
-            descQualifier = "peak";
-        }
-        else {
-            nameQualifier = "o";
-            descQualifier = "offpeak";
-        }
-
-        if ( nh.getAccessMode().equalsIgnoreCase("walk") ) {
-            nameQualifier = nameQualifier.concat("wt");
-            descQualifier = descQualifier.concat(" walk-transit");
-        }
-        else {
-            nameQualifier = nameQualifier.concat("dt");
-            descQualifier = descQualifier.concat(" drive-transit");
-        }
-        
-
-        skimMatrices[IVT] = new Matrix( nameQualifier + "ivt", descQualifier + " in-vehicle time skims", zeroBasedFloatArrays[IVT] );
-        skimMatrices[FWT] = new Matrix( nameQualifier + "fwt", descQualifier + " first wait time skims", zeroBasedFloatArrays[FWT] );
-        skimMatrices[TWT] = new Matrix( nameQualifier + "twt", descQualifier + " total wait time skims", zeroBasedFloatArrays[TWT] );
-        skimMatrices[ACC] = new Matrix( nameQualifier + "acc", descQualifier + " access time skims", zeroBasedFloatArrays[ACC] );
-        skimMatrices[AUX] = new Matrix( nameQualifier + "aux", descQualifier + " other walk time skims", zeroBasedFloatArrays[AUX] );
-        skimMatrices[EGR] = new Matrix( nameQualifier + "egr", descQualifier + " egress walk time skims", zeroBasedFloatArrays[EGR] );
-        skimMatrices[HSR$] = new Matrix( nameQualifier + "hsr$", descQualifier + " hsr fare skims", zeroBasedFloatArrays[HSR$] );
-        skimMatrices[AIR$] = new Matrix( nameQualifier + "air$", descQualifier + " air fare skims", zeroBasedFloatArrays[AIR$] );
-        skimMatrices[RAIL$] = new Matrix( nameQualifier + "rail$", descQualifier + " ic rail fare skims", zeroBasedFloatArrays[RAIL$] );
-        skimMatrices[BUS$] = new Matrix( nameQualifier + "bus$", descQualifier + " ic bus fare skims", zeroBasedFloatArrays[BUS$] );
-        skimMatrices[TRAN$] = new Matrix( nameQualifier + "tran$", descQualifier + " local transit fare skims", zeroBasedFloatArrays[TRAN$] );
-        
-        for (int k=0; k < NUM_SKIMS; k++)
-            skimMatrices[k].setExternalNumbers( alphaExternalNumbers );
-        
-	}
-
-    
-    
-    public Matrix[] getSkimMatrices() {
-        return skimMatrices;
-    }
-    
-    
-    private float[][] getZeroBasedFloatArray ( double[][] zeroBasedDoubleArray ) {
-
-        int[] skimsInternalToExternal = indexNode;
-
-        // convert the zero-based double[alphas+externals][alphas+externals] produced by the skimming procedure, with network centroid/zone index mapping
-        // to a zero-based float[alphas+externals][alphas+externals] with indexZone mapping to be written to skims file.
-        float[][] zeroBasedFloatArray = new float[nh.getNumCentroids()][nh.getNumCentroids()];
-        
-        int exRow;
-        int exCol;
-        int inRow;
-        int inCol;
-        for (int i=0; i < zeroBasedDoubleArray.length; i++) {
-            exRow = skimsInternalToExternal[i];
-            if ( zonesToSkim[exRow] == 1 ) {
-                inRow = externalToAlphaInternal[exRow];
-                for (int j=0; j < zeroBasedDoubleArray[i].length; j++) {
-                    exCol = skimsInternalToExternal[j];
-                    if ( zonesToSkim[exCol] == 1 ) {
-                        inCol = externalToAlphaInternal[exCol];
-                        zeroBasedFloatArray[inRow][inCol] = (float)zeroBasedDoubleArray[i][j];
-                    }
-                }
-            }
-        }
-
-        zeroBasedDoubleArray = null;
-
-        return zeroBasedFloatArray;
-
-    }
-
-    
-    
     private double getSkimTableLookupFare ( int i, double[] skimTable, HashMap tazFareLookupTable ) {
         
         double fare = 0.0;
@@ -1227,8 +1036,9 @@ public class OptimalStrategy {
     }
 
     
-    public void setTransitFareTables ( HashMap intracityFareTable ) {
+    public void setTransitFareTables ( HashMap intracityFareTable, HashMap fareZonesMap ) {
         transitFareLookupTable = intracityFareTable;
+        fareZones = fareZonesMap;
     }
 
     

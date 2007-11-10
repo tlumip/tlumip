@@ -293,6 +293,16 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 	
 
     
+    public double[][] getTripTablesForMode ( String tripModeString ) {
+    
+        ArrayList tripModes = new ArrayList();
+        tripModes.add(tripModeString);
+        
+        return getTripTablesForModes ( tripModes );
+        
+    }
+
+    
     public double[][] getTripTablesForModes ( ArrayList tripModes ) {
         
         double[][] sdtTripTable = getTripTableFromSdtLdtListsForModes ( tripModes, sdtFileName );
