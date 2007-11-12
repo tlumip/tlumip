@@ -31,7 +31,7 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.models.pt.TripModeType;
 import com.pb.models.pt.ldt.LDTripModeType;
 import com.pb.tlumip.ts.assign.Skims;
-import com.pb.tlumip.ts.assign.TransitSkimManager;
+import com.pb.tlumip.ts.assign.TransitAssignAndSkimManager;
 import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
 import org.apache.log4j.Logger;
@@ -597,7 +597,7 @@ public class TS {
         String assignmentPeriod = nh.getTimePeriod();
         
         // generate transit load and skim manager object, then load and skim all networks
-        TransitSkimManager tsm = new TransitSkimManager( nh, appRb, globalRb );
+        TransitAssignAndSkimManager tsm = new TransitAssignAndSkimManager( nh, appRb, globalRb );
         tsm.assignAndSkimTransit ( assignmentPeriod );
 
         

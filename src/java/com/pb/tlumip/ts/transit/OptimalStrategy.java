@@ -17,7 +17,7 @@
 package com.pb.tlumip.ts.transit;
 
 import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.assign.TransitSkimManager;
+import com.pb.tlumip.ts.assign.TransitAssignAndSkimManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,17 +35,17 @@ public class OptimalStrategy {
 
 	protected static Logger logger = Logger.getLogger(OptimalStrategy.class);
 
-	int IVT = TransitSkimManager.SkimType.IVT.ordinal();      // in-vehicle time
-	int FWT = TransitSkimManager.SkimType.FWT.ordinal();      // first wait
-	int TWT = TransitSkimManager.SkimType.TWT.ordinal();      // total wait
-    int ACC = TransitSkimManager.SkimType.ACC.ordinal();      // access time
-    int AUX = TransitSkimManager.SkimType.AUX.ordinal();      // transfer time
-    int EGR = TransitSkimManager.SkimType.EGR.ordinal();      // egress time
-    int HSR$ = TransitSkimManager.SkimType.HSR$.ordinal();      // hsr fare
-    int AIR$ = TransitSkimManager.SkimType.AIR$.ordinal();      // air fare
-    int RAIL$ = TransitSkimManager.SkimType.RAIL$.ordinal();     // intercity rail fare
-    int BUS$ = TransitSkimManager.SkimType.BUS$.ordinal();      // intercity bus fare
-    int TRAN$ = TransitSkimManager.SkimType.TRAN$.ordinal();     // intracity transit fare
+	int IVT = TransitAssignAndSkimManager.SkimType.IVT.ordinal();      // in-vehicle time
+	int FWT = TransitAssignAndSkimManager.SkimType.FWT.ordinal();      // first wait
+	int TWT = TransitAssignAndSkimManager.SkimType.TWT.ordinal();      // total wait
+    int ACC = TransitAssignAndSkimManager.SkimType.ACC.ordinal();      // access time
+    int AUX = TransitAssignAndSkimManager.SkimType.AUX.ordinal();      // transfer time
+    int EGR = TransitAssignAndSkimManager.SkimType.EGR.ordinal();      // egress time
+    int HSR$ = TransitAssignAndSkimManager.SkimType.HSR$.ordinal();      // hsr fare
+    int AIR$ = TransitAssignAndSkimManager.SkimType.AIR$.ordinal();      // air fare
+    int RAIL$ = TransitAssignAndSkimManager.SkimType.RAIL$.ordinal();     // intercity rail fare
+    int BUS$ = TransitAssignAndSkimManager.SkimType.BUS$.ordinal();      // intercity bus fare
+    int TRAN$ = TransitAssignAndSkimManager.SkimType.TRAN$.ordinal();     // intracity transit fare
 	public static final int NUM_SKIMS = 11;
 
 	static final double COMPARE_EPSILON = 1.0e-07;
