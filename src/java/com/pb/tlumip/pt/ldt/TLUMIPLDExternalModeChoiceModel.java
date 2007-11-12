@@ -34,7 +34,7 @@ import java.util.ResourceBundle;
  */
 public class TLUMIPLDExternalModeChoiceModel extends LDExternalModeChoiceModel {
 
-
+    private static String MATRIX_EXTENSION;
     /**
      * Default constructor. 
      *
@@ -49,14 +49,15 @@ public class TLUMIPLDExternalModeChoiceModel extends LDExternalModeChoiceModel {
      * 
      * @param ptRb
      */
-    public void initialize(ResourceBundle ptRb){
-        super.initialize(ptRb);
+    public void initialize(ResourceBundle ptRb, ResourceBundle globalRb){
+        super.initialize(ptRb, globalRb);
+        MATRIX_EXTENSION = globalRb.getString("matrix.extension");
         readParameters(); 
         
         // read the distance matrix
         String skimPath = ResourceUtil.getProperty(rb, "assign.previous.skim.path");
         String[] fileNames = ResourceUtil.getArray(rb, "pt.car.offpeak.skims");
-        distance = readTravelCost(skimPath + fileNames[1], "carOpDist");
+        distance = readTravelCost(skimPath + fileNames[1] + MATRIX_EXTENSION, "carOpDist");
     }
     
     

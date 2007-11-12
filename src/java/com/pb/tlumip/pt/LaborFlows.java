@@ -20,14 +20,7 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.TableDataSetLoader;
 import com.pb.common.math.MathUtil;
-import com.pb.common.matrix.AlphaToBeta;
-import com.pb.common.matrix.ColumnVector;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.MatrixCollection;
-import com.pb.common.matrix.MatrixException;
-import com.pb.common.matrix.MatrixExpansion2;
-import com.pb.common.matrix.MatrixReader;
-import com.pb.common.matrix.RowVector;
+import com.pb.common.matrix.*;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pt.PTOccupationReferencer;
 import com.pb.models.utils.Tracer;
@@ -73,9 +66,11 @@ public class LaborFlows {
 
     String matrixFormat;
     ResourceBundle rb;
+    ResourceBundle globalRb;
 
     public LaborFlows(ResourceBundle globalRb, ResourceBundle appRb, PTOccupationReferencer occRef) {
         rb = appRb;
+        this.globalRb = globalRb;
         dispersionParameter = Double.parseDouble(ResourceUtil.getProperty(rb,
                 "sdt.labor.flow.dispersion.parameter"));
         distance_0_5 = Double.parseDouble(ResourceUtil.getProperty(rb,
@@ -195,7 +190,7 @@ public class LaborFlows {
 
     public void readBetaLaborFlows(int baseYear, String[] occupations) {
         String path = ResourceUtil.getProperty(rb, "pi.beta.labor.flows");
-        String suffix = ResourceUtil.getProperty(rb, "matrix.extension");
+        String suffix = ResourceUtil.getProperty(globalRb, "matrix.extension");
 
         logger.info("Reading labor flow matrices.");
         for (String occupation : occupations) {
