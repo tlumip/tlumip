@@ -92,7 +92,10 @@ public class TSModelComponent extends ModelComponent {
         }
 
 
-        ts.runHighwayAssignment( nh );
+        // if SKIM_ONLY is false (set by skimOnly.flag TS property map key missing or set equal to false)
+        // then skip the trip assignment step.
+        if ( ! ts.SKIM_ONLY )
+            ts.runHighwayAssignment( nh );
 
         //This will return a local network handler.  Jim needs to
         //test the remote network handler for transit skim building.

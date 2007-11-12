@@ -1028,7 +1028,7 @@ public class OptimalStrategy {
 
         // if skim OD pair is connected by rail service, calculate distance based rail fare for OD pair
         if ( railDist[i] > 0 ) {
-            fare = 1.9694*Math.pow(railDist[i], -0.4994); 
+            fare = 0.6823*Math.pow(railDist[i], -0.2989); 
         }
         
         return fare;

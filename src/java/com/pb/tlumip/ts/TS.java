@@ -28,12 +28,8 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.rpc.DafNode;
 import com.pb.common.util.ResourceUtil;
-import com.pb.models.pt.TripModeType;
-import com.pb.models.pt.ldt.LDTripModeType;
 import com.pb.tlumip.ts.assign.Skims;
 import com.pb.tlumip.ts.assign.TransitAssignAndSkimManager;
-import com.pb.tlumip.ts.transit.OptimalStrategy;
-import com.pb.tlumip.ts.transit.TrRoute;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -47,10 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 
 public class TS {
@@ -59,6 +52,7 @@ public class TS {
 
 
     static final boolean CREATE_NEW_NETWORK = true;
+    public boolean SKIM_ONLY = false;
     
 
     ResourceBundle appRb;
@@ -70,6 +64,12 @@ public class TS {
 
         this.appRb = appRb;
         this.globalRb = globalRb;
+        
+        String skimsOnlyFlag = this.appRb.getString("skimsOnly.flag");
+        if ( skimsOnlyFlag != null ) {
+            if ( skimsOnlyFlag.equalsIgnoreCase("true") )
+                SKIM_ONLY = true;
+        }
         
 	}
 
@@ -316,302 +316,26 @@ public class TS {
 
 
     
-    private ArrayList formatLogHeaderLines( String periodHeadingLabel, String routeType, String descrFormat ) {
-     
-        ArrayList outputLines = new ArrayList();
-        
-        String title = String.format ( "Transit Network Boardings Report for %s Period %s Trips\n", periodHeadingLabel, routeType );
-        String dashes = "";
-        for (int i=0; i < title.length(); i++)
-            dashes += "-";
-        dashes += "\n";
-        
-        outputLines.add( dashes );
-        outputLines.add( title );
-        outputLines.add( dashes );
-        outputLines.add( "\n" );
-        outputLines.add( "\n" );
-        
-        String outputString = String.format("%-6s %-9s " + descrFormat + " %-10s %-6s %8s %8s    %8s %8s    %8s %8s    %8s %8s    %8s %8s    %8s\n", "Count", "Route", "Description", "RouteType", "Mode", "wAir", "dAir", "wHsr", "dHsr", "wIc", "dIc", "wt", "dt", "wTot", "dTot", "Total") ;
-
-        dashes = "";
-        for (int i=0; i < outputString.length(); i++)
-            dashes += "-";
-        dashes += "\n";
-        
-        outputLines.add( outputString );
-        outputLines.add( dashes );
-        
-        return outputLines;
-    }
-
-
-    private String formatLogRecord( String name, SavedRouteInfo info, String descrFormat, int lineCount ) {
-        double wTot = info.boardings[0] + info.boardings[2] + info.boardings[4] + info.boardings[6];
-        double dTot = info.boardings[1] + info.boardings[3] + info.boardings[5] + info.boardings[7];
-        String outputString = String.format("%-6d %-9s " + descrFormat + " %-10s  %-6c %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f\n", lineCount, name, info.description, info.routeType, info.mode, info.boardings[0], info.boardings[1], info.boardings[2], info.boardings[3], info.boardings[4], info.boardings[5], info.boardings[6], info.boardings[7], wTot, dTot, (wTot+dTot));
-        return outputString;
-    }
-
-    
-    private String formatLogTotalsRecord( double[] totals, String descrFormat ) {
-        String outputString = String.format("%-16s " + descrFormat + " %-10s  %-6s %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f %8.2f    %8.2f\n", "Total Boardings", "", "", "", totals[0], totals[1], totals[2], totals[3], totals[4], totals[5], totals[6], totals[7], totals[8], totals[9], totals[10]) ;
-        return outputString;
-    }
-
-        
-    private ArrayList formatCsvHeaderLines() {
-        ArrayList outputLines = new ArrayList();
-        outputLines.add("Count,Route,Description,RouteType,Mode,wAir,dAir,wHsr,dHsr,wIc,dIc,wt,dt,wTot,dTot,Total\n");
-        return outputLines;
-    }
-
-    
-    private String formatCsvRecord( String name, SavedRouteInfo info, int lineCount ) {
-        double wTot = info.boardings[0] + info.boardings[2] + info.boardings[4] + info.boardings[6];
-        double dTot = info.boardings[1] + info.boardings[3] + info.boardings[5] + info.boardings[7];
-        String outputString = String.format("%d,%s,%s,%s,%c,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", lineCount, name, info.description, info.routeType, info.mode, info.boardings[0], info.boardings[1], info.boardings[2], info.boardings[3], info.boardings[4], info.boardings[5], info.boardings[6], info.boardings[7], wTot, dTot, (wTot+dTot));
-        return outputString;
-    }
-
-
-    private double[] updateTotals( SavedRouteInfo info, double[] totals ) {
-    
-        double wTot = info.boardings[0] + info.boardings[2] + info.boardings[4] + info.boardings[6];
-        double dTot = info.boardings[1] + info.boardings[3] + info.boardings[5] + info.boardings[7];
-
-        for (int i=0; i < 8; i++)
-            totals[i] += info.boardings[i];
-        
-        totals[8] += wTot;
-        totals[9] += dTot;
-        totals[10] += (wTot + dTot);
-        
-        return totals;
-        
-    }
-    
-    
-    private ArrayList getCsvOutputLines ( HashMap savedBoardings, String type, int lineCount ) {
-        
-        ArrayList outputLines = new ArrayList();
-        double[] totals = new double[11];
-
-        // get the subset of route names that match type in sorted order
-        SortedSet< String > nameSet = new TreeSet< String >();
-        Iterator it = savedBoardings.keySet().iterator();
-        while ( it.hasNext() ) {
-            String name = (String)it.next();
-            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
-            if ( info.routeType.equalsIgnoreCase( type ) )
-                nameSet.add(name);
-        }
-        
-
-        // generate an output record for each route in the selected subset
-        it = nameSet.iterator();
-        while ( it.hasNext() ) {
-            String name = (String)it.next();
-            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
-            String outputString = formatCsvRecord( name, info, ++lineCount );
-            totals = updateTotals( info, totals );
-            outputLines.add( outputString );
-        }
-
-        return outputLines;
-        
-    }
-    
-    
-    private ArrayList getLogOutputLines ( HashMap savedBoardings, String type, String periodHeadingLabel, int lineCount ) {
-        
-        double[] totals = new double[11];
-
-
-        // construct a format string for the description field from the longest route description of any route
-        int maxStringLength = 0;
-        Iterator it = savedBoardings.keySet().iterator();
-        while ( it.hasNext() ) {
-            String name = (String)it.next();
-            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
-            if ( info.description.length() > maxStringLength )
-                maxStringLength = info.description.length();
-        }
-        String descrFormat = "%-" + (maxStringLength+4) + "s";
-
-        
-
-        
-        // add header lines to output list
-        ArrayList outputLines = formatLogHeaderLines( periodHeadingLabel, type, descrFormat );
-
-
-        // get the subset of route names that match type in sorted order
-        SortedSet< String > nameSet = new TreeSet< String >();
-        it = savedBoardings.keySet().iterator();
-        while ( it.hasNext() ) {
-            String name = (String)it.next();
-            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
-            if ( info.routeType.equalsIgnoreCase( type ) )
-                nameSet.add(name);
-        }
-        
-
-        // generate an output record for each route in the selected subset and add to output list
-        it = nameSet.iterator();
-        while ( it.hasNext() ) {
-            String name = (String)it.next();
-            SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
-            String outputString = formatLogRecord( name, info, descrFormat, ++lineCount );
-            totals = updateTotals( info, totals );
-            outputLines.add( outputString );
-        }
-
-        // add the summary totals record to output list
-        String outputString = formatLogTotalsRecord( totals, descrFormat );
-        String dashes = "";
-        for (int i=0; i < outputString.length(); i++)
-            dashes += "-";
-        dashes += "\n";
-
-        outputLines.add( dashes );
-        outputLines.add( outputString );
-
-        // add some white space to report
-        outputLines.add( "\n" );
-        outputLines.add( "\n" );
-        outputLines.add( "\n" );
-
-        return outputLines;
-        
-    }
-    
-    
-    public void logTransitBoardingsReport ( HashMap savedBoardings, String periodHeadingLabel ) {
-        
-        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-            
-        String csvFileName = null;
-        String repFileName = null;
-
-        if ( periodHeadingLabel.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            csvFileName = (String)tsPropertyMap.get("peakTransitLoadings.fileName");
-            repFileName = (String)tsPropertyMap.get("peakTransitReport.fileName");
-        }
-        else if ( periodHeadingLabel.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            csvFileName = (String)tsPropertyMap.get("offpeakTransitLoadings.fileName");
-            repFileName = (String)tsPropertyMap.get("offpeakTransitReport.fileName");
-        }
-        
-        
-        
-        
-        // write results to csv file, if one was named in properties file
-        if ( csvFileName != null ) {
-        
-            // open csv file for saving transit assignment route boardings summary information 
-            PrintWriter outStream = null;
-            try {
-                outStream = new PrintWriter (new BufferedWriter( new FileWriter(csvFileName) ) );
-            }
-            catch (IOException e) {
-                logger.fatal ( String.format("I/O exception opening transit boardings csv file=%s.", csvFileName), e);
-                System.exit(-1);
-            }
-
-            
-            // write formatted lines to file here as first line in csv file
-            ArrayList outputLines = formatCsvHeaderLines();
-            Iterator it = outputLines.iterator();
-            while ( it.hasNext() ) {
-                outStream.write( (String)it.next() );
-            }                
-
-
-            // get set of route boardings results for all route types
-            int lineCount = 0;
-            String[] typeList = { "air", "hsr", "intercity", "intracity" };
-            for ( String type : typeList ) {
-
-                outputLines = getCsvOutputLines ( savedBoardings, type, ++lineCount );
-                
-                // write formatted lines to file
-                it = outputLines.iterator();
-                while ( it.hasNext() ) {
-                    outStream.write( (String)it.next() );
-                }                
-                
-            }
-            
-            outStream.close();
-
-        }   
-
-
-        
-        
-        
-        // likewise for a report file, if one was named in properties file
-        if ( repFileName != null ) {
-        
-            // open log file for saving transit assignment route boardings summary information 
-            PrintWriter outStream = null;
-            try {
-                outStream = new PrintWriter (new BufferedWriter( new FileWriter(repFileName) ) );
-            }
-            catch (IOException e) {
-                logger.fatal ( String.format("I/O exception opening transit boardings report file=%s.", csvFileName), e);
-                System.exit(-1);
-            }
-
-            
-            
-            
-            // get set of route boardings results for all route types
-            int lineCount = 0;
-            String[] typeList = { "air", "hsr", "intercity", "intracity" };
-            for ( String type : typeList ) {
-
-                ArrayList outputLines = getLogOutputLines ( savedBoardings, type, periodHeadingLabel, ++lineCount );
-                
-                // write formatted lines to file
-                Iterator it = outputLines.iterator();
-                while ( it.hasNext() ) {
-                    outStream.write( (String)it.next() );
-                }                
-                
-            }
-            
-            outStream.close();
-
-        }   
-
-    }
-    
-    
-    
     public void assignAndSkimTransit ( NetworkHandlerIF nh, ResourceBundle appRb, ResourceBundle globalRb ) {
 
         String assignmentPeriod = nh.getTimePeriod();
         
         // generate transit load and skim manager object, then load and skim all networks
         TransitAssignAndSkimManager tsm = new TransitAssignAndSkimManager( nh, appRb, globalRb );
-        tsm.assignAndSkimTransit ( assignmentPeriod );
-
         
-        logTransitBoardingsReport ( tsm.getSavedBoardings(), assignmentPeriod );
-        
-        
-        logger.info ("done with " + assignmentPeriod + " period transit skimming and loading.");
+        if ( SKIM_ONLY ) {
+            tsm.assignAndSkimTransit ( assignmentPeriod, true );
+            logger.info ("done with " + assignmentPeriod + " period transit skimming.");
+        }
+        else {
+            tsm.assignAndSkimTransit ( assignmentPeriod, false);
+            logger.info ("done with " + assignmentPeriod + " period transit loading and skimming.");
+        }
         
     }
 
     
 
-    
-    
     public void loadAssignmentResults ( NetworkHandlerIF nh, ResourceBundle appRb ) {
         
         // get the filename where highway assignment total link flows and times are stored from the property file. 
@@ -758,29 +482,6 @@ public class TS {
     
     
     
-    
-    public class SavedRouteInfo {
-        
-        static final int NUM_ROUTE_TYPES = 4;
-        
-        String routeType;
-        String description;
-        char mode;
-        double[] boardings;
-        
-        private SavedRouteInfo(String description, char mode, String routeType) {
-            this.routeType = routeType;
-            this.description = description;
-            this.mode = mode;
-            boardings = new double[2*NUM_ROUTE_TYPES];
-        }
-        
-    }
-    
-    
-    
-    
-
     public static void main (String[] args) {
 
         TS tsMain = new TS( ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle (args[1]) );
@@ -851,10 +552,10 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
-        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
-        //tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
-        nhPeak.startDataServer();
-        logger.info ("Network data server running...");
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
+        //nhPeak.startDataServer();
+        //logger.info ("Network data server running...");
         
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
       
@@ -880,8 +581,8 @@ public class TS {
         
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
-        nhPeak.stopDataServer();
-        logger.info ("Network data server stopped.");
+        //nhPeak.stopDataServer();
+        //logger.info ("Network data server stopped.");
         logger.info ("TS.main() exiting.");
 
     }
