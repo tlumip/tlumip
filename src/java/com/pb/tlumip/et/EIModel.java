@@ -301,8 +301,8 @@ public class EIModel {
         intLightTruckClass = ResourceUtil.getIntegerProperty(appRb, "LT.truck.class");
         intHeavyTruckClass = ResourceUtil.getIntegerProperty(appRb, "HT.truck.class");
 
-        strAMTime = ResourceUtil.getProperty(globalRb, "AM_PEAK_START");
-        strMDTime = ResourceUtil.getProperty(globalRb, "OFF_PEAK_START");
+        strAMTime = ResourceUtil.getProperty(globalRb, "am.peak.start");
+        strMDTime = ResourceUtil.getProperty(globalRb, "offpeak.start");
 
         defineGravityModelParameters();
 
