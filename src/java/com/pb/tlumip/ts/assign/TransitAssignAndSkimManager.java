@@ -387,9 +387,9 @@ public class TransitAssignAndSkimManager {
         String routeTypeIdentifier = getRouteTypeIdentifier("air");
         
         // generate filenames
-        String ivtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ivt" + periodIdentifier + skimFileExtension;
-        String drvFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "drv" + periodIdentifier + skimFileExtension;
-        String farFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "far" + periodIdentifier + skimFileExtension;
+        String ivtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ivt" + skimFileExtension;
+        String drvFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "drv" + skimFileExtension;
+        String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
         
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -418,12 +418,12 @@ public class TransitAssignAndSkimManager {
         String routeTypeIdentifier = getRouteTypeIdentifier("hsr");
         
         // generate filenames
-        String ivtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ivt" + periodIdentifier + skimFileExtension;
-        String fwtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "fwt" + periodIdentifier + skimFileExtension;
-        String twtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "twt" + periodIdentifier + skimFileExtension;
-        String xwkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "xwk" + periodIdentifier + skimFileExtension;
-        String drvFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "drv" + periodIdentifier + skimFileExtension;
-        String farFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "far" + periodIdentifier + skimFileExtension;
+        String ivtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ivt" + skimFileExtension;
+        String fwtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "fwt" + skimFileExtension;
+        String twtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "twt" + skimFileExtension;
+        String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
+        String drvFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "drv" + skimFileExtension;
+        String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
 
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -462,12 +462,12 @@ public class TransitAssignAndSkimManager {
         String routeTypeIdentifier = getRouteTypeIdentifier("intercity");
         
         // generate filenames
-        String ivtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ivt" + periodIdentifier + skimFileExtension;
-        String fwtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "fwt" + periodIdentifier + skimFileExtension;
-        String twtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "twt" + periodIdentifier + skimFileExtension;
-        String xwkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "xwk" + periodIdentifier + skimFileExtension;
-        String drvFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "drv" + periodIdentifier + skimFileExtension;
-        String farFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "far" + periodIdentifier + skimFileExtension;
+        String ivtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ivt" + skimFileExtension;
+        String fwtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "fwt" + skimFileExtension;
+        String twtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "twt" + skimFileExtension;
+        String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
+        String drvFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "drv" + skimFileExtension;
+        String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
         
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -507,13 +507,13 @@ public class TransitAssignAndSkimManager {
         String routeTypeIdentifier = getRouteTypeIdentifier("intracity");
         
         // generate filenames
-        String ivtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ivt" + periodIdentifier + skimFileExtension;
-        String fwtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "fwt" + periodIdentifier + skimFileExtension;
-        String twtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "twt" + periodIdentifier + skimFileExtension;
-        String drvFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "drv" + periodIdentifier + skimFileExtension;
-        String xwkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "xwk" + periodIdentifier + skimFileExtension;
-        String ewkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ewk" + periodIdentifier + skimFileExtension;
-        String farFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "far" + periodIdentifier + skimFileExtension;
+        String ivtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ivt" + skimFileExtension;
+        String fwtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "fwt" + skimFileExtension;
+        String twtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "twt" + skimFileExtension;
+        String drvFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "drv" + skimFileExtension;
+        String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
+        String ewkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ewk" + skimFileExtension;
+        String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
         
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -554,13 +554,13 @@ public class TransitAssignAndSkimManager {
         String routeTypeIdentifier = getRouteTypeIdentifier("hsr");
         
         // generate filenames
-        String ivtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ivt" + periodIdentifier + skimFileExtension;
-        String fwtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "fwt" + periodIdentifier + skimFileExtension;
-        String twtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "twt" + periodIdentifier + skimFileExtension;
-        String awkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "awk" + periodIdentifier + skimFileExtension;
-        String xwkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "xwk" + periodIdentifier + skimFileExtension;
-        String ewkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ewk" + periodIdentifier + skimFileExtension;
-        String farFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "far" + periodIdentifier + skimFileExtension;
+        String ivtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ivt" + skimFileExtension;
+        String fwtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "fwt" + skimFileExtension;
+        String twtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "twt" + skimFileExtension;
+        String awkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "awk" + skimFileExtension;
+        String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
+        String ewkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ewk" + skimFileExtension;
+        String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
         
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -602,13 +602,13 @@ public class TransitAssignAndSkimManager {
         String routeTypeIdentifier = getRouteTypeIdentifier("intercity");
         
         // generate filenames
-        String ivtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ivt" + periodIdentifier + skimFileExtension;
-        String fwtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "fwt" + periodIdentifier + skimFileExtension;
-        String twtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "twt" + periodIdentifier + skimFileExtension;
-        String awkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "awk" + periodIdentifier + skimFileExtension;
-        String xwkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "xwk" + periodIdentifier + skimFileExtension;
-        String ewkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ewk" + periodIdentifier + skimFileExtension;
-        String farFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "far" + periodIdentifier + skimFileExtension;
+        String ivtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ivt" + skimFileExtension;
+        String fwtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "fwt" + skimFileExtension;
+        String twtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "twt" + skimFileExtension;
+        String awkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "awk" + skimFileExtension;
+        String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
+        String ewkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ewk" + skimFileExtension;
+        String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
         
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -650,13 +650,13 @@ public class TransitAssignAndSkimManager {
         String routeTypeIdentifier = getRouteTypeIdentifier("intracity");
         
         // generate filenames
-        String ivtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ivt" + periodIdentifier + skimFileExtension;
-        String fwtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "fwt" + periodIdentifier + skimFileExtension;
-        String twtFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "twt" + periodIdentifier + skimFileExtension;
-        String awkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "awk" + periodIdentifier + skimFileExtension;
-        String xwkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "xwk" + periodIdentifier + skimFileExtension;
-        String ewkFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "ewk" + periodIdentifier + skimFileExtension;
-        String farFilename = skimFileDirectory + accessIdentifier + routeTypeIdentifier + "far" + periodIdentifier + skimFileExtension;
+        String ivtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ivt" + skimFileExtension;
+        String fwtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "fwt" + skimFileExtension;
+        String twtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "twt" + skimFileExtension;
+        String awkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "awk" + skimFileExtension;
+        String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
+        String ewkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ewk" + skimFileExtension;
+        String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
         
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -723,7 +723,7 @@ public class TransitAssignAndSkimManager {
             String rateString = (String)globalMap.get("pt.sample.rate");
             if ( rateString != null )
                 sampleRate = Double.parseDouble( rateString );
-            d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), sampleRate, (String)globalMap.get("ct.truck.trips"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+            d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), sampleRate, (String)globalMap.get("ct.truck.trips"), (String)globalMap.get("et.truck.trips"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
             
             tripTable = d.getTripTablesForMode ( tripMode );
 

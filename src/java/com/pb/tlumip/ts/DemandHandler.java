@@ -53,6 +53,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 	protected static transient Logger logger = Logger.getLogger(DemandHandler.class);
 
     static final double AVERAGE_SR3P_AUTO_OCCUPANCY = 3.33;
+    static final double ET_DEFAULT_TRUCK_FACTOR = 1.2;
+    static final int MAX_TRUCK_CLASSES = 5;
     
     
     int maxDistrict;
@@ -70,6 +72,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     String sdtFileName;
     String ldtFileName;
     String ctFileName;
+    String etFileName;
     String timePeriod;
     int startHour;
     int endHour;
@@ -119,7 +122,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
 
    
-    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
         
         networkNumCentroids = numCentroids;
@@ -132,6 +135,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         this.sdtFileName = sdtFileName;
         this.ldtFileName = ldtFileName;
         this.ctFileName = ctFileName;
+        this.etFileName = etFileName;
         this.startHour = startHour;
         this.endHour = endHour;
         this.ptSampleRate = ptSampleRate;
@@ -151,9 +155,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setupRpc( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
-        return setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, alphaDistrictArray, alphaDistrictNames, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
+        return setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, alphaDistrictArray, alphaDistrictNames, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
     
     }
     
@@ -275,15 +279,37 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 		}
 
         
-		// read CT trip list into o/d trip matrix if at least one truck class was defined
-		if ( networkUserClassesIncludeTruck ) {
-			myDateString = DateFormat.getDateTimeInstance().format(new Date());
-			logger.info ("reading " + timePeriod + " CT trip list at: " + myDateString);
-			double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ();
+        // read CT trip list into o/d trip matrix if at least one truck class was defined
+        if ( networkUserClassesIncludeTruck ) {
 
-			for(int i=0; i < truckTripTables.length - 1; i++)
-				multiclassTripTable[i+1] = truckTripTables[i];
-		}
+            myDateString = DateFormat.getDateTimeInstance().format(new Date());
+            logger.info ("reading " + timePeriod + " CT trip list at: " + myDateString);
+            double[][][] truckTripTables = getTruckAssignmentGroupTripTableFromCTList ();
+
+            // read ET trip list and accumulate into o/d truck trip matrices.
+            myDateString = DateFormat.getDateTimeInstance().format(new Date());
+            logger.info ("reading " + timePeriod + " ET trip list at: " + myDateString);
+            truckTripTables = getExternalAssignmentGroupTripTableFromETList ( truckTripTables );
+
+            
+            for(int i=0; i < truckTripTables.length - 1; i++)
+                multiclassTripTable[i+1] = truckTripTables[i];
+            
+        }
+        else {
+            
+            // store ET trips in auto class matrix
+            double[][][] truckTripTables = new double[MAX_TRUCK_CLASSES][networkNumCentroids+1][networkNumCentroids+1];
+            truckTripTables = getExternalAssignmentGroupTripTableFromETList ( truckTripTables );
+            
+            for(int i=0; i < truckTripTables[0].length; i++)
+                for(int j=0; j < truckTripTables[0].length; j++)
+                    for(int m=0; m < truckTripTables.length; m++)
+                        multiclassTripTable[0][i][j] += truckTripTables[m][i][j];
+            
+        }
+
+
 
 
         return multiclassTripTable;
@@ -549,28 +575,28 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
 
 
-		// read the CT output file into a TableDataSet
-		OLD_CSVFileReader reader = new OLD_CSVFileReader();
+        // read the CT output file into a TableDataSet
+        OLD_CSVFileReader reader = new OLD_CSVFileReader();
 
-		TableDataSet table = null;
-		int tripRecord = 0;
-		try {
-			if ( ctFileName != null && ! ctFileName.equals("") ) {
+        TableDataSet table = null;
+        int tripRecord = 0;
+        try {
+            if ( ctFileName != null && ! ctFileName.equals("") ) {
 
-				table = reader.readFile(new File( ctFileName ));
+                table = reader.readFile(new File( ctFileName ));
 
-				// traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
-				for (int i=0; i < table.getRowCount(); i++) {
-					tripRecord = i+1;
-					
-					orig = (int)table.getValueAt( i+1, "origin" );
-					dest = (int)table.getValueAt( i+1, "destination" );
-					startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-					truckType = (String)table.getStringValueAt( i+1, "truckType" );
-					tripFactor = (int)table.getValueAt( i+1, "tripFactor" );
-	
-					mode = Integer.parseInt( truckType.substring(3) );
-					modeChar = highwayModeCharacters[mode];
+                // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
+                for (int i=0; i < table.getRowCount(); i++) {
+                    tripRecord = i+1;
+                    
+                    orig = (int)table.getValueAt( i+1, "origin" );
+                    dest = (int)table.getValueAt( i+1, "destination" );
+                    startTime = (int)table.getValueAt( i+1, "tripStartTime" );
+                    truckType = (String)table.getStringValueAt( i+1, "truckType" );
+                    tripFactor = (int)table.getValueAt( i+1, "tripFactor" );
+    
+                    mode = Integer.parseInt( truckType.substring(3) );
+                    modeChar = highwayModeCharacters[mode];
                     group = -1;
                     for (int j=1; j < networkAssignmentGroupChars.length; j++) {
                         for (int k=0; k < networkAssignmentGroupChars[j].length; k++) {
@@ -584,48 +610,48 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                         logger.error ( "modeChar = " + modeChar + " associated with CT integer mode = " + mode + " not found in any asignment group." );
                         System.exit(-1);
                     }
-					
-					o = networkNodeIndexArray[orig];
-					d = networkNodeIndexArray[dest];
+                    
+                    o = networkNodeIndexArray[orig];
+                    d = networkNodeIndexArray[dest];
 
                     
-					// accumulate all peak period highway mode trips
-					if ( startTime >= startHour && startTime <= endHour ) {
-	
-					    tripTable[group-1][o][d] += tripFactor;
-					    tripsByUserClass[mode-1] += tripFactor;
-					    tripsByAssignmentGroup[group-1] += tripFactor;
+                    // accumulate all peak period highway mode trips
+                    if ( startTime >= startHour && startTime <= endHour ) {
+    
+                        tripTable[group-1][o][d] += tripFactor;
+                        tripsByUserClass[mode-1] += tripFactor;
+                        tripsByAssignmentGroup[group-1] += tripFactor;
 
                         // accumulate district/district trip summaries by user class
                         multiclassVehicleDistrictTable[group][alphaDistrictIndex[orig]][alphaDistrictIndex[dest]] += tripFactor;
                         
-					}
+                    }
                     
                     allTruckTripCount += tripFactor;
-	
-				}
-	
-				// done with trip list TabelDataSet
-				table = null;
+    
+                }
+    
+                // done with trip list TabelDataSet
+                table = null;
 
-			}
-			
-		} catch (Exception e) {
-			logger.error ("exception caught reading CT truck trip record " + tripRecord, e);
-			System.exit(-1);
-		}
+            }
+            
+        } catch (Exception e) {
+            logger.error ("exception caught reading CT truck trip record " + tripRecord, e);
+            System.exit(-1);
+        }
 
-		
+        
         logger.info (allTruckTripCount + " total trips by all truck user classes read from CT file.");
         logger.info ("trips by truck user class read from CT file from " + startHour + " to " + endHour + ":");
-		for (int i=0; i < tripsByUserClass.length; i++)
-			if (tripsByUserClass[i] > 0)
-				logger.info ( tripsByUserClass[i] + " truck trips with user class " + highwayModeCharacters[i+1] );
+        for (int i=0; i < tripsByUserClass.length; i++)
+            if (tripsByUserClass[i] > 0)
+                logger.info ( tripsByUserClass[i] + " truck trips with user class " + highwayModeCharacters[i+1] );
 
-		logger.info ("trips by truck assignment groups read from CT file from " + startHour + " to " + endHour + ":");
-		for (int i=0; i < tripsByAssignmentGroup.length; i++)
-			if (tripsByAssignmentGroup[i] > 0)
-				logger.info ( tripsByAssignmentGroup[i] + " truck trips in assignment group " + (i+1) );
+        logger.info ("trips by truck assignment groups read from CT file from " + startHour + " to " + endHour + ":");
+        for (int i=0; i < tripsByAssignmentGroup.length; i++)
+            if (tripsByAssignmentGroup[i] > 0)
+                logger.info ( tripsByAssignmentGroup[i] + " truck trips in assignment group " + (i+1) );
 
         
         double totalVehicle = 0.0;
@@ -637,7 +663,118 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         logger.info ( "");
         logger.info ( String.format( "%.0f total vehicle trips read from %s for %d to %d period triptable:", totalVehicle, ctFileName, startHour, endHour) );
         
-		return tripTable;
+        return tripTable;
+
+    }
+    
+    
+    
+    
+    private double[][][] getExternalAssignmentGroupTripTableFromETList ( double[][][] tripTable ) {
+
+        int orig;
+        int dest;
+        int startTime;
+        int o;
+        int d;
+        int group;
+        char modeChar;
+        int truckType;
+        int allTruckTripCount=0;
+        
+
+        double[] tripsByUserClass = new double[highwayModeCharacters.length];
+        double[] tripsByAssignmentGroup = new double[networkNumUserClasses];
+
+
+
+        // read the ET output file into a TableDataSet
+        OLD_CSVFileReader reader = new OLD_CSVFileReader();
+
+        TableDataSet table = null;
+        int tripRecord = 0;
+        try {
+            if ( etFileName != null && ! etFileName.equals("") ) {
+
+                table = reader.readFile(new File( etFileName ));
+
+                // traverse the trip list in the TableDataSet and aggregate trips to an o/d trip table
+                for (int i=0; i < table.getRowCount(); i++) {
+                    tripRecord = i+1;
+                    
+                    orig = (int)table.getValueAt( i+1, "origin" );
+                    dest = (int)table.getValueAt( i+1, "destination" );
+                    startTime = (int)table.getValueAt( i+1, "tripStartTime" );
+                    truckType = (int)table.getValueAt( i+1, "truckClass" );
+    
+                    modeChar = highwayModeCharacters[truckType];
+                    group = -1;
+                    for (int j=1; j < networkAssignmentGroupChars.length; j++) {
+                        for (int k=0; k < networkAssignmentGroupChars[j].length; k++) {
+                            if ( networkAssignmentGroupChars[j][k] == modeChar ) {
+                                group = j;
+                                break;
+                            }
+                        }
+                    }
+                    if ( group < 0 ) {
+                        logger.error ( "modeChar = " + modeChar + " associated with ET integer mode = " + truckType + " not found in any asignment group." );
+                        System.exit(-1);
+                    }
+                    
+                    o = networkNodeIndexArray[orig];
+                    d = networkNodeIndexArray[dest];
+
+                    
+                    // accumulate all peak period highway mode trips
+                    if ( startTime >= startHour && startTime <= endHour ) {
+    
+                        tripTable[group-1][o][d] += ET_DEFAULT_TRUCK_FACTOR;
+                        tripsByUserClass[truckType-1] += ET_DEFAULT_TRUCK_FACTOR;
+                        tripsByAssignmentGroup[group-1] += ET_DEFAULT_TRUCK_FACTOR;
+
+                        // accumulate district/district trip summaries by user class
+                        multiclassVehicleDistrictTable[group][alphaDistrictIndex[orig]][alphaDistrictIndex[dest]] += ET_DEFAULT_TRUCK_FACTOR;
+                        
+                    }
+                    
+                    allTruckTripCount += ET_DEFAULT_TRUCK_FACTOR;
+    
+                }
+    
+                // done with trip list TabelDataSet
+                table = null;
+
+            }
+            
+        } catch (Exception e) {
+            logger.error ("exception caught reading ET external trip record " + tripRecord, e);
+            System.exit(-1);
+        }
+
+        
+        logger.info (allTruckTripCount + " total external trips by all user classes read from ET file.");
+        logger.info ("external trips by user class read from ET file from " + startHour + " to " + endHour + ":");
+        for (int i=0; i < tripsByUserClass.length; i++)
+            if (tripsByUserClass[i] > 0)
+                logger.info ( tripsByUserClass[i] + " external trips with user class " + highwayModeCharacters[i+1] );
+
+        logger.info ("external trips by truck assignment groups read from ET file from " + startHour + " to " + endHour + ":");
+        for (int i=0; i < tripsByAssignmentGroup.length; i++)
+            if (tripsByAssignmentGroup[i] > 0)
+                logger.info ( tripsByAssignmentGroup[i] + " external trips in assignment group " + (i+1) );
+
+        
+        double totalVehicle = 0.0;
+        for(int i=0; i < tripTable.length; i++)
+            for(int j=0; j < tripTable[i].length; j++)
+                for(int k=0; k < tripTable[i][j].length; k++)
+                    totalVehicle += tripTable[i][j][k];
+        
+        logger.info ( "");
+        logger.info ( String.format( "%.0f total external vehicle trips read from %s for %d to %d period triptable:", totalVehicle, etFileName, startHour, endHour) );
+        
+        return tripTable;
 
     }
     

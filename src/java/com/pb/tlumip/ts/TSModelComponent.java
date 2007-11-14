@@ -110,7 +110,7 @@ public class TSModelComponent extends ModelComponent {
             System.exit(-1);
         }
         ts.loadAssignmentResults(nh_new, appRb);
-        char[] hwyModeChars = { 'a' };        
+        char[] hwyModeChars = { 'a', 'd' };        
         ts.writeHighwaySkimMatrices ( nh_new, hwyModeChars );
 
 

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 
@@ -65,10 +66,15 @@ public class TS {
         this.appRb = appRb;
         this.globalRb = globalRb;
         
-        String skimsOnlyFlag = this.appRb.getString("skimsOnly.flag");
-        if ( skimsOnlyFlag != null ) {
-            if ( skimsOnlyFlag.equalsIgnoreCase("true") )
-                SKIM_ONLY = true;
+        try {
+            String skimsOnlyFlag = this.appRb.getString("skimsOnly.flag");
+            if ( skimsOnlyFlag != null ) {
+                if ( skimsOnlyFlag.equalsIgnoreCase("true") )
+                    SKIM_ONLY = true;
+            }
+        }
+        catch (MissingResourceException e) {
+            // if this exception is caught, no flag was set, so continue on with SKIM_ONLY value false.
         }
         
 	}
@@ -189,7 +195,7 @@ public class TS {
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF d = DemandHandler.getInstance();
-        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), (String)globalMap.get("et.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         d.buildHighwayDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
