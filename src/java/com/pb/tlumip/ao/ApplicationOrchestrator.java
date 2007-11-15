@@ -28,19 +28,8 @@ import com.pb.tlumip.spg.SPGnew;
 import com.pb.tlumip.ts.TSModelComponent;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.ResourceBundle;
+import java.io.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,6 +89,8 @@ public class ApplicationOrchestrator {
                 runLogWriter.write("SCENARIO_NAME=" + scenarioName);
                 runLogWriter.newLine();
                 runLogWriter.write("BASE_YEAR=" + baseYear);
+                runLogWriter.newLine();
+                runLogWriter.write("BASE_INTERVAL=0");
                 runLogWriter.newLine();
                 runLogWriter.write("CURRENT_INTERVAL=0");
                 runLogWriter.newLine();
@@ -437,7 +428,6 @@ public class ApplicationOrchestrator {
 
         spg.getHHAttributesFromPUMS(baseYearS);
         spg.spg1(currentYear);
-        //spg.writeFrequencyTables();
         TableDataSet table = spg.sumHouseholdsByIncomeSize();
         spg.writePiInputFile(table);
         
