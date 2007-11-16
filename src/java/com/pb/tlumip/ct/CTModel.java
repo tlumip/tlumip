@@ -18,6 +18,7 @@ package com.pb.tlumip.ct;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.reference.ModelComponent;
+import com.pb.models.utils.StatusLogger;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -32,7 +33,6 @@ import java.util.ResourceBundle;
 public class CTModel extends ModelComponent {
 	
 	Logger logger = Logger.getLogger(CTModel.class);
-    Logger statusLogger = Logger.getLogger("status");
     long randomSeed;           //will be read from properties files and passed to
     String inputPath;    //other methods that
     String outputPath;   //run the CTModel.
@@ -53,13 +53,13 @@ public class CTModel extends ModelComponent {
         // This translates PI output (annual dollar flows at beta zone level) to
         // weekly tons by commodity class (SCTG01-SCTG43), and writes output in
         // binary format.
-        statusLogger.info("ct.status,Converting dollars to tons");
+        StatusLogger.logText("ct","CT Status","Converting dollars to tons");
         FreightDemand3 fd = new FreightDemand3(appRb,globalRb,inputPath,outputPath,randomSeed);
 	    fd.run();  //writes WeeklyDemand.binary
 
         // Translates weekly demand from beta zones into discrete daily shipments in
         // alpha zone, and writes text file of shipments
-        statusLogger.info("ct.status,Converting betazone demand into daily shipments by alphazone");
+        StatusLogger.logText("ct","CT Status","Converting betazone demand into daily shipments by alphazone");
         DiscreteShipments2 ds = new DiscreteShipments2(appRb,globalRb,inputPath,randomSeed);
         ds.run(new File(outputPath + "WeeklyDemand.binary"));   // input from FreightDemand
         ds.writeShipments(new File(outputPath + "DailyShipments.csv"));   // output file
@@ -67,14 +67,14 @@ public class CTModel extends ModelComponent {
         // Loads discrete shipments at alpha zone level onto individual trucks, optimizes
         // their itinerary, and writes to a CSV file in format required by TS
         // Next line prevents writing intrazonal (at alpha level) trips
-        statusLogger.info("ct.status,Placing shipments on trucks");
+        StatusLogger.logText("ct","CT Status","Placing shipments on trucks");
         boolean collapseIntrazonalTrips = true;
         TruckTours4 truckTours = new TruckTours4(appRb, globalRb, inputPath,randomSeed);
         truckTours.run(new File(outputPath + "DailyShipments.csv"));   // input from DiscreteShipments
         truckTours.writeTours(new File(globalRb.getString("ct.truck.trips")), collapseIntrazonalTrips);  //output
 
         logger.info("total time of CT: "+CTHelper.elapsedTime(start, new Date()));
-        statusLogger.info("ct.status,ct done");
+        StatusLogger.logText("ct","CT Status","CT done");
     }
 	
 	public static void main (String args[]){

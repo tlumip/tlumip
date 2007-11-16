@@ -22,6 +22,7 @@ import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.reference.ModelComponent;
+import com.pb.models.utils.StatusLogger;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -39,7 +40,6 @@ import java.util.ResourceBundle;
 public class ETModel extends ModelComponent {
 
     Logger logger = Logger.getLogger(ETModel.class);
-    Logger statusLogger = Logger.getLogger("status");
 
     private ExternalStationParameters externalStationParameters;
 
@@ -82,11 +82,11 @@ public class ETModel extends ModelComponent {
         EIModel eiModel = new EIModel(appRb, globalRb, externalStationParameters);
         eiModel.runModel(alTrucks);
 
-        statusLogger.info("et.status,Writing output file");
+        StatusLogger.logText("et","Writing output file");
         outputFile();
 
         logger.info("Finishing ET Model.");
-        statusLogger.info("et.status,et done");
+        StatusLogger.logText("et","ET Done");
     }
 
     private void outputFile() {

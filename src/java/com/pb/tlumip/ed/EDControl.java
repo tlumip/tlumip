@@ -18,6 +18,7 @@ package com.pb.tlumip.ed;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.reference.ModelComponent;
+import com.pb.models.utils.StatusLogger;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -29,7 +30,6 @@ import java.util.Vector;
 public class EDControl extends ModelComponent {
 
   private static Logger logger = Logger.getLogger(EDControl.class);
-  private static Logger statusLogger = Logger.getLogger("status");
   private static int currentYear;
   private static int modelYear;
   private static String defaultDataLocation;
@@ -150,7 +150,7 @@ public class EDControl extends ModelComponent {
 
     public void startModel(int baseYear, int t) {
         startModel();
-        statusLogger.info("ed.status,ed done");
+        StatusLogger.logText("ed","ED Done");
     }
 
     public static void main(String[] args) {
