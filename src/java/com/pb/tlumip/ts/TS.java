@@ -391,7 +391,16 @@ public class TS {
         nh.setFlows(flows);
         
         
-        double[] timau = assignmentResults.getColumnAsDouble( nh.getAssignmentResultsTimeString() );
+        int[] an = assignmentResults.getColumnAsInt( nh.getAssignmentResultsAnodeString() );
+        int[] bn = assignmentResults.getColumnAsInt( nh.getAssignmentResultsBnodeString() );
+        double[] times = assignmentResults.getColumnAsDouble( nh.getAssignmentResultsTimeString() );
+        double[] timau = new double[times.length];
+        
+        for (int i=0; i < an.length; i++) {
+            int k = nh.getLinkIndex(an[i], bn[i]);
+            timau[k] = times[i];
+        }
+        
         nh.setTimau(timau);
         
     }
@@ -560,10 +569,10 @@ public class TS {
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
         //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
-        //nhPeak.startDataServer();
+        nhPeak.startDataServer();
         //logger.info ("Network data server running...");
         
-        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+        //tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
       
        
         
@@ -587,7 +596,7 @@ public class TS {
         
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
-        //nhPeak.stopDataServer();
+        nhPeak.stopDataServer();
         //logger.info ("Network data server stopped.");
         logger.info ("TS.main() exiting.");
 

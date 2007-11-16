@@ -241,6 +241,10 @@ public class NetworkDataServer {
         return Util.intVector( nh.getShortestPathNodes(startNode, endNode) );
     }
     
+    public Vector getSpLinkInRouteIdList(int startNode, int endNode) {
+        return Util.intVector( nh.getShortestPathLinks(startNode, endNode) );
+    }
+    
     public Vector getSpLinkIdList(int startNode, int endNode) {
         return Util.intVector( nh.getShortestPathLinks(startNode, endNode) );
     }

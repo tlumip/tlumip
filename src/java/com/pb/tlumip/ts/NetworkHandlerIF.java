@@ -100,6 +100,8 @@ public interface NetworkHandlerIF {
     public int writeNetworkAttributes ( String fileName );
     public int checkForIsolatedLinks ();
     public String getAssignmentResultsString ();
+    public String getAssignmentResultsAnodeString ();
+    public String getAssignmentResultsBnodeString ();
     public String getAssignmentResultsTimeString ();
     
     public int setupHighwayNetworkObject ( String timePeriod, String[] propertyValues  );

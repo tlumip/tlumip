@@ -58,8 +58,12 @@ public class Network implements Serializable {
     
     static final  int NOT_USED_FLAG = 99999999;
     
+    
     static final String OUTPUT_FLOW_FIELDS_START_WITH = "assignmentFlow";
     static final String OUTPUT_TIME_FIELD = "assignmentTime";
+    static final String OUTPUT_ANODE_FIELD = "anode";
+    static final String OUTPUT_BNODE_FIELD = "bnode";
+    static final String OUTPUT_CAPACITY_FIELD = "capacity";
 	
     final char[] highwayModeCharacters = { 'a', 'd', 'e', 'f', 'g', 'h' };
     final char[] transitModeCharacters = { 'b', 'i', 'k', 'l', 'm', 'p', 'r', 's', 't', 'w', 'x' };
@@ -578,6 +582,14 @@ public class Network implements Serializable {
 
     public String getAssignmentResultsString () {
         return OUTPUT_FLOW_FIELDS_START_WITH;
+    }
+    
+    public String getAssignmentResultsAnodeString () {
+        return OUTPUT_ANODE_FIELD;
+    }
+    
+    public String getAssignmentResultsBnodeString () {
+        return OUTPUT_BNODE_FIELD;
     }
     
     public String getAssignmentResultsTimeString () {
@@ -1940,7 +1952,8 @@ public class Network implements Serializable {
 			outStream = new PrintWriter (new BufferedWriter( new FileWriter(fileName) ) );
 
 			
-			outStream.print ("anode,bnode,capacity,assignmentTime,");
+			outStream.print ( String.format("id,%s,%s,%s,%s,", OUTPUT_ANODE_FIELD, OUTPUT_BNODE_FIELD, OUTPUT_CAPACITY_FIELD, OUTPUT_TIME_FIELD) );
+            
 			for (int j=0; j < userClasses.length-1; j++)
 				outStream.print( OUTPUT_FLOW_FIELDS_START_WITH + "_" + j + "," );
 			
@@ -1950,16 +1963,14 @@ public class Network implements Serializable {
 			
 			for (int k=0; k < ia.length; k++) {
 			
-				outStream.print( indexNode[ia[k]] + ","
-								+ indexNode[ib[k]] + ","
-								+ String.format("%.4f", capacity[k]) + ","
-								+ String.format("%.4f", congestedTime[k]) + ","
-								);
+                String tempString = String.format("%d,%d,%d,%.4f,%.4f,", k, indexNode[ia[k]], indexNode[ib[k]], capacity[k], congestedTime[k]);
 								
 				for (int j=0; j < userClasses.length-1; j++)
-					outStream.print( String.format("%.4f", flow[j][k]) + "," );
+					tempString += String.format("%.4f,", flow[j][k]);
 	
-				outStream.println( String.format("%.4f", flow[userClasses.length-1][k]) );
+                tempString += String.format("%.4f,", flow[userClasses.length-1][k]);
+                
+				outStream.println( tempString );
 
 			}
 		

@@ -278,6 +278,14 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getAssignmentResultsString();
     }
     
+    public String getAssignmentResultsAnodeString () {
+        return g.getAssignmentResultsAnodeString();
+    }
+    
+    public String getAssignmentResultsBnodeString () {
+        return g.getAssignmentResultsBnodeString();
+    }
+    
     public String getAssignmentResultsTimeString () {
         return g.getAssignmentResultsTimeString();
     }
@@ -656,7 +664,7 @@ public class NetworkHandler implements NetworkHandlerIF {
         return nodeList;
     }
     
-    public int[] getShortestPathLinks(int startNode, int endNode) {
+    public int[] getSpLinkInRouteIdList(int startNode, int endNode) {
         
         if ( sp == null ) {
             sp = new ShortestPathTreeH( getLinkCount(), getNodeCount(), getNumCentroids(), getIa(), getIb(), getIpa(), getSortedLinkIndexA(), getIndexNode(), getNodeIndex(), getCentroid(), getTurnPenaltyIndices(), getTurnPenaltyArray() );
@@ -671,6 +679,37 @@ public class NetworkHandler implements NetworkHandlerIF {
         int[] nodeIndex = getNodeIndex();
         sp.buildPath( nodeIndex[startNode], nodeIndex[endNode] );
         int[] linkIdList = sp.getLinkIdList();
+        
+        return linkIdList;
+    }
+
+    
+    public int[] getShortestPathLinks(int startNode, int endNode) {
+        
+        if ( sp == null ) {
+            sp = new ShortestPathTreeH( getLinkCount(), getNodeCount(), getNumCentroids(), getIa(), getIb(), getIpa(), getSortedLinkIndexA(), getIndexNode(), getNodeIndex(), getCentroid(), getTurnPenaltyIndices(), getTurnPenaltyArray() );
+
+            // set the highway network attribute on which to skim the network
+            sp.setLinkCost( setLinkGeneralizedCost() );
+            
+            sp.setValidLinks( getValidLinksForClassChar( 'a' ) );
+
+        }
+        
+        int[] ia = getIa();
+        int[] ib = getIb();
+        double[] dist = getDist();
+        double[] time = getCongestedTime();
+        
+        int[] nodeIndex = getNodeIndex();
+        int[] indexNode = getIndexNode();
+        sp.buildPath( nodeIndex[startNode], nodeIndex[endNode] );
+        int[] linkIdList = sp.getLinkIdList();
+        
+        for (int i=0; i < linkIdList.length; i++) {
+            int k = linkIdList[i];
+            logger.info( String.format("%3d %6d %6d %6d %8.2f %8.2f %8.2f", i, k, indexNode[ia[k]], indexNode[ib[k]], dist[k], time[k], (60.0*dist[k]/time[k]) ) );
+        }
         
         return linkIdList;
     }

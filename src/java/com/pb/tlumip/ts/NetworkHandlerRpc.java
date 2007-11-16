@@ -778,6 +778,30 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return returnValue;
     }
     
+    public String getAssignmentResultsAnodeString () {
+        String returnValue = "";
+        try {
+            returnValue = (String)rc.execute(HANDLER_NAME+".getAssignmentResultsAnodeString", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        return returnValue;
+    }
+    
+    public String getAssignmentResultsBnodeString () {
+        String returnValue = "";
+        try {
+            returnValue = (String)rc.execute(HANDLER_NAME+".getAssignmentResultsBnodeString", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        return returnValue;
+    }
+    
     public String getAssignmentResultsTimeString () {
         String returnValue = "";
         try {
