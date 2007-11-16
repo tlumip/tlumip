@@ -20,16 +20,16 @@
  */
 package com.pb.tlumip.ed;
 
+import com.pb.models.utils.StatusLogger;
 import org.apache.log4j.Logger;
 
 import java.util.Hashtable;
 import java.util.Vector;
 
-import com.pb.models.utils.StatusLogger;
-
 
 public class Model {
   protected static Logger logger = Logger.getLogger(Model.class);
+  protected static Logger statusLogger = Logger.getLogger("status");
   private Vector submodels;
   private Hashtable errors;
   private boolean hasErrors;

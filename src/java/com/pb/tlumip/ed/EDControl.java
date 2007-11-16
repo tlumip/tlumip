@@ -30,6 +30,7 @@ import java.util.Vector;
 public class EDControl extends ModelComponent {
 
   private static Logger logger = Logger.getLogger(EDControl.class);
+  private static Logger statusLogger = Logger.getLogger("status");
   private static int currentYear;
   private static int modelYear;
   private static String defaultDataLocation;
@@ -124,14 +125,14 @@ public class EDControl extends ModelComponent {
     	String outFile = new String();
     	String dataFile = new String();
     	int i, lastIndex;
-    	
+
     	for (i=0; i < splitFiles.size(); i++)
     	{
     		dataFile = (String)splitFiles.get(i);
             lastIndex = dataFile.indexOf(".csv") + 4;
     		dataFile = dataFile.substring(0, lastIndex);
     		logger.info("Input File: "+ dataFile);
-			
+
     		outFile = (String)splitFiles.get(i);
             outFile = outFile.substring(lastIndex+1, outFile.indexOf(".csv", lastIndex) + 4);
 			outFile = outFile.substring(0, outFile.indexOf("tMY")) + "t" + (modelYear)
