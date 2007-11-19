@@ -63,12 +63,14 @@ public class EEModel {
     private ArrayList alLargeRoads;
     //private ArrayList alSmallRoads;
 
+    private int intIntervalFactor;
+
     private int[] intsExternalStations;
-    
+
     private int intTimeInterval;
     private ExternalStationParameters externalStationParameters;
-   String strMatrixExtension;
-    
+    String strMatrixExtension;
+
     public EEModel(ResourceBundle appRb, ResourceBundle globalRb, int intTimeInterval, ExternalStationParameters externalStationParameters) {
         this.appRb = appRb;
         this.globalRb = globalRb;
@@ -110,6 +112,12 @@ public class EEModel {
 
         dblLargeRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "large.road.growth.rate");
         dblSmallRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "small.road.growth.rate");
+        if (intTimeInterval == 0) {
+            intIntervalFactor = 0;
+        } else {
+            intIntervalFactor = ResourceUtil.getIntegerProperty(appRb, "number.of.years");
+        }
+
 
         alLargeRoads = ResourceUtil.getList(appRb, "large.roads");
         //alSmallRoads = ResourceUtil.getList(appRb, "small.roads");
@@ -236,7 +244,7 @@ public class EEModel {
 
     private float calculateValue(float fltInputValue, double dblGrowthRate) {
 
-        double value = fltInputValue * Math.pow(1f + (dblGrowthRate/100f), intTimeInterval);
+        double value = fltInputValue * Math.pow(1f + (dblGrowthRate/100f), intIntervalFactor);
         return (float) value;
 
     }
