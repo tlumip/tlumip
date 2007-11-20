@@ -301,7 +301,18 @@ public class Skims {
 	        mw.writeMatrix(newSkimMatrices[i]);
 	        
 
-            if ( modeChar == 'd' || modeChar == 'e' || modeChar == 'f' || modeChar == 'g' || modeChar == 'h' ) {
+            if ( modeChar == 'a' ) {
+                
+                logger.info( String.format( "writing beta%s" + matrixExtension + " skim matrix file.", matrixName[i] ) );
+
+                String periodIdentifierString = assignmentPeriod + ".identifier";
+                tempName = (String)tsPropertyMap.get( periodIdentifierString );
+                
+                String betaFileName = skimsDirectory + "beta" + tempName + "auto" + skimType[i] + matrixExtension;
+                writeBetaSkimMatrix ( newSkimMatrices[i], betaFileName );
+                
+            }
+            else if ( modeChar == 'd' || modeChar == 'e' || modeChar == 'f' || modeChar == 'g' || modeChar == 'h' ) {
                 
                 logger.info( String.format( "writing beta%s" + matrixExtension + " skim matrix file.", matrixName[i] ) );
 
