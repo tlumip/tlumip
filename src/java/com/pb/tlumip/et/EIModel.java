@@ -93,7 +93,7 @@ public class EIModel {
     // to pick the 5000 zoneS, I need to use a gravity model to choose the percentage to go to the various zones.
 
     //Pj = (zeta * e ^ (- beta * Dj)) / sumofJ (alpha * e ^(- beta * Dj))
-    // where Dj is the distance and J is the 5000 zone. capish?
+    // where Dj is the distance and J is the 5000 zone. 
 
 
 
