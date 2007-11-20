@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 
 public class FW {
 
-    Logger logger = Logger.getLogger("com.pb.tlumip.ts.assign.FW");
+    Logger logger = Logger.getLogger(FW.class);
 
     static Constants c = new Constants();
 
