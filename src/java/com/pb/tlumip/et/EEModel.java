@@ -16,7 +16,6 @@
  */
 package com.pb.tlumip.et;
 
-import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.FileType;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -61,9 +60,7 @@ public class EEModel {
     private Double dblSmallRoadGrowthRate;
 
     private ArrayList alLargeRoads;
-    //private ArrayList alSmallRoads;
-
-    private int intIntervalFactor;
+    //private ArrayList alSmallRoads;         
 
     private int[] intsExternalStations;
 
@@ -95,7 +92,7 @@ public class EEModel {
 
             //writeMatrix(mtxOutput, strTripType);
             //outputDiagnosticFile(strTripType);
-            outputFile(strTripType);
+            //outputFile(strTripType);
         }
 
     }
@@ -112,12 +109,6 @@ public class EEModel {
 
         dblLargeRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "large.road.growth.rate");
         dblSmallRoadGrowthRate = ResourceUtil.getDoubleProperty(appRb, "small.road.growth.rate");
-        if (intTimeInterval == 0) {
-            intIntervalFactor = 0;
-        } else {
-            intIntervalFactor = ResourceUtil.getIntegerProperty(appRb, "number.of.years");
-        }
-
 
         alLargeRoads = ResourceUtil.getList(appRb, "large.roads");
         //alSmallRoads = ResourceUtil.getList(appRb, "small.roads");
@@ -244,12 +235,15 @@ public class EEModel {
 
     private float calculateValue(float fltInputValue, double dblGrowthRate) {
 
-        double value = fltInputValue * Math.pow(1f + (dblGrowthRate/100f), intIntervalFactor);
+        double value = fltInputValue * Math.pow(1f + (dblGrowthRate/100f), (intTimeInterval - 10));
         return (float) value;
 
     }
 
-    private void outputFile(String strTripType) {
+    //The current design no longer requires the following method, but given that the design is still (a bit) in flux,
+    // I've simply commented this out.
+
+    /*private void outputFile(String strTripType) {
 
         TableDataSet tblOutput = new TableDataSet();
         tblOutput.appendColumn(intsExternalStations, "TAZ");
@@ -270,7 +264,7 @@ public class EEModel {
             System.exit(1);
         }
 
-    }
+    }*/
 
     //The following is commented out because it was very useful for debugging during development,
     // but it's not actually needed for production. I'm expecting that there will be some additional debugging work
