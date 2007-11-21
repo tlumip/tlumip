@@ -65,14 +65,17 @@ public class EEModel {
     private int[] intsExternalStations;
 
     private int intTimeInterval;
+    private int intBaseYear;
     private ExternalStationParameters externalStationParameters;
     String strMatrixExtension;
 
-    public EEModel(ResourceBundle appRb, ResourceBundle globalRb, int intTimeInterval, ExternalStationParameters externalStationParameters) {
+    public EEModel(ResourceBundle appRb, ResourceBundle globalRb, int intTimeInterval, int intBaseYear,
+                   ExternalStationParameters externalStationParameters) {
         this.appRb = appRb;
         this.globalRb = globalRb;
         this.intTimeInterval = intTimeInterval;
         this.externalStationParameters = externalStationParameters;
+        this.intBaseYear = intBaseYear;
     }
 
     public void runModel(ArrayList<ShipmentDetail> alTrucks) {
@@ -235,7 +238,9 @@ public class EEModel {
 
     private float calculateValue(float fltInputValue, double dblGrowthRate) {
 
-        double value = fltInputValue * Math.pow(1f + (dblGrowthRate/100f), (intTimeInterval - 10));
+        int intIntervalFactor = (intBaseYear + intTimeInterval) - 2000;
+       
+        double value = fltInputValue * Math.pow(1f + (dblGrowthRate/100f), intIntervalFactor);
         return (float) value;
 
     }
