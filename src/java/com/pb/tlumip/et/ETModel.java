@@ -153,7 +153,7 @@ public class ETModel extends ModelComponent {
 
         tblOutput.appendColumn(intsOrigin, "Origin");
         tblOutput.appendColumn(intsDestination, "Destination");
-        tblOutput.appendColumn(strsStartTime, "StartTime");
+        tblOutput.appendColumn(strsStartTime, "TripStartTime");
         tblOutput.appendColumn(intsTruckClass, "TruckClass");
 
         //need to share property with TS
