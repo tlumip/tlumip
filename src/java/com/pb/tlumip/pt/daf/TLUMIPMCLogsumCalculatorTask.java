@@ -141,10 +141,12 @@ public class TLUMIPMCLogsumCalculatorTask extends MCLogsumCalculatorTask {
             }
         }
 
-        //next fill the worldzone entries with NEG.INFINITY
-        for(int oZone : wzEzUtil.getWorldZones()){
-            for(int dZone : wzEzUtil.getWorldZones()){
-                beta6000s.setValueAt(oZone, dZone, Float.NEGATIVE_INFINITY);
+        //next fill the worldzone rows and columns with -100
+        for(int oZone : betaExternals){
+            for(int dZone : betaExternals){
+                if(wzEzUtil.isWorldZone(oZone) || wzEzUtil.isWorldZone(dZone)){
+                    beta6000s.setValueAt(oZone, dZone, -100);
+                }
             }
         }
 
