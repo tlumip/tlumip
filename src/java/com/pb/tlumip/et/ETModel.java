@@ -75,7 +75,7 @@ public class ETModel extends ModelComponent {
         alTrucks = new ArrayList<ShipmentDetail> ();
 
         logger.info("Starting Thru-Trips Model.");
-        EEModel eeModel = new EEModel(appRb, globalRb, intTimeInterval, externalStationParameters);
+        EEModel eeModel = new EEModel(appRb, globalRb, intTimeInterval, baseYear, externalStationParameters);
         eeModel.runModel(alTrucks);
 
         logger.info("Starting ExternalInternal Model.");
