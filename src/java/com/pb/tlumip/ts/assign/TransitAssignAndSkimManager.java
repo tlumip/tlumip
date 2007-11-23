@@ -668,6 +668,7 @@ public class TransitAssignAndSkimManager {
         String awkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "awk" + skimFileExtension;
         String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
         String ewkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ewk" + skimFileExtension;
+        String brdFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "brd" + skimFileExtension;
         String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
         
         
@@ -689,6 +690,9 @@ public class TransitAssignAndSkimManager {
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ewkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.EGR.ordinal()] );
+
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(brdFilename) );
+        mw.writeMatrix( skimMatrices[SkimType.BRD.ordinal()] );
 
         Matrix m = skimMatrices[SkimType.TRAN$.ordinal()];   // for walk intracity, far is tran$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
