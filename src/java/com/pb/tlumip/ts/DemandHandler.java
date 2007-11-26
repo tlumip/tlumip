@@ -320,7 +320,10 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
     
     public double[][] getTripTablesForMode ( String tripModeString ) {
-    
+
+        // this method gets called for each modal transit assignment - it does not get called when reading highway demand
+        multiclassVehicleDistrictTable = new double[1][maxDistrict+1][maxDistrict+1];
+        
         ArrayList tripModes = new ArrayList();
         tripModes.add(tripModeString);
         
