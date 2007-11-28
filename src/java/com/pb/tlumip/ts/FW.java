@@ -211,10 +211,6 @@ public class FW {
                 nh.applyVdfs();
 
                 
-                nh.logLinkTimeFreqs ();
-                nh.linkSummaryReport(flow);
-                
-                
                 iterationsCompleted++;
                 
                 if ( Math.abs( (lub - glb)/glb ) < fwGap )
@@ -223,6 +219,10 @@ public class FW {
             } // end of FW iter loop
     
     
+            nh.logLinkTimeFreqs ();
+            nh.linkSummaryReport(flow);
+            
+            
     
     
             double[] fwFlowProps = getFWFlowProps();
