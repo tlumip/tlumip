@@ -485,10 +485,9 @@ public class NetworkHandler implements NetworkHandlerIF {
         ag.setBackwardStarArrays ();
 
         
-//      ag.printAuxTrLinks (24, tr);
+        //ag.printAuxTrLinks (28, tr);
         if ( auxTransitNetworkListingFileName != null )
             ag.printAuxTranNetwork( auxTransitNetworkListingFileName );
-//      ag.printTransitNodePointers();
 
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
         logger.info ("done creating transit network AuxTrNetTest: " + myDateString);

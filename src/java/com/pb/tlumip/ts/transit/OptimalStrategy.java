@@ -521,6 +521,57 @@ public class OptimalStrategy {
     }
 
 
+    
+    public void getOptimalStrategyLinks ( int orig ) {
+
+        nodeFlow[orig] = 1.0;
+        
+        
+        // loop through links in optimal strategy in reverse order and allocate
+        // flow at the nodes to exiting links in the optimal strategy
+        int count = 0;
+        double linkFlow = 0.0;
+        for (int i=inStrategyCount; i >= 0; i--) {
+            
+            int k = orderInStrategy[i];
+            int m = hwyLink[k];
+
+            if ( linkType[k] == AuxTrNet.BOARDING_TYPE) {
+                
+                linkFlow = (freq[k]/nodeFreq[ia[k]])*nodeFlow[ia[k]];
+
+                if ( linkFlow > 0 ) {
+                    flow[k] = linkFlow;
+                    nodeFlow[ib[k]] += linkFlow;
+                }
+
+            }
+            else {
+
+                linkFlow = nodeFlow[ia[k]];
+
+                if ( linkFlow > 0 ) {
+                    if ( nodeLabel[ib[k]] != AuxTrNet.INFINITY ) {
+                        flow[k] = linkFlow;
+                        nodeFlow[ib[k]] += linkFlow;
+                        nodeFlow[ia[k]] -= linkFlow;
+                    }
+                }
+
+            }
+            
+            
+            
+            if ( linkFlow > 0 ) {
+                logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
+                count++;
+            }
+        
+        }
+
+    }
+
+
     public double getTripsNotLoaded () {
         return tripsNotLoaded;
     }

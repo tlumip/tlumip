@@ -53,7 +53,7 @@ public class TS {
 
 
     static final boolean CREATE_NEW_NETWORK = true;
-    public boolean SKIM_ONLY = false;
+    public boolean SKIM_ONLY = true;
     
 
     ResourceBundle appRb;
@@ -567,7 +567,7 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
-        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         nhPeak.startDataServer();
         logger.info ("Network data server running...");

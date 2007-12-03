@@ -26,7 +26,7 @@ public class TrSegment implements Serializable {
 	int ttf, ttf1, ttft;
 	double dwf, dwt, us1, us2, us3;
 	double lay, tdwt, tus1, tus2, tus3;
-	boolean path, board, alight, layover;
+	boolean path, boardA, alightA, boardB, alightB, layover;
 
 	TrSegment (int rteIndex, int an, int bn, ArrayList defaults, ArrayList tdefaults) {
 		dwf    =  ((Double)defaults.get(0)).doubleValue();
@@ -38,9 +38,11 @@ public class TrSegment implements Serializable {
 		us1    =  ((Double)defaults.get(6)).doubleValue();
 		us2    =  ((Double)defaults.get(7)).doubleValue();
 		us3    =  ((Double)defaults.get(8)).doubleValue();
-		board  =  ((Boolean)defaults.get(9)).booleanValue();
-		alight =  ((Boolean)defaults.get(10)).booleanValue();
-		layover = ((Boolean)defaults.get(11)).booleanValue();
+        boardA  =  ((Boolean)defaults.get(9)).booleanValue();
+        alightA =  ((Boolean)defaults.get(10)).booleanValue();
+        boardB  =  ((Boolean)defaults.get(11)).booleanValue();
+        alightB =  ((Boolean)defaults.get(12)).booleanValue();
+		layover = ((Boolean)defaults.get(13)).booleanValue();
 		lay    =  ((Double)tdefaults.get(0)).doubleValue();
 		tdwt   =  ((Double)tdefaults.get(1)).doubleValue();
 		tus1   =  ((Double)tdefaults.get(2)).doubleValue();
@@ -68,8 +70,10 @@ public class TrSegment implements Serializable {
 		tsNew.us1     = ts.us1;
 		tsNew.us2     = ts.us2;
 		tsNew.us3     = ts.us3;
-		tsNew.board   = ts.board;
-		tsNew.alight  = ts.alight;
+        tsNew.boardA   = ts.boardA;
+        tsNew.alightA  = ts.alightA;
+        tsNew.boardB   = ts.boardB;
+        tsNew.alightB  = ts.alightB;
 		tsNew.layover = ts.layover;
 		tsNew.lay     = ts.lay;
 		tsNew.tdwt    = ts.tdwt;

@@ -63,6 +63,9 @@ public class TrRoute implements Serializable {
 	ArrayList defaults;
 	ArrayList tdefaults;
 
+    
+
+
 	public TrRoute (int maxRoutes) {
 		line = new String[maxRoutes];
         description = new String[maxRoutes];
@@ -77,36 +80,67 @@ public class TrRoute implements Serializable {
 		transitPath = new ArrayList[maxRoutes];
 		for (int i=0; i < maxRoutes; i++)
 			transitPath[i] = new ArrayList(500);
-		defaults = new ArrayList();
-		tdefaults = new ArrayList();
 
         this.maxRoutes = maxRoutes;
+
+        defaults = new ArrayList();
+        initDefaults();
+        
+        tdefaults = new ArrayList();
+        initTempDefaults();
+
     }
 
 
-	void initDefaults () {
-		defaults.add(0, Double.valueOf("0.0"));
-		defaults.add(1, Double.valueOf("0.01"));
-		defaults.add(2, Boolean.valueOf("true"));
-		defaults.add(3, Integer.valueOf("0"));
-		defaults.add(4, Integer.valueOf("0"));
-		defaults.add(5, Integer.valueOf("0"));
-		defaults.add(6, Double.valueOf("0.0"));
-		defaults.add(7, Double.valueOf("0.0"));
-		defaults.add(8, Double.valueOf("0.0"));
-		defaults.add(9, Boolean.valueOf("true"));
-		defaults.add(10, Boolean.valueOf("true"));
-		defaults.add(11, Boolean.valueOf("false"));
-	}
+    void initDefaults () {
+        defaults.add(0, Double.valueOf("0.0"));
+        defaults.add(1, Double.valueOf("0.01"));
+        defaults.add(2, Boolean.valueOf("true"));
+        defaults.add(3, Integer.valueOf("0"));
+        defaults.add(4, Integer.valueOf("0"));
+        defaults.add(5, Integer.valueOf("0"));
+        defaults.add(6, Double.valueOf("0.0"));
+        defaults.add(7, Double.valueOf("0.0"));
+        defaults.add(8, Double.valueOf("0.0"));
+        defaults.add(9, Boolean.valueOf("true"));
+        defaults.add(10, Boolean.valueOf("true"));
+        defaults.add(11, Boolean.valueOf("false"));
+        defaults.add(12, Boolean.valueOf("false"));
+        defaults.add(13, Boolean.valueOf("false"));
+    }
 
+    void resetDefaults () {
+        defaults.set(0, Double.valueOf("0.0"));
+        defaults.set(1, Double.valueOf("0.01"));
+        defaults.set(2, Boolean.valueOf("true"));
+        defaults.set(3, Integer.valueOf("0"));
+        defaults.set(4, Integer.valueOf("0"));
+        defaults.set(5, Integer.valueOf("0"));
+        defaults.set(6, Double.valueOf("0.0"));
+        defaults.set(7, Double.valueOf("0.0"));
+        defaults.set(8, Double.valueOf("0.0"));
+        defaults.set(9, Boolean.valueOf("true"));
+        defaults.set(10, Boolean.valueOf("true"));
+        defaults.set(11, Boolean.valueOf("false"));
+        defaults.set(12, Boolean.valueOf("false"));
+        defaults.set(13, Boolean.valueOf("false"));
+    }
 
-	void initTempDefaults () {
-		tdefaults.add(0, Double.valueOf("0.0"));
-		tdefaults.add(1, Double.valueOf("0.0"));
-		tdefaults.add(2, Double.valueOf("0.0"));
-		tdefaults.add(3, Double.valueOf("0.0"));
-		tdefaults.add(4, Double.valueOf("0.0"));
-	}
+    void initTempDefaults () {
+        tdefaults.add(0, Double.valueOf("0.0"));
+        tdefaults.add(1, Double.valueOf("0.0"));
+        tdefaults.add(2, Double.valueOf("0.0"));
+        tdefaults.add(3, Double.valueOf("0.0"));
+        tdefaults.add(4, Double.valueOf("0.0"));
+    }
+
+    void resetTempDefaults () {
+        tdefaults.set(0, Double.valueOf("0.0"));
+        tdefaults.set(1, Double.valueOf("0.0"));
+        tdefaults.set(2, Double.valueOf("0.0"));
+        tdefaults.set(3, Double.valueOf("0.0"));
+        tdefaults.set(4, Double.valueOf("0.0"));
+    }
 
 
     public void readTransitRoutes ( NetworkHandlerIF nh, String fileName ) {
@@ -140,8 +174,8 @@ public class TrRoute implements Serializable {
                         if ( WRITE_NEW_ROUTE_FILES )
                             newRoutesWriter.printf("%s\n", s);
 
-                        initDefaults();
-                        initTempDefaults();
+                        resetDefaults();
+                        resetTempDefaults();
 
                         lineCount++;
                         totalLinkCount += linkCount;
@@ -237,8 +271,8 @@ public class TrRoute implements Serializable {
                                 newRoutesWriter.printf("%s\n", s);
                             }
 
-                            initDefaults();
-                            initTempDefaults();
+                            resetDefaults();
+                            resetTempDefaults();
 
                             lineCount++;
                             tempLineCount++;
@@ -329,6 +363,8 @@ public class TrRoute implements Serializable {
 
         SegmentChecker segChecker = new SegmentChecker ( nh);
         
+        String returnString;
+        
 		while (stringPointer < s.length()) {
             
             try {
@@ -347,20 +383,30 @@ public class TrRoute implements Serializable {
                         an = Integer.parseInt(value);
                         if ( WRITE_NEW_ROUTE_FILES && (Boolean)defaults.get(2) )
                             newRoutesWriter.printf("dwt=+0.0 %s ", Integer.toString(an));
+                        
                     }
                     else {
+                        // if there is already a bn, set it to an and set temp ArrayLists to null.
                         if (bn != -1)
                             an = bn;
+                        
                         bn = Integer.parseInt(value);
 
                     }
 
                     if (an != -1 && bn != -1) {
-                        TrSegment seg = new TrSegment(lineCount, an, bn, defaults, tdefaults);
-                        transitPath[lineCount].add(linkCount++, seg);
-                        initTempDefaults();
                         
-                        String returnString = segChecker.checkSegment(this, seg, linkCount-1);
+                        // use this to handle board/alight flags changing after first an, before bn.
+                        TrSegment seg = new TrSegment(lineCount, an, bn, defaults, tdefaults);
+
+                        defaults.set(9,defaults.get(11));
+                        defaults.set(10,defaults.get(12));
+                        
+                        transitPath[lineCount].add(linkCount++, seg);
+                        resetTempDefaults();
+
+                        
+                        returnString = segChecker.checkSegment(this, seg, linkCount-1);
                         
                         if ( WRITE_NEW_ROUTE_FILES && (Boolean)defaults.get(2) ) {
                             if ( returnString == "" ) {
@@ -383,28 +429,28 @@ public class TrRoute implements Serializable {
                                 case 0:
                                 case 1:
                                     if (value.indexOf('<') != -1) {
-                                        defaults.set(9, Boolean.valueOf("true"));
-                                        defaults.set(10, Boolean.valueOf("false"));
+                                        defaults.set(11, Boolean.valueOf("true"));
+                                        defaults.set(12, Boolean.valueOf("false"));
                                         value = value.replace ('<', ' ');
                                     }
                                     else if (value.indexOf('>') != -1) {
-                                        defaults.set(9, Boolean.valueOf("false"));
-                                        defaults.set(10, Boolean.valueOf("true"));
+                                        defaults.set(11, Boolean.valueOf("false"));
+                                        defaults.set(12, Boolean.valueOf("true"));
                                         value = value.replace ('>', ' ');
                                     }
                                     else if (value.indexOf('#') != -1) {
-                                        defaults.set(9, Boolean.valueOf("false"));
-                                        defaults.set(10, Boolean.valueOf("false"));
+                                        defaults.set(11, Boolean.valueOf("false"));
+                                        defaults.set(12, Boolean.valueOf("false"));
                                         value = value.replace ('#', ' ');
                                     }
                                     else if (value.indexOf('+') != -1) {
-                                        defaults.set(9, Boolean.valueOf("true"));
-                                        defaults.set(10, Boolean.valueOf("true"));
+                                        defaults.set(11, Boolean.valueOf("true"));
+                                        defaults.set(12, Boolean.valueOf("true"));
                                         value = value.replace ('+', ' ');
                                     }
                                     else {
-                                        defaults.set(9, Boolean.valueOf("true"));
-                                        defaults.set(10, Boolean.valueOf("true"));
+                                        defaults.set(11, Boolean.valueOf("true"));
+                                        defaults.set(12, Boolean.valueOf("true"));
                                     }
                                     // if * is in the value field, set value to negative and it will get applied as a distance based rate later
                                     if (value.indexOf('*') != -1) {
@@ -453,7 +499,7 @@ public class TrRoute implements Serializable {
                                     transitPath[lineCount].add(linkCount++, seg);
                                     totalLinkCount += linkCount;
 
-                                    String returnString = segChecker.checkSegment(this, seg, linkCount-1);
+                                    returnString = segChecker.checkSegment(this, seg, linkCount-1);
                                     
                                     if ( WRITE_NEW_ROUTE_FILES && (Boolean)defaults.get(2) ) {
                                         if ( returnString != "" ) {
@@ -806,7 +852,7 @@ public class TrRoute implements Serializable {
 
         for (int i=0; i < transitPath[rte].size(); i++) {
             ts = (TrSegment)transitPath[rte].get(i);
-            out.printf( "%4d%6d%6d%6d%6.2f%6.2f%6s%6d%6d%6d%6.2f%6.2f%6.2f%6s%6s%6.2f%6.2f%6.2f%6.2f%6.2f", i+1, ts.link, ts.an, ts.bn, ts.dwf, ts.dwt, String.valueOf(ts.path), ts.ttf, ts.ttf1, ts.ttft, ts.us1, ts.us2, ts.us3, String.valueOf(ts.board), String.valueOf(ts.alight), ts.lay, ts.tdwt, ts.tus1, ts.tus2, ts.tus3 );
+            out.printf( "%4d%6d%6d%6d%6.2f%6.2f%6s%6d%6d%6d%6.2f%6.2f%6.2f%6s%6s%6s%6s%6.2f%6.2f%6.2f%6.2f%6.2f", i+1, ts.link, ts.an, ts.bn, ts.dwf, ts.dwt, String.valueOf(ts.path), ts.ttf, ts.ttf1, ts.ttft, ts.us1, ts.us2, ts.us3, String.valueOf(ts.boardA), String.valueOf(ts.alightA), String.valueOf(ts.boardB), String.valueOf(ts.alightB), ts.lay, ts.tdwt, ts.tus1, ts.tus2, ts.tus3 );
         }
 
         out.println (underLine);
@@ -1220,8 +1266,10 @@ public class TrRoute implements Serializable {
                         tsNew.link = nh.getLinkIndex(an, bn); 
                         if ( ! ts.layover )
                             tsNew.lay = 0.0;
-                        tsNew.board = true;
-                        tsNew.alight = false;
+                        tsNew.boardA = true;
+                        tsNew.alightA = false;
+                        tsNew.boardB = false;
+                        tsNew.alightB = false;
                         transitPath[rte].add(rteSeg++, tsNew);
                         
                         newPathString += String.format(" dwt=#0.0 %d", bn);
@@ -1237,8 +1285,10 @@ public class TrRoute implements Serializable {
                             tsNew.bn = bn;
                             tsNew.link = nh.getLinkIndex(an, bn); 
                             tsNew.lay = 0.0;
-                            tsNew.board = false;
-                            tsNew.alight = false;
+                            tsNew.boardA = false;
+                            tsNew.alightA = false;
+                            tsNew.boardB = false;
+                            tsNew.alightB = false;
                             transitPath[rte].add(rteSeg++, tsNew);
                         }
 
@@ -1253,8 +1303,10 @@ public class TrRoute implements Serializable {
                         tsNew.link = nh.getLinkIndex(an, bn); 
                         if ( ! ts.layover )
                             tsNew.lay = 0.0;
-                        tsNew.board = false;
-                        tsNew.alight = true;
+                        tsNew.boardA = false;
+                        tsNew.alightA = false;
+                        tsNew.boardB = false;
+                        tsNew.alightB = true;
                         transitPath[rte].add(rteSeg++, tsNew);
                         
                         // reset the seg index number so the next original segment will be processed afetr the new ones are added

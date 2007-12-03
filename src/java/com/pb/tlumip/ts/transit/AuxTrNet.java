@@ -43,8 +43,7 @@ public class AuxTrNet implements Serializable {
 
 	protected static transient Logger logger = Logger.getLogger( AuxTrNet.class );
 
-    public static final double INFINITY = 1.0e+30;
-    public static final double NEG_INFINITY = Float.NEGATIVE_INFINITY;
+    public static final double INFINITY = 1.0e+37;
     public static final double UNCONNECTED = 0.0;
 	
 	public static final int BOARDING_TYPE = 0;
@@ -226,16 +225,17 @@ public class AuxTrNet implements Serializable {
 //        nextNode = nh.getNodeCount() + 1;
         nextNode = nh.getNodeCount();
 		for (int rte=0; rte < tr.getLineCount(); rte++) {
+            
 			ts = (TrSegment)tr.transitPath[rte].get(0);
             
             String routeType = tr.routeType[rte];
             routeTypeIndex = (Integer)routeTypeMap.get(routeType);
             
+            
 			startNode = gia[ts.link];
 			startAuxNode = nextNode;
 			if (debug) logger.info ("rte=" + rte + ", startNode(ia)=" + startNode + ", startNode(an)=" + ts.an + ", startAuxNode=" + startAuxNode);
 			
-            
             for (int seg=0; seg < tr.transitPath[rte].size(); seg++) {
 				
 				try {
@@ -247,8 +247,7 @@ public class AuxTrNet implements Serializable {
 				    	tsNext = (TrSegment)tr.transitPath[rte].get(seg+1);
 				    else
 				    	tsNext = null;
-				    
-				    
+			
 				    // Keep a list of transit lines using each network link.  Save using xxxyyy where xxx is rte and yyy is seg.
 				    // A link will therefore be able to look up all transit routes serving the link using tr.transitPaths[rte].get(seg)
 				    // for all the rteseg values stored for the link.
@@ -264,25 +263,25 @@ public class AuxTrNet implements Serializable {
 				            nextNode++;
 				        }
 				        else {
-				        	if (debug) logger.info ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				        	if (debug) logger.info ("mid-line layover:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.boardA=" + ts.boardA + ", ts.alightA=" + ts.alightA + ", ts.boardB=" + ts.boardB + ", ts.alightB=" + ts.alightB + ", ts.layover=" + ts.layover);
 				       	   	addAuxLayoverLink (aux++, nextNode, nextNode + 1, ts, tr.headway[rte], rte, tr.mode[rte]);
 							nextNode++;
 				        }
 				    }
 				    else {
-				        if (ts.board) {
+				        if ( ts.boardA ) {
                             int inA = nodeIndex[ts.an];
-				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.boardA=" + ts.boardA + ", ts.alightA=" + ts.alightA + ", ts.boardB=" + ts.boardB + ", ts.alightB=" + ts.alightB + ", ts.layover=" + ts.layover);
 				           	addAuxBoardingLink (aux++, inA, nextNode, ts, tr.headway[rte], tr.ut1[rte], rte, tr.mode[rte]);
                             if ( nodeRoutes[inA] == null )
                                 nodeRoutes[inA] = new HashSet();
                             nodeRoutes[inA].add(rte);
                             boardingNode[routeTypeIndex][inA] = true;
 				        }
-				        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.boardA=" + ts.boardA + ", ts.alightA=" + ts.alightA + ", ts.boardB=" + ts.boardB + ", ts.alightB=" + ts.alightB + ", ts.layover=" + ts.layover);
 				       	addAuxInVehicleLink (aux++, nextNode, ts, tsNext, tr.headway[rte], tr.speed[rte], rte, tr.mode[rte]);
-				   	   	if (ts.alight) {
-							if (debug) logger.info ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.board=" + ts.board + ", ts.alight=" + ts.alight + ", ts.layover=" + ts.layover);
+				   	   	if ( ts.alightB ) {
+							if (debug) logger.info ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.boardA=" + ts.boardA + ", ts.alightA=" + ts.alightA + ", ts.boardB=" + ts.boardB + ", ts.alightB=" + ts.alightB + ", ts.layover=" + ts.layover);
                             int inB = nodeIndex[ts.bn];
 							addAuxAlightingLink (aux++, nextNode, inB, ts, tr.headway[rte], rte, tr.mode[rte]);
 						}
@@ -299,13 +298,18 @@ public class AuxTrNet implements Serializable {
 					logger.fatal( "      anode = " + ts.an);
                     logger.fatal( "      bnode = " + ts.bn);
                     logger.fatal( "      linkId = " + ts.link);
-                    logger.fatal( "      alight = " + ts.alight);
-                    logger.fatal( "      board = " + ts.board);
+                    logger.fatal( "      boardA = " + ts.boardA);
+                    logger.fatal( "      alightA = " + ts.alightA);
+                    logger.fatal( "      boardB = " + ts.boardB);
+                    logger.fatal( "      alightB = " + ts.alightB);
                     logger.fatal( "      layover = " + ts.layover);
                     logger.fatal ( "", e );
 					System.exit(1);
 				}
 			}
+            
+            nextNode++;
+            
 		}
 
 		logger.info (aux + " transit links added.");
@@ -331,7 +335,7 @@ public class AuxTrNet implements Serializable {
 
 	
 	
-	public void resizeAuxNetLinkAttributes () {
+	private void resizeAuxNetLinkAttributes () {
 
 		int[] tempi1 = new int[auxLinks];
 		int[] tempi2 = new int[auxLinks];
