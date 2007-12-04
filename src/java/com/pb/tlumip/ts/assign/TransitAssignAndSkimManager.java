@@ -58,14 +58,15 @@ public class TransitAssignAndSkimManager {
 	protected static Logger logger = Logger.getLogger(TransitAssignAndSkimManager.class);
 
     static final boolean CREATE_NEW_NETWORK = true;
-    boolean SKIM_ONLY = true;
+    boolean SKIM_ONLY = false;
 
-    // make TEST_DEST a negative number to skip debugging an od.
-    // static final int TEST_DEST = -1;
+    // make TEST_ORIG and TEST_DEST a negative number to skip debugging an od.
+    static final int TEST_ORIG = -1;
+    static final int TEST_DEST = -1;
 
-    // make TEST_ORIG and TEST_DEST a positive number to trigger debugging an od.
-    static final int TEST_DEST = 1;
-    static final int TEST_ORIG = 3106;
+    // make TEST_ORIG and TEST_DEST a positive number to trigger debugging the strategy for the od.
+    //static final int TEST_ORIG = 3106;
+    //static final int TEST_DEST = 1;
 	
 
     
@@ -137,7 +138,6 @@ public class TransitAssignAndSkimManager {
         
         SKIM_ONLY = skimOnlyFlag;
         
-/*        
         // drive access air loading and skims
         String[] drAirTypes = { "air" }; 
         setupTransitNetwork( nh, period, "driveLdt", drAirTypes );
@@ -150,7 +150,7 @@ public class TransitAssignAndSkimManager {
         setupTransitNetwork( nh, period, "driveLdt", drHsrTypes );
         runTransitAssignment ( nh, "drive", "hsr", LDTripModeType.HSR_DRIVE.name() );
         writeDriveHsrSkims ( period );
-*/    
+
         
         // drive access intercity bus/rail loading and skims
         String[] drIcTypes = { "intercity" }; 
@@ -833,7 +833,7 @@ public class TransitAssignAndSkimManager {
                 }
             
             }
-            else if ( dest == nodeIndex[TEST_DEST] ) {
+            else if ( TEST_ORIG >= 0 && TEST_DEST >= 0 && dest == nodeIndex[TEST_DEST] ) {
                 
                 os.getOptimalStrategyLinks ( nodeIndex[TEST_ORIG] );
                 return;

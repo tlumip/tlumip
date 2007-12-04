@@ -54,6 +54,8 @@ public class OptimalStrategy {
 	static final double MIN_ALLOCATED_FLOW = 0.00001;
 	
 	static final int MAX_BOARDING_LINKS = 100;
+    
+    static final float MAX_TRANSFER_WALK_TIME = 30;
 
 
     HashMap fareZones;
@@ -69,7 +71,7 @@ public class OptimalStrategy {
 	Heap candidateHeap;
 	int[] heapContents;
 
-	double[] nodeLabel, nodeFreq, linkLabel;
+	double[] nodeLabel, trfWalkLabel, nodeFreq, linkLabel;
 	boolean[] inStrategy;
 	int[] orderInStrategy;
 	int[] strategyOrderForLink;
@@ -121,7 +123,8 @@ public class OptimalStrategy {
         
         
 		nodeFlow = new double[auxNodeCount+1];
-		nodeLabel = new double[auxNodeCount+1];
+        nodeLabel = new double[auxNodeCount+1];
+        trfWalkLabel = new double[auxNodeCount+1];
 		nodeFreq = new double[auxNodeCount+1];
 		linkLabel = new double[auxLinkCount+1];
 		inStrategy = new boolean[auxLinkCount+1];
@@ -165,7 +168,8 @@ public class OptimalStrategy {
 
 	private void initData() {
 		Arrays.fill(nodeLabel, AuxTrNet.INFINITY);
-		Arrays.fill(nodeFlow, 0.0);
+        Arrays.fill(trfWalkLabel, 0.0);
+        Arrays.fill(nodeFlow, 0.0);
 		Arrays.fill(nodeFreq, 0.0);
 		Arrays.fill(linkLabel, 0.0);
 		Arrays.fill(inStrategy, false);
@@ -315,13 +319,24 @@ public class OptimalStrategy {
 					}
 					// non-boarding link - either in-vehicle or auxilliary
 					else {
-						
-						nodeLabel[ia[k]] = nodeLabel[ib[k]] + linkImped;
 
-						inStrategy[k] = true;
-						strategyOrderForLink[k] = inStrategyCount;
-						orderInStrategy[inStrategyCount++] = k;
-						updateEnteringLabels(ia[k]);
+                        nodeLabel[ia[k]] = nodeLabel[ib[k]] + linkImped;
+                        
+                        // do not add link to strategy if accumulated walk time is too large
+                        if ( linkType[k] == AuxTrNet.AUXILIARY_TYPE ) 
+                            trfWalkLabel[ia[k]] = trfWalkLabel[ib[k]] + walkTime[k];
+
+                        
+                        if ( trfWalkLabel[ia[k]] > MAX_TRANSFER_WALK_TIME ) {
+                            inStrategy[k] = false;
+                        }
+                        else {
+    						inStrategy[k] = true;
+    						strategyOrderForLink[k] = inStrategyCount;
+    						orderInStrategy[inStrategyCount++] = k;
+    						updateEnteringLabels(ia[k]);
+                        }
+                        
 					}
 				}
 				else {
