@@ -68,6 +68,9 @@ public class TransitAssignAndSkimManager {
     //static final int TEST_ORIG = 3106;
     //static final int TEST_DEST = 1;
 	
+    static final String OUT_OF_AREA_FARE_ZONE = "NONE"; 
+    
+    
 
     
     NetworkHandlerIF nh = null;
@@ -1174,6 +1177,10 @@ public class TransitAssignAndSkimManager {
         fareZones = new HashMap();
         for (int i=0; i < alphaNumberArray.length; i++ ) {
             fareZones.put(alphaNumberArray[i], fareZoneLabels[i]);
+        }
+        
+        for (int i=0; i < externals.length; i++ ) {
+            fareZones.put(externals[i], OUT_OF_AREA_FARE_ZONE);
         }
         
     }

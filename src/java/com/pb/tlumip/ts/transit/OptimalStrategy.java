@@ -55,7 +55,7 @@ public class OptimalStrategy {
 	
 	static final int MAX_BOARDING_LINKS = 100;
     
-    static final float MAX_TRANSFER_WALK_TIME = 30;
+    static final float MAX_TRANSFER_WALK_TIME = 20;
 
 
     HashMap fareZones;
@@ -839,7 +839,7 @@ public class OptimalStrategy {
                 }
                 catch (RuntimeException e) {
                     logger.error( String.format("exception caught looking up intracity fare for,"));
-                    logger.error( String.format("extOrigCent=%d, origFareZone=%s, extDestCent=%d, destFareZone=%s, key=%s", extOrigCent, origFareZone, extDestCent, destFareZone, key));
+                    logger.error( String.format("extOrigCent=%d, origFareZone=%s, extDestCent=%d, destFareZone=%s, key=%s", extOrigCent, origFareZone, extDestCent, destFareZone, key), e);
                 }
             
             }
