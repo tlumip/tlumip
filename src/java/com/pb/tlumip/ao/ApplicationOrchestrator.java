@@ -20,6 +20,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pecas.PIModel;
 import com.pb.models.reference.ModelComponent;
+import com.pb.models.utils.StatusLogger;
 import com.pb.tlumip.ald.ALDModel;
 import com.pb.tlumip.ct.CTModel;
 import com.pb.tlumip.ed.EDControl;
@@ -520,6 +521,8 @@ public class ApplicationOrchestrator {
             int baseYear = Integer.parseInt(args[4]);
             int t = Integer.parseInt(args[5]);
 
+            StatusLogger.logText(appName.toLowerCase(),appName + " has started.");
+
             logger.info("Root Directory: " + rootDir);
             logger.info("Base Scenario Name: " + baseScenarioName);
             logger.info("Scenario Name: " + scenarioName);
@@ -619,6 +622,7 @@ public class ApplicationOrchestrator {
 
             ao.logAppRun(appName);
             logger.info(appName + " is complete");
+            StatusLogger.logText(appName.toLowerCase(),appName + " has finished.");
             
             
         } catch (Exception e) {
