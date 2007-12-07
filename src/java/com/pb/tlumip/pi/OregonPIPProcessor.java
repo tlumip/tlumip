@@ -616,8 +616,15 @@ public class OregonPIPProcessor extends PIPProcessor {
         double laborUseScalor = dollarsToJobsTo98 / dollarsToJobs;
         logger.debug("LaborUseScalingFactor: " + laborUseScalor);
 
-        if(timePeriod == 8 && Math.abs(1-laborUseScalor) > .1){
+//        if(timePeriod == 8 && Math.abs(1-laborUseScalor) > .1){
+//            logger.warn("WARNING: Expected LaborUseScalingFactor is 1, Actual value is " + laborUseScalor);
+//        }
+
+
+        if(timePeriod == 8 && laborUseScalor != 1.0d){
             logger.warn("WARNING: Expected LaborUseScalingFactor is 1, Actual value is " + laborUseScalor);
+        } else {
+            logger.info("LaborUseScalingFactor is: " + laborUseScalor);
         }
 
         //Now scale minimum and the discretionary amounts of the activities that use labor commodities
