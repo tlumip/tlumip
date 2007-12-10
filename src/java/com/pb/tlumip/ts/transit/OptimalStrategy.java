@@ -56,6 +56,8 @@ public class OptimalStrategy {
 	static final int MAX_BOARDING_LINKS = 100;
     
     static final float MAX_TRANSFER_WALK_TIME = 20;
+    static final float MAX_FIRST_WAIT_TIME = 60;
+    static final float MAX_TOTAL_WAIT_TIME = 90;
 
 
     HashMap fareZones;
@@ -325,6 +327,8 @@ public class OptimalStrategy {
                         // do not add link to strategy if accumulated walk time is too large
                         if ( linkType[k] == AuxTrNet.AUXILIARY_TYPE ) 
                             trfWalkLabel[ia[k]] = trfWalkLabel[ib[k]] + walkTime[k];
+                        else
+                            trfWalkLabel[ia[k]] = trfWalkLabel[ib[k]];
 
                         
                         if ( trfWalkLabel[ia[k]] > MAX_TRANSFER_WALK_TIME ) {
@@ -802,6 +806,13 @@ public class OptimalStrategy {
         for (int i=0; i < nh.getNumCentroids(); i++) {
             skimResults[FWT][i] /= AuxTrNet.WAIT_COEFF;
             skimResults[TWT][i] /= AuxTrNet.WAIT_COEFF;
+            
+            if ( skimResults[FWT][i] > MAX_FIRST_WAIT_TIME )
+                skimResults[FWT][i] = MAX_FIRST_WAIT_TIME;
+        
+            if ( skimResults[TWT][i] > MAX_TOTAL_WAIT_TIME )
+                skimResults[TWT][i] = MAX_TOTAL_WAIT_TIME;
+
         }
 
         
