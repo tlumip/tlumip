@@ -97,7 +97,7 @@ public class ETModel extends ModelComponent {
         ArrayList<Integer> alOrigin = new ArrayList<Integer>();
         ArrayList<Integer> alDestination = new ArrayList<Integer>();
         ArrayList<String> alStartTime = new ArrayList<String>();
-        ArrayList<Integer> alTruckClass = new ArrayList<Integer>();
+        ArrayList<String> alTruckClass = new ArrayList<String>();
 
         float fltRemainder = 0f;
 
@@ -142,22 +142,18 @@ public class ETModel extends ModelComponent {
         int[] intsOrigin = new int[alOrigin.size()];
         int[] intsDestination = new int[alOrigin.size()];
         String[] strsStartTime = new String[alOrigin.size()];
-        //int[] intsTruckClass = new int[alOrigin.size()];
         String[] strsTruckClass = new String[alOrigin.size()];
 
         for (int i = 0; i < alOrigin.size(); i++) {
             intsOrigin[i] = alOrigin.get(i);
             intsDestination[i] = alDestination.get(i);
             strsStartTime[i] = alStartTime.get(i);
-            //intsTruckClass[i] = alTruckClass.get(i);
-            //(crf) This is especially hacky, but creating a cross dependency with CT to get truck type names would be a pain right now
-            strsTruckClass[i] = "TRK" + alTruckClass.get(i);
+            strsTruckClass[i] = alTruckClass.get(i);
         }
 
         tblOutput.appendColumn(intsOrigin, "Origin");
         tblOutput.appendColumn(intsDestination, "Destination");
         tblOutput.appendColumn(strsStartTime, "TripStartTime");
-        //tblOutput.appendColumn(intsTruckClass, "TruckClass");
         tblOutput.appendColumn(strsTruckClass, "TruckClass");
 
         //need to share property with TS

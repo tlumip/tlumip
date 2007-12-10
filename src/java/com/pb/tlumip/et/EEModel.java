@@ -128,7 +128,7 @@ public class EEModel {
     private void addShipments(String strTripType, ArrayList<ShipmentDetail> alTrucks) {
 
         String strStartTime;
-        int intTruckClass;
+        String strTruckClass;
 
         if (strTripType.startsWith("AM")) {
             strStartTime = ResourceUtil.getProperty(globalRb, "am.peak.start");
@@ -137,9 +137,9 @@ public class EEModel {
         }
 
         if (strTripType.endsWith("LT")) {
-            intTruckClass = ResourceUtil.getIntegerProperty(appRb, "LT.truck.class");
+            strTruckClass = ResourceUtil.getProperty(appRb, "LT.truck.class");
         } else {
-            intTruckClass = ResourceUtil.getIntegerProperty(appRb, "HT.truck.class");
+            strTruckClass = ResourceUtil.getProperty(appRb, "HT.truck.class");
         }
 
         for (int intOrigin: intsExternalStations) {
@@ -147,7 +147,7 @@ public class EEModel {
 
                 float fltValue = mtxOutput.getValueAt(intOrigin, intDestination);
                 alTrucks.add(new ShipmentDetail(strTripType, intOrigin, intDestination,
-                        strStartTime, fltValue, intTruckClass));
+                        strStartTime, fltValue, strTruckClass));
 
             }
         }

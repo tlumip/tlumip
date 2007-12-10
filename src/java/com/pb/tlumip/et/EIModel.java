@@ -68,8 +68,8 @@ public class EIModel {
         private float fltMDHeavyPercentage;
 
 
-    private int intLightTruckClass;
-    private int intHeavyTruckClass;
+    private String strLightTruckClass;
+    private String strHeavyTruckClass;
 
     private String strAMTime;
     private String strMDTime;
@@ -261,21 +261,21 @@ public class EIModel {
                 float fltMDExportHeavyTrucksPerWeek = fltExportHeavyTrucksPerWeek * fltMDHeavyPercentage;
 
                 if (fltAMImportLightTrucksPerWeek > 0)
-                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strAMTime, fltAMImportLightTrucksPerWeek/7, intLightTruckClass));
+                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strAMTime, fltAMImportLightTrucksPerWeek/7, strLightTruckClass));
                 if (fltMDImportLightTrucksPerWeek > 0)
-                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strMDTime, fltMDImportLightTrucksPerWeek/7, intLightTruckClass));
+                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strMDTime, fltMDImportLightTrucksPerWeek/7, strLightTruckClass));
                 if (fltAMExportLightTrucksPerWeek > 0)
-                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strAMTime, fltAMExportLightTrucksPerWeek/7, intLightTruckClass));
+                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strAMTime, fltAMExportLightTrucksPerWeek/7, strLightTruckClass));
                 if (fltMDExportLightTrucksPerWeek > 0)
-                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strMDTime, fltMDExportLightTrucksPerWeek/7, intLightTruckClass));
+                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strMDTime, fltMDExportLightTrucksPerWeek/7, strLightTruckClass));
                 if (fltAMImportHeavyTrucksPerWeek > 0)
-                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strAMTime, fltAMImportHeavyTrucksPerWeek/7, intHeavyTruckClass));
+                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strAMTime, fltAMImportHeavyTrucksPerWeek/7, strHeavyTruckClass));
                 if (fltMDImportHeavyTrucksPerWeek > 0)
-                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strMDTime, fltMDImportHeavyTrucksPerWeek/7, intHeavyTruckClass));
+                    alTrucks.add(new ShipmentDetail(strCommodity, intExternalZone, intAlphaZone, strMDTime, fltMDImportHeavyTrucksPerWeek/7, strHeavyTruckClass));
                 if (fltAMExportHeavyTrucksPerWeek > 0)
-                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strAMTime, fltAMExportHeavyTrucksPerWeek/7, intHeavyTruckClass));
+                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strAMTime, fltAMExportHeavyTrucksPerWeek/7, strHeavyTruckClass));
                 if (fltMDExportHeavyTrucksPerWeek > 0)
-                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strMDTime, fltMDExportHeavyTrucksPerWeek/7, intHeavyTruckClass));
+                    alTrucks.add(new ShipmentDetail(strCommodity, intAlphaZone, intExternalZone, strMDTime, fltMDExportHeavyTrucksPerWeek/7, strHeavyTruckClass));
             }
         }
     }
@@ -298,8 +298,8 @@ public class EIModel {
 
         defineStationParameters();
 
-        intLightTruckClass = ResourceUtil.getIntegerProperty(appRb, "LT.truck.class");
-        intHeavyTruckClass = ResourceUtil.getIntegerProperty(appRb, "HT.truck.class");
+        strLightTruckClass = ResourceUtil.getProperty(appRb, "LT.truck.class");
+        strHeavyTruckClass = ResourceUtil.getProperty(appRb, "HT.truck.class");
 
         strAMTime = ResourceUtil.getProperty(globalRb, "am.peak.start");
         strMDTime = ResourceUtil.getProperty(globalRb, "offpeak.start");

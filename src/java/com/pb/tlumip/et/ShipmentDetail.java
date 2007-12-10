@@ -29,16 +29,16 @@ public class ShipmentDetail {
     private int intDestination;
     private String strTimeOfDay;
     private float fltNumberOfTrucks;
-    private int intTruckClass;
+    private String strTruckClass;
     private String strCommodity; //I don't think this is needed.
 
-    public ShipmentDetail(String Commodity, int Origination, int Destination, String TimeOfDay, float NumberOfTrucks, int TruckClass) {
+    public ShipmentDetail(String Commodity, int Origination, int Destination, String TimeOfDay, float NumberOfTrucks, String TruckClass) {
         intOrigination = Origination;
         intDestination = Destination;
         strTimeOfDay = TimeOfDay;
         fltNumberOfTrucks = NumberOfTrucks;
         strCommodity = Commodity;
-        intTruckClass = TruckClass;
+        strTruckClass = TruckClass;
     }
 
     public int getOrigination() {
@@ -61,7 +61,7 @@ public class ShipmentDetail {
         return strCommodity;
     }
 
-    public int getTruckClass() {
-        return intTruckClass;
+    public String getTruckClass() {
+        return strTruckClass;
     }
 }
