@@ -17,7 +17,7 @@ public class ShipmentDetailTest extends TestCase {
     int destination = 5;
     String startTime = "0900";
     float numberOfTrucks = 7.47f;
-    int truckClass=4;
+    String truckClass="TRK4";
 
     protected void setUp() {
         shipmentDetail = new ShipmentDetail(commodity, origin, destination, startTime, numberOfTrucks, truckClass);
