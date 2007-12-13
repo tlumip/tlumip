@@ -197,7 +197,10 @@ public class LogReader {
         long minutes = (diff - days* millisecondsInADay - hours* millisecondsInAnHour) / millisecondsInAMinute;
         long seconds = (diff - days* millisecondsInADay - hours* millisecondsInAnHour - minutes* millisecondsInAMinute) / millisecondsInASecond;
         //ignore days - we shouldn't have anything that runs that long
-        return String.format("%02d:%02d:%02d",hours,minutes,seconds);
+        if (minutes == 0)
+            return "<00:00:01";
+        else
+            return String.format("%02d:%02d:%02d",hours,minutes,seconds);
     }
 
     /**
@@ -252,6 +255,6 @@ public class LogReader {
     }
 
     public static void main(String[] args) {
-       readAndReportLogs("c:\\transfers\\logtest","main_event.log", "c:\\transfers\\logtest\\checklog_TLUMIP.csv");
+       readAndReportLogs("c:\\transfers\\logtest","mainevent.log", "c:\\transfers\\logtest\\checklog_TLUMIP2.csv");
     }
 }
