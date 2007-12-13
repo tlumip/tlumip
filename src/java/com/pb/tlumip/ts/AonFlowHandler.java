@@ -92,7 +92,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
 
     // this setup method called by methods running in the same VM as this object
-    public boolean setup( String rpcConfigFile, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
+    public boolean setup( String reportFileName, String rpcConfigFile, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
 
         this.nh = nh;
         
@@ -107,6 +107,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         dh.setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildHighwayDemandObject();
         dh.logDistrictReport();
+        dh.writeDistrictReport ( reportFileName );
         
         logger.info( "setting up SpBuildLoadHandlers." );
         sp = setupSpBuildLoadHandlers( dh.getTripTableRowSums(), dh.getMulticlassTripTables() );
@@ -117,11 +118,11 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String rpcConfigFile, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, char[] highwayModeCharacters ) {
+    public boolean setupRpc( String reportFileName, String rpcConfigFile, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, char[] highwayModeCharacters ) {
 
         nh = NetworkHandler.getInstance(rpcConfigFile);
         
-        return setup( rpcConfigFile, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, highwayModeCharacters, nh );        
+        return setup( reportFileName, rpcConfigFile, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, highwayModeCharacters, nh );        
         
     }
     

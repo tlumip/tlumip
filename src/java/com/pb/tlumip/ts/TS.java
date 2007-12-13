@@ -51,9 +51,8 @@ public class TS {
 
 	protected static Logger logger = Logger.getLogger(TS.class);
 
-
     static final boolean CREATE_NEW_NETWORK = true;
-    public boolean SKIM_ONLY = true;
+    public boolean SKIM_ONLY = false;
     
 
     ResourceBundle appRb;
@@ -103,13 +102,8 @@ public class TS {
         
 		long startTime = System.currentTimeMillis();
 		
-        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-
-		String myDateString;
-
-		
-		
 		// create Frank-Wolfe Algortihm Object
+        String myDateString;
 		myDateString = DateFormat.getDateTimeInstance().format(new Date());
 		logger.info ("creating and initializing a " + assignmentPeriod + " FW object at: " + myDateString);
 		FW fw = new FW();
@@ -129,16 +123,8 @@ public class TS {
         
         
         
-        String assignmentResultsFileName = null;
-
-        if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            assignmentResultsFileName = (String)tsPropertyMap.get("peakOutput.fileName");
-        }
-        else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            assignmentResultsFileName = (String)tsPropertyMap.get("offpeakOutput.fileName");
-        }
+        String assignmentResultsTarget = String.format( "%sOutput.fileName", assignmentPeriod.toLowerCase() );
+        String assignmentResultsFileName = appRb.getString( assignmentResultsTarget );
 
         
 		logger.info("Writing results file with " + assignmentPeriod + " assignment results.");
@@ -148,7 +134,7 @@ public class TS {
         logger.info("Checking network connectivity and computing TLDs after " + assignmentPeriod + " period assignment.");
         checkODPairsWithTripsForNetworkConnectivity(nh);
         
-        
+
         logger.info( "\ndone with " + assignmentPeriod + " period assignment."); 
         
     }
@@ -567,12 +553,12 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
-        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
-        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         nhPeak.startDataServer();
+        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        //tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         logger.info ("Network data server running...");
         
-        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+        //tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
       
        
         

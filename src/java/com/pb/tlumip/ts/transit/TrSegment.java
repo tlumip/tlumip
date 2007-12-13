@@ -23,31 +23,32 @@ import java.util.ArrayList;
 
 public class TrSegment implements Serializable {
 	int rteIndex, link, an, bn;
-	int ttf, ttf1, ttft;
+	int ttf, ttfl, ttft;
 	double dwf, dwt, us1, us2, us3;
 	double lay, tdwt, tus1, tus2, tus3;
 	boolean path, boardA, alightA, boardB, alightB, layover;
 
+
 	TrSegment (int rteIndex, int an, int bn, ArrayList defaults, ArrayList tdefaults) {
-		dwf    =  ((Double)defaults.get(0)).doubleValue();
-		dwt    =  ((Double)defaults.get(1)).doubleValue();
-		path   =  ((Boolean)defaults.get(2)).booleanValue();
-		ttf    =  ((Integer)defaults.get(3)).intValue();
-		ttf1   =  ((Integer)defaults.get(4)).intValue();
-		ttft   =  ((Integer)defaults.get(5)).intValue();
-		us1    =  ((Double)defaults.get(6)).doubleValue();
-		us2    =  ((Double)defaults.get(7)).doubleValue();
-		us3    =  ((Double)defaults.get(8)).doubleValue();
+		dwf     =  ((Double)defaults.get(0)).doubleValue();
+		dwt     =  ((Double)defaults.get(1)).doubleValue();
+		path    =  ((Boolean)defaults.get(2)).booleanValue();
+		ttfl    =  ((Integer)defaults.get(3)).intValue();
+		ttft    =  ((Integer)defaults.get(4)).intValue();
+		ttf     =  ((Integer)defaults.get(5)).intValue();
+		us1     =  ((Double)defaults.get(6)).doubleValue();
+		us2     =  ((Double)defaults.get(7)).doubleValue();
+		us3     =  ((Double)defaults.get(8)).doubleValue();
         boardA  =  ((Boolean)defaults.get(9)).booleanValue();
         alightA =  ((Boolean)defaults.get(10)).booleanValue();
         boardB  =  ((Boolean)defaults.get(11)).booleanValue();
         alightB =  ((Boolean)defaults.get(12)).booleanValue();
 		layover = ((Boolean)defaults.get(13)).booleanValue();
-		lay    =  ((Double)tdefaults.get(0)).doubleValue();
-		tdwt   =  ((Double)tdefaults.get(1)).doubleValue();
-		tus1   =  ((Double)tdefaults.get(2)).doubleValue();
-		tus2   =  ((Double)tdefaults.get(3)).doubleValue();
-		tus3   =  ((Double)tdefaults.get(4)).doubleValue();
+		lay     =  ((Double)tdefaults.get(0)).doubleValue();
+		tdwt    =  ((Double)tdefaults.get(1)).doubleValue();
+		tus1    =  ((Double)tdefaults.get(2)).doubleValue();
+		tus2    =  ((Double)tdefaults.get(3)).doubleValue();
+		tus3    =  ((Double)tdefaults.get(4)).doubleValue();
 
 		link = -1;
 
@@ -64,16 +65,16 @@ public class TrSegment implements Serializable {
 		tsNew.dwf     = ts.dwf;
 		tsNew.dwt     = ts.dwt;
 		tsNew.path    = ts.path;
-		tsNew.ttf     = ts.ttf;
-		tsNew.ttf1    = ts.ttf1;
+		tsNew.ttfl    = ts.ttfl;
 		tsNew.ttft    = ts.ttft;
+		tsNew.ttf     = ts.ttf;
 		tsNew.us1     = ts.us1;
 		tsNew.us2     = ts.us2;
 		tsNew.us3     = ts.us3;
-        tsNew.boardA   = ts.boardA;
-        tsNew.alightA  = ts.alightA;
-        tsNew.boardB   = ts.boardB;
-        tsNew.alightB  = ts.alightB;
+        tsNew.boardA  = ts.boardA;
+        tsNew.alightA = ts.alightA;
+        tsNew.boardB  = ts.boardB;
+        tsNew.alightB = ts.alightB;
 		tsNew.layover = ts.layover;
 		tsNew.lay     = ts.lay;
 		tsNew.tdwt    = ts.tdwt;

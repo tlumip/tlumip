@@ -278,6 +278,7 @@ public class TrRoute implements Serializable {
                             tempLineCount++;
                             totalLinkCount += linkCount;
                             parseHeader(s, rteTypes[i]);
+                            
                             linkCount = 0;
                             an = -1;
                             bn = -1;
@@ -840,7 +841,7 @@ public class TrRoute implements Serializable {
 
         TrSegment ts;
 
-        String outputRecord = String.format ( "%4s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s", "seq", "link", "an", "bn", "dwf", "dwt", "path", "ttf", "ttf1", "ttft", "us1", "us2", "us3", "brd", "alt", "lay", "tdwt", "tus1", "tus2", "tus3" );
+        String outputRecord = String.format ( "%4s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s%6s", "seq", "link", "an", "bn", "dwf", "dwt", "path", "ttf", "ttfl", "ttft", "us1", "us2", "us3", "brd", "alt", "lay", "tdwt", "tus1", "tus2", "tus3" );
 
         String underLine = "-";
         for (int i=0; i < outputRecord.length() - 1; i++)
@@ -852,7 +853,7 @@ public class TrRoute implements Serializable {
 
         for (int i=0; i < transitPath[rte].size(); i++) {
             ts = (TrSegment)transitPath[rte].get(i);
-            out.printf( "%4d%6d%6d%6d%6.2f%6.2f%6s%6d%6d%6d%6.2f%6.2f%6.2f%6s%6s%6s%6s%6.2f%6.2f%6.2f%6.2f%6.2f", i+1, ts.link, ts.an, ts.bn, ts.dwf, ts.dwt, String.valueOf(ts.path), ts.ttf, ts.ttf1, ts.ttft, ts.us1, ts.us2, ts.us3, String.valueOf(ts.boardA), String.valueOf(ts.alightA), String.valueOf(ts.boardB), String.valueOf(ts.alightB), ts.lay, ts.tdwt, ts.tus1, ts.tus2, ts.tus3 );
+            out.printf( "%4d%6d%6d%6d%6.2f%6.2f%6s%6d%6d%6d%6.2f%6.2f%6.2f%6s%6s%6s%6s%6.2f%6.2f%6.2f%6.2f%6.2f", i+1, ts.link, ts.an, ts.bn, ts.dwf, ts.dwt, String.valueOf(ts.path), ts.ttf, ts.ttfl, ts.ttft, ts.us1, ts.us2, ts.us3, String.valueOf(ts.boardA), String.valueOf(ts.alightA), String.valueOf(ts.boardB), String.valueOf(ts.alightB), ts.lay, ts.tdwt, ts.tus1, ts.tus2, ts.tus3 );
         }
 
         out.println (underLine);

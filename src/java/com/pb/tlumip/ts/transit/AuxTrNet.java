@@ -1004,6 +1004,7 @@ public class AuxTrNet implements Serializable {
             else
                 invTime[aux] = (60.0*gDist[ts.link]/speed);
             
+            
             layoverTime[aux] = 0.0;
             linkType[aux] = IN_VEHICLE_TYPE;
             

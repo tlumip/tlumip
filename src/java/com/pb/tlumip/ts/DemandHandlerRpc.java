@@ -106,7 +106,24 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         
     }
     
+
+    public int writeDistrictReport ( String fileName ) {
+        
+        int returnValue = -1;
+        Vector params = new Vector();
+        params.add(fileName);
+        try {
+            rc.execute(HANDLER_NAME+".writeDistrictReport", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+        
+    }
     
+
     public boolean buildHighwayDemandObject() {
         
         boolean returnValue = false;

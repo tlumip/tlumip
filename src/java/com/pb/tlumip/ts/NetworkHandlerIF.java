@@ -6,6 +6,10 @@ import com.pb.tlumip.ts.transit.TrRoute;
 public interface NetworkHandlerIF {
 
     public static final String HANDLER_NAME = "networkHandler";
+
+    public static final int networkDataServerPort = 6003;
+    public static final String dataServerName = "networkDataServer";
+    
     
     public static int NETWORK_FILENAME_INDEX = 0;
     public static int NETWORK_DISKOBJECT_FILENAME_INDEX = 1;

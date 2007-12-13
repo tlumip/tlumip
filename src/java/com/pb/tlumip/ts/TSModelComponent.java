@@ -17,6 +17,7 @@
 package com.pb.tlumip.ts;
 
 import com.pb.common.rpc.DafNode;
+import com.pb.common.util.DosCommand;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.reference.ModelComponent;
 import org.apache.log4j.Logger;
@@ -35,6 +36,13 @@ import java.util.ResourceBundle;
 public class TSModelComponent extends ModelComponent {
 
     Logger logger = Logger.getLogger(TSModelComponent.class);
+    
+    static final String WINDOWS_CMD_TARGET = "windows.cmd";
+    static final String PYTHON_CMD_TARGET = "python.cmd";
+    static final String PYTHON_PROGRAM_TARGET = "python.source";
+    static final int COUNT_YEAR = 1998;
+    
+    
     private String configFileName;
 
     TS ts;
@@ -73,8 +81,10 @@ public class TSModelComponent extends ModelComponent {
     }
 
     private void assignAndSkimHwyAndTransit(String period){
+
         NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
 
+        
         if ( nh.getStatus() ) {
             logger.info ( nh.getClass().getCanonicalName() + " instance created, and handler is active." );
         }
@@ -96,28 +106,78 @@ public class TSModelComponent extends ModelComponent {
         // then skip the trip assignment step.
         if ( ! ts.SKIM_ONLY )
             ts.runHighwayAssignment( nh );
+        
 
+        
         //This will return a local network handler.  Jim needs to
         //test the remote network handler for transit skim building.
         NetworkHandlerIF nh_new = NetworkHandler.getInstance(null);
         try {
             if ( ts.setupHighwayNetwork( nh_new, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
                 throw new Exception();
-            logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+            logger.info ("created " + period + " Highway NetworkHandler object: " + nh_new.getNodeCount() + " highway nodes, " + nh_new.getLinkCount() + " highway links." );
         }
         catch (Exception e) {
-            logger.error ( "Exception caught setting up network in " + nh.getClass().getCanonicalName(), e );
+            logger.error ( "Exception caught setting up network in " + nh_new.getClass().getCanonicalName(), e );
             System.exit(-1);
         }
+
+        
         ts.loadAssignmentResults(nh_new, appRb);
-        char[] hwyModeChars = { 'a', 'd' };        
+        runLinkSummaries ( nh_new );
+        
+        
+        char[] hwyModeChars = nh_new.getUserClasses();
         ts.writeHighwaySkimMatrices ( nh_new, hwyModeChars );
 
 
         ts.assignAndSkimTransit ( nh_new,  appRb, globalRb );
         
-        
     }
 
+        
     
+    private void runLinkSummaries ( NetworkHandlerIF nh_new ) {
+        
+        String assignmentPeriod = nh_new.getTimePeriod();
+        
+        String linkSummaryFileName = null;
+
+        // get output filename for link summary statustics report written by python program
+        linkSummaryFileName = (String)appRb.getString( "linkSummary.fileName" );
+        if ( linkSummaryFileName != null ) {
+
+            int index = linkSummaryFileName.indexOf(".");
+            if ( index < 0 ) {
+                linkSummaryFileName += "_" + assignmentPeriod;
+            }
+            else {
+                String extension = linkSummaryFileName.substring(index);
+                linkSummaryFileName = linkSummaryFileName.substring(0, index);
+                linkSummaryFileName += "_" + assignmentPeriod + extension;
+            }
+
+            String a2bFileName = (String)globalRb.getString( "alpha2beta.file" );
+            String countsFileName = (String)appRb.getString( "counts.file" );
+            
+            String winCmdLocation = appRb.getString( WINDOWS_CMD_TARGET );
+            
+            String pythonCommand = appRb.getString( PYTHON_CMD_TARGET );
+            String pythonSrc = appRb.getString( PYTHON_PROGRAM_TARGET );
+            
+            String commandString = String.format ( "%s %s %d %s %s %s %s %s %d", pythonCommand, pythonSrc, COUNT_YEAR, assignmentPeriod, linkSummaryFileName, a2bFileName, countsFileName, "localhost", NetworkHandlerIF.networkDataServerPort ); 
+
+            // start data server that python program will use to generate link summaries.
+            nh_new.startDataServer();
+            
+            // run python in an external dos command to generate link category summary reports file
+            DosCommand.runDOSCommand ( winCmdLocation, commandString );
+
+            // stop the data server.
+            nh_new.stopDataServer();
+            
+        }
+
+    }
+        
 }

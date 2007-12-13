@@ -176,14 +176,13 @@ public class TransitAssignAndSkimManager {
         writeWalkHsrSkims ( period );
 
         
-        // walk access hsr loading and skims
+        // walk access intercity loading and skims
         String[] wkIcTypes = { "intercity", "intracity" }; 
         setupTransitNetwork( nh, period, "walk", wkIcTypes );
         runTransitAssignment ( nh, "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() );
         writeWalkIntercitySkims ( period );
 
-        
-        // walk access hsr loading and skims
+        // walk access intracity loading and skims
         String[] wkTrTypes = { "intracity" }; 
         setupTransitNetwork( nh, period, "walk", wkTrTypes );
         runTransitAssignment ( nh, "walk", "intracity", TripModeType.WK_TRAN.name() );

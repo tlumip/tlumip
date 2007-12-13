@@ -1033,10 +1033,6 @@ public class Network implements Serializable {
             
             
 
-			
-
-
-			
 			freeFlowSpeed[i] = ul1;
 			congestedTime[i] = (float)((dist/ul1)*60.0);
 			freeFlowTime[i] = congestedTime[i];
@@ -1181,14 +1177,22 @@ public class Network implements Serializable {
 	
 	public double applyLinkTransitVdf ( int hwyLinkIndex, int transitVdfIndex ) {
 		
+        double result = -1.0;
+        
 		// calculate the link in-vehicle travel times based on the transit vdf index for the link passed in
-		double result = ftLc.solve(hwyLinkIndex, transitVdfIndex);
+        try {
+
+            result = ftLc.solve(hwyLinkIndex, transitVdfIndex);
 		
-		if ( result < 0 || result == Double.NaN ) {
-			logger.error ( "invalid result in Network.applyLinkTransitVdf(int hwyLinkIndex, int transitVdfIndex).   hwyLinkIndex=" + hwyLinkIndex + ", transitVdfIndex = " + transitVdfIndex + ", result = "+ result );
-			System.exit(-1);
-		}
-			
+    		if ( result < 0 || result == Double.NaN )
+                throw new RuntimeException();
+            
+        }
+        catch (RuntimeException e) {
+            logger.error ( "invalid result in Network.applyLinkTransitVdf(int hwyLinkIndex, int transitVdfIndex).   hwyLinkIndex=" + hwyLinkIndex + ", transitVdfIndex = " + transitVdfIndex + ", result = "+ result );
+            throw new RuntimeException(e);
+        }
+        
 		return result;
 		
 	}
@@ -1829,6 +1833,7 @@ public class Network implements Serializable {
         double[] typeTime1 = new double[Constants.MAX_LINK_TYPE];
         double[] typeTime2 = new double[Constants.MAX_LINK_TYPE];
         double[] typeTime3 = new double[Constants.MAX_LINK_TYPE];
+        double[] typeTime4 = new double[Constants.MAX_LINK_TYPE];
 
         //String indexString = "Link Type";
         //int[] linkType = getLinkType();
@@ -1837,14 +1842,16 @@ public class Network implements Serializable {
 
         double[] congestedTime = (double[])linkTable.getColumnAsDouble( "congestedTime" );
         double[] freeFlowSpeed = (double[])linkTable.getColumnAsDouble( "freeFlowSpeed" );
-        double[] capacity = (double[])linkTable.getColumnAsDouble( "capacity" );
+        double[] distance =      (double[])linkTable.getColumnAsDouble( "dist" );
+        double[] capacity =      (double[])linkTable.getColumnAsDouble( "capacity" );
         
 
         for (int k=0; k < numLinks; k++) {
             typeFreq[linkType[k]]++;
             typeTime1[linkType[k]] += congestedTime[k];
-            typeTime2[linkType[k]] += freeFlowSpeed[k];
-            typeTime3[linkType[k]] += capacity[k];
+            typeTime2[linkType[k]] += distance[k];
+            typeTime3[linkType[k]] += freeFlowSpeed[k];
+            typeTime4[linkType[k]] += capacity[k];
             for (int m=0; m < numUserClasses; m++)
                 volumeSum[m][linkType[k]] += flow[m][k];
         }
@@ -1852,13 +1859,15 @@ public class Network implements Serializable {
         logger.info("");
         logger.info("");
         logger.info("");
-        String logRecord = String.format("%-10s", indexString);
+        String logRecord = String.format("%-10s %10s", indexString, "Num Links");
         for (int m=0; m < numUserClasses; m++)
-            logRecord += String.format("      class %c", userClasses[m]);
-        logRecord += "        total";
+            logRecord += String.format("        class %c", userClasses[m]);
+        logRecord += "          total";
         logRecord += "        avgTime";
-        logRecord += "        avgFfspd";
-        logRecord += "        avgCapacity";
+        logRecord += "        avgDist";
+        logRecord += "         avgSpd";
+        logRecord += "       avgFfspd";
+        logRecord += "    avgCapacity";
         logger.info( logRecord );
         for (int i=0; i < Constants.MAX_LINK_TYPE; i++) {
             totalVol = 0.0;
@@ -1868,13 +1877,16 @@ public class Network implements Serializable {
                 double avg1 = typeTime1[i]/typeFreq[i];
                 double avg2 = typeTime2[i]/typeFreq[i];
                 double avg3 = typeTime3[i]/typeFreq[i];
-                logRecord = String.format("%-8d", i);
+                double avg4 = typeTime4[i]/typeFreq[i];
+                logRecord = String.format("%-10d %10d", i, typeFreq[i]);
                 for (int m=0; m < numUserClasses; m++)
                     logRecord += String.format("   %12.2f", volumeSum[m][i]);
                 logRecord += String.format("   %12.2f", totalVol);
                 logRecord += String.format("   %12.2f", avg1);
                 logRecord += String.format("   %12.2f", avg2);
+                logRecord += String.format("   %12.2f", (avg2/(avg1/60.0)) );
                 logRecord += String.format("   %12.2f", avg3);
+                logRecord += String.format("   %12.2f", avg4);
                 logger.info( logRecord );
             }
         }

@@ -37,9 +37,12 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
@@ -680,10 +683,12 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         int startTime;
         int o;
         int d;
-        int group;
+        int group, mode;
         char modeChar;
-        int truckType;
+        String truckType;
+        double tripFactor = 1.0;
         int allTruckTripCount=0;
+
         
 
         double[] tripsByUserClass = new double[highwayModeCharacters.length];
@@ -708,9 +713,11 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     orig = (int)table.getValueAt( i+1, "origin" );
                     dest = (int)table.getValueAt( i+1, "destination" );
                     startTime = (int)table.getValueAt( i+1, "tripStartTime" );
-                    truckType = (int)table.getValueAt( i+1, "truckClass" );
+                    truckType = (String)table.getStringValueAt( i+1, "truckClass" );
+                    tripFactor = ET_DEFAULT_TRUCK_FACTOR;
     
-                    modeChar = highwayModeCharacters[truckType];
+                    mode = Integer.parseInt( truckType.substring(3) );
+                    modeChar = highwayModeCharacters[mode];
                     group = -1;
                     for (int j=1; j < networkAssignmentGroupChars.length; j++) {
                         for (int k=0; k < networkAssignmentGroupChars[j].length; k++) {
@@ -732,9 +739,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     // accumulate all peak period highway mode trips
                     if ( startTime >= startHour && startTime <= endHour ) {
     
-                        tripTable[group-1][o][d] += ET_DEFAULT_TRUCK_FACTOR;
-                        tripsByUserClass[truckType-1] += ET_DEFAULT_TRUCK_FACTOR;
-                        tripsByAssignmentGroup[group-1] += ET_DEFAULT_TRUCK_FACTOR;
+                        tripTable[group-1][o][d] += tripFactor;
+                        tripsByUserClass[mode-1] += tripFactor;
+                        tripsByAssignmentGroup[group-1] += tripFactor;
 
                         // accumulate district/district trip summaries by user class
                         multiclassVehicleDistrictTable[group][alphaDistrictIndex[orig]][alphaDistrictIndex[dest]] += ET_DEFAULT_TRUCK_FACTOR;
@@ -840,4 +847,78 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         return 1;
         
     }
+
+
+
+    public int writeDistrictReport ( String fileName ) {
+        
+        try {
+            
+            String record = null;
+
+            double[] rowTotals = new double[districtNames.length];
+            double[] colTotals = new double[districtNames.length];
+            double total = 0.0;
+            
+
+            
+            PrintWriter outStream =  new PrintWriter(new BufferedWriter( new FileWriter( fileName ) ) );
+
+            for (int m=0; m < networkNumUserClasses; m++) {
+
+                outStream.println( String.format("District - District Summary of vehicle trips for class %c:", highwayModeCharacters[m]) );
+                outStream.println ( "" );
+                
+                record = String.format("%-18s", "District");
+                for (int i=0; i < districtNames.length; i++)
+                    record += String.format("%18s", districtNames[i]);
+                record += String.format("%18s", "Total");
+
+                outStream.println ( record );
+
+                total = 0.0;
+                for (int i=0; i < districtNames.length; i++) {
+                    rowTotals[i] =  0.0;
+                    colTotals[i] =  0.0;
+                }
+                
+                for (int i=0; i < districtNames.length; i++) {
+
+                    record = String.format("%-18s", districtNames[i]);
+                    for (int j=0; j < districtNames.length; j++) {
+                        record += String.format("%18.1f", multiclassVehicleDistrictTable[m][i][j]);
+                        rowTotals[i] +=  multiclassVehicleDistrictTable[m][i][j];
+                        colTotals[j] +=  multiclassVehicleDistrictTable[m][i][j];
+                        total +=  multiclassVehicleDistrictTable[m][i][j];
+                    }
+                    record += String.format("%18.1f", rowTotals[i]);
+                    
+                    outStream.println ( record );
+
+                }
+                
+                record = String.format("%-18s", "Total");
+                for (int i=0; i < districtNames.length; i++)
+                    record += String.format("%18.1f", colTotals[i]);
+                record += String.format("%18.1f", total);
+
+                outStream.println ( record );
+                outStream.println ( "" );
+                outStream.println ( "" );
+                outStream.println ( "" );
+
+            }
+                
+            outStream.close();
+
+        }
+        catch (IOException e) {
+            logger.fatal("IO Exception writing district to district trip summary report to file: " + fileName, e );
+        }
+        
+        return 1;
+        
+    }
+
+    
 }

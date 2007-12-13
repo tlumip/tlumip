@@ -37,9 +37,6 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 
-    static final int port = 6003;
-    static final String dataServerName = "networkDataServer";
-    
     Network g = null;
     AuxTrNet ag = null;
     ShortestPathTreeH sp = null;
@@ -48,7 +45,7 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     
     public NetworkHandler() {
-        ns = NetworkDataServer.getInstance( this, port, dataServerName );
+        ns = NetworkDataServer.getInstance( this, networkDataServerPort, dataServerName );
     }
 
     
@@ -65,7 +62,7 @@ public class NetworkHandler implements NetworkHandlerIF {
             
             // return either a local instance or an rpc instance depending on how the handler was defined.
             Boolean isLocal = DafNode.getInstance().isHandlerLocal( HANDLER_NAME );
-
+            
             if ( isLocal == null )
                 // handler name not found in config file, so create a local instance.
                 return new NetworkHandler();
