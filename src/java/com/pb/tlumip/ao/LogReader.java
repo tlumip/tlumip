@@ -15,7 +15,7 @@ import java.io.FilenameFilter;
  *          </p>
  * @author: crf
  */
-public class LogReader_v2 {
+public class LogReader {
     private static final long MILLISECONDS_IN_A_SECOND = 1000;
     private static final long MILLIESECONDS_IN_A_MINUTE = 60* MILLISECONDS_IN_A_SECOND;
     private static final long MILLISECONDS_IN_AN_HOUR = MILLIESECONDS_IN_A_MINUTE *60;
@@ -481,7 +481,7 @@ public class LogReader_v2 {
      *        The full path and filename of the output file to put the summary csv file.
      */
     public static void readAndReportLogs(String logDirectory, String logBaseName, String outputFileName) {
-        LogReader_v2 lr = new LogReader_v2();
+        LogReader lr = new LogReader();
         lr.readLogsAndReport(logDirectory,logBaseName,outputFileName);
     }
 
