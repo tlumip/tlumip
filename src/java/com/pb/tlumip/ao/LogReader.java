@@ -23,6 +23,7 @@ public class LogReader {
 
     private static final String MODULE_SUMMARY_FILE_NAME = "ModuleSummary.csv";
     private static final String PI_ITERATION_SUMMARY_FILE_NAME = "PiIterationSummary.txt";
+    private static final String PT_SUMMARY_FILE_NAME = "PtIterationSummary.txt";
     private static final String TS_SUMMARY_FILE_NAME = "TsSummary.txt";
 
     private List<SegmentInformation> segments = new ArrayList<SegmentInformation>();
@@ -254,6 +255,59 @@ public class LogReader {
         return sb.toString();
     }
 
+    private void writePtSummary() {
+        EnumSet<Segment> ptSegments = EnumSet.of(Segment.PT_MC_LOGSUM,
+                                                 Segment.PT_AUTO_OWNERSHIP,
+                                                 Segment.PT_WORKPLACE_LOCATION,
+                                                 Segment.PT_DC_LOGSUM,
+                                                 Segment.PT_HH_PROCESSING);
+        TextFile ptSummary = new TextFile();
+        ptSummary.addLine("**PT Summary**");
+        Calendar start = null;
+        Calendar end = null;
+
+        for (SegmentInformation si : segments) {
+            if (si.segment == Segment.MODULE && (si.startCapturedGroups[1].equalsIgnoreCase("PT") || si.startCapturedGroups[1].equalsIgnoreCase("PTDAF"))) {
+                if (end != null) {
+                    ptSummary.addLine("\tFinish up time: " + getTimeDifference(si.end,end));
+                }
+                start = si.start;
+                end = si.end;
+                ptSummary.addLine("PT run started at: " + getStringTime(start));
+            } else if (ptSegments.contains(si.segment)) {
+                if (start != null) {
+                    ptSummary.addLine("\tStart up time: " + getTimeDifference(start,si.start));
+                    start = null;
+                }
+                switch (si.segment) {
+                    case PT_MC_LOGSUM : {
+                        ptSummary.addLine("\tMC logsum time: " + getTimeDifference(si.start,si.end));
+                        break;
+                    }
+                    case PT_AUTO_OWNERSHIP : {
+                        ptSummary.addLine("\tAuto-ownership time: " + getTimeDifference(si.start,si.end));
+                        break;
+                    }
+                    case PT_WORKPLACE_LOCATION : {
+                        ptSummary.addLine("\tWorkplace location time: " + getTimeDifference(si.start,si.end));
+                        break;
+                    }
+                    case PT_DC_LOGSUM : {
+                        ptSummary.addLine("\tDC logsum time: " + getTimeDifference(si.start,si.end));
+                        break;
+                    }
+                    case PT_HH_PROCESSING : {
+                        ptSummary.addLine("\tHousehold processing time: " + getTimeDifference(si.start,si.end));
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        ptSummary.writeTo(outputsDirectory.toString() + File.separator + PT_SUMMARY_FILE_NAME);
+    }
+
     private void writeTsSummary() {
         TextFile tsSummary = new TextFile();
         tsSummary.addLine("**TS Summary**");
@@ -312,6 +366,7 @@ public class LogReader {
     private void writeSummaries() {
         writeModuleSummary();
         writePiIterationSummary();
+        writePtSummary();
         writeTsSummary();
     }
 
@@ -373,17 +428,12 @@ public class LogReader {
         PI("AO will now start PI for simulation year (\\d\\d\\d\\d)","pi is complete"),
         PIDAF("AO will now start PIDAF for simulation year (\\d\\d\\d\\d)","pidaf is complete"),
         MODULE("AO will now start (.[^iI].*) for simulation year (\\d\\d\\d\\d)","(.+) is complete"),
-//        ED("AO will now start ED for simulation year (\\d\\d\\d\\d)","ed is complete"),
-//        ALD("AO will now start ALD for simulation year (\\d\\d\\d\\d)","ald is complete"),
-//        SPG1("AO will now start SPG1 for simulation year (\\d\\d\\d\\d)","spg1 is complete"),
-//        PI("AO will now start PI for simulation year (\\d\\d\\d\\d)","pi is complete"),
-//        PIDAF("AO will now start PIDAF for simulation year (\\d\\d\\d\\d)","pidaf is complete"),
-//        SPG2("AO will now start SPG2 for simulation year (\\d\\d\\d\\d)","spg2 is complete"),
-//        CT("AO will now start CT for simulation year (\\d\\d\\d\\d)","ct is complete"),
-//        ET("AO will now start ET for simulation year (\\d\\d\\d\\d)","et is complete"),
-//        TS("AO will now start TS for simulation year (\\d\\d\\d\\d)","ts is complete"),
-//        TSDAF("AO will now start TS DAF for simulation year (\\d\\d\\d\\d)","tsdaf is complete"),
         PI_ITERATION(".*Starting iteration (\\d+)-(\\d+).*",".*End of iteration (\\d+).  Time in seconds: (\\d+\\.\\d+).*"),
+        PT_MC_LOGSUM("MasterTask, Sending out mode choice logsum calculation work"," Signaling that the ModeChoice Logsums are finished."),
+        PT_AUTO_OWNERSHIP("MasterTask, Sending out auto-ownership work","MasterTask, Signaling that the AutoOwnership is finished."),
+        PT_WORKPLACE_LOCATION("MasterTask, Sending calculate workplace location work","MasterTask, Signaling that the Workplace Location is finished."),
+        PT_DC_LOGSUM("MasterTask, Sending destination choice logsums work","MasterTask, Signaling that the Destination Choice Logsums are finished."),
+        PT_HH_PROCESSING("MasterTask, Starting ldt/sdt household processing work","MasterTask, Signaling that the all Hhs have been processed."),
         TSDAF_HWY("AO will now start TS DAF for simulation year (\\d\\d\\d\\d)|done with peak period transit loading and skimming\\.","done with (.*peak) highway assignment\\."),
         TS_TRANSIT("done with (.*)peak highway assignment\\.|done writing (.*) skims files\\.","done writing (.*peak) (.*) skims files\\.")
         ;
