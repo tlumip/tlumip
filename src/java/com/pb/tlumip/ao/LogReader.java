@@ -186,13 +186,15 @@ public class LogReader {
                 currentIteration = iteration;
                 if (si.endCapturedGroups != null)
                     iterationClump.get(currentPiSegment).get(currentCalibrationIteration).add((long) (Float.valueOf(si.endCapturedGroups[2])*1000.0f));
+                previousEnd = si.end;
             }
         }
+        startEndMap.get(currentPiSegment)[1] = previousEnd;
 
         TextFile piIterationSummary = new TextFile();
         piIterationSummary.addLine("**PI Iteration Summary**\n");
         for (SegmentInformation piSegment : iterationClump.keySet()) {
-            piIterationSummary.addLine(getPiIterationSummary(iterationClump.get(piSegment),startEndMap.get(piSegment)[0],startEndMap.get(piSegment)[0],piSegment));
+            piIterationSummary.addLine(getPiIterationSummary(iterationClump.get(piSegment),startEndMap.get(piSegment)[0],startEndMap.get(piSegment)[1],piSegment));
         }
         piIterationSummary.writeTo(outputsDirectory.toString() + File.separator + PI_ITERATION_SUMMARY_FILE_NAME);
 
@@ -248,9 +250,8 @@ public class LogReader {
 
 
         sb.append("\tTotal iteration time: ").append(getStringDuration(iterationTime)).append("\n");
-//        if (piSegment.end != null)
-//            System.out.println(lastTimes.get(lastTimes.size() - 1).getTime().toString() + ":" + piSegment.start.getTime().toString() + ":" + piSegment.end.getTime().toString());
-        sb.append("\tFinish up time: ").append(getTimeDifference(end,piSegment.end)).append("\n");
+        if (piSegment.end != null && end != null)
+            sb.append("\tFinish up time: ").append(getTimeDifference(end,piSegment.end)).append("\n");
 
         return sb.toString();
     }
@@ -536,7 +537,9 @@ public class LogReader {
     }
 
     public static void main(String ... args) {
-       readAndReportLogs("c:\\transfers\\logtest","mainevent.log,node0_event.log", "c:\\transfers\\logtest");
+       //readAndReportLogs("c:\\transfers\\logtest","mainevent.log,node0_event.log", "c:\\transfers\\logtest");
+        readAndReportLogs("c:\\transfers\\logtest","main_event_nn.log,node0_event_nn.log", "c:\\transfers\\logtest");
+        
     }
 
 
