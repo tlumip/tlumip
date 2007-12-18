@@ -26,7 +26,8 @@ package com.pb.tlumip.ct;
 // @author "Rick Donnelly <rdonnelly@pbtfsc.com>
 // @version "1.0, 04/12/04"
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class Truck3 {
   private static final int DEFAULT_ARRAYLIST_SIZE = 5;
