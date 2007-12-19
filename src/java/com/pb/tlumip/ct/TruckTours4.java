@@ -21,18 +21,8 @@ import com.pb.common.matrix.ZipMatrixReader;
 import com.pb.common.util.ResourceUtil;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Random;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 class TruckTours4 {
     protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
@@ -77,7 +67,8 @@ class TruckTours4 {
                 String mode = st.nextToken(); //mode of transport
                 boolean transShipped = Boolean.valueOf(st.nextToken()).booleanValue();  //transShipped
                 String pattern = st.nextToken(); //transshipment pattern
-                shipments.add(new Shipment(sctg,obz,oaz,dbz,daz,pounds,value,mode,transShipped,pattern));
+                float alphaDistance =  Float.parseFloat(st.nextToken());
+                shipments.add(new Shipment(sctg,obz,oaz,dbz,daz,pounds,value,mode,transShipped,pattern,alphaDistance));
             }
             br.close();
         } catch (IOException e) { e.printStackTrace(); }
@@ -153,8 +144,8 @@ class TruckTours4 {
       int nTrucks = trucks.size();
       logger.info("Writing "+nTrucks+" truck tours to "+f);
 
-      bw.write("origin,tripStartTime,distance,destination,tourMode,tripMode,"+
-        "tripFactor,truckID,truckType,carrierType,commodity,weight");
+      bw.write("origin,tripStartTime,duration,destination,tourMode,tripMode,"+
+        "tripFactor,truckID,truckType,carrierType,commodity,weight,distance");
       bw.newLine();
 
       for (int n=0; n<nTrucks; n++)
@@ -169,8 +160,8 @@ class TruckTours4 {
   public static void main (String[] args) {
     boolean collapseIntrazonalTrips = true;
     Date start = new Date();
-    ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/ct/ct.properties"));
-    ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/global.properties"));
+    ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_CT/t1/ct/ct.properties"));
+    ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_CT/t1/global.properties"));
         String inputPath = ResourceUtil.getProperty(rb, "ct.base.data");
       logger.info("input path: " + inputPath);
     String outputPath = ResourceUtil.getProperty(rb, "ct.current.data");

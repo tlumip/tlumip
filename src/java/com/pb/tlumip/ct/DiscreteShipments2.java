@@ -23,19 +23,8 @@ import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 import com.pb.tlumip.model.ZoneMap;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.ResourceBundle;
-import java.util.Vector;
+import java.io.*;
+import java.util.*;
 
 public class DiscreteShipments2 {
     protected static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
@@ -168,7 +157,7 @@ public class DiscreteShipments2 {
                                 destinationAlpha = zoneMap.getAlphaZone(destinationBeta, commodity);
                             }
 
-
+                            float alphaODDist = alphaDistMatrix.getValueAt(originAlpha, destinationAlpha);
 
                             float betaODDist = betaDistMatrix.getValueAt(originBeta,destinationBeta);
 
@@ -186,12 +175,12 @@ public class DiscreteShipments2 {
                                 //first from the transShipment Zone to the Destination zone and then the
                                 //Origin zone to the transShipment Zone.
                                 if(!wzUtil.isWorldZone(transShipmentBeta)){
-                                    transShipmentAlpha = destinationAlpha;   // Replace with search function
+                                    transShipmentAlpha = destinationAlpha;   // Replace with search function                                    
                                     // Generate the trip from the transshipment point to final destination
                                     transShipmentPattern = "XD";
                                     shipments.add(new Shipment(commodity, transShipmentBeta, transShipmentAlpha,
                                                     destinationBeta, destinationAlpha, shipmentList[i], value, "STK", transShipped,
-                                                    transShipmentPattern));
+                                                    transShipmentPattern, alphaODDist));
                                     // Specify the destination end to be the transshipment point
                                     destinationBeta = transShipmentBeta;
                                     destinationAlpha = transShipmentAlpha;
@@ -202,7 +191,7 @@ public class DiscreteShipments2 {
                             // And finally, add the leg from origin to either ultimate destination or transshipment point
                             //This code is used for the case of internal to worldZone with transShipment as well.
                             shipments.add(new Shipment(commodity, originBeta, originAlpha, destinationBeta, destinationAlpha,
-                                            shipmentList[i], value, "STK", transShipped, transShipmentPattern));
+                                            shipmentList[i], value, "STK", transShipped, transShipmentPattern, alphaODDist));
                         }
                     }
                 }
