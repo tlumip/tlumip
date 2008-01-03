@@ -590,7 +590,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         double totalDollarsProduction = 0.0;
         for(int row=1; row <= dollars.getRowCount(); row++){
             if(!dollars.getStringValueAt(row, 1).equalsIgnoreCase("Capitalists" ) &&
-                    !dollars.getStringValueAt(row, 1).equalsIgnoreCase("GovInstitiutions")){
+                    !dollars.getStringValueAt(row, 1).equalsIgnoreCase("GovInstitutions")){
                 totalDollarsProduction += dollars.getValueAt(row, 2);
             }
         }
