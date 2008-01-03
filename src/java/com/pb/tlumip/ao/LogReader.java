@@ -13,7 +13,7 @@ import java.io.FilenameFilter;
  *
  * @version 1.0 Dec 12, 2007 - 11:20:46 AM
  *          </p>
- * @author: crf
+ * @author crf
  */
 public class LogReader {
     private static final long MILLISECONDS_IN_A_SECOND = 1000;

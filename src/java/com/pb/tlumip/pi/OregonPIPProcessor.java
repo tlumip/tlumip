@@ -346,6 +346,8 @@ public class OregonPIPProcessor extends PIPProcessor {
             // write the updated PI input file
             String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
             CSVFileWriter writer = new CSVFileWriter();
+            writer.setMyDecimalFormat(new GeneralDecimalFormat("0.#########E0",10000000,.001));
+
             try {
                 writer.writeFile(actI, new File(piOutputsPath + "ActivitiesW.csv"));
             } catch (IOException e) {
@@ -656,6 +658,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         logger.info("Writing out the MakeUseW.csv file to the current pi directory");
         String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
         CSVFileWriter writer = new CSVFileWriter();
+        writer.setMyDecimalFormat(new GeneralDecimalFormat("0.#########E0",10000000,.001));
         try {
             writer.writeFile(makeUseITable, new File(piOutputsPath + "MakeUseW.csv"));
         } catch (IOException e) {
