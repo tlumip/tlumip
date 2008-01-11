@@ -554,8 +554,8 @@ public class TS {
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
         nhPeak.startDataServer();
-        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
-        //tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         logger.info ("Network data server running...");
         
         //tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
