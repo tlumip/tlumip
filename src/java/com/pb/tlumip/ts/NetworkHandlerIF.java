@@ -1,6 +1,7 @@
 package com.pb.tlumip.ts;
 
 
+import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.TrRoute;
 
 public interface NetworkHandlerIF {
@@ -108,9 +109,13 @@ public interface NetworkHandlerIF {
     public String getAssignmentResultsBnodeString ();
     public String getAssignmentResultsTimeString ();
     
+    public String[] getDistrictNames ();
+    public int[] getAlphaDistrictIndex ();
+
     public int setupHighwayNetworkObject ( String timePeriod, String[] propertyValues  );
-    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes );
+    public AuxTrNet setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes );
     
+    /*
     public TrRoute getTrRoute();
     public String getAccessMode();
     public int getMaxRoutes();
@@ -141,7 +146,6 @@ public interface NetworkHandlerIF {
     public int[] getAuxHwyLink();
     public char[] getRteMode();
     public int[] getStationDriveAccessNodes(int stationNode);
-    public String[] getDistrictNames ();
-    public int[] getAlphaDistrictIndex ();
+    */
     
 }

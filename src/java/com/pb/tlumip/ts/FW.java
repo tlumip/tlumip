@@ -17,12 +17,11 @@
 package com.pb.tlumip.ts;
 
 import com.pb.common.datafile.DataWriter;
-import com.pb.common.util.ResourceUtil;
 
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
@@ -37,9 +36,6 @@ public class FW {
     ResourceBundle componentRb;
     ResourceBundle globalRb;
     
-    HashMap appPropertyMap;
-    HashMap globalPropertyMap;
-	
     NetworkHandlerIF nh;
     
     double [] lambdas;
@@ -67,11 +63,8 @@ public class FW {
         this.nh = nh;
         this.highwayModeCharacters = highwayModeCharacters;
         
-        this.appPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(componentRb);
-        this.globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-        
-        maxFwIters = Integer.parseInt ( (String)appPropertyMap.get( "NUM_FW_ITERATIONS" ) );
-        fwGap = Double.parseDouble ( (String)appPropertyMap.get( "FW_RELATIVE_GAP" ) );
+        maxFwIters = Integer.parseInt ( componentRb.getString( "NUM_FW_ITERATIONS" ) );
+        fwGap = Double.parseDouble ( componentRb.getString( "FW_RELATIVE_GAP" ) );
 
         lambdas = new double[maxFwIters];
 
@@ -115,32 +108,39 @@ public class FW {
             }
 
             
+            double ptSampleRate = 1.0;
+            String rateString = globalRb.getString( "pt.sample.rate" );
+            if ( rateString != null )
+                ptSampleRate = Double.parseDouble( rateString );
+
+            
             int startHour = 0;
             int endHour = 0;
-            if ( timePeriod.equalsIgnoreCase( "peak" ) ) {
-                // get peak period definitions from property files
-                startHour = Integer.parseInt((String)globalPropertyMap.get("am.peak.start"));
-                endHour = Integer.parseInt( (String)globalPropertyMap.get("am.peak.end") );
+            if ( timePeriod.equalsIgnoreCase( "ampeak" ) ) {
+                // get am peak period definitions from property files
+                startHour = Integer.parseInt( globalRb.getString( "am.peak.start") );
+                endHour = Integer.parseInt( globalRb.getString( "am.peak.end" ) );
             }
-            else if ( timePeriod.equalsIgnoreCase( "offpeak" ) ) {
-                // get off-peak period definitions from property files
-                startHour = Integer.parseInt((String)globalPropertyMap.get("offpeak.start"));
-                endHour = Integer.parseInt( (String)globalPropertyMap.get("offpeak.end") );
+            else if ( timePeriod.equalsIgnoreCase( "pmpeak" ) ) {
+                // get pm peak period definitions from property files
+                startHour = Integer.parseInt( globalRb.getString( "pm.peak.start") );
+                endHour = Integer.parseInt( globalRb.getString( "pm.peak.end" ) );
             }
-            
-            
-            
-            double ptSampleRate;
-            String ptSampleRateProperty = (String)globalPropertyMap.get("pt.sample.rate");
-            if ( ptSampleRateProperty != null )
-                ptSampleRate = Double.parseDouble( ptSampleRateProperty );
-            else
-                ptSampleRate = 1.0;
+            else if ( timePeriod.equalsIgnoreCase( "mdoffpeak" ) ) {
+                // get md off-peak period definitions from property files
+                startHour = Integer.parseInt( globalRb.getString( "md.offpeak.start") );
+                endHour = Integer.parseInt( globalRb.getString( "md.offpeak.end" ) );
+            }
+            else if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
+                // get nt off-peak period definitions from property files
+                startHour = Integer.parseInt( globalRb.getString( "nt.offpeak.start") );
+                endHour = Integer.parseInt( globalRb.getString( "nt.offpeak.end" ) );
+            }
             
             
             AonFlowHandlerIF ah = AonFlowHandler.getInstance( nh.getRpcConfigFileName() );
             logger.info ( "FW.iterate() creating an AonFlowHandler and calling its setup()." ); 
-            ah.setup( (String)appPropertyMap.get("distDistDemand.summary"), nh.getRpcConfigFileName(), (String)globalPropertyMap.get("sdt.person.trips"), (String)globalPropertyMap.get("ldt.vehicle.trips"), ptSampleRate, (String)globalPropertyMap.get("ct.truck.trips"), (String)globalPropertyMap.get("et.truck.trips"), startHour, endHour, highwayModeCharacters, nh );
+            ah.setup( componentRb.getString("distDistDemand.summary"), nh.getRpcConfigFileName(), globalRb.getString("sdt.person.trips"), globalRb.getString("ldt.vehicle.trips"), ptSampleRate, globalRb.getString("ct.truck.trips"), globalRb.getString("et.truck.trips"), startHour, endHour, highwayModeCharacters, nh );
             
             
             // loop thru FW iterations
@@ -412,19 +412,24 @@ public class FW {
 
 
     private void createSelectLinkAnalysisDiskObject ( double[] fwFlowProps ) {
-        
-        // get the locations of the files for storing the network and assignment proportions
-        String networkDiskObjectFile = (String)appPropertyMap.get("NetworkDiskObject.file");
-        String proportionsDiskObjectFile = (String)appPropertyMap.get("ProportionsDiskObject.file");
 
-            
-        // write the network and saved proportions to DiskObject files for subsequent select link analysis
-        if ( networkDiskObjectFile != null )
+        // get the locations of the files for storing the network and assignment proportions
+        try {
+            String networkDiskObjectFile = componentRb.getString("NetworkDiskObject.file");
             DataWriter.writeDiskObject ( nh, networkDiskObjectFile, "highwayNetwork_" + timePeriod );
-        
-        if ( proportionsDiskObjectFile != null )
+        }
+        catch ( MissingResourceException e ) {
+            // do nothing; missing key is valid; no file will be written.
+        }
+
+        try {
+            String proportionsDiskObjectFile = componentRb.getString("ProportionsDiskObject.file");
             DataWriter.writeDiskObject ( fwFlowProps, proportionsDiskObjectFile, "fwProportions_" + timePeriod );
-    
+        }
+        catch ( MissingResourceException e ) {
+            // do nothing; missing key is valid; no file will be written.
+        }
+
     }
 
     

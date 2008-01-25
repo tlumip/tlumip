@@ -454,7 +454,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                 o = networkNodeIndexArray[orig];
                 d = networkNodeIndexArray[dest];
                 
-                if ( (startTime >= startHour && startTime <= endHour) ) {
+                if ( tripStartsInCurrentPeriod ( startTime ) ) {
                         
                     // accumulate a frequency table of all trips within period by mode
                     totalPeriod++;
@@ -560,6 +560,29 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     }
     
 
+
+    private boolean tripStartsInCurrentPeriod ( int tripStartTime ) {
+        
+        boolean tripStartsInCurrentPeriod = false;
+        
+        // if startHour > endHour, the period wraps midnight, so two checks are required
+        if ( startHour > endHour) {
+            if ( ( tripStartTime >= startHour && tripStartTime <= 2400 ) || ( tripStartTime >= 0 && tripStartTime <= endHour ) )
+                tripStartsInCurrentPeriod = true;
+        }
+        else {
+            if ( tripStartTime >= startHour && tripStartTime <= endHour )
+                tripStartsInCurrentPeriod = true;
+        }
+        
+        return tripStartsInCurrentPeriod;
+        
+    }
+
+    
+    
+    
+    
     private double[][][] getTruckAssignmentGroupTripTableFromCTList () {
 
         int orig;
@@ -622,7 +645,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
                     
                     // accumulate all peak period highway mode trips
-                    if ( startTime >= startHour && startTime <= endHour ) {
+                    if ( tripStartsInCurrentPeriod ( startTime ) ) {
     
                         tripTable[group-1][o][d] += tripFactor;
                         tripsByUserClass[mode-1] += tripFactor;
@@ -737,7 +760,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
                     
                     // accumulate all peak period highway mode trips
-                    if ( startTime >= startHour && startTime <= endHour ) {
+                    if ( tripStartsInCurrentPeriod ( startTime ) ) {
     
                         tripTable[group-1][o][d] += tripFactor;
                         tripsByUserClass[mode-1] += tripFactor;

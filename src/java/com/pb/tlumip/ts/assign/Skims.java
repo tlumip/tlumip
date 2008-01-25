@@ -105,13 +105,18 @@ public class Skims {
         String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
         
         // get peak or off-peak volume factor from properties file
+        // get peak or off-peak volume factor from properties file
         String volumeFactor="";
-        if ( timePeriod.equalsIgnoreCase( "peak" ) )
+        if ( timePeriod.equalsIgnoreCase( "ampeak" ) )
             volumeFactor = (String)globalMap.get("am.peak.volume.factor");
-        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
-            volumeFactor = (String)globalMap.get("offpeak.volume.factor");
+        else if ( timePeriod.equalsIgnoreCase( "mdoffpeak" ) )
+            volumeFactor = (String)globalMap.get("md.offpeak.volume.factor");
+        else if ( timePeriod.equalsIgnoreCase( "pmpeak" ) )
+            volumeFactor = (String)globalMap.get("pm.peak.volume.factor");
+        else if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) )
+            volumeFactor = (String)globalMap.get("nt.offpeak.volume.factor");
         else {
-            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
+            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." );
             System.exit(-1);
         }
         

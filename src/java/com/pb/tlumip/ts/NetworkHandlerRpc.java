@@ -22,6 +22,7 @@ import java.util.Vector;
 
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
+import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.TrRoute;
 
 import org.apache.log4j.Logger;
@@ -1230,8 +1231,8 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
     
     
     
-    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes ) {
-        return 0;
+    public AuxTrNet setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes ) {
+        return null;
     }
     
     public TrRoute getTrRoute() {

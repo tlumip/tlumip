@@ -123,7 +123,7 @@ public class TS {
         
         
         
-        String assignmentResultsTarget = String.format( "%sOutput.fileName", assignmentPeriod.toLowerCase() );
+        String assignmentResultsTarget = String.format( "%s.output.fileName", assignmentPeriod.toLowerCase() );
         String assignmentResultsFileName = appRb.getString( assignmentResultsTarget );
 
         
@@ -155,7 +155,7 @@ public class TS {
 				Arrays.fill(dummyTripTable[i][j], 1.0);
 			}
 		}
-		checkODConnectivity(nh, dummyTripTable, "peak");
+		checkODConnectivity(nh, dummyTripTable, "amPeak");
 
     }
     
@@ -169,13 +169,25 @@ public class TS {
         int startHour = -1;
         int endHour = -1;
         
-        if ( timePeriod.equalsIgnoreCase("peak")) {
+        if ( timePeriod.equalsIgnoreCase("ampeak")) {
             startHour = Integer.parseInt((String)globalMap.get("am.peak.start"));
             endHour = Integer.parseInt( (String)globalMap.get("am.peak.end") );
         }
+        else if ( timePeriod.equalsIgnoreCase("pmpeak")) {
+            startHour = Integer.parseInt((String)globalMap.get("pm.peak.start"));
+            endHour = Integer.parseInt( (String)globalMap.get("pm.peak.end") );
+        }
+        else if ( timePeriod.equalsIgnoreCase("mdoffpeak")) {
+            startHour = Integer.parseInt((String)globalMap.get("md.offpeak.start"));
+            endHour = Integer.parseInt( (String)globalMap.get("md.offpeak.end") );
+        }
+        else if ( timePeriod.equalsIgnoreCase("ntoffpeak")) {
+            startHour = Integer.parseInt((String)globalMap.get("nt.offpeak.start"));
+            endHour = Integer.parseInt( (String)globalMap.get("nt.offpeak.end") );
+        }
         else {
-            startHour = Integer.parseInt((String)globalMap.get("offpeak.start"));
-            endHour = Integer.parseInt( (String)globalMap.get("offpeak.end") );
+            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." );
+            System.exit(-1);
         }
         
 
@@ -294,6 +306,7 @@ public class TS {
     
     public void writeHighwaySkimMatrices ( NetworkHandlerIF nh, char[] hwyModeChars ) {
         
+        
         Skims skims = new Skims(nh, appRb, globalRb);
         
         String assignmentPeriod = nh.getTimePeriod();
@@ -303,7 +316,8 @@ public class TS {
             String[] skimTypeArray = { "time", "dist", "toll" };
             skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, mode );
         }
-
+        
+        
     }
 
 
@@ -316,11 +330,11 @@ public class TS {
         TransitAssignAndSkimManager tsm = new TransitAssignAndSkimManager( nh, appRb, globalRb );
         
         if ( SKIM_ONLY ) {
-            tsm.assignAndSkimTransit ( assignmentPeriod, true );
+            tsm.assignAndSkimTransit ( nh, assignmentPeriod, true );
             logger.info ("done with " + assignmentPeriod + " period transit skimming.");
         }
         else {
-            tsm.assignAndSkimTransit ( assignmentPeriod, false);
+            tsm.assignAndSkimTransit ( nh, assignmentPeriod, false);
             logger.info ("done with " + assignmentPeriod + " period transit loading and skimming.");
         }
         
@@ -331,18 +345,8 @@ public class TS {
     public void loadAssignmentResults ( NetworkHandlerIF nh, ResourceBundle appRb ) {
         
         // get the filename where highway assignment total link flows and times are stored from the property file. 
-        HashMap propertyMap = ResourceUtil.changeResourceBundleIntoHashMap( appRb );
-        
-        String fileNameKey = "";
-        String assignmentPeriod = nh.getTimePeriod();
-        if ( assignmentPeriod.equalsIgnoreCase("peak") )
-            fileNameKey = "peakOutput.fileName";
-        else
-            fileNameKey = "offpeakOutput.fileName";
-                
-        String fileName = (String)propertyMap.get( fileNameKey );
-        
-        
+        String fileNameKey = String.format( "%s.output.fileName", nh.getTimePeriod() );
+        String fileName = appRb.getString( fileNameKey );
         
         // read the link data from the assignment results csv file into a TableDataSet 
         TableDataSet assignmentResults = null;
@@ -409,12 +413,16 @@ public class TS {
         
         // get peak or off-peak volume factor from properties file
         String volumeFactor="";
-        if ( timePeriod.equalsIgnoreCase( "peak" ) )
+        if ( timePeriod.equalsIgnoreCase( "ampeak" ) )
             volumeFactor = (String)globalMap.get("am.peak.volume.factor");
-        else if ( timePeriod.equalsIgnoreCase( "offpeak" ) )
-            volumeFactor = (String)globalMap.get("offpeak.volume.factor");
+        else if ( timePeriod.equalsIgnoreCase( "mdoffpeak" ) )
+            volumeFactor = (String)globalMap.get("md.offpeak.volume.factor");
+        else if ( timePeriod.equalsIgnoreCase( "pmpeak" ) )
+            volumeFactor = (String)globalMap.get("pm.peak.volume.factor");
+        else if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) )
+            volumeFactor = (String)globalMap.get("nt.offpeak.volume.factor");
         else {
-            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'peak' or 'offpeak'." );
+            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." );
             System.exit(-1);
         }
         
@@ -460,7 +468,7 @@ public class TS {
 
         long startTime = System.currentTimeMillis();
         
-        String period = "peak";
+        String period = "ampeak";
 
         // generate a NetworkHandler object to use for peak period assignments and skimming
         logger.info( "TS.bench() getting a NetworkHandler instance and setting the config file name value." );
@@ -517,7 +525,7 @@ public class TS {
 /*        
         // generate a NetworkHandler object to use for peak period assignments and skimming
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
-        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        tsMain.setupNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "ampeak" );
         
         nhPeak.checkForIsolatedLinks();
 
@@ -533,9 +541,9 @@ public class TS {
         // run peak highway assignment
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
-        tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "ampeak" );
 //        nhPeak.checkForIsolatedLinks();
-//        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+//        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "ampeak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         nhPeak.startDataServer();
 
@@ -552,13 +560,13 @@ public class TS {
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
-        tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "peak" );
+        tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "ampeak" );
         nhPeak.startDataServer();
-        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "peak" );
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "ampeak" );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         logger.info ("Network data server running...");
         
-        //tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
       
        
         

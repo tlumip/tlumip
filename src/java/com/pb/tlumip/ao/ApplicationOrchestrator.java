@@ -481,14 +481,21 @@ public class ApplicationOrchestrator {
     }
 
     public void runTSModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
-        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, null);
+        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, null, null);
         tsModel.startModel(baseYear, timeInterval);
     }
 
     public void runTSDAFModel(int baseYear, int timeInterval, String pathToAppRb, String pathToGlobalRb, String configFileName){
         ResourceBundle appRb = findResourceBundle(pathToAppRb);
         ResourceBundle globalRb = findResourceBundle(pathToGlobalRb);
-        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, configFileName);
+        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, configFileName, null);
+        tsModel.startModel(baseYear, timeInterval);
+    }
+
+    public void runDailyTSDAFModel(int baseYear, int timeInterval, String pathToAppRb, String pathToGlobalRb, String configFileName){
+        ResourceBundle appRb = findResourceBundle(pathToAppRb);
+        ResourceBundle globalRb = findResourceBundle(pathToGlobalRb);
+        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, configFileName, Boolean.TRUE);
         tsModel.startModel(baseYear, timeInterval);
     }
 
@@ -614,8 +621,9 @@ public class ApplicationOrchestrator {
                 logger.info("AO will now start TS for simulation year " + (baseYear+t));
                 ao.runTSModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TSDAF")){
-                logger.info("AO will now start TS DAF for simulation year " + (baseYear+t));
-                ao.runTSDAFModel(baseYear, t, pathToAppRb, pathToGlobalRb, configFileOrNodeName);
+                logger.info("AO will now start TS DAF peak & offPeak periods models for simulation year " + (baseYear+t));
+//                ao.runTSDAFModel(baseYear, t, pathToAppRb, pathToGlobalRb, configFileOrNodeName);
+                ao.runDailyTSDAFModel(baseYear, t, pathToAppRb, pathToGlobalRb, configFileOrNodeName);
             }else {
                 logger.fatal("AppName not recognized");
             }
@@ -630,8 +638,6 @@ public class ApplicationOrchestrator {
             throw new RuntimeException("An application threw the following error", e);
         }
     }
-
-
 
 
 }

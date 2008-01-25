@@ -1943,7 +1943,7 @@ public class Network implements Serializable {
 	
 	
 
-	public void writeNetworkAttributes ( String fileName ) {
+	public void writeHighwayAsignmentResults ( String fileName ) {
 
 		int[] ia = getIa();
 		int[] ib = getIb();
@@ -1964,24 +1964,22 @@ public class Network implements Serializable {
 			outStream = new PrintWriter (new BufferedWriter( new FileWriter(fileName) ) );
 
 			
-			outStream.print ( String.format("id,%s,%s,%s,%s,", OUTPUT_ANODE_FIELD, OUTPUT_BNODE_FIELD, OUTPUT_CAPACITY_FIELD, OUTPUT_TIME_FIELD) );
+            String tempString = String.format( "id,%s,%s,%s,%s", OUTPUT_ANODE_FIELD, OUTPUT_BNODE_FIELD, OUTPUT_CAPACITY_FIELD, OUTPUT_TIME_FIELD );
             
-			for (int j=0; j < userClasses.length-1; j++)
-				outStream.print( OUTPUT_FLOW_FIELDS_START_WITH + "_" + j + "," );
+			for (int j=0; j < userClasses.length; j++)
+				tempString += String.format( ",%s_%c,", OUTPUT_FLOW_FIELDS_START_WITH, userClasses[j] );
 			
-			outStream.println( OUTPUT_FLOW_FIELDS_START_WITH + "_" + (userClasses.length-1) );
+			outStream.println( tempString );
 			
 
 			
 			for (int k=0; k < ia.length; k++) {
 			
-                String tempString = String.format("%d,%d,%d,%.4f,%.4f,", k, indexNode[ia[k]], indexNode[ib[k]], capacity[k], congestedTime[k]);
+                tempString = String.format("%d,%d,%d,%.4f,%.4f", k, indexNode[ia[k]], indexNode[ib[k]], capacity[k], congestedTime[k]);
 								
-				for (int j=0; j < userClasses.length-1; j++)
-					tempString += String.format("%.4f,", flow[j][k]);
+				for (int j=0; j < userClasses.length; j++)
+					tempString += String.format(",%.4f,", flow[j][k]);
 	
-                tempString += String.format("%.4f,", flow[userClasses.length-1][k]);
-                
 				outStream.println( tempString );
 
 			}
@@ -1991,7 +1989,7 @@ public class Network implements Serializable {
 		
 		}
 		catch (IOException e) {
-			logger.fatal ("I/O exception writing network attributes file.", e);
+			logger.fatal ("I/O exception writing assignment results file.", e);
 		}
 
 	}

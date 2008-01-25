@@ -212,6 +212,7 @@ public class NetworkDataServer {
         return Util.doubleVector( nh.getCoordsForLink(k) );
     }
     
+    /*
     public Vector getTransitRouteLinkIds(String rteName) {
         return Util.intVector( nh.getTransitRouteLinkIds(rteName) );
     }
@@ -236,6 +237,7 @@ public class NetworkDataServer {
     public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
         return nh.getCentroidTransitDriveAccessLinkCoords(zones);       
     }
+    */
     
     public Vector getSpNodeList(int startNode, int endNode) {
         return Util.intVector( nh.getShortestPathNodes(startNode, endNode) );

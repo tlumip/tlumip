@@ -27,6 +27,7 @@ import com.pb.models.pt.TripModeType;
 import com.pb.models.pt.ldt.LDTripModeType;
 import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
 import com.pb.common.datafile.OLD_CSVFileReader;
@@ -34,16 +35,21 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
-import com.pb.common.util.ResourceUtil;
 
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -57,6 +63,8 @@ public class TransitAssignAndSkimManager {
 
 	protected static Logger logger = Logger.getLogger(TransitAssignAndSkimManager.class);
 
+    protected static Object objLock = new Object();
+    
     static final boolean CREATE_NEW_NETWORK = true;
     boolean SKIM_ONLY = false;
 
@@ -72,11 +80,9 @@ public class TransitAssignAndSkimManager {
     
     
 
+    DemandHandler d = null;
     
-    NetworkHandlerIF nh = null;
-	
-	HashMap tsPropertyMap = null;
-    HashMap globalPropertyMap = null;
+ //   NetworkHandlerIF nh = null;
 	
     ResourceBundle appRb = null;
     ResourceBundle globalRb = null;
@@ -84,63 +90,154 @@ public class TransitAssignAndSkimManager {
     String skimFileExtension = null;
     String skimFileDirectory = null;
     
-    String transitRouteDataFilesDirectory = null;
+    String transitNetworkListings = null;
     String transitRoutesDirectory = null;
     int maxRoutes = 0;
 
+    String assignmentPeriod;
     
     HashMap fareZones = null;
+    HashMap intracityFareTable = null;
     
-    int[] indexNode = null;
-    int[] nodeIndex = null;
-    int[] alphaNumberArray = null;
     int[] zonesToSkim = null;
     int[] externalToAlphaInternal = null;
     int[] alphaExternalNumbers = null;
 
-    Matrix[] skimMatrices = null;
     HashMap savedBoardings = null;
-    HashMap intracityFareTable = null;
 
     
 	
     public TransitAssignAndSkimManager(NetworkHandlerIF nh, ResourceBundle appRb, ResourceBundle globalRb) {
 
-        // get the items in the properties file
-        tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap ( appRb );
-        globalPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap ( globalRb );
-
-        this.nh = nh;
         this.appRb = appRb;
         this.globalRb = globalRb;
         
-        // get some information from the properties file
-        transitRouteDataFilesDirectory = (String)tsPropertyMap.get("transitRouteDataFiles.directory");
-        transitRoutesDirectory = (String)tsPropertyMap.get("transitRoutes.directory");
-        maxRoutes = Integer.parseInt ( (String)tsPropertyMap.get("MAX_TRANSIT_ROUTES") );
+        transitNetworkListings = appRb.getString( "transitNetworkListings.directory" );
+        transitRoutesDirectory = appRb.getString( "transitRoutes.directory" );
+        
+        maxRoutes = Integer.parseInt ( appRb.getString( "MAX_TRANSIT_ROUTES" ) );
 
-        skimFileExtension = (String)globalPropertyMap.get("matrix.extension");
-        skimFileDirectory = (String)tsPropertyMap.get("transitSkims.directory");
+        skimFileExtension = globalRb.getString( "matrix.extension" );
+        skimFileDirectory = appRb.getString( "transitSkims.directory" );
 
         intracityFareTable = readIntracityTransitFareCsvFile();
         
         savedBoardings = new HashMap();
         
-        indexNode = nh.getIndexNode();
-        nodeIndex = nh.getNodeIndex();
-
+        assignmentPeriod = nh.getTimePeriod();
+        
+        // create demand handler to get trips to assign if SKIM_ONLY == false
+        if ( ! SKIM_ONLY )
+            createDemandHandler ( nh );
+            
+        initSkimMatrices ( nh, globalRb.getString( "alpha2beta.file" ) );
+        
     }    
     
+
     
-    public void assignAndSkimTransit ( String period ) {
-        assignAndSkimTransit ( period, false );
+    private void createDemandHandler ( NetworkHandlerIF nh ) {
+
+        // get the transit trip table to be assigned 
+        d = new DemandHandler();
+        
+        double sampleRate = 1.0;
+        String rateString = globalRb.getString( "pt.sample.rate" );
+        if ( rateString != null )
+            sampleRate = Double.parseDouble( rateString );
+
+        
+        int startHour = 0;
+        int endHour = 0;
+        if ( assignmentPeriod.equalsIgnoreCase( "ampeak" ) ) {
+            // get am peak period definitions from property files
+            startHour = Integer.parseInt( globalRb.getString( "am.peak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "am.peak.end" ) );
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "pmpeak" ) ) {
+            // get pm peak period definitions from property files
+            startHour = Integer.parseInt( globalRb.getString( "pm.peak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "pm.peak.end" ) );
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "mdoffpeak" ) ) {
+            // get md off-peak period definitions from property files
+            startHour = Integer.parseInt( globalRb.getString( "md.offpeak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "md.offpeak.end" ) );
+        }
+        else if ( assignmentPeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
+            // get nt off-peak period definitions from property files
+            startHour = Integer.parseInt( globalRb.getString( "nt.offpeak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "nt.offpeak.end" ) );
+        }
+        
+        d.setup( globalRb.getString( "sdt.person.trips" ), globalRb.getString( "ldt.vehicle.trips" ), sampleRate, globalRb.getString( "ct.truck.trips" ), globalRb.getString( "et.truck.trips" ), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+
+    }
+    
+    
+    public void assignAndSkimTransit ( NetworkHandlerIF nh, String period ) {
+        assignAndSkimTransit ( nh, period, false );
     }
 
     
-    public void assignAndSkimTransit ( String period, boolean skimOnlyFlag ) {
+    public void assignAndSkimTransit ( NetworkHandlerIF nh, String period, boolean skimOnlyFlag ) {
         
         SKIM_ONLY = skimOnlyFlag;
         
+        int numberOfThreads = java.lang.Runtime.getRuntime().availableProcessors();
+        ExecutorService exec = Executors.newFixedThreadPool(numberOfThreads);
+        ArrayList<Future<String>> results = new ArrayList<Future<String>>();
+
+        
+        // drive access air loading and skims
+        String[] drAirTypes = { "air" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
+        
+        // drive access hsr loading and skims
+        String[] drHsrTypes = { "hsr", "intercity" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name() ) ) );
+        
+        // drive access intercity bus/rail loading and skims
+        String[] drIcTypes = { "intercity" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
+
+        // drive access intercity bus/rail loading and skims
+        String[] drTrTypes = { "intracity" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name() ) ) );
+
+        // walk access hsr loading and skims
+        String[] wkHsrTypes = { "hsr", "intercity", "intracity" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name() ) ) );
+
+        // walk access intercity loading and skims
+        String[] wkIcTypes = { "intercity", "intracity" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
+
+        // walk access intracity loading and skims
+        String[] wkTrTypes = { "intracity" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+
+        
+        for ( Future<String> fs : results ) {
+            
+            try {
+                String result = fs.get();
+                logger.info( String.format( "%s task finished.", result ) );
+            }
+            catch (InterruptedException e) {
+                logger.error( "", e );
+            }
+            catch (ExecutionException e) {
+                logger.error( "", e );
+            }
+            finally {
+                exec.shutdown();
+            }
+            
+        }
+        
+        
+/*        
         // drive access air loading and skims
         String[] drAirTypes = { "air" }; 
         setupTransitNetwork( nh, period, "driveLdt", drAirTypes );
@@ -187,7 +284,7 @@ public class TransitAssignAndSkimManager {
         setupTransitNetwork( nh, period, "walk", wkTrTypes );
         runTransitAssignment ( nh, "walk", "intracity", TripModeType.WK_TRAN.name() );
         writeWalkIntracitySkims ( period );
-    
+*/    
         
         logTransitBoardingsReport ( period );
         
@@ -197,20 +294,28 @@ public class TransitAssignAndSkimManager {
     
     private void logTransitBoardingsReport ( String periodHeadingLabel ) {
         
-        HashMap tsPropertyMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
-            
         String csvFileName = null;
         String repFileName = null;
 
-        if ( periodHeadingLabel.equalsIgnoreCase( "peak" ) ) {
-            // get peak period definitions from property files
-            csvFileName = (String)tsPropertyMap.get("peakTransitLoadings.fileName");
-            repFileName = (String)tsPropertyMap.get("peakTransitReport.fileName");
+        if ( periodHeadingLabel.equalsIgnoreCase( "ampeak" ) ) {
+            // get am peak period definitions from property files
+            try { csvFileName = appRb.getString( "am.peak.transitLoadings.fileName" ); } catch ( MissingResourceException e) {}
+            try { repFileName = appRb.getString( "am.peak.transitReport.fileName" ); } catch ( MissingResourceException e) {}
         }
-        else if ( periodHeadingLabel.equalsIgnoreCase( "offpeak" ) ) {
-            // get off-peak period definitions from property files
-            csvFileName = (String)tsPropertyMap.get("offpeakTransitLoadings.fileName");
-            repFileName = (String)tsPropertyMap.get("offpeakTransitReport.fileName");
+        else if ( periodHeadingLabel.equalsIgnoreCase( "pmpeak" ) ) {
+            // get pm peak period definitions from property files
+            try { csvFileName = appRb.getString( "pm.peak.transitLoadings.fileName" ); } catch ( MissingResourceException e) {}
+            try { repFileName = appRb.getString( "pm.peak.transitReport.fileName" ); } catch ( MissingResourceException e) {}
+        }
+        else if ( periodHeadingLabel.equalsIgnoreCase( "mdoffpeak" ) ) {
+            // get md off-peak period definitions from property files
+            try { csvFileName = appRb.getString( "md.offpeak.transitLoadings.fileName" ); } catch ( MissingResourceException e) {}
+            try { repFileName = appRb.getString( "md.offpeak.transitReport.fileName" ); } catch ( MissingResourceException e) {}
+        }
+        else if ( periodHeadingLabel.equalsIgnoreCase( "ntoffpeak" ) ) {
+            // get nt off-peak period definitions from property files
+            try { csvFileName = appRb.getString( "nt.offpeak.transitLoadings.fileName" ); } catch ( MissingResourceException e) {}
+            try { repFileName = appRb.getString( "nt.offpeak.transitReport.fileName" ); } catch ( MissingResourceException e) {}
         }
         
         
@@ -302,21 +407,21 @@ public class TransitAssignAndSkimManager {
      * setup transit network from route files specified:
      * 
      * Examples:
-     *      "peak", "walk", ["intracity"]
-     *      "offpeak", "drive", ["intracity"]
-     *      "offpeak", "driveLDT", ["air"]
-     *      "offpeak", "driveLDT", ["hsr", "intercity"]
-     *      "peak", "walk", ["intercity", "hsr", "intracity"]
+     *      "ampeak", "walk", ["intracity"]
+     *      "mdoffpeak", "drive", ["intracity"]
+     *      "mdoffpeak", "driveLDT", ["air"]
+     *      "mdoffpeak", "driveLDT", ["hsr", "intercity"]
+     *      "ampeak", "walk", ["intercity", "hsr", "intracity"]
      * @param nh
      * @param period
      * @param accessMode
      * @param rteTypes
      * @return
      */
-    private int setupTransitNetwork ( NetworkHandlerIF nh, String period, String accessMode, String[] rteTypes ) {
+    private AuxTrNet setupTransitNetwork ( NetworkHandlerIF nh, String period, String accessMode, String[] rteTypes ) {
         
         // construct a network listing output filename for the transit network being setup - assume primary route type is the first listed
-        String listingName = (String)tsPropertyMap.get("transitNetworkListings.directory") + period + "_" + accessMode + "_" + rteTypes[0] + ".listing";
+        String listingName = appRb.getString( "transitNetworkListings.directory" ) + period + "_" + accessMode + "_" + rteTypes[0] + ".listing";
 
         // transit network setup method expects arrays of filenames and types:
         String[] d221Files = new String[rteTypes.length];
@@ -329,17 +434,17 @@ public class TransitAssignAndSkimManager {
             checkArguments( period, accessMode, rteTypes[i] );
             
             // construct a target for the route file (e.g. "air.pk.fileName")
-            String d221Target = String.format("%s.%s.fileName", rteTypes[i], ( period.equalsIgnoreCase("peak") ? "pk" : "op" ) );
+            String d221Target = String.format("%s.%s.fileName", rteTypes[i], ( period.equalsIgnoreCase("ampeak") || period.equalsIgnoreCase("pmpeak") ? "pk" : "op" ) );
             
             // get the file name for the target from the propoerties file
-            d221Files[i] = transitRoutesDirectory + (String)tsPropertyMap.get(d221Target);
+            d221Files[i] = transitRoutesDirectory + appRb.getString( d221Target );
             
             // check existence of route file
             checkRouteFile( period, accessMode, rteTypes[i], d221Files[i]);
 
         }
 
-        return nh.setupTransitNetworkObject ( period, accessMode, listingName, transitRouteDataFilesDirectory, d221Files, rteTypes, maxRoutes );
+        return nh.setupTransitNetworkObject ( period, accessMode, listingName, transitNetworkListings, d221Files, rteTypes, maxRoutes );
         
     }
 
@@ -354,7 +459,7 @@ public class TransitAssignAndSkimManager {
 
         HashMap fareTable = null;
 
-        String filename = (String)tsPropertyMap.get("fareZoneFares.file");
+        String filename = appRb.getString( "fareZoneFares.file" );
         
         // read the extra link attributes file and update link attributes table values.
         if ( filename != null && ! filename.equals("") ) {
@@ -393,7 +498,7 @@ public class TransitAssignAndSkimManager {
     /**
      * write a set of zip format drive access air skim matrix files for the period specified
      */
-    private void writeDriveAirSkims ( String period ) {
+    private void writeDriveAirSkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
         String accessIdentifier = getAccessIdentifier("drive");
@@ -428,7 +533,7 @@ public class TransitAssignAndSkimManager {
     /**
      * write a set of zip format drive access high speed rail skim matrix files for the period specified
      */
-    private void writeDriveHsrSkims ( String period ) {
+    private void writeDriveHsrSkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
         String accessIdentifier = getAccessIdentifier("drive");
@@ -472,7 +577,7 @@ public class TransitAssignAndSkimManager {
     /**
      * write a set of zip format drive access intercity transit skim matrix files for the period specified
      */
-    private void writeDriveIntercitySkims ( String period ) {
+    private void writeDriveIntercitySkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
         String accessIdentifier = getAccessIdentifier("drive");
@@ -517,7 +622,7 @@ public class TransitAssignAndSkimManager {
     /**
      * write a set of zip format drive access intracity transit skim matrix files for the period specified
      */
-    private void writeDriveIntracitySkims ( String period ) {
+    private void writeDriveIntracitySkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
         String accessIdentifier = getAccessIdentifier("drive");
@@ -568,7 +673,7 @@ public class TransitAssignAndSkimManager {
     /**
      * write a set of zip format walk access high speed rail skim matrix files for the period specified
      */
-    private void writeWalkHsrSkims ( String period ) {
+    private void writeWalkHsrSkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
         String accessIdentifier = getAccessIdentifier("walk");
@@ -616,7 +721,7 @@ public class TransitAssignAndSkimManager {
     /**
      * write a set of zip format walk access intercity bus/rail skim matrix files for the period specified
      */
-    private void writeWalkIntercitySkims ( String period ) {
+    private void writeWalkIntercitySkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
         String accessIdentifier = getAccessIdentifier("walk");
@@ -668,7 +773,7 @@ public class TransitAssignAndSkimManager {
     /**
      * write a set of zip format walk access intracity transit skim matrix files for the period specified
      */
-    private void writeWalkIntracitySkims ( String period ) {
+    private void writeWalkIntracitySkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
         String accessIdentifier = getAccessIdentifier("walk");
@@ -719,63 +824,38 @@ public class TransitAssignAndSkimManager {
 
     
     
-    private void runTransitAssignment ( NetworkHandlerIF nh, String accessMode, String routeType, String tripMode ) {
-        
-        HashMap globalMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
-
-        String assignmentPeriod = nh.getTimePeriod();
+    private Matrix[] runTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String timePeriod, String accessMode, String routeType, String tripMode ) {
         
         double[][] tripTable = null;  
         double[] tripTableColumn = null;
         
+        int numCentroids = nh.getNumCentroids();
         
-        // create demand handler to get trips to assign if SKIM_ONLY == false
+        // get trip table from demand handler for trips to assign if SKIM_ONLY == false
         if ( ! SKIM_ONLY ) {
-            
-            int startHour = 0;
-            int endHour = 0;
-            if ( assignmentPeriod.equalsIgnoreCase( "peak" ) ) {
-                // get peak period definitions from property files
-                startHour = Integer.parseInt((String)globalMap.get("am.peak.start"));
-                endHour = Integer.parseInt( (String)globalMap.get("am.peak.end") );
-            }
-            else if ( assignmentPeriod.equalsIgnoreCase( "offpeak" ) ) {
-                // get off-peak period definitions from property files
-                startHour = Integer.parseInt((String)globalMap.get("offpeak.start"));
-                endHour = Integer.parseInt( (String)globalMap.get("offpeak.end") );
-            }
-            
-            
-            // get the transit trip table to be assigned 
-            DemandHandler d = new DemandHandler();
-            double sampleRate = 1.0;
-            String rateString = (String)globalMap.get("pt.sample.rate");
-            if ( rateString != null )
-                sampleRate = Double.parseDouble( rateString );
-            d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), sampleRate, (String)globalMap.get("ct.truck.trips"), (String)globalMap.get("et.truck.trips"), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
-            
             tripTable = d.getTripTablesForMode ( tripMode );
 
             tripTableColumn = new double[tripTable[0].length];
         }
         
-        
-        
+                
         // load the triptable on walk access transit network
         // create an optimal strategy object for this highway and transit network
-        OptimalStrategy os = new OptimalStrategy( nh );
+        OptimalStrategy os = new OptimalStrategy( nh, ag );
         os.setTransitFareTables ( intracityFareTable, fareZones ); 
 
         // arrays for skim values into 0-based double[][] dimensioned to number of actual zones including externals (2983)
-        double[][][] zeroBasedDoubleArray = new double[OptimalStrategy.NUM_SKIMS][nh.getNumCentroids()][nh.getNumCentroids()];
+        double[][][] zeroBasedDoubleArray = new double[OptimalStrategy.NUM_SKIMS][numCentroids][numCentroids];
                 
         double intrazonal = 0;
         double totalTrips = 0;
         double notLoadedTrips = 0;
+        
+        int[] nodeIndex = nh.getNodeIndex();
 
-        double[] routeBoardings = new double[nh.getMaxRoutes()];
+        double[] routeBoardings = new double[ag.getMaxRoutes()];
 
-        for ( int dest=0; dest < nh.getNumCentroids(); dest++ ) {
+        for ( int dest=0; dest < numCentroids; dest++ ) {
 
             
             if ( TEST_DEST >= 0 && dest != nodeIndex[TEST_DEST] )
@@ -813,7 +893,7 @@ public class TransitAssignAndSkimManager {
             
             
             // build optimal strategy for this network
-            os.buildStrategy( dest );
+            os.buildStrategy( dest, accessMode );
 
             
             // load trips onto strategy unless SKIM_ONLY == true
@@ -838,7 +918,7 @@ public class TransitAssignAndSkimManager {
             else if ( TEST_ORIG >= 0 && TEST_DEST >= 0 && dest == nodeIndex[TEST_DEST] ) {
                 
                 os.getOptimalStrategyLinks ( nodeIndex[TEST_ORIG] );
-                return;
+                return null;
                 
             }
             
@@ -847,7 +927,7 @@ public class TransitAssignAndSkimManager {
             
             // save skim table values
             for (int k=0; k < OptimalStrategy.NUM_SKIMS; k++) {
-                for (int orig=0; orig < nh.getNumCentroids(); orig++)
+                for (int orig=0; orig < numCentroids; orig++)
                     zeroBasedDoubleArray[k][orig][dest] = odSkimValues[k][orig];
                 
             }
@@ -857,33 +937,31 @@ public class TransitAssignAndSkimManager {
 
         // load trips onto strategy unless SKIM_ONLY == true
         if ( ! SKIM_ONLY ) {
-            saveTransitBoardings ( nh, accessMode, routeType, routeBoardings );
+            saveTransitBoardings ( ag, accessMode, routeType, routeBoardings );
         }
         
         
         // save skim Matrix objects        
         float[][][] zeroBasedFloatArrays = new float[OptimalStrategy.NUM_SKIMS][][];
 
-        initSkimMatrices ( (String)globalPropertyMap.get("alpha2beta.file") );
-        
         for (int k=0; k < OptimalStrategy.NUM_SKIMS; k++) {
-            zeroBasedFloatArrays[k] = getZeroBasedFloatArray ( zeroBasedDoubleArray[k] );
+            zeroBasedFloatArrays[k] = getZeroBasedFloatArray ( nh.getIndexNode(), zeroBasedDoubleArray[k], numCentroids );
             zeroBasedDoubleArray[k] = null;
         }
         
-        skimMatrices = new Matrix[OptimalStrategy.NUM_SKIMS];
+        Matrix[] skimMatrices = new Matrix[OptimalStrategy.NUM_SKIMS];
         
 
         
         String nameQualifier = null;
         String descQualifier = null;
-        if ( nh.getTimePeriod().equalsIgnoreCase("peak") ) {
+        if ( timePeriod.equalsIgnoreCase("ampeak") ) {
             nameQualifier = "p";
-            descQualifier = "peak";
+            descQualifier = "ampeak";
         }
         else {
             nameQualifier = "o";
-            descQualifier = "offpeak";
+            descQualifier = "mdoffpeak";
         }
 
         if ( accessMode.equalsIgnoreCase("walk") ) {
@@ -941,13 +1019,16 @@ public class TransitAssignAndSkimManager {
         for (int k=0; k < OptimalStrategy.NUM_SKIMS; k++)
             skimMatrices[k].setExternalNumbers( alphaExternalNumbers );
         
+        
+        return skimMatrices;
+        
     }
     
     
     
-    private void  saveTransitBoardings ( NetworkHandlerIF nh, String accessMode, String routeType, double[] transitBoardings ) {
+    private void  saveTransitBoardings ( AuxTrNet ag, String accessMode, String routeType, double[] transitBoardings ) {
         
-        TrRoute tr = nh.getTrRoute();
+        TrRoute tr = ag.getTrRoute();
 
         
         int accessIndex = -1;
@@ -976,17 +1057,23 @@ public class TransitAssignAndSkimManager {
         if ( routeTypeIndex >= 0 && accessIndex >= 0 ) {
             
             for (int rte=0; rte < tr.getLineCount(); rte++) {
+               
                 String rteName = tr.getLine(rte);
                 
-                if ( savedBoardings.containsKey(rteName) )
-                    savedInfo = (SavedRouteInfo)savedBoardings.get(rteName);
-                else
-                    savedInfo = new SavedRouteInfo(tr.getDescription(rte), tr.getMode(rte), tr.getRouteType(rte) );
+                synchronized (objLock) {
+
+                    if ( savedBoardings.containsKey(rteName) )
+                        savedInfo = (SavedRouteInfo)savedBoardings.get(rteName);
+                    else
+                        savedInfo = new SavedRouteInfo(tr.getDescription(rte), tr.getMode(rte), tr.getRouteType(rte) );
+                    
+                    index = 2*routeTypeIndex + accessIndex;
+                    savedInfo.boardings[index] += transitBoardings[rte];
+                    
+                    savedBoardings.put(rteName, savedInfo);
                 
-                index = 2*routeTypeIndex + accessIndex;
-                savedInfo.boardings[index] += transitBoardings[rte];
+                }
                 
-                savedBoardings.put(rteName, savedInfo);
             }
 
         }
@@ -1000,9 +1087,9 @@ public class TransitAssignAndSkimManager {
     
     
     private String getPeriodIdentifier ( String period ) {
-        if ( period.equalsIgnoreCase( "peak" ) )
+        if ( period.equalsIgnoreCase( "ampeak" ) )
             return "pk";
-        else if ( period.equalsIgnoreCase( "offpeak" ) )
+        else if ( period.equalsIgnoreCase( "mdoffpeak" ) )
             return "op";
         else
             return "nul";
@@ -1065,7 +1152,7 @@ public class TransitAssignAndSkimManager {
         
         boolean fails = true;
         
-        if ( period.equalsIgnoreCase("peak") || period.equalsIgnoreCase("offpeak") ) {
+        if ( period.equalsIgnoreCase("ampeak") || period.equalsIgnoreCase("mdoffpeak") ) {
             // air is not allowed for walk
             if ( accessMode.equalsIgnoreCase("walk") ) {
                 if ( rteType.equalsIgnoreCase("hsr") || rteType.equalsIgnoreCase("intercity") || rteType.equalsIgnoreCase("intracity") ) {
@@ -1100,13 +1187,11 @@ public class TransitAssignAndSkimManager {
         
 
     
-    private float[][] getZeroBasedFloatArray ( double[][] zeroBasedDoubleArray ) {
-
-        int[] skimsInternalToExternal = indexNode;
+    private float[][] getZeroBasedFloatArray ( int[] skimsInternalToExternal, double[][] zeroBasedDoubleArray, int numCentroids ) {
 
         // convert the zero-based double[alphas+externals][alphas+externals] produced by the skimming procedure, with network centroid/zone index mapping
         // to a zero-based float[alphas+externals][alphas+externals] with indexZone mapping to be written to skims file.
-        float[][] zeroBasedFloatArray = new float[nh.getNumCentroids()][nh.getNumCentroids()];
+        float[][] zeroBasedFloatArray = new float[numCentroids][numCentroids];
         
         int exRow;
         int exCol;
@@ -1134,8 +1219,9 @@ public class TransitAssignAndSkimManager {
 
 
     
-    private void initSkimMatrices ( String zoneCorrespondenceFile ) {
+    private void initSkimMatrices ( NetworkHandlerIF nh, String zoneCorrespondenceFile ) {
 
+        int[] alphaNumberArray = null;
         String[] fareZoneLabels = null;
         
         // take a column of alpha zone numbers from a TableDataSet and puts them into an array for
@@ -1393,4 +1479,92 @@ public class TransitAssignAndSkimManager {
         TRAN$
     }
 
+    
+    public class AssignSkimTask implements Callable<String> {
+        
+        private Logger logger = Logger.getLogger(AssignSkimTask.class);
+        
+        private NetworkHandlerIF nh;
+        private String[] serviceTypes;      // combinations of air, hsr, intercity, intracity
+        private String specificServiceType; // air, hsr, intercity, or intracity
+        private String period;              // amPeak, mdOffPeak, pmPeak, or ntOffPeak 
+        private String accessMode;          // driveLdt, drive, or walk
+        private String accessModeType;      // drive or walk
+        private String tripModeName;        // LDTripModeType or TripModeType trip mode name
+        
+        
+        public AssignSkimTask( NetworkHandlerIF nh, String[] serviceTypes, String period, String accessMode, String accessModeType, String specificServiceType, String tripModeName ) {
+            this.nh = nh;
+            this.serviceTypes = serviceTypes;
+            this.specificServiceType = specificServiceType;
+            this.period = period;
+            this.accessMode = accessMode;
+            this.accessModeType = accessModeType;
+            this.tripModeName = tripModeName;
+            
+            logger.info( String.format( "task created to load and skim %s period %s access %s transit using %s access network for %s trips", period, accessModeType, specificServiceType, accessMode ,tripModeName ) );
+        }
+        
+        public String call() {
+            
+            try {
+                
+                // transit loading and skims
+                AuxTrNet ag = setupTransitNetwork( nh, period, accessMode, serviceTypes );
+                Matrix[] skims = runTransitAssignment ( nh, ag, period, accessModeType, specificServiceType, tripModeName );
+                writeSkims ( skims, period, accessModeType, specificServiceType );
+                
+            }
+            catch (RuntimeException e) {
+                logger.fatal ( String.format( "exception caught loading and skimming %s period %s access %s transit using %s access network for %s trips", period, accessModeType, specificServiceType, accessMode ,tripModeName ) );
+                throw e;
+            }
+            
+            return String.format( "%s period %s access %s", period, accessModeType, specificServiceType );
+        }
+        
+        
+        private void writeSkims( Matrix[] skims, String period, String access, String serviceType ) {
+            
+            if ( access.equalsIgnoreCase("drive") ) {
+
+                if ( serviceType.equalsIgnoreCase("air") )
+                    writeDriveAirSkims ( skims, period );
+                else if ( serviceType.equalsIgnoreCase("hsr") )
+                    writeDriveHsrSkims ( skims, period );
+                else if ( serviceType.equalsIgnoreCase("intercity") )
+                    writeDriveIntercitySkims ( skims, period );
+                else if ( serviceType.equalsIgnoreCase("intracity") )
+                    writeDriveIntracitySkims ( skims, period );
+                else {
+                    logger.fatal ( String.format( "'%s' is not a valid service type for writing %s period drive transit skim files", serviceType, period ) );
+                    throw new RuntimeException();
+                }
+                
+            }
+            else if ( access.equalsIgnoreCase("walk") ) {
+
+                // no walk access air trips assigned or skimmed
+                if ( serviceType.equalsIgnoreCase("hsr") )
+                    writeWalkHsrSkims ( skims, period );
+                else if ( serviceType.equalsIgnoreCase("intercity") )
+                    writeWalkIntercitySkims ( skims, period );
+                else if ( serviceType.equalsIgnoreCase("intracity") )
+                    writeWalkIntracitySkims ( skims, period );
+                else {
+                    logger.fatal ( String.format( "'%s' is not a valid service type for writing %s period walk transit skim files", serviceType, period ) );
+                    throw new RuntimeException();
+                }
+                
+            }
+            else {
+                logger.fatal ( String.format( "'%s' is not a valid access mode for writing %s period %s transit skim files", access, period, serviceType ) );
+                throw new RuntimeException();
+            }
+                
+        }
+        
+    }
+    
+    
 }

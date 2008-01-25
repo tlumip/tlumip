@@ -60,16 +60,19 @@ public class OptimalStrategy {
     static final float MAX_TOTAL_WAIT_TIME = 90;
 
 
+    
+    AuxTrNet ag = null;
+    
     HashMap fareZones;
     HashMap transitFareLookupTable;
     
-	NetworkHandlerIF nh;
-
 	int dest;
     
     int auxNodeCount;
     int auxLinkCount;
 	
+    int numCentroids;
+    
 	Heap candidateHeap;
 	int[] heapContents;
 
@@ -91,6 +94,7 @@ public class OptimalStrategy {
     double[] cost = null;
     double[] accessTime = null;
     double[] walkTime = null;
+    double[] drAccTime = null;
     double[] waitTime = null;
     double[] dwellTime = null;
     double[] layoverTime = null;
@@ -115,13 +119,14 @@ public class OptimalStrategy {
 	
 	
 	
-	public OptimalStrategy ( NetworkHandlerIF nh ) {
+	public OptimalStrategy ( NetworkHandlerIF nh, AuxTrNet ag ) {
 
-		this.nh = nh;
+        this.ag = ag;
+    
+        numCentroids = nh.getNumCentroids();
         
-        
-        auxNodeCount = nh.getAuxNodeCount();
-        auxLinkCount = nh.getAuxLinkCount();
+        auxNodeCount = ag.getAuxNodeCount();
+        auxLinkCount = ag.getAuxLinkCount();
         
         
 		nodeFlow = new double[auxNodeCount+1];
@@ -138,24 +143,25 @@ public class OptimalStrategy {
         candidateHeap = new Heap( auxLinkCount ); // new SortedSet
 		heapContents = new int[auxNodeCount+1];
 
-        ia = nh.getAuxIa();
-        ib = nh.getAuxIb();
-        ipa = nh.getAuxIpa();
-        ipb = nh.getAuxIpb();
-        indexa = nh.getAuxIndexa();
-        indexb = nh.getAuxIndexb();
-        hwyLink = nh.getAuxHwyLink();
-        trRoute = nh.getLinkTrRoute();
-        rteMode = nh.getRteMode();
-        linkType = nh.getAuxLinkType();
-        cost = nh.getCost();
-        dwellTime = nh.getDwellTime();
-        layoverTime = nh.getLayoverTime();
-        waitTime = nh.getWaitTime(); 
-        walkTime = nh.getWalkTime(); 
-        invTime = nh.getInvTime();
-        freq = nh.getAuxLinkFreq();
-        flow = nh.getAuxLinkFlow();
+        ia = ag.getIa();
+        ib = ag.getIb();
+        ipa = ag.getIpa();
+        ipb = ag.getIpb();
+        indexa = ag.getIndexa();
+        indexb = ag.getIndexb();
+        hwyLink = ag.getHwyLink();
+        trRoute = ag.getLinkTrRoute();
+        rteMode = ag.getRteMode();
+        linkType = ag.getLinkType();
+        cost = ag.getCost();
+        dwellTime = ag.getDwellTime();
+        layoverTime = ag.getLayoverTime();
+        waitTime = ag.getWaitTime(); 
+        walkTime = ag.getWalkTime(); 
+        drAccTime = ag.getDriveAccTime(); 
+        invTime = ag.getInvTime();
+        freq = ag.getFreq();
+        flow = ag.getFlow();
         
 		gia = nh.getIa();
 		gib = nh.getIb();
@@ -188,7 +194,7 @@ public class OptimalStrategy {
 	// This method builds the optimal strategy sub-network for the destination taz passed in.
 	// The sub-network is represented by the boolean link field inStrategy[] where true indicates
 	// the link is part of the strategy and false indicates it is not.
-	public int buildStrategy (int dest) {
+	public int buildStrategy ( int dest, String accessMode ) {
 		// dest is an internally numbered centroid number from highway network (g).
 
 		int j, k, m, start, end;
@@ -207,11 +213,11 @@ public class OptimalStrategy {
 
 		
 		// set the access time array based on access mode
-		if (nh.getAccessMode().equalsIgnoreCase("walk")) {
+		if (accessMode.equalsIgnoreCase("walk")) {
 			accessTime = walkTime; 
 		}
 		else {
-			accessTime = nh.getDriveAccTime(); 
+			accessTime = drAccTime; 
 		}
 
 
@@ -228,13 +234,13 @@ public class OptimalStrategy {
             if (ia[k] != dest && !inStrategy[k]) {
 
     			// do not include links into centroids in strategy unless its going into dest.
-    			if ( ib[k] < nh.getNumCentroids() && ib[k] != dest ) {
+    			if ( ib[k] < numCentroids && ib[k] != dest ) {
     				inStrategy[k] = false;
     				continue;
     			}
     			
     			
-				linkImped = nh.getLinkImped(k);
+				linkImped = ag.getLinkImped(k);
 				
 				// log some information about the starting condition of the candidate link being examined
 				if ( debug ) {
@@ -244,7 +250,7 @@ public class OptimalStrategy {
                     m = hwyLink[k];
                 
 
-					logger.info ("k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", trRoute=" + trRoute[k] + "(" + (trRoute[k] >= 0 ? nh.getRouteName(trRoute[k]) : "aux") + ")" );
+					logger.info ("k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", trRoute=" + trRoute[k] + "(" + (trRoute[k] >= 0 ? ag.getRouteName(trRoute[k]) : "aux") + ")" );
 					logger.info ("nodeLabel[ag.ia=" + ia[k] + "]=" + nodeLabel[ia[k]]);
 					logger.info ("nodeLabel[ag.ib=" + ib[k] + "]=" + nodeLabel[ib[k]]);
 					logger.info ("nodeFreq[ag.ia=" + ia[k] + "]=" + nodeFreq[ia[k]]);
@@ -421,7 +427,7 @@ public class OptimalStrategy {
             if ( linkType[k] == AuxTrNet.BOARDING_TYPE && !inStrategy[k+1] )
                 continue;
                 
-            linkImped = nh.getLinkImped(k);
+            linkImped = ag.getLinkImped(k);
             linkLabel[k] = nodeLabel[ib[k]] + linkImped;
 
             // if the anode's label is already smaller than the bnode's label plus the link impedance,
@@ -481,7 +487,7 @@ public class OptimalStrategy {
 
 
         // allocate an array to store boardings by route to be passed back to calling method.
-        double[] routeBoardingsToDest = new double[nh.getMaxRoutes()];
+        double[] routeBoardingsToDest = new double[ag.getMaxRoutes()];
         
         
         // loop through links in optimal strategy in reverse order and allocate
@@ -513,7 +519,7 @@ public class OptimalStrategy {
                         nodeFlow[ib[k]] += linkFlow;
                         nodeFlow[ia[k]] -= linkFlow;
                         
-                        if ( ia[k] < nh.getNumCentroids() )
+                        if ( ia[k] < numCentroids )
                             originsNotLoaded[ia[k]] = 0;
                     }
                 }
@@ -613,7 +619,7 @@ public class OptimalStrategy {
         
         
         double[][] nodeSkims = new double[NUM_SKIMS][auxNodeCount];
-        double[][] skimResults = new double[NUM_SKIMS][nh.getNumCentroids()];
+        double[][] skimResults = new double[NUM_SKIMS][numCentroids];
         for (k=0; k < NUM_SKIMS; k++) {
             Arrays.fill (nodeSkims[k], AuxTrNet.UNCONNECTED);
             Arrays.fill (skimResults[k], AuxTrNet.UNCONNECTED);
@@ -751,7 +757,7 @@ public class OptimalStrategy {
             else if ( linkType[k] == AuxTrNet.AUXILIARY_TYPE ) {
 
                 // if bnode is dest, initialize anode's egress walk time to that walk egress time and other skims to zero.
-                if ( ib[k] < nh.getNumCentroids() ) {
+                if ( ib[k] < numCentroids ) {
                     nodeSkims[IVT][ia[k]] = 0.0;
                     nodeSkims[FWT][ia[k]] = 0.0;
                     nodeSkims[TWT][ia[k]] = 0.0;
@@ -765,7 +771,7 @@ public class OptimalStrategy {
                     tranIvt[ia[k]] = 0.0;
                 }
                 // anode is an origin node, set final skim values for that origin and add the access time
-                else if ( ia[k] < nh.getNumCentroids() ) {
+                else if ( ia[k] < numCentroids ) {
                     skimResults[IVT][ia[k]] = nodeSkims[IVT][ib[k]];
                     skimResults[FWT][ia[k]] = nodeSkims[FWT][ib[k]];
                     skimResults[TWT][ia[k]] = nodeSkims[TWT][ib[k]];
@@ -803,7 +809,7 @@ public class OptimalStrategy {
         
         
         // linkFreqs were weighted by WAIT_COEFF, so unweight them to get actual first and total wait values
-        for (int i=0; i < nh.getNumCentroids(); i++) {
+        for (int i=0; i < numCentroids; i++) {
             skimResults[FWT][i] /= AuxTrNet.WAIT_COEFF;
             skimResults[TWT][i] /= AuxTrNet.WAIT_COEFF;
             
@@ -817,7 +823,7 @@ public class OptimalStrategy {
 
         
 
-        for (int i=0; i < nh.getNumCentroids(); i++) {
+        for (int i=0; i < numCentroids; i++) {
             skimResults[RAIL$][i] = getIcRailFareMatrix ( i, railDist );
             skimResults[BUS$][i] = getIcBusFareMatrix ( i, busDist );
             skimResults[TRAN$][i] = getSkimTableLookupFare ( i, tranIvt, transitFareLookupTable );
@@ -837,13 +843,29 @@ public class OptimalStrategy {
             
             // if skim OD pair is connected by rail service, lookup fare for OD pair
             if ( skimTable[i] > 0 ) {
-                
-                // get the external origin and destination centroid numbers for the skim matrix indices
-                int extOrigCent = indexNode[i];
-                String origFareZone = (String)fareZones.get(extOrigCent);
-                int extDestCent = indexNode[dest];
-                String destFareZone = (String)fareZones.get(extDestCent);
-                String key = String.format("%s_%s", origFareZone, destFareZone);
+    
+                int extOrigCent = 0;
+                int extDestCent = 0;
+                String origFareZone = "";
+                String destFareZone = "";
+                String key = "";
+                try {
+                    // get the external origin and destination centroid numbers for the skim matrix indices
+                    extOrigCent = indexNode[i];
+                    origFareZone = (String)fareZones.get(extOrigCent);
+                    extDestCent = indexNode[dest];
+                    destFareZone = (String)fareZones.get(extDestCent);
+                    key = String.format("%s_%s", origFareZone, destFareZone);
+                }
+                catch (RuntimeException e) {
+                    logger.error( String.format("exception caught constructing fare lookup table key,"));
+                    logger.error( String.format("i=%d, extOrigCent=%d, origFareZone=%s, extDestCent=%d, destFareZone=%s, key=%s", i, extOrigCent, origFareZone, extDestCent, destFareZone, key) );
+                    if ( fareZones == null )
+                        logger.error( "fareZones object is null" );
+                    else
+                        logger.error( String.format( "size of fareZones object is %d", fareZones.size() ) );
+                    throw e;
+                }
                 
                 try {
                     fare = (Float)tazFareLookupTable.get(key);

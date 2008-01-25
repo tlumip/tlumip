@@ -44,20 +44,33 @@ public class TSModelComponent extends ModelComponent {
     
     
     private String configFileName;
+    private boolean dailyModel;
 
     TS ts;
 
     /**
      * If running in DAF mode, the configFileName will be something other than "null".
      * If the configFileName is null, then TS will run monolithically.
-     * @param appRb
-     * @param globalRb
-     * @param configFileName
+     * @param appRb is the TS component specific properties file ResourceBundle.
+     * @param globalRb is the global model properties file ResourceBundle.
+     * @param configFileName is the name of a DAF 3 configuration file (.groovy) that defines machine addresses and handler classes.
+     * @param dailyModel is a Boolean that if true, causes all 4 assignment periods to be run.  If false or null, only amPeak and
+     *        mdOffPeak periods are assigned.  FullModel runs are intended for base year and final year to produce full daily
+     *        assignment results while intermediate model years require assignment procedures only for the purpose of producing
+     *        representative peak and off-peak travel skim matrices for spatial models.
      */
-    public TSModelComponent(ResourceBundle appRb, ResourceBundle globalRb, String configFileName){
+    public TSModelComponent( ResourceBundle appRb, ResourceBundle globalRb, String configFileName, Boolean dailyModelFlag ){
 		setResourceBundles(appRb, globalRb);    //creates a resource bundle as a class attribute called appRb.
         this.configFileName = configFileName;
+        
+        dailyModel = false;
+        if ( dailyModelFlag != null ) {
+            dailyModel = dailyModelFlag.booleanValue();
+        }
+        
     }
+
+    
     public void startModel(int baseYear, int timeInterval){
         logger.info("Config file name: " + configFileName);
         if ( configFileName != null ) {
@@ -74,9 +87,15 @@ public class TSModelComponent extends ModelComponent {
         }
         ts = new TS(appRb, globalRb);
 
-        assignAndSkimHwyAndTransit("peak");
-        assignAndSkimHwyAndTransit("offpeak");
+        // amPeak and mdOffPeak periods are always run 
+        assignAndSkimHwyAndTransit("ampeak");
+        assignAndSkimHwyAndTransit("mdoffpeak");
 
+        // pmPeak and ntOffPeak periods are run only if a daily model is required
+        if ( dailyModel ) {
+            assignAndSkimHwyAndTransit("pmpeak");
+            assignAndSkimHwyAndTransit("ntoffpeak");
+        }
 
     }
 

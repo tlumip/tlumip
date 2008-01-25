@@ -38,7 +38,7 @@ public class NetworkHandler implements NetworkHandlerIF {
     protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 
     Network g = null;
-    AuxTrNet ag = null;
+    //AuxTrNet ag = null;
     ShortestPathTreeH sp = null;
     NetworkDataServer ns = null;
     String rpcConfigFile = null;
@@ -408,7 +408,7 @@ public class NetworkHandler implements NetworkHandlerIF {
     }
 
     public int writeNetworkAttributes ( String fileName ) {
-        g.writeNetworkAttributes(fileName);
+        g.writeHighwayAsignmentResults(fileName);
         return 1;
     }
     
@@ -453,7 +453,7 @@ public class NetworkHandler implements NetworkHandlerIF {
 
 
 
-    public int setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes ) {
+    public AuxTrNet setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitNetworkListings, String[] d221Files, String[] rteTypes, int maxRoutes ) {
         
         // create transit routes object
         TrRoute tr = new TrRoute ( maxRoutes );
@@ -465,8 +465,8 @@ public class NetworkHandler implements NetworkHandlerIF {
 //        tr.getLinkIndices (this);
 
 
-        if ( transitRouteDataFilesDirectory != null )
-            tr.printTransitRouteFile ( transitRouteDataFilesDirectory);
+        if ( transitNetworkListings != null )
+            tr.printTransitRouteFile ( transitNetworkListings );
 
 
         // create an auxilliary transit network object
@@ -489,13 +489,13 @@ public class NetworkHandler implements NetworkHandlerIF {
         String myDateString = DateFormat.getDateTimeInstance().format(new Date());
         logger.info ("done creating transit network AuxTrNetTest: " + myDateString);
 
-        setTransitNetwork( ag );
         
-        return 1;
+        return ag;
     }
     
     
     
+    /*
     
     private void setTransitNetwork( AuxTrNet ag) {
         this.ag = ag;
@@ -641,6 +641,10 @@ public class NetworkHandler implements NetworkHandlerIF {
     public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
         return ag.getCentroidTransitDriveAccessLinkCoords(zones);       
     }
+    
+    
+    */
+    
     
     public int[] getShortestPathNodes(int startNode, int endNode) {
         
