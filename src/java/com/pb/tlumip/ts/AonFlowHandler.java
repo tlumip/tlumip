@@ -107,7 +107,9 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         dh.setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildHighwayDemandObject();
         dh.logDistrictReport();
-        dh.writeDistrictReport ( reportFileName );
+        
+        if ( reportFileName != null )
+            dh.writeDistrictReport ( reportFileName );
         
         logger.info( "setting up SpBuildLoadHandlers." );
         sp = setupSpBuildLoadHandlers( dh.getTripTableRowSums(), dh.getMulticlassTripTables() );

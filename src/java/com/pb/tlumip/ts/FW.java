@@ -140,7 +140,16 @@ public class FW {
             
             AonFlowHandlerIF ah = AonFlowHandler.getInstance( nh.getRpcConfigFileName() );
             logger.info ( "FW.iterate() creating an AonFlowHandler and calling its setup()." ); 
-            ah.setup( componentRb.getString("distDistDemand.summary"), nh.getRpcConfigFileName(), globalRb.getString("sdt.person.trips"), globalRb.getString("ldt.vehicle.trips"), ptSampleRate, globalRb.getString("ct.truck.trips"), globalRb.getString("et.truck.trips"), startHour, endHour, highwayModeCharacters, nh );
+            
+            String summaryFile = null;
+            try {
+                summaryFile = componentRb.getString("distDistDemand.summary");
+            }
+            catch (MissingResourceException e) {
+                // do nothing, filename can be null.
+            }
+            
+            ah.setup( summaryFile, nh.getRpcConfigFileName(), globalRb.getString("sdt.person.trips"), globalRb.getString("ldt.vehicle.trips"), ptSampleRate, globalRb.getString("ct.truck.trips"), globalRb.getString("et.truck.trips"), startHour, endHour, highwayModeCharacters, nh );
             
             
             // loop thru FW iterations

@@ -26,10 +26,10 @@ package com.pb.tlumip.ts.assign;
 import com.pb.models.pt.TripModeType;
 import com.pb.models.pt.ldt.LDTripModeType;
 import com.pb.tlumip.ts.DemandHandler;
+import com.pb.tlumip.ts.DemandHandlerIF;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.OptimalStrategy;
-import com.pb.tlumip.ts.transit.TrRoute;
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
@@ -63,8 +63,6 @@ public class TransitAssignAndSkimManager {
 
 	protected static Logger logger = Logger.getLogger(TransitAssignAndSkimManager.class);
 
-    protected static Object objLock = new Object();
-    
     static final boolean CREATE_NEW_NETWORK = true;
     boolean SKIM_ONLY = false;
 
@@ -79,11 +77,11 @@ public class TransitAssignAndSkimManager {
     static final String OUT_OF_AREA_FARE_ZONE = "NONE"; 
     
     
-
-    DemandHandler d = null;
+    protected static Object objLock = new Object();
+    private static final int MAX_NUMBER_OF_THREADS = 4;
     
- //   NetworkHandlerIF nh = null;
-	
+    DemandHandlerIF dh = null;
+    
     ResourceBundle appRb = null;
     ResourceBundle globalRb = null;
     
@@ -104,6 +102,7 @@ public class TransitAssignAndSkimManager {
     int[] alphaExternalNumbers = null;
 
     HashMap savedBoardings = null;
+
 
     
 	
@@ -127,53 +126,58 @@ public class TransitAssignAndSkimManager {
         assignmentPeriod = nh.getTimePeriod();
         
         // create demand handler to get trips to assign if SKIM_ONLY == false
-        if ( ! SKIM_ONLY )
-            createDemandHandler ( nh );
+        if ( ! SKIM_ONLY ) {
+            String rpcConfigFile = nh.getRpcConfigFileName();
+            setupDemandObject ( rpcConfigFile, assignmentPeriod, nh );
+        }
             
         initSkimMatrices ( nh, globalRb.getString( "alpha2beta.file" ) );
         
     }    
     
-
     
-    private void createDemandHandler ( NetworkHandlerIF nh ) {
-
-        // get the transit trip table to be assigned 
-        d = new DemandHandler();
+    private void setupDemandObject ( String rpcConfigFile, String timePeriod, NetworkHandlerIF nh ) {
         
-        double sampleRate = 1.0;
+        double ptSampleRate = 1.0;
         String rateString = globalRb.getString( "pt.sample.rate" );
         if ( rateString != null )
-            sampleRate = Double.parseDouble( rateString );
+            ptSampleRate = Double.parseDouble( rateString );
 
         
         int startHour = 0;
         int endHour = 0;
-        if ( assignmentPeriod.equalsIgnoreCase( "ampeak" ) ) {
+        if ( timePeriod.equalsIgnoreCase( "ampeak" ) ) {
             // get am peak period definitions from property files
             startHour = Integer.parseInt( globalRb.getString( "am.peak.start") );
             endHour = Integer.parseInt( globalRb.getString( "am.peak.end" ) );
         }
-        else if ( assignmentPeriod.equalsIgnoreCase( "pmpeak" ) ) {
+        else if ( timePeriod.equalsIgnoreCase( "pmpeak" ) ) {
             // get pm peak period definitions from property files
             startHour = Integer.parseInt( globalRb.getString( "pm.peak.start") );
             endHour = Integer.parseInt( globalRb.getString( "pm.peak.end" ) );
         }
-        else if ( assignmentPeriod.equalsIgnoreCase( "mdoffpeak" ) ) {
+        else if ( timePeriod.equalsIgnoreCase( "mdoffpeak" ) ) {
             // get md off-peak period definitions from property files
             startHour = Integer.parseInt( globalRb.getString( "md.offpeak.start") );
             endHour = Integer.parseInt( globalRb.getString( "md.offpeak.end" ) );
         }
-        else if ( assignmentPeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
+        else if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
             // get nt off-peak period definitions from property files
             startHour = Integer.parseInt( globalRb.getString( "nt.offpeak.start") );
             endHour = Integer.parseInt( globalRb.getString( "nt.offpeak.end" ) );
         }
         
-        d.setup( globalRb.getString( "sdt.person.trips" ), globalRb.getString( "ldt.vehicle.trips" ), sampleRate, globalRb.getString( "ct.truck.trips" ), globalRb.getString( "et.truck.trips" ), startHour, endHour, assignmentPeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
-
+        String sdtFileName = globalRb.getString("sdt.person.trips");
+        String ldtFileName = globalRb.getString("ldt.vehicle.trips");
+        String ctFileName = globalRb.getString("ct.truck.trips");
+        String etFileName = globalRb.getString("et.truck.trips");
+        
+        
+        dh = DemandHandler.getInstance( rpcConfigFile );
+        dh.setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        
     }
-    
+
     
     public void assignAndSkimTransit ( NetworkHandlerIF nh, String period ) {
         assignAndSkimTransit ( nh, period, false );
@@ -185,6 +189,9 @@ public class TransitAssignAndSkimManager {
         SKIM_ONLY = skimOnlyFlag;
         
         int numberOfThreads = java.lang.Runtime.getRuntime().availableProcessors();
+        if ( numberOfThreads > MAX_NUMBER_OF_THREADS )
+            numberOfThreads = MAX_NUMBER_OF_THREADS;
+        
         ExecutorService exec = Executors.newFixedThreadPool(numberOfThreads);
         ArrayList<Future<String>> results = new ArrayList<Future<String>>();
 
@@ -286,121 +293,28 @@ public class TransitAssignAndSkimManager {
         writeWalkIntracitySkims ( period );
 */    
         
-        logTransitBoardingsReport ( period );
-        
-    }
-
-    
-    
-    private void logTransitBoardingsReport ( String periodHeadingLabel ) {
-        
         String csvFileName = null;
-        String repFileName = null;
-
-        if ( periodHeadingLabel.equalsIgnoreCase( "ampeak" ) ) {
-            // get am peak period definitions from property files
-            try { csvFileName = appRb.getString( "am.peak.transitLoadings.fileName" ); } catch ( MissingResourceException e) {}
-            try { repFileName = appRb.getString( "am.peak.transitReport.fileName" ); } catch ( MissingResourceException e) {}
+        String csvFileTarget = String.format("%s.TransitLoadings.fileName", period);
+        try {
+            csvFileName = appRb.getString( csvFileTarget );
         }
-        else if ( periodHeadingLabel.equalsIgnoreCase( "pmpeak" ) ) {
-            // get pm peak period definitions from property files
-            try { csvFileName = appRb.getString( "pm.peak.transitLoadings.fileName" ); } catch ( MissingResourceException e) {}
-            try { repFileName = appRb.getString( "pm.peak.transitReport.fileName" ); } catch ( MissingResourceException e) {}
-        }
-        else if ( periodHeadingLabel.equalsIgnoreCase( "mdoffpeak" ) ) {
-            // get md off-peak period definitions from property files
-            try { csvFileName = appRb.getString( "md.offpeak.transitLoadings.fileName" ); } catch ( MissingResourceException e) {}
-            try { repFileName = appRb.getString( "md.offpeak.transitReport.fileName" ); } catch ( MissingResourceException e) {}
-        }
-        else if ( periodHeadingLabel.equalsIgnoreCase( "ntoffpeak" ) ) {
-            // get nt off-peak period definitions from property files
-            try { csvFileName = appRb.getString( "nt.offpeak.transitLoadings.fileName" ); } catch ( MissingResourceException e) {}
-            try { repFileName = appRb.getString( "nt.offpeak.transitReport.fileName" ); } catch ( MissingResourceException e) {}
+        catch ( MissingResourceException e ){
+            // do nothing, filename can be null.
         }
         
+        String rptFileName = null;
+        String rptFileTarget = String.format("%s.TransitReport.fileName", period);
+        try {
+            rptFileName = appRb.getString( rptFileTarget );
+        }
+        catch ( MissingResourceException e ){
+            // do nothing, filename can be null.
+        }
         
-        // write results to csv file, if one was named in properties file
-        if ( csvFileName != null ) {
+        logTransitBoardingsReport ( csvFileName, rptFileName, period );
         
-            // open csv file for saving transit assignment route boardings summary information 
-            PrintWriter outStream = null;
-            try {
-                outStream = new PrintWriter (new BufferedWriter( new FileWriter(csvFileName) ) );
-            }
-            catch (IOException e) {
-                logger.fatal ( String.format("I/O exception opening transit boardings csv file=%s.", csvFileName), e);
-                System.exit(-1);
-            }
-
-            
-            // write formatted lines to file here as first line in csv file
-            ArrayList outputLines = formatCsvHeaderLines();
-            Iterator it = outputLines.iterator();
-            while ( it.hasNext() ) {
-                outStream.write( (String)it.next() );
-            }                
-
-
-            // get set of route boardings results for all route types
-            int lineCount = 0;
-            String[] typeList = { "air", "hsr", "intercity", "intracity" };
-            for ( String type : typeList ) {
-
-                outputLines = getCsvOutputLines ( savedBoardings, type, ++lineCount );
-                
-                // write formatted lines to file
-                it = outputLines.iterator();
-                while ( it.hasNext() ) {
-                    outStream.write( (String)it.next() );
-                }                
-                
-            }
-            
-            outStream.close();
-
-        }   
-
-
-        
-        
-        
-        // likewise for a report file, if one was named in properties file
-        if ( repFileName != null ) {
-        
-            // open log file for saving transit assignment route boardings summary information 
-            PrintWriter outStream = null;
-            try {
-                outStream = new PrintWriter (new BufferedWriter( new FileWriter(repFileName) ) );
-            }
-            catch (IOException e) {
-                logger.fatal ( String.format("I/O exception opening transit boardings report file=%s.", csvFileName), e);
-                System.exit(-1);
-            }
-
-            
-            
-            
-            // get set of route boardings results for all route types
-            int lineCount = 0;
-            String[] typeList = { "air", "hsr", "intercity", "intracity" };
-            for ( String type : typeList ) {
-
-                ArrayList outputLines = getLogOutputLines ( savedBoardings, type, periodHeadingLabel, ++lineCount );
-                
-                // write formatted lines to file
-                Iterator it = outputLines.iterator();
-                while ( it.hasNext() ) {
-                    outStream.write( (String)it.next() );
-                }                
-                
-            }
-            
-            outStream.close();
-
-        }   
-
     }
-    
+
     
     
     /**
@@ -418,7 +332,7 @@ public class TransitAssignAndSkimManager {
      * @param rteTypes
      * @return
      */
-    private AuxTrNet setupTransitNetwork ( NetworkHandlerIF nh, String period, String accessMode, String[] rteTypes ) {
+    private int setupTransitNetwork ( String identifier, NetworkHandlerIF nh, String period, String accessMode, String[] rteTypes ) {
         
         // construct a network listing output filename for the transit network being setup - assume primary route type is the first listed
         String listingName = appRb.getString( "transitNetworkListings.directory" ) + period + "_" + accessMode + "_" + rteTypes[0] + ".listing";
@@ -444,7 +358,7 @@ public class TransitAssignAndSkimManager {
 
         }
 
-        return nh.setupTransitNetworkObject ( period, accessMode, listingName, transitNetworkListings, d221Files, rteTypes, maxRoutes );
+        return nh.setupTransitNetworkObject ( identifier, period, accessMode, listingName, transitNetworkListings, d221Files, rteTypes, maxRoutes );
         
     }
 
@@ -824,7 +738,7 @@ public class TransitAssignAndSkimManager {
 
     
     
-    private Matrix[] runTransitAssignment ( NetworkHandlerIF nh, AuxTrNet ag, String timePeriod, String accessMode, String routeType, String tripMode ) {
+    private Matrix[] runTransitAssignment ( String identifier, NetworkHandlerIF nh, String timePeriod, String accessMode, String routeType, String tripMode ) {
         
         double[][] tripTable = null;  
         double[] tripTableColumn = null;
@@ -833,15 +747,16 @@ public class TransitAssignAndSkimManager {
         
         // get trip table from demand handler for trips to assign if SKIM_ONLY == false
         if ( ! SKIM_ONLY ) {
-            tripTable = d.getTripTablesForMode ( tripMode );
+            tripTable = dh.getTripTableForMode ( tripMode );
 
             tripTableColumn = new double[tripTable[0].length];
         }
         
+        
                 
         // load the triptable on walk access transit network
         // create an optimal strategy object for this highway and transit network
-        OptimalStrategy os = new OptimalStrategy( nh, ag );
+        OptimalStrategy os = new OptimalStrategy( nh, identifier );
         os.setTransitFareTables ( intracityFareTable, fareZones ); 
 
         // arrays for skim values into 0-based double[][] dimensioned to number of actual zones including externals (2983)
@@ -853,7 +768,7 @@ public class TransitAssignAndSkimManager {
         
         int[] nodeIndex = nh.getNodeIndex();
 
-        double[] routeBoardings = new double[ag.getMaxRoutes()];
+        double[] routeBoardings = new double[AuxTrNet.MAX_ROUTES];
 
         for ( int dest=0; dest < numCentroids; dest++ ) {
 
@@ -935,9 +850,9 @@ public class TransitAssignAndSkimManager {
         }
 
 
-        // load trips onto strategy unless SKIM_ONLY == true
+        // save loaded trips for summarizing unless SKIM_ONLY == true
         if ( ! SKIM_ONLY ) {
-            saveTransitBoardings ( ag, accessMode, routeType, routeBoardings );
+            saveTransitBoardings ( nh, identifier, accessMode, routeType, routeBoardings );
         }
         
         
@@ -1024,12 +939,9 @@ public class TransitAssignAndSkimManager {
         
     }
     
-    
-    
-    private void  saveTransitBoardings ( AuxTrNet ag, String accessMode, String routeType, double[] transitBoardings ) {
-        
-        TrRoute tr = ag.getTrRoute();
 
+    
+    private void  saveTransitBoardings ( NetworkHandlerIF nh, String identifier, String accessMode, String routeType, double[] transitBoardings ) {
         
         int accessIndex = -1;
         if ( accessMode.equalsIgnoreCase("walk") )
@@ -1056,22 +968,24 @@ public class TransitAssignAndSkimManager {
         int index = -1;
         if ( routeTypeIndex >= 0 && accessIndex >= 0 ) {
             
-            for (int rte=0; rte < tr.getLineCount(); rte++) {
+            int numRoutes = nh.getAuxNumRoutes(identifier);
+            
+            for (int rte=0; rte < numRoutes; rte++) {
                
-                String rteName = tr.getLine(rte);
+                String rteName = nh.getAuxRouteName(identifier, rte);
                 
                 synchronized (objLock) {
-
+                
                     if ( savedBoardings.containsKey(rteName) )
                         savedInfo = (SavedRouteInfo)savedBoardings.get(rteName);
                     else
-                        savedInfo = new SavedRouteInfo(tr.getDescription(rte), tr.getMode(rte), tr.getRouteType(rte) );
+                        savedInfo = new SavedRouteInfo(nh.getAuxRouteDescription(identifier, rte), nh.getAuxRouteMode(identifier, rte), nh.getAuxRouteType(identifier, rte) );
                     
                     index = 2*routeTypeIndex + accessIndex;
                     savedInfo.boardings[index] += transitBoardings[rte];
                     
                     savedBoardings.put(rteName, savedInfo);
-                
+
                 }
                 
             }
@@ -1085,6 +999,7 @@ public class TransitAssignAndSkimManager {
     }
 
     
+
     
     private String getPeriodIdentifier ( String period ) {
         if ( period.equalsIgnoreCase( "ampeak" ) )
@@ -1152,7 +1067,7 @@ public class TransitAssignAndSkimManager {
         
         boolean fails = true;
         
-        if ( period.equalsIgnoreCase("ampeak") || period.equalsIgnoreCase("mdoffpeak") ) {
+        if ( period.equalsIgnoreCase("ampeak") || period.equalsIgnoreCase("mdoffpeak") || period.equalsIgnoreCase("pmpeak") || period.equalsIgnoreCase("ntoffpeak") ) {
             // air is not allowed for walk
             if ( accessMode.equalsIgnoreCase("walk") ) {
                 if ( rteType.equalsIgnoreCase("hsr") || rteType.equalsIgnoreCase("intercity") || rteType.equalsIgnoreCase("intracity") ) {
@@ -1269,8 +1184,98 @@ public class TransitAssignAndSkimManager {
         }
         
     }
+    
+    
+    
+    
+
+    public void logTransitBoardingsReport ( String csvFileName, String repFileName, String periodHeadingLabel ) {
+                
+        
+        // write results to csv file, if one was named in properties file
+        if ( csvFileName != null ) {
+        
+            // open csv file for saving transit assignment route boardings summary information 
+            PrintWriter outStream = null;
+            try {
+                outStream = new PrintWriter (new BufferedWriter( new FileWriter(csvFileName) ) );
+            }
+            catch (IOException e) {
+                logger.fatal ( String.format("I/O exception opening transit boardings csv file=%s.", csvFileName), e);
+                System.exit(-1);
+            }
+
+            
+            // write formatted lines to file here as first line in csv file
+            ArrayList outputLines = formatCsvHeaderLines();
+            Iterator it = outputLines.iterator();
+            while ( it.hasNext() ) {
+                outStream.write( (String)it.next() );
+            }                
 
 
+            // get set of route boardings results for all route types
+            int lineCount = 0;
+            String[] typeList = { "air", "hsr", "intercity", "intracity" };
+            for ( String type : typeList ) {
+
+                outputLines = getCsvOutputLines ( savedBoardings, type, ++lineCount );
+                
+                // write formatted lines to file
+                it = outputLines.iterator();
+                while ( it.hasNext() ) {
+                    outStream.write( (String)it.next() );
+                }                
+                
+            }
+            
+            outStream.close();
+
+        }   
+
+
+        
+        
+        
+        // likewise for a report file, if one was named in properties file
+        if ( repFileName != null ) {
+        
+            // open log file for saving transit assignment route boardings summary information 
+            PrintWriter outStream = null;
+            try {
+                outStream = new PrintWriter (new BufferedWriter( new FileWriter(repFileName) ) );
+            }
+            catch (IOException e) {
+                logger.fatal ( String.format("I/O exception opening transit boardings report file=%s.", csvFileName), e);
+                System.exit(-1);
+            }
+
+            
+            
+            
+            // get set of route boardings results for all route types
+            int lineCount = 0;
+            String[] typeList = { "air", "hsr", "intercity", "intracity" };
+            for ( String type : typeList ) {
+
+                ArrayList outputLines = getLogOutputLines ( savedBoardings, type, periodHeadingLabel, ++lineCount );
+                
+                // write formatted lines to file
+                Iterator it = outputLines.iterator();
+                while ( it.hasNext() ) {
+                    outStream.write( (String)it.next() );
+                }                
+                
+            }
+            
+            outStream.close();
+
+        }   
+
+    }
+    
+    
+        
     private ArrayList formatLogHeaderLines( String periodHeadingLabel, String routeType, String descrFormat ) {
         
         ArrayList outputLines = new ArrayList();
@@ -1445,6 +1450,8 @@ public class TransitAssignAndSkimManager {
     
     
     
+    
+    
     public class SavedRouteInfo {
         
         static final int NUM_ROUTE_TYPES = 4;
@@ -1463,6 +1470,7 @@ public class TransitAssignAndSkimManager {
         
     }
     
+
 
     public enum SkimType {
         IVT,
@@ -1492,6 +1500,7 @@ public class TransitAssignAndSkimManager {
         private String accessModeType;      // drive or walk
         private String tripModeName;        // LDTripModeType or TripModeType trip mode name
         
+        private String identifier;          // unique String to distinguish the 7 types of transit assignments.
         
         public AssignSkimTask( NetworkHandlerIF nh, String[] serviceTypes, String period, String accessMode, String accessModeType, String specificServiceType, String tripModeName ) {
             this.nh = nh;
@@ -1502,6 +1511,8 @@ public class TransitAssignAndSkimManager {
             this.accessModeType = accessModeType;
             this.tripModeName = tripModeName;
             
+            this.identifier = accessMode + "_" + specificServiceType;
+            
             logger.info( String.format( "task created to load and skim %s period %s access %s transit using %s access network for %s trips", period, accessModeType, specificServiceType, accessMode ,tripModeName ) );
         }
         
@@ -1510,8 +1521,8 @@ public class TransitAssignAndSkimManager {
             try {
                 
                 // transit loading and skims
-                AuxTrNet ag = setupTransitNetwork( nh, period, accessMode, serviceTypes );
-                Matrix[] skims = runTransitAssignment ( nh, ag, period, accessModeType, specificServiceType, tripModeName );
+                setupTransitNetwork( identifier, nh, period, accessMode, serviceTypes );
+                Matrix[] skims = runTransitAssignment ( identifier, nh, period, accessModeType, specificServiceType, tripModeName );
                 writeSkims ( skims, period, accessModeType, specificServiceType );
                 
             }

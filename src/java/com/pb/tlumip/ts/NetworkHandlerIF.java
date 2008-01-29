@@ -1,9 +1,6 @@
 package com.pb.tlumip.ts;
 
 
-import com.pb.tlumip.ts.transit.AuxTrNet;
-import com.pb.tlumip.ts.transit.TrRoute;
-
 public interface NetworkHandlerIF {
 
     public static final String HANDLER_NAME = "networkHandler";
@@ -113,38 +110,44 @@ public interface NetworkHandlerIF {
     public int[] getAlphaDistrictIndex ();
 
     public int setupHighwayNetworkObject ( String timePeriod, String[] propertyValues  );
-    public AuxTrNet setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes );
+    public int setupTransitNetworkObject ( String identifier, String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes );
+
+    
+    public int[] getAuxIa(String identifier);
+    public int[] getAuxIb(String identifier);
+    public int[] getAuxIpa(String identifier);
+    public int[] getAuxIpb(String identifier);
+    public int[] getAuxIndexa(String identifier);
+    public int[] getAuxIndexb(String identifier);
+    public int[] getAuxHwyLink(String identifier);
+
+    public int[] getLinkTrRoute(String identifier);
+    public char[] getRteMode(String identifier);
+    public int[] getAuxLinkType(String identifier);
+    public double[] getAuxCost(String identifier);
+    public double[] getAuxDwellTime(String identifier);
+    public double[] getAuxLayoverTime(String identifier);
+    public double[] getAuxWaitTime(String identifier);
+    public double[] getAuxWalkTime(String identifier);
+    public double[] getAuxDriveAccTime(String identifier);
+    public double[] getAuxInvTime(String identifier);
+    public double[] getAuxLinkFreq(String identifier);
+    public double[] getAuxLinkFlow(String identifier);
+    public int getAuxNodeCount( String identifier );
+    public int getAuxLinkCount( String identifier );
+    public double getAuxLinkImped (String identifier, int k);
+    public String getAuxRouteName(String identifier, int rte);
+    public String getAuxRouteDescription(String identifier, int rte);
+    public char getAuxRouteMode(String identifier, int rte);
+    public String getAuxRouteType(String identifier, int rte);
+    public int getAuxNumRoutes(String identifier);
+    
     
     /*
-    public TrRoute getTrRoute();
     public String getAccessMode();
-    public int getMaxRoutes();
-    public String getRouteName(int rte);
     public String[] getTransitRouteNames();
     public String[] getTransitRouteTypes();
     public int[] getTransitRouteLinkIds(String rteName);
-    public int getAuxNodeCount();
-    public int getAuxLinkCount();
-    public int[] getLinkTrRoute();
-    public double[] getCost();
-    public double[] getWalkTime();
-    public double[] getWaitTime();
-    public double[] getDriveAccTime();
-    public double[] getDwellTime();
-    public double[] getLayoverTime();
-    public double[] getInvTime();
-    public double getLinkImped (int k);
-    public double[] getAuxLinkFreq();
-    public double[] getAuxLinkFlow();
-    public int[] getAuxLinkType();
-    public int[] getAuxIa();
-    public int[] getAuxIb();
-    public int[] getAuxIpa();
-    public int[] getAuxIpb();
-    public int[] getAuxIndexa();
-    public int[] getAuxIndexb();
-    public int[] getAuxHwyLink();
-    public char[] getRteMode();
     public int[] getStationDriveAccessNodes(int stationNode);
     */
     

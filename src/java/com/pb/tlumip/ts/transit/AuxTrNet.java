@@ -52,7 +52,7 @@ public class AuxTrNet implements Serializable {
 	public static final int LAYOVER_TYPE = 3;
 	public static final int AUXILIARY_TYPE = 4;
 
-	static final int MAX_ROUTES = 500;
+	public static final int MAX_ROUTES = 500;
 
     static final String[] routeTypeStrings = { "air", "hsr", "intercity", "intracity" };
 
@@ -95,7 +95,7 @@ public class AuxTrNet implements Serializable {
     NetworkHandlerIF nh = null;
 	TrRoute tr;
 
-	private int auxLinks, auxNodes;
+    private int auxLinks, auxNodes;
     private int maxHwyInternalNode;
 
 
@@ -1198,16 +1198,24 @@ public class AuxTrNet implements Serializable {
         return period;
     }
 
-    public int getMaxRoutes() {
-        return MAX_ROUTES;
-    }
-    
     public int getNumRoutes() {
         return tr.getLineCount();
     }
     
     public String getRouteName(int rte) {
         return tr.getLine(rte);
+    }
+    
+    public String getRouteDescription(int rte) {
+        return tr.getDescription(rte);
+    }
+    
+    public char getRouteMode(int rte) {
+        return tr.getMode(rte);
+    }
+    
+    public String getRouteType(int rte) {
+        return tr.getRouteType(rte);
     }
     
     public String[] getRouteNames() {
@@ -1491,4 +1499,8 @@ public class AuxTrNet implements Serializable {
         
     }
     
+
+
+
+
 }

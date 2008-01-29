@@ -16,9 +16,7 @@
  */
 package com.pb.tlumip.ts;
 
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Vector;
+import java.util.HashMap;
 
 import com.pb.common.datafile.DataReader;
 import com.pb.common.rpc.DafNode;
@@ -38,7 +36,9 @@ public class NetworkHandler implements NetworkHandlerIF {
     protected static transient Logger logger = Logger.getLogger(NetworkHandler.class);
 
     Network g = null;
-    //AuxTrNet ag = null;
+    
+    HashMap transitNetworks; 
+    
     ShortestPathTreeH sp = null;
     NetworkDataServer ns = null;
     String rpcConfigFile = null;
@@ -46,6 +46,7 @@ public class NetworkHandler implements NetworkHandlerIF {
     
     public NetworkHandler() {
         ns = NetworkDataServer.getInstance( this, networkDataServerPort, dataServerName );
+        transitNetworks = new HashMap();
     }
 
     
@@ -453,7 +454,7 @@ public class NetworkHandler implements NetworkHandlerIF {
 
 
 
-    public AuxTrNet setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitNetworkListings, String[] d221Files, String[] rteTypes, int maxRoutes ) {
+    public int setupTransitNetworkObject ( String identifier, String period, String accessMode, String auxTransitNetworkListingFileName, String transitNetworkListings, String[] d221Files, String[] rteTypes, int maxRoutes ) {
         
         // create transit routes object
         TrRoute tr = new TrRoute ( maxRoutes );
@@ -481,44 +482,169 @@ public class NetworkHandler implements NetworkHandlerIF {
         logger.info( "creating backward star representation for transit network.");
         ag.setBackwardStarArrays ();
 
+
+        // store the transit network built in a HashMap so that several transit network objects can exist in parallel.
+        transitNetworks.put(identifier, ag);
+        
         
         //ag.printAuxTrLinks (28, tr);
         if ( auxTransitNetworkListingFileName != null )
             ag.printAuxTranNetwork( auxTransitNetworkListingFileName );
 
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info ("done creating transit network AuxTrNetTest: " + myDateString);
+        
+        logger.info ( String.format("done creating %s transit network for %s period and %s access mode.", identifier, period, accessMode ) );
 
         
-        return ag;
+        return 1;
     }
     
+
     
+    
+    public int[] getAuxIa( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getIa();
+    }
+    
+    public int[] getAuxIb( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getIb();
+    }
+    
+    public int[] getAuxIpa( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getIpa();
+    }
+    
+    public int[] getAuxIpb( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getIpb();
+    }
+    
+    public int[] getAuxIndexa( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getIndexa();
+    }
+    
+    public int[] getAuxIndexb( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getIndexb();
+    }
+    
+    public int[] getAuxHwyLink( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getHwyLink();
+    }
+
+    
+    public int[] getLinkTrRoute( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getLinkTrRoute();
+    }
+    
+    public char[] getRteMode( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getRteMode();
+    }
+
+    public int[] getAuxLinkType( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getLinkType();
+    }
+
+    public double[] getAuxWalkTime( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getWalkTime();
+    }
+    
+    public double[] getAuxWaitTime( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getWaitTime();
+    }
+    
+    public double[] getAuxDriveAccTime( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getDriveAccTime();
+    }
+    
+    public double[] getAuxDwellTime( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getDwellTime();
+    }
+
+    public double[] getAuxCost( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getCost();
+    }
+
+    public double[] getAuxLayoverTime( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getLayoverTime();
+    }
+
+    public double[] getAuxInvTime( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getInvTime();
+    }
+
+    public double[] getAuxLinkFreq( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getFreq();
+    }
+
+    public double[] getAuxLinkFlow( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getFlow();
+    }
+
+    public int getAuxNodeCount( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getAuxNodeCount();
+    }
+
+    public int getAuxLinkCount( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getAuxLinkCount();
+    }
+
+    public double getAuxLinkImped (String identifier, int k) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getLinkImped(k);
+    }
+    
+    public String getAuxRouteName(String identifier, int rte) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getRouteName(rte);
+    }
+    
+    public String getAuxRouteDescription(String identifier, int rte) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getRouteDescription(rte);
+    }
+    
+    public char getAuxRouteMode(String identifier, int rte) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getRouteMode(rte);
+    }
+    
+    public String getAuxRouteType(String identifier, int rte) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getRouteType(rte);
+    }
+    
+    public int getAuxNumRoutes(String identifier) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getNumRoutes();
+    }
     
     /*
     
-    private void setTransitNetwork( AuxTrNet ag) {
-        this.ag = ag;
-    }
-
     // Transit Network handling methods
 
-    public TrRoute getTrRoute() {
-        return ag.getTrRoute();
-    }
-    
     public String getAccessMode() {
         return ag.getAccessMode();
     }
 
-    public int getMaxRoutes() {
-        return ag.getMaxRoutes();
-    }
-    
-    public String getRouteName(int rte) {
-        return ag.getRouteName(rte);
-    }
-    
     public String[] getTransitRouteNames() {
         if ( ag == null)
             return new String[0];
@@ -542,94 +668,6 @@ public class NetworkHandler implements NetworkHandlerIF {
         return ag.getRouteLinkIds (rteName);
     }
     
-    public int getAuxNodeCount() {
-        return ag.getAuxNodeCount();
-    }
-
-    public int getAuxLinkCount() {
-        return ag.getAuxLinkCount();
-    }
-
-    public int[] getLinkTrRoute() {
-        return ag.getLinkTrRoute();
-    }
-    
-    public double[] getWalkTime() {
-        return ag.getWalkTime();
-    }
-    
-    public double[] getWaitTime() {
-        return ag.getWaitTime();
-    }
-    
-    public double[] getDriveAccTime() {
-        return ag.getDriveAccTime();
-    }
-    
-    public double[] getDwellTime() {
-        return ag.getDwellTime();
-    }
-
-    public double[] getCost() {
-        return ag.getCost();
-    }
-
-    public double[] getLayoverTime() {
-        return ag.getLayoverTime();
-    }
-
-    public double[] getInvTime() {
-        return ag.getInvTime();
-    }
-
-    public double getLinkImped (int k) {
-        return ag.getLinkImped(k);
-    }
-    
-    public double[] getAuxLinkFreq() {
-        return ag.getFreq();
-    }
-
-    public double[] getAuxLinkFlow() {
-        return ag.getFlow();
-    }
-
-    public int[] getAuxLinkType() {
-        return ag.getLinkType();
-    }
-
-    public int[] getAuxIa() {
-        return ag.getIa();
-    }
-    
-    public int[] getAuxIb() {
-        return ag.getIb();
-    }
-    
-    public int[] getAuxIpa() {
-        return ag.getIpa();
-    }
-    
-    public int[] getAuxIpb() {
-        return ag.getIpb();
-    }
-    
-    public int[] getAuxIndexa() {
-        return ag.getIndexa();
-    }
-    
-    public int[] getAuxIndexb() {
-        return ag.getIndexb();
-    }
-    
-    public int[] getAuxHwyLink() {
-        return ag.getHwyLink();
-    }
-
-    public char[] getRteMode() {
-        return ag.getRteMode();
-    }
-
     public int[] getStationDriveAccessNodes(int stationNode) {
         return ag.getStationDriveAccessNodes(stationNode);
     }
@@ -723,5 +761,5 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getDistrictNames();
     }
     
-    
+
 }

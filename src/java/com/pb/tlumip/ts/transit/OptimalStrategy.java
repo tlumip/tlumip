@@ -61,10 +61,12 @@ public class OptimalStrategy {
 
 
     
-    AuxTrNet ag = null;
-    
     HashMap fareZones;
     HashMap transitFareLookupTable;
+    
+
+    NetworkHandlerIF nh;
+    String identifier;
     
 	int dest;
     
@@ -119,14 +121,16 @@ public class OptimalStrategy {
 	
 	
 	
-	public OptimalStrategy ( NetworkHandlerIF nh, AuxTrNet ag ) {
+	public OptimalStrategy ( NetworkHandlerIF nh, String identifier ) {
+        
+        this.nh = nh;
+        this.identifier = identifier;
+        
 
-        this.ag = ag;
-    
         numCentroids = nh.getNumCentroids();
         
-        auxNodeCount = ag.getAuxNodeCount();
-        auxLinkCount = ag.getAuxLinkCount();
+        auxNodeCount = nh.getAuxNodeCount( identifier );
+        auxLinkCount = nh.getAuxLinkCount( identifier );
         
         
 		nodeFlow = new double[auxNodeCount+1];
@@ -143,25 +147,25 @@ public class OptimalStrategy {
         candidateHeap = new Heap( auxLinkCount ); // new SortedSet
 		heapContents = new int[auxNodeCount+1];
 
-        ia = ag.getIa();
-        ib = ag.getIb();
-        ipa = ag.getIpa();
-        ipb = ag.getIpb();
-        indexa = ag.getIndexa();
-        indexb = ag.getIndexb();
-        hwyLink = ag.getHwyLink();
-        trRoute = ag.getLinkTrRoute();
-        rteMode = ag.getRteMode();
-        linkType = ag.getLinkType();
-        cost = ag.getCost();
-        dwellTime = ag.getDwellTime();
-        layoverTime = ag.getLayoverTime();
-        waitTime = ag.getWaitTime(); 
-        walkTime = ag.getWalkTime(); 
-        drAccTime = ag.getDriveAccTime(); 
-        invTime = ag.getInvTime();
-        freq = ag.getFreq();
-        flow = ag.getFlow();
+        ia = nh.getAuxIa(identifier);
+        ib = nh.getAuxIb(identifier);
+        ipa = nh.getAuxIpa(identifier);
+        ipb = nh.getAuxIpb(identifier);
+        indexa = nh.getAuxIndexa(identifier);
+        indexb = nh.getAuxIndexb(identifier);
+        hwyLink = nh.getAuxHwyLink(identifier);
+        trRoute = nh.getLinkTrRoute(identifier);
+        rteMode = nh.getRteMode(identifier);
+        linkType = nh.getAuxLinkType(identifier);
+        cost = nh.getAuxCost(identifier);
+        dwellTime = nh.getAuxDwellTime(identifier);
+        layoverTime = nh.getAuxLayoverTime(identifier);
+        waitTime = nh.getAuxWaitTime(identifier); 
+        walkTime = nh.getAuxWalkTime(identifier); 
+        drAccTime = nh.getAuxDriveAccTime(identifier); 
+        invTime = nh.getAuxInvTime(identifier);
+        freq = nh.getAuxLinkFreq(identifier);
+        flow = nh.getAuxLinkFlow(identifier);
         
 		gia = nh.getIa();
 		gib = nh.getIb();
@@ -240,7 +244,7 @@ public class OptimalStrategy {
     			}
     			
     			
-				linkImped = ag.getLinkImped(k);
+				linkImped = nh.getAuxLinkImped(identifier, k);
 				
 				// log some information about the starting condition of the candidate link being examined
 				if ( debug ) {
@@ -250,7 +254,7 @@ public class OptimalStrategy {
                     m = hwyLink[k];
                 
 
-					logger.info ("k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", trRoute=" + trRoute[k] + "(" + (trRoute[k] >= 0 ? ag.getRouteName(trRoute[k]) : "aux") + ")" );
+					logger.info ("k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", trRoute=" + trRoute[k] + "(" + (trRoute[k] >= 0 ? nh.getAuxRouteName(identifier, trRoute[k]) : "aux") + ")" );
 					logger.info ("nodeLabel[ag.ia=" + ia[k] + "]=" + nodeLabel[ia[k]]);
 					logger.info ("nodeLabel[ag.ib=" + ib[k] + "]=" + nodeLabel[ib[k]]);
 					logger.info ("nodeFreq[ag.ia=" + ia[k] + "]=" + nodeFreq[ia[k]]);
@@ -427,7 +431,7 @@ public class OptimalStrategy {
             if ( linkType[k] == AuxTrNet.BOARDING_TYPE && !inStrategy[k+1] )
                 continue;
                 
-            linkImped = ag.getLinkImped(k);
+            linkImped = nh.getAuxLinkImped(identifier, k);
             linkLabel[k] = nodeLabel[ib[k]] + linkImped;
 
             // if the anode's label is already smaller than the bnode's label plus the link impedance,
@@ -487,7 +491,7 @@ public class OptimalStrategy {
 
 
         // allocate an array to store boardings by route to be passed back to calling method.
-        double[] routeBoardingsToDest = new double[ag.getMaxRoutes()];
+        double[] routeBoardingsToDest = new double[AuxTrNet.MAX_ROUTES];
         
         
         // loop through links in optimal strategy in reverse order and allocate

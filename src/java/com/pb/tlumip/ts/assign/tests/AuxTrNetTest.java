@@ -26,14 +26,11 @@ package com.pb.tlumip.ts.assign.tests;
 
 import com.pb.common.datafile.DataReader;
 import com.pb.common.datafile.DataWriter;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.MatrixType;
-import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.transit.AuxTrNet;
-import com.pb.tlumip.ts.transit.OpStrategy;
+import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.tlumip.ts.transit.TrRoute;
 import org.apache.log4j.Logger;
 
@@ -66,6 +63,7 @@ public class AuxTrNetTest {
 //	public static final int PK_WT_FAR = 5;
 //	public static final int PK_WT_SKIMS = 6;
 	
+    NetworkHandlerIF nh;    
 	AuxTrNet ag = null;	
 	
 	HashMap tsPropertyMap = null;
@@ -158,69 +156,14 @@ public class AuxTrNetTest {
 	
     public static void main (String[] args) {
 
-// Use to write out all transit skims files    	
-//    	ResourceBundle rb = ResourceUtil.getPropertyBundle( new File("/jim/util/svn_workspace/projects/tlumip/config/Network.properties") );
-//    	HashMap propertyMap = ResourceUtil.changeResourceBundleIntoHashMap(rb); 
-//
-//		AuxTrNetTest test = new AuxTrNetTest(propertyMap);
-//		test.runWriteFilesTest();
-		
-		
-		
-
-    	logger.info ("building transit network");
-		AuxTrNetTest test = new AuxTrNetTest();
-		
-		/*
-		 * specify which period, accessmode and matrix element to view:
-		 * 
-		 * period: "peak" or "offpeak"
-		 * accessMode: "walk" or "drive"
-		 *
-		 * 0: in-vehicle time Matrix
-		 * 1: first wait Matrix
-		 * 2: total wait Matrix
-		 * 3: access time Matrix
-		 * 4: boardings Matrix
-		 * 5: cost Matrix
-		 *  
-		 */
-		
+        AuxTrNetTest test = new AuxTrNetTest();
+        test.testTransitStrategy ( "ampeak", "walk" );
+        
     }
 
     
     
-	private void runWriteFilesTest () {
-	    
-		long startTime = System.currentTimeMillis();
-
-        // get off-peak period definitions from property file
-		writeZipTransitSkims( "peak", "Walk", PeakWalkTransitSkimFileNames );
-		writeZipTransitSkims( "peak", "Drive", PeakDriveTransitSkimFileNames );
-		writeZipTransitSkims( "offpeak", "Walk", OffPeakWalkTransitSkimFileNames );
-		writeZipTransitSkims( "offpeak", "Drive", OffPeakDriveTransitSkimFileNames );
-		
-		logger.info("AuxTrNetTest.runTest() finished in " +
-			((System.currentTimeMillis() - startTime) / 60000.0) + " minutes");
-
-		
-	}
-
-	
-	
-	public void writeZipTransitSkims ( String period, String accessMode, String[] transitSkimFileNames ) {
-	    
-		// generate a set of output zip format peak walk transit skims
-		Matrix[] skims = getTransitSkims ( period, accessMode );
-		for (int i=0; i < skims.length; i++) {
-			writeZipMatrix( skims[i], transitSkimFileNames[i] );
-		}
-		
-	}
-		
-	
-	
-	public Matrix[] getTransitSkims ( String period, String accessMode ) {
+	public void testTransitStrategy ( String period, String accessMode ) {
         
 		
 		String diskObjectFileName = null;
@@ -239,85 +182,17 @@ public class AuxTrNetTest {
 		else {
 			ag = (AuxTrNet) DataReader.readDiskObject ( diskObjectFileName, key );
 		}
-
-		
-
 		
 		
 		// create an optimal strategy object for this highway and transit network
-		OpStrategy os = new OpStrategy( ag );
+		OptimalStrategy os = new OptimalStrategy( nh, period );
 
 		int[] nodeIndex = ag.getHighwayNetworkNodeIndex();
-		os.buildStrategy( nodeIndex[END_NODE] );
-		os.getOptimalStrategyWtSkimsOrigDest( START_NODE, END_NODE );
+		os.buildStrategy( nodeIndex[END_NODE], period );
+		os.getOptimalStrategyLinks(START_NODE);
 		System.exit(1);
 		
 		
-//		// generate the walk transit skims to zone 1 and print values in tabular report
-//		int dest = 0;
-//		if ( os.buildStrategy( dest ) >= 0 ) {
-//		    
-//			// compute skims for this O/D pair for use in stop/station choice
-//			os.initSkims();
-//			os.wtSkimsFromDest();
-//
-//			for (int i=0; i < ag.getHighwayNodeCount(); i++)
-//				os.getOptimalStrategySkimsFromOrig(i);
-//
-//
-//			os.printTransitSkimsTo ( dest );
-//			
-//		}
-//
-//		System.exit(1);
-		
-	
-		Matrix[] transitSkims = os.getOptimalStrategySkimMatrices();
-		
-		
-		
-/*
-		// load a walk transit trip on the O/D strategy
-		os.loadWalkTransit(orig,dest);
-
-		// print the node skims values for all links in this strategy assigned flow.
-		System.out.println ("Loading a walk transit trip on the current transit strategy and dumping skims");
-		System.out.println ("");
-//		os.printTransitSkims();
-	  os.printTransitSkimsTo (71020);
-		System.out.println ("");
-		System.out.println ("");
-		System.out.println ("");
-*/
-
-
-/*
-		// compute skims for this O/D pair for use in stop/station choice
-		os.initSkims(dest);
-		os.skimsFromDest();
-		System.out.println ("done with skims toward the destination.");
-
-
-		for (int i=1; i < g.getNodeCount(); i++)
-		  os.driveTransitSkimsFromOrig(i);
-		System.out.println ("done with skims from origin nodes.");
-
-		// load a drive transit trip on the O/D strategy
-		os.loadDriveTransit(orig);
-		System.out.println ("loading.");
-
-		// print the node skims values for all links in this strategy assigned flow.
-		System.out.println ("Loading a drive transit trip on the current transit strategy and dumping skims");
-		System.out.println ("");
-		os.printTransitSkims();
-*/
-
-        
-		String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-		logger.info ("done with getTransitSkims(): " + myDateString);
-
-
-		return transitSkims;
 	}
     
 
@@ -325,7 +200,7 @@ public class AuxTrNetTest {
 	private AuxTrNet createTransitNetwork ( String period, String accessMode ) {
         
 		// create a highway network oject
-        NetworkHandlerIF nh = NetworkHandler.getInstance();
+        nh = NetworkHandler.getInstance();
         setupNetwork ( nh, tsPropertyMap, globalPropertyMap, period );
         
 		logger.info (nh.getLinkCount() + " highway links");
@@ -422,15 +297,6 @@ public class AuxTrNetTest {
         nh.setupHighwayNetworkObject ( timePeriod, propertyValues );
         
     }
-    
-	
-	/**
-	 *  Write the matrix out to a new zip file
-	 */
-	public static void writeZipMatrix(Matrix m, String fileName) {
-		MatrixWriter mw = MatrixWriter.createWriter(MatrixType.ZIP, new File(fileName));
-		mw.writeMatrix( m );
-	}
 
 
 }

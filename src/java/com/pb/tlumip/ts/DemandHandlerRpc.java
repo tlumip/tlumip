@@ -210,4 +210,23 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         return returnArray;
 
     }
+
+    public double[][] getTripTableForMode ( String tripMode ) {
+        
+        double[][] returnArray = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add(tripMode);
+            returnArray = (double[][])rc.execute(HANDLER_NAME+".getTripTableForMode", params);
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+
+        return returnArray;
+
+    }
+
 }

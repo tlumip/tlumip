@@ -22,8 +22,6 @@ import java.util.Vector;
 
 import com.pb.common.rpc.RpcClient;
 import com.pb.common.rpc.RpcException;
-import com.pb.tlumip.ts.transit.AuxTrNet;
-import com.pb.tlumip.ts.transit.TrRoute;
 
 import org.apache.log4j.Logger;
 
@@ -1231,23 +1229,491 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
     
     
     
-    public AuxTrNet setupTransitNetworkObject ( String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes ) {
-        return null;
+    public int setupTransitNetworkObject ( String identifier, String period, String accessMode, String auxTransitNetworkListingFileName, String transitRouteDataFilesDirectory, String[] d221Files, String[] rteTypes, int maxRoutes ) {
+
+        int returnValue = -1;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            params.add( period );
+            params.add( accessMode );
+            params.add( auxTransitNetworkListingFileName );
+            params.add( transitRouteDataFilesDirectory );
+            params.add( d221Files );
+            params.add( rteTypes );
+            params.add( maxRoutes );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".setupTransitNetworkObject", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
+    }
+
+    
+    
+    public int[] getAuxIa(String identifier) {
+
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIa", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
     }
     
-    public TrRoute getTrRoute() {
-        return null;
+    public int[] getAuxIb( String identifier ) {
+
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIb", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
     }
     
+    public int[] getAuxIpa( String identifier ) {
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIpa", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
+    }
+    
+    public int[] getAuxIpb( String identifier ) {
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIpb", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
+    }
+    
+    public int[] getAuxIndexa( String identifier ) {
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIndexa", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
+    }
+    
+    public int[] getAuxIndexb( String identifier ) {
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIndexb", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
+    }
+    
+    public int[] getAuxHwyLink( String identifier ) {
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxHwyLink", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
+    }
+    
+    
+    
+    
+    
+    public int[] getLinkTrRoute( String identifier ) {
+
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getLinkTrRoute", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
+    }
+    
+    public char[] getRteMode( String identifier ) {
+
+        char[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (char[])rc.execute(HANDLER_NAME+".getRteMode", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+
+    }
+
+    public int[] getAuxLinkType( String identifier ) {
+        int[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxLinkType", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public double[] getAuxWalkTime( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxWalkTime", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+    
+    public double[] getAuxWaitTime( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxWaitTime", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+    
+    public double[] getAuxDriveAccTime( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxDriveAccTime", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+    
+    public double[] getAuxDwellTime( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxDwellTime", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public double[] getAuxCost( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxCost", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public double[] getAuxLayoverTime( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxLayoverTime", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public double[] getAuxInvTime( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxInvTime", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public double[] getAuxLinkFreq( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxLinkFreq", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public double[] getAuxLinkFlow( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxLinkFlow", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public int getAuxNodeCount( String identifier ) {
+        int returnValue = -1;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".getAuxNodeCount", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public int getAuxLinkCount( String identifier ) {
+        int returnValue = -1;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".getAuxLinkCount", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
+    public double getAuxLinkImped (String identifier, int k) {
+        double returnValue = -1;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            params.add( k );
+            returnValue = (Double)rc.execute(HANDLER_NAME+".getAuxLinkImped", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+    
+    public String getAuxRouteName(String identifier, int rte) {
+        String returnValue = "";
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            params.add( rte );
+            returnValue = (String)rc.execute(HANDLER_NAME+".getRouteName", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+    
+    public String getAuxRouteDescription(String identifier, int rte) {
+        String returnValue = "";
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            params.add( rte );
+            returnValue = (String)rc.execute(HANDLER_NAME+".getAuxRouteDescription", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+    
+    public char getAuxRouteMode(String identifier, int rte) {
+        char returnValue = '0';
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            params.add( rte );
+            returnValue = (Character)rc.execute(HANDLER_NAME+".getAuxRouteMode", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+    
+    public String getAuxRouteType(String identifier, int rte) {
+        String returnValue = "";
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            params.add( rte );
+            returnValue = (String)rc.execute(HANDLER_NAME+".getAuxRouteType", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }    
+    
+    public int getAuxNumRoutes(String identifier) {
+        int returnValue = -1;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".getAuxNumRoutes", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+    
+    
+    
+
     public String getAccessMode() {
-        return null;
-    }
-    
-    public int getMaxRoutes() {
-        return 0;
-    }
-    
-    public String getRouteName(int rte) {
         return null;
     }
     
@@ -1260,94 +1726,6 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
     }
     
     public int[] getTransitRouteLinkIds(String rteName) {
-        return null;
-    }
-    
-    public int getAuxNodeCount() {
-        return 0;
-    }
-    
-    public int getAuxLinkCount() {
-        return 0;
-    }
-    
-    public int[] getLinkTrRoute() {
-        return null;
-    }
-    
-    public double[] getWalkTime() {
-        return null;
-    }
-    
-    public double[] getWaitTime() {
-        return null;
-    }
-    
-    public double[] getDriveAccTime() {
-        return null;
-    }
-    
-    public double[] getDwellTime() {
-        return null;
-    }
-    
-    public double[] getLayoverTime() {
-        return null;
-    }
-    
-    public double[] getInvTime() {
-        return null;
-    }
-    
-    public double[] getCost() {
-        return null;
-    }
-    
-    public double getLinkImped (int k) {
-        return 0;
-    }
-    
-    public double[] getAuxLinkFreq() {
-        return null;
-    }
-    
-    public double[] getAuxLinkFlow() {
-        return null;
-    }
-    
-    public int[] getAuxLinkType() {
-        return null;
-    }
-    
-    public int[] getAuxIa() {
-        return null;
-    }
-    
-    public int[] getAuxIb() {
-        return null;
-    }
-    
-    public int[] getAuxIpa() {
-        return null;
-    }
-    
-    public int[] getAuxIpb() {
-        return null;
-    }
-    
-    public int[] getAuxIndexa() {
-        return null;
-    }
-    
-    public int[] getAuxIndexb() {
-        return null;
-    }
-    
-    public int[] getAuxHwyLink() {
-        return null;
-    }
-    
-    public char[] getRteMode() {
         return null;
     }
     

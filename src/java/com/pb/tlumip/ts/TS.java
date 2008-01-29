@@ -306,7 +306,6 @@ public class TS {
     
     public void writeHighwaySkimMatrices ( NetworkHandlerIF nh, char[] hwyModeChars ) {
         
-        
         Skims skims = new Skims(nh, appRb, globalRb);
         
         String assignmentPeriod = nh.getTimePeriod();
@@ -316,7 +315,6 @@ public class TS {
             String[] skimTypeArray = { "time", "dist", "toll" };
             skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, mode );
         }
-        
         
     }
 
@@ -372,6 +370,9 @@ public class TS {
         }
         int numFlowFields = flowColumnNames.size();
 
+        if ( numFlowFields > nh.getNumUserClasses() )
+            numFlowFields = nh.getNumUserClasses();
+        
 
         // update the multiclass flow fields and congested time field in NetworkHandler
         double[][] flows = new double[numFlowFields][];
@@ -561,9 +562,9 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "ampeak" );
-        nhPeak.startDataServer();
-        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "ampeak" );
-        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
+        //nhPeak.startDataServer();
+        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, "ampeak" );
+        //tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         logger.info ("Network data server running...");
         
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
@@ -590,7 +591,7 @@ public class TS {
         
 
         logger.info ("TS.main() finished in " + ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds.");
-        nhPeak.stopDataServer();
+        //nhPeak.stopDataServer();
         //logger.info ("Network data server stopped.");
         logger.info ("TS.main() exiting.");
 

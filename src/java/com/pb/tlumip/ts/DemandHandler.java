@@ -282,7 +282,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 		}
 
         
-        // read CT trip list into o/d trip matrix if at least one truck class was defined
+        // read CT and ET trip list into o/d trip matrix if at least one truck class was defined
+        // make sure the trips in ET file have a truck class defined
         if ( networkUserClassesIncludeTruck ) {
 
             myDateString = DateFormat.getDateTimeInstance().format(new Date());
@@ -299,18 +300,6 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                 multiclassTripTable[i+1] = truckTripTables[i];
             
         }
-        else {
-            
-            // store ET trips in auto class matrix
-            double[][][] truckTripTables = new double[MAX_TRUCK_CLASSES][networkNumCentroids+1][networkNumCentroids+1];
-            truckTripTables = getExternalAssignmentGroupTripTableFromETList ( truckTripTables );
-            
-            for(int i=0; i < truckTripTables[0].length; i++)
-                for(int j=0; j < truckTripTables[0].length; j++)
-                    for(int m=0; m < truckTripTables.length; m++)
-                        multiclassTripTable[0][i][j] += truckTripTables[m][i][j];
-            
-        }
 
 
 
@@ -322,7 +311,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 	
 
     
-    public double[][] getTripTablesForMode ( String tripModeString ) {
+    public double[][] getTripTableForMode ( String tripModeString ) {
 
         // this method gets called for each modal transit assignment - it does not get called when reading highway demand
         multiclassVehicleDistrictTable = new double[1][maxDistrict+1][maxDistrict+1];
@@ -636,7 +625,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                         }
                     }
                     if ( group < 0 ) {
-                        logger.error ( "modeChar = " + modeChar + " associated with CT integer mode = " + mode + " not found in any asignment group." );
+                        logger.error ( "modeChar = " + modeChar + " associated with CT integer mode = " + mode + " not found in any assignment group." );
                         System.exit(-1);
                     }
                     
@@ -751,7 +740,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                         }
                     }
                     if ( group < 0 ) {
-                        logger.error ( "modeChar = " + modeChar + " associated with ET integer mode = " + truckType + " not found in any asignment group." );
+                        logger.error ( "modeChar = " + modeChar + " associated with ET integer mode = " + truckType + " not found in any assignment group." );
                         System.exit(-1);
                     }
                     
