@@ -153,7 +153,8 @@ public class LogReader {
                     currentYear = year;
                     currentYearTime = 0;
                 }
-                currentYearTime += si.end.getTime().getTime() - si.start.getTime().getTime();
+                if (si.end != null)
+                    currentYearTime += si.end.getTime().getTime() - si.start.getTime().getTime();
                 currentYearEnd = si.end;
             }
         }
@@ -515,7 +516,7 @@ public class LogReader {
         PT_WORKPLACE_LOCATION("MasterTask, Sending calculate workplace location work","MasterTask, Signaling that the Workplace Location is finished."),
         PT_DC_LOGSUM("MasterTask, Sending destination choice logsums work","MasterTask, Signaling that the Destination Choice Logsums are finished."),
         PT_HH_PROCESSING("MasterTask, Starting ldt/sdt household processing work","MasterTask, Signaling that the all Hhs have been processed."),
-        TSDAF_HWY("AO will now start TS DAF for simulation year (\\d\\d\\d\\d)|done with peak period transit loading and skimming\\.","done with (.*peak) highway assignment\\."),
+        TSDAF_HWY("AO will now start TS DAF for simulation year (\\d\\d\\d\\d)|AO will now start TS DAF peak & offPeak periods models for simulation year (\\d\\d\\d\\d)|done with .*peak period transit loading and skimming\\.","done with (.*peak) highway assignment\\."),
         TS_TRANSIT("done with (.*)peak highway assignment\\.|done writing (.*) skims files\\.","done writing (.*peak) (.*) skims files\\.")
         ;
 
@@ -634,7 +635,8 @@ public class LogReader {
 
     public static void main(String ... args) {
         System.out.println(new Date());
-        readAndReportLogs("c:\\transfers\\logtest","main_event.log,node0_event.log", "c:\\transfers\\logtest");
+        //readAndReportLogs("c:\\transfers\\logtest","main_event.log,node0_event.log", "c:\\transfers\\logtest");
+        readAndReportLogs("c:\\transfers\\logtest","main_event_4period.log,node0_event_4period.log", "c:\\transfers\\logtest");
         System.out.println(new Date());
         
     }
