@@ -26,7 +26,7 @@ public class LogReader {
     private static final String PT_SUMMARY_FILE_NAME = "PtIterationSummary.txt";
     private static final String TS_SUMMARY_FILE_NAME = "TsSummary.txt";
 
-    private List<SegmentInformation> segments = new ArrayList<SegmentInformation>();
+    private SortedSet<SegmentInformation> segments = new TreeSet<SegmentInformation>();
     private File outputsDirectory;
     
 
@@ -93,47 +93,72 @@ public class LogReader {
         if (parsedLine.length < 4)
             return;
         String message = parsedLine[3].trim();
-        Matcher m;
-        //first check if something ended
-        for (int i = segments.size() - 1; i > -1; i--) {
-            SegmentInformation si = segments.get(i);
-            if (si.segmentFinished())
-                continue;
-            m = si.segment.messageEndRegexp.matcher(message);
-            if (m.matches()) {
-                //System.out.println(m.group());
-                si.segmentEnded(parsedLine[0].trim(),m);
-                break;
+        Matcher m = null;
+        SegmentInformation si = null;
+        for (SegmentInformation tempSi : segments) {
+            if (!tempSi.segmentFinished()) {
+                Matcher mm = tempSi.segment.messageEndRegexp.matcher(message);
+                if (mm.matches()) {
+                    si = tempSi;
+                    m = mm;
+                }
             }
         }
+        if (si != null)
+            si.segmentEnded(parsedLine[0].trim(),m);
         //now check if something started
         for (Segment s : Segment.values()) {
             m = s.messageStartRegexp.matcher(message);
             if (m.matches()) {
-                //System.out.println(m.group());
                 segments.add(new SegmentInformation(s,parsedLine[0].trim(),m));
             }
         }
     }
 
     private EnumSet<Segment> getModuleSegments() {
-//        return EnumSet.of(Segment.ED,Segment.SPG1,Segment.PI,Segment.PIDAF,Segment.SPG2,Segment.CT,Segment.ET,Segment.TS,Segment.TSDAF);
-        return EnumSet.of(Segment.MODULE,Segment.PI,Segment.PIDAF);
+        return EnumSet.of(Segment.MODULE,Segment.PI);
     }
 
     private void writeModuleSummary() {
         TextFile moduleSummary = new TextFile();
         moduleSummary.addLine("Year,ModuleName,StartTime,EndTime,Duration");
+        String currentYear = "";
+        Calendar currentYearStart = null;
+        Calendar currentYearEnd = null;
+        long currentYearTime = 0;
+        String firstYear = "";
+        Calendar fullRunStart = null;
+        long fullRunTime = 0;
 
         EnumSet<Segment> moduleSegments = getModuleSegments();
         for (SegmentInformation si : segments) {
+            String year;
             if (moduleSegments.contains(si.segment)) {
-                if (si.segment == Segment.MODULE)
-                    moduleSummary.addLine(getCsvLine(si.startCapturedGroups[2],si.startCapturedGroups[1],getStringTime(si.start),getStringTime(si.end),getTimeDifference(si.start, si.end)));
-                else
-                    moduleSummary.addLine(getCsvLine(si.startCapturedGroups[1],si.segment.toString(),getStringTime(si.start),getStringTime(si.end),getTimeDifference(si.start, si.end)));
+                if (si.segment == Segment.MODULE) {
+                    year = si.startCapturedGroups[2];
+                    moduleSummary.addLine(getCsvLine(year,si.startCapturedGroups[1],getStringTime(si.start),getStringTime(si.end),getTimeDifference(si.start, si.end)));
+                } else {
+                    year = si.startCapturedGroups[1];
+                    moduleSummary.addLine(getCsvLine(year,si.segment.toString(),getStringTime(si.start),getStringTime(si.end),getTimeDifference(si.start, si.end)));
+                }
+                if (!currentYear.equals(year)) {
+                    if (!currentYear.equals(""))
+                        moduleSummary.addLine(getCsvLine(currentYear,"Full Year Run",getStringTime(currentYearStart),getStringTime(currentYearEnd),getStringDuration(currentYearTime)));
+                    else {
+                        firstYear = year;
+                        fullRunStart = si.start;
+                    }
+                    fullRunTime += currentYearTime;
+                    currentYearStart = si.start;
+                    currentYear = year;
+                    currentYearTime = 0;
+                }
+                currentYearTime += si.end.getTime().getTime() - si.start.getTime().getTime();
+                currentYearEnd = si.end;
             }
         }
+        moduleSummary.addLine(getCsvLine(currentYear,"Full Year Run",getStringTime(currentYearStart),getStringTime(currentYearEnd),getStringDuration(currentYearTime)));
+        moduleSummary.addLine(getCsvLine(firstYear + "-" + currentYear,"Full Run",getStringTime(fullRunStart),getStringTime(currentYearEnd),getStringDuration(fullRunTime)));
 
         moduleSummary.writeTo(outputsDirectory.toString() + File.separator + MODULE_SUMMARY_FILE_NAME);
     }
@@ -141,73 +166,78 @@ public class LogReader {
     private void writePiIterationSummary() {
         int currentIteration = 9999;
         int currentCalibrationIteration = 9999;
-        Map<SegmentInformation,List<List<Long>>> iterationClump = new LinkedHashMap<SegmentInformation,List<List<Long>>>();
+        Map<SegmentInformation,List<List<Long>>> iterationTimes = new LinkedHashMap<SegmentInformation,List<List<Long>>>();
+        Map<SegmentInformation,List<List<Long>>> globalSearchTimes = new LinkedHashMap<SegmentInformation,List<List<Long>>>();
         Map<SegmentInformation,Calendar[]> startEndMap = new HashMap<SegmentInformation,Calendar[]>();
         Calendar previousEnd = null;
 
         SegmentInformation currentPiSegment = null;
 
+//        for (SegmentInformation si : segments) {
+//            System.out.println(si.segment + ":" + si.start.getTime());
+//        }
+
         for (SegmentInformation si : segments) {
-            if (si.segment == Segment.PI_ITERATION) {
-                int iteration = Integer.valueOf(si.startCapturedGroups[2]);
+            if (si.segment == Segment.PI)  {
+                currentPiSegment = si;
+                iterationTimes.put(currentPiSegment,new LinkedList<List<Long>>());
+                iterationTimes.get(currentPiSegment).add(new LinkedList<Long>());
+                globalSearchTimes.put(currentPiSegment,new LinkedList<List<Long>>());
+                globalSearchTimes.get(currentPiSegment).add(new LinkedList<Long>());
+                startEndMap.put(currentPiSegment,new Calendar[2]);
+                startEndMap.get(currentPiSegment)[0] = si.start;
+            } else if (si.segment == Segment.PI_ITERATION) {
+               int iteration = Integer.valueOf(si.startCapturedGroups[2]);
                 //if new iterations, then restart
                 if (currentIteration > iteration) {
                     int calibrationIteration = Integer.valueOf(si.startCapturedGroups[1]);
                     if (currentCalibrationIteration < calibrationIteration) {
-                        iterationClump.get(currentPiSegment).add(new LinkedList<Long>());
-                    } else {
-                        if (previousEnd != null) {
-                            startEndMap.get(currentPiSegment)[1] = previousEnd;
-                        }
-                        //this is a new pi run
-                        //have to find the pi run this goes with
-                        for (int i = segments.size() - 1; i > -1; i--) {
-                            if (segments.get(i).segment != Segment.PI && segments.get(i).segment != Segment.PIDAF)
-                                continue;
-                            if (si.start.getTime().getTime() - segments.get(i).start.getTime().getTime() > 0) {
-                                if (segments.get(i).end != null && si.start.getTime().getTime() - segments.get(i).end.getTime().getTime() > 0)
-                                    continue;
-                                currentPiSegment = segments.get(i);
-                                break;
-                            }
-                        }
-                        if (currentPiSegment == null) {
-                            System.out.println("PI Iteration Problem: " + si.start.getTime() + ":" + si.startCapturedGroups[0]);
-                            continue;
-                        }
-
-                        iterationClump.put(currentPiSegment,new LinkedList<List<Long>>());
-                        iterationClump.get(currentPiSegment).add(new LinkedList<Long>());
-                        startEndMap.put(currentPiSegment,new Calendar[2]);
-                        startEndMap.get(currentPiSegment)[0] = si.start;
+                        iterationTimes.get(currentPiSegment).add(new LinkedList<Long>());
+                        globalSearchTimes.get(currentPiSegment).add(new LinkedList<Long>());
                     }
                     currentCalibrationIteration = calibrationIteration;
                 }
                 currentIteration = iteration;
+
                 if (si.endCapturedGroups != null)
-                    iterationClump.get(currentPiSegment).get(currentCalibrationIteration).add((long) (Float.valueOf(si.endCapturedGroups[2])*1000.0f));
+                    iterationTimes.get(currentPiSegment).get(currentCalibrationIteration).add((long) (Float.valueOf(si.endCapturedGroups[2])*1000.0f));
                 previousEnd = si.end;
+                if (si.end != null) {
+                    startEndMap.get(currentPiSegment)[1] = si.end;
+                }
+            } else if (si.segment == Segment.PI_GLOBAL_SEARCH) {
+                if (si.end != null) {
+                    //peculiarities of logging may allow reverse times
+                    long start = si.start.getTime().getTime();
+                    long end = si.end.getTime().getTime();
+                    if (end > start)
+                        globalSearchTimes.get(currentPiSegment).get(currentCalibrationIteration).add(si.end.getTime().getTime() - si.start.getTime().getTime());
+//                    else
+//                        System.out.println("Iteration #" + currentIteration + "; start time: " + start + "; end time: " + end);
+                }
             }
         }
         startEndMap.get(currentPiSegment)[1] = previousEnd;
 
         TextFile piIterationSummary = new TextFile();
         piIterationSummary.addLine("**PI Iteration Summary**\n");
-        for (SegmentInformation piSegment : iterationClump.keySet()) {
-            piIterationSummary.addLine(getPiIterationSummary(iterationClump.get(piSegment),startEndMap.get(piSegment)[0],startEndMap.get(piSegment)[1],piSegment));
+        for (SegmentInformation piSegment : iterationTimes.keySet()) {
+            piIterationSummary.addLine(getPiIterationSummary(iterationTimes.get(piSegment),globalSearchTimes.get(piSegment),startEndMap.get(piSegment)[0],startEndMap.get(piSegment)[1],piSegment));
         }
         piIterationSummary.writeTo(outputsDirectory.toString() + File.separator + PI_ITERATION_SUMMARY_FILE_NAME);
 
     }
 
-    private String getPiIterationSummary(List<List<Long>> timesArray, Calendar start, Calendar end, SegmentInformation piSegment) {
+    private String getPiIterationSummary(List<List<Long>> iterationTimesArray, List<List<Long>> globalSearchTimesArray, Calendar start, Calendar end, SegmentInformation piSegment) {
         StringBuilder sb = new StringBuilder();
         sb.append("").append(piSegment.startCapturedGroups[1]).append(" PI run started at: ").append(getStringTime(piSegment.start)).append("\n");
         sb.append("\tStartup time: ").append(getTimeDifference(piSegment.start, start)).append("\n");
         long iterationTime = 0;
+        long globalSearchIterationTime = 0;
 
         int calibrationIteration = 0;
-        for (List<Long> times : timesArray) {
+        for (int i = 0; i < iterationTimesArray.size(); i++) {
+            List<Long> times = iterationTimesArray.get(i);
             long maxTime = -1;
             long minTime = Long.MAX_VALUE;
 
@@ -229,8 +259,10 @@ public class LogReader {
             float averageTime = (float) sum / (float) times.size();
             double sdTime = Math.sqrt((float) squareSum / (float) times.size() - averageTime);
 
+
+
             String indent;
-            if (timesArray.size() > 1) {
+            if (iterationTimesArray.size() > 1) {
                 sb.append("\tCalibration iteration: ").append(calibrationIteration++).append("\n");
                 indent = "\t\t";
             } else {
@@ -238,7 +270,7 @@ public class LogReader {
             }
 
             sb.append(indent).append("Number of iterations: ").append(times.size()).append("\n");
-            if (timesArray.size() > 1)
+            if (iterationTimesArray.size() > 1)
                 sb.append(indent).append("Total iteration time: ").append(getStringDuration(sum)).append("\n");
             if (times.size() > 1) {
                 sb.append(indent).append("Average iteration duration: ").append(getStringDuration((long) averageTime)).append("\n");
@@ -246,10 +278,42 @@ public class LogReader {
                 sb.append(indent).append("Minimum iteration duration: ").append(getStringDuration(minTime)).append("\n");
                 sb.append(indent).append("Maximum iteration duration: ").append(getStringDuration(maxTime)).append("\n");
             }
+
+            times = globalSearchTimesArray.get(i);
+            maxTime = -1;
+            minTime = Long.MAX_VALUE;
+
+            sum = 0;
+            squareSum = 0;
+            //sd = ave(x^2) - ave(x)^2
+
+            for (Long duration : times) {
+                if (duration > maxTime)
+                    maxTime = duration;
+                if (duration < minTime)
+                    minTime = duration;
+                sum += duration;
+                squareSum += duration*duration;
+            }
+
+            globalSearchIterationTime += sum;
+            averageTime = (float) sum / (float) times.size();
+            sdTime = Math.sqrt((float) squareSum / (float) times.size() - averageTime);
+
+            if (globalSearchTimesArray.size() > 1) {
+                sb.append(indent).append("Total global search iteration time: ").append(getStringDuration(sum)).append("\n");
+            }
+            if (times.size() > 1) {
+                sb.append(indent).append("Average global search iteration duration: ").append(getStringDuration((long) averageTime)).append("\n");
+                sb.append(indent).append("Global search iteration duration standard error: ").append(getStringDuration((long) sdTime)).append("\n");
+                sb.append(indent).append("Minimum global search iteration duration: ").append(getStringDuration(minTime)).append("\n");
+                sb.append(indent).append("Maximum global search iteration duration: ").append(getStringDuration(maxTime)).append("\n");
+            }
         }
 
 
         sb.append("\tTotal iteration time: ").append(getStringDuration(iterationTime)).append("\n");
+        sb.append("\tTotal global search iteration time: ").append(getStringDuration(globalSearchIterationTime)).append("\n");
         if (piSegment.end != null && end != null)
             sb.append("\tFinish up time: ").append(getTimeDifference(end,piSegment.end)).append("\n");
 
@@ -266,16 +330,23 @@ public class LogReader {
         ptSummary.addLine("**PT Summary**");
         Calendar start = null;
         Calendar end = null;
+        Calendar lastEnd = null;
 
         for (SegmentInformation si : segments) {
             if (si.segment == Segment.MODULE && (si.startCapturedGroups[1].equalsIgnoreCase("PT") || si.startCapturedGroups[1].equalsIgnoreCase("PTDAF"))) {
-                if (end != null) {
-                    ptSummary.addLine("\tFinish up time: " + getTimeDifference(si.end,end));
+                if (end != null && lastEnd != null) {
+                    if (lastEnd.compareTo(end) < 0)
+                        ptSummary.addLine("\tFinish up time: " + getTimeDifference(lastEnd,end));
+                    else {
+                        System.out.println("end time mismatch for pt: " + lastEnd.getTime() + " - " + end.getTime());
+                        ptSummary.addLine("\tFinish up time: <00:01:00");
+                    }
                 }
                 start = si.start;
                 end = si.end;
-                ptSummary.addLine("PT run started at: " + getStringTime(start));
+                ptSummary.addLine("\n" + si.startCapturedGroups[2] + " PT run started at: " + getStringTime(start));
             } else if (ptSegments.contains(si.segment)) {
+                lastEnd = si.end;
                 if (start != null) {
                     ptSummary.addLine("\tStart up time: " + getTimeDifference(start,si.start));
                     start = null;
@@ -302,6 +373,15 @@ public class LogReader {
                         break;
                     }
                 }
+            }
+        }
+
+        if (end != null && lastEnd != null) {
+            if (lastEnd.compareTo(end) < 0)
+                ptSummary.addLine("\tFinish up time: " + getTimeDifference(lastEnd,end));
+            else {
+                System.out.println("end time mismatch for pt: " + lastEnd.getTime() + " - " + end.getTime());
+                ptSummary.addLine("\tFinish up time: <00:01:00");
             }
         }
 
@@ -414,7 +494,7 @@ public class LogReader {
         long seconds = (duration - days* MILLISECONDS_IN_A_DAY - hours* MILLISECONDS_IN_AN_HOUR - minutes* MILLIESECONDS_IN_A_MINUTE) / MILLISECONDS_IN_A_SECOND;
         //ignore days - we shouldn't have anything that runs that long
         if (days == 0 && minutes == 0 && seconds == 0)
-            return "<00:00:01";
+            return "<00:01:00";
         else
             return String.format("%02d:%02d:%02d",hours,minutes,seconds);
     }
@@ -426,11 +506,11 @@ public class LogReader {
     }
 
     private enum Segment {
-        PI("AO will now start PI for simulation year (\\d\\d\\d\\d)","pi is complete"),
-        PIDAF("AO will now start PIDAF for simulation year (\\d\\d\\d\\d)","pidaf is complete"),
+        PI("AO will now start PI.*? for simulation year (\\d\\d\\d\\d)","pi.*? is complete"),
         MODULE("AO will now start (.[^iI].*) for simulation year (\\d\\d\\d\\d)","(.+) is complete"),
         PI_ITERATION(".*Starting iteration (\\d+)-(\\d+).*",".*End of iteration (\\d+).  Time in seconds: (\\d+\\.\\d+).*"),
-        PT_MC_LOGSUM("MasterTask, Sending out mode choice logsum calculation work"," Signaling that the ModeChoice Logsums are finished."),
+        PI_GLOBAL_SEARCH("Calculating average commodity price change","Finished calculating average commodity price change"),
+        PT_MC_LOGSUM("MasterTask, Sending out mode choice logsum calculation work","MasterTask, Signaling that the ModeChoice Logsums are finished."),
         PT_AUTO_OWNERSHIP("MasterTask, Sending out auto-ownership work","MasterTask, Signaling that the AutoOwnership is finished."),
         PT_WORKPLACE_LOCATION("MasterTask, Sending calculate workplace location work","MasterTask, Signaling that the Workplace Location is finished."),
         PT_DC_LOGSUM("MasterTask, Sending destination choice logsums work","MasterTask, Signaling that the Destination Choice Logsums are finished."),
@@ -449,7 +529,7 @@ public class LogReader {
 
     }
 
-    private class SegmentInformation {
+    private class SegmentInformation implements Comparable<SegmentInformation> {
         private Segment segment;
         private Calendar start;
         private Calendar end = null;
@@ -478,12 +558,16 @@ public class LogReader {
         }
 
         private Calendar parseDateFromString(String date) {
-            //Date format is: dd-MMM-YY HH:mm
+            //Date format is: dd-MMM-YY HH:mm:[ss]
             int day = Integer.valueOf(date.substring(0,2));
             int month = getMonthInt(date.substring(3,6).toLowerCase());
-            int year = Integer.valueOf(date.substring(7,9));
+            int year = 2000+Integer.valueOf(date.substring(7,9));
             int hour = Integer.valueOf(date.substring(10,12));
             int min = Integer.valueOf(date.substring(13,15));
+            if (date.length() > 15) {
+                int sec = Integer.valueOf(date.substring(16,18));
+                return new GregorianCalendar(year,month,day,hour,min,sec);
+            }
             return new GregorianCalendar(year,month,day,hour,min);
         }
 
@@ -516,6 +600,18 @@ public class LogReader {
                 throw new IllegalArgumentException("Month not recognized: " + month);
             }
         }
+
+        public int compareTo(SegmentInformation si) {
+            int timeDiff = (new Long(start.getTime().getTime())).compareTo(si.start.getTime().getTime());
+            if (timeDiff != 0)
+                return timeDiff;
+            else {
+//                System.out.println(this.segment + ":" + si.segment);
+//                System.out.println(this.equals(si));
+                //if it isn't equal and has the same time, then creation/insert preference is give
+                return (this.equals(si)) ? 0 : 1;
+            }
+        }
     }
 
     /**
@@ -537,8 +633,9 @@ public class LogReader {
     }
 
     public static void main(String ... args) {
-       //readAndReportLogs("c:\\transfers\\logtest","mainevent.log,node0_event.log", "c:\\transfers\\logtest");
-        readAndReportLogs("c:\\transfers\\logtest","main_event_nn.log,node0_event_nn.log", "c:\\transfers\\logtest");
+        System.out.println(new Date());
+        readAndReportLogs("c:\\transfers\\logtest","main_event.log,node0_event.log", "c:\\transfers\\logtest");
+        System.out.println(new Date());
         
     }
 
