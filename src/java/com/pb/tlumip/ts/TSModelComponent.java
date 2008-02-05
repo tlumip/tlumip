@@ -91,8 +91,8 @@ public class TSModelComponent extends ModelComponent {
         assignAndSkimHwyAndTransit("ampeak");
         assignAndSkimHwyAndTransit("mdoffpeak");
 
-        // pmPeak and ntOffPeak periods are run only if a daily model is required
-        if ( dailyModel ) {
+        // pmPeak and ntOffPeak periods are run only if a daily model is required, and it's not SKIMS_ONLY mode.
+        if ( dailyModel && ! ts.SKIM_ONLY ) {
             assignAndSkimHwyAndTransit("pmpeak");
             assignAndSkimHwyAndTransit("ntoffpeak");
         }
