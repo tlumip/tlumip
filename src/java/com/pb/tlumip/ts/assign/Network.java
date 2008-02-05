@@ -1967,7 +1967,7 @@ public class Network implements Serializable {
             String tempString = String.format( "id,%s,%s,%s,%s", OUTPUT_ANODE_FIELD, OUTPUT_BNODE_FIELD, OUTPUT_CAPACITY_FIELD, OUTPUT_TIME_FIELD );
             
 			for (int j=0; j < userClasses.length; j++)
-				tempString += String.format( ",%s_%c,", OUTPUT_FLOW_FIELDS_START_WITH, userClasses[j] );
+				tempString += String.format( ",%s_%c", OUTPUT_FLOW_FIELDS_START_WITH, userClasses[j] );
 			
 			outStream.println( tempString );
 			
@@ -1978,7 +1978,7 @@ public class Network implements Serializable {
                 tempString = String.format("%d,%d,%d,%.4f,%.4f", k, indexNode[ia[k]], indexNode[ib[k]], capacity[k], congestedTime[k]);
 								
 				for (int j=0; j < userClasses.length; j++)
-					tempString += String.format(",%.4f,", flow[j][k]);
+					tempString += String.format(",%.4f", flow[j][k]);
 	
 				outStream.println( tempString );
 

@@ -214,6 +214,22 @@ public class Skims {
 	 */
 	public void writeHwySkimMatrices ( String assignmentPeriod, String[] skimType, char modeChar ) {
 
+        // construct a filename based on assignment period, network mode skimmed, skim value:
+        
+        // get String associated with peak.identifier or offpeak.identifier from property file, and start filename with that String.
+        String periodIdentifierString = assignmentPeriod + ".identifier";
+        String tempName = (String)tsPropertyMap.get( periodIdentifierString );
+        String tempMatrixDescription = assignmentPeriod + " ";
+
+        
+        // if tempName is "null", no period identifier associated with period, so don't need skims files to be written
+        if ( tempName.equalsIgnoreCase( "null" ) ) {
+            logger.info ( String.format( "no highway skims files were written for %s period.", assignmentPeriod ) );
+            return;
+        }
+        
+
+        
         double[][] linkAttrib = new double[skimType.length][];
         String[] fileName = new String[skimType.length];
         String[] matrixName = new String[skimType.length];
@@ -223,15 +239,8 @@ public class Skims {
         String skimsDirectory = (String)tsPropertyMap.get( "highwaySkims.directory" );
         String matrixExtension = (String) globalPropertyMap.get("matrix.extension");
         
-        String tempName;
-        String tempMatrixDescription;
-        
 		for (int i=0; i < skimType.length; i++) {
 
-            // construct a filename based on assignment period, network mode skimmed, skim value:
-            
-            // get String associated with peak.identifier or offpeak.identifier from property file, and start filename with that String.
-            String periodIdentifierString = assignmentPeriod + ".identifier";
             tempName = (String)tsPropertyMap.get( periodIdentifierString );
             tempMatrixDescription = assignmentPeriod + " ";
 
@@ -269,7 +278,7 @@ public class Skims {
             
             // append the modeIdentifierString to the filename.
             tempName += modeIdentifierString;
-            tempMatrixDescription = modeString + ( modeIndex == 0 ? " " : String.valueOf(modeIndex) + " " );
+            tempMatrixDescription += modeString + ( modeIndex == 0 ? " " : String.valueOf(modeIndex) + " " );
             
             // append "time", "dist", or "toll" fir the skim type
             tempName += skimType[i];
@@ -310,7 +319,6 @@ public class Skims {
                 
                 logger.info( String.format( "writing beta%s" + matrixExtension + " skim matrix file.", matrixName[i] ) );
 
-                String periodIdentifierString = assignmentPeriod + ".identifier";
                 tempName = (String)tsPropertyMap.get( periodIdentifierString );
                 
                 String betaFileName = skimsDirectory + "beta" + tempName + "auto" + skimType[i] + matrixExtension;
@@ -322,7 +330,6 @@ public class Skims {
                 logger.info( String.format( "writing beta%s" + matrixExtension + " skim matrix file.", matrixName[i] ) );
 
                 int truckIndex = 1 + (modeChar - 'd');
-                String periodIdentifierString = assignmentPeriod + ".identifier";
                 tempName = (String)tsPropertyMap.get( periodIdentifierString );
                 
                 String betaFileName = skimsDirectory + "beta" + tempName + "trk" + String.valueOf(truckIndex) + skimType[i] + matrixExtension;

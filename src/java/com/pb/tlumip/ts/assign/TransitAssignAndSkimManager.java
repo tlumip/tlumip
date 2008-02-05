@@ -78,6 +78,7 @@ public class TransitAssignAndSkimManager {
     
     
     protected static Object objLock = new Object();
+//    private static final int MAX_NUMBER_OF_THREADS = 1;
     private static final int MAX_NUMBER_OF_THREADS = 4;
     
     DemandHandlerIF dh = null;
@@ -200,6 +201,7 @@ public class TransitAssignAndSkimManager {
         String[] drAirTypes = { "air" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
         
+        
         // drive access hsr loading and skims
         String[] drHsrTypes = { "hsr", "intercity" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name() ) ) );
@@ -223,6 +225,7 @@ public class TransitAssignAndSkimManager {
         // walk access intracity loading and skims
         String[] wkTrTypes = { "intracity" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+
 
         
         for ( Future<String> fs : results ) {
@@ -415,6 +418,14 @@ public class TransitAssignAndSkimManager {
     private void writeDriveAirSkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
+        
+        // if period is "nul", no period identifier associated with period, so don't need skims files to be written
+        if ( period.equalsIgnoreCase( "nul" ) ) {
+            logger.info ( String.format( "no drive air skims files were written for %s period.", period ) );
+            return;
+        }
+        
+        
         String accessIdentifier = getAccessIdentifier("drive");
         String routeTypeIdentifier = getRouteTypeIdentifier("air");
         
@@ -450,6 +461,14 @@ public class TransitAssignAndSkimManager {
     private void writeDriveHsrSkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
+        
+        // if period is "nul", no period identifier associated with period, so don't need skims files to be written
+        if ( period.equalsIgnoreCase( "nul" ) ) {
+            logger.info ( String.format( "no drive high speed rail skims files were written for %s period.", period ) );
+            return;
+        }
+        
+        
         String accessIdentifier = getAccessIdentifier("drive");
         String routeTypeIdentifier = getRouteTypeIdentifier("hsr");
         
@@ -494,6 +513,14 @@ public class TransitAssignAndSkimManager {
     private void writeDriveIntercitySkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
+        
+        // if period is "nul", no period identifier associated with period, so don't need skims files to be written
+        if ( period.equalsIgnoreCase( "nul" ) ) {
+            logger.info ( String.format( "no drive intercity bus/rail skims files were written for %s period.", period ) );
+            return;
+        }
+        
+        
         String accessIdentifier = getAccessIdentifier("drive");
         String routeTypeIdentifier = getRouteTypeIdentifier("intercity");
         
@@ -539,6 +566,14 @@ public class TransitAssignAndSkimManager {
     private void writeDriveIntracitySkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
+        
+        // if period is "nul", no period identifier associated with period, so don't need skims files to be written
+        if ( period.equalsIgnoreCase( "nul" ) ) {
+            logger.info ( String.format( "no drive intracity transit skims files were written for %s period.", period ) );
+            return;
+        }
+        
+        
         String accessIdentifier = getAccessIdentifier("drive");
         String routeTypeIdentifier = getRouteTypeIdentifier("intracity");
         
@@ -590,6 +625,14 @@ public class TransitAssignAndSkimManager {
     private void writeWalkHsrSkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
+        
+        // if period is "nul", no period identifier associated with period, so don't need skims files to be written
+        if ( period.equalsIgnoreCase( "nul" ) ) {
+            logger.info ( String.format( "no walk high speed rail skims files were written for %s period.", period ) );
+            return;
+        }
+        
+        
         String accessIdentifier = getAccessIdentifier("walk");
         String routeTypeIdentifier = getRouteTypeIdentifier("hsr");
         
@@ -638,6 +681,14 @@ public class TransitAssignAndSkimManager {
     private void writeWalkIntercitySkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
+        
+        // if period is "nul", no period identifier associated with period, so don't need skims files to be written
+        if ( period.equalsIgnoreCase( "nul" ) ) {
+            logger.info ( String.format( "no walk intercity bus/rail skims files were written for %s period.", period ) );
+            return;
+        }
+        
+        
         String accessIdentifier = getAccessIdentifier("walk");
         String routeTypeIdentifier = getRouteTypeIdentifier("intercity");
         
@@ -690,6 +741,14 @@ public class TransitAssignAndSkimManager {
     private void writeWalkIntracitySkims ( Matrix[] skimMatrices, String period ) {
 
         String periodIdentifier = getPeriodIdentifier(period);
+        
+        // if period is "nul", no period identifier associated with period, so don't need skims files to be written
+        if ( period.equalsIgnoreCase( "nul" ) ) {
+            logger.info ( String.format( "no walk intracity transit skims files were written for %s period.", period ) );
+            return;
+        }
+        
+        
         String accessIdentifier = getAccessIdentifier("walk");
         String routeTypeIdentifier = getRouteTypeIdentifier("intracity");
         
