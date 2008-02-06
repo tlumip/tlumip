@@ -222,8 +222,8 @@ public class Skims {
         String tempMatrixDescription = assignmentPeriod + " ";
 
         
-        // if tempName is "null", no period identifier associated with period, so don't need skims files to be written
-        if ( tempName.equalsIgnoreCase( "null" ) ) {
+        // if tempName is "null", no period identifier was associated with this period, so don't need skims files to be written
+        if ( tempName == null ) {
             logger.info ( String.format( "no highway skims files were written for %s period.", assignmentPeriod ) );
             return;
         }
