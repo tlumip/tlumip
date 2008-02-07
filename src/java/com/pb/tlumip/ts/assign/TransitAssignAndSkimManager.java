@@ -79,7 +79,7 @@ public class TransitAssignAndSkimManager {
     
     protected static Object objLock = new Object();
 //    private static final int MAX_NUMBER_OF_THREADS = 1;
-    private static final int MAX_NUMBER_OF_THREADS = 4;
+    private static final int MAX_NUMBER_OF_THREADS = 2;
     
     DemandHandlerIF dh = null;
     
