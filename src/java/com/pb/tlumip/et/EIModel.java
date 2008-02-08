@@ -28,11 +28,14 @@ import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 import com.pb.tlumip.model.ZoneMap;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 /**
  * EIModel is a class that converts PI $/yr by commodity to trucks/year.
@@ -63,9 +66,9 @@ public class EIModel {
 
     //private ArrayList<ShipmentDetail> alTrucks;
     private float fltAMLightPercentage;
-        private float fltAMHeavyPercentage;
-        private float fltMDLightPercentage;
-        private float fltMDHeavyPercentage;
+    private float fltAMHeavyPercentage;
+    private float fltMDLightPercentage;
+    private float fltMDHeavyPercentage;
 
 
     private String strLightTruckClass;
@@ -127,7 +130,7 @@ public class EIModel {
 
             Matrix mtxOriginalCommodityFlow;
             String strFileName = ResourceUtil.getProperty(appRb, "pi.output.dir") +
-                        "buying_" + strCommodity + strMatrixExtension;
+                    "buying_" + strCommodity + strMatrixExtension;
             try {
 
                 mtxOriginalCommodityFlow = readMatrix(strFileName, strCommodity);
@@ -349,41 +352,39 @@ public class EIModel {
 
         hshCommodityVehicleType = new HashMap<String, Float>();
 
-        TableDataSet tblCommodityVehicleData;
-        String strFileName = ResourceUtil.getProperty(appRb, "commodity.vehicle.types.file");
-        TableDataFileReader rdrReader = CSVFileReader.createReader(new File(strFileName));
-
         try {
-            tblCommodityVehicleData = rdrReader.readFile(new File(strFileName));
-        }
-        catch (IOException e) {
-            tblCommodityVehicleData = null;
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        for (int row = 1; row <= tblCommodityVehicleData.getRowCount(); row++) {
-            int intCommodity = (int) tblCommodityVehicleData.getValueAt(row, "sctg");
-
-            String strSCTG = Integer.toString(intCommodity);
-            if (strSCTG.length() == 1) {
-                strSCTG = "SCTG0" + strSCTG;
-            } else {
-                strSCTG = "SCTG" + strSCTG;
+            String strFileName = ResourceUtil.getProperty(appRb, "commodity.vehicle.types.file");
+            BufferedReader br = new BufferedReader(new FileReader(strFileName));
+            String s;
+            StringTokenizer st;
+            int commodity;
+            //logger.info("Reading " +  f.getAbsolutePath() + " length: " + f.length());
+            while ((s = br.readLine()) != null) {
+                if (s.startsWith("#")) continue;   // plow past comments
+                st = new StringTokenizer(s," ,");
+                commodity = Integer.parseInt(st.nextToken());
+                String strSCTG = Integer.toString(commodity);
+                if (strSCTG.length() == 1) {
+                    strSCTG = "SCTG0" + strSCTG;
+                } else {
+                    strSCTG = "SCTG" + strSCTG;
+                }
+                Float.parseFloat(st.nextToken()); //pPriv
+                float fltLightPercentage = Float.parseFloat(st.nextToken()) + //pTRK1"
+                        Float.parseFloat(st.nextToken()) + //pTRK2
+                        Float.parseFloat(st.nextToken());  //pTRK3
+                float fltHighPercentage = Float.parseFloat(st.nextToken()) +   //  pTRK4
+                        Float.parseFloat(st.nextToken()); //pTRK5
+                hshCommodityVehicleType.put(strSCTG + "_Light", fltLightPercentage);
+                hshCommodityVehicleType.put(strSCTG + "_Heavy", fltHighPercentage);
             }
-            float fltLightPercentage = tblCommodityVehicleData.getValueAt(row, "pTRK1") +
-                    tblCommodityVehicleData.getValueAt(row, "pTRK2") +
-                    tblCommodityVehicleData.getValueAt(row, "pTRK3");
-            float fltHighPercentage = tblCommodityVehicleData.getValueAt(row, "pTRK4") +
-                    tblCommodityVehicleData.getValueAt(row, "pTRK5");
-            hshCommodityVehicleType.put(strSCTG + "_Light", fltLightPercentage);
-            hshCommodityVehicleType.put(strSCTG + "_Heavy", fltHighPercentage);
-
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
     }
 
-    private Matrix readMatrix(String strFilePath, String strName) {        
+    private Matrix readMatrix(String strFilePath, String strName) {
         return MatrixReader.readMatrix(new File(strFilePath), strName);
     }
 
