@@ -45,7 +45,7 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     
     public NetworkHandler() {
-        ns = NetworkDataServer.getInstance( this, networkDataServerPort, dataServerName );
+        //ns = NetworkDataServer.getInstance( this, networkDataServerPort, dataServerName );
         transitNetworks = new HashMap();
     }
 
