@@ -420,7 +420,7 @@ public class TransitAssignAndSkimManager {
         String periodIdentifier = getPeriodIdentifier(period);
         
         // if period is "nul", no period identifier associated with period, so don't need skims files to be written
-        if ( period.equalsIgnoreCase( "nul" ) ) {
+        if ( periodIdentifier.equalsIgnoreCase( "nul" ) ) {
             logger.info ( String.format( "no drive air skims files were written for %s period.", period ) );
             return;
         }
@@ -463,7 +463,7 @@ public class TransitAssignAndSkimManager {
         String periodIdentifier = getPeriodIdentifier(period);
         
         // if period is "nul", no period identifier associated with period, so don't need skims files to be written
-        if ( period.equalsIgnoreCase( "nul" ) ) {
+        if ( periodIdentifier.equalsIgnoreCase( "nul" ) ) {
             logger.info ( String.format( "no drive high speed rail skims files were written for %s period.", period ) );
             return;
         }
@@ -515,7 +515,7 @@ public class TransitAssignAndSkimManager {
         String periodIdentifier = getPeriodIdentifier(period);
         
         // if period is "nul", no period identifier associated with period, so don't need skims files to be written
-        if ( period.equalsIgnoreCase( "nul" ) ) {
+        if ( periodIdentifier.equalsIgnoreCase( "nul" ) ) {
             logger.info ( String.format( "no drive intercity bus/rail skims files were written for %s period.", period ) );
             return;
         }
@@ -568,7 +568,7 @@ public class TransitAssignAndSkimManager {
         String periodIdentifier = getPeriodIdentifier(period);
         
         // if period is "nul", no period identifier associated with period, so don't need skims files to be written
-        if ( period.equalsIgnoreCase( "nul" ) ) {
+        if ( periodIdentifier.equalsIgnoreCase( "nul" ) ) {
             logger.info ( String.format( "no drive intracity transit skims files were written for %s period.", period ) );
             return;
         }
@@ -627,7 +627,7 @@ public class TransitAssignAndSkimManager {
         String periodIdentifier = getPeriodIdentifier(period);
         
         // if period is "nul", no period identifier associated with period, so don't need skims files to be written
-        if ( period.equalsIgnoreCase( "nul" ) ) {
+        if ( periodIdentifier.equalsIgnoreCase( "nul" ) ) {
             logger.info ( String.format( "no walk high speed rail skims files were written for %s period.", period ) );
             return;
         }
@@ -683,7 +683,7 @@ public class TransitAssignAndSkimManager {
         String periodIdentifier = getPeriodIdentifier(period);
         
         // if period is "nul", no period identifier associated with period, so don't need skims files to be written
-        if ( period.equalsIgnoreCase( "nul" ) ) {
+        if ( periodIdentifier.equalsIgnoreCase( "nul" ) ) {
             logger.info ( String.format( "no walk intercity bus/rail skims files were written for %s period.", period ) );
             return;
         }
@@ -743,7 +743,7 @@ public class TransitAssignAndSkimManager {
         String periodIdentifier = getPeriodIdentifier(period);
         
         // if period is "nul", no period identifier associated with period, so don't need skims files to be written
-        if ( period.equalsIgnoreCase( "nul" ) ) {
+        if ( periodIdentifier.equalsIgnoreCase( "nul" ) ) {
             logger.info ( String.format( "no walk intracity transit skims files were written for %s period.", period ) );
             return;
         }
@@ -1061,6 +1061,7 @@ public class TransitAssignAndSkimManager {
 
     
     private String getPeriodIdentifier ( String period ) {
+        
         if ( period.equalsIgnoreCase( "ampeak" ) )
             return "pk";
         else if ( period.equalsIgnoreCase( "mdoffpeak" ) )
