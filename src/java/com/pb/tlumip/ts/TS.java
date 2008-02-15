@@ -312,7 +312,7 @@ public class TS {
 
         for ( char mode : hwyModeChars ) {
             logger.info( String.format("Compute shortest generalized cost trees for skimming %s time, dist and toll skim matrices for highway mode '%c' ...", assignmentPeriod, mode) );
-            String[] skimTypeArray = { "time", "dist", "toll" };
+            String[] skimTypeArray = { "time", "dist", "toll", "fftime" };
             skims.writeHwySkimMatrices ( assignmentPeriod, skimTypeArray, mode );
         }
         
@@ -563,13 +563,13 @@ public class TS {
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "pmpeak" );
         //nhPeak.startDataServer();
-        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
-        char[] hwyModeChars = { 'a', 'd' };
-        tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
-        //tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
+        //char[] hwyModeChars = { 'a', 'd' };
+        //tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
+        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         logger.info ("Network data server running...");
         
-        //tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
       
        
         

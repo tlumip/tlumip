@@ -300,6 +300,9 @@ public class Skims {
             else if ( skimType[i].equalsIgnoreCase("toll") ) {
                 linkAttrib[i] = nh.getToll();
             }
+            else if ( skimType[i].equalsIgnoreCase("fftime") ) {
+                linkAttrib[i] = nh.getFreeFlowTime();
+            }
 			
 		}
 
