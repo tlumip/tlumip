@@ -63,6 +63,7 @@ public class TrRoute implements Serializable {
 	ArrayList defaults;
 	ArrayList tdefaults;
 
+    int segmentCheckErrorCount;
     
 
 
@@ -81,6 +82,8 @@ public class TrRoute implements Serializable {
 		for (int i=0; i < maxRoutes; i++)
 			transitPath[i] = new ArrayList(500);
 
+        segmentCheckErrorCount = 0;
+        
         this.maxRoutes = maxRoutes;
 
         defaults = new ArrayList();
@@ -323,6 +326,7 @@ public class TrRoute implements Serializable {
 
             logger.info ( String.format("finished reading %d records from transit line file %s, %d transit lines found.", recNumber, fileNames[i], tempLineCount) );
 
+            
         }
 
         lineCount++;
@@ -330,6 +334,10 @@ public class TrRoute implements Serializable {
         logger.info (lineCount + " total transit lines found in all files.");
         logger.info (totalLinkCount + " total transit links found in all transit routes.\n");
 
+        if ( segmentCheckErrorCount > 0 ) {
+            throw new RuntimeException();
+        }
+        
     }
 
 
@@ -1320,6 +1328,7 @@ public class TrRoute implements Serializable {
                     else {
                         
                         logger.error ( "no highway network link exists from " + ts.an + " to " + ts.bn + " on route " + rte + ", " + getLine(rte) + ", and path=yes was not defined for route." );
+                        segmentCheckErrorCount++;
 
                     }
                     

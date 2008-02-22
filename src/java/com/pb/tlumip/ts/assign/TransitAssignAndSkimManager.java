@@ -196,11 +196,10 @@ public class TransitAssignAndSkimManager {
         ExecutorService exec = Executors.newFixedThreadPool(numberOfThreads);
         ArrayList<Future<String>> results = new ArrayList<Future<String>>();
 
-        
+
         // drive access air loading and skims
         String[] drAirTypes = { "air" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
-        
         
         // drive access hsr loading and skims
         String[] drHsrTypes = { "hsr", "intercity" }; 
@@ -210,7 +209,7 @@ public class TransitAssignAndSkimManager {
         String[] drIcTypes = { "intercity" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
 
-        // drive access intercity bus/rail loading and skims
+        // drive access intracity transit loading and skims
         String[] drTrTypes = { "intracity" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name() ) ) );
 
@@ -225,7 +224,6 @@ public class TransitAssignAndSkimManager {
         // walk access intracity loading and skims
         String[] wkTrTypes = { "intracity" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
-
 
         
         for ( Future<String> fs : results ) {
