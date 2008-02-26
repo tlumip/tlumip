@@ -16,40 +16,16 @@
  */
 package com.pb.tlumip.pi;
 
-import com.pb.common.datafile.CSVFileReader;
-import com.pb.common.datafile.CSVFileWriter;
-import com.pb.common.datafile.GeneralDecimalFormat;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.datafile.TableDataSetCollection;
-import com.pb.common.datafile.TableDataSetIndex;
-import com.pb.common.matrix.AlphaToBeta;
-import com.pb.common.matrix.CSVMatrixWriter;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.MatrixCompression;
-import com.pb.common.matrix.MatrixWriter;
+import com.pb.common.datafile.*;
+import com.pb.common.matrix.*;
 import com.pb.common.util.ResourceUtil;
-import com.pb.models.pecas.AbstractCommodity;
-import com.pb.models.pecas.Commodity;
-import com.pb.models.pecas.LaborProductionAndConsumption;
-import com.pb.models.pecas.PIPProcessor;
-import com.pb.models.pecas.SomeSkims;
-import com.pb.models.pecas.TransportKnowledge;
+import com.pb.models.pecas.*;
 import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
 import com.pb.tlumip.model.IncomeSize;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.TreeMap;
+import java.io.*;
+import java.util.*;
 
 /**
  * @author John Abraham
@@ -60,23 +36,27 @@ public class OregonPIPProcessor extends PIPProcessor {
     String year;
     IndustryOccupationSplitIndustryReference indOccRef; //initially null
     String[] occupations; //initially null
-    private AlphaToBeta beta2CountyMap = null; /* used for squeezing the commodities from beta flows to County flows */
     MatrixCompression compressor = null;
-    
+    ArrayList<String> activities;
+    String[] activitiesColumns;
+    HashMap<String, Double> activitiesI;
+
     public OregonPIPProcessor() {
         super();
 
     }
 
     /**
-     * @param timePeriod
+     * @param timePeriod time perios
+     * @param piRb pi resource bundle
+     * @param globalRb global resource bundle
      */
     public OregonPIPProcessor(int timePeriod, ResourceBundle piRb, ResourceBundle globalRb) {
-        
+
         super(timePeriod, piRb, globalRb);
         indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "industry.occupation.to.split.industry.correspondence"));
         this.year = timePeriod < 10 ? "1990" : "2000";
-        
+
     }
 
     /* (non-Javadoc)
@@ -90,7 +70,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     public void doProjectSpecificInputProcessing() {
         indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "industry.occupation.to.split.industry.correspondence"));
 
-        
+
         //create PECASZonesI and FloorspaceZonesI.csv file for PI to use
         createZoneFiles();
 
@@ -99,7 +79,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         if (calibrationMetaParameters.equalsIgnoreCase("true")) {
             setUpMetaParameters();
         }
-        
+
         boolean doIntegratedModuleRun = false;
         String oregonInputsString = ResourceUtil.getProperty(piRb, "pi.oregonInputs");
         if (oregonInputsString != null ) {
@@ -109,35 +89,26 @@ public class OregonPIPProcessor extends PIPProcessor {
         }
 
         if (doIntegratedModuleRun) {
+
             String currPath = ResourceUtil.getProperty(piRb,"pi.current.data");
-            File actW = new File(currPath + "ActivitiesW.csv");
-            if(actW.exists()){
-            actW.delete();
-            logger.info("Deleted old ActivitiesW.csv to prepare for new file");
-            }
 
-            File flrW = new File(currPath + "FloorspaceW.csv");
-            if(flrW.exists()){
-            flrW.delete();
-            logger.info("Deleted old FloorspaceW.csv to prepare for new file");
-            }
-
-            File zoneW = new File(currPath + "ActivitiesZonalValuesW.csv");
-            if(zoneW.exists()){
-            zoneW.delete();
-            logger.info("Deleted old ActivitiesZonalValuesW.csv to prepare for new file");
-            }
-
-            File makeUseW = new File(currPath + "MakeUseW.csv");
-            if(makeUseW.exists()){
-            makeUseW.delete();
-            logger.info("Deleted old MakeUseW.csv to prepare for new file");
-            }
+            deleteOldFile(currPath, "ActivitiesW.csv");
+            deleteOldFile(currPath, "FloorspaceW.csv");
+            deleteOldFile(currPath, "ActivitiesZonalValuesW.csv");
+            deleteOldFile(currPath, "MakeUseW.csv");
 
             createActivitiesWFile();
             createFloorspaceWFile();
             createActivitiesZonalValuesWFile();
             createMakeUseWFile();
+        }
+    }
+
+    private void deleteOldFile(String currPath, String fileName) {
+        File file = new File(currPath + fileName);
+        if(file.exists()){
+            file.delete();
+            logger.info("Deleted old " + fileName + " to prepare for new file");
         }
     }
 
@@ -167,7 +138,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             fips[i] = stateFIPS[i]*1000 + countyFIPS[i];
         }
         System.arraycopy(worldZones,0,fips,stateFIPS.length,worldZones.length);
-        
+
         TableDataSet floorspaceZonesI = new TableDataSet();
         floorspaceZonesI.appendColumn(alphas, "AlphaZone");
         floorspaceZonesI.appendColumn(betas, "PecasZone");
@@ -215,7 +186,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         }
     }
 
-    private void createActivitiesWFile(){
+    private void createActivitiesWFileOLD(){
         logger.info("Creating new ActivitiesW.csv using current ED and SPG data");
         boolean readSpgHHFile = (ResourceUtil.getProperty(piRb, "pi.readHouseholdsByHHCategory").equalsIgnoreCase("true"));
         boolean readEDDollarFile = (ResourceUtil.getProperty(piRb, "pi.readActivityDollarDataForPI").equalsIgnoreCase("true"));
@@ -265,18 +236,21 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
 
             //The ED File has 2 columns, Activity and Dollar Amounts
-            HashMap<String, Float> dollarsByIndustry = new HashMap<String, Float>(); //needed to updateImportsAndExports
+             HashMap<String, Float> dollarsByIndustry = new HashMap<String, Float>(); //needed to updateImportsAndExports
+
             if(readEDDollarFile || updateImportsAndExports){
                 String dollarPath = ResourceUtil.getProperty(piRb,"ed.input.data");
+                String filePath = dollarPath + "ActivityDollarDataForPI.csv";
                 //read the ED input file and put the data into a hashmap by industry
                 TableDataSet dollars = null;
                 try {
-                    dollars = reader.readFile(new File(dollarPath + "ActivityDollarDataForPI.csv"));
+                    dollars = reader.readFile(new File(filePath));
+
                 } catch (IOException e) {
-                    throw new RuntimeException("Can't find ActivityDollarDataForPI.csv file");
+                    throw new RuntimeException("Can't find ActivityDollarDataForPI.csv file at " + filePath);
                 }
 
-                 //header row does not count in row count
+                //header row does not count in row count
                 for(int r = 0; r < dollars.getRowCount(); r++){
                     String splitIndustryLabel = dollars.getStringValueAt(r + 1, 1);//Activity Name
                     dollarsByIndustry.put(splitIndustryLabel, dollars.getValueAt(r + 1, 2)); //Total Dollars
@@ -337,7 +311,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                 for(int r=0; r< actI.getRowCount(); r++){
                     String key = actI.getStringValueAt(r+1,activityColumnPosition);
                     if (importExportSize.containsKey(key)){
-                        actI.setValueAt(r+1,sizeColumnPosition, (float)importExportSize.get(key));
+                        actI.setValueAt(r+1,sizeColumnPosition, importExportSize.get(key));
                     }
                 }
             }  //done updating the imports and exports
@@ -356,11 +330,283 @@ public class OregonPIPProcessor extends PIPProcessor {
         }//otherwise just use the ActivitiesI.csv file
     }
 
+    private void createActivitiesWFile(){
+        logger.info("Creating new ActivitiesW.csv using current ED and SPG data");
+        boolean readSpgHHFile = (ResourceUtil.getProperty(piRb, "pi.readHouseholdsByHHCategory").equalsIgnoreCase("true"));
+        boolean readEDDollarFile = (ResourceUtil.getProperty(piRb, "pi.readActivityDollarDataForPI").equalsIgnoreCase("true"));
+        boolean updateImportsAndExports = ResourceUtil.getBooleanProperty(piRb, "pi.updateImportsAndExports", true);
+        if(readSpgHHFile || readEDDollarFile || updateImportsAndExports) {
+
+            CSVFileReader reader = new CSVFileReader();
+            // read the PI intput file into a TableDataSet
+            String piInputsPath = ResourceUtil.getProperty(piRb, "pi.base.data");
+
+            activitiesI = new HashMap<String, Double>();
+
+            try {
+                activitiesI = readActivitiesIFile(piInputsPath + "ActivitiesI.csv");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(-1);
+            }
+            //int sizeColumnPosition = actI.checkColumnPosition("Size");
+            //int activityColumnPosition = actI.checkColumnPosition("Activity");
+
+            // the SPG1 File has HHCategory as rows and Size as columns
+            int[] householdsByIncomeSize = null;                         //needed to update imports and exports.
+            if (readSpgHHFile || updateImportsAndExports) {
+                String hhPath = ResourceUtil.getProperty(piRb, "spg.input.data");
+                //read the SPG input file and put the data into an array by hhIndex
+                TableDataSet hh = null;
+                try {
+                    hh = reader.readFile(new File(hhPath + "householdsByHHCategory.csv"));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                IncomeSize inc = new IncomeSize();
+                householdsByIncomeSize = new int[hh.getRowCount()];
+                for (int r = 0; r < hh.getRowCount(); r++) {
+                    int incomeSize = inc.getIncomeSizeIndex(hh.getStringValueAt(r + 1, 1)); //HHCategory
+                    householdsByIncomeSize[incomeSize] = (int) hh.getValueAt(r + 1, 2); //Size
+                }
+
+                if (readSpgHHFile) {
+                    // update the values in the actI TableDataSet using the SPG1 results
+                    /*for (int r = 0; r < actI.getRowCount(); r++) {
+                        int incomeSize = inc.getIncomeSizeIndex(actI.getStringValueAt(r + 1, activityColumnPosition));
+                        if (incomeSize >= 0) {
+                            actI.setValueAt(r + 1, sizeColumnPosition, householdsByIncomeSize[incomeSize]);
+                        }
+                    }*/
+                    for (String activity: activities) {
+                        int incomeSize = inc.getIncomeSizeIndex(activity);
+                        if (incomeSize >= 0) {
+                            activitiesI.put(activity + "_" + "Size", Double.parseDouble(Integer.toString(householdsByIncomeSize[incomeSize])));
+                        }
+                    }
+                }
+            }
+
+            //The ED File has 2 columns, Activity and Dollar Amounts
+            HashMap<String, Double> dollarsByIndustry = new HashMap<String, Double>(); //needed to updateImportsAndExports
+            if(readEDDollarFile || updateImportsAndExports){
+                String dollarPath = ResourceUtil.getProperty(piRb,"ed.input.data");
+                //read the ED input file and put the data into a hashmap by industry
+
+                try {
+                    dollarsByIndustry = readActivityDollarDataFile(dollarPath + "ActivityDollarDataForPI.csv");
+                } catch (IOException e) {
+                    throw new RuntimeException("Can't find ActivityDollarDataForPI.csv file");
+                }
+
+
+                if (readEDDollarFile) {
+                    //update the values in the actI TableDataSet using the ED results
+                    /*for(int r=0; r< actI.getRowCount(); r++){
+                        String key = actI.getStringValueAt(r+1,activityColumnPosition);
+                        if (dollarsByIndustry.containsKey(key)){
+                            actI.setValueAt(r+1,sizeColumnPosition, dollarsByIndustry.get(key));
+                        }
+                    }*/
+                    for (String activity: activities) {
+                        if (dollarsByIndustry.containsKey(activity)){
+                            activitiesI.put(activity + "_" + "Size", dollarsByIndustry.get(activity));
+                        }
+                    }
+                }
+            }
+
+            if(updateImportsAndExports){
+                TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodity", "pi.base.data");
+                TableDataSet makeUse = loadTableDataSet("MakeUseI","pi.base.data");
+                HashMap<String, Float> importExportSize = new HashMap<String, Float>();
+                IncomeSize inc = new IncomeSize();
+
+                //Get the list of commodities that will be processed.
+                String commodity;
+                float importShare;
+                float imports;
+                float exports;
+                //for each commodity
+                for(int row = 1; row <= importShareByComm.getRowCount(); row++){
+                    importShare = importShareByComm.getValueAt(row, "98ImportShareOfModelwideUse");
+                    commodity = importShareByComm.getStringValueAt(row, "SCTG");
+
+                    //go thru the MakeUseI file and figure out the total amount
+                    //of the commodity that is made and used.
+                    String makeUseCommodity;
+                    String industry;
+                    float[] makeUseAmts = new float[2]; //0-make, 1=use
+                    for(int rowInMUFile = 1; rowInMUFile <= makeUse.getRowCount(); rowInMUFile++){
+                        makeUseCommodity = makeUse.getStringValueAt(rowInMUFile, "Commodity");
+                        if(makeUseCommodity.equals(commodity)){
+                            //figure out if it is make or use and what industry is involved.
+                            int index = makeUse.getStringValueAt(rowInMUFile, "MorU").equals("U")?1:0;
+                            industry = makeUse.getStringValueAt(rowInMUFile, "Activity");
+                            if(indOccRef.isSplitIndustryLabelValid(industry) || industry.equals("Capitalists") || industry.equals("GovInstitutions")){
+                                makeUseAmts[index] += dollarsByIndustry.get(industry) * makeUse.getValueAt(rowInMUFile, "Minimum");
+                            }else if(industry.contains("HH")){
+                                makeUseAmts[index] += householdsByIncomeSize[inc.getIncomeSizeIndex(industry)]*makeUse.getValueAt(rowInMUFile, "Minimum");
+                            }
+                        } //else go to the next line in the MakeUseI file.
+                    } //next row in MakeUseI
+                    imports = makeUseAmts[1] * importShare;
+                    exports = makeUseAmts[0] - makeUseAmts[1] + imports;
+                    System.out.println("Commodity: " + commodity + " Import Share: " + importShare + " Use: " + makeUseAmts[1] + " Make: " + makeUseAmts[0]);
+                    importExportSize.put((commodity + " Importers"), imports);
+                    importExportSize.put((commodity + " Exporters"), exports);
+                } //next commodity
+
+
+                /*for(int r=0; r< actI.getRowCount(); r++){
+                    String key = actI.getStringValueAt(r+1,activityColumnPosition);
+                    if (importExportSize.containsKey(key)){
+                        actI.setValueAt(r+1,sizeColumnPosition, importExportSize.get(key));
+                    }
+                }*/
+                for (String activity: activities) {
+                    if (importExportSize.containsKey(activity)){
+                        activitiesI.put(activity + "_" + "Size", Double.parseDouble(Float.toString(importExportSize.get(activity))));
+
+                    }
+                }
+            }  //done updating the imports and exports
+            writeActivitiesW();
+
+
+        }//otherwise just use the ActivitiesI.csv file
+    }
+
+    private void writeActivitiesW() {
+        // write the updated PI input file
+        String piOutputsPath = ResourceUtil.getProperty(piRb, "output.data");
+        String filePath = piOutputsPath + "ActivitiesW.csv";
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(new File(filePath).getAbsolutePath()));
+
+            logger.info("Writing ActivitiesW file: " + filePath);
+            String headerLine = "";
+            for (String header: activitiesColumns) {
+                headerLine += header + ",";
+            }
+            //remove final comma
+            headerLine = headerLine.substring(0, headerLine.length()-1);
+
+            bw.write(headerLine);
+            bw.newLine();
+            for (String activity: activities) {
+                String currentLine = activity + ",";
+                for (String header: activitiesColumns) {
+                    if (header.equals("Activity")) {
+                        continue;
+                    }
+                    if (header.equals("NonModelledProduction") || (header.equals("NonModelledConsumption"))) {
+                        double value = activitiesI.get(activity + "_" + header);
+                        if (value == 1.0) {
+                            currentLine += "TRUE,";
+                        } else {
+                            currentLine += "FALSE,";
+                        }
+                    } else {
+                    currentLine += activitiesI.get(activity + "_" + header) + ",";
+                    }
+                }
+                //remove final comma
+                currentLine = currentLine.substring(0, currentLine.length()-1);
+                bw.write(currentLine);
+                bw.newLine();
+            }
+
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    private HashMap<String, Double> readActivitiesIFile(String filePath) throws IOException {
+        HashMap<String, Double> activitiesI = new HashMap<String, Double>();
+        activities = new ArrayList<String>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(new File(filePath)));
+            String s;
+            StringTokenizer st;
+            s = br.readLine();
+            //st = new StringTokenizer(s, ", ");
+            //activitiesColumns = new ArrayList<String>();
+            activitiesColumns = s.split(",");
+
+            /*String[] headers = new String[14];
+            for (int i = 0; i < headers.length; i++) {
+                headers[i] = st.nextToken();
+            }*/
+            while ((s = br.readLine()) != null) {
+                st = new StringTokenizer(s, ",");
+                String activity = st.nextToken();
+                activities.add(activity);
+                activitiesI.put(activity + "_" + activitiesColumns[1], Double.parseDouble(st.nextToken())); //locationDispersionParameter
+                activitiesI.put(activity + "_" + activitiesColumns[2], Double.parseDouble(st.nextToken()));  //SizeTermCoefficient
+                activitiesI.put(activity + "_" + activitiesColumns[3], Double.parseDouble(st.nextToken()));  //productionUtilityScaling
+                activitiesI.put(activity + "_" + activitiesColumns[4], Double.parseDouble(st.nextToken()));   //productionSubstitutionNesting
+                activitiesI.put(activity + "_" + activitiesColumns[5], Double.parseDouble(st.nextToken()));//consumptionUtilityScaling
+                activitiesI.put(activity + "_" + activitiesColumns[6], Double.parseDouble(st.nextToken())); //consumptionSubstitutionNesting
+                activitiesI.put(activity + "_" + activitiesColumns[7], Double.parseDouble(st.nextToken()));//size
+                activitiesI.put(activity + "_" + activitiesColumns[8], Double.parseDouble(st.nextToken())); //inertiaTermCoefficient
+                activitiesI.put(activity + "_" + activitiesColumns[9], Double.parseDouble(st.nextToken()));//inertiaTermConstant
+                Boolean nonModelledConsumption = Boolean.parseBoolean(st.nextToken());  //nonModelledConsumption
+                if (nonModelledConsumption) {
+                    activitiesI.put(activity + "_" + activitiesColumns[10], 1d);
+                } else {
+                    activitiesI.put(activity + "_" + activitiesColumns[10], 0d);
+                }
+                activitiesI.put(activity + "_" + activitiesColumns[11], Double.parseDouble(st.nextToken()));//utilityOfNonModelledConsumption
+                Boolean nonModelledProduction = Boolean.parseBoolean(st.nextToken());//nonModelledProduction
+                if (nonModelledProduction) {
+                    activitiesI.put(activity + "_" + activitiesColumns[12], 1d);
+                } else {
+                    activitiesI.put(activity + "_" + activitiesColumns[12], 0d);
+                }
+                activitiesI.put(activity + "_" + activitiesColumns[13], Double.parseDouble(st.nextToken()));//utilityOfNonModelledProduction
+
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return activitiesI;
+    }
+
+    private HashMap<String, Double> readActivityDollarDataFile(String filePath) throws IOException {
+        HashMap<String, Double> activityDollarData = new HashMap<String, Double>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(new File(filePath)));
+            String s;
+            StringTokenizer st;
+            //This is the header line
+            br.readLine();
+            while ((s = br.readLine()) != null) {
+                if (s.startsWith("#")) continue;    // skip comment records
+                st = new StringTokenizer(s, ",");
+                
+                activityDollarData.put(st.nextToken(),   // activity
+                        Double.parseDouble(st.nextToken()) );  // factor
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return activityDollarData;
+    }
+
     /* This method will read in the FloorspaceI.csv file that was output by ALD
     * and replace the aglog data with the PIAgForestFloorspace.csv base year data.  This will
     * happen every year.
     */
-
     public void createFloorspaceWFile() {
         logger.info("Creating new FloorspaceW.csv using current ALD PIAgForestFloorspace.csv file");
         //Read in the FloorspaceI.csv file that was produced by ALD
@@ -439,7 +685,7 @@ public class OregonPIPProcessor extends PIPProcessor {
     public void readFloorspace() {
         if (maxAlphaZone == 0) readFloorspaceZones();
         TableDataSet floorspaceTable = loadTableDataSet("FloorspaceW","pi.current.data");
-        floorspaceInventory = new Hashtable();
+        floorspaceInventory = new Hashtable<String, ZoneQuantityStorage>();
         int alphaZoneColumn = floorspaceTable.checkColumnPosition("AZone");
         int quantityColumn = floorspaceTable.checkColumnPosition("BldgMSQFT");
         int floorspaceTypeColumn = floorspaceTable.checkColumnPosition("FLRName");
@@ -684,25 +930,25 @@ public class OregonPIPProcessor extends PIPProcessor {
         String[] temp = {"ParameterName"};
         metaParamIndex.setIndexColumns(temp, new String[0]);
         String[] smallHouseholds = {
-            "HH0to5k1to2",
-            "HH5to10k1to2",
-            "HH10to15k1to2",
-            "HH15to20k1to2",
-            "HH20to30k1to2",
-            "HH30to40k1to2",
-            "HH40to50k1to2",
-            "HH50to70k1to2",
-            "HH70kUp1to2"};
+                "HH0to5k1to2",
+                "HH5to10k1to2",
+                "HH10to15k1to2",
+                "HH15to20k1to2",
+                "HH20to30k1to2",
+                "HH30to40k1to2",
+                "HH40to50k1to2",
+                "HH50to70k1to2",
+                "HH70kUp1to2"};
         String[] largeHouseholds = {
-            "HH0to5k3plus",
-            "HH5to10k3plus",
-            "HH10to15k3plus",
-            "HH15to20k3plus",
-            "HH20to30k3plus",
-            "HH30to40k3plus",
-            "HH40to50k3plus",
-            "HH50to70k3plus",
-            "HH70kUp3plus"};
+                "HH0to5k3plus",
+                "HH5to10k3plus",
+                "HH10to15k3plus",
+                "HH15to20k3plus",
+                "HH20to30k3plus",
+                "HH30to40k3plus",
+                "HH40to50k3plus",
+                "HH50to70k3plus",
+                "HH70kUp3plus"};
 
         TableDataSetIndex makeUseIndex = new TableDataSetIndex(myCollection,"MakeUseI");
         String[] temp2 = {"Activity","Commodity","MorU"};
@@ -801,7 +1047,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             rows = makeUseIndex.getRowNumbers(makeUseKeys,nothing);
             makeUseTable.setValueAt(rows[0],constantColumn,(float) (sfdLargeHHConstant+incomeCat*sfdLargeHHIncome));
 
-           }
+        }
         makeUseIndex.dispose();
         metaParamIndex.dispose();
         myCollection.flush();
@@ -847,10 +1093,10 @@ public class OregonPIPProcessor extends PIPProcessor {
         //4.  String[] hhCategories
         //5.  String[] activities (not including the households)
 
-        
+
         TableDataSet householdQuantity = loadTableDataSet("ActivityLocations2","pi.current.data");
-        
-       
+
+
         // an Occupation class must be instantiated in order to get the PUMS/Occupation
         // correspondence file to be read to make the statewide Occupation categories known.
         String[] occupations =  indOccRef.getOccupationLabelsByIndex();
@@ -861,16 +1107,16 @@ public class OregonPIPProcessor extends PIPProcessor {
         }
         occupations = new String[tempList.size()];
         tempList.toArray(occupations);
-        
-        
+
+
         String[] hhCategories = new IncomeSize().getIncomeSizeLabels();
-        
-        
+
+
         Set activities = indOccRef.getSplitIndustryLabels();
 
 //        TableDataSet alphaToBeta = loadTableDataSet("alpha2beta","reference.data");
 //        LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AZone","BZone",householdQuantity,occupations,hhCategories,activities);
-        
+
         TableDataSet alphaToBeta = loadTableDataSet("FloorspaceZonesI","reference.data");
         LaborProductionAndConsumption labor = new LaborProductionAndConsumption(alphaToBeta,"AlphaZone","PecasZone",householdQuantity,occupations,hhCategories,activities);
         labor.writeAllFiles(getOutputPath());
@@ -897,7 +1143,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         //for the goods commodities.
         //Set up the files
         try {
-        	logger.info("Creating Histograms_InternalZones.csv and Histograms_AllZones.csv");
+            logger.info("Creating Histograms_InternalZones.csv and Histograms_AllZones.csv");
             BufferedWriter internalHistogramFile = new BufferedWriter(new FileWriter(getOutputPath() + "Histograms_InternalZones.csv"));
             internalHistogramFile.write("Commodity,BuyingSelling,BandNumber,LowerBound,Quantity,AverageLength\n");
 
@@ -965,7 +1211,7 @@ public class OregonPIPProcessor extends PIPProcessor {
 
 
                     } catch (NumberFormatException e) {  //implies that the commodity is a service
-                      //In the case of service commodities, we want internal histograms only but all zone
+                        //In the case of service commodities, we want internal histograms only but all zone
                         //flows (if requested)
                         if(writeBuyingServiceFlows) {
                             buyAllZns = commodity.getBuyingFlowMatrix();
@@ -976,7 +1222,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                             writeFlowZipMatrix(commodity.name, sellAllZns, "selling");
                         }
                         if(writeBuyingServiceFlows && writeSellingServiceFlows)
-                           writePctIntrazonalFile(pctFile, commodity.name, buyAllZns, sellAllZns);
+                            writePctIntrazonalFile(pctFile, commodity.name, buyAllZns, sellAllZns);
 
                         buyInternalZns = commodity.getBuyingFlowMatrix().getSubMatrix(internalBetaZones);
                         sellInternalZns = commodity.getSellingFlowMatrix().getSubMatrix(internalBetaZones);
@@ -994,14 +1240,14 @@ public class OregonPIPProcessor extends PIPProcessor {
         } catch (IOException e) {
             logger.fatal("Problems writing flow related files (histograms, flow matrices and pctIntrazonal) "+e);
             e.printStackTrace();
-         }
+        }
     }
-    
+
     public void writeCountyOutputs(String name, Matrix buy, Matrix sell, String goodsOrLabor) {
 
         if(compressor == null){
             String a2bFilePath = ResourceUtil.getProperty(globalRb,"alpha2beta.file");
-            beta2CountyMap = new AlphaToBeta(new File(a2bFilePath),"Bzone","FIPS");
+            AlphaToBeta beta2CountyMap = new AlphaToBeta(new File(a2bFilePath), "Bzone", "FIPS");
             compressor = new MatrixCompression(beta2CountyMap);
         }
 
@@ -1018,8 +1264,6 @@ public class OregonPIPProcessor extends PIPProcessor {
             writer.writeMatrix(countySqueeze);
         }
     }
-    
-    
 
     /**
      * This method wrote out the county buying flows for the various commodities but as of
@@ -1060,16 +1304,15 @@ public class OregonPIPProcessor extends PIPProcessor {
 //        
 //        writeFlowHistograms(histogramFile, name,b,s);
 //    }
-    
 
-    
+
     public static void main(String[] args) {
-        ResourceBundle piRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_testNewActivitiesW/t8/pi/pi.properties"));
-        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_testNewActivitiesW/t8/global.properties"));
+        ResourceBundle piRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_seam/t0/pi/pi.properties"));
+        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_seam/t0/global.properties"));
 
-        OregonPIPProcessor pProcessor =  new OregonPIPProcessor(8,piRb, globalRb);
+        OregonPIPProcessor pProcessor =  new OregonPIPProcessor(1,piRb, globalRb);
         pProcessor.createActivitiesWFile();
         //pProcessor.createZoneFiles();
     }
-    
+
 }
