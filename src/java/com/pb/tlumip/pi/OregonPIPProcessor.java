@@ -236,7 +236,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             }
 
             //The ED File has 2 columns, Activity and Dollar Amounts
-             HashMap<String, Float> dollarsByIndustry = new HashMap<String, Float>(); //needed to updateImportsAndExports
+            HashMap<String, Float> dollarsByIndustry = new HashMap<String, Float>(); //needed to updateImportsAndExports
 
             if(readEDDollarFile || updateImportsAndExports){
                 String dollarPath = ResourceUtil.getProperty(piRb,"ed.input.data");
@@ -257,7 +257,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                 }
 
                 if (readEDDollarFile) {
-                //update the values in the actI TableDataSet using the ED results
+                    //update the values in the actI TableDataSet using the ED results
                     for(int r=0; r< actI.getRowCount(); r++){
                         String key = actI.getStringValueAt(r+1,activityColumnPosition);
                         if (dollarsByIndustry.containsKey(key)){
@@ -323,7 +323,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             writer.setMyDecimalFormat(new GeneralDecimalFormat("0.#########E0",10000000,.001));
 
             try {
-                writer.writeFile(actI, new File(piOutputsPath + "ActivitiesW.csv"));
+                writer.writeFile(actI, new File(piOutputsPath + "ActivitiesWOld.csv"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -350,8 +350,6 @@ public class OregonPIPProcessor extends PIPProcessor {
                 e.printStackTrace();
                 System.exit(-1);
             }
-            //int sizeColumnPosition = actI.checkColumnPosition("Size");
-            //int activityColumnPosition = actI.checkColumnPosition("Activity");
 
             // the SPG1 File has HHCategory as rows and Size as columns
             int[] householdsByIncomeSize = null;                         //needed to update imports and exports.
@@ -374,12 +372,6 @@ public class OregonPIPProcessor extends PIPProcessor {
 
                 if (readSpgHHFile) {
                     // update the values in the actI TableDataSet using the SPG1 results
-                    /*for (int r = 0; r < actI.getRowCount(); r++) {
-                        int incomeSize = inc.getIncomeSizeIndex(actI.getStringValueAt(r + 1, activityColumnPosition));
-                        if (incomeSize >= 0) {
-                            actI.setValueAt(r + 1, sizeColumnPosition, householdsByIncomeSize[incomeSize]);
-                        }
-                    }*/
                     for (String activity: activities) {
                         int incomeSize = inc.getIncomeSizeIndex(activity);
                         if (incomeSize >= 0) {
@@ -404,12 +396,6 @@ public class OregonPIPProcessor extends PIPProcessor {
 
                 if (readEDDollarFile) {
                     //update the values in the actI TableDataSet using the ED results
-                    /*for(int r=0; r< actI.getRowCount(); r++){
-                        String key = actI.getStringValueAt(r+1,activityColumnPosition);
-                        if (dollarsByIndustry.containsKey(key)){
-                            actI.setValueAt(r+1,sizeColumnPosition, dollarsByIndustry.get(key));
-                        }
-                    }*/
                     for (String activity: activities) {
                         if (dollarsByIndustry.containsKey(activity)){
                             activitiesI.put(activity + "_" + "Size", dollarsByIndustry.get(activity));
@@ -459,13 +445,6 @@ public class OregonPIPProcessor extends PIPProcessor {
                     importExportSize.put((commodity + " Exporters"), exports);
                 } //next commodity
 
-
-                /*for(int r=0; r< actI.getRowCount(); r++){
-                    String key = actI.getStringValueAt(r+1,activityColumnPosition);
-                    if (importExportSize.containsKey(key)){
-                        actI.setValueAt(r+1,sizeColumnPosition, importExportSize.get(key));
-                    }
-                }*/
                 for (String activity: activities) {
                     if (importExportSize.containsKey(activity)){
                         activitiesI.put(activity + "_" + "Size", Double.parseDouble(Float.toString(importExportSize.get(activity))));
@@ -511,7 +490,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                             currentLine += "FALSE,";
                         }
                     } else {
-                    currentLine += activitiesI.get(activity + "_" + header) + ",";
+                        currentLine += activitiesI.get(activity + "_" + header) + ",";
                     }
                 }
                 //remove final comma
@@ -548,6 +527,8 @@ public class OregonPIPProcessor extends PIPProcessor {
             while ((s = br.readLine()) != null) {
                 st = new StringTokenizer(s, ",");
                 String activity = st.nextToken();
+                if (activity.startsWith("\""))
+                    activity = activity.substring(1, activity.length()-1);
                 activities.add(activity);
                 activitiesI.put(activity + "_" + activitiesColumns[1], Double.parseDouble(st.nextToken())); //locationDispersionParameter
                 activitiesI.put(activity + "_" + activitiesColumns[2], Double.parseDouble(st.nextToken()));  //SizeTermCoefficient
@@ -592,7 +573,7 @@ public class OregonPIPProcessor extends PIPProcessor {
             while ((s = br.readLine()) != null) {
                 if (s.startsWith("#")) continue;    // skip comment records
                 st = new StringTokenizer(s, ",");
-                
+
                 activityDollarData.put(st.nextToken(),   // activity
                         Double.parseDouble(st.nextToken()) );  // factor
             }
@@ -1312,6 +1293,7 @@ public class OregonPIPProcessor extends PIPProcessor {
 
         OregonPIPProcessor pProcessor =  new OregonPIPProcessor(1,piRb, globalRb);
         pProcessor.createActivitiesWFile();
+        pProcessor.createActivitiesWFileOLD();
         //pProcessor.createZoneFiles();
     }
 
