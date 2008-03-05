@@ -573,8 +573,10 @@ public class OregonPIPProcessor extends PIPProcessor {
             while ((s = br.readLine()) != null) {
                 if (s.startsWith("#")) continue;    // skip comment records
                 st = new StringTokenizer(s, ",");
-
-                activityDollarData.put(st.nextToken(),   // activity
+                String activity = st.nextToken();
+                if (activity.startsWith("\""))
+                    activity = activity.substring(1, activity.length()-1);
+                activityDollarData.put(activity,   // activity
                         Double.parseDouble(st.nextToken()) );  // factor
             }
             br.close();
