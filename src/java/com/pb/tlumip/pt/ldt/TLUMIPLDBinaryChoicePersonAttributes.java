@@ -68,6 +68,8 @@ public class TLUMIPLDBinaryChoicePersonAttributes extends LDBinaryChoicePersonAt
 
         for(int i=0;i<h.persons.length;++i){
             p=h.persons[i];
+
+            persid = p.memberID; 
             
             if (p.occupation == PTOccupation.PROFESSIONAL) prof_sci=true; 
             
@@ -102,7 +104,7 @@ public class TLUMIPLDBinaryChoicePersonAttributes extends LDBinaryChoicePersonAt
      * @param p
      */
     public void codePersonAttributes(PTPerson p){
-
+        persid = p.memberID; 
         occ_ag_farm_mine=0;
         occ_manufactur=0;
         occ_trans_comm=0;

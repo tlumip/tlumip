@@ -63,7 +63,7 @@ public class TLUMIPLongDistanceWorker extends LongDistanceWorker {
         if (runHouseholdLevelModels) {
             ldtRunner.readTazData(); 
             ldtRunner.readDcLogsums();
-            PTHousehold[] households = ldtRunner.runHouseholdLevelModels(true, true, 2000);
+            PTHousehold[] households = ldtRunner.runHouseholdLevelModels(true, true, 1990);
             tours = RunLDTModels.createLDTours(households); 
         } else {
             //read households and create tours
