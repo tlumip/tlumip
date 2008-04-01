@@ -128,19 +128,16 @@ public class LogReader {
         long currentYearTime = 0;
         String firstYear = "";
         Calendar fullRunStart = null;
-        long fullRunTime = 0;
+        //long fullRunTime = 0;
 
         EnumSet<Segment> moduleSegments = getModuleSegments();
         for (SegmentInformation si : segments) {
             String year;
             if (moduleSegments.contains(si.segment)) {
-                if (si.segment == Segment.MODULE) {
+                if (si.segment == Segment.MODULE) 
                     year = si.startCapturedGroups[2];
-                    moduleSummary.addLine(getCsvLine(year,si.startCapturedGroups[1],getStringTime(si.start),getStringTime(si.end),getTimeDifference(si.start, si.end)));
-                } else {
+                else
                     year = si.startCapturedGroups[1];
-                    moduleSummary.addLine(getCsvLine(year,si.segment.toString(),getStringTime(si.start),getStringTime(si.end),getTimeDifference(si.start, si.end)));
-                }
                 if (!currentYear.equals(year)) {
                     if (!currentYear.equals(""))
                         moduleSummary.addLine(getCsvLine(currentYear,"Full Year Run",getStringTime(currentYearStart),getStringTime(currentYearEnd),getStringDuration(currentYearTime)));
@@ -148,18 +145,27 @@ public class LogReader {
                         firstYear = year;
                         fullRunStart = si.start;
                     }
-                    fullRunTime += currentYearTime;
+                    //fullRunTime += currentYearTime;
                     currentYearStart = si.start;
                     currentYear = year;
                     currentYearTime = 0;
                 }
+
+                //Do this after year check to get full year summary order correct
+                if (si.segment == Segment.MODULE)
+                    moduleSummary.addLine(getCsvLine(year,si.startCapturedGroups[1],getStringTime(si.start),getStringTime(si.end),getTimeDifference(si.start, si.end)));
+                else
+                    moduleSummary.addLine(getCsvLine(year,si.segment.toString(),getStringTime(si.start),getStringTime(si.end),getTimeDifference(si.start, si.end)));
+
                 if (si.end != null)
                     currentYearTime += si.end.getTime().getTime() - si.start.getTime().getTime();
                 currentYearEnd = si.end;
             }
         }
-        moduleSummary.addLine(getCsvLine(currentYear,"Full Year Run",getStringTime(currentYearStart),getStringTime(currentYearEnd),getStringDuration(currentYearTime)));
-        moduleSummary.addLine(getCsvLine(firstYear + "-" + currentYear,"Full Run",getStringTime(fullRunStart),getStringTime(currentYearEnd),getStringDuration(fullRunTime)));
+        //moduleSummary.addLine(getCsvLine(currentYear,"Full Year Run",getStringTime(currentYearStart),getStringTime(currentYearEnd),getStringDuration(currentYearTime)));
+        //moduleSummary.addLine(getCsvLine(firstYear + "-" + currentYear,"Full Run",getStringTime(fullRunStart),getStringTime(currentYearEnd),getStringDuration(fullRunTime)));
+        moduleSummary.addLine(getCsvLine(currentYear,"Full Year Run",getStringTime(currentYearStart),getStringTime(currentYearEnd),getTimeDifference(currentYearStart,currentYearEnd)));
+        moduleSummary.addLine(getCsvLine(firstYear + "-" + currentYear,"Full Run",getStringTime(fullRunStart),getStringTime(currentYearEnd),getTimeDifference(fullRunStart,currentYearEnd)));
 
         moduleSummary.writeTo(outputsDirectory.toString() + File.separator + MODULE_SUMMARY_FILE_NAME);
     }
@@ -398,9 +404,11 @@ public class LogReader {
         String subTransitType = "";
         long subTransit = 0;
 
+        long subSubTransit = 0;
+
         for (SegmentInformation si : segments) {
             Segment segment = si.segment;
-            if (segment != Segment.TSDAF_HWY && segment != Segment.TS_TRANSIT)
+            if (segment != Segment.TSDAF_HWY && segment != Segment.TS_TRANSIT && segment != Segment.TS_SUB_TRANSIT)
                 continue;
             if (segment == Segment.TSDAF_HWY) {
                 if (subTransit > 0)
@@ -416,20 +424,50 @@ public class LogReader {
                     totalHighway = 0;
                     totalTransit = 0;
                     tsSummary.addLine("\n" + si.startCapturedGroups[1] + " TS Run started at " + getStringTime(si.start));
+                } else {
+                    tsSummary.addLine("");
                 }
                 if (si.endCapturedGroups != null) {
                     tsSummary.addLine("\t" + si.endCapturedGroups[1] + " highway assignment time: " + getTimeDifference(si.start,si.end));
                     totalHighway += getLongTimeDifference(si.start,si.end);
                 } else {
-                    tsSummary.addLine("\t? highway assignment time: " + getTimeDifference(si.start,si.end));
+                    if (!getTimeDifference(si.start, si.end).equals("NA"))
+                        tsSummary.addLine("\t? highway assignment time: " + getTimeDifference(si.start,si.end));
                 }
             }
-            else {
+            else if (segment == Segment.TS_TRANSIT) {
                 if (si.endCapturedGroups != null) {
                     tsSummary.addLine("\t" + si.endCapturedGroups[1] + " " + si.endCapturedGroups[2] + " loading and skimming time: " + getTimeDifference(si.start,si.end));
                     totalTransit += getLongTimeDifference(si.start,si.end);
                     subTransit += getLongTimeDifference(si.start,si.end);
                     subTransitType = si.endCapturedGroups[1];
+
+                }
+            } else {
+                if (si.endCapturedGroups != null) {
+                    if (si.startCapturedGroups[0].equals(si.endCapturedGroups[0])) {
+                        subSubTransit += getLongTimeDifference(si.start,si.end);
+                    } else {
+                        subSubTransit += getLongTimeDifference(si.start,si.end);
+                        String transitName = "";
+                        if (si.startCapturedGroups[0].equals("AIR")) {
+                            transitName = "Air";
+                        } else if (si.startCapturedGroups[0].equals("HSR_DRIVE")) {
+                            transitName = "High Speed Rail Drive";
+                        } else if (si.startCapturedGroups[0].equals("TRANSIT_DRIVE")) {
+                            transitName = "Intercity Transit Drive";
+                        } else if (si.startCapturedGroups[0].equals("DR_TRAN")) {
+                            transitName = "Intracity Transit Drive";
+                        } else if (si.startCapturedGroups[0].equals("HSR_WALK")) {
+                            transitName = "High Speed Rail Walk";
+                        } else if (si.startCapturedGroups[0].equals("TRANSIT_WALK")) {
+                            transitName = "Intercity Transit Walk";
+                        } else if (si.startCapturedGroups[0].equals("WK_TRAN")) {
+                            transitName = "Intracity Transit Walk";
+                        }
+                        tsSummary.addLine("\t" + subTransitType + " " + transitName + " assignment time: " + getStringDuration(subSubTransit));
+                        subSubTransit = 0;
+                    }
                 }
             }
         }
@@ -516,9 +554,12 @@ public class LogReader {
         PT_WORKPLACE_LOCATION("MasterTask, Sending calculate workplace location work","MasterTask, Signaling that the Workplace Location is finished."),
         PT_DC_LOGSUM("MasterTask, Sending destination choice logsums work","MasterTask, Signaling that the Destination Choice Logsums are finished."),
         PT_HH_PROCESSING("MasterTask, Starting ldt/sdt household processing work","MasterTask, Signaling that the all Hhs have been processed."),
-        TSDAF_HWY("AO will now start TS DAF for simulation year (\\d\\d\\d\\d)|AO will now start TS DAF peak & offPeak periods models for simulation year (\\d\\d\\d\\d)|done with .*peak period transit loading and skimming\\.","done with (.*peak) highway assignment\\."),
-        TS_TRANSIT("done with (.*)peak highway assignment\\.|done writing (.*) skims files\\.","done writing (.*peak) (.*) skims files\\.")
+        //TSDAF_HWY("AO will now start TS DAF for simulation year (\\d\\d\\d\\d)|AO will now start TS DAF peak & offPeak periods models for simulation year (\\d\\d\\d\\d)|done with (.*) period transit loading and skimming\\.","done with (.*peak) highway assignment\\."),
+        TSDAF_HWY("AO will now start TS DAF peak & offPeak periods models for simulation year (\\d\\d\\d\\d)|done with (.*) period transit loading and skimming\\.","done with (.*peak) highway assignment\\."),
+        TS_TRANSIT("done with (.*peak) highway assignment\\.|done with (.*peak) period transit loading and skimming\\.","done with (.*peak) period (transit) loading and skimming\\."),
+        TS_SUB_TRANSIT("AIR|HSR_DRIVE|TRANSIT_DRIVE|DR_TRAN|HSR_WALK|TRANSIT_WALK|WK_TRAN","AIR|HSR_DRIVE|TRANSIT_DRIVE|DR_TRAN|HSR_WALK|TRANSIT_WALK|WK_TRAN|(.*)peak period walk access intracity task finished\\.")
         ;
+
 
         private Pattern messageStartRegexp;
         private Pattern messageEndRegexp;
@@ -634,10 +675,15 @@ public class LogReader {
     }
 
     public static void main(String ... args) {
-        System.out.println(new Date());
+//        System.out.println(new Date());
         //readAndReportLogs("c:\\transfers\\logtest","main_event.log,node0_event.log", "c:\\transfers\\logtest");
-        readAndReportLogs("c:\\transfers\\logtest","main_event_4period.log,node0_event_4period.log", "c:\\transfers\\logtest");
-        System.out.println(new Date());
+        //readAndReportLogs("c:\\transfers\\logtesthhhertergfe","main_event_4period.log,node0_event_4period.log", "c:\\transfers\\logtest");
+        //readAndReportLogs("C:\\Models\\TLUMIP\\final_deliverable_logs\\fd_runtime","main_event.log,node0_event.log", "C:\\Models\\TLUMIP\\final_deliverable_logs\\fd_runtime");
+        String base = "C:\\Models\\TLUMIP\\runtime_comparisons\\daf_configuration\\";
+        String[] base_folders = {"base","conf1","conf2"};
+        for (String folder : base_folders)
+            readAndReportLogs(base + folder,"main_event.log,node0_event.log", base + folder);
+//        System.out.println(new Date());
         
     }
 
