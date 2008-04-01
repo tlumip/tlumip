@@ -480,27 +480,17 @@ public class ApplicationOrchestrator {
         et.startModel(baseYear, timeInterval);
     }
 
-    public void runTSModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
-        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, null, null);
+    public void runTSModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb, Boolean daily){
+        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, null, daily);
         tsModel.startModel(baseYear, timeInterval);
     }
 
-    public void runTSDAFModel(int baseYear, int timeInterval, String pathToAppRb, String pathToGlobalRb, String configFileName){
+    public void runTSDAFModel(int baseYear, int timeInterval, String pathToAppRb, String pathToGlobalRb, String configFileName, Boolean daily){
         ResourceBundle appRb = findResourceBundle(pathToAppRb);
         ResourceBundle globalRb = findResourceBundle(pathToGlobalRb);
-        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, configFileName, null);
+        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, configFileName, daily);
         tsModel.startModel(baseYear, timeInterval);
     }
-
-    public void runDailyTSDAFModel(int baseYear, int timeInterval, String pathToAppRb, String pathToGlobalRb, String configFileName){
-        ResourceBundle appRb = findResourceBundle(pathToAppRb);
-        ResourceBundle globalRb = findResourceBundle(pathToGlobalRb);
-        ModelComponent tsModel = new TSModelComponent(appRb, globalRb, configFileName, Boolean.TRUE);
-        tsModel.startModel(baseYear, timeInterval);
-    }
-
-
-
 
     private void logAppRun(String appName){
         if (appName.endsWith("daf")) {
@@ -528,7 +518,7 @@ public class ApplicationOrchestrator {
             int baseYear = Integer.parseInt(args[4]);
             int t = Integer.parseInt(args[5]);
 
-            StatusLogger.logText(appName.toLowerCase(),appName + " has started.");
+            StatusLogger.logText(appName.toLowerCase(),appName + " has started for t" + t + ".");
 
             logger.info("Root Directory: " + rootDir);
             logger.info("Base Scenario Name: " + baseScenarioName);
@@ -537,9 +527,18 @@ public class ApplicationOrchestrator {
             logger.info("Base Year: " + baseYear);
             logger.info("Time Interval: " + t);
             String configFileOrNodeName = null; //nodeName is for daf2, configFile is for daf3
-            if(args.length == 7 ){
+            if(args.length >= 7 ){
                 configFileOrNodeName = args[6];
                 logger.info("Daf Property: "+ configFileOrNodeName);
+            }
+            Boolean tsDaily = null;
+            if (args.length == 8) {
+                //Note: "true", ignoring case, will yield a true boolean
+                //  everything else will be false; so effectively there is
+                //  a default of false which will pass through, even if
+                // argument is junk
+                tsDaily = Boolean.parseBoolean(args[7]);
+                logger.info("Run TS daily: " + tsDaily);
             }
 
             //Create an ApplicationOrchestrator object that will handle creating the
@@ -619,22 +618,27 @@ public class ApplicationOrchestrator {
                 ao.runETModel(baseYear, t, appRb, globalRb);
             }else if(appName.equalsIgnoreCase("TS")){
                 logger.info("AO will now start TS for simulation year " + (baseYear+t));
-                ao.runTSModel(baseYear, t, appRb, globalRb);
+                if (tsDaily == null) {
+                    throw new RuntimeException("'daily' jvm argument required for TS not present, application will exit.");
+                }
+                ao.runTSModel(baseYear, t, appRb, globalRb,tsDaily);
             }else if(appName.equalsIgnoreCase("TSDAF")){
                 logger.info("AO will now start TS DAF peak & offPeak periods models for simulation year " + (baseYear+t));
-//                ao.runTSDAFModel(baseYear, t, pathToAppRb, pathToGlobalRb, configFileOrNodeName);
-                ao.runDailyTSDAFModel(baseYear, t, pathToAppRb, pathToGlobalRb, configFileOrNodeName);
+                if (tsDaily == null) {
+                    throw new RuntimeException("'daily' jvm argument required for TS not present, application will exit.");
+                }
+                ao.runTSDAFModel(baseYear, t, pathToAppRb, pathToGlobalRb, configFileOrNodeName,tsDaily);
             }else {
                 logger.fatal("AppName not recognized");
             }
 
             ao.logAppRun(appName);
             logger.info(appName + " is complete");
-            StatusLogger.logText(appName.toLowerCase(),appName + " has finished.");
+            StatusLogger.logText(appName.toLowerCase(),appName + " has finished for t" + t + ".");
             
             
         } catch (Exception e) {
-            logger.fatal("An application threw the following error");
+            logger.fatal("An application threw the following error",e);
             throw new RuntimeException("An application threw the following error", e);
         }
     }
