@@ -69,6 +69,7 @@ public class ETModel extends ModelComponent {
 
     public void startModel(int baseYear, int intTimeInterval){
         logger.info("Starting ET Model.");
+        StatusLogger.logText("et","ET started for year t" + intTimeInterval);
 
         defineExternalStationParameters();
 

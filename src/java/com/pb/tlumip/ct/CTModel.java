@@ -49,6 +49,7 @@ public class CTModel extends ModelComponent {
 	
 	public void startModel(int baseYear, int t){
         Date start = new Date();
+        StatusLogger.logText("ct","CT Status","CT started for year t" + t);
 
         // This translates PI output (annual dollar flows at beta zone level) to
         // weekly tons by commodity class (SCTG01-SCTG43), and writes output in
