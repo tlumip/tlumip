@@ -852,6 +852,11 @@ public class Network implements Serializable {
                     int cap = (int)table.getValueAt( i+1, "CAPACITY" );
                     int taz = (int)table.getValueAt( i+1, "NEWTAZ" );
                     
+                    int dummy=0;
+                    if ( an == 25506 && bn == 25502 ) {
+                        dummy=1;
+                    }
+
                     int drop = 0;
                     if ( tableContainsDropsColumn )
                         drop = (int)table.getValueAt( i+1, "DROPLINK" );
@@ -1134,10 +1139,15 @@ public class Network implements Serializable {
             // if link calculater returns a negative or NaN result for a valid link, report the error
             if ( validLinks[i] ) {
 
-                if ( results[i] < 0 || results[i] == Double.NaN ) {
+                if ( results[i] < 0 || (Double.valueOf(results[i])).equals(Double.NaN) ) {
                     logger.error ( "invalid result in Network.applyVdfs(boolean[] validLinks).   results[i=" + i + "] = " + results[i] );
                     logger.error ( "anode = " + indexNode[ia[i]] + ", bnode = " + indexNode[ib[i]] );
-                    throw new RuntimeException();
+                    logger.error ( "volau = " + linkTable.getValueAt( i+1, linkTable.getColumnPosition("volau") ) );
+                    logger.error ( "volad = " + linkTable.getValueAt( i+1, linkTable.getColumnPosition("volad") ) );
+                    logger.error ( "capacity = " + linkTable.getValueAt( i+1, linkTable.getColumnPosition("capacity") ) );
+                    logger.error ( "lanes = " + linkTable.getValueAt( i+1, linkTable.getColumnPosition("lanes") ) );
+                    logger.error ( "length = " + linkTable.getValueAt( i+1, linkTable.getColumnPosition("length") ) );
+                    //throw new RuntimeException();
                 }
                 else {
                     congestedTime[i] = results[i];
