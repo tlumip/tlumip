@@ -57,6 +57,7 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
     protected static final Object lock = new Object();
     protected static boolean initialized = false;
     protected static boolean dataRead = false;
+    protected static boolean sensitivityTestingMode;
 
     protected static ResourceBundle ptRb;
     protected static ResourceBundle globalRb;
@@ -71,6 +72,7 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
     protected static int[] aZones;
 
     PTOccupationReferencer occReferencer;
+    long workplaceLocationModelSeed = 1970;
 
     public void onStart(){
         onStart(PTOccupation.NONE);
@@ -129,6 +131,13 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
 
                 CALCULATE_SDT = ResourceUtil.getBooleanProperty(ptRb, "sdt.calculate.sdt", true);
                 if(!CALCULATE_SDT) sendQueue="ResultsWriterQueue";
+
+                //sensitivity testing is for Tlumip - added to code on 4/22/08 by Christi
+                //The idea is that when in sensitivityTestMode we would allow the sequence of random numbers
+                //to vary from run to run instead of fixing the seed (and thereby fixing the sequence of random numbers)
+                //in order to be able to reproduce the results.
+                sensitivityTestingMode = ResourceUtil.getBooleanProperty(ptRb, "pt.sensitivity.testing", false);
+                wlLogger.info(getName() + ", Sensitivity Testing: " + sensitivityTestingMode);
 
                 debugDirPath = ptRb.getString("sdt.debug.files");
                 initialized = true;
@@ -310,7 +319,10 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
 
         Random random = new Random();
         for (PTPerson person : persons) {
-            random.setSeed(person.randomSeed);
+            if(sensitivityTestingMode)
+                random.setSeed(workplaceLocationModelSeed + System.currentTimeMillis() + person.randomSeed);
+            else random.setSeed(workplaceLocationModelSeed + person.randomSeed);
+            
             WorkplaceLocationModel.chooseWorkplace(flows,
                     person, random, debugDirPath, aZones);
         }
