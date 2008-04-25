@@ -219,6 +219,13 @@ public class WorldZoneExternalZoneUtil {
     }
 
     public Matrix createBeta6000Matrix(Matrix mtxBeta5000s){
+        // set value negative to indicate no value supplied so that the distance value will be looked up and used.
+        // distance value can be used for times as well, implying time is based on 60 mph.
+        float value = -1.0f;
+        return createBeta6000Matrix( mtxBeta5000s, value );
+    }
+    
+    public Matrix createBeta6000Matrix(Matrix mtxBeta5000s, float value){
         //figure out the external numbers
         int nBetas = mtxBeta5000s.getExternalNumbers().length - nExternalZones -1; //just betas
         int[] externalNumbers = new int[nBetas + nWorldZones + 1];
@@ -247,10 +254,12 @@ public class WorldZoneExternalZoneUtil {
                     float minDist = Float.MAX_VALUE;
                     List<Integer> eZones = getExternalZonesConnectedTo(col);
                     for(int zone : eZones){
-                        distance = mtxBeta5000s.getValueAt(row, zone) + getDistanceFromEZoneToWorldZone(zone, col);
-                        if(distance < minDist){
+                        if ( value >= 0 )
+                            distance = mtxBeta5000s.getValueAt(row, zone) + value;
+                        else
+                            distance = mtxBeta5000s.getValueAt(row, zone) + getDistanceFromEZoneToWorldZone(zone, col);
+                        if(distance < minDist)
                             minDist = distance;
-                        }
                     }
                     mtxBeta6000s.setValueAt(row, col, minDist);
 
@@ -259,8 +268,12 @@ public class WorldZoneExternalZoneUtil {
                     float minDist = Float.MAX_VALUE;
                     List<Integer> eZones = getExternalZonesConnectedTo(row);
                     for(int zone: eZones){
-                        distance = getDistanceFromWorldZoneToEZone(row,zone) + mtxBeta5000s.getValueAt(zone, col);
-                        if(distance < minDist) minDist = distance;
+                        if ( value >= 0 )
+                            distance = mtxBeta5000s.getValueAt(zone, col) + value;
+                        else
+                            distance = getDistanceFromWorldZoneToEZone(row,zone) + mtxBeta5000s.getValueAt(zone, col);
+                        if(distance < minDist) 
+                            minDist = distance;
                     }
                     mtxBeta6000s.setValueAt(row, col, minDist);
 

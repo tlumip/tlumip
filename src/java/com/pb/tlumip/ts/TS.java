@@ -562,12 +562,12 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "ampeak" );
-        nhPeak.checkForIsolatedLinks();
+//        nhPeak.checkForIsolatedLinks();
         nhPeak.startDataServer();
-        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
-        char[] hwyModeChars = { 'a', 'd', 'e', 'f' };
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
+        //char[] hwyModeChars = { 'a', 'd', 'e', 'f' };
         //tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
-        //tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
+        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         logger.info ("Network data server running...");
         
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );

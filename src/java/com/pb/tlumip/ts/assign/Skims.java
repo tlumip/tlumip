@@ -403,12 +403,17 @@ public class Skims {
 	 */
 	public void writeBetaSkimMatrix ( Matrix alphaZoneMatrix, String betaFileName ) {
 
-        // create a squeezed beta skims Matrix from the peak alpha distance skims Matrix and write to disk
+        // create a squeezed beta skims Matrix from the peak alpha skims Matrix and write to disk.
+        // skim matrices are assumed to be either time, distance, or toll - time and dist values are treated the same for world zones, but toll is 0.
         if( betaFileName != null ) {
             Matrix beta5000s = getBetaSkimMatrix ( alphaZoneMatrix );
 
             WorldZoneExternalZoneUtil wzUtil = new WorldZoneExternalZoneUtil(globalRb);
-            Matrix beta6000s = wzUtil.createBeta6000Matrix(beta5000s);
+            Matrix beta6000s = null;
+            if ( betaFileName.toLowerCase().contains("toll") )
+                beta6000s = wzUtil.createBeta6000Matrix( beta5000s, 0.0f );
+            else
+                beta6000s = wzUtil.createBeta6000Matrix( beta5000s );
             
             MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(betaFileName) );
             mw.writeMatrix(beta6000s);

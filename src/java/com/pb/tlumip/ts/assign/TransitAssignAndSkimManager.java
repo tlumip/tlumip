@@ -207,7 +207,7 @@ public class TransitAssignAndSkimManager {
         
         // drive access intercity bus/rail loading and skims
         String[] drIcTypes = { "intercity" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
+       results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
 
         // drive access intracity transit loading and skims
         String[] drTrTypes = { "intracity" }; 
@@ -369,7 +369,6 @@ public class TransitAssignAndSkimManager {
 
         final String OrigDistLabel = "OFareDistrict";
         final String DestDistLabel = "DFareDistrict";
-        final String Fare2007Label = "Fare_2007$";
         final String Fare1990Label = "Fare_1990$";
 
         HashMap fareTable = null;
