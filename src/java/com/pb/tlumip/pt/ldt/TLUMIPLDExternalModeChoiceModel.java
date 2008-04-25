@@ -24,6 +24,7 @@ import com.pb.models.pt.ldt.LDTour;
 import com.pb.models.pt.ldt.LDTourModeType;
 
 import java.util.ResourceBundle;
+import java.util.Random;
 
 /**
  * Mode choice for long-distance tours with external destinations.  
@@ -67,9 +68,8 @@ public class TLUMIPLDExternalModeChoiceModel extends LDExternalModeChoiceModel {
      * @param frequencies  The choice frequencies for the modes types.
      * @return The chosen mode.
      */
-    private LDTourModeType chooseModeFromFrequency(float[] frequencies) {
+    private LDTourModeType chooseModeFromFrequency(float[] frequencies, double random) {
 
-        double random = SeededRandom.getRandom();
         double culmFreq = 0;
         LDTourModeType chosenMode = null;
         LDTourModeType[] mode = LDTourModeType.values();
@@ -94,10 +94,15 @@ public class TLUMIPLDExternalModeChoiceModel extends LDExternalModeChoiceModel {
     /**
      * Choose a mode for the given tour.  
      */
-    public LDTourModeType chooseMode(LDTour tour) {
+    public LDTourModeType chooseMode(LDTour tour, boolean sensitivityTesting) {
+        long seed = tour.hh.ID*100 + tour.person.memberID + tour.ID + ldExternalModeFixedSeed;
+        if(sensitivityTesting) seed += System.currentTimeMillis();
+
+        Random random = new Random();
+        random.setSeed(seed);
 
         LDTourModeType chosenMode; 
-        chosenMode = chooseModeFromFrequency(parameters[tour.purpose.ordinal()]); 
+        chosenMode = chooseModeFromFrequency(parameters[tour.purpose.ordinal()], random.nextDouble()); 
         return chosenMode;
     }
 

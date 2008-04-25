@@ -30,6 +30,7 @@ import static com.pb.tlumip.pt.ldt.LDExternalDestinationChoiceParameters.SIZECOU
 import static com.pb.tlumip.pt.ldt.LDExternalDestinationChoiceParameters.TIME;
 
 import java.util.ResourceBundle;
+import java.util.Random;
 
 /**
  * 
@@ -147,14 +148,18 @@ public class TLUMIPLDExternalDestinationModel  extends LDExternalDestinationMode
      * 
      * @return  The ID of the chosen TAZ.  
      */
-    public int chooseTaz(LDTour tour) {
-                                
+    public int chooseTaz(LDTour tour, boolean sensitivityTesting) {
+        long seed = tour.hh.ID*100 + tour.person.memberID + tour.ID + ldExternalDestinationFixedSeed;
+        if(sensitivityTesting) seed += System.currentTimeMillis();
+
+        Random random = new Random();
+        random.setSeed(seed);
         // choose the taz      
         Integer chosenTaz; 
         try {
             calculateUtility(tour);
             model.calculateProbabilities();
-            ConcreteAlternative chosen = (ConcreteAlternative) model.chooseElementalAlternative();
+            ConcreteAlternative chosen = (ConcreteAlternative) model.chooseAlternative(random.nextDouble());
             chosenTaz = (Integer) chosen.getAlternative(); 
         } catch (Exception e) {
             String msg = "Error in external desination choice: no alts available ";
