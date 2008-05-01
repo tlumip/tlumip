@@ -18,15 +18,6 @@
     <orderEntry type="module" module-name="synpop" />
     <orderEntry type="module" module-name="reference" />
     <orderEntry type="module" module-name="pasaat" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://Y:/models/tlumip/scenario_20070924_NewCodeTest2/t1" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module" module-name="utils" />
     <orderEntryProperties />
   </component>
