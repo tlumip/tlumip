@@ -23,12 +23,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.AlphaToBeta;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import com.pb.models.pt.ActivityPurpose;
-import com.pb.models.pt.PTDataReader;
-import com.pb.models.pt.PTOccupationReferencer;
-import com.pb.models.pt.PTPerson;
-import com.pb.models.pt.TourModeChoiceLogsumManager;
-import com.pb.models.pt.WorkplaceLocationModel;
+import com.pb.models.pt.*;
 import com.pb.models.pt.daf.MessageID;
 import com.pb.models.pt.util.SkimsInMemory;
 import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
@@ -38,11 +33,7 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * TLUMIPWorkplaceLocationTask is a class that ...
@@ -72,7 +63,7 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
     protected static int[] aZones;
 
     PTOccupationReferencer occReferencer;
-    long workplaceLocationModelSeed = 1970;
+    long workplaceLocationModelSeed = Long.MIN_VALUE/243;
 
     public void onStart(){
         onStart(PTOccupation.NONE);
@@ -316,7 +307,6 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
      */
     public void calculateWorkplaceLocation(ArrayList<PTPerson> persons,
                                            Matrix flows) {
-
         Random random = new Random();
         for (PTPerson person : persons) {
             if(sensitivityTestingMode)
