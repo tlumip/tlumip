@@ -52,14 +52,15 @@ import com.pb.tlumip.ts.NetworkHandlerIF;
 public class Network implements Serializable {
 
 	//TODO these values should be set in a method from values determined in tour mode choice
-	static final float TIME_PARAMETER = 1.0f;
-	static final float COST_PARAMETER = 0.0f;
-	static final float OPERATING_COST = 0.0f;
-    
+    static final float[][] VOT  = { { 1150, 1150, 1150, 1150, 1150 }, {  770,  770,  770,  770,  770 } };   // vehicle class VOT: peak $11.50/hr, offpeak $7.70/hr
+    static final float[] OP_COST = {   12,   12,   12,   12,   12 };   // vehicle class cents/mile
+
+
     static final  int NOT_USED_FLAG = 99999999;
     
     
     static final String OUTPUT_FLOW_FIELDS_START_WITH = "assignmentFlow";
+    static final String OUTPUT_COST_FIELDS_START_WITH = "linkCost";
     static final String OUTPUT_TIME_FIELD = "assignmentTime";
     static final String OUTPUT_ANODE_FIELD = "anode";
     static final String OUTPUT_BNODE_FIELD = "bnode";
@@ -85,8 +86,8 @@ public class Network implements Serializable {
 	String assignmentPeriod;
 
     float volumeFactor;
-    
-	double WALK_SPEED;
+
+    double WALK_SPEED;
 
 	
 	int maxCentroid;
@@ -95,8 +96,9 @@ public class Network implements Serializable {
     int numLinks;
     int numUserClasses;
 
-	char[] userClasses = null;
-	
+    char[] userClasses = null;
+    float[] userClassPces = null;
+
     double[] volau;
     double[] totAonFlow;
 
@@ -132,7 +134,7 @@ public class Network implements Serializable {
     int[][] turnPenaltyIndices = null;
     float[][] turnPenaltyArray = null;
 	float[][][] turnTable = null;
-    
+
     int[] externalZoneLabels = null;
 
     int[] alphaDistrictIndex = null;
@@ -141,9 +143,9 @@ public class Network implements Serializable {
 
     public Network ( String period, String[] propertyValues ) { 
             
-        this.assignmentPeriod = period;
-        this.volumeFactor = Float.parseFloat( propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] );
-        
+        assignmentPeriod = period;
+        volumeFactor = Float.parseFloat( propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] );
+
         String d211File = propertyValues[NetworkHandlerIF.NETWORK_FILENAME_INDEX];
         String d211ModsFile = propertyValues[NetworkHandlerIF.NETWORKMODS_FILENAME_INDEX];
         String d231File = propertyValues[NetworkHandlerIF.TURNTABLE_FILENAME_INDEX];
@@ -151,15 +153,30 @@ public class Network implements Serializable {
         
 
         String zoneIndexFile = propertyValues[NetworkHandlerIF.ALPHA2BETA_FILENAME_INDEX];
-        this.maxCentroidLabel = getMaxCentroid( zoneIndexFile );
+        maxCentroidLabel = getMaxCentroid( zoneIndexFile );
 
-        this.minCentroidLabel = 1;
+        minCentroidLabel = 1;
 
 
         // get user classes to assign and assignment groups (which classes are combined together for assigning)
-        this.userClasses = getUserClassesFromProperties ( propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] );
-        this.numUserClasses = this.userClasses.length;
-        
+        userClasses = getUserClassesFromProperties ( propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] );
+        userClassPces = getUserClassPcesFromProperties ( propertyValues[NetworkHandlerIF.USER_CLASS_PCES_STRING_INDEX] );
+        numUserClasses = userClasses.length;
+
+        // check for valid PCE values
+        if ( userClassPces.length != numUserClasses ) {
+            String errorString = String.format("%d user classes were specified for %s, but %d user class PCEs were specified.", this.numUserClasses, propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX]);
+            errorString += "\n" + "the number of user classes and number of PCE values must be equal.";
+            throw new RuntimeException( errorString );
+        }
+        for (int m=0; m < numUserClasses; m++) {
+            if ( userClassPces[m] <= 0.0 ) {
+                String errorString = String.format("PCE for user class %d (%c) was specified as %f, but must by > 0.0.", m, userClasses[m], userClassPces[m]);
+                throw new RuntimeException( errorString );
+            }
+        }
+
+
         String[] truckClassPropertyValues = new String[6];
         truckClassPropertyValues[1] = propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX];
         truckClassPropertyValues[2] = propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX];
@@ -235,8 +252,9 @@ public class Network implements Serializable {
         
         
         numLinks = linkTable.getRowCount();
-		
-		// calculate the congested link travel times based on the vdf functions defined
+
+
+        // calculate the congested link travel times based on the vdf functions defined
 		fdLc = new LinkCalculator ( linkTable, lf.getFunctionStrings( "fd" ), "vdf" );
 		applyVdfs();
 		logLinkTimeFreqs();
@@ -378,26 +396,13 @@ public class Network implements Serializable {
 	}
 
     public double getSumOfVdfIntegrals () {
+
         double[] integrals = linkTable.getColumnAsDouble("vdfIntegral");
         
         double sum = 0.0;
         for (int k=0; k < integrals.length; k++)
             if ( validLinks[k] )
                 sum += integrals[k];
-            
-        return sum;
-    }
-
-    public double getSumOfGcIntegrals () {
-        
-        double[] integrals = linkTable.getColumnAsDouble("vdfIntegral");
-        double[] toll = getToll();
-        double[] dist = getDist();
-        
-        double sum = 0.0;
-        for (int k=0; k < integrals.length; k++)
-            if ( validLinks[k] )
-                sum += TIME_PARAMETER*integrals[k] + volau[k]*COST_PARAMETER*(toll[k] + dist[k]*OPERATING_COST);
             
         return sum;
     }
@@ -409,10 +414,6 @@ public class Network implements Serializable {
     public double[] getFreeFlowSpeed () {
         return linkTable.getColumnAsDouble( "freeFlowSpeed" );
     }
-
-	public double[] getToll () {
-		return linkTable.getColumnAsDouble( "toll" );
-	}
 
 	public double[] getDist () {
 		return linkTable.getColumnAsDouble( "dist" );
@@ -432,6 +433,10 @@ public class Network implements Serializable {
 
     public int[] getUniqueIds () {
         return linkTable.getColumnAsInt( "uniqueIds" );
+    }
+
+    public float[] getUserClassPces() {
+        return userClassPces;
     }
 
     public double[] getLanes () {
@@ -483,15 +488,26 @@ public class Network implements Serializable {
 	}
 
     public double[][] getFlows () {
-         
+
         double[][] flows = new double[userClasses.length][];
-         
-        for (int m=0; m < userClasses.length; m++)
-            flows[m] = linkTable.getColumnAsDouble( "flow_" + m );
-        
+
+        for (char c : userClasses) {
+            int m = getUserClassIndex(c);
+            flows[m] = linkTable.getColumnAsDouble( "flow_" + c );
+        }
+
         return flows;
     }
-    
+
+    public double[] getTotalLinkCost () {
+        return linkTable.getColumnAsDouble( "totalLinkCost" );
+    }
+
+    public double[] getLinkAttribCosts ( int m ) {
+        char c = userClasses[m];
+        return linkTable.getColumnAsDouble( String.format("linkAttribCosts_%c", c) );
+    }
+
     public double[] getVolau() {
         return linkTable.getColumnAsDouble( "volau" );
     }
@@ -597,16 +613,19 @@ public class Network implements Serializable {
     }
     
     public double[] setLinkGeneralizedCost () {
-    	double[] ctime = getCongestedTime();
-    	double[] toll = getToll();
-    	double[] dist = getDist();
-    	
-    	double[] gc = new double[ctime.length];
-    	
-    	for (int i=0; i < ctime.length; i++)
-    		gc[i] = TIME_PARAMETER*ctime[i] + COST_PARAMETER*(toll[i] + dist[i]*OPERATING_COST);
-    	
-		linkTable.setColumnAsDouble( linkTable.getColumnPosition("generalizedCost"), gc );
+
+        double[] ctime = getCongestedTime();
+        double[] totalLinkCost = getTotalLinkCost();
+
+        double[] gc = new double[ctime.length];
+
+
+        // loop over links and add link cost to congested time
+        for (int i=0; i < ctime.length; i++)
+            gc[i] = ctime[i] + totalLinkCost[i];
+
+
+        linkTable.setColumnAsDouble( linkTable.getColumnPosition("generalizedCost"), gc );
 		
 		return gc;
     }
@@ -641,6 +660,17 @@ public class Network implements Serializable {
        }
     }
 
+    public void setTotalLinkCost( double[] cost){
+        linkTable.appendColumn ( cost, "totalLinkCost" );
+    }
+
+    public void setLinkAttribCosts( double[][] cost){
+        for ( char c : userClasses ) {
+            int m = getUserClassIndex(c);
+            linkTable.appendColumn ( cost[m], String.format("%s_%c", "linkAttribCosts", c) );
+        }
+    }
+
     public void setUniqueIds ( int[] ids ) {
         uniqueIds = ids;
         linkTable.appendColumn( ids, "uniqueIds" );
@@ -673,8 +703,10 @@ public class Network implements Serializable {
     }
 
     public void setFlows (double[][] flow) {
-        for (int m=0; m < flow.length; m++)
-            linkTable.setColumnAsDouble( linkTable.getColumnPosition("flow_" + m), flow[m] );
+        for ( char c : userClasses ) {
+            int m = getUserClassIndex(c);
+            linkTable.setColumnAsDouble( linkTable.getColumnPosition("flow_" + c), flow[m] );
+        }
     }
     
     public void setTtf ( int[] ttf ) {
@@ -689,10 +721,10 @@ public class Network implements Serializable {
 		while (st.hasMoreTokens()) {
 			userClassList.add(st.nextElement());
 		}
-		
+
 		// copy the valid mode codes into an array
 		char tempUserClass;
-		char[] tempUserClasses = new char[userClassList.size()]; 
+		char[] tempUserClasses = new char[userClassList.size()];
 		int j = 0;
 		for (int i=0; i < tempUserClasses.length; i++) {
 			tempUserClass = ((String)userClassList.get(i)).charAt(0);
@@ -701,18 +733,36 @@ public class Network implements Serializable {
 		}
 
 		// create an array of valid mode codes to return
-		char[] finalUserClasses = new char[j]; 
+		char[] finalUserClasses = new char[j];
 		for (int i=0; i < finalUserClasses.length; i++) {
 			finalUserClasses[i] = tempUserClasses[i];
-			
+
 			userClassMap.put ( String.valueOf(finalUserClasses[i]), Integer.valueOf(i) );
 		}
-		
+
 		return finalUserClasses;
-		
+
     }
-    
-    
+
+
+    private float[] getUserClassPcesFromProperties ( String userClassPcesPropertyString ) {
+
+		// get the mode codes that identify user classes
+		ArrayList<String> userClassPcesList = new ArrayList();
+		StringTokenizer st = new StringTokenizer(userClassPcesPropertyString, ", |");
+		while (st.hasMoreTokens()) {
+			userClassPcesList.add( (String)st.nextElement() );
+		}
+
+        float[] returnArray = new float[userClassPcesList.size()];
+        for ( int i=0; i < userClassPcesList.size(); i++ )
+            returnArray[i] = Float.parseFloat( userClassPcesList.get(i) );
+
+		return returnArray;
+
+    }
+
+
     /**
      * The char[][] returned by this class is used by Demand handling objects to determine
      * which truck modes are combined together into a userclass for assignment and therefore
@@ -837,12 +887,20 @@ public class Network implements Serializable {
                 double[] capacity = new double[table.getRowCount()];
                 double[] originalCapacity = new double[table.getRowCount()];
                 double[] totalCapacity = new double[table.getRowCount()];
+                double[][] linkAttribCost = new double[numUserClasses][table.getRowCount()];
                 String[] labels = new String[table.getRowCount()];
                 String[] revMode = new String[table.getRowCount()];
                 
                 boolean tableContainsDropsColumn = ( table.getColumnPosition("DROPLINK") >= 0 );
                 boolean tableContainsRevisedModeColumn = ( table.getColumnPosition("REVISED_MODES") >= 0 );
-                
+
+
+                // set the assignment period index
+                int periodIndex = assignmentPeriod.equalsIgnoreCase("peak") ? 0 : 1;
+
+                double[] dist = getDist();
+                double[] totLinkCost = new double[table.getRowCount()];
+
                 // traverse links and store attibutes in linktable
                 for (int i=0; i < table.getRowCount(); i++) {
                     
@@ -851,11 +909,19 @@ public class Network implements Serializable {
                     int uniqueId = (int)table.getValueAt( i+1, "UNIQID" );
                     int cap = (int)table.getValueAt( i+1, "CAPACITY" );
                     int taz = (int)table.getValueAt( i+1, "NEWTAZ" );
-                    
-                    int dummy=0;
-                    if ( an == 25506 && bn == 25502 ) {
-                        dummy=1;
+
+                    // read the link cost fields by user class into the timeValueOfCost array
+                    double linkCost = 0.0;
+                    for ( char c : userClasses ) {
+                        int m = getUserClassIndex(c);
+                        linkAttribCost[m][i] = table.getValueAt( i+1, String.format("COST_%c", c) );
+
+                        // cost parameter is (60/VOT) in units of  min/cent ( minutes/hr / cents/hr )
+                        // dist parameter is OPERATING_COST / VOT in min/mile (i.e. TIME_PARAMETER * OPERATING_COST )
+                        linkCost += (60.0/VOT[periodIndex][m]) * ( linkAttribCost[m][i] + OP_COST[m]*dist[i] );
                     }
+                    totLinkCost[i] = linkCost;
+
 
                     int drop = 0;
                     if ( tableContainsDropsColumn )
@@ -886,6 +952,7 @@ public class Network implements Serializable {
                 setLinkLabels(labels);
                 setUniqueIds(uniqueIds);
                 setDrops(drops);
+                setTotalLinkCost(totLinkCost);
 
                 if ( tableContainsRevisedModeColumn )
                     setRevisedModes(revMode);
@@ -923,7 +990,6 @@ public class Network implements Serializable {
 		double[] freeFlowTime = new double[linkTable.getRowCount()];
 		double[] oldTime = new double[linkTable.getRowCount()];
 		double[] volad = new double[linkTable.getRowCount()];
-		double[] toll = new double[linkTable.getRowCount()];
 		double[] gc = new double[linkTable.getRowCount()];
 		double[][] flow = new double[userClasses.length][linkTable.getRowCount()];
 		boolean[] centroid = new boolean[linkTable.getRowCount()];
@@ -1002,8 +1068,10 @@ public class Network implements Serializable {
 			    dist = 0.001f;
 			length[i] = dist;
 
-			
-			// initialize the flow by user class fields to zero
+
+
+
+            // initialize the flow by user class fields to zero
 			for (int j=0; j < userClasses.length; j++) {
 				flow[j][i] = 0.0f;
 			}
@@ -1093,7 +1161,6 @@ public class Network implements Serializable {
 		derivedTable.appendColumn(congestedTime, "transitTime");
 		derivedTable.appendColumn(volau, "volau");
 		derivedTable.appendColumn(volad, "volad");
-		derivedTable.appendColumn(toll, "toll");
 		derivedTable.appendColumn(gc, "generalizedCost");
 		derivedTable.appendColumn(vdfIntegral, "vdfIntegral");
 		derivedTable.appendColumn(freeFlowTime, "freeFlowTime");
@@ -1658,183 +1725,6 @@ public class Network implements Serializable {
 
     
     
-    //Bisection routine to calculate opitmal lambdas during each frank-wolfe iteration.
-    public double bisect ( int iter, double[][] aonFlow, double[][] flow ) {
-        
-        String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-        logger.info ("starting FW.bisect()" + myDateString);
- 
-        double x=0.0, xleft=0.0, xright=1.0, gap=0.0;
-
-        int numBisectIterations = (int)(Math.log(1.0e-07)/Math.log(0.5) + 1.5);
-        
-        gap = ofGap( aonFlow, flow );
-        
-        if (Math.abs(gap) <= 1.0e-07) {
-            x = -1.0;
-            return( x );
-        }
-        else {
-            if (gap <= 0)
-                xleft = x;
-            else
-                xright = x;
-            x = (xleft + xright)/2.0;
-            if(logger.isDebugEnabled()) {
-                logger.debug ("iter=" + iter + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
-            }
-
-            for (int n=0; n < numBisectIterations; n++) {
-                gap = bisectGap(x, aonFlow, flow );
-                if (gap <= 0)
-                    xleft = x;
-                else
-                    xright = x;
-                x = (xleft + xright)/2.0;
-                if(logger.isDebugEnabled()) {
-                    logger.debug ("iter=" + iter + ", n=" + n + ", gap=" + gap + ", xleft=" + xleft + ", xright=" + xright + ", x=" + x);
-                }
-            }
-
-            return( x );
-            
-        }
-    }
-
-
-
-    public double ofValue ( double[][] flow )  {
-
-        double returnValue = -1;
-        
-        try {
-        
-            double[] volau = new double[numLinks];
-            
-            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-            logger.info ("starting FW.ofValue()" + myDateString);
-     
-            // sum total flow over all user classes for each link 
-            for (int k=0; k < volau.length; k++) {
-                volau[k] = 0.0;
-                for (int m=0; m < numUserClasses; m++)
-                    volau[k] += flow[m][k];
-            }
-            
-            setVolau(volau);
-            setVolCapRatios();
-            applyVdfIntegrals();
-    
-            returnValue = getSumOfGcIntegrals();
-        
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-
-        return returnValue;
-        
-    }
-
-
-
-    public double ofGap ( double[][] aonFlow, double[][] flow ) {
-
-        double returnValue = -1;
-        
-        try {
-            
-            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-            logger.info ("starting FW.ofGap()" + myDateString);
-     
-            // sum total flow over all user classes for each link 
-            for (int k=0; k < volau.length; k++) {
-                volau[k] = 0.0;
-                totAonFlow[k] = 0.0;
-                for (int m=0; m < numUserClasses; m++) {
-                    volau[k] += flow[m][k];
-                    totAonFlow[k] += aonFlow[m][k];
-                }
-            }
-            
-            setVolau(volau);
-            applyVdfs();
-            double[] cTime = setLinkGeneralizedCost();
-            
-            
-            double gap = 0.0;
-            for (int k=0; k < volau.length; k++) {
-                if ( validLinks[k] ) {
-                    
-                    if ( ! isValidDoubleValue(cTime[k]) )
-                        logger.error( "invalid value for loaded link travel time on link " + k );
-                    else if ( ! isValidDoubleValue(totAonFlow[k]) )
-                        logger.error( "invalid value for all-or-nothing link flow on link " + k );
-                    else if ( ! isValidDoubleValue(volau[k]) )
-                        logger.error( "invalid value for loaded link flow on link " + k );
-                
-                    gap += cTime[k]*(totAonFlow[k] - volau[k]);
-                }
-            }
-    
-            returnValue = gap;
-        
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-
-        return returnValue;
-        
-    }
-
-
-    public double bisectGap (double x, double[][] aonFlow, double[][] flow ) {
-
-        double returnValue = -1;
-        
-        try {
-            
-            String myDateString = DateFormat.getDateTimeInstance().format(new Date());
-            logger.info ("starting FW.bisectGap()" + myDateString);
-     
-            // sum total flow over all user classes for each link 
-            for (int k=0; k < volau.length; k++) {
-                volau[k] = 0.0;
-                totAonFlow[k] = 0.0;
-                for (int m=0; m < numUserClasses; m++) {
-                    volau[k] += flow[m][k];
-                    totAonFlow[k] += aonFlow[m][k];
-                }
-                volau[k] = volau[k] + x*(totAonFlow[k] - volau[k]);
-            }
-            
-            setVolau(volau);
-            applyVdfs();
-            double[] cTime = setLinkGeneralizedCost();
-    
-            double gap = 0.0;
-            for (int k=0; k < cTime.length; k++)
-                if ( validLinks[k] )
-                    gap += cTime[k]*(totAonFlow[k] - volau[k]);
-    
-    
-            returnValue = gap;
-        
-        }
-        catch ( Exception e ) {
-            logger.error ( "Exception caught.", e );
-            System.exit(1);
-        }
-
-        return returnValue;
-        
-    }
-
-
-    
     public void linkSummaryReport ( double[][] flow ) {
         
         double totalVol;
@@ -1960,9 +1850,12 @@ public class Network implements Serializable {
 		double[] congestedTime = (double[])linkTable.getColumnAsDouble( "congestedTime" );
 		double[] capacity = (double[])linkTable.getColumnAsDouble( "capacity" );
 
-		double[][] flow = new double[userClasses.length][];
-		for (int j=0; j < userClasses.length; j++) {
-			flow[j] = (double[])linkTable.getColumnAsDouble( "flow_" + j );
+        double[][] flow = new double[userClasses.length][];
+        double[][] cost = new double[userClasses.length][];
+		for ( char c : userClasses ) {
+            int j = getUserClassIndex(c);
+            flow[j] = (double[])linkTable.getColumnAsDouble( "flow_" + c );
+            cost[j] = (double[])linkTable.getColumnAsDouble( "cost_" + c );
 		}
 		
 		
@@ -1976,9 +1869,12 @@ public class Network implements Serializable {
 			
             String tempString = String.format( "id,%s,%s,%s,%s", OUTPUT_ANODE_FIELD, OUTPUT_BNODE_FIELD, OUTPUT_CAPACITY_FIELD, OUTPUT_TIME_FIELD );
             
-			for (int j=0; j < userClasses.length; j++)
-				tempString += String.format( ",%s_%c", OUTPUT_FLOW_FIELDS_START_WITH, userClasses[j] );
-			
+            for (int j=0; j < userClasses.length; j++)
+                tempString += String.format( ",%s_%c", OUTPUT_FLOW_FIELDS_START_WITH, userClasses[j] );
+
+            for (int j=0; j < userClasses.length; j++)
+                tempString += String.format( ",%s_%c", OUTPUT_COST_FIELDS_START_WITH, userClasses[j] );
+
 			outStream.println( tempString );
 			
 
@@ -1987,9 +1883,15 @@ public class Network implements Serializable {
 			
                 tempString = String.format("%d,%d,%d,%.4f,%.4f", k, indexNode[ia[k]], indexNode[ib[k]], capacity[k], congestedTime[k]);
 								
-				for (int j=0; j < userClasses.length; j++)
-					tempString += String.format(",%.4f", flow[j][k]);
-	
+                for (int j=0; j < userClasses.length; j++) {
+                    float pce = userClassPces[j];
+                    double tempFlow = flow[j][k]/pce;
+                    tempString += String.format(",%.4f", tempFlow);
+                }
+
+                for (int j=0; j < userClasses.length; j++)
+                    tempString += String.format(",%.4f", cost[j][k]);
+
 				outStream.println( tempString );
 
 			}

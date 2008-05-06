@@ -298,7 +298,7 @@ public class Skims {
                 linkAttrib[i] = nh.getDist();
             }
             else if ( skimType[i].equalsIgnoreCase("toll") ) {
-                linkAttrib[i] = nh.getToll();
+                linkAttrib[i] = nh.getLinkAttribCosts(modeIndex);
             }
             else if ( skimType[i].equalsIgnoreCase("fftime") ) {
                 linkAttrib[i] = nh.getFreeFlowTime();
