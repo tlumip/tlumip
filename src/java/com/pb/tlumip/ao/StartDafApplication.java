@@ -41,12 +41,13 @@ import java.util.ResourceBundle;
  */
 public class StartDafApplication {
     private static Logger logger = Logger.getLogger(StartDafApplication.class);
-    private ResourceBundle rb; //this is ao.properties
+    //private ResourceBundle rb; //this is ao.properties
     private long startNodeSleepTime = 15000;
     private long startClusterApplicationSleepTime = 15000;
     private long fileCheckSleepTime = 55;
     private int t;
-    String pathPrefix;
+    //String pathPrefix;
+    String scenarioOutputs;
     String doneFilePath;
     File commandFile;
     File errorFile; //the error file
@@ -56,26 +57,30 @@ public class StartDafApplication {
     String nodeName; //name of the node that will start the cluster - can be any node
     String rootDir;
 
-    public StartDafApplication(String appName, int timeInterval, ResourceBundle rb){
-        this(appName, "node0", timeInterval, rb);
+    public StartDafApplication(String appName, String rootDir, String scenarioOutputs, int timeInterval){
+        this(appName, "node0", rootDir, scenarioOutputs, timeInterval);
     }
 
-    public StartDafApplication(String appName, String nodeName, int timeInterval, ResourceBundle rb){
-        this.rb = rb;
+    public StartDafApplication(String appName, String nodeName, String rootDir, String scenarioOutputs, int timeInterval){
+        //this.rb = rb;
         this.appName = appName;
         this.nodeName = nodeName;
+        this.scenarioOutputs = scenarioOutputs;
+        this.rootDir = rootDir;
+
         this.t = timeInterval;
 
-        this.rootDir =  ResourceUtil.getProperty(rb, "root.dir");
-        this.scenarioName = ResourceUtil.getProperty(rb, "scenario.name");
+        //this.rootDir =  ResourceUtil.getProperty(rb, "root.dir");
+        //this.scenarioName = ResourceUtil.getProperty(rb, "scenario.name");
 
-        this.pathPrefix = rootDir + "scenario_" + scenarioName+ "/";
+        //this.pathPrefix = rootDir + "scenario_" + scenarioName+ "/";
 
         this.errorFile = new File(rootDir + LogServer.CLIENTLOG_NAME);
     }
 
     private File getCommandFile(String cmdFilePath){
-        File cmdFile = new File(cmdFilePath+"commandFile.txt");
+        File cmdFile = new File(cmdFilePath+"/commandFile.txt");
+        logger.info("Cmd File: " + cmdFile);
         if(!cmdFile.exists()){
             logger.info("The file used by the FileMonitor class does not exist - creating file");
             try {
@@ -90,11 +95,11 @@ public class StartDafApplication {
         return cmdFile;
     }
 
-    private void deleteAppDoneFile(File doneFile){
+    private void deleteAppDoneFile(File doneFile){        
         if(doneFile.exists()){
-            logger.info("Deleting the "+appName+"_done.txt file");
+            logger.info("Deleting the zz"+appName+"_done.txt file");
             doneFile.delete();
-            if(doneFile.exists()) logger.info(appName+"_done.txt file still exists");
+            if(doneFile.exists()) logger.info("zz" + appName+"_done.txt file still exists");
         }
     }
 
@@ -134,7 +139,7 @@ public class StartDafApplication {
             }else if(entry.equals(Entry.START_APPLICATION)){
                 writer.println(Entry.START_APPLICATION);
                 writer.println(nodeName);
-                writer.println(appName.toLowerCase()+"_"+scenarioName);
+                writer.println(appName.toLowerCase());
 
             }else{
                 writer.println(entry); //all other commands have just a single entry with no arguments
@@ -177,14 +182,17 @@ public class StartDafApplication {
 
     public void run(){
         //get the path to the command file and make sure the file exists
-        String cmdPath = pathPrefix  + ResourceUtil.getProperty(rb,"command.file.dir");
+        //String cmdPath = pathPrefix  + ResourceUtil.getProperty(rb,"command.file.dir");
+        String cmdPath = rootDir + "/" + scenarioOutputs + "/ops";
         logger.info("CommandFile Path: "+ cmdPath);
         commandFile = getCommandFile(cmdPath);
 
         //construct the path to the $appName_done.txt file
         //and delete the file if it already exists
-        int appIndex = appName.indexOf("daf");
-        String doneFile = pathPrefix + "t" + t + "/" + appName.substring(0,appIndex) + "/" + appName + "_done.txt";
+       // int appIndex = appName.indexOf("daf");
+        //String doneFile = pathPrefix + "t" + t + "/" + appName.substring(0,appIndex) + "/" + appName + "_done.txt";
+        String doneFile = rootDir + "/" + scenarioOutputs + "/ops/zz" +  appName + "_done.txt";
+        //String doneFile = cmdPath + "/" + appName + "_done.txt";
         logger.info("DoneFile Path: " + doneFile);
         appDone = new File(doneFile);
         deleteAppDoneFile(appDone);
@@ -211,8 +219,9 @@ public class StartDafApplication {
         logger.info("appName: "+ appName);
         logger.info("nodeName: "+ nodeName);
         logger.info("timeInterval " + t);
-        StartDafApplication appRunner = new StartDafApplication(appName,nodeName,t, rb);
-        appRunner.run();
+        //StartDafApplication appRunner = new StartDafApplication(appName,nodeName,t, rb);
+        //String appName, String rootDir, String scenarioOutputs, int timeInterval
+       // appRunner.run();
 
 
     }

@@ -47,28 +47,34 @@ public class ALDModel extends ModelComponent {
                 3.  the time interval (t) of the current simulation year
             Then we need the full path to the R code itself
         */
-        String pathToRCode = ResourceUtil.getProperty(appRb, "codePath");
+        String pathToRCode = ResourceUtil.getProperty(appRb, "ald.codePath");
         String pathToRCodeArg = "-" + pathToRCode;
 
-        String pathToIOFiles = ResourceUtil.getProperty(appRb, "filePath");
-        String pathToIOFilesArg = "-" + pathToIOFiles;
+        String pathToPropertiesFile = ResourceUtil.getProperty(appRb, "ald.property");
+        String pathToPropertiesFileArg = "-" + pathToPropertiesFile;
+
+
+        String pathToIOFiles = ResourceUtil.getProperty(appRb, "ald.filePath");
+       // String pathToIOFilesArg = "-" + pathToIOFiles;
 
         String yearArg = "-" + t;
 
-        String rFileName = ResourceUtil.getProperty(appRb, "nameOfRCode");
+       String rFileName = ResourceUtil.getProperty(appRb, "nameOfRCode");
         String rCode = pathToRCode + rFileName;
 
-        String rOut = pathToIOFiles + "t" + t +"/ald/ald.Rout";
+        String rOut = pathToIOFiles + "t" + t +"/zzAld.Rout";
 
-        String execCommand = "R CMD BATCH "+ pathToRCodeArg + " "
-                                + pathToIOFilesArg + " " + yearArg + " " + rCode + " " + rOut;
+        //String execCommand = "R CMD BATCH "+ pathToRCodeArg + " "
+       //                         + pathToIOFilesArg + " " + yearArg + " " + rCode + " " + rOut;
+        String execCommand = "R CMD BATCH " + pathToRCodeArg + " " + pathToPropertiesFileArg + " "
+                + yearArg + " " + rCode + " " + rOut;
         logger.info("Executing "+execCommand);
         Runtime rt = Runtime.getRuntime();
         try {
 //            process = rt.exec("cmd.exe /c " + execCommand);
 //          First delete the indicator file (if there is one) that signals the 
             //java program that the R script has completed.
-            File doneFile = new File(pathToIOFiles + "t" + t + "/ald/.RData");
+            File doneFile = new File(pathToIOFiles + "t" + t + "/.RData");
             if(doneFile.exists()) doneFile.delete();
             
             process = rt.exec(execCommand);
@@ -79,7 +85,7 @@ public class ALDModel extends ModelComponent {
                 //Will wait for the .RData file to appear before signaling 
                 //that ALD is done.
                 if(doneFile.exists()) logger.info("ALD is done");
-                else logger.info("The ALD run was NOT successful, check the ald.Rout file for details");
+                else logger.info("The ALD run was NOT successful, check the zzAld.Rout file for details");
             } catch (InterruptedException e) {
                 throw new RuntimeException("InterruptedException: ", e);
             }
