@@ -216,6 +216,10 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getAssignmentGroupChars();
     }
 
+    public float[] getUserClassPces() {
+        return g.getUserClassPces();
+    }
+
     public double[] getLanes () {
         return g.getLanes();
     }
@@ -250,10 +254,6 @@ public class NetworkHandler implements NetworkHandlerIF {
 
     public double[] getDist () {
         return g.getDist();
-    }
-
-    public double[] getToll () {
-        return g.getToll();
     }
 
     public double[] getVolau () {
@@ -333,7 +333,17 @@ public class NetworkHandler implements NetworkHandlerIF {
         g.applyVdfIntegrals();
         return 1;
     }
-    
+
+    public double[] getTotalLinkCost() {
+        return g.getTotalLinkCost();
+    }
+
+    public double[] getLinkAttribCosts(int m) {
+        char[] userClasses = g.getUserClasses();
+        char c = userClasses[m];
+        return g.getLinkAttribCosts(c);
+    }
+
     public double getSumOfVdfIntegrals () {
         return g.getSumOfVdfIntegrals();
     }

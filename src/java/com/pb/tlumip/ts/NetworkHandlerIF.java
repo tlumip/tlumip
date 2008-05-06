@@ -25,8 +25,9 @@ public interface NetworkHandlerIF {
     public static int TRUCKCLASS4_STRING_INDEX = 13;
     public static int TRUCKCLASS5_STRING_INDEX = 14;
     public static int WALK_SPEED_INDEX = 15;
-    
-    public static int NUMBER_OF_PROPERTY_VALUES = 16;
+    public static int USER_CLASS_PCES_STRING_INDEX = 16;
+
+    public static int NUMBER_OF_PROPERTY_VALUES = 17;
     
     
     public void startDataServer();
@@ -62,6 +63,7 @@ public interface NetworkHandlerIF {
     public int[] getDrops();
     public int[] getUniqueIds();
     public char[][] getAssignmentGroupChars();
+    public float[] getUserClassPces();
     public double[] getLanes();
     public double[] getCapacity();
     public double[] getOriginalCapacity();
@@ -71,7 +73,8 @@ public interface NetworkHandlerIF {
     public double[] getFreeFlowSpeed();
     public double[] getTransitTime();
     public double[] getDist();
-    public double[] getToll();
+    public double[] getTotalLinkCost();
+    public double[] getLinkAttribCosts( int userClass );
     public double[] getVolau();
     public int[][] getTurnPenaltyIndices ();
     public float[][] getTurnPenaltyArray ();

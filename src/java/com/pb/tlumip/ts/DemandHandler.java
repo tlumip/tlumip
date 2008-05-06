@@ -79,8 +79,10 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     String timePeriod;
     int startHour;
     int endHour;
-    
-	double[][][] multiclassVehicleTripTable = null;
+
+    float[] userClassPces;
+
+    double[][][] multiclassVehicleTripTable = null;
     
     double[][] multiclassVehicleTripTableRowSums = null;
 
@@ -125,9 +127,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
 
    
-    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( float[] userClassPces, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
-        
+        this.userClassPces =  userClassPces; 
         networkNumCentroids = numCentroids;
         networkNumUserClasses = numUserClasses;
         networkAssignmentGroupChars = assignmentGroupChars;
@@ -158,9 +160,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setupRpc( float[] userClassPces, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
-        return setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, alphaDistrictArray, alphaDistrictNames, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
+        return setup( userClassPces, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, alphaDistrictArray, alphaDistrictNames, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
     
     }
     
@@ -439,7 +441,12 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     value = (Integer)totalModeFreqMap.get(mode);
                 totalModeFreqMap.put ( mode, (value+1) );
 
-                
+
+                // SDT and LDT use vehicle class 0 (a).
+                double tripFactor = userClassPces[0];
+
+
+
                 o = networkNodeIndexArray[orig];
                 d = networkNodeIndexArray[dest];
                 
@@ -460,11 +467,11 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                             
                             double trips = 0.0;
                             if ( mode.equalsIgnoreCase(TripModeType.SR2.name()) )
-                                trips = 0.5;
+                                trips = tripFactor/2.0;
                             else if ( mode.equalsIgnoreCase(TripModeType.SR3P.name()) )
-                                trips = 1.0/AVERAGE_SR3P_AUTO_OCCUPANCY;
+                                trips = tripFactor/AVERAGE_SR3P_AUTO_OCCUPANCY;
                             else
-                                trips = 1.0;
+                                trips = tripFactor;
                             
                             tripTable[o][d] += trips*ptSampleRate;
                             totalValid++;
@@ -611,8 +618,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     dest = (int)table.getValueAt( i+1, "destination" );
                     startTime = (int)table.getValueAt( i+1, "tripStartTime" );
                     truckType = (String)table.getStringValueAt( i+1, "truckType" );
-                    tripFactor = (int)table.getValueAt( i+1, "tripFactor" );
-    
+                    //tripFactor = (int)table.getValueAt( i+1, "tripFactor" );  // replace tripFactor from CT and ET with PCE based on truck type.
+
                     mode = Integer.parseInt( truckType.substring(3) );
                     modeChar = highwayModeCharacters[mode];
                     group = -1;
@@ -628,7 +635,12 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                         logger.error ( "modeChar = " + modeChar + " associated with CT integer mode = " + mode + " not found in any assignment group." );
                         System.exit(-1);
                     }
-                    
+
+
+                    tripFactor = userClassPces[mode];
+
+
+
                     o = networkNodeIndexArray[orig];
                     d = networkNodeIndexArray[dest];
 
@@ -726,7 +738,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     dest = (int)table.getValueAt( i+1, "destination" );
                     startTime = (int)table.getValueAt( i+1, "tripStartTime" );
                     truckType = (String)table.getStringValueAt( i+1, "truckClass" );
-                    tripFactor = ET_DEFAULT_TRUCK_FACTOR;
+                    //tripFactor = ET_DEFAULT_TRUCK_FACTOR;  // replace tripFactor from CT and ET with PCE based on truck type.
     
                     mode = Integer.parseInt( truckType.substring(3) );
                     modeChar = highwayModeCharacters[mode];
@@ -744,6 +756,11 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                         System.exit(-1);
                     }
                     
+
+                    tripFactor = userClassPces[mode];
+
+
+
                     o = networkNodeIndexArray[orig];
                     d = networkNodeIndexArray[dest];
 

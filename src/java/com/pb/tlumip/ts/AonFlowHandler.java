@@ -99,12 +99,13 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         networkNumLinks = nh.getLinkCount();
         networkNumCentroids = nh.getNumCentroids();
         networkNumUserClasses = nh.getNumUserClasses();
-        this.timePeriod = nh.getTimePeriod();
+        timePeriod = nh.getTimePeriod();
+        float[] userClassPces = nh.getUserClassPces();
 
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF dh = DemandHandler.getInstance( rpcConfigFile );
-        dh.setup( sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        dh.setup( userClassPces, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildHighwayDemandObject();
         dh.logDistrictReport();
         

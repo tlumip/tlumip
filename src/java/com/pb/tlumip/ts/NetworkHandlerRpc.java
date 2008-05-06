@@ -605,10 +605,26 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
 
+    public float[] getUserClassPces () {
+
+        float[] returnArray = null;
+
+        try {
+            returnArray = (float[])rc.execute(HANDLER_NAME+".getUserClassPces", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+
+        return returnArray;
+
+    }
+
     public double[] getLanes () {
-        
+
         double[] returnArray = null;
-        
+
         try {
             returnArray = (double[])rc.execute(HANDLER_NAME+".getLanes", new Vector());
         } catch (RpcException e) {
@@ -616,9 +632,9 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         } catch (IOException e) {
             logger.error( e.getCause().getMessage(), e );
         }
-        
+
         return returnArray;
-        
+
     }
 
     public double[] getCongestedTime () {
@@ -701,20 +717,38 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
 
-    public double[] getToll () {
-        
+    public double[] getTotalLinkCost () {
+
         double[] returnArray = null;
-        
+
         try {
-            returnArray = (double[])rc.execute(HANDLER_NAME+".getToll", new Vector());
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getTotalLinkCost", new Vector());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
             logger.error( e.getCause().getMessage(), e );
         }
-        
+
         return returnArray;
-        
+
+    }
+
+    public double[] getLinkAttribCosts ( int userClass ) {
+
+        double[] returnArray = null;
+        Vector params = new Vector();
+        params.add( userClass );
+
+        try {
+            returnArray = (double[])rc.execute(HANDLER_NAME+".getLinkAttribCosts", params );
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+
+        return returnArray;
+
     }
 
     public double[] getVolau () {

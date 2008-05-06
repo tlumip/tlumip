@@ -50,6 +50,7 @@ import java.util.ResourceBundle;
 public class TS {
 
 	protected static Logger logger = Logger.getLogger(TS.class);
+    
 
     static final boolean CREATE_NEW_NETWORK = true;
     public boolean SKIM_ONLY = false;
@@ -193,7 +194,7 @@ public class TS {
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF d = DemandHandler.getInstance();
-        d.setup( (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), (String)globalMap.get("et.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.setup( nh.getUserClassPces(), (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), (String)globalMap.get("et.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         d.buildHighwayDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
@@ -428,6 +429,7 @@ public class TS {
         }
         
         String userClassesString = (String)appMap.get("userClass.modes");
+        String userClassPCEsString = (String)appMap.get("userClass.pces");
         String truckClass1String = (String)appMap.get( "truckClass1.modes" );
         String truckClass2String = (String)appMap.get( "truckClass2.modes" );
         String truckClass3String = (String)appMap.get( "truckClass3.modes" );
@@ -451,6 +453,7 @@ public class TS {
         if ( extraAtribsFileName != null ) propertyValues[NetworkHandlerIF.EXTRA_ATTRIBS_FILENAME_INDEX] = extraAtribsFileName;
         if ( volumeFactor != null ) propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
         if ( userClassesString != null ) propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
+        if ( userClassPCEsString != null ) propertyValues[NetworkHandlerIF.USER_CLASS_PCES_STRING_INDEX] = userClassPCEsString;
         if ( truckClass1String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
         if ( truckClass2String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX] = truckClass2String;
         if ( truckClass3String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS3_STRING_INDEX] = truckClass3String;
@@ -565,8 +568,8 @@ public class TS {
 //        nhPeak.checkForIsolatedLinks();
         nhPeak.startDataServer();
         //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
-        //char[] hwyModeChars = { 'a', 'd', 'e', 'f' };
-        //tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
+        char[] hwyModeChars = { 'a', 'd', 'e', 'f' };
+        tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
         logger.info ("Network data server running...");
         

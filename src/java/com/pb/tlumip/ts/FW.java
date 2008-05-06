@@ -338,7 +338,17 @@ public class FW {
         nh.setVolCapRatios();
         nh.applyVdfIntegrals();
 
-        return( nh.getSumOfVdfIntegrals() );
+        double[] totalLinkCost = nh.getTotalLinkCost();
+
+
+        double ofValue = 0.0;
+        for (int k=0; k < totalLinkCost.length; k++)
+            if ( validLinks[k] )
+                ofValue += totalLinkCost[k]*totalLinkFlow[k];
+
+        ofValue += nh.getSumOfVdfIntegrals();
+
+        return( ofValue );
     }
 
 
@@ -391,12 +401,14 @@ public class FW {
         
         nh.setVolau(totalLinkFlow);
         nh.applyVdfs();
+
         double[] cTime = nh.getCongestedTime();
+        double[] totalLinkCost = nh.getTotalLinkCost();
 
         double gap = 0.0;
         for (int k=0; k < totalLinkFlow.length; k++)
             if ( validLinks[k] )
-                gap += cTime[k]*(totAonFlow[k] - totalLinkFlow[k]);
+                gap += cTime[k]*(totAonFlow[k] - totalLinkFlow[k]) + totalLinkCost[k]*(1.0 - x);
 
 
         return(gap);

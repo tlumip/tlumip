@@ -56,13 +56,14 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     
    
-    public boolean setup( String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictIndex, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( float[] userClassPces, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictIndex, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
 
         boolean returnValue = false;
 
         try {
             
             Vector params = new Vector();
+            params.add(userClassPces);
             params.add(sdtFileName);
             params.add(ldtFileName);
             params.add(ptSampleRate);
