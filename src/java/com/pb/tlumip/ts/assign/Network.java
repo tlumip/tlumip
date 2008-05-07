@@ -165,7 +165,7 @@ public class Network implements Serializable {
 
         // check for valid PCE values
         if ( userClassPces.length != numUserClasses ) {
-            String errorString = String.format("%d user classes were specified for %s, but %d user class PCEs were specified.", this.numUserClasses, propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX]);
+            String errorString = String.format("%d user classes were specified for %s, but %d user class PCEs were specified.", this.numUserClasses, propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX], userClassPces.length);
             errorString += "\n" + "the number of user classes and number of PCE values must be equal.";
             throw new RuntimeException( errorString );
         }
@@ -503,8 +503,7 @@ public class Network implements Serializable {
         return linkTable.getColumnAsDouble( "totalLinkCost" );
     }
 
-    public double[] getLinkAttribCosts ( int m ) {
-        char c = userClasses[m];
+    public double[] getLinkAttribCosts ( char c ) {
         return linkTable.getColumnAsDouble( String.format("linkAttribCosts_%c", c) );
     }
 
@@ -667,7 +666,7 @@ public class Network implements Serializable {
     public void setLinkAttribCosts( double[][] cost){
         for ( char c : userClasses ) {
             int m = getUserClassIndex(c);
-            linkTable.appendColumn ( cost[m], String.format("%s_%c", "linkAttribCosts", c) );
+            linkTable.appendColumn ( cost[m], String.format("linkAttribCosts_%c", c) );
         }
     }
 
@@ -953,6 +952,7 @@ public class Network implements Serializable {
                 setUniqueIds(uniqueIds);
                 setDrops(drops);
                 setTotalLinkCost(totLinkCost);
+                setLinkAttribCosts(linkAttribCost);
 
                 if ( tableContainsRevisedModeColumn )
                     setRevisedModes(revMode);
@@ -1167,7 +1167,7 @@ public class Network implements Serializable {
 		derivedTable.appendColumn(length, "length");
 		derivedTable.appendColumn(oldTime, "oldTime");
 		for (int j=0; j < userClasses.length; j++) {
-			derivedTable.appendColumn(flow[j], "flow" + "_" + j);
+			derivedTable.appendColumn(flow[j], "flow" + "_" + userClasses[j]);
 		}
 
 		
@@ -1855,7 +1855,7 @@ public class Network implements Serializable {
 		for ( char c : userClasses ) {
             int j = getUserClassIndex(c);
             flow[j] = (double[])linkTable.getColumnAsDouble( "flow_" + c );
-            cost[j] = (double[])linkTable.getColumnAsDouble( "cost_" + c );
+            cost[j] = (double[])linkTable.getColumnAsDouble( "linkAttribCosts_" + c );
 		}
 		
 		
