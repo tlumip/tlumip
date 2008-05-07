@@ -637,7 +637,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     }
 
 
-                    tripFactor = userClassPces[mode];
+                    tripFactor = userClassPces[group];
 
 
 
@@ -757,7 +757,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     }
                     
 
-                    tripFactor = userClassPces[mode];
+                    tripFactor = userClassPces[group];
 
 
 
