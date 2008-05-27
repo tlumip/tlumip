@@ -30,15 +30,17 @@ import com.pb.tlumip.ts.TSModelComponent;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.ResourceBundle;
+
 
 /**
  *
  *
- * @author  Christi Willison
- * @version Jan 6, 2004
+ * @author  Christi Willison, Kimberly Grommes
+ * @version May 27, 2008
  * Created by IntelliJ IDEA.
  */
 public class ApplicationOrchestrator {
@@ -55,8 +57,6 @@ public class ApplicationOrchestrator {
     HashMap<String,String> runLogHashmap;
     String scenarioOutputs;
     String scenarioInputs;
-
-
 
     public ApplicationOrchestrator(ResourceBundle rb){
         this.rb = rb;
@@ -80,10 +80,10 @@ public class ApplicationOrchestrator {
 
     private void createBaseYearPropFile(){
         runLogPropFile = new File(rootDir + "/" + baseScenarioName + "/t0/zzInitialRunLog.properties");
-        //runLogPropFile = new File(rootDir + "/scenario_" + scenarioName + "/t0/runLog.properties");
+
         if(!runLogPropFile.exists()){
             logger.info("Creating the base year run log in " + rootDir + "/" + baseScenarioName + "/t0/");
-            //logger.info("Creating the base year run log in " + rootDir + "/scenario_" + scenarioName + "/t0/");
+            
             try {
                 runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, false));
                 runLogWriter.write("# Filter values for properties files");
@@ -92,41 +92,17 @@ public class ApplicationOrchestrator {
                 runLogWriter.newLine();
                 runLogWriter.write("BASE.SCENARIO.NAME=" + baseScenarioName);
                 runLogWriter.newLine();
-                //runLogWriter.write("SCENARIO_NAME=" + scenarioName);
-                //runLogWriter.newLine();
                 runLogWriter.write("BASE.YEAR=" + baseYear);
                 runLogWriter.newLine();
                 runLogWriter.write("GLOBAL.TEMPLATE.INTERVAL=0");
 	            runLogWriter.newLine();
-                /*runLogWriter.write("BASE_INTERVAL=0");
-                runLogWriter.newLine();
-                runLogWriter.write("CURRENT_INTERVAL=0");
-                runLogWriter.newLine();
-
-                runLogWriter.write("AO_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-                runLogWriter.write("ED_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-                runLogWriter.write("ALD_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-                runLogWriter.write("SPG_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-                runLogWriter.write("PI_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-                runLogWriter.write("CT_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-                runLogWriter.write("ET_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-                runLogWriter.write("PT_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-                runLogWriter.write("TS_TEMPLATE_INTERVAL=0");
-	            runLogWriter.newLine();
-	            */
                 runLogWriter.write("ED.LAST.RUN=0");
                 runLogWriter.newLine();
                 runLogWriter.write("ALD.LAST.RUN=0");
                 runLogWriter.newLine();
                 runLogWriter.write("SPG1.LAST.RUN=0");
+                runLogWriter.newLine();
+                runLogWriter.write("PI.PRIOR.RUN=0");
                 runLogWriter.newLine();
                 runLogWriter.write("PI.LAST.RUN=0");
                 runLogWriter.newLine();
@@ -152,7 +128,7 @@ public class ApplicationOrchestrator {
         if(baseScenarioName.equals(scenarioName)){
             scenarioInputs = baseScenarioName;
             scenarioOutputs = baseScenarioName;
-            //}else if (t==5){
+            //}else if (t==1){ //It was decided to initially make a complete copy of the parent scenario for the child scenario.
             //    scenarioInputs = baseScenarioName;
             //    scenarioOutputs = baseScenarioName + "/" + scenarioName;
         }else{
@@ -160,9 +136,9 @@ public class ApplicationOrchestrator {
             scenarioOutputs = baseScenarioName + "/" + scenarioName;
         }
         runLogPropFile = new File(rootDir + "/" + scenarioOutputs + "/t" + t + "/zzRunLog.properties");
-        //runLogPropFile = new File(rootDir + "/scenario_" + scenarioName + "/t" + t + "/runLog.properties");
+
         logger.info("Looking for the run log in " + rootDir + "/" + scenarioOutputs + "/t" + t + "/");
-        //logger.info("Looking for the run log in " + rootDir + "/scenario_" + scenarioName + "/t" + t + "/");
+
         if(!runLogPropFile.exists()){
             try { //create the file and write the current year into it.
                 logger.info("Writing the current scenario information into the run log");
@@ -191,43 +167,14 @@ public class ApplicationOrchestrator {
                 e.printStackTrace();
             }
         }
-        /*
-        if(!runLogPropFile.exists()){
-	        try { //create the file and write the current year into it.
-	            logger.info("Writing the current year into the run log");
-	            runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, false));
-	            runLogWriter.write("# Filter values for properties files");
-	            runLogWriter.newLine();
-	            runLogWriter.write("BASEDIR=" + rootDir);
-	            runLogWriter.newLine();
-                runLogWriter.write("BASE_SCENARIO_NAME=" + baseScenarioName);
-	            runLogWriter.newLine();
-                runLogWriter.write("SCENARIO_NAME=" + scenarioName);
-	            runLogWriter.newLine();
-	            runLogWriter.write("BASE_YEAR=" + baseYear);
-	            runLogWriter.newLine();
-	            runLogWriter.write("CURRENT_INTERVAL=" + t);
-	            runLogWriter.newLine();
-	            runLogWriter.flush();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-        }else { // the file may have already been created by a call from an earlier app.
-            	// so just attach a writer to it that can append the appLog info.
-            try {
-                runLogWriter = new BufferedWriter(new FileWriter(runLogPropFile, true));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        */
+
     }
 
     private void updateRunLogPropertiesHashmap (int t){
         //Get the base year runLog and read in all of the properties into a hashmap.
         String initialRunLogPath = rootDir + "/" + baseScenarioName + "/t0/zzInitialRunLog.properties";
         logger.info("Reading initial Run log file: " + initialRunLogPath);
-        //String initialRunLogPath = rootDir + "/scenario_" + scenarioName + "/t0/runLog.properties";
+
         ResourceBundle runLogRb = ResourceUtil.getPropertyBundle(new File(initialRunLogPath));
         runLogHashmap = ResourceUtil.changeResourceBundleIntoHashMap(runLogRb);
 
@@ -241,7 +188,7 @@ public class ApplicationOrchestrator {
 
         while (i<=t){
             String propPath = rootDir + "/" + scenarioOutputs + "/t" + i + "/zzRunLog.properties";
-            //String propPath = rootDir + "/scenario_" + scenarioName + "/t" + i + "/runLog.properties";
+
             propFile = new File(propPath);
             if(propFile.exists()){
                 logger.info("Reading in Run Log from year " + i + " and updating the RunLog HashMap: ");
@@ -273,14 +220,13 @@ public class ApplicationOrchestrator {
 
     }
 
-    private String createAppRbNew(String appName){
+    private String createAppRb(String appName){
         //First read in the template properties file.  This will have default values and
         //tokens (surrounded by @ symbols).  The tokens will be replaced with the values
         //in the runLogHashMap
 
         //Get Template File
-        File appPropertyTemplate = findTemplateFileRecursivelyNew(appName);
-        //File appPropertyTemplate = new File(rootDir + "/java_files/" + appName+ "Template.properties");
+        File appPropertyTemplate = findTemplateFileRecursively(appName);
 
         String appPropertyTemplateName = appPropertyTemplate.getName();
         //The property file will have the same name as the template file minus the 'Template' part.
@@ -303,21 +249,19 @@ public class ApplicationOrchestrator {
             e.printStackTrace();
         }
 
-        Iterator keys = runLogHashmap.keySet().iterator();
-        while (keys.hasNext()) {
-            String keyName = (String) keys.next();
+        for (String keyName : runLogHashmap.keySet()) {
+
             String hashmapValue = runLogHashmap.get(keyName);
             hashmapValue = hashmapValue.replace(":", ":/"); //the separator gets lost when read in from prop file
-            //Build a pattern and compile it
+
             String patternStr = "@" + keyName + "@";
-//	        Pattern pattern = Pattern.compile(patternStr);
 
             // Replace all occurrences of pattern in input string
             Enumeration propNames = appDefaultProps.propertyNames();
-            while(propNames.hasMoreElements()){
-                String propName = (String)propNames.nextElement();
+            while (propNames.hasMoreElements()) {
+                String propName = (String) propNames.nextElement();
                 String tempStr = appDefaultProps.getProperty(propName);
-                tempStr = tempStr.replaceAll(patternStr,hashmapValue);
+                tempStr = tempStr.replaceAll(patternStr, hashmapValue);
                 appDefaultProps.setProperty(propName, tempStr);
             }
         }
@@ -334,74 +278,9 @@ public class ApplicationOrchestrator {
         return (appPropertyFilePath);
     }
 
-    private String createAppRb(String appName){
-        //First read in the template properties file.  This will have default values and
-        //tokens (surrounded by @ symbols).  The tokens will be replaced with the values
-        //in the runLogHashMap
 
-        //Get Template File
-        File appPropertyTemplate = findTemplateFileRecursively(appName);
-        String appPropertyTemplateName = appPropertyTemplate.getName();
 
-        //The property file will have the same name as the template file minus the 'Template' part.
-        //Keep in mind that the 'appName' passed in will be spg1 or pidaf but the template and properties
-        //files are spg.properties or pi.properties.  The 'findTemplateFileRecursively' method will strip off the
-        //extra characters (like '1' or 'daf') and so the appPropFileName != appName but the appPropFileName
-        //will be the one we want to use to locate and name the properties file.
-        String appPropFileName = appPropertyTemplateName.substring(0, appPropertyTemplateName.indexOf("Temp"));
-        String outputPath = rootDir + "/scenario_" + scenarioName + "/t" + t + "/";
-        File appPropertyFile;
-
-        if (appPropFileName.equalsIgnoreCase("global"))  appPropertyFile = new File(outputPath + "global.properties");
-        else appPropertyFile = new File(outputPath + appPropFileName + "/" + appPropFileName + ".properties");
-
-        logger.info("Creating " + appPropertyFile.getAbsolutePath());
-
-        Properties appDefaultProps = new Properties();
-        try {
-            appDefaultProps.load(new FileInputStream(appPropertyTemplate));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Iterator keys = runLogHashmap.keySet().iterator();
-        while (keys.hasNext()) {
-            String keyName = (String) keys.next();
-            String hashmapValue = runLogHashmap.get(keyName);
-
-            //Build a pattern and compile it
-            String patternStr = "@" + keyName + "@";
-            Pattern pattern = Pattern.compile(patternStr);
-
-            // Replace all occurrences of pattern in input string
-            Enumeration propNames = appDefaultProps.propertyNames();
-            while(propNames.hasMoreElements()){
-                String propName = (String)propNames.nextElement();
-                String tempStr = appDefaultProps.getProperty(propName);
-                Matcher matcher = pattern.matcher(tempStr);
-                tempStr = matcher.replaceAll(hashmapValue);
-                appDefaultProps.setProperty(propName, tempStr);
-            }
-        }
-        //write the properties file to the output stream in a format suitable for loading into a
-        //properties table using the "load" method.
-        try {
-            appDefaultProps.store(new FileOutputStream(appPropertyFile), appPropFileName.toUpperCase() + " Properties File for Interval " + t);
-        } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-
-        if (appPropFileName.equalsIgnoreCase("global"))
-            return (outputPath + "global.properties");
-        else
-            return (outputPath + appPropFileName + "/" + appPropFileName + ".properties");
-    }
-
-    public File findTemplateFileRecursivelyNew(String appName) {
+    public File findTemplateFileRecursively(String appName) {
         String templateSuffix = "Template.properties";
         String editedName = appName.toUpperCase();
         File templateFile = null;
@@ -446,87 +325,12 @@ public class ApplicationOrchestrator {
         return templateFile;
     }
 
-    public File findTemplateFileRecursively(String appName) {
-        String templateSuffix;
-        if(appName.startsWith("ct") || appName.startsWith("et") || appName.startsWith("pi") || appName.startsWith("pt")){
-            if(t==1 || t==0) templateSuffix = "TemplateBase.properties";
-            else templateSuffix = "Template.properties";
-        }else{
-            templateSuffix = "Template.properties";
-        }
-        File templateFile = null;
-        String editedName;
-        int i = t;  // look thru all of the tn directories for a property template file
-        // starting with the most recent t.
-        while(i >= 0){
-            String templatePath = rootDir + "/scenario_" + scenarioName + "/t" + i + "/";
-            //Deal with SPG exception (appName=spg1 or spg2 but template file is spgTemplate.properties for both)
-            if(appName.startsWith("spg")){
-                editedName = "SPG";
-                templateFile = new File(templatePath + "spg/spg" + templateSuffix);
-                //Deal with the PTDAF and PIDAF exceptions
-            }else if (appName.endsWith("daf")) {
-                editedName = appName.substring(0,(appName.length()-3)).toUpperCase();
-                templateFile = new File(templatePath + appName.substring(0,(appName.length()-3)) +
-                        "/" + appName.substring(0,(appName.length()-3)) + templateSuffix);//subtract off the 'daf' part
-            }else if (appName.endsWith("constrained")){ //for the piConstrained runs.
-                editedName = appName.substring(0,(appName.length()-11)).toUpperCase();
-                templateFile = new File(templatePath + appName.substring(0,(appName.length()-11)) +
-                        "/" + appName.substring(0,(appName.length()-11)) + templateSuffix);
-                //Deal with the global exception
-            } else if (appName.equalsIgnoreCase("global")) {
-                editedName="GLOBAL";
-                templateFile = new File(templatePath + "global" + templateSuffix);
-            } else{
-                editedName = appName.toUpperCase();
-                templateFile = new File(templatePath + appName + "/" + appName + templateSuffix);
-            }
-
-            if(templateFile.exists()){
-                logger.info("Full Path to Template File: " + templateFile.getAbsolutePath());
-                String currentTemplate = runLogHashmap.get(editedName + "_TEMPLATE_INTERVAL");
-                if(currentTemplate == null){ // no previous template was found.
-                    runLogHashmap.put(editedName + "_TEMPLATE_INTERVAL", Integer.toString(i));
-                    try {
-                        logger.info("Writing the initial template location for this app into the run log");
-                        runLogWriter.write(editedName + "_TEMPLATE_INTERVAL=" + Integer.toString(i));
-                        runLogWriter.newLine();
-                        runLogWriter.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } else if(!currentTemplate.equals(Integer.toString(i))){  //a more recent template file was found
-                    try {
-                        logger.info("Writing the new template location for this app into the run log");
-                        runLogWriter.write(editedName + "_TEMPLATE_INTERVAL=" + Integer.toString(i));
-                        runLogWriter.newLine();
-                        runLogWriter.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } //if template file is the same as the last one found don't write it into the log.
-                return templateFile;
-            }else {
-                i--;
-            }
-        }
-        // if you get to here it means a template file couldn't be found in any of the tn directories
-        // so templateFile = null
-        logger.fatal("Couldn't find Template File for " + appName + ".  Returning a file that does not exist");
-        return templateFile;
-    }
-
-
-
     public ResourceBundle findResourceBundle(String pathToRb) {
         File propFile = new File(pathToRb);
         ResourceBundle rb = ResourceUtil.getPropertyBundle(propFile);
         if(rb == null ) logger.fatal("Problem loading resource bundle: " + pathToRb);
         return rb;
     }
-
-
-
 
     public void writeRunParamsToPropertiesFile(String pathToAppRb, String pathToGlobalRb, String moduleName){
         File runParams = new File(rootDir + "/" + scenarioInputs + "/ops/RunParams.properties");
@@ -622,9 +426,7 @@ public class ApplicationOrchestrator {
 
     public void runPTDAFModel(int timeInterval, String pathToAppRb, String pathToGlobalRb,String nodeName){
         writeRunParamsToPropertiesFile(pathToAppRb, pathToGlobalRb);
-        //StartDafApplication appRunner = new StartDafApplication("ptdaf", nodeName, timeInterval, rb);
         StartDafApplication appRunner = new StartDafApplication("ptdaf", rootDir, scenarioOutputs, timeInterval);
-
 
         appRunner.run();
     }
@@ -659,6 +461,11 @@ public class ApplicationOrchestrator {
         }
         try {
             logger.info("Writing the application name and the timeInterval for run into the run log");
+            if (appName.toUpperCase().equals("PI")) {
+                int piPriorRun = Integer.parseInt(runLogHashmap.get("PI.LAST.RUN"));
+                runLogWriter.write("PI.PRIOR.RUN=" + piPriorRun);
+                runLogWriter.newLine();
+            }
             runLogWriter.write(appName.toUpperCase() + ".LAST.RUN=" + t);
             runLogWriter.newLine();
             runLogWriter.close();
@@ -713,46 +520,19 @@ public class ApplicationOrchestrator {
             //For each t interval that the model runs in,  AO needs to create the runLogProperty file and write in the current year
             // if the file does not already exist in that year.  This file will then be updated by any application that runs.
             ao.createRunLogPropFile();
+
             //We need to read in the runLog.properties files starting
             //in year interval=0 and moving up to interval=t.  We will fill
             //up a hashmap with the appropriate values.
             ao.updateRunLogPropertiesHashmap(t);
 
-            //Create an ao.properties file for the current 't' directory
-            // using the most recent aoTemplate.properties file
-            //String pathToAoRb = ao.createAppRb("ao");
-
-            //Get the ao.properties file that was just created and read in the "base.year"
-            //value from the ao.properties so that you can pass it to the application that you are starting.
-            //ResourceBundle aoRb = ao.findResourceBundle(pathToAoRb);
-            //ao.setRb(aoRb);
-
             //Create a global.properties file for the current 't' directory
             // using the most recent globalTemplate.properties file
-            String pathToAppRb = ao.createAppRbNew("global");
+            String pathToAppRb = ao.createAppRb("global");
 
             ResourceBundle appRb = ao.findResourceBundle(pathToAppRb);
             ao.setRb(appRb);
 
-            //Get the global properties file that was just created so that you can pass it to the current application
-            // ResourceBundle globalRb = null;
-            // if(!appName.endsWith("daf")){
-            //     globalRb = ao.findResourceBundle(pathToGlobalRb);
-            //}
-
-            //Read in the appNameTemplate.properties and replace
-            //all patterns with values from the RunLogHashMap and write properties file
-            //to the appropriate directory.
-            //String pathToAppRb = ao.createAppRbNew("NEWglobal");
-
-            //Unless AO is being asked to start a daf-application, it should
-            //find the actual application resource bundle and pass it to the app
-            //on start-up.  Daf applications will be passed a path to a runProperties file
-            //instead of the actual file.
-            //ResourceBundle appRb = null;
-            //if(! appName.endsWith("daf")){
-            //ResourceBundle appRb = ao.findResourceBundle(pathToAppRb);
-            //}
             if(appName.equalsIgnoreCase("ED")){
                 logger.info("AO will now start ED for simulation year " + (baseYear+t));
                 ao.runEDModel(baseYear, t, appRb);
@@ -799,7 +579,6 @@ public class ApplicationOrchestrator {
             ao.logAppRun(appName);
             logger.info(appName + " is complete");
             StatusLogger.logText(appName.toLowerCase(),appName + " has finished for t" + t + ".");
-
 
         } catch (Exception e) {
             logger.fatal("An application threw the following error",e);
