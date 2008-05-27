@@ -29,21 +29,22 @@ package com.pb.tlumip.model;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.AlphaToBeta;
+import com.pb.common.util.SeededRandom;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
+
 
 public class ZoneMap {
     protected static Logger logger = Logger.getLogger(ZoneMap.class);
     public static int HIGHEST_ALPHA_ZONENUMBER,
                        HIGHEST_BETA_ZONENUMBER ; //initialized after reading alphaToBeta.csv
     float[][] intensityMap;   // rows=beta zones, columns = alpha zones
-    Random rn;
 
-    public ZoneMap (File f, long randomSeed) {
-        rn = new Random(randomSeed);
+
+    public ZoneMap (File f) {
+
         AlphaToBeta a2b= new AlphaToBeta(f);
         HIGHEST_ALPHA_ZONENUMBER = a2b.getMaxAlphaZone();
         HIGHEST_BETA_ZONENUMBER = a2b.getMaxBetaZone();
@@ -124,7 +125,7 @@ public class ZoneMap {
   // iated with sector producing the commodity to weight the intensity) and
   // and betazone, and receives back the alpha zone to allocate the flows to.
   public int getAlphaZone (int betaZone, String commodityCode) {
-    float r = rn.nextFloat();
+    float r = SeededRandom.getRandomFloat();
     int result = -1;
     for (int q=1; q<HIGHEST_ALPHA_ZONENUMBER+1; q++)
       if (r<intensityMap[betaZone][q]) {
@@ -138,7 +139,7 @@ public class ZoneMap {
 
 
   public static void main (String[] args) {
-    ZoneMap zm = new ZoneMap(new File("/temp/data/alpha2beta.csv"), 5910772L);
+    ZoneMap zm = new ZoneMap(new File("/temp/data/alpha2beta.csv"));
     int i;
     for (int k=0; k<20; k++) {
       i = zm.getAlphaZone(3157, "UNDEFINED");
