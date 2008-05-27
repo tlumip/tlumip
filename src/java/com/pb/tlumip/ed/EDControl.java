@@ -135,9 +135,10 @@ public class EDControl extends ModelComponent {
 
     		outFile = (String)splitFiles.get(i);
             outFile = outFile.substring(lastIndex+1, outFile.indexOf(".csv", lastIndex) + 4);
-			outFile = outFile.substring(0, outFile.indexOf("tMY")) + "t" + (modelYear)
-						+ outFile.substring(outFile.indexOf("tMY")+3);
-			logger.info("Output File: " + outFile);
+			//outFile = outFile.substring(0, outFile.indexOf("tMY")) + "t" + (modelYear)
+			//			+ outFile.substring(outFile.indexOf("tMY")+3);
+            outFile = outFile.substring(0);
+            logger.info("Output File: " + outFile);
 			try
 			{
 				CSVSplitter.split(new File(defaultDataLocation), new File(outFile), new File(dataFile), currentYear);
