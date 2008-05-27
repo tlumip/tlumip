@@ -24,6 +24,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixException;
 import com.pb.common.matrix.MatrixReader;
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.util.SeededRandom;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 import com.pb.tlumip.model.ZoneMap;
 import org.apache.log4j.Logger;
@@ -193,7 +194,7 @@ public class EIModel {
                         mtxUpdatedCommodityExportFlow.setValueAt(intExternalZone, intAlphaZone, fltExportAmount);
                     }
                 }
-                //TODO: should the double loop below be moved inside this loop?
+
             }
 
             float fltTotalImports = 0f;
@@ -310,8 +311,14 @@ public class EIModel {
         defineGravityModelParameters();
 
         mtxDistanceSkim = readMatrix((ResourceUtil.getProperty(appRb, "distance.skim")+strMatrixExtension), "Distance_Skim");
+        
+        boolean sensitivityTestingMode = ResourceUtil.getBooleanProperty(appRb, "et.sensitivity.testing", false);
+        if(sensitivityTestingMode)
+            SeededRandom.setSeed( (int) System.currentTimeMillis() );
+        else
+            SeededRandom.setSeed( ResourceUtil.getIntegerProperty(appRb,"randomSeed"));
 
-        zones = new ZoneMap(new File(ResourceUtil.getProperty(globalRb, "alpha2beta.file")), 1990);
+        zones = new ZoneMap(new File(ResourceUtil.getProperty(globalRb, "alpha2beta.file")));
 
         intLightTonsPerTruck = ResourceUtil.getIntegerProperty(appRb, "light.tons.per.truck");
         intHeavyTonsPerTruck = ResourceUtil.getIntegerProperty(appRb, "heavy.tons.per.truck");
