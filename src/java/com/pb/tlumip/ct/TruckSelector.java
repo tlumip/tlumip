@@ -16,9 +16,15 @@
  */
 package com.pb.tlumip.ct;
 
-import java.io.*;
-import java.util.*;
+import com.pb.common.util.SeededRandom;
 import org.apache.log4j.Logger;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Random;
+import java.util.StringTokenizer;
 
 class TruckSelector {
   // Define default parameters
@@ -32,7 +38,6 @@ class TruckSelector {
   private float[] tf$payloadCapacity;
   private float[] tf$shiftMinutes;
   private float[] tf$averageDwellTimes;
-  private Random rn;
 
   // Define structures to hold the probabilities of each of the vehicle types
   private boolean[] isDefined;
@@ -40,8 +45,8 @@ class TruckSelector {
   private float[][] pTruckType;
 
 
-  TruckSelector (long randomSeed, File vehicleTypeAttributes, File commodityVehicleTypes) {
-    rn = new Random(randomSeed);
+  TruckSelector (File vehicleTypeAttributes, File commodityVehicleTypes) {
+
     readVehicleTypeAttributes(vehicleTypeAttributes);
     readCommodityVehicleTypes(commodityVehicleTypes);
   }
@@ -121,7 +126,7 @@ class TruckSelector {
 
     // Now we need to convert the raw probabilities (which might not even be
     // normalised yet) into cumulative probabilities
-    float total, scalingFactor;
+    float total;
     for (n=0; n<nClasses; n++)
       if (isDefined[n]) {
         total = 0.0f;
@@ -153,7 +158,7 @@ class TruckSelector {
   }
 
   public float getDwellTime (Truck3 t) {
-    return tf$averageDwellTimes[getIndex( ((Truck3)t).truckType )];
+    return tf$averageDwellTimes[getIndex( t.truckType )];
   }
 
 
@@ -163,7 +168,8 @@ class TruckSelector {
   // to this implementation of the transitional model.
   public String nextCarrierType (int commodity) {
     String result = "STF";    // for-hire truck
-    if (rn.nextFloat()<=pPrivateCarriage[commodity]) result = "STP";
+
+    if (SeededRandom.getRandomFloat()<=pPrivateCarriage[commodity]) result = "STP";
     return result;
   }
 
@@ -175,7 +181,7 @@ class TruckSelector {
     // Start by randomly choosing a truck from the cumulative probability
     // distribution associated with the given commodity
     int draws = 0, index = -1;
-    float r = rn.nextFloat();
+    float r = SeededRandom.getRandomFloat();
     do {
       // Since the upper ends of the cumulative probabilities are stored in the
       // arrays, we simply need to see if the random number is less or equal
@@ -205,14 +211,14 @@ class TruckSelector {
 
 
   public static void main (String[] args) {
-    TruckSelector ts = new TruckSelector( 201957l,
+    TruckSelector ts = new TruckSelector(
       new File ("/temp/data/VehicleTypeAttributes.txt"),
       new File ("/temp/data/CommodityVehicleTypes.txt") );
 
     // Test nextTruck()
     Random r = new Random();
     int commodity = 10, location = 401;
-    float pounds = 0f, base = 3000f, nr=0f;
+    float pounds, base = 3000f, nr;
     String carrierType = "STP";
     Truck3 truck;
     for (int n=0; n<10; n++) {

@@ -35,25 +35,9 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.DecimalFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.util.*;
 
 
 public class FreightDemand3 {
@@ -62,7 +46,7 @@ public class FreightDemand3 {
     static double SMALLEST_ALLOWABLE_TONNAGE;  // interzonal interchange threshold- read in from properties file
     ModalDistributions md;
     ValueDensityFunction vdf;
-    Random rn;
+   // Random rn;
     String inputPath;
     String outputPath;
     ResourceBundle ctRb;
@@ -75,7 +59,7 @@ public class FreightDemand3 {
     ResourceBundle globalRb;
     int[] betaPlusWZsForCT;
 
-    FreightDemand3(ResourceBundle appRb, ResourceBundle globalRb, String ctInputs, String ctOutputs, long seed){
+    FreightDemand3(ResourceBundle appRb, ResourceBundle globalRb, String ctInputs, String ctOutputs){
         //set the ctRb to the ct.properties resource bundle and get the smallest allowable tonnage from there.
         this.ctRb = appRb;
         this.globalRb = globalRb;
@@ -92,8 +76,7 @@ public class FreightDemand3 {
         this.outputPath = ctOutputs;
         this.md = new ModalDistributions(inputPath+"ModalDistributionParameters.txt");
         this.vdf = new ValueDensityFunction(new File(inputPath + "ValueDensityParameters.txt"));
-        this.rn = new Random(seed);
-
+       
         wzUtil = new WorldZoneExternalZoneUtil(globalRb);
         int[] betaZones = a2b.getBetaExternals0Based();
         int[] worldZonesForCt = wzUtil.getWorldZonesForCT();
@@ -126,9 +109,13 @@ public class FreightDemand3 {
         //We need to read in the list of Transportable Goods that
         //were produced by PI.
         File dir = new File(ResourceUtil.getProperty(ctRb,"pi.commodity.flows"));
-        String extension = globalRb.getString("matrix.extension");
+        String extension = globalRb.getString("matrix.extension").trim();
         String[] fileNames = dir.list(new MyFilter(extension));
-        if(fileNames.length == 0) throw new RuntimeException();
+
+        if(fileNames.length == 0) {
+            logger.info("There are no filenames containing SCTG and ending with " + extension + " in " + dir);
+            throw new RuntimeException();
+        }
 
         commoditySet = new TreeSet<String>();  //auto sorts by "natural order"
         for(String file : fileNames){
@@ -435,8 +422,8 @@ public class FreightDemand3 {
         ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/global.properties"));
         String inputPath = ResourceUtil.getProperty(rb,"ct.base.data");
         String outputPath = ResourceUtil.getProperty(rb,"ct.current.data");
-        long randomSeed = Long.parseLong(ResourceUtil.getProperty(rb, "randomSeed"));
-        FreightDemand3 fd = new FreightDemand3(rb,globalRb,inputPath,outputPath,randomSeed);
+       // long randomSeed = Long.parseLong(ResourceUtil.getProperty(rb, "randomSeed"));
+        FreightDemand3 fd = new FreightDemand3(rb,globalRb,inputPath,outputPath);
         fd.run();
         logger.info("total time: "+CTHelper.elapsedTime(start, new Date()));
    }

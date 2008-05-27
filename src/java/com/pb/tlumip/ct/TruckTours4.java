@@ -31,18 +31,14 @@ class TruckTours4 {
     String inputPath;
     ArrayList shipments;
     ArrayList trucks;
-    Random rn;
-    long randomNumberSeed;
 
-
-    TruckTours4 (ResourceBundle rb, ResourceBundle globalRb, String ctInputPath, long rns) {
+    TruckTours4 (ResourceBundle rb, ResourceBundle globalRb, String ctInputPath) {
         this.rb = rb;
         this.globalRb = globalRb;
         this.inputPath = ctInputPath;
         this.shipments = new ArrayList();
         this.trucks = new ArrayList();
-        this.randomNumberSeed = rns;
-        this.rn = new Random(randomNumberSeed);
+
     }
 
     private void readShipments (File f) {
@@ -65,7 +61,7 @@ class TruckTours4 {
                 double pounds = Double.parseDouble(st.nextToken());  //pounds
                 double value = Double.parseDouble(st.nextToken());  //value
                 String mode = st.nextToken(); //mode of transport
-                boolean transShipped = Boolean.valueOf(st.nextToken()).booleanValue();  //transShipped
+                boolean transShipped = Boolean.valueOf(st.nextToken());  //transShipped
                 String pattern = st.nextToken(); //transshipment pattern
                 float alphaDistance =  Float.parseFloat(st.nextToken());
                 shipments.add(new Shipment(sctg,obz,oaz,dbz,daz,pounds,value,mode,transShipped,pattern,alphaDistance));
@@ -84,7 +80,7 @@ class TruckTours4 {
       logger.info("Starting sort...");
       Collections.sort(shipments, new ShipmentComparator());
 
-      TruckSelector ts = new TruckSelector(randomNumberSeed,new File (inputPath + "VehicleTypeAttributes.txt"),   // yet more parameters
+      TruckSelector ts = new TruckSelector(new File (inputPath + "VehicleTypeAttributes.txt"),   // yet more parameters
                                 new File(inputPath + "CommodityVehicleTypes.txt") );   // even more parameters
 
       String offPeakTimeFile = ResourceUtil.getProperty(rb, "alpha.op.time.skim");
@@ -166,9 +162,8 @@ class TruckTours4 {
       logger.info("input path: " + inputPath);
     String outputPath = ResourceUtil.getProperty(rb, "ct.current.data");
       logger.info("output path: " + outputPath);
-    long randomSeed = Long.parseLong(ResourceUtil.getProperty(rb, "randomSeed"));
-      logger.info("random seed: " + randomSeed);
-    TruckTours4 truckTours = new TruckTours4(rb,globalRb, inputPath,randomSeed);
+   
+    TruckTours4 truckTours = new TruckTours4(rb,globalRb, inputPath);
     truckTours.run(new File(outputPath + "DailyShipments.txt"));
     truckTours.writeTours(new File(outputPath + "TruckTrips.txt"), collapseIntrazonalTrips);
     logger.info("total time: "+CTHelper.elapsedTime(start, new Date()));

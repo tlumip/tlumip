@@ -118,11 +118,19 @@ public class Truck3 {
         // currentZone)
         int departureTime = getStartTime();
         int origin = ((Shipment)shipments.get(0)).getOriginAlphaZone();
+        int originalOrigin = origin;
         int destination;
+        int finalDestination = 0;
+        int totalDuration = 0;
+        float totalDistance = 0f;
+
         for (int n=0; n<nShipments; n++) {
             destination = ((Shipment)shipments.get(n)).getDestinationAlphaZone();
             // If the user hasn't asked for intrazonal trips then suppress them
             if (consolidateIntrazonalTrips & (origin==destination)) continue;
+            finalDestination = destination;
+            totalDuration += Integer.parseInt(durations.get(n).toString());
+            totalDistance += ((Shipment)shipments.get(n)).getAlphaDistance();
             s += origin+","+
                     departureTime+","+
                     durations.get(n)+","+
@@ -138,10 +146,29 @@ public class Truck3 {
                     ((Shipment)shipments.get(n)).getAlphaDistance()+"\n";
             // Note that duration includes both travel and dwell time, so no need to
             // separately account of the latter here
-            departureTime = addMinutes(departureTime, ((Integer)durations.get(n)).intValue());
+            departureTime = addMinutes(departureTime, (Integer) durations.get(n));
             origin = ((Shipment)shipments.get(n)).getDestinationAlphaZone();
         }
-        return s;
+        //write return trip
+        if (finalDestination != 0) {
+            if (consolidateIntrazonalTrips & originalOrigin!=finalDestination)
+                s += finalDestination +","+
+                        departureTime+","+
+                        totalDuration+","+
+                        originalOrigin+","+
+                        tourMode+","+
+                        tripMode+","+
+                        tripFactor+" ,"+
+                        seqnum+","+
+                        truckType+","+
+                        carrierType+","+
+                        0+","+
+                        0+","+
+                        totalDistance+"\n";
+
+        }
+          return s;
+
     }
 
 }

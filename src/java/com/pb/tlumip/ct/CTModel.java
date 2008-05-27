@@ -17,6 +17,7 @@
 package com.pb.tlumip.ct;
 
 import com.pb.common.util.ResourceUtil;
+import com.pb.common.util.SeededRandom;
 import com.pb.models.reference.ModelComponent;
 import com.pb.models.utils.StatusLogger;
 import org.apache.log4j.Logger;
@@ -28,26 +29,34 @@ import java.util.ResourceBundle;
 /**
  * @author donnellyr
  *
- * 
+ *
  */
 public class CTModel extends ModelComponent {
-	
-	Logger logger = Logger.getLogger(CTModel.class);
-    long randomSeed;           //will be read from properties files and passed to
+
+    Logger logger = Logger.getLogger(CTModel.class);
+   // long randomSeed;           //will be read from properties files and passed to
     String inputPath;    //other methods that
     String outputPath;   //run the CTModel.
 
-	public CTModel(ResourceBundle appRb, ResourceBundle globalRb){
-		setResourceBundles(appRb, globalRb);    //creates a resource bundle as a class attribute called appRb.
+    public CTModel(ResourceBundle appRb, ResourceBundle globalRb){
+        setResourceBundles(appRb, globalRb);    //creates a resource bundle as a class attribute called appRb.
         this.inputPath = ResourceUtil.getProperty(appRb, "ct.base.data");
         logger.info("inputPath: " + inputPath);
         this.outputPath = ResourceUtil.getProperty(appRb, "ct.current.data");
         logger.info("outputPath: " + outputPath);
-        this.randomSeed = Long.parseLong(ResourceUtil.getProperty(appRb, "randomSeed"));
-        logger.info("random seed: " + randomSeed);
+
+        boolean sensitivityTestingMode;
+
+        sensitivityTestingMode = ResourceUtil.getBooleanProperty(appRb, "ct.sensitivity.testing", false);
+
+        if(sensitivityTestingMode)
+            SeededRandom.setSeed( (int) System.currentTimeMillis() );
+        else
+            SeededRandom.setSeed( ResourceUtil.getIntegerProperty(appRb, "randomSeed"));
+
     }
-	
-	public void startModel(int baseYear, int t){
+
+    public void startModel(int baseYear, int t){
         Date start = new Date();
         StatusLogger.logText("ct","CT Status","CT started for year t" + t);
 
@@ -55,13 +64,13 @@ public class CTModel extends ModelComponent {
         // weekly tons by commodity class (SCTG01-SCTG43), and writes output in
         // binary format.
         StatusLogger.logText("ct","CT Status","Converting dollars to tons");
-        FreightDemand3 fd = new FreightDemand3(appRb,globalRb,inputPath,outputPath,randomSeed);
-	    fd.run();  //writes WeeklyDemand.binary
+        FreightDemand3 fd = new FreightDemand3(appRb,globalRb,inputPath,outputPath);
+        fd.run();  //writes WeeklyDemand.binary
 
         // Translates weekly demand from beta zones into discrete daily shipments in
         // alpha zone, and writes text file of shipments
         StatusLogger.logText("ct","CT Status","Converting betazone demand into daily shipments by alphazone");
-        DiscreteShipments2 ds = new DiscreteShipments2(appRb,globalRb,inputPath,randomSeed);
+        DiscreteShipments2 ds = new DiscreteShipments2(appRb,globalRb,inputPath);
         ds.run(new File(outputPath + "WeeklyDemand.binary"));   // input from FreightDemand
         ds.writeShipments(new File(outputPath + "DailyShipments.csv"));   // output file
 
@@ -70,19 +79,19 @@ public class CTModel extends ModelComponent {
         // Next line prevents writing intrazonal (at alpha level) trips
         StatusLogger.logText("ct","CT Status","Placing shipments on trucks");
         boolean collapseIntrazonalTrips = true;
-        TruckTours4 truckTours = new TruckTours4(appRb, globalRb, inputPath,randomSeed);
+        TruckTours4 truckTours = new TruckTours4(appRb, globalRb, inputPath);
         truckTours.run(new File(outputPath + "DailyShipments.csv"));   // input from DiscreteShipments
         truckTours.writeTours(new File(globalRb.getString("ct.truck.trips")), collapseIntrazonalTrips);  //output
 
         logger.info("total time of CT: "+CTHelper.elapsedTime(start, new Date()));
         StatusLogger.logText("ct","CT Status","CT done");
     }
-	
-	public static void main (String args[]){
+
+    public static void main (String args[]){
         ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/ct/ct.properties"));
         ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/global.properties"));
         CTModel ctModel = new CTModel(rb, globalRb);
-		ctModel.startModel(1990, 1);	
-	}
+        ctModel.startModel(1990, 1);
+    }
 
 }
