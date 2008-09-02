@@ -66,7 +66,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
     
     public void startDataServer() {
         try {
-            rc.execute(HANDLER_NAME+".start", new Vector());
+            rc.execute(HANDLER_NAME+".startDataServer", new Vector());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
@@ -1198,12 +1198,44 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         
     }
 
+    public int[] getIpb() {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getIpb", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+        
+    }
+
     public int[] getSortedLinkIndexA() {
         
         int[] returnArray = null;
         
         try {
             returnArray = (int[])rc.execute(HANDLER_NAME+".getSortedLinkIndexA", new Vector());
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+        
+    }
+
+    public int[] getSortedLinkIndexB() {
+        
+        int[] returnArray = null;
+        
+        try {
+            returnArray = (int[])rc.execute(HANDLER_NAME+".getSortedLinkIndexB", new Vector());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {

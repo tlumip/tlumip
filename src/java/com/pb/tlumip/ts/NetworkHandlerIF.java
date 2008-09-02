@@ -100,7 +100,9 @@ public interface NetworkHandlerIF {
     public int[] getIa();
     public int[] getIb();
     public int[] getIpa();
+    public int[] getIpb();
     public int[] getSortedLinkIndexA();
+    public int[] getSortedLinkIndexB();
     public double getWalkSpeed ();
     public int writeNetworkAttributes ( String fileName );
     public int checkForIsolatedLinks ();

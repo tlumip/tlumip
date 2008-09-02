@@ -17,6 +17,7 @@
 package com.pb.tlumip.ts;
 
 import java.util.HashMap;
+import java.util.Vector;
 
 import com.pb.common.datafile.DataReader;
 import com.pb.common.rpc.DafNode;
@@ -410,8 +411,16 @@ public class NetworkHandler implements NetworkHandlerIF {
         return g.getIpa();
     }
 
+    public int[] getIpb() {
+        return g.getIpb();
+    }
+
     public int[] getSortedLinkIndexA() {
         return g.getSortedLinkIndexA();
+    }
+
+    public int[] getSortedLinkIndexB() {
+        return g.getSortedLinkIndexB();
     }
 
     public double getWalkSpeed () {
@@ -484,7 +493,7 @@ public class NetworkHandler implements NetworkHandlerIF {
         AuxTrNet ag = new AuxTrNet(this, tr);
 
         // build the auxilliary links for the given transit routes object
-        ag.buildAuxTrNet ( accessMode );
+        ag.buildAuxTrNet ( accessMode, rteTypes );
         
         // define the forward star index arrays, first by anode then by bnode
         logger.info( "creating forward star representation for transit network.");
@@ -647,15 +656,17 @@ public class NetworkHandler implements NetworkHandlerIF {
         return ag.getNumRoutes();
     }
     
-    /*
+    
     
     // Transit Network handling methods
 
-    public String getAccessMode() {
+    public String getAccessMode(String identifier) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
         return ag.getAccessMode();
     }
 
-    public String[] getTransitRouteNames() {
+    public String[] getTransitRouteNames(String identifier) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
         if ( ag == null)
             return new String[0];
         
@@ -666,7 +677,8 @@ public class NetworkHandler implements NetworkHandlerIF {
         return names;
     }
     
-    public String[] getTransitRouteTypes() {
+    public String[] getTransitRouteTypes(String identifier) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
         String[] types = new String[ag.getNumRoutes()];
         String[] tempTypes = ag.getRouteTypes();
         for (int i=0; i < types.length; i++)
@@ -674,24 +686,38 @@ public class NetworkHandler implements NetworkHandlerIF {
         return types;
     }
     
-    public int[] getTransitRouteLinkIds(String rteName) {
+    public int[] getTransitRouteBoardingLinkIds(String identifier, String rteName) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getRouteBoardingLinkIds (rteName);
+    }
+
+    public int[] getTransitRouteLinkIds(String identifier, String rteName) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
         return ag.getRouteLinkIds (rteName);
     }
     
-    public int[] getStationDriveAccessNodes(int stationNode) {
+    public int[] getStationDriveAccessNodes(String identifier, int stationNode) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
         return ag.getStationDriveAccessNodes(stationNode);
     }
 
-    public Vector getDriveAccessLinkCoords(Vector routeNames, Vector linkIds) {
+    public Vector getDriveAccessLinkCoords(String identifier, Vector routeNames, Vector linkIds) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
         return ag.getDriveAccessLinkCoords(routeNames, linkIds);
     }
     
-    public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
+    public Vector getCentroidTransitDriveAccessLinkCoords(String identifier, Vector zones) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
         return ag.getCentroidTransitDriveAccessLinkCoords(zones);       
     }
     
+    public Vector getCentroidTransitDriveEgressLinkCoords(String identifier, Vector zones) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getCentroidTransitDriveEgressLinkCoords(zones);       
+    }
     
-    */
+    
+    
     
     
     public int[] getShortestPathNodes(int startNode, int endNode) {

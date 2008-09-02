@@ -212,32 +212,41 @@ public class NetworkDataServer {
         return Util.doubleVector( nh.getCoordsForLink(k) );
     }
     
-    /*
-    public Vector getTransitRouteLinkIds(String rteName) {
-        return Util.intVector( nh.getTransitRouteLinkIds(rteName) );
+    
+    public Vector getTransitRouteBoardingLinkIds(String identifier, String rteName) {
+        return Util.intVector( nh.getTransitRouteBoardingLinkIds(identifier, rteName) );
     }
     
-    public String[] getTransitRouteNames() {
-        String[] names = nh.getTransitRouteNames();
+    public Vector getTransitRouteLinkIds(String identifier, String rteName) {
+        return Util.intVector( nh.getTransitRouteLinkIds(identifier, rteName) );
+    }
+    
+    public String[] getTransitRouteNames(String identifier) {
+        String[] names = nh.getTransitRouteNames(identifier);
         return names;
     }
     
-    public String[] getTransitRouteTypes() {
-        return nh.getTransitRouteTypes();
+    public String[] getTransitRouteTypes(String identifier) {
+        String[] types = nh.getTransitRouteTypes(identifier);
+        return types;
     }
     
-    public Vector getStationDriveAccessNodes(int stationNode) {
-        return Util.intVector( nh.getStationDriveAccessNodes(stationNode) );
+    public Vector getStationDriveAccessNodes(String identifier, int stationNode) {
+        return Util.intVector( nh.getStationDriveAccessNodes(identifier, stationNode) );
     }
 
-    public Vector getDriveAccessLinkCoords( Vector routeNames, Vector linkIds ) {
-        return nh.getDriveAccessLinkCoords( routeNames, linkIds );
+    public Vector getDriveAccessLinkCoords( String identifier, Vector routeNames, Vector linkIds ) {
+        return nh.getDriveAccessLinkCoords( identifier, routeNames, linkIds );
     }
 
-    public Vector getCentroidTransitDriveAccessLinkCoords(Vector zones) {
-        return nh.getCentroidTransitDriveAccessLinkCoords(zones);       
+    public Vector getCentroidTransitDriveAccessLinkCoords(String identifier, Vector zones) {
+        return nh.getCentroidTransitDriveAccessLinkCoords(identifier, zones);       
     }
-    */
+    
+    public Vector getCentroidTransitDriveEgressLinkCoords(String identifier, Vector zones) {
+        return nh.getCentroidTransitDriveEgressLinkCoords(identifier, zones);       
+    }
+    
     
     public Vector getSpNodeList(int startNode, int endNode) {
         return Util.intVector( nh.getShortestPathNodes(startNode, endNode) );
