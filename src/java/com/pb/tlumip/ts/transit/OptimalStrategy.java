@@ -43,11 +43,14 @@ public class OptimalStrategy {
     int AUX = TransitAssignAndSkimManager.SkimType.AUX.ordinal();      // transfer time
     int BRD = TransitAssignAndSkimManager.SkimType.BRD.ordinal();      // boardings
     int HSR$ = TransitAssignAndSkimManager.SkimType.HSR$.ordinal();    // hsr fare
+    int HSR_IVT = TransitAssignAndSkimManager.SkimType.HSR_IVT.ordinal();    // hsr rail-only ivt
     int AIR$ = TransitAssignAndSkimManager.SkimType.AIR$.ordinal();    // air fare
     int RAIL$ = TransitAssignAndSkimManager.SkimType.RAIL$.ordinal();  // intercity rail fare
+    int RAIL_IVT = TransitAssignAndSkimManager.SkimType.RAIL_IVT.ordinal();  // intercity rail rail-only ivt
     int BUS$ = TransitAssignAndSkimManager.SkimType.BUS$.ordinal();    // intercity bus fare
+    int BUS_IVT = TransitAssignAndSkimManager.SkimType.BUS_IVT.ordinal();    // intercity bus bus-only ivt
     int TRAN$ = TransitAssignAndSkimManager.SkimType.TRAN$.ordinal();  // intracity transit fare
-	public static final int NUM_SKIMS = 12;
+	public static final int NUM_SKIMS = 15;
 
 	static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -695,6 +698,10 @@ public class OptimalStrategy {
                 nodeSkims[ACC][ia[k]] = nodeSkims[ACC][ib[k]];
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
+
+                nodeSkims[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
+                nodeSkims[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];
+                nodeSkims[BUS_IVT][ia[k]] = nodeSkims[BUS_IVT][ib[k]];
                 
                 railDist[ia[k]] = railDist[ib[k]];
                 busDist[ia[k]] = busDist[ib[k]];
@@ -710,23 +717,30 @@ public class OptimalStrategy {
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
                 
-                // if link mode is intercity rail, accumulate dist.
+                // if link mode is intercity rail, accumulate dist and ivt.
                 if ( rteMode[k] == 'm' ) {
                     railDist[ia[k]] = railDist[ib[k]] + gDist[m];
                     busDist[ia[k]] = busDist[ib[k]];
                     tranIvt[ia[k]] = tranIvt[ib[k]];
+
+                    nodeSkims[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]] + invTime[k];
                 }
                 // if link mode is intercity bus, accumulate dist.
                 else if ( rteMode[k] == 'i' ) {
                     railDist[ia[k]] = railDist[ib[k]];
                     busDist[ia[k]] = busDist[ib[k]] + gDist[m];
                     tranIvt[ia[k]] = tranIvt[ib[k]];
+                    
+                    nodeSkims[BUS_IVT][ia[k]] = nodeSkims[BUS_IVT][ib[k]] + invTime[k];
                 }
                 // if link mode is local bus, express bus, light rail, or commuter rail, accumulate ivt.
                 else if ( rteMode[k] == 'b' || rteMode[k] == 'x' || rteMode[k] == 'l' || rteMode[k] == 'r' ) {
                     railDist[ia[k]] = railDist[ib[k]];
                     busDist[ia[k]] = busDist[ib[k]];
                     tranIvt[ia[k]] = tranIvt[ib[k]] + invTime[k];
+
+                    if ( rteMode[k] == 'r' )
+                        nodeSkims[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]] + invTime[k];
                 }
                     
             }
@@ -740,6 +754,10 @@ public class OptimalStrategy {
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
                     
+                nodeSkims[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
+                nodeSkims[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];
+                nodeSkims[BUS_IVT][ia[k]] = nodeSkims[BUS_IVT][ib[k]];
+
                 railDist[ia[k]] = railDist[ib[k]];
                 busDist[ia[k]] = busDist[ib[k]];
                 tranIvt[ia[k]] = tranIvt[ib[k]];
@@ -754,6 +772,10 @@ public class OptimalStrategy {
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
                 
+                nodeSkims[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
+                nodeSkims[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];
+                nodeSkims[BUS_IVT][ia[k]] = nodeSkims[BUS_IVT][ib[k]];
+
                 railDist[ia[k]] = railDist[ib[k]];
                 busDist[ia[k]] = busDist[ib[k]];
                 tranIvt[ia[k]] = tranIvt[ib[k]];
@@ -770,6 +792,10 @@ public class OptimalStrategy {
                     nodeSkims[BRD][ia[k]] = 0.0;
                     nodeSkims[EGR][ia[k]] = walkTime[k];
 
+                    nodeSkims[HSR_IVT][ia[k]] = 0.0;
+                    nodeSkims[RAIL_IVT][ia[k]] = 0.0;
+                    nodeSkims[BUS_IVT][ia[k]] = 0.0;
+
                     railDist[ia[k]] = 0.0;
                     busDist[ia[k]] = 0.0;
                     tranIvt[ia[k]] = 0.0;
@@ -784,6 +810,10 @@ public class OptimalStrategy {
                     skimResults[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                     skimResults[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
 
+                    skimResults[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
+                    skimResults[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];
+                    skimResults[BUS_IVT][ia[k]] = nodeSkims[BUS_IVT][ib[k]];
+
                     railDist[ia[k]] = railDist[ib[k]];
                     busDist[ia[k]] = busDist[ib[k]];
                     tranIvt[ia[k]] = tranIvt[ib[k]];
@@ -797,6 +827,10 @@ public class OptimalStrategy {
                     nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]] + walkTime[k];
                     nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                     nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
+
+                    nodeSkims[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
+                    nodeSkims[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];
+                    nodeSkims[BUS_IVT][ia[k]] = nodeSkims[BUS_IVT][ib[k]];
 
                     railDist[ia[k]] = railDist[ib[k]];
                     busDist[ia[k]] = busDist[ib[k]];

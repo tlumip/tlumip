@@ -339,13 +339,21 @@ public class Network implements Serializable {
 		return linkTable.getColumnAsInt( "ib" );
 	}
 
-	public int[] getIpa () {
-		return ipa;
-	}
+    public int[] getIpa () {
+        return ipa;
+    }
 
-	public int[] getSortedLinkIndexA () {
-		return sortedLinkIndexA;
-	}
+    public int[] getIpb () {
+        return ipb;
+    }
+
+    public int[] getSortedLinkIndexA () {
+        return sortedLinkIndexA;
+    }
+
+    public int[] getSortedLinkIndexB () {
+        return sortedLinkIndexB;
+    }
 
     public int[] getIndexNode () {
         return indexNode;

@@ -224,7 +224,8 @@ public class AuxTrNetTest {
 
 		
 		// build the auxilliary links for the given transit routes object
-		ag.buildAuxTrNet ( accessMode );
+		String[] routeTypes = { "intracity" };
+		ag.buildAuxTrNet ( accessMode, routeTypes );
 		
 		
 		// define the forward star index arrays, first by anode then by bnode

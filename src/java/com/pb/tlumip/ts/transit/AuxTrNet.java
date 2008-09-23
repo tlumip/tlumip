@@ -18,8 +18,10 @@ package com.pb.tlumip.ts.transit;
 
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.ShortestPathTreeH;
+import com.pb.tlumip.ts.assign.TransitAssignAndSkimManager;
 
 import com.pb.common.util.IndexSort;
+import com.pb.common.util.SeededRandom;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -110,13 +112,17 @@ public class AuxTrNet implements Serializable {
 
 
     boolean[][] boardingNode;
+    boolean[][] alightingNode;
     
-    Set[] nodeRoutes = null;
+    Set<Integer>[] boardingNodeRoutes = null;
+    Set<Integer>[] alightingNodeRoutes = null;
     
     int[] indexNode;
     int[] nodeIndex;
 	int[] gia;
 	int[] gib;
+    int[] gipb;
+    int[] gSortedIndexB;
 	String[] gMode;
     int[] gInternalNodeToNodeTableRow;
     double[] gNodeX;
@@ -128,7 +134,7 @@ public class AuxTrNet implements Serializable {
 	String accessMode = null;
     String period = null;
 
-    HashMap routeTypeMap = new HashMap();
+    HashMap<String, Integer> routeTypeMap = new HashMap();
 
     
     
@@ -158,15 +164,19 @@ public class AuxTrNet implements Serializable {
 		driveAccTime = new double[maxAuxLinks];
 
         boardingNode = new boolean[routeTypeStrings.length][nh.getNodeCount()+1];
+        alightingNode = new boolean[routeTypeStrings.length][nh.getNodeCount()+1];
 
         routeType = new String[maxAuxLinks];
         
-        nodeRoutes = new Set[nh.getNodeCount()+1];
+        boardingNodeRoutes = new Set[nh.getNodeCount()+1];
+        alightingNodeRoutes = new Set[nh.getNodeCount()+1];
         
         maxHwyInternalNode = nh.getNodeCount();
         
 		gia = nh.getIa();
-		gib = nh.getIb();
+        gib = nh.getIb();
+        gipb = nh.getIpb();
+		gSortedIndexB = nh.getSortedLinkIndexB();
 		gMode = nh.getMode();
         indexNode = nh.getIndexNode();
         nodeIndex = nh.getNodeIndex();
@@ -186,7 +196,7 @@ public class AuxTrNet implements Serializable {
 	}
 
 
-	public void buildAuxTrNet ( String accessMode ) {
+	public void buildAuxTrNet ( String accessMode, String[] rteTypes ) {
 
 	    this.accessMode = accessMode;
 	    
@@ -199,9 +209,14 @@ public class AuxTrNet implements Serializable {
 		int startNode;
 		int startAuxNode;
         int routeTypeIndex;
-        
-        for (int i=0; i < routeTypeStrings.length; i++)
-            routeTypeMap.put(routeTypeStrings[i], i);
+
+        // add the routeTypeStrings values that are included in rteTypes to the route type map.
+        for (int i=0; i < routeTypeStrings.length; i++) {
+            for (int j=0; j < rteTypes.length; j++) {
+                if ( rteTypes[j].equalsIgnoreCase( routeTypeStrings[i] ) )
+                    routeTypeMap.put(routeTypeStrings[i], i);
+            }
+        }
         
 
 		// add boarding, in-vehicle, and alighting transit links for each link in a transit route
@@ -231,6 +246,7 @@ public class AuxTrNet implements Serializable {
 				    else
 				    	tsNext = null;
 			
+				    
 				    // Keep a list of transit lines using each network link.  Save using xxxyyy where xxx is rte and yyy is seg.
 				    // A link will therefore be able to look up all transit routes serving the link using tr.transitPaths[rte].get(seg)
 				    // for all the rteseg values stored for the link.
@@ -254,11 +270,11 @@ public class AuxTrNet implements Serializable {
 				    else {
 				        if ( ts.boardA ) {
                             int inA = nodeIndex[ts.an];
-				            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.boardA=" + ts.boardA + ", ts.alightA=" + ts.alightA + ", ts.boardB=" + ts.boardB + ", ts.alightB=" + ts.alightB + ", ts.layover=" + ts.layover);
+                            if (debug) logger.info ("regular board:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.boardA=" + ts.boardA + ", ts.alightA=" + ts.alightA + ", ts.boardB=" + ts.boardB + ", ts.alightB=" + ts.alightB + ", ts.layover=" + ts.layover);
 				           	addAuxBoardingLink (aux++, inA, nextNode, ts, tr.headway[rte], tr.ut1[rte], rte, tr.mode[rte]);
-                            if ( nodeRoutes[inA] == null )
-                                nodeRoutes[inA] = new HashSet();
-                            nodeRoutes[inA].add(rte);
+                            if ( boardingNodeRoutes[inA] == null )
+                                boardingNodeRoutes[inA] = new HashSet<Integer>();
+                            boardingNodeRoutes[inA].add(rte);
                             boardingNode[routeTypeIndex][inA] = true;
 				        }
 				        if (debug) logger.info ("regular in-veh:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.boardA=" + ts.boardA + ", ts.alightA=" + ts.alightA + ", ts.boardB=" + ts.boardB + ", ts.alightB=" + ts.alightB + ", ts.layover=" + ts.layover);
@@ -267,6 +283,10 @@ public class AuxTrNet implements Serializable {
 							if (debug) logger.info ("regular alight:  aux=" + aux + ", nextNode=" + nextNode + ", anode=" + ts.an + ", bnode=" + ts.bn + ", ts.boardA=" + ts.boardA + ", ts.alightA=" + ts.alightA + ", ts.boardB=" + ts.boardB + ", ts.alightB=" + ts.alightB + ", ts.layover=" + ts.layover);
                             int inB = nodeIndex[ts.bn];
 							addAuxAlightingLink (aux++, nextNode, inB, ts, tr.headway[rte], rte, tr.mode[rte]);
+                            if ( alightingNodeRoutes[inB] == null )
+                                alightingNodeRoutes[inB] = new HashSet<Integer>();
+                            alightingNodeRoutes[inB].add(rte);
+                            alightingNode[routeTypeIndex][inB] = true;
 						}
 						nextNode++;
 					}
@@ -300,7 +320,7 @@ public class AuxTrNet implements Serializable {
         auxNodes = nextNode;
         logger.info (auxNodes + " is the max transit node.");
 
-        // add walk links first
+        // add access links for the route types specified
         logger.info ( "generating transit network access links..." );
         auxLinks =  getAuxilliaryLinks( accessMode, aux );
         logger.info ( (auxLinks-aux) + " " + accessMode + " transit total access, walk, and egress links added.");
@@ -475,94 +495,35 @@ public class AuxTrNet implements Serializable {
 	
 	private int getAuxilliaryLinks ( String accessMode, int aux ) {
 
-        Iterator it;
+        Iterator<double[]> it;
         
-        ArrayList walkAccessLinkList = null;
-        ArrayList driveAccessLinkList = null;
+        ArrayList<double[]> walkAccessLinkList = null;
+        ArrayList<double[]> driveAccessLinkList = null;
 
         int startAux = aux;
         
         
         // add the access links depending on value of accessMode.
         // if acces mode is walk, add walk access and walk egress.
-        // if acces mode is drive, add drive local access and walk egress.
-        // if acces mode is driveLdt, add drive long distance access and drive long distance egress.
-        if ( accessMode.equalsIgnoreCase("walk") || accessMode.equalsIgnoreCase("drive") ) {
+        // if acces mode is drive, add drive intracity access and walk egress.
+        // if acces mode is driveLdt, add drive intercity access and drive intercity egress.
+            
+        // get drive access links and walk egress links if the accessMode is "drive".
+        if ( accessMode.equalsIgnoreCase("walk") ) {
 
-            // get walk access links no matter the accessMode.
-            walkAccessLinkList = getWalkAccessLinks();
-            
-            
-            if ( accessMode.equalsIgnoreCase("walk") ) {
-
-                it = walkAccessLinkList.iterator();
-                while ( it.hasNext() ) {
-                    double[] linkInfo = (double[])it.next();
-            
-                    hwyLink[aux] = -1;
-                    trRoute[aux] = -1;
-                    routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
-                    ia[aux] = (int)linkInfo[0];
-                    ib[aux] = (int)linkInfo[1];
-                    an[aux] = indexNode[(int)linkInfo[0]];
-                    bn[aux] = indexNode[(int)linkInfo[1]];
-                    freq[aux] = INFINITY;
-                    cost[aux] = 0.0;
-                    invTime[aux] = 0.0;
-                    walkTime[aux] = (float)(60.0*linkInfo[2]/nh.getWalkSpeed());
-                    driveAccTime[aux] = 0.0;
-                    layoverTime[aux] = 0.0;
-                    linkType[aux] = AUXILIARY_TYPE;
-                    aux++;
-            
-                }
-
-            }
-            else {
-            
-                // get drive access links if the accessMode is "drive".
-                if ( accessMode.equalsIgnoreCase("drive") )
-                    driveAccessLinkList = getDriveAccessLinks( 25.0 );      // max dist = 25 miles for drive to local transit
-
-                it = driveAccessLinkList.iterator();
-                while ( it.hasNext() ) {
-                    double[] linkInfo = (double[])it.next();
-            
-                    hwyLink[aux] = -1;
-                    trRoute[aux] = -1;
-                    routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
-                    ia[aux] = (int)linkInfo[0];
-                    ib[aux] = (int)linkInfo[1];
-                    an[aux] = indexNode[(int)linkInfo[0]];
-                    bn[aux] = indexNode[(int)linkInfo[1]];
-                    freq[aux] = INFINITY;
-                    cost[aux] = 0.0;
-                    invTime[aux] = 0.0;
-                    walkTime[aux] = 0.0;
-                    driveAccTime[aux] = (float)linkInfo[2];
-                    layoverTime[aux] = 0.0;
-                    linkType[aux] = AUXILIARY_TYPE;
-                    aux++;
-            
-                }
-            }
-        
-            logger.info ( (aux-startAux) + " " + accessMode + " transit access links added.");
-            startAux = aux;
-            
-            
-            // add the egress links which are walk for either accessMode.
+            // get walk access links from centroids to boarding nodes
+            walkAccessLinkList = getWalkAccessLinks( "boarding" );
             it = walkAccessLinkList.iterator();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
-    
+        
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
                 routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
-                ia[aux] = (int)linkInfo[1];
-                ib[aux] = (int)linkInfo[0];
-                an[aux] = indexNode[(int)linkInfo[1]];
-                bn[aux] = indexNode[(int)linkInfo[0]];
+                ia[aux] = (int)linkInfo[0];
+                ib[aux] = (int)linkInfo[1];
+                an[aux] = indexNode[(int)linkInfo[0]];
+                bn[aux] = indexNode[(int)linkInfo[1]];
                 freq[aux] = INFINITY;
                 cost[aux] = 0.0;
                 invTime[aux] = 0.0;
@@ -571,15 +532,45 @@ public class AuxTrNet implements Serializable {
                 layoverTime[aux] = 0.0;
                 linkType[aux] = AUXILIARY_TYPE;
                 aux++;
+        
+            }
+            
+            logger.info ( (aux-startAux) + " walk intracity transit walk access links added.");
+            startAux = aux;
+
+            // get walk egress links from alighting nodes to centroids
+            walkAccessLinkList = getWalkAccessLinks( "alighting" );
+            it = walkAccessLinkList.iterator();
+            while ( it.hasNext() ) {
+                double[] linkInfo = (double[])it.next();
+        
+                hwyLink[aux] = -1;
+                trRoute[aux] = -1;
+                routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                ia[aux] = (int)linkInfo[0];
+                ib[aux] = (int)linkInfo[1];
+                an[aux] = indexNode[(int)linkInfo[0]];
+                bn[aux] = indexNode[(int)linkInfo[1]];
+                freq[aux] = INFINITY;
+                cost[aux] = 0.0;
+                invTime[aux] = 0.0;
+                walkTime[aux] = (float)(60.0*linkInfo[2]/nh.getWalkSpeed());
+                driveAccTime[aux] = 0.0;
+                layoverTime[aux] = 0.0;
+                linkType[aux] = AUXILIARY_TYPE;
+                aux++;
+            
             }
 
-            logger.info ( (aux-startAux) + " " + accessMode + " transit walk egress links added.");
-
-        }
-        else if ( accessMode.equalsIgnoreCase("driveLdt") ) {
+            logger.info ( (aux-startAux) + " walk intracity transit walk egress links added.");
+            startAux = aux;
             
-            driveAccessLinkList = getDriveAccessLinks( 50.0 );      // max dist = 50 miles for drive to long distance transit
-
+        }
+        // get drive access links and walk egress links if the accessMode is "drive".
+        else if ( accessMode.equalsIgnoreCase("drive") ) {
+            
+            // get drive access links from centroids to boarding nodes
+            driveAccessLinkList = getDriveAccessLinks( 25.0, "boarding" );      // max dist = 25 miles for drive to local transit
             it = driveAccessLinkList.iterator();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
@@ -600,13 +591,55 @@ public class AuxTrNet implements Serializable {
                 linkType[aux] = AUXILIARY_TYPE;
                 aux++;
         
+            }
+            
+            logger.info ( (aux-startAux) + " drive intracity transit drive access links added.");
+            startAux = aux;
+            
+            // get walk egress links from alighting nodes to centroids
+            driveAccessLinkList = getWalkAccessLinks( "alighting" );
+            it = driveAccessLinkList.iterator();
+            while ( it.hasNext() ) {
+                double[] linkInfo = (double[])it.next();
+        
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
                 routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
-                ia[aux] = (int)linkInfo[1];
-                ib[aux] = (int)linkInfo[0];
-                an[aux] = indexNode[(int)linkInfo[1]];
-                bn[aux] = indexNode[(int)linkInfo[0]];
+                ia[aux] = (int)linkInfo[0];
+                ib[aux] = (int)linkInfo[1];
+                an[aux] = indexNode[(int)linkInfo[0]];
+                bn[aux] = indexNode[(int)linkInfo[1]];
+                freq[aux] = INFINITY;
+                cost[aux] = 0.0;
+                invTime[aux] = 0.0;
+                walkTime[aux] = (float)(60.0*linkInfo[2]/nh.getWalkSpeed());
+                driveAccTime[aux] = 0.0;
+                layoverTime[aux] = 0.0;
+                linkType[aux] = AUXILIARY_TYPE;
+                aux++;
+        
+            }
+            
+            logger.info ( (aux-startAux) + " drive intracity transit walk egress links added.");
+            startAux = aux;
+            
+        }
+        // get drive access links and drive egress links if the accessMode is "driveLdt".
+        else if ( accessMode.equalsIgnoreCase("driveLdt") ) {
+        
+            // get drive access links from centroids to boarding nodes
+            driveAccessLinkList = getDriveAccessLinks( 50.0, "boarding" );      // max dist = 50 miles for drive to long distance transit                
+            it = driveAccessLinkList.iterator();
+            while ( it.hasNext() ) {
+                double[] linkInfo = (double[])it.next();
+            
+                hwyLink[aux] = -1;
+                trRoute[aux] = -1;
+                routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                ia[aux] = (int)linkInfo[0];
+                ib[aux] = (int)linkInfo[1];
+                an[aux] = indexNode[(int)linkInfo[0]];
+                bn[aux] = indexNode[(int)linkInfo[1]];
                 freq[aux] = INFINITY;
                 cost[aux] = 0.0;
                 invTime[aux] = 0.0;
@@ -615,14 +648,42 @@ public class AuxTrNet implements Serializable {
                 layoverTime[aux] = 0.0;
                 linkType[aux] = AUXILIARY_TYPE;
                 aux++;
-        
+            
             }
             
-            logger.info ( (aux-startAux) + " " + accessMode + " transit drive access and drive egress links added.");
+            logger.info ( (aux-startAux) + " drive intercity transit drive access links added.");
+            startAux = aux;
+
+            // get drive egress links from alighting nodes to centroids
+            driveAccessLinkList = getDriveAccessLinks( 50.0, "alighting" );      // max dist = 50 miles for drive to long distance transit                
+            it = driveAccessLinkList.iterator();
+            while ( it.hasNext() ) {
+                double[] linkInfo = (double[])it.next();
+            
+                hwyLink[aux] = -1;
+                trRoute[aux] = -1;
+                routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                ia[aux] = (int)linkInfo[0];
+                ib[aux] = (int)linkInfo[1];
+                an[aux] = indexNode[(int)linkInfo[0]];
+                bn[aux] = indexNode[(int)linkInfo[1]];
+                freq[aux] = INFINITY;
+                cost[aux] = 0.0;
+                invTime[aux] = 0.0;
+                walkTime[aux] = 0.0;
+                driveAccTime[aux] = (float)linkInfo[2];
+                layoverTime[aux] = 0.0;
+                linkType[aux] = AUXILIARY_TYPE;
+                aux++;
+            
+            }
+            
+            logger.info ( (aux-startAux) + " drive intercity transit drive egress links added.");
+            startAux = aux;
 
         }
         
-        startAux = aux;
+
         
         // add the highway links that have mode s(sidewalk) or w(walk) to allow transfer possibilities.
         // these are the only walk links added at this time besides access links
@@ -638,8 +699,7 @@ public class AuxTrNet implements Serializable {
                 an[aux] = indexNode[gia[k]];
                 bn[aux] = indexNode[gib[k]];
                 freq[aux] = INFINITY;
-                cost[aux] = 0.0;
-                invTime[aux] = 0.0;
+                cost[aux] = 0.0;                invTime[aux] = 0.0;
                 walkTime[aux] = (float)(60.0*gDist[k]/nh.getWalkSpeed());
                 driveAccTime[aux] = 0.0;
                 layoverTime[aux] = 0.0;
@@ -657,9 +717,15 @@ public class AuxTrNet implements Serializable {
 	
     
 	
-    private ArrayList getWalkAccessLinks() {
+    private ArrayList<double[]> getWalkAccessLinks( String accessType ) {
+
+        int i=-1, m=-1, endPointCount=-1;
         
-        ArrayList walkAccessLinkList = new ArrayList();
+        boolean[] validAccessNode = null;
+
+        Set<Integer>[] nodeRoutes = null;
+        
+        ArrayList<double[]> walkAccessLinkList = new ArrayList<double[]>();
         
         // update the link costs based on current flows
         double[] linkCost = gDist;
@@ -668,57 +734,93 @@ public class AuxTrNet implements Serializable {
         // build shortest path tree object and set cost and valid link attributes for this user class.
         ShortestPathTreeH sp = new ShortestPathTreeH( nh );
         
-        // let any link in the network be used in shortest paths from origin to boarding nodes.
+        // let any link in the network be used in shortest paths from centroid to boarding nodes.
         Arrays.fill(validLinks, true);
         sp.setValidLinks( validLinks );
         sp.setLinkCost( linkCost );
 
-        for (int origin=0; origin < nh.getNumCentroids(); origin++) {
+        for (int centroid=0; centroid < nh.getNumCentroids(); centroid++) {
 
-            Set connectedRoutes = new HashSet();
-
-            // build a shortest path tree from the origin.
-            sp.buildTree ( origin );
-            
-            ArrayList[] endPoints = new ArrayList[routeTypeStrings.length];
-            
-            // get a list of boarding nodes ordered by distance from the origin and within walking distance of origin.
-            // get one list for each routeType of transit routes defined
-            for ( int i=0; i < routeTypeStrings.length; i++ ) {
+            try {
                 
-                endPoints[i] = sp.getNodesWithinCost ( MAX_WALK_ACCESS_DIST, boardingNode[i] );
-                
-                // get a list of node pairs (origin,bnode) with shortest path distances to bnode to use to create walk access links.
-                // the node pairs will only be selected for bnodes that serve different transit routes from previously selected node pairs within the specified routeType.
-                Iterator it = endPoints[i].iterator();
-                while ( it.hasNext() ) {
-                    // get the node info for nodes within walk distance (ia, cumDist).
-                    double[] nodeInfo = (double[])it.next();
+                Set<Integer> connectedRoutes = new HashSet<Integer>();
 
-                    // add each element in nodeRoutes to connectedRoutes.  The add method will only add the element to the connectedRoute set if it isn't already contained.
-                    int oldSize = connectedRoutes.size();
-                    Iterator rt = nodeRoutes[(int)nodeInfo[0]].iterator();
-                    while ( rt.hasNext() )
-                        connectedRoutes.add( rt.next() );
+                // build a shortest path tree from/to the centroid.
+                sp.buildTree ( centroid );
+                
+                ArrayList<double[]>[] endPoints = new ArrayList[routeTypeStrings.length];
+                
+                // get a list of boarding nodes ordered by distance from/to the centroid and within walking distance of centroid.
+                // get one list for each routeType of transit routes defined
+                for ( m=0; m < routeTypeStrings.length; m++ ) {
                     
-                    // if the updated connectedRoutes set has increased in size, create new walk access links to this boarding node
-                    if ( connectedRoutes.size() > oldSize ) {
-                        
-                        // make an array to hold ia, ib, dist for new walk access link, then store in ArrayList
-                        double[] linkList = new double[4];
-                        
-                        linkList[0] = origin;
-                        linkList[1] = nodeInfo[0];
-                        linkList[2] = nodeInfo[1];
-                        linkList[3] = (Integer)routeTypeMap.get( routeTypeStrings[i] );
-        
-                        walkAccessLinkList.add(linkList);
-                    }
+                    // if this route type wasn't specified for this network, we don't need access links.
+                    if ( ! routeTypeMap.containsKey( routeTypeStrings[m] ) )
+                        continue;
 
+                    
+                    i = routeTypeMap.get( routeTypeStrings[m] );
+
+                    if ( accessType.equalsIgnoreCase("boarding") ) {
+                        validAccessNode = boardingNode[i];
+                        nodeRoutes = boardingNodeRoutes;
+                    }
+                    else {
+                        validAccessNode = alightingNode[i];
+                        nodeRoutes = alightingNodeRoutes;
+                    }
+                    
+                    
+                    endPoints[i] = sp.getNodesWithinCost ( MAX_WALK_ACCESS_DIST, validAccessNode );
+                    
+                    // create a list of node pairs (centroid,bnode)/(anode,centroid) with shortest path distances and route type strings to be used to create
+                    // walk access links.  The node pairs will be selected such that bnodes connect different transit routes for this
+                    // centroid from previously selected node pairs within the specified routeType.
+                    endPointCount = 0;
+                    Iterator<double[]> it = endPoints[i].iterator();
+                    while ( it.hasNext() ) {
+                        endPointCount++;
+        
+                        // get the node info for nodes within walk distance (ia, cumDist).
+                        double[] nodeInfo = it.next();
+
+                        // add each element in nodeRoutes, int value indices of routes that can be boarded at the node,
+                        // to connectedRoutes.  The add method will only add the route index to the connectedRoute set
+                        // if it isn't already contained.
+                        int oldSize = connectedRoutes.size();
+                        Iterator<Integer> rt = nodeRoutes[(int)nodeInfo[0]].iterator();
+                        while ( rt.hasNext() )
+                            connectedRoutes.add( rt.next() );
+                        
+                        // if the updated connectedRoutes set has increased in size, create new walk access links to this boarding node
+                        if ( connectedRoutes.size() > oldSize ) {
+                            
+                            // make an array to hold ia, ib, dist for new walk access link, then store in ArrayList
+                            double[] linkList = new double[4];
+                            
+                            if ( accessType.equalsIgnoreCase("boarding")) {
+                                linkList[0] = centroid;
+                                linkList[1] = nodeInfo[0];
+                            }
+                            else {
+                                linkList[0] = nodeInfo[0];
+                                linkList[1] = centroid;
+                            }
+                            linkList[2] = nodeInfo[1];
+                            linkList[3] = routeTypeMap.get( routeTypeStrings[i] );
+            
+                            walkAccessLinkList.add(linkList);
+                        }
+
+                    }
+                    
                 }
                 
             }
-
+            catch ( Exception e) {
+                logger.error( String.format("exception creating %s walk access links for centroid=%d, m=%d, i=%d, endPointCount=%d", accessType, centroid, m, i, endPointCount), e );
+                throw new RuntimeException();
+            }
         }
 
         return walkAccessLinkList;
@@ -726,79 +828,126 @@ public class AuxTrNet implements Serializable {
     
     
     
-    private ArrayList getDriveAccessLinks( double maxDriveAccessDist ) {
+    private ArrayList<double[]> getDriveAccessLinks( double maxDriveAccessDist, String accessType ) {
         
-        ArrayList driveAccessLinkList = new ArrayList();
+        ArrayList<double[]> driveAccessLinkList = new ArrayList<double[]>();
         
+        boolean[] validAccessNode = null;
+
         // update the link costs based on current flows
         double[] linkCost = gCongestedTime;
         boolean[][] validLinksForClasses = nh.getValidLinksForAllClasses();
 
         // use auto userclass (m=0) for building paths
-        int m = 0;
+        int autoClass = 0;
 
         double avgSpeed = 30.0;
         double increment = 2.0;
         double distanceIncrement = 0;
         // build shortest path tree object and set cost and valid link attributes for this user class.
         ShortestPathTreeH sp = new ShortestPathTreeH( nh );
-        sp.setValidLinks( validLinksForClasses[m] );
+        
+        sp.setValidLinks( validLinksForClasses[autoClass] );
         sp.setLinkCost( linkCost );
 
-        for (int origin=0; origin < nh.getNumCentroids(); origin++) {
+        for (int centroid=0; centroid < nh.getNumCentroids(); centroid++) {
 
-            sp.buildTree ( origin );
+            sp.buildTree ( centroid );
             
-            ArrayList[] endPoints = new ArrayList[routeTypeStrings.length];
-            Set[] indexSet = new HashSet[routeTypeStrings.length];
+            ArrayList<double[]>[] endPoints = new ArrayList[routeTypeStrings.length];
             
-            for ( int i=0; i < routeTypeStrings.length; i++ ) {
+            for ( int m=0; m < routeTypeStrings.length; m++ ) {
 
-                // we'll add 3 miles incrementally to MAX_WALK_ACCESS_DIST until the desired number of drive access links are found
+                // if this route type wasn't specified for this network, we don't need access links.
+                if ( ! routeTypeMap.containsKey( routeTypeStrings[m] ) )
+                    continue;
+
+                
+                int i = routeTypeMap.get( routeTypeStrings[m] );
+
+                if ( accessType.equalsIgnoreCase("boarding") )
+                    validAccessNode = boardingNode[i];
+                else
+                    validAccessNode = alightingNode[i];
+                
+                
+                // we'll add 3 miles incrementally, starting at MAX_WALK_ACCESS_DIST, until the desired number of drive access links are found.
                 distanceIncrement = MAX_WALK_ACCESS_DIST;
                 
                 
                 // determine time bands based on incremental distances and an assumed average speed.
                 // we'll get nodes from the shortest congested drive time tree that are within this band
-                endPoints[i] = new ArrayList();
+                endPoints[i] = new ArrayList<double[]>();
                 double maxTime = 60.0*distanceIncrement/avgSpeed;
                 double minTime = 0.0;
                 
-                // add distance incrementally until at least MIN_DRIVE_ACCESS_LINKS drive access links for this routeType
-                // are found or MAX_DRIVE_ACCESS_DIST is reached.
+                // add distance incrementally and add links from centroids to nodes found in the distance bands until
+                // MAX_DRIVE_ACCESS_LINKS drive access links for this routeType are found or MAX_DRIVE_ACCESS_DIST is reached.
                 int selectedNodes = 0;
                 while ( selectedNodes < MAX_DRIVE_ACCESS_LINKS  && distanceIncrement < maxDriveAccessDist ) {
                     distanceIncrement += increment;
                     minTime = maxTime;
                     maxTime = 60.0*distanceIncrement/avgSpeed;
-                    endPoints[i] = sp.getNodesWithinCosts ( minTime, maxTime, boardingNode[i] );
-                    indexSet[i] = new HashSet();
+                    endPoints[i] = sp.getNodesWithinCosts ( minTime, maxTime, validAccessNode );
 
-                    // if no end points were found, no drive access links will be created for this origin zone
+                    // if no end points were found, no drive access links will be created for this centroid 
                     if ( endPoints[i].size() > 0 ) {
                     
-                        // select MIN_DRIVE_ACCESS_LINKS drive access links randomly from the set available
-                        // or all drive access links if the set available is less than MIN_DRIVE_ACCESS_LINKS.
-                        int randomIndex;
-                        while ( selectedNodes < MAX_DRIVE_ACCESS_LINKS && indexSet[i].size() < MAX_DRIVE_ACCESS_LINKS && indexSet[i].size() < endPoints[i].size() ) {
+                        // select up to MAX_DRIVE_ACCESS_LINKS drive access links randomly from the set available.
+                        if ( selectedNodes + endPoints[i].size() < MAX_DRIVE_ACCESS_LINKS ) {
                             
-                            randomIndex = (int)(Math.random()*endPoints[i].size());
-                            while ( indexSet[i].contains(randomIndex) )
-                                randomIndex = (int)(Math.random()*endPoints[i].size());
-                            indexSet[i].add(randomIndex);
+                            for ( int j=0; j < endPoints[i].size(); j++ ) {
+                                double[] nodeInfo = (double[])endPoints[i].get(j);
+                                
+                                // make an array to hold ia, ib, dist, and routeTypeIndex for new drive access link, then store in ArrayList
+                                double[] linkList = new double[4];
+                                if ( accessType.equalsIgnoreCase("boarding")) {
+                                    linkList[0] = centroid;
+                                    linkList[1] = nodeInfo[0];
+                                }
+                                else {
+                                    linkList[0] = nodeInfo[0];
+                                    linkList[1] = centroid;
+                                }
+                                linkList[2] = nodeInfo[1];
+                                linkList[3] = (Integer)routeTypeMap.get( routeTypeStrings[i] );
+
+                                driveAccessLinkList.add(linkList);
+                                selectedNodes++;
+                                
+                            }
                             
-                            double[] nodeInfo = (double[])endPoints[i].get(randomIndex);
-            
-                            // make an array to hold ia, ib, dist, and routeTypeIndex for new walk access link, then store in ArrayList
-                            double[] linkList = new double[4];
-                            linkList[0] = origin;
-                            linkList[1] = nodeInfo[0];
-                            linkList[2] = nodeInfo[1];
-                            linkList[3] = (Integer)routeTypeMap.get( routeTypeStrings[i] );
+                        }
+                        else {
                             
-                            selectedNodes++;
-                            
-                            driveAccessLinkList.add(linkList);
+                            Set<Integer> selectedIndexSet = new HashSet<Integer>();
+                            while ( selectedNodes < MAX_DRIVE_ACCESS_LINKS ) {
+                                
+                                int randomIndex = (int)(SeededRandom.getRandom()*endPoints[i].size());
+                                while ( selectedIndexSet.contains(randomIndex) )
+                                    randomIndex = (int)(SeededRandom.getRandom()*endPoints[i].size());
+                                selectedIndexSet.add(randomIndex);
+                                
+                                double[] nodeInfo = (double[])endPoints[i].get(randomIndex);
+                
+                                // make an array to hold ia, ib, dist, and routeTypeIndex for new walk access link, then store in ArrayList
+                                double[] linkList = new double[4];
+                                if ( accessType.equalsIgnoreCase("boarding")) {
+                                    linkList[0] = centroid;
+                                    linkList[1] = nodeInfo[0];
+                                }
+                                else {
+                                    linkList[0] = nodeInfo[0];
+                                    linkList[1] = centroid;
+                                }
+                                linkList[2] = nodeInfo[1];
+                                linkList[3] = (Integer)routeTypeMap.get( routeTypeStrings[i] );
+                                
+                                driveAccessLinkList.add(linkList);
+                                selectedNodes++;
+                                
+                            }
+
                         }
 
                     }
@@ -914,6 +1063,11 @@ public class AuxTrNet implements Serializable {
     }
 
 
+    public int[] getRouteBoardingLinkIds (String rteName) {
+        int rte = tr.getId(rteName);
+        return getHwyBoardingLinkIds(rte);
+    }
+    
     public int[] getRouteLinkIds (int rte) {
         return getHwyLinkIds (rte);
     }
@@ -934,6 +1088,29 @@ public class AuxTrNet implements Serializable {
             TrSegment ts = (TrSegment)segList.get(i);
             
             if ( ts.link > 0 && ts.layover == false )
+                tempIds[k++] = ts.link;
+        }
+
+        int[] linkIds = new int[k];
+        for (int i=0; i < linkIds.length; i++)
+            linkIds[i] = tempIds[i];
+        
+        return linkIds;
+        
+    }
+
+
+    // get an array of highway neytwork linkIds where boarding is allowed for the transit route index provided
+    private int[] getHwyBoardingLinkIds (int rte) {
+
+        ArrayList segList = tr.transitPath[rte];
+        int[] tempIds = new int[segList.size()];
+        
+        int k = 0;
+        for (int i=0; i < segList.size(); i++) {
+            TrSegment ts = (TrSegment)segList.get(i);
+            
+            if ( ts.link > 0 && ts.boardA && ts.layover == false )
                 tempIds[k++] = ts.link;
         }
 
@@ -1117,7 +1294,13 @@ public class AuxTrNet implements Serializable {
 
 	// linkImped in optimal strategy is generalized cost, not including wait time.
 	public double getLinkImped (int k) {
-		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*walkTime[k] + COST_COEFF*cost[k]);
+	    double accessTime = 0.0;
+	    if ( accessMode.equalsIgnoreCase("walk") )
+	        accessTime = walkTime[k];
+	    else
+	        accessTime = driveAccTime[k];
+	    
+		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*accessTime + COST_COEFF*cost[k]);
 	}
 
 
@@ -1474,6 +1657,74 @@ public class AuxTrNet implements Serializable {
         }
         catch (Exception e) {
             logger.error ( String.format( "Exception in AuxTrNet.getCentroidTransitDriveAccessLinkCoords(): j=%d, k=%d, start=%d, end=%d, inA=%d.", j, k, start, end, inA) );
+            logger.error ("", e);
+        }
+            
+            
+        return linkInfoList;
+        
+    }
+    
+
+    public Vector getCentroidTransitDriveEgressLinkCoords(Vector zones) {
+        
+        // zones is a Vector of external zone centroid numbers for which to get drive access links and coords.
+
+        int j = 0;
+        int k = 0;
+        int r = 0;
+        int inB = -1;
+        int start = -1;
+        int end = -1;
+        Vector linkInfoList = new Vector();
+        
+        try {
+            
+            Iterator it = zones.iterator();
+            while ( it.hasNext() ) {
+
+                int exB = (Integer)it.next();
+                inB = nodeIndex[exB];
+                start = ipb[inB];
+
+                if ( start < 0 )
+                    continue;
+                
+                
+                // get the start and end pointers for links exiting inA.
+                j = inB + 1;
+                while ( ipb[j] < 0 )
+                    j++;
+                
+                end = ipb[j];
+                                    
+                for(j=start; j < end; j++) {
+                    
+                    k = indexb[j];
+                    
+                    if ( linkType[k] == AUXILIARY_TYPE && driveAccTime[k] > 0.0 ) {
+                        Vector linkInfo = new Vector();
+                        
+                        r = gInternalNodeToNodeTableRow[ia[k]];
+                        linkInfo.add(indexNode[ia[k]]);
+                        linkInfo.add(gNodeX[r]);
+                        linkInfo.add(gNodeY[r]);
+                        r = gInternalNodeToNodeTableRow[ib[k]];
+                        linkInfo.add(indexNode[ib[k]]);
+                        linkInfo.add(gNodeX[r]);
+                        linkInfo.add(gNodeY[r]);
+                        linkInfo.add(routeType[k]);
+                        
+                        linkInfoList.add(linkInfo);
+                    }
+                        
+                }
+                
+            }
+                
+        }
+        catch (Exception e) {
+            logger.error ( String.format( "Exception in AuxTrNet.getCentroidTransitDriveEgressLinkCoords(): j=%d, k=%d, start=%d, end=%d, inA=%d.", j, k, start, end, inB) );
             logger.error ("", e);
         }
             

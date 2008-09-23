@@ -67,12 +67,12 @@ public class TransitAssignAndSkimManager {
     boolean SKIM_ONLY = false;
 
     // make TEST_ORIG and TEST_DEST a negative number to skip debugging an od.
-    static final int TEST_ORIG = -1;
-    static final int TEST_DEST = -1;
+    public static final int TEST_ORIG = -1;
+    public static final int TEST_DEST = -1;
 
     // make TEST_ORIG and TEST_DEST a positive number to trigger debugging the strategy for the od.
-    //static final int TEST_ORIG = 3106;
-    //static final int TEST_DEST = 1;
+    //public static final int TEST_ORIG = 1215;
+    //public static final int TEST_DEST = 1;
 	
     static final String OUT_OF_AREA_FARE_ZONE = "NONE"; 
     
@@ -112,7 +112,13 @@ public class TransitAssignAndSkimManager {
         this.appRb = appRb;
         this.globalRb = globalRb;
         
-        transitNetworkListings = appRb.getString( "transitNetworkListings.directory" );
+        try {
+            transitNetworkListings = appRb.getString( "transitNetworkListings.directory" );
+        }
+        catch ( MissingResourceException e ) {
+            transitNetworkListings = null;
+        }
+        
         transitRoutesDirectory = appRb.getString( "transitRoutes.directory" );
         
         maxRoutes = Integer.parseInt ( appRb.getString( "MAX_TRANSIT_ROUTES" ) );
@@ -189,6 +195,7 @@ public class TransitAssignAndSkimManager {
         
         SKIM_ONLY = skimOnlyFlag;
         
+        
         int numberOfThreads = java.lang.Runtime.getRuntime().availableProcessors();
         if ( numberOfThreads > MAX_NUMBER_OF_THREADS )
             numberOfThreads = MAX_NUMBER_OF_THREADS;
@@ -197,6 +204,8 @@ public class TransitAssignAndSkimManager {
         ArrayList<Future<String>> results = new ArrayList<Future<String>>();
 
 
+        
+         
         // drive access air loading and skims
         String[] drAirTypes = { "air" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
@@ -207,7 +216,7 @@ public class TransitAssignAndSkimManager {
         
         // drive access intercity bus/rail loading and skims
         String[] drIcTypes = { "intercity" }; 
-       results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
+        results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
 
         // drive access intracity transit loading and skims
         String[] drTrTypes = { "intracity" }; 
@@ -221,9 +230,12 @@ public class TransitAssignAndSkimManager {
         String[] wkIcTypes = { "intercity", "intracity" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
 
+         
+
+        // For testing intracity only:
         // walk access intracity loading and skims
-        String[] wkTrTypes = { "intracity" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+        //String[] wkTrTypes = { "intracity" }; 
+        //results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
 
         
         for ( Future<String> fs : results ) {
@@ -246,40 +258,6 @@ public class TransitAssignAndSkimManager {
         
         
 /*        
-        // drive access air loading and skims
-        String[] drAirTypes = { "air" }; 
-        setupTransitNetwork( nh, period, "driveLdt", drAirTypes );
-        runTransitAssignment ( nh, "drive", "air", LDTripModeType.AIR.name() );
-        writeDriveAirSkims ( period );
-    
-        
-        // drive access hsr loading and skims
-        String[] drHsrTypes = { "hsr", "intercity" }; 
-        setupTransitNetwork( nh, period, "driveLdt", drHsrTypes );
-        runTransitAssignment ( nh, "drive", "hsr", LDTripModeType.HSR_DRIVE.name() );
-        writeDriveHsrSkims ( period );
-
-        
-        // drive access intercity bus/rail loading and skims
-        String[] drIcTypes = { "intercity" }; 
-        setupTransitNetwork( nh, period, "driveLdt", drIcTypes );
-        runTransitAssignment ( nh, "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() );
-        writeDriveIntercitySkims ( period );
-    
-        
-        // drive access intracity transit loading and skims
-        String[] drTrTypes = { "intracity" }; 
-        setupTransitNetwork( nh, period, "drive", drTrTypes );
-        runTransitAssignment ( nh, "drive", "intracity", TripModeType.DR_TRAN.name() );
-        writeDriveIntracitySkims ( period );
-    
-        
-        // walk access hsr loading and skims
-        String[] wkHsrTypes = { "hsr", "intercity", "intracity" }; 
-        setupTransitNetwork( nh, period, "walk", wkHsrTypes );
-        runTransitAssignment ( nh, "walk", "hsr", LDTripModeType.HSR_WALK.name() );
-        writeWalkHsrSkims ( period );
-
         
         // walk access intercity loading and skims
         String[] wkIcTypes = { "intercity", "intracity" }; 
@@ -287,12 +265,9 @@ public class TransitAssignAndSkimManager {
         runTransitAssignment ( nh, "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() );
         writeWalkIntercitySkims ( period );
 
-        // walk access intracity loading and skims
-        String[] wkTrTypes = { "intracity" }; 
-        setupTransitNetwork( nh, period, "walk", wkTrTypes );
-        runTransitAssignment ( nh, "walk", "intracity", TripModeType.WK_TRAN.name() );
-        writeWalkIntracitySkims ( period );
-*/    
+*/
+
+
         
         String csvFileName = null;
         String csvFileTarget = String.format("%s.TransitLoadings.fileName", period);
@@ -336,8 +311,14 @@ public class TransitAssignAndSkimManager {
     private int setupTransitNetwork ( String identifier, NetworkHandlerIF nh, String period, String accessMode, String[] rteTypes ) {
         
         // construct a network listing output filename for the transit network being setup - assume primary route type is the first listed
-        String listingName = appRb.getString( "transitNetworkListings.directory" ) + period + "_" + accessMode + "_" + rteTypes[0] + ".listing";
-
+        String listingName = null;
+        try {
+            listingName = appRb.getString( "transitNetworkListings.directory" ) + period + "_" + accessMode + "_" + rteTypes[0] + ".listing";
+        }
+        catch ( MissingResourceException e ) {
+        }
+        
+        
         // transit network setup method expects arrays of filenames and types:
         String[] d221Files = new String[rteTypes.length];
 
@@ -476,6 +457,7 @@ public class TransitAssignAndSkimManager {
         String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
         String drvFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "drv" + skimFileExtension;
         String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
+        String hsrIvtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "hsr_ivt" + skimFileExtension;
 
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -490,6 +472,9 @@ public class TransitAssignAndSkimManager {
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(xwkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AUX.ordinal()] );
+
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(hsrIvtFilename) );
+        mw.writeMatrix( skimMatrices[SkimType.HSR_IVT.ordinal()] );
 
         Matrix m = skimMatrices[SkimType.HSR$.ordinal()].add( skimMatrices[SkimType.BUS$.ordinal()].add( skimMatrices[SkimType.RAIL$.ordinal()] ) );   // for drive hsr, far combines hsr$, bus$, and rail$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
@@ -528,6 +513,8 @@ public class TransitAssignAndSkimManager {
         String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
         String drvFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "drv" + skimFileExtension;
         String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
+        String busIvtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "bus_ivt" + skimFileExtension;
+        String railIvtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "rail_ivt" + skimFileExtension;
         
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -542,6 +529,12 @@ public class TransitAssignAndSkimManager {
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(xwkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AUX.ordinal()] );
+
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(busIvtFilename) );
+        mw.writeMatrix( skimMatrices[SkimType.BUS_IVT.ordinal()] );
+
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(railIvtFilename) );
+        mw.writeMatrix( skimMatrices[SkimType.RAIL_IVT.ordinal()] );
 
         Matrix m = skimMatrices[SkimType.BUS$.ordinal()].add( skimMatrices[SkimType.RAIL$.ordinal()] );   // for drive intercity, far combines bus$ and rail$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
@@ -641,7 +634,7 @@ public class TransitAssignAndSkimManager {
         String xwkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "xwk" + skimFileExtension;
         String ewkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ewk" + skimFileExtension;
         String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
-        
+        String hsrIvtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "hsr_ivt" + skimFileExtension;
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ivtFilename) );
@@ -661,6 +654,9 @@ public class TransitAssignAndSkimManager {
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ewkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.EGR.ordinal()] );
+
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(hsrIvtFilename) );
+        mw.writeMatrix( skimMatrices[SkimType.HSR_IVT.ordinal()] );
 
         Matrix m = skimMatrices[SkimType.HSR$.ordinal()].add( skimMatrices[SkimType.BUS$.ordinal()] ).add( skimMatrices[SkimType.RAIL$.ordinal()] ).add( skimMatrices[SkimType.TRAN$.ordinal()] );   // for walk hsr, far combines hsr$, bus$, $rail and tran$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
@@ -698,6 +694,8 @@ public class TransitAssignAndSkimManager {
         String ewkFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "ewk" + skimFileExtension;
         String brdFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "brd" + skimFileExtension;
         String farFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "far" + skimFileExtension;
+        String busIvtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "bus_ivt" + skimFileExtension;
+        String railIvtFilename = skimFileDirectory + periodIdentifier + accessIdentifier + routeTypeIdentifier + "rail_ivt" + skimFileExtension;
         
         
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
@@ -721,6 +719,12 @@ public class TransitAssignAndSkimManager {
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(brdFilename) );
         mw.writeMatrix( skimMatrices[SkimType.BRD.ordinal()] );
+
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(busIvtFilename) );
+        mw.writeMatrix( skimMatrices[SkimType.BUS_IVT.ordinal()] );
+
+        mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(railIvtFilename) );
+        mw.writeMatrix( skimMatrices[SkimType.RAIL_IVT.ordinal()] );
 
         Matrix m = skimMatrices[SkimType.BUS$.ordinal()].add( skimMatrices[SkimType.RAIL$.ordinal()] ).add( skimMatrices[SkimType.TRAN$.ordinal()] );   // for walk intercity, far combines bus$, $rail and tran$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
@@ -976,12 +980,18 @@ public class TransitAssignAndSkimManager {
         zeroBasedFloatArrays[SkimType.EGR.ordinal()] = null;
         skimMatrices[SkimType.BRD.ordinal()] = new Matrix( nameQualifier + "brd", descQualifier + " boardings skims", zeroBasedFloatArrays[SkimType.BRD.ordinal()] );
         zeroBasedFloatArrays[SkimType.EGR.ordinal()] = null;
+        skimMatrices[SkimType.HSR_IVT.ordinal()] = new Matrix( nameQualifier + "hsr_ivt", descQualifier + " hsr in-vehicle time skims", zeroBasedFloatArrays[SkimType.HSR_IVT.ordinal()] );
+        zeroBasedFloatArrays[SkimType.HSR_IVT.ordinal()] = null;
         skimMatrices[SkimType.HSR$.ordinal()] = new Matrix( nameQualifier + "hsr$", descQualifier + " hsr fare skims", zeroBasedFloatArrays[SkimType.HSR$.ordinal()] );
         zeroBasedFloatArrays[SkimType.HSR$.ordinal()] = null;
         skimMatrices[SkimType.AIR$.ordinal()] = new Matrix( nameQualifier + "air$", descQualifier + " air fare skims", zeroBasedFloatArrays[SkimType.AIR$.ordinal()] );
         zeroBasedFloatArrays[SkimType.AIR$.ordinal()] = null;
+        skimMatrices[SkimType.RAIL_IVT.ordinal()] = new Matrix( nameQualifier + "cr_ivt", descQualifier + " cr in-vehicle time skims", zeroBasedFloatArrays[SkimType.RAIL_IVT.ordinal()] );
+        zeroBasedFloatArrays[SkimType.RAIL_IVT.ordinal()] = null;
         skimMatrices[SkimType.RAIL$.ordinal()] = new Matrix( nameQualifier + "rail$", descQualifier + " ic rail fare skims", zeroBasedFloatArrays[SkimType.RAIL$.ordinal()] );
         zeroBasedFloatArrays[SkimType.RAIL$.ordinal()] = null;
+        skimMatrices[SkimType.BUS_IVT.ordinal()] = new Matrix( nameQualifier + "bus_ivt", descQualifier + " ic bus in-vehicle time skims", zeroBasedFloatArrays[SkimType.BUS_IVT.ordinal()] );
+        zeroBasedFloatArrays[SkimType.BUS_IVT.ordinal()] = null;
         skimMatrices[SkimType.BUS$.ordinal()] = new Matrix( nameQualifier + "bus$", descQualifier + " ic bus fare skims", zeroBasedFloatArrays[SkimType.BUS$.ordinal()] );
         zeroBasedFloatArrays[SkimType.BUS$.ordinal()] = null;
         skimMatrices[SkimType.TRAN$.ordinal()] = new Matrix( nameQualifier + "tran$", descQualifier + " local transit fare skims", zeroBasedFloatArrays[SkimType.TRAN$.ordinal()] );
@@ -1537,9 +1547,12 @@ public class TransitAssignAndSkimManager {
         EGR,
         AUX,
         BRD,
+        HSR_IVT,
         HSR$,
         AIR$,
+        RAIL_IVT,
         RAIL$,
+        BUS_IVT,
         BUS$,
         TRAN$
     }

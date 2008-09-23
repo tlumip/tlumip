@@ -113,7 +113,6 @@ public class ShortestPathTreeH {
 
     }
 
-
     public void buildTree(int inOrigin) {
         
 		long start = System.currentTimeMillis();
@@ -402,9 +401,9 @@ public class ShortestPathTreeH {
      * Returns an ArrayList of arrays containing (internal node id, shortest path cost), for links where one of the nodes has a nodeLabel
      * less than the threshold value, and the node is valid.
      */
-    public ArrayList getNodesWithinCost ( double costThreshold, boolean[] validNode ) {
+    public ArrayList<double[]> getNodesWithinCost ( double costThreshold, boolean[] validNode ) {
 
-        ArrayList tempList = new ArrayList();
+        ArrayList<double[]> tempList = new ArrayList<double[]>();
         int[] tempData = new int[nodeLabels.length];
         
         int k = 0;
@@ -424,7 +423,7 @@ public class ShortestPathTreeH {
         
         // sort the node list by node label and return a sorted ArrayList with nodes sorted by shortest path cost from origin 
         int[] sortIndices = IndexSort.indexSort( sortData );
-        ArrayList nodeList = new ArrayList(k);
+        ArrayList<double[]> nodeList = new ArrayList<double[]>(k);
         for (int i=0; i < tempList.size(); i++)
             nodeList.add( tempList.get(sortIndices[i]));
         
@@ -434,11 +433,12 @@ public class ShortestPathTreeH {
     
     // return an ArrayList of arrays containing (internal node id, shortest path cost), for links where one of the nodes has a nodeLabel
     // greater than the min and less than the max threshold values, and the node is valid.
-    public ArrayList getNodesWithinCosts ( double minThreshold, double maxThreshold, boolean[] validNode ) {
+    public ArrayList<double[]> getNodesWithinCosts ( double minThreshold, double maxThreshold, boolean[] validNode ) {
 
-        ArrayList nodeList = new ArrayList();
+        ArrayList<double[]> nodeList = new ArrayList<double[]>();
         
         for (int i=0; i < nodeLabels.length; i++) {
+            
             if ( validNode[i] && nodeLabels[i] >= minThreshold && nodeLabels[i] < maxThreshold ) {
                 double[] nodeData = new double[2];
                 nodeData[0] = i;

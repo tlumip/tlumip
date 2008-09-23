@@ -565,9 +565,9 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "ampeak" );
-        nhPeak.checkForIsolatedLinks();
+        //nhPeak.checkForIsolatedLinks();
         nhPeak.startDataServer();
-        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
+        //tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
         char[] hwyModeChars = { 'a', 'd', 'e', 'f' };
         //tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
