@@ -274,6 +274,7 @@ public class OptimalStrategy {
 					// alighting link
 					if (linkType[k] == AuxTrNet.ALIGHTING_TYPE) {
 
+					    
 						nodeLabel[ia[k]] = nodeLabel[ib[k]] + linkImped;
 
 						// the in-vehicle transit segment preceding this alighting link has index = k - 1.
@@ -365,7 +366,7 @@ public class OptimalStrategy {
 
 
 				// log some information about the ending condition of the candidate link being examined
-				if ( debug && inStrategy[k] ) {
+                if ( debug && inStrategy[k] ) {
 					
                     // get the highway network link index for the given transit network link index
                     m = hwyLink[k];
@@ -595,7 +596,7 @@ public class OptimalStrategy {
             
             
             if ( linkFlow > 0 ) {
-                logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
+                logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", mode=" + rteMode[k] + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", ag.drAccTime=" + drAccTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
                 count++;
             }
         

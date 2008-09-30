@@ -699,7 +699,8 @@ public class AuxTrNet implements Serializable {
                 an[aux] = indexNode[gia[k]];
                 bn[aux] = indexNode[gib[k]];
                 freq[aux] = INFINITY;
-                cost[aux] = 0.0;                invTime[aux] = 0.0;
+                cost[aux] = 0.0;
+                invTime[aux] = 0.0;
                 walkTime[aux] = (float)(60.0*gDist[k]/nh.getWalkSpeed());
                 driveAccTime[aux] = 0.0;
                 layoverTime[aux] = 0.0;
@@ -852,6 +853,7 @@ public class AuxTrNet implements Serializable {
 
         for (int centroid=0; centroid < nh.getNumCentroids(); centroid++) {
 
+            
             sp.buildTree ( centroid );
             
             ArrayList<double[]>[] endPoints = new ArrayList[routeTypeStrings.length];
@@ -878,7 +880,7 @@ public class AuxTrNet implements Serializable {
                 // determine time bands based on incremental distances and an assumed average speed.
                 // we'll get nodes from the shortest congested drive time tree that are within this band
                 endPoints[i] = new ArrayList<double[]>();
-                double maxTime = 60.0*distanceIncrement/avgSpeed;
+                double maxTime = 0.0;
                 double minTime = 0.0;
                 
                 // add distance incrementally and add links from centroids to nodes found in the distance bands until
@@ -1294,13 +1296,25 @@ public class AuxTrNet implements Serializable {
 
 	// linkImped in optimal strategy is generalized cost, not including wait time.
 	public double getLinkImped (int k) {
-	    double accessTime = 0.0;
-	    if ( accessMode.equalsIgnoreCase("walk") )
-	        accessTime = walkTime[k];
-	    else
-	        accessTime = driveAccTime[k];
+	    double ovt = 0.0;
 	    
-		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*accessTime + COST_COEFF*cost[k]);
+	    if ( linkType[k] == AUXILIARY_TYPE ) {
+
+	        // if either node is a centroid, ovt is access time depending on access mode.
+	        if ( ia[k] < nh.getNumCentroids() ||  ib[k] < nh.getNumCentroids() ) {
+	            if ( accessMode.equalsIgnoreCase("walk") )
+	                ovt = walkTime[k];
+	            else
+	                ovt = driveAccTime[k];
+	        }
+	        // otherwise ovt is walk time
+	        else {
+                ovt = walkTime[k];
+	        }
+	        
+	    }
+	    
+		return (IVT_COEFF*(invTime[k] + dwellTime[k] + layoverTime[k]) + OVT_COEFF*ovt + COST_COEFF*cost[k]);
 	}
 
 

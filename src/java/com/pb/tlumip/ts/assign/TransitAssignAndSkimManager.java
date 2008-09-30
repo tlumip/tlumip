@@ -71,8 +71,8 @@ public class TransitAssignAndSkimManager {
     public static final int TEST_DEST = -1;
 
     // make TEST_ORIG and TEST_DEST a positive number to trigger debugging the strategy for the od.
-    //public static final int TEST_ORIG = 1215;
-    //public static final int TEST_DEST = 1;
+    //public static final int TEST_ORIG = 1;
+    //public static final int TEST_DEST = 1505;
 	
     static final String OUT_OF_AREA_FARE_ZONE = "NONE"; 
     
@@ -205,7 +205,7 @@ public class TransitAssignAndSkimManager {
 
 
         
-         
+        
         // drive access air loading and skims
         String[] drAirTypes = { "air" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
@@ -230,13 +230,17 @@ public class TransitAssignAndSkimManager {
         String[] wkIcTypes = { "intercity", "intracity" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
 
-         
+        
 
+        
+        /*
         // For testing intracity only:
         // walk access intracity loading and skims
-        //String[] wkTrTypes = { "intracity" }; 
-        //results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
-
+        String[] drHsrTypes = { "hsr", "intercity" }; 
+        //String[] drHsrTypes = { "hsr" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name() ) ) );
+        */
+        
         
         for ( Future<String> fs : results ) {
             
@@ -257,17 +261,6 @@ public class TransitAssignAndSkimManager {
         }
         
         
-/*        
-        
-        // walk access intercity loading and skims
-        String[] wkIcTypes = { "intercity", "intracity" }; 
-        setupTransitNetwork( nh, period, "walk", wkIcTypes );
-        runTransitAssignment ( nh, "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() );
-        writeWalkIntercitySkims ( period );
-
-*/
-
-
         
         String csvFileName = null;
         String csvFileTarget = String.format("%s.TransitLoadings.fileName", period);
@@ -893,7 +886,7 @@ public class TransitAssignAndSkimManager {
             else if ( TEST_ORIG >= 0 && TEST_DEST >= 0 && dest == nodeIndex[TEST_DEST] ) {
                 
                 os.getOptimalStrategyLinks ( nodeIndex[TEST_ORIG] );
-                return null;
+                //return null;
                 
             }
             
