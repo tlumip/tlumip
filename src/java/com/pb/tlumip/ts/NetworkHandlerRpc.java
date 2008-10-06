@@ -1277,7 +1277,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int returnValue = -1;
         
         try {
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.add( timePeriod );
             params.add( propertyValues );
             returnValue = (Integer)rc.execute(HANDLER_NAME+".setupHighwayNetworkObject", params);
@@ -1300,7 +1300,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int returnValue = -1;
         
         try {
-            Vector params = new Vector();
+            Vector params = new Vector<Object>();
             params.add( identifier );
             params.add( period );
             params.add( accessMode );
@@ -1362,7 +1362,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int[] returnValue = null;
         
         try {
-            Vector params = new Vector();
+            Vector<String> params = new Vector<String>();
             params.add( identifier );
             returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIpa", params);
         } catch (RpcException e) {
@@ -1379,7 +1379,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int[] returnValue = null;
         
         try {
-            Vector params = new Vector();
+            Vector<String> params = new Vector<String>();
             params.add( identifier );
             returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIpb", params);
         } catch (RpcException e) {
@@ -1396,7 +1396,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int[] returnValue = null;
         
         try {
-            Vector params = new Vector();
+            Vector<String> params = new Vector<String>();
             params.add( identifier );
             returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIndexa", params);
         } catch (RpcException e) {
@@ -1413,7 +1413,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int[] returnValue = null;
         
         try {
-            Vector params = new Vector();
+            Vector<String> params = new Vector<String>();
             params.add( identifier );
             returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxIndexb", params);
         } catch (RpcException e) {
@@ -1430,7 +1430,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int[] returnValue = null;
         
         try {
-            Vector params = new Vector();
+            Vector<String> params = new Vector<String>();
             params.add( identifier );
             returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxHwyLink", params);
         } catch (RpcException e) {
@@ -1452,7 +1452,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int[] returnValue = null;
         
         try {
-            Vector params = new Vector();
+            Vector<String> params = new Vector<String>();
             params.add( identifier );
             returnValue = (int[])rc.execute(HANDLER_NAME+".getLinkTrRoute", params);
         } catch (RpcException e) {
@@ -1470,7 +1470,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         char[] returnValue = null;
         
         try {
-            Vector params = new Vector();
+            Vector<String> params = new Vector<String>();
             params.add( identifier );
             returnValue = (char[])rc.execute(HANDLER_NAME+".getRteMode", params);
         } catch (RpcException e) {
@@ -1487,7 +1487,7 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         int[] returnValue = null;
         
         try {
-            Vector params = new Vector();
+            Vector<String> params = new Vector<String>();
             params.add( identifier );
             returnValue = (int[])rc.execute(HANDLER_NAME+".getAuxLinkType", params);
         } catch (RpcException e) {
@@ -1643,6 +1643,22 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return returnValue;
     }
 
+    public double[] getAuxRouteHeadway( String identifier ) {
+        double[] returnValue = null;
+        
+        try {
+            Vector params = new Vector();
+            params.add( identifier );
+            returnValue = (double[])rc.execute(HANDLER_NAME+".getAuxRouteHeadway", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnValue;
+    }
+
     public int getAuxNodeCount( String identifier ) {
         int returnValue = -1;
         
@@ -1783,8 +1799,22 @@ public class NetworkHandlerRpc implements NetworkHandlerIF {
         return null;
     }
     
-    public String[] getTransitRouteNames() {
-        return null;
+    public String[] getTransitRouteNames( String identifier ) {
+
+        String[] returnArray = null;
+        
+        try {
+            Vector<String> params = new Vector<String>();
+            params.add( identifier );
+            returnArray = (String[])rc.execute(HANDLER_NAME+".getTransitRouteNames", params);
+        } catch (RpcException e) {
+            logger.error( e.getCause().getMessage(), e );
+        } catch (IOException e) {
+            logger.error( e.getCause().getMessage(), e );
+        }
+        
+        return returnArray;
+
     }
     
     public String[] getTransitRouteTypes() {

@@ -33,7 +33,9 @@ import org.apache.log4j.Logger;
 public class OptimalStrategy {
 
 
-	protected static Logger logger = Logger.getLogger(OptimalStrategy.class);
+    protected static Logger logger = Logger.getLogger(OptimalStrategy.class);
+//    protected static Logger debugLogger = Logger.getLogger("debugLogger");
+    protected static Logger debugLogger = logger;
 
 	int IVT = TransitAssignAndSkimManager.SkimType.IVT.ordinal();      // in-vehicle time
 	int FWT = TransitAssignAndSkimManager.SkimType.FWT.ordinal();      // first wait
@@ -106,9 +108,11 @@ public class OptimalStrategy {
     double[] invTime = null;
     double[] freq = null;
     double[] flow = null;
+    double[] rteHeadway = null;
     int[] linkType = null;
     char[] rteMode = null;
-	
+    String[] rteNames = null;
+    
 	int[] gia;
 	int[] gib;
 	int[] indexNode;
@@ -120,7 +124,8 @@ public class OptimalStrategy {
 	int inStrategyCount;
     double tripsNotLoaded;
 	
-	boolean classDebug = false;
+    boolean classDebug = false;
+    //boolean classDebug = true;
 	
 	
 	
@@ -159,6 +164,7 @@ public class OptimalStrategy {
         hwyLink = nh.getAuxHwyLink(identifier);
         trRoute = nh.getLinkTrRoute(identifier);
         rteMode = nh.getRteMode(identifier);
+        rteNames = nh.getTransitRouteNames(identifier);
         linkType = nh.getAuxLinkType(identifier);
         cost = nh.getAuxCost(identifier);
         dwellTime = nh.getAuxDwellTime(identifier);
@@ -169,6 +175,7 @@ public class OptimalStrategy {
         invTime = nh.getAuxInvTime(identifier);
         freq = nh.getAuxLinkFreq(identifier);
         flow = nh.getAuxLinkFlow(identifier);
+        rteHeadway = nh.getAuxRouteHeadway(identifier);
         
 		gia = nh.getIa();
 		gib = nh.getIb();
@@ -229,7 +236,7 @@ public class OptimalStrategy {
 
 
 		if (debug)
-		    logger.info ("building optimal strategy to " + dest + "(" + indexNode[dest] + ")");
+		    debugLogger.info ("building optimal strategy to " + dest + "(" + indexNode[dest] + ")");
 		
         
         //while ((k = candidateHeap.remove()) != -1) {  //old Heap
@@ -237,6 +244,13 @@ public class OptimalStrategy {
 
             HeapElement he = candidateHeap.getFirst();
             k = he.getIndex();
+            
+            
+            int dummy=0;
+            if ( k == 18505 ){
+                dummy = 1;
+            }
+            
             
             if (ia[k] != dest && !inStrategy[k]) {
 
@@ -251,19 +265,19 @@ public class OptimalStrategy {
 				
 				// log some information about the starting condition of the candidate link being examined
 				if ( debug ) {
-					logger.info ("");
+					debugLogger.info ("");
 					
                     // get the highway network link index for the given transit network link index
                     m = hwyLink[k];
                 
 
-					logger.info ("k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", trRoute=" + trRoute[k] + "(" + (trRoute[k] >= 0 ? nh.getAuxRouteName(identifier, trRoute[k]) : "aux") + ")" );
-					logger.info ("nodeLabel[ag.ia=" + ia[k] + "]=" + nodeLabel[ia[k]]);
-					logger.info ("nodeLabel[ag.ib=" + ib[k] + "]=" + nodeLabel[ib[k]]);
-					logger.info ("nodeFreq[ag.ia=" + ia[k] + "]=" + nodeFreq[ia[k]]);
-					logger.info ("nodeFreq[ag.ib=" + ib[k] + "]=" + nodeFreq[ib[k]]);
-					logger.info ("ag.freq[k=" + k + "]=" + freq[k]);
-					logger.info ("linkImped(k=" + k + ")=" + linkImped);
+					debugLogger.info ("k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", trRoute=" + trRoute[k] + "(" + (trRoute[k] >= 0 ? nh.getAuxRouteName(identifier, trRoute[k]) : "aux") + ")" );
+					debugLogger.info ("nodeLabel[ag.ia=" + ia[k] + "]=" + nodeLabel[ia[k]]);
+					debugLogger.info ("nodeLabel[ag.ib=" + ib[k] + "]=" + nodeLabel[ib[k]]);
+					debugLogger.info ("nodeFreq[ag.ia=" + ia[k] + "]=" + nodeFreq[ia[k]]);
+					debugLogger.info ("nodeFreq[ag.ib=" + ib[k] + "]=" + nodeFreq[ib[k]]);
+					debugLogger.info ("ag.freq[k=" + k + "]=" + freq[k]);
+					debugLogger.info ("linkImped(k=" + k + ")=" + linkImped);
 					
 				}
 
@@ -359,7 +373,7 @@ public class OptimalStrategy {
 				}
 				else {
 					
-					if (debug) logger.info ("link not included in strategy");
+					if (debug) debugLogger.info ("link not included in strategy");
 					inStrategy[k] = false;
 					
 				}
@@ -372,15 +386,15 @@ public class OptimalStrategy {
                     m = hwyLink[k];
                 
 
-					logger.info ("");
-					logger.info ("k=" + k + ", linkType=" + linkType[k] + ", trRoute=" + trRoute[k]);
-					logger.info ("ag.ia[k]=" + ia[k] + "(g.an=" + (m >= 0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + ( m>=0 ? indexNode[gib[m]] : -1) + ")");
-					logger.info ("nodeLabel[ag.ia=" + ia[k] + "]=" + nodeLabel[ia[k]]);
-					logger.info ("nodeLabel[ag.ib=" + ib[k] + "]=" + nodeLabel[ib[k]]);
-					logger.info ("nodeFreq[ag.ia=" + ia[k] + "]=" + nodeFreq[ia[k]]);
-					logger.info ("nodeFreq[ag.ib=" + ib[k] + "]=" + nodeFreq[ib[k]]);
-					logger.info ("ag.freq[k=" + k + "]=" + freq[k]);
-					logger.info ("inStrategy[k=" + k + "]=" + inStrategy[k]);
+					debugLogger.info ("");
+					debugLogger.info ("k=" + k + ", linkType=" + linkType[k] + ", trRoute=" + trRoute[k]);
+					debugLogger.info ("ag.ia[k]=" + ia[k] + "(g.an=" + (m >= 0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + ( m>=0 ? indexNode[gib[m]] : -1) + ")");
+					debugLogger.info ("nodeLabel[ag.ia=" + ia[k] + "]=" + nodeLabel[ia[k]]);
+					debugLogger.info ("nodeLabel[ag.ib=" + ib[k] + "]=" + nodeLabel[ib[k]]);
+					debugLogger.info ("nodeFreq[ag.ia=" + ia[k] + "]=" + nodeFreq[ia[k]]);
+					debugLogger.info ("nodeFreq[ag.ib=" + ib[k] + "]=" + nodeFreq[ib[k]]);
+					debugLogger.info ("ag.freq[k=" + k + "]=" + freq[k]);
+					debugLogger.info ("inStrategy[k=" + k + "]=" + inStrategy[k]);
 					
 				}
 				
@@ -401,12 +415,11 @@ public class OptimalStrategy {
         int i, j, k, m;
         int start, end;
         boolean debug = classDebug;
-//      boolean debug = true;
         double linkImped = 0.0;
 
         if (debug) {
-            logger.info ("");
-            logger.info ("updateEnteringLabels(): currentNode = " + currentNode);
+            debugLogger.info ("");
+            debugLogger.info ("updateEnteringLabels(): currentNode = " + currentNode);
         }
 
         start = ipb[currentNode];
@@ -417,15 +430,15 @@ public class OptimalStrategy {
 
         
         if (debug)
-              logger.info ("start=" + start + ", indexb[start]=" + indexb[start] + ", ia=" + ia[indexb[start]] + ", ib=" + ib[indexb[start]] + ", an=" + (ia[indexb[start]] < indexNode.length ? indexNode[ia[indexb[start]]] : 0) + ", bn=" + (ib[indexb[start]] < indexNode.length ? indexNode[ib[indexb[start]]] : 0));
+              debugLogger.info ("start=" + start + ", indexb[start]=" + indexb[start] + ", ia=" + ia[indexb[start]] + ", ib=" + ib[indexb[start]] + ", an=" + (ia[indexb[start]] < indexNode.length ? indexNode[ia[indexb[start]]] : 0) + ", bn=" + (ib[indexb[start]] < indexNode.length ? indexNode[ib[indexb[start]]] : 0));
         j = currentNode + 1;
         while (ipb[j] == -1)
             j++;
         end = ipb[j];
         if (debug) {
-            logger.info ("end=" + end + ", j=" + j);
-            logger.info ("end=" + end + ", indexb[end]=" + (end < indexb.length ? Integer.toString(indexb[end]) : "null") + ", ia=" + (end < indexb.length ? Integer.toString(ia[indexb[end]]) : "null") + ", ib=" + (end < indexb.length ? Integer.toString(ib[indexb[end]]) : "null"));
-            logger.info ("");
+            debugLogger.info ("end=" + end + ", j=" + j);
+            debugLogger.info ("end=" + end + ", indexb[end]=" + (end < indexb.length ? Integer.toString(indexb[end]) : "null") + ", ia=" + (end < indexb.length ? Integer.toString(ia[indexb[end]]) : "null") + ", ib=" + (end < indexb.length ? Integer.toString(ib[indexb[end]]) : "null"));
+            debugLogger.info ("");
         }
         for (i=start; i < end; i++) {
             k = indexb[i];
@@ -445,7 +458,11 @@ public class OptimalStrategy {
 
             if (debug) {
                 m = hwyLink[k];
-                logger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + linkType[k] + ", ia=" + ia[k] + "(" + (m>=0 ? indexNode[gia[m]] : -1) + "), ib=" + ib[k] + "(" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkLabel[k]=" + String.format("%15.6f", linkLabel[k]) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ib[k]] + ", linkImped=" + linkImped);
+                String name = "N/A";
+                if ( trRoute[k] >= 0 )
+                    name = String.format("%d_%s", trRoute[k], rteNames[trRoute[k]]);
+                
+                debugLogger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + linkType[k] + ", route=" + name + ", ia=" + ia[k] + "(" + (m>=0 ? indexNode[gia[m]] : -1) + "), ib=" + ib[k] + "(" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkLabel[k]=" + String.format("%15.6f", linkLabel[k]) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ib[k]] + ", linkImped=" + linkImped);
             }
 
             HeapElement he = new HeapElement(k, linkType[k], linkLabel[k]);
@@ -457,7 +474,8 @@ public class OptimalStrategy {
 
         }
 
-        if (debug) candidateHeap.dataPrintSorted();
+        if ( debugLogger.isDebugEnabled() )
+            candidateHeap.dataPrintSorted();
             
         return 0;
     }
@@ -537,7 +555,7 @@ public class OptimalStrategy {
             
             
             if (debug) {
-                logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
+                debugLogger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
             }
             
             count++;
@@ -559,6 +577,7 @@ public class OptimalStrategy {
 
         nodeFlow[orig] = 1.0;
         
+        HashMap<String,Double> routeIvt = new HashMap<String,Double>();
         
         // loop through links in optimal strategy in reverse order and allocate
         // flow at the nodes to exiting links in the optimal strategy
@@ -594,14 +613,25 @@ public class OptimalStrategy {
             }
             
             
-            
             if ( linkFlow > 0 ) {
-                logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", mode=" + rteMode[k] + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", ag.drAccTime=" + drAccTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
+                double ivt = 0;
+                String name = "N/A";
+                if ( trRoute[k] >= 0 ) {
+                    name = String.format("%d_%s", trRoute[k], rteNames[trRoute[k]]);
+                    if ( routeIvt.containsKey(name) )
+                        ivt = routeIvt.get(name);
+                    ivt += linkFlow * invTime[k];
+                    routeIvt.put(name, ivt);
+                }
+                logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", name=" + name + ", mode=" + rteMode[k] + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", ag.drAccTime=" + drAccTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
                 count++;
             }
         
         }
 
+        for ( String name : routeIvt.keySet() ){
+            logger.info( String.format("Route %s has IVT = %.2f.", name, routeIvt.get(name)) );
+        }
     }
 
 
@@ -668,7 +698,7 @@ public class OptimalStrategy {
             m = hwyLink[k];
             
             if ( debug )
-                logger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ag.ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ib[k]] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ia[k]] + ", ag.freq[k]=" + freq[k] + ", nodeFlow[ag.ia[k]]=" + nodeFlow[ia[k]] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ib[k]] );
+                debugLogger.info ( "count=" + count + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ag.ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ib[k]] + ", nodeFreq[ag.ia[k]]=" + nodeFreq[ia[k]] + ", ag.freq[k]=" + freq[k] + ", nodeFlow[ag.ia[k]]=" + nodeFlow[ia[k]] + ", nodeFlow[ag.ib[k]]=" + nodeFlow[ib[k]] + ", nodeSkims[IVT][ia[k]]=" + nodeSkims[IVT][ia[k]] + ", nodeSkims[IVT][ib[k]]=" + nodeSkims[IVT][ib[k]] );
             
         
         
@@ -694,6 +724,30 @@ public class OptimalStrategy {
                     nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]] + freq[k]/nodeFreq[ia[k]];
 
                 }
+                
+                /*
+                // loop over boarding links exiting ia[k] and sum 1/headway.
+                double totalInverseHeadway = 0.0;
+                start = ipa[ia[k]];
+                if (start >= 0) {
+
+                    int j = ia[k] + 1;
+                    while (ipa[j] == -1)
+                        j++;
+                    int end = ipa[j];
+                    
+                    for (j=start; j < end; j++) {
+                        int a = indexa[j];
+                        if ( linkType[a] == AuxTrNet.BOARDING_TYPE ) {
+                            totalInverseHeadway += 1.0/rteHeadway[a];
+                        }
+                    }
+                }
+
+                // calculate the loading proportion based on relative headway
+                double loadingProportion = rteHeadway[k]/totalInverseHeadway;
+                */
+                
                 
                 nodeSkims[IVT][ia[k]] = nodeSkims[IVT][ib[k]];
                 nodeSkims[ACC][ia[k]] = nodeSkims[ACC][ib[k]];
@@ -840,10 +894,10 @@ public class OptimalStrategy {
                 
             }
 
+            count++;
+
         }
         
-        count++;
-
 
         
         
@@ -1061,7 +1115,7 @@ public class OptimalStrategy {
 
         public void dataPrintSorted() {
 
-            logger.info( "Heap contents sorted by linklabel" );
+            debugLogger.debug( "Heap contents sorted by linklabel" );
             Iterator it = elements.iterator();
 
             int i=0;
@@ -1069,7 +1123,7 @@ public class OptimalStrategy {
                 HeapElement h = (HeapElement)it.next();
                 int k = h.getIndex();
                 int m = hwyLink[k];
-                logger.info ("i=" + (i++) + ",k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", Route=" + trRoute[k] + ", linkLabel[k]=" + String.format("%10.6f", linkLabel[k]) );
+                debugLogger.info ("i=" + (i++) + ",k=" + k + ", ag.ia[k]=" + ia[k] + "(g.an=" + (m>=0 ? indexNode[gia[m]] : -1) + "), ag.ib[k]=" + ib[k] + "(g.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkType=" + linkType[k] + ", Route=" + trRoute[k] + ", linkLabel[k]=" + String.format("%10.6f", linkLabel[k]) );
             }
         }
 

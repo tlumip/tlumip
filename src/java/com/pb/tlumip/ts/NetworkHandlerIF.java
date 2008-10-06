@@ -138,6 +138,7 @@ public interface NetworkHandlerIF {
     public double[] getAuxInvTime(String identifier);
     public double[] getAuxLinkFreq(String identifier);
     public double[] getAuxLinkFlow(String identifier);
+    public double[] getAuxRouteHeadway( String identifier );
     public int getAuxNodeCount( String identifier );
     public int getAuxLinkCount( String identifier );
     public double getAuxLinkImped (String identifier, int k);
@@ -148,9 +149,10 @@ public interface NetworkHandlerIF {
     public int getAuxNumRoutes(String identifier);
     
     
+    public String[] getTransitRouteNames(String identifier);
+
     /*
     public String getAccessMode();
-    public String[] getTransitRouteNames();
     public String[] getTransitRouteTypes();
     public int[] getTransitRouteLinkIds(String rteName);
     public int[] getStationDriveAccessNodes(int stationNode);

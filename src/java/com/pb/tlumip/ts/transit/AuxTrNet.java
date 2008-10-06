@@ -101,6 +101,7 @@ public class AuxTrNet implements Serializable {
 	double[] layoverTime;
 	double[] flow;
 	double[] driveAccTime;
+	double[] rteHeadway;
 	char[] rteMode;
 	String[] routeType;
     
@@ -160,7 +161,8 @@ public class AuxTrNet implements Serializable {
 		walkTime = new double[maxAuxLinks];
 		waitTime = new double[maxAuxLinks];
 		layoverTime = new double[maxAuxLinks];
-		flow = new double[maxAuxLinks];
+        flow = new double[maxAuxLinks];
+        rteHeadway = new double[maxAuxLinks];
 		driveAccTime = new double[maxAuxLinks];
 
         boardingNode = new boolean[routeTypeStrings.length][nh.getNodeCount()+1];
@@ -1134,7 +1136,8 @@ public class AuxTrNet implements Serializable {
         an[aux] = ts.an;
         bn[aux] = ts.bn;
 		// WAIT_COEFF is assumed positive, so it is used here just to scale the link frequency
-		freq[aux] = 1.0/(WAIT_COEFF*headway);
+        freq[aux] = 1.0/(WAIT_COEFF*headway);
+        rteHeadway[aux] = headway;
 		cost[aux] = fare;
 		invTime[aux] = 0.0;
 		walkTime[aux] = 0.0;
@@ -1157,9 +1160,15 @@ public class AuxTrNet implements Serializable {
             an[aux] = ts.an;
             bn[aux] = ts.bn;
             freq[aux] = INFINITY;
+            rteHeadway[aux] = headway;
             cost[aux] = 0.0;
             walkTime[aux] = 0.0;
             waitTime[aux] = 0.0;
+            
+            int dummy=0;
+            if ( aux == 18505 ){
+                dummy = 1;
+            }
             
             if (ts.ttf > 0)
                 invTime[aux] = nh.applyLinkTransitVdf( ts.link, ts.ttf );
@@ -1197,6 +1206,7 @@ public class AuxTrNet implements Serializable {
         an[aux] = ts.an;
         bn[aux] = ts.bn;
 		freq[aux] = INFINITY;
+        rteHeadway[aux] = headway;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
 		waitTime[aux] = 0.0;
@@ -1216,6 +1226,7 @@ public class AuxTrNet implements Serializable {
         an[aux] = ts.an;
         bn[aux] = ts.bn;
 		freq[aux] = INFINITY;
+        rteHeadway[aux] = headway;
 		cost[aux] = 0.0;
 		walkTime[aux] = 0.0;
 		waitTime[aux] = 0.0;
@@ -1448,6 +1459,10 @@ public class AuxTrNet implements Serializable {
 
     public double[] getFlow() {
         return flow;
+    }
+
+    public double[] getHeadway() {
+        return rteHeadway;
     }
 
     public int[] getLinkType() {

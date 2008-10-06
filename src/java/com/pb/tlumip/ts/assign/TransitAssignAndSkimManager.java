@@ -71,8 +71,8 @@ public class TransitAssignAndSkimManager {
     public static final int TEST_DEST = -1;
 
     // make TEST_ORIG and TEST_DEST a positive number to trigger debugging the strategy for the od.
-    //public static final int TEST_ORIG = 1;
-    //public static final int TEST_DEST = 1505;
+    //public static final int TEST_ORIG = 2405;
+    //public static final int TEST_DEST = 1;
 	
     static final String OUT_OF_AREA_FARE_ZONE = "NONE"; 
     
@@ -204,7 +204,8 @@ public class TransitAssignAndSkimManager {
         ArrayList<Future<String>> results = new ArrayList<Future<String>>();
 
 
-        
+
+        ///*
         
         // drive access air loading and skims
         String[] drAirTypes = { "air" }; 
@@ -230,15 +231,16 @@ public class TransitAssignAndSkimManager {
         String[] wkIcTypes = { "intercity", "intracity" }; 
         results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
 
+        //*/
         
-
+        
         
         /*
         // For testing intracity only:
         // walk access intracity loading and skims
-        String[] drHsrTypes = { "hsr", "intercity" }; 
-        //String[] drHsrTypes = { "hsr" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name() ) ) );
+        //String[] wkIcTypes = { "intercity", "intracity" }; 
+        String[] wkIcTypes = { "intercity" }; 
+        results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
         */
         
         

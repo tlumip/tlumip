@@ -615,6 +615,11 @@ public class NetworkHandler implements NetworkHandlerIF {
         AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
         return ag.getFlow();
     }
+    
+    public double[] getAuxRouteHeadway( String identifier ) {
+        AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
+        return ag.getHeadway();
+    }
 
     public int getAuxNodeCount( String identifier ) {
         AuxTrNet ag = (AuxTrNet)transitNetworks.get(identifier);
