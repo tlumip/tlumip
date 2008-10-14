@@ -432,8 +432,8 @@ public class OptimalStrategy {
 
         int i, j, k, m;
         int start, end;
-        //boolean debug = classDebug;
-        boolean debug = true;
+        boolean debug = classDebug;
+        //boolean debug = true;
         double linkImped = 0.0;
 
         if (debug) {
