@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -504,6 +505,9 @@ public class AuxTrNet implements Serializable {
 
         int startAux = aux;
         
+        // create a map to count access links by service types that were generated
+        HashMap<String, Integer> serviceTypeLinks = new HashMap<String, Integer>();
+        
         
         // add the access links depending on value of accessMode.
         // if acces mode is walk, add walk access and walk egress.
@@ -516,12 +520,24 @@ public class AuxTrNet implements Serializable {
             // get walk access links from centroids to boarding nodes
             walkAccessLinkList = getWalkAccessLinks( "boarding" );
             it = walkAccessLinkList.iterator();
+            serviceTypeLinks.clear();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
         
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
                 routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                
+                if ( serviceTypeLinks.containsKey(routeTypeStrings[(int)linkInfo[3]]) ) {
+                    // if an entry exists, get the entry, then add the increnmented value
+                    int count = serviceTypeLinks.get ( routeTypeStrings[(int)linkInfo[3]] );
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], ++count );
+                }
+                else {
+                    // otherwise add the key with a value of 1.
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], 1 );
+                }
+                
                 ia[aux] = (int)linkInfo[0];
                 ib[aux] = (int)linkInfo[1];
                 an[aux] = indexNode[(int)linkInfo[0]];
@@ -537,18 +553,33 @@ public class AuxTrNet implements Serializable {
         
             }
             
-            logger.info ( (aux-startAux) + " walk intracity transit walk access links added.");
+            for ( String type : serviceTypeLinks.keySet() ) {
+                int count = serviceTypeLinks.get(type);
+                logger.info ( String.format( "%d walk %s transit access links added.", count, type ) );
+            }
             startAux = aux;
 
             // get walk egress links from alighting nodes to centroids
             walkAccessLinkList = getWalkAccessLinks( "alighting" );
             it = walkAccessLinkList.iterator();
+            serviceTypeLinks.clear();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
         
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
                 routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+
+                if ( serviceTypeLinks.containsKey(routeTypeStrings[(int)linkInfo[3]]) ) {
+                    // if an entry exists, get the entry, then add the increnmented value
+                    int count = serviceTypeLinks.get ( routeTypeStrings[(int)linkInfo[3]] );
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], ++count );
+                }
+                else {
+                    // otherwise add the key with a value of 1.
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], 1 );
+                }
+                
                 ia[aux] = (int)linkInfo[0];
                 ib[aux] = (int)linkInfo[1];
                 an[aux] = indexNode[(int)linkInfo[0]];
@@ -564,7 +595,10 @@ public class AuxTrNet implements Serializable {
             
             }
 
-            logger.info ( (aux-startAux) + " walk intracity transit walk egress links added.");
+            for ( String type : serviceTypeLinks.keySet() ) {
+                int count = serviceTypeLinks.get(type);
+                logger.info ( String.format( "%d walk %s transit egress links added.", count, type ) );
+            }
             startAux = aux;
             
         }
@@ -574,12 +608,24 @@ public class AuxTrNet implements Serializable {
             // get drive access links from centroids to boarding nodes
             driveAccessLinkList = getDriveAccessLinks( 25.0, "boarding" );      // max dist = 25 miles for drive to local transit
             it = driveAccessLinkList.iterator();
+            serviceTypeLinks.clear();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
         
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
                 routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                
+                if ( serviceTypeLinks.containsKey(routeTypeStrings[(int)linkInfo[3]]) ) {
+                    // if an entry exists, get the entry, then add the increnmented value
+                    int count = serviceTypeLinks.get ( routeTypeStrings[(int)linkInfo[3]] );
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], ++count );
+                }
+                else {
+                    // otherwise add the key with a value of 1.
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], 1 );
+                }
+                
                 ia[aux] = (int)linkInfo[0];
                 ib[aux] = (int)linkInfo[1];
                 an[aux] = indexNode[(int)linkInfo[0]];
@@ -595,18 +641,33 @@ public class AuxTrNet implements Serializable {
         
             }
             
-            logger.info ( (aux-startAux) + " drive intracity transit drive access links added.");
+            for ( String type : serviceTypeLinks.keySet() ) {
+                int count = serviceTypeLinks.get(type);
+                logger.info ( String.format( "%d drive %s transit access links added.", count, type ) );
+            }
             startAux = aux;
             
             // get walk egress links from alighting nodes to centroids
             driveAccessLinkList = getWalkAccessLinks( "alighting" );
             it = driveAccessLinkList.iterator();
+            serviceTypeLinks.clear();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
         
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
                 routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                
+                if ( serviceTypeLinks.containsKey(routeTypeStrings[(int)linkInfo[3]]) ) {
+                    // if an entry exists, get the entry, then add the increnmented value
+                    int count = serviceTypeLinks.get ( routeTypeStrings[(int)linkInfo[3]] );
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], ++count );
+                }
+                else {
+                    // otherwise add the key with a value of 1.
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], 1 );
+                }
+                
                 ia[aux] = (int)linkInfo[0];
                 ib[aux] = (int)linkInfo[1];
                 an[aux] = indexNode[(int)linkInfo[0]];
@@ -622,7 +683,10 @@ public class AuxTrNet implements Serializable {
         
             }
             
-            logger.info ( (aux-startAux) + " drive intracity transit walk egress links added.");
+            for ( String type : serviceTypeLinks.keySet() ) {
+                int count = serviceTypeLinks.get(type);
+                logger.info ( String.format( "%d drive %s transit egress links added.", count, type ) );
+            }
             startAux = aux;
             
         }
@@ -632,12 +696,24 @@ public class AuxTrNet implements Serializable {
             // get drive access links from centroids to boarding nodes
             driveAccessLinkList = getDriveAccessLinks( 50.0, "boarding" );      // max dist = 50 miles for drive to long distance transit                
             it = driveAccessLinkList.iterator();
+            serviceTypeLinks.clear();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
             
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
                 routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                
+                if ( serviceTypeLinks.containsKey(routeTypeStrings[(int)linkInfo[3]]) ) {
+                    // if an entry exists, get the entry, then add the increnmented value
+                    int count = serviceTypeLinks.get ( routeTypeStrings[(int)linkInfo[3]] );
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], ++count );
+                }
+                else {
+                    // otherwise add the key with a value of 1.
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], 1 );
+                }
+                
                 ia[aux] = (int)linkInfo[0];
                 ib[aux] = (int)linkInfo[1];
                 an[aux] = indexNode[(int)linkInfo[0]];
@@ -653,18 +729,33 @@ public class AuxTrNet implements Serializable {
             
             }
             
-            logger.info ( (aux-startAux) + " drive intercity transit drive access links added.");
+            for ( String type : serviceTypeLinks.keySet() ) {
+                int count = serviceTypeLinks.get(type);
+                logger.info ( String.format( "%d drive %s transit access links added.", count, type ) );
+            }
             startAux = aux;
 
             // get drive egress links from alighting nodes to centroids
             driveAccessLinkList = getDriveAccessLinks( 50.0, "alighting" );      // max dist = 50 miles for drive to long distance transit                
             it = driveAccessLinkList.iterator();
+            serviceTypeLinks.clear();
             while ( it.hasNext() ) {
                 double[] linkInfo = (double[])it.next();
             
                 hwyLink[aux] = -1;
                 trRoute[aux] = -1;
                 routeType[aux] = routeTypeStrings[(int)linkInfo[3]];
+                
+                if ( serviceTypeLinks.containsKey(routeTypeStrings[(int)linkInfo[3]]) ) {
+                    // if an entry exists, get the entry, then add the increnmented value
+                    int count = serviceTypeLinks.get ( routeTypeStrings[(int)linkInfo[3]] );
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], ++count );
+                }
+                else {
+                    // otherwise add the key with a value of 1.
+                    serviceTypeLinks.put ( routeTypeStrings[(int)linkInfo[3]], 1 );
+                }
+                
                 ia[aux] = (int)linkInfo[0];
                 ib[aux] = (int)linkInfo[1];
                 an[aux] = indexNode[(int)linkInfo[0]];
@@ -680,7 +771,10 @@ public class AuxTrNet implements Serializable {
             
             }
             
-            logger.info ( (aux-startAux) + " drive intercity transit drive egress links added.");
+            for ( String type : serviceTypeLinks.keySet() ) {
+                int count = serviceTypeLinks.get(type);
+                logger.info ( String.format( "%d drive %s transit egress links added.", count, type ) );
+            }
             startAux = aux;
 
         }
@@ -743,6 +837,9 @@ public class AuxTrNet implements Serializable {
         sp.setLinkCost( linkCost );
 
         for (int centroid=0; centroid < nh.getNumCentroids(); centroid++) {
+            
+            if ( TransitAssignAndSkimManager.TEST_ORIG > 0 && TransitAssignAndSkimManager.TEST_ORIG != indexNode[centroid] && TransitAssignAndSkimManager.TEST_DEST > 0 && TransitAssignAndSkimManager.TEST_DEST != indexNode[centroid] )
+                continue;
 
             try {
                 

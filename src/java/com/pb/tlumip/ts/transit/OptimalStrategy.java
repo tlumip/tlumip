@@ -34,8 +34,8 @@ public class OptimalStrategy {
 
 
     protected static Logger logger = Logger.getLogger(OptimalStrategy.class);
-//    protected static Logger debugLogger = Logger.getLogger("debugLogger");
-    protected static Logger debugLogger = logger;
+    protected static Logger debugLogger = Logger.getLogger("debugLogger");
+    //protected static Logger debugLogger = logger;
 
 	int IVT = TransitAssignAndSkimManager.SkimType.IVT.ordinal();      // in-vehicle time
 	int FWT = TransitAssignAndSkimManager.SkimType.FWT.ordinal();      // first wait
@@ -44,6 +44,7 @@ public class OptimalStrategy {
     int EGR = TransitAssignAndSkimManager.SkimType.EGR.ordinal();      // egress time
     int AUX = TransitAssignAndSkimManager.SkimType.AUX.ordinal();      // transfer time
     int BRD = TransitAssignAndSkimManager.SkimType.BRD.ordinal();      // boardings
+    int BRD_HSR = TransitAssignAndSkimManager.SkimType.BRD_HSR.ordinal();      // HSR routes available for OD
     int HSR$ = TransitAssignAndSkimManager.SkimType.HSR$.ordinal();    // hsr fare
     int HSR_IVT = TransitAssignAndSkimManager.SkimType.HSR_IVT.ordinal();    // hsr rail-only ivt
     int AIR$ = TransitAssignAndSkimManager.SkimType.AIR$.ordinal();    // air fare
@@ -52,7 +53,7 @@ public class OptimalStrategy {
     int BUS$ = TransitAssignAndSkimManager.SkimType.BUS$.ordinal();    // intercity bus fare
     int BUS_IVT = TransitAssignAndSkimManager.SkimType.BUS_IVT.ordinal();    // intercity bus bus-only ivt
     int TRAN$ = TransitAssignAndSkimManager.SkimType.TRAN$.ordinal();  // intracity transit fare
-	public static final int NUM_SKIMS = 15;
+	public static final int NUM_SKIMS = 16;
 
 	static final double COMPARE_EPSILON = 1.0e-07;
 
@@ -238,6 +239,9 @@ public class OptimalStrategy {
 		if (debug)
 		    debugLogger.info ("building optimal strategy to " + dest + "(" + indexNode[dest] + ")");
 		
+		
+		ArrayList<Integer> linksInStrategyList = new ArrayList<Integer>();
+		
         
         //while ((k = candidateHeap.remove()) != -1) {  //old Heap
         while ( candidateHeap.size() > 0 ) {
@@ -247,7 +251,7 @@ public class OptimalStrategy {
             
             
             int dummy=0;
-            if ( k == 18505 ){
+            if ( ia[k] < indexNode.length && indexNode[ia[k]] == 24963 ){
                 dummy = 1;
             }
             
@@ -320,6 +324,7 @@ public class OptimalStrategy {
 						inStrategy[k] = true;
 						strategyOrderForLink[k] = inStrategyCount;
                         orderInStrategy[inStrategyCount++] = k;
+                        linksInStrategyList.add(k);
 						updateEnteringLabels(ia[k]);
 
 					}
@@ -344,6 +349,7 @@ public class OptimalStrategy {
 						inStrategy[k] = true;
 						strategyOrderForLink[k] = inStrategyCount;
 						orderInStrategy[inStrategyCount++] = k;
+                        linksInStrategyList.add(k);
 						updateEnteringLabels (ia[k]);
 							
 					}
@@ -366,6 +372,7 @@ public class OptimalStrategy {
     						inStrategy[k] = true;
     						strategyOrderForLink[k] = inStrategyCount;
     						orderInStrategy[inStrategyCount++] = k;
+                            linksInStrategyList.add(k);
     						updateEnteringLabels(ia[k]);
                         }
                         
@@ -400,6 +407,17 @@ public class OptimalStrategy {
 				
 			}
 
+//            logger.info( "" );
+//            logger.info( "Strategy Contents:" );
+//            int cnt = 0;
+//            for ( int el : linksInStrategyList ) {
+//                int an = ia[el] < indexNode.length ? indexNode[ia[el]] : -1;
+//                int bn = ib[el] < indexNode.length ? indexNode[ib[el]] : -1;
+//                String name = trRoute[el] >= 0 ? rteNames[trRoute[el]] : "N/A";
+//                logger.info( String.format("cnt=%d, k=%d, ia=%d, ib=%d, an=%d, bn=%d, linkType=%d, rte=%d, rteName=%s", cnt++, el, ia[el], ib[el], an, bn, linkType[el], trRoute[el], name ) );
+//            }
+//            logger.info( "" );
+            
 		} // end of while heap not empty
 
 		return 0;
@@ -414,7 +432,8 @@ public class OptimalStrategy {
 
         int i, j, k, m;
         int start, end;
-        boolean debug = classDebug;
+        //boolean debug = classDebug;
+        boolean debug = true;
         double linkImped = 0.0;
 
         if (debug) {
@@ -447,22 +466,39 @@ public class OptimalStrategy {
             // don't add link k to the heap.
             if ( linkType[k] == AuxTrNet.BOARDING_TYPE && !inStrategy[k+1] )
                 continue;
-                
+
+            
             linkImped = nh.getAuxLinkImped(identifier, k);
-            linkLabel[k] = nodeLabel[ib[k]] + linkImped;
 
             // if the anode's label is already smaller than the bnode's label plus the link impedance,
             // no need to add the link to the heap. 
             if ( nodeLabel[ia[k]] < (nodeLabel[ib[k]] + linkImped) )
                 continue;
 
+            
+            if (linkType[k] == AuxTrNet.BOARDING_TYPE) {
+                if ( nodeFreq[ia[k]] == 0.0 ) {
+                    // first transit boarding link considered from the current node
+                    linkLabel[k] = (AuxTrNet.ALPHA + freq[k]*(nodeLabel[ib[k]] + linkImped))/(nodeFreq[ia[k]] + freq[k]);
+                }
+                else {
+                    // at least one transit boarding link from the current node exists in optimal strategy
+                    linkLabel[k] = (nodeFreq[ia[k]]*nodeLabel[ia[k]] + freq[k]*(nodeLabel[ib[k]] + linkImped))/(nodeFreq[ia[k]] + freq[k]);
+                }
+            }
+            else {
+                linkLabel[k] = nodeLabel[ib[k]] + linkImped;
+            }
+            
+
+            
             if (debug) {
                 m = hwyLink[k];
                 String name = "N/A";
                 if ( trRoute[k] >= 0 )
                     name = String.format("%d_%s", trRoute[k], rteNames[trRoute[k]]);
                 
-                debugLogger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + linkType[k] + ", route=" + name + ", ia=" + ia[k] + "(" + (m>=0 ? indexNode[gia[m]] : -1) + "), ib=" + ib[k] + "(" + (m>=0 ? indexNode[gib[m]] : -1) + "), linkLabel[k]=" + String.format("%15.6f", linkLabel[k]) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ib[k]] + ", linkImped=" + linkImped);
+                debugLogger.info ("adding   " + i + ", indexb[i] or k=" + k + ", linkType=" + linkType[k] + ", route=" + name + ", ia=" + ia[k] + "(" + ( ia[k] < indexNode.length ? indexNode[ia[k]] : -1) + "), ib=" + ib[k] + "(" + (ib[k] < indexNode.length ? indexNode[ib[k]] : -1) + "), linkLabel[k]=" + String.format("%15.6f", linkLabel[k]) + ", nodeLabel[ag.ib[k]]=" + nodeLabel[ib[k]] + ", linkImped=" + linkImped);
             }
 
             HeapElement he = new HeapElement(k, linkType[k], linkLabel[k]);
@@ -568,6 +604,68 @@ public class OptimalStrategy {
         }
         
         return routeBoardingsToDest;
+
+    }
+
+
+    
+    public void testLoadOptimalStrategyDest () {
+
+        // tripColumn is the column of the trip table for the destination zone for this optimal strategy 
+        int k, m;
+        int count;
+        double linkFlow;
+        
+        int orig = nodeIndex[TransitAssignAndSkimManager.TEST_ORIG];
+                  
+        // assign 1 trip to TransitAssignAndSkimManager.TEST_DEST for testing purposes.
+        nodeFlow[orig] = 1;
+
+        
+        // loop through links in optimal strategy in reverse order and allocate
+        // flow at the nodes to exiting links in the optimal strategy
+        count = 0;
+        for (int i=inStrategyCount; i >= 0; i--) {
+            
+            k = orderInStrategy[i];
+            m = hwyLink[k];
+
+            if ( linkType[k] == AuxTrNet.BOARDING_TYPE) {
+                
+                linkFlow = (freq[k]/nodeFreq[ia[k]])*nodeFlow[ia[k]];
+
+                if ( linkFlow > 0 ) {
+                    flow[k] = linkFlow;
+                    nodeFlow[ib[k]] += linkFlow;
+
+                    // log boarding
+                    logger.info ( String.format("orig=%d, dest=%d, board=%d, rte=%d, rteName=%s, flow=%.3f", + indexNode[orig], indexNode[dest], indexNode[ia[k]], trRoute[k], rteNames[trRoute[k]], flow[k] ) );
+                    //logger.info ( "count=" + count++ + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
+                }
+
+            }
+            else {
+
+                linkFlow = nodeFlow[ia[k]];
+
+                if ( linkFlow > 0 ) {
+                    if ( nodeLabel[ib[k]] != AuxTrNet.INFINITY ) {
+                        flow[k] = linkFlow;
+                        nodeFlow[ib[k]] += linkFlow;
+                        nodeFlow[ia[k]] -= linkFlow;
+
+                        if ( linkType[k] == AuxTrNet.ALIGHTING_TYPE) {
+                            // log alighting
+                            logger.info ( String.format("orig=%d, dest=%d, alight=%d, rte=%d, rteName=%s, flow=%.3f", + indexNode[orig], indexNode[dest], indexNode[ib[k]], trRoute[k], rteNames[trRoute[k]], flow[k] ) );
+                        }
+                        //logger.info ( "count=" + count++ + ", i=" + i + ", k=" + k + ", m=" + m + ", trRoute=" + trRoute[k] + ", ag.ia=" + ia[k] + ", ag.ib="  + ib[k] + ", nh.an=" + (m>=0 ? indexNode[gia[m]] : -1) + ", nh.bn=" + (m>=0 ? indexNode[gib[m]] : -1) + ", linkType=" + linkType[k] + ", ag.walkTime=" + walkTime[k] + ", invTime=" + invTime[k] + ", ag.waitTime=" + waitTime[k] + ", flow[k]=" + flow[k] + ", nodeLabel[ia[k]]=" + nodeLabel[ia[k]] + ", nodeLabel[ib[k]]=" + nodeLabel[ib[k]] );
+                    }
+                }
+
+            }
+            
+        
+        }
 
     }
 
@@ -715,6 +813,9 @@ public class OptimalStrategy {
                         nodeSkims[AIR$][ia[k]] = cost[k];
                     else if ( rteMode[k] == 't' )
                         nodeSkims[HSR$][ia[k]] = cost[k];
+                    else if ( rteMode[k] == 'm' ) {
+                        nodeSkims[BRD_HSR][ia[k]] ++;
+                    }
                     
                 }
                 else {
@@ -723,7 +824,17 @@ public class OptimalStrategy {
                     nodeSkims[TWT][ia[k]] = nodeSkims[TWT][ib[k]] + freq[k]*AuxTrNet.ALPHA/nodeFreq[ia[k]];
                     nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]] + freq[k]/nodeFreq[ia[k]];
 
+                    if ( rteMode[k] == 'm' )
+                        nodeSkims[BRD_HSR][ia[k]] ++;
+
                 }
+                
+                
+                int dummy = 0;
+                if ( nodeSkims[BRD_HSR][ia[k]] > 1 ) {
+                    dummy = 1;
+                }
+                
                 
                 /*
                 // loop over boarding links exiting ia[k] and sum 1/headway.
@@ -771,6 +882,7 @@ public class OptimalStrategy {
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
+                nodeSkims[BRD_HSR][ia[k]] = nodeSkims[BRD_HSR][ib[k]];
                 
                 // if link mode is intercity rail, accumulate dist and ivt.
                 if ( rteMode[k] == 'm' ) {
@@ -808,6 +920,7 @@ public class OptimalStrategy {
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
+                nodeSkims[BRD_HSR][ia[k]] = nodeSkims[BRD_HSR][ib[k]];
                     
                 nodeSkims[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
                 nodeSkims[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];
@@ -826,6 +939,7 @@ public class OptimalStrategy {
                 nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                 nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                 nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
+                nodeSkims[BRD_HSR][ia[k]] = nodeSkims[BRD_HSR][ib[k]];
                 
                 nodeSkims[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
                 nodeSkims[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];
@@ -845,6 +959,7 @@ public class OptimalStrategy {
                     nodeSkims[ACC][ia[k]] = 0.0;
                     nodeSkims[AUX][ia[k]] = 0.0;
                     nodeSkims[BRD][ia[k]] = 0.0;
+                    nodeSkims[BRD_HSR][ia[k]] = 0.0;
                     nodeSkims[EGR][ia[k]] = walkTime[k];
 
                     nodeSkims[HSR_IVT][ia[k]] = 0.0;
@@ -864,6 +979,7 @@ public class OptimalStrategy {
                     skimResults[AUX][ia[k]] = nodeSkims[AUX][ib[k]];
                     skimResults[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                     skimResults[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
+                    skimResults[BRD_HSR][ia[k]] = nodeSkims[BRD_HSR][ib[k]];
 
                     skimResults[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
                     skimResults[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];
@@ -882,6 +998,7 @@ public class OptimalStrategy {
                     nodeSkims[AUX][ia[k]] = nodeSkims[AUX][ib[k]] + walkTime[k];
                     nodeSkims[EGR][ia[k]] = nodeSkims[EGR][ib[k]];
                     nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]];
+                    nodeSkims[BRD_HSR][ia[k]] = nodeSkims[BRD_HSR][ib[k]];
 
                     nodeSkims[HSR_IVT][ia[k]] = nodeSkims[HSR_IVT][ib[k]];
                     nodeSkims[RAIL_IVT][ia[k]] = nodeSkims[RAIL_IVT][ib[k]];

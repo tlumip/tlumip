@@ -911,45 +911,54 @@ public class Network implements Serializable {
                 // traverse links and store attibutes in linktable
                 for (int i=0; i < table.getRowCount(); i++) {
                     
-                    int an = (int)table.getValueAt( i+1, "FNODE" );
-                    int bn = (int)table.getValueAt( i+1, "TNODE" );
-                    int uniqueId = (int)table.getValueAt( i+1, "UNIQID" );
-                    int cap = (int)table.getValueAt( i+1, "CAPACITY" );
-                    int taz = (int)table.getValueAt( i+1, "NEWTAZ" );
+                    try {
+                        
+                        int an = (int)table.getValueAt( i+1, "FNODE" );
+                        int bn = (int)table.getValueAt( i+1, "TNODE" );
+                        int uniqueId = (int)table.getValueAt( i+1, "UNIQID" );
+                        int cap = (int)table.getValueAt( i+1, "CAPACITY" );
+                        int taz = (int)table.getValueAt( i+1, "NEWTAZ" );
 
-                    // read the link cost fields by user class into the timeValueOfCost array
-                    double linkCost = 0.0;
-                    for ( char c : userClasses ) {
-                        int m = getUserClassIndex(c);
-                        linkAttribCost[m][i] = table.getValueAt( i+1, String.format("COST_%c", c) );
+                        // read the link cost fields by user class into the timeValueOfCost array
+                        double linkCost = 0.0;
+                        for ( char c : userClasses ) {
+                            int m = getUserClassIndex(c);
+                            linkAttribCost[m][i] = table.getValueAt( i+1, String.format("COST_%c", c) );
 
-                        // cost parameter is (60/VOT) in units of  min/cent ( minutes/hr / cents/hr )
-                        // dist parameter is OPERATING_COST / VOT in min/mile (i.e. TIME_PARAMETER * OPERATING_COST )
-                        linkCost += (60.0/VOT[periodIndex][m]) * ( linkAttribCost[m][i] + OP_COST[m]*dist[i] );
+                            // cost parameter is (60/VOT) in units of  min/cent ( minutes/hr / cents/hr )
+                            // dist parameter is OPERATING_COST / VOT in min/mile (i.e. TIME_PARAMETER * OPERATING_COST )
+                            linkCost += (60.0/VOT[periodIndex][m]) * ( linkAttribCost[m][i] + OP_COST[m]*dist[i] );
+                        }
+                        totLinkCost[i] = linkCost;
+
+
+                        int drop = 0;
+                        if ( tableContainsDropsColumn )
+                            drop = (int)table.getValueAt( i+1, "DROPLINK" );
+        
+                        int k = getLinkIndex(an,bn);
+                        
+                        tazs[k] = taz;
+
+                        if ( tableContainsRevisedModeColumn )
+                            revMode[k] = table.getStringValueAt( i+1, "REVISED_MODES" );
+                        
+                        int lanes = (int)linkTable.getValueAt( k+1, "lanes" );
+                        originalCapacity[k] = cap;
+                        capacity[k] = cap / volumeFactor;
+                        // the following variables are needed for the VDF Integrals definitions
+                        totalCapacity[k] = 0.75 * capacity[k] * lanes;
+
+                        labels[k] = an + "_" + bn;
+                        drops[k] = drop;
+                        uniqueIds[k] = uniqueId;
+
                     }
-                    totLinkCost[i] = linkCost;
+                    catch ( Exception e ) {
+                        logger.error ( String.format("exception caught reading attributes file, record %d.", i+1 ), e );
+                        throw new RuntimeException();
+                    }
 
-
-                    int drop = 0;
-                    if ( tableContainsDropsColumn )
-                        drop = (int)table.getValueAt( i+1, "DROPLINK" );
-    
-                    int k = getLinkIndex(an,bn);
-                    
-                    tazs[k] = taz;
-
-                    if ( tableContainsRevisedModeColumn )
-                        revMode[k] = table.getStringValueAt( i+1, "REVISED_MODES" );
-                    
-                    int lanes = (int)linkTable.getValueAt( k+1, "lanes" );
-                    originalCapacity[k] = cap;
-                    capacity[k] = cap / volumeFactor;
-                    // the following variables are needed for the VDF Integrals definitions
-                    totalCapacity[k] = 0.75 * capacity[k] * lanes;
-
-                    labels[k] = an + "_" + bn;
-                    drops[k] = drop;
-                    uniqueIds[k] = uniqueId;
                 }
 
                 setTaz(tazs);

@@ -412,7 +412,7 @@ public class ShortestPathTreeH {
                 double[] nodeData = new double[2];
                 nodeData[0] = i;
                 nodeData[1] = nodeLabels[i];
-                tempData[k++] = (int)nodeLabels[i]*100000;
+                tempData[k++] = (int)(nodeLabels[i]*100000);
                 tempList.add( nodeData );
             }
         }
