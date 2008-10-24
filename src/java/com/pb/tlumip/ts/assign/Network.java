@@ -42,6 +42,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.IndexSort;
 import com.pb.common.matrix.AlphaToBeta;
 import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.transit.AuxTrNet;
 
 /**
  * This Network class contains the link and node data tables and
@@ -919,6 +920,7 @@ public class Network implements Serializable {
                         int cap = (int)table.getValueAt( i+1, "CAPACITY" );
                         int taz = (int)table.getValueAt( i+1, "NEWTAZ" );
 
+                        
                         // read the link cost fields by user class into the timeValueOfCost array
                         double linkCost = 0.0;
                         for ( char c : userClasses ) {
@@ -1068,6 +1070,7 @@ public class Network implements Serializable {
             else
                 capacity[i] = 600;
 
+            
 			
 			lanes[i] = linkTable.getValueAt( i+1, "lanes" );
 			
@@ -1371,7 +1374,7 @@ public class Network implements Serializable {
 		ip[old] = 0;
 		for (int i=0; i < nodes.length; i++) {
 			k = indexArray[i];
-
+			
 			if ( nodes[k] != old ) {
 				ip[nodes[k]] = i;
 				old = nodes[k];
@@ -1672,7 +1675,14 @@ public class Network implements Serializable {
         int k = 0;
         int returnValue = 0;
         
-        for (int i=ipa[nodeIndex[an]]; i < ipa[nodeIndex[an]+1]; i++) {
+        
+        // search through bnodes for the given anode to find the link and return its index
+        int start = ipa[nodeIndex[an]];
+        int end = ipa[nodeIndex[an] + 1];
+        if ( end <= 0 )
+            end = start + 1;
+
+        for (int i=start; i < end; i++) {
             
             k = sortedLinkIndexA[i];
             
@@ -1685,6 +1695,32 @@ public class Network implements Serializable {
                 break;
             }
         }
+
+        
+        if ( returnValue == 0 ) {
+            
+            // search through bnodes for the given anode to find the link and return its index
+            start = ipb[nodeIndex[bn]];
+            end = ipb[nodeIndex[bn] + 1];
+            if ( end <= 0 )
+                end = start + 1;
+
+            for (int i=start; i < end; i++) {
+                
+                k = sortedLinkIndexB[i];
+                
+                if(logger.isDebugEnabled()) {
+                    logger.debug ("i=" + i + ", k=" + k + ", an=" + nodeIndex[an] + ", bn=" + nodeIndex[bn] + ", ia[k=" + k + "]=" + ia + ", ib[k=" + k + "]=" + ib );
+                }
+                
+                if ( ia[k] == nodeIndex[an] ) {
+                    returnValue = k;
+                    break;
+                }
+            }
+
+        }
+        
 
         return returnValue;
         
