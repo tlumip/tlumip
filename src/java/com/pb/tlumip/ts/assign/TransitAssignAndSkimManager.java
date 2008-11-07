@@ -71,14 +71,14 @@ public class TransitAssignAndSkimManager {
     public static final int TEST_DEST = -1;
 
     // make TEST_ORIG and TEST_DEST a positive number to trigger debugging the strategy for the od.
-    //public static final int TEST_ORIG = 12;
+    //public static final int TEST_ORIG = 1418;
     //public static final int TEST_DEST = 1;
 	
     static final String OUT_OF_AREA_FARE_ZONE = "NONE"; 
     
     
     protected static Object objLock = new Object();
-//    private static final int MAX_NUMBER_OF_THREADS = 1;
+    //private static final int MAX_NUMBER_OF_THREADS = 1;
     private static final int MAX_NUMBER_OF_THREADS = 2;
     
     DemandHandlerIF dh = null;
@@ -95,14 +95,14 @@ public class TransitAssignAndSkimManager {
 
     String assignmentPeriod;
     
-    HashMap fareZones = null;
-    HashMap intracityFareTable = null;
+    HashMap<Integer,String> fareZones = null;
+    HashMap<String,Float> intracityFareTable = null;
     
     int[] zonesToSkim = null;
     int[] externalToAlphaInternal = null;
     int[] alphaExternalNumbers = null;
 
-    HashMap savedBoardings = null;
+    HashMap<String,SavedRouteInfo> savedBoardings = null;
 
 
     
@@ -128,7 +128,7 @@ public class TransitAssignAndSkimManager {
 
         intracityFareTable = readIntracityTransitFareCsvFile();
         
-        savedBoardings = new HashMap();
+        savedBoardings = new HashMap<String,SavedRouteInfo>();
         
         assignmentPeriod = nh.getTimePeriod();
         
@@ -205,44 +205,67 @@ public class TransitAssignAndSkimManager {
 
 
 
-        ///*
+        
+        
+        // check for existence of a route file targets in the properties file for each service type, access mode, period.
+        // if resource is missing, then no need to create an AssignSkimTask -- no assignment or skimming is required for the service type.
+        
         
         // drive access air loading and skims
-        String[] drAirTypes = { "air" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
+        String[] drAirTypesIn = { "air" }; 
+        String[] drAirTypes = getServiceTypeRouteFilesSpecified( drAirTypesIn, period );
+        if ( drAirTypes.length > 0 )
+            results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
         
         // drive access hsr loading and skims
-        String[] drHsrTypes = { "hsr", "intercity" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name() ) ) );
+        String[] drHsrTypesIn = { "hsr", "intercity" }; 
+        String[] drHsrTypes = getServiceTypeRouteFilesSpecified( drHsrTypesIn, period );
+        if ( drHsrTypes.length > 0 )
+            results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name() ) ) );
         
         // drive access intercity bus/rail loading and skims
-        String[] drIcTypes = { "intercity" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
+        String[] drIcTypesIn = { "intercity" }; 
+        String[] drIcTypes = getServiceTypeRouteFilesSpecified( drIcTypesIn, period );
+        if ( drIcTypes.length > 0 )
+            results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
 
         // drive access intracity transit loading and skims
-        String[] drTrTypes = { "intracity" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name() ) ) );
+        String[] drTrTypesIn = { "intracity" }; 
+        String[] drTrTypes = getServiceTypeRouteFilesSpecified( drTrTypesIn, period );
+        if ( drTrTypes.length > 0 )
+            results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name() ) ) );
 
         // walk access hsr loading and skims
-        String[] wkHsrTypes = { "hsr", "intercity", "intracity" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name() ) ) );
+        String[] wkHsrTypesIn = { "hsr", "intercity", "intracity" }; 
+        String[] wkHsrTypes = getServiceTypeRouteFilesSpecified( wkHsrTypesIn, period );
+        if ( wkHsrTypes.length > 0 )
+            results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name() ) ) );
 
         // walk access intercity loading and skims
-        String[] wkIcTypes = { "intercity", "intracity" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
+        String[] wkIcTypesIn = { "intercity", "intracity" }; 
+        String[] wkIcTypes = getServiceTypeRouteFilesSpecified( wkIcTypesIn, period );
+        if ( wkIcTypes.length > 0 )
+            results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
 
         // walk access intracity loading and skims
-        String[] wkTrTypes = { "intracity" }; 
-        results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+        String[] wkTrTypesIn = { "intracity" }; 
+        String[] wkTrTypes = getServiceTypeRouteFilesSpecified( wkTrTypesIn, period );
+        if ( wkTrTypes.length > 0 )
+            results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
 
-        //*/
         
         
         
+        /*
         
-        //String[] wkHsrTypes = { "hsr", "intercity", "intracity" }; 
-        //String[] wkHsrTypes = { "hsr" }; 
-        //results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name() ) ) );
+        // walk access hsr loading and skims
+        String[] wkTrTypesIn = { "intracity" }; 
+        String[] wkTrTypes = getServiceTypeRouteFilesSpecified( wkTrTypesIn, period );
+        if ( wkTrTypes.length > 0 )
+            results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+        
+        */
+        
         
         
         
@@ -288,7 +311,36 @@ public class TransitAssignAndSkimManager {
         
     }
 
+
     
+    // check the service type strings for the period specified for their specification in the proprties file.
+    // if the target name is defined in the properties file, include that service type in the return array.
+    private String[] getServiceTypeRouteFilesSpecified( String[] types, String period ) {
+
+        ArrayList<String> typeList = new ArrayList<String>();
+        
+        for ( int i=0; i < types.length; i++ ) {
+            try {
+                // if the target for the service type is specified in the property file, add the service type name to the list.
+                // don't need to do anything with the filename at this point, just saving the value in case we need to debug this and see aht is returned.
+                String fileName = appRb.getString( String.format("%s.%s.fileName", types[i], getPeriodIdentifier(period)) );
+                typeList.add( types[i] );
+            }
+            catch ( MissingResourceException e ){
+                // if the first element in the types array, the primary service type, is not defined, then
+                // don't bother checking any other secondary types -- the service is not to be assigned.
+                if ( i == 0 )
+                    return new String[0];
+            }
+        }
+        
+        String[] returnArray = new String[typeList.size()];
+        for ( int i=0; i < returnArray.length; i++ )
+            returnArray[i] = typeList.get(i);
+
+        return returnArray;
+        
+    }
     
     /**
      * setup transit network from route files specified:
@@ -343,13 +395,13 @@ public class TransitAssignAndSkimManager {
 
     
 
-    private HashMap readIntracityTransitFareCsvFile () {
+    private HashMap<String,Float> readIntracityTransitFareCsvFile () {
 
         final String OrigDistLabel = "OFareDistrict";
         final String DestDistLabel = "DFareDistrict";
         final String Fare1990Label = "Fare_1990$";
 
-        HashMap fareTable = null;
+        HashMap<String,Float> fareTable = null;
 
         String filename = appRb.getString( "fareZoneFares.file" );
         
@@ -361,7 +413,7 @@ public class TransitAssignAndSkimManager {
                 OLD_CSVFileReader reader = new OLD_CSVFileReader();
                 TableDataSet table = reader.readFile( new File(filename) );
 
-                fareTable = new HashMap();
+                fareTable = new HashMap<String,Float>();
                 
                 for (int i=0; i < table.getRowCount(); i++) {
                     
@@ -1251,7 +1303,7 @@ public class TransitAssignAndSkimManager {
         }
 
         
-        fareZones = new HashMap();
+        fareZones = new HashMap<Integer,String>();
         for (int i=0; i < alphaNumberArray.length; i++ ) {
             fareZones.put(alphaNumberArray[i], fareZoneLabels[i]);
         }
@@ -1284,10 +1336,10 @@ public class TransitAssignAndSkimManager {
 
             
             // write formatted lines to file here as first line in csv file
-            ArrayList outputLines = formatCsvHeaderLines();
-            Iterator it = outputLines.iterator();
+            ArrayList<String> outputLines = formatCsvHeaderLines();
+            Iterator<String> it = outputLines.iterator();
             while ( it.hasNext() ) {
-                outStream.write( (String)it.next() );
+                outStream.write( it.next() );
             }                
 
 
@@ -1335,12 +1387,12 @@ public class TransitAssignAndSkimManager {
             String[] typeList = { "air", "hsr", "intercity", "intracity" };
             for ( String type : typeList ) {
 
-                ArrayList outputLines = getLogOutputLines ( savedBoardings, type, periodHeadingLabel, ++lineCount );
+                ArrayList<String> outputLines = getLogOutputLines ( savedBoardings, type, periodHeadingLabel, ++lineCount );
                 
                 // write formatted lines to file
-                Iterator it = outputLines.iterator();
+                Iterator<String> it = outputLines.iterator();
                 while ( it.hasNext() ) {
-                    outStream.write( (String)it.next() );
+                    outStream.write( it.next() );
                 }                
                 
             }
@@ -1353,9 +1405,9 @@ public class TransitAssignAndSkimManager {
     
     
         
-    private ArrayList formatLogHeaderLines( String periodHeadingLabel, String routeType, String descrFormat ) {
+    private ArrayList<String> formatLogHeaderLines( String periodHeadingLabel, String routeType, String descrFormat ) {
         
-        ArrayList outputLines = new ArrayList();
+        ArrayList<String> outputLines = new ArrayList<String>();
         
         String title = String.format ( "Transit Network Boardings Report for %s Period %s Trips\n", periodHeadingLabel, routeType );
         String dashes = "";
@@ -1397,8 +1449,8 @@ public class TransitAssignAndSkimManager {
     }
 
         
-    private ArrayList formatCsvHeaderLines() {
-        ArrayList outputLines = new ArrayList();
+    private ArrayList<String> formatCsvHeaderLines() {
+        ArrayList<String> outputLines = new ArrayList<String>();
         outputLines.add("Count,Route,Description,RouteType,Mode,wAir,dAir,wHsr,dHsr,wIc,dIc,wt,dt,wTot,dTot,Total\n");
         return outputLines;
     }
@@ -1429,16 +1481,16 @@ public class TransitAssignAndSkimManager {
     }
     
     
-    private ArrayList getCsvOutputLines ( HashMap savedBoardings, String type, int lineCount ) {
+    private ArrayList<String> getCsvOutputLines ( HashMap<String,SavedRouteInfo> savedBoardings, String type, int lineCount ) {
         
-        ArrayList outputLines = new ArrayList();
+        ArrayList<String> outputLines = new ArrayList<String>();
         double[] totals = new double[11];
 
         // get the subset of route names that match type in sorted order
         SortedSet< String > nameSet = new TreeSet< String >();
-        Iterator it = savedBoardings.keySet().iterator();
+        Iterator<String> it = savedBoardings.keySet().iterator();
         while ( it.hasNext() ) {
-            String name = (String)it.next();
+            String name = it.next();
             SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
             if ( info.routeType.equalsIgnoreCase( type ) )
                 nameSet.add(name);
@@ -1448,7 +1500,7 @@ public class TransitAssignAndSkimManager {
         // generate an output record for each route in the selected subset
         it = nameSet.iterator();
         while ( it.hasNext() ) {
-            String name = (String)it.next();
+            String name = it.next();
             SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
             String outputString = formatCsvRecord( name, info, ++lineCount );
             totals = updateTotals( info, totals );
@@ -1460,16 +1512,16 @@ public class TransitAssignAndSkimManager {
     }
     
     
-    private ArrayList getLogOutputLines ( HashMap savedBoardings, String type, String periodHeadingLabel, int lineCount ) {
+    private ArrayList<String> getLogOutputLines ( HashMap<String,SavedRouteInfo> savedBoardings, String type, String periodHeadingLabel, int lineCount ) {
         
         double[] totals = new double[11];
 
 
         // construct a format string for the description field from the longest route description of any route
         int maxStringLength = 0;
-        Iterator it = savedBoardings.keySet().iterator();
+        Iterator<String> it = savedBoardings.keySet().iterator();
         while ( it.hasNext() ) {
-            String name = (String)it.next();
+            String name = it.next();
             SavedRouteInfo info = (SavedRouteInfo)savedBoardings.get(name);
             if ( info.description.length() > maxStringLength )
                 maxStringLength = info.description.length();
@@ -1480,7 +1532,7 @@ public class TransitAssignAndSkimManager {
 
         
         // add header lines to output list
-        ArrayList outputLines = formatLogHeaderLines( periodHeadingLabel, type, descrFormat );
+        ArrayList<String> outputLines = formatLogHeaderLines( periodHeadingLabel, type, descrFormat );
 
 
         // get the subset of route names that match type in sorted order
