@@ -200,6 +200,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         }
         catch (Exception e) {
             
+            logger.error ("num zones = " + networkNumCentroids);
             logger.error ("error building multiclass od demand matrices for " + timePeriod + " period.");
             logger.error ("multiclassTripTable.length=" + multiclassVehicleTripTable.length);
             logger.error ("multiclassTripTable[0].length=" + multiclassVehicleTripTable[0].length);
@@ -207,7 +208,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
             logger.error ("multiclassTripTableRowSums.length=" + multiclassVehicleTripTableRowSums.length);
             logger.error ("multiclassTripTableRowSums[0].length=" + multiclassVehicleTripTableRowSums[0].length);
             logger.error ("i=" + i + ", j=" + j + ", k=" + k, e);
-            return false;
+            throw new RuntimeException();
             
         }
         
@@ -271,7 +272,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                 
 		if ( assignmentGroupContainsAuto ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
-			logger.info ("reading " + timePeriod + " PT trip list at: " + myDateString);
+            logger.info ( String.format("reading %s PT trip list at: %s, %d zones in trip tables.", timePeriod, myDateString, networkNumCentroids ) );
             ArrayList tripModeList = new ArrayList();
             tripModeList.add( String.valueOf(TripModeType.DA) );
             tripModeList.add( String.valueOf(TripModeType.SR2) );
@@ -358,7 +359,14 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         String fileHeader = null;
         String s;
         
-        double[][] tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
+        double[][] tripTable = null;
+        try {
+            tripTable = new double[networkNumCentroids+1][networkNumCentroids+1];
+        }
+        catch ( Exception e) {
+            logger.error("could not allocate trip table array for " + networkNumCentroids + " zones.", e);
+            throw new RuntimeException();
+        }
 
         TreeMap totalModeFreqMap = new TreeMap();
         TreeMap periodModeFreqMap = new TreeMap();
@@ -407,9 +415,12 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
         
         // parse fields for the values we were interested in.
+        int lineCount =0;
         try {
+            
             while ( (s = in.readLine()) != null) {
-                    
+                lineCount++;
+                
                 // get the int values
                 i = 0;
                 st = new StringTokenizer(s, ",\n\r");
@@ -491,14 +502,21 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         }
         catch (NumberFormatException e) {
             logger.error ( String.format("reading trip list file = %s.", fileName), e);
+            throw new RuntimeException();
         }
         catch (IOException e) {
             logger.error ( String.format("reading trip list file = %s.", fileName), e);
+            throw new RuntimeException();
+        }
+        catch (Exception e) {
+            logger.error ( String.format("reading line %d of trip list file = %s.", lineCount, fileName), e);
+            throw new RuntimeException();
         }
 
+        logger.info("read " + lineCount + " lines from " + fileName + "." );
 
 
-
+        
         Set keys = periodModeFreqMap.keySet();
         Iterator it = keys.iterator();
         logger.info ( "");

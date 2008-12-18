@@ -52,6 +52,8 @@ public class TS {
 	protected static Logger logger = Logger.getLogger(TS.class);
     
 
+	static final String VERSION = "TS version 14 nov 2008, 5";
+	
     static final boolean CREATE_NEW_NETWORK = true;
     public boolean SKIM_ONLY = false;
     
@@ -76,7 +78,8 @@ public class TS {
         catch (MissingResourceException e) {
             // if this exception is caught, no flag was set, so continue on with SKIM_ONLY value false.
         }
-        
+    
+        logger.info( String.format( "%s, with SKIM_ONLY = %s", VERSION, SKIM_ONLY ) );
 	}
 
 
