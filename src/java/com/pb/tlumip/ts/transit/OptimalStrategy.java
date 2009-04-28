@@ -1097,27 +1097,36 @@ public class OptimalStrategy {
     private double getIcBusFareMatrix ( int i, double[] busDist ) {
         
         double fare = 0.0;
+        double fareRate = 0.0;
 
         // if skim OD pair is connected by rail service, calculate distance based bus fare for OD pair
         if ( busDist[i] > 0 ) {
-            fare = 1.9694*Math.pow(busDist[i], -0.4994); 
+            
+            // the following rate function was estimated by ODOT and is in units of dollars per mile
+            fareRate = 1.9694*Math.pow(busDist[i], -0.4994); 
+            fare = fareRate * busDist[i];
         }
         
+        // return bus fare in dollars
         return fare;
         
     }
 
     
-    //TODO: implement function for rail
     private double getIcRailFareMatrix ( int i, double[] railDist ) {
         
         double fare = 0.0;
+        double fareRate = 0.0;
 
         // if skim OD pair is connected by rail service, calculate distance based rail fare for OD pair
         if ( railDist[i] > 0 ) {
-            fare = 0.6823*Math.pow(railDist[i], -0.2989); 
+
+            // the following rate function was estimated by ODOT and is in units of dollars per mile
+            fareRate = 0.6823*Math.pow(railDist[i], -0.2989); 
+            fare = fareRate * railDist[i];
         }
         
+        // return rail fare in dollars
         return fare;
         
     }
