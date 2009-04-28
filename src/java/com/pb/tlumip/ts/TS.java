@@ -431,6 +431,10 @@ public class TS {
             System.exit(-1);
         }
         
+        String userClassVotPk = (String)appMap.get("userClass.pk.vot");
+        String userClassVotOp = (String)appMap.get("userClass.op.vot");
+        String userClassOpCost = (String)appMap.get("userClass.operating.cost");
+
         String userClassesString = (String)appMap.get("userClass.modes");
         String userClassPCEsString = (String)appMap.get("userClass.pces");
         String truckClass1String = (String)appMap.get( "truckClass1.modes" );
@@ -456,6 +460,9 @@ public class TS {
         if ( extraAtribsFileName != null ) propertyValues[NetworkHandlerIF.EXTRA_ATTRIBS_FILENAME_INDEX] = extraAtribsFileName;
         if ( volumeFactor != null ) propertyValues[NetworkHandlerIF.VOLUME_FACTOR_INDEX] = volumeFactor;
         if ( userClassesString != null ) propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] = userClassesString;
+        if ( userClassVotPk != null ) propertyValues[NetworkHandlerIF.USER_CLASS_VOT_PK_STRING_INDEX] = userClassVotPk;
+        if ( userClassVotOp != null ) propertyValues[NetworkHandlerIF.USER_CLASS_VOT_OP_STRING_INDEX] = userClassVotOp;
+        if ( userClassOpCost != null ) propertyValues[NetworkHandlerIF.USER_CLASS_OP_COST_STRING_INDEX] = userClassOpCost;
         if ( userClassPCEsString != null ) propertyValues[NetworkHandlerIF.USER_CLASS_PCES_STRING_INDEX] = userClassPCEsString;
         if ( truckClass1String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS1_STRING_INDEX] = truckClass1String;
         if ( truckClass2String != null ) propertyValues[NetworkHandlerIF.TRUCKCLASS2_STRING_INDEX] = truckClass2String;
