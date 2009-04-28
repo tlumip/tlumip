@@ -26,8 +26,11 @@ public interface NetworkHandlerIF {
     public static int TRUCKCLASS5_STRING_INDEX = 14;
     public static int WALK_SPEED_INDEX = 15;
     public static int USER_CLASS_PCES_STRING_INDEX = 16;
+    public static int USER_CLASS_VOT_PK_STRING_INDEX = 17;
+    public static int USER_CLASS_VOT_OP_STRING_INDEX = 18;
+    public static int USER_CLASS_OP_COST_STRING_INDEX = 19;
 
-    public static int NUMBER_OF_PROPERTY_VALUES = 17;
+    public static int NUMBER_OF_PROPERTY_VALUES = 20;
     
     
     public void startDataServer();
