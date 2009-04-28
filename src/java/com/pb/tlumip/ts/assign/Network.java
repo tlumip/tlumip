@@ -52,11 +52,6 @@ import com.pb.tlumip.ts.transit.AuxTrNet;
 
 public class Network implements Serializable {
 
-	//TODO these values should be set in a method from values determined in tour mode choice
-    static final float[][] VOT  = { { 1150, 1150, 1150, 1150, 1150 }, {  770,  770,  770,  770,  770 } };   // vehicle class VOT: peak $11.50/hr, offpeak $7.70/hr
-    static final float[] OP_COST = {   12,   12,   12,   12,   12 };   // vehicle class cents/mile
-
-
     static final  int NOT_USED_FLAG = 99999999;
     
     
@@ -100,6 +95,10 @@ public class Network implements Serializable {
     char[] userClasses = null;
     float[] userClassPces = null;
 
+    float[] userClassVotPk;
+    float[] userClassVotOp;
+    float[] userClassOpCost;
+    
     double[] volau;
     double[] totAonFlow;
 
@@ -159,6 +158,16 @@ public class Network implements Serializable {
         minCentroidLabel = 1;
 
 
+//  previous version of code defined costs in cents and VOT and OP_COST by user class were hard coded in Network class        
+//      static final float[][] VOT  = { { 1150, 1150, 1150, 1150, 1150 }, {  770,  770,  770,  770,  770 } };   // vehicle class VOT: peak $11.50/hr, offpeak $7.70/hr
+//      static final float[] OP_COST = {   12,   12,   12,   12,   12 };   // vehicle class cents/mile
+        
+        // get value of time and operating cost values (in dollars) by user classes to convert link dollar costs to units of minutes.
+        userClassVotPk = getUserClassFloatValuesFromProperties( propertyValues[NetworkHandlerIF.USER_CLASS_VOT_PK_STRING_INDEX] );
+        userClassVotOp = getUserClassFloatValuesFromProperties( propertyValues[NetworkHandlerIF.USER_CLASS_VOT_OP_STRING_INDEX] );
+        userClassOpCost = getUserClassFloatValuesFromProperties( propertyValues[NetworkHandlerIF.USER_CLASS_OP_COST_STRING_INDEX] );
+        
+        
         // get user classes to assign and assignment groups (which classes are combined together for assigning)
         userClasses = getUserClassesFromProperties ( propertyValues[NetworkHandlerIF.USER_CLASSES_STRING_INDEX] );
         userClassPces = getUserClassPcesFromProperties ( propertyValues[NetworkHandlerIF.USER_CLASS_PCES_STRING_INDEX] );
@@ -755,18 +764,41 @@ public class Network implements Serializable {
 
     private float[] getUserClassPcesFromProperties ( String userClassPcesPropertyString ) {
 
-		// get the mode codes that identify user classes
-		ArrayList<String> userClassPcesList = new ArrayList();
-		StringTokenizer st = new StringTokenizer(userClassPcesPropertyString, ", |");
-		while (st.hasMoreTokens()) {
-			userClassPcesList.add( (String)st.nextElement() );
-		}
+        // get the mode codes that identify user classes
+        ArrayList<String> userClassPcesList = new ArrayList();
+        StringTokenizer st = new StringTokenizer(userClassPcesPropertyString, ", |");
+        while (st.hasMoreTokens()) {
+            userClassPcesList.add( (String)st.nextElement() );
+        }
 
         float[] returnArray = new float[userClassPcesList.size()];
         for ( int i=0; i < userClassPcesList.size(); i++ )
             returnArray[i] = Float.parseFloat( userClassPcesList.get(i) );
 
-		return returnArray;
+        return returnArray;
+
+    }
+
+
+    /**
+     * 
+     * @param userClassVotPropertyString could be the property file key for peak or offpeak value of time or operating cost values
+     * @return float[] with user class indexed values
+     */
+    private float[] getUserClassFloatValuesFromProperties ( String userClassPropertyString ) {
+
+        // get the mode codes that identify user classes
+        ArrayList<String> userClassValueList = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(userClassPropertyString, ", |");
+        while (st.hasMoreTokens()) {
+            userClassValueList.add( (String)st.nextElement() );
+        }
+
+        float[] returnArray = new float[userClassValueList.size()];
+        for ( int i=0; i < userClassValueList.size(); i++ )
+            returnArray[i] = Float.parseFloat( userClassValueList.get(i) );
+
+        return returnArray;
 
     }
 
@@ -881,6 +913,7 @@ public class Network implements Serializable {
     
     private void readLinkAttributesCsvFile ( String filename ) {
 
+        
         // read the extra link attributes file and update link attributes table values.
         if ( filename != null && ! filename.equals("") ) {
 
@@ -905,6 +938,7 @@ public class Network implements Serializable {
 
                 // set the assignment period index
                 int periodIndex = assignmentPeriod.equalsIgnoreCase("peak") ? 0 : 1;
+                float[] valueOfTimeArray = assignmentPeriod.equalsIgnoreCase("peak") ? userClassVotPk : userClassVotOp;
 
                 double[] dist = getDist();
                 double[] totLinkCost = new double[table.getRowCount()];
@@ -929,7 +963,7 @@ public class Network implements Serializable {
 
                             // cost parameter is (60/VOT) in units of  min/cent ( minutes/hr / cents/hr )
                             // dist parameter is OPERATING_COST / VOT in min/mile (i.e. TIME_PARAMETER * OPERATING_COST )
-                            linkCost += (60.0/VOT[periodIndex][m]) * ( linkAttribCost[m][i] + OP_COST[m]*dist[i] );
+                            linkCost += (60.0/valueOfTimeArray[m]) * ( linkAttribCost[m][i] + userClassOpCost[m]*dist[i] );
                         }
                         totLinkCost[i] = linkCost;
 
