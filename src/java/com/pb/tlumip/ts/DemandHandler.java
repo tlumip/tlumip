@@ -56,7 +56,6 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 	protected static transient Logger logger = Logger.getLogger(DemandHandler.class);
 
     static final double AVERAGE_SR3P_AUTO_OCCUPANCY = 3.33;
-    static final double ET_DEFAULT_TRUCK_FACTOR = 1.2;
     static final int MAX_TRUCK_CLASSES = 5;
     
     
@@ -728,6 +727,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         int group, mode;
         char modeChar;
         String truckType;
+        double truckVolume = 1.0;
         double tripFactor = 1.0;
         int allTruckTripCount=0;
 
@@ -756,6 +756,10 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     dest = (int)table.getValueAt( i+1, "destination" );
                     startTime = (int)table.getValueAt( i+1, "tripStartTime" );
                     truckType = (String)table.getStringValueAt( i+1, "truckClass" );
+                    
+                    // truck volume is 1 by default, 1 trip per record.
+                    if ( table.containsColumn( "truckVolume" ) )
+                        truckVolume = (double)table.getValueAt( i+1, "truckVolume" );
                     //tripFactor = ET_DEFAULT_TRUCK_FACTOR;  // replace tripFactor from CT and ET with PCE based on truck type.
     
                     mode = Integer.parseInt( truckType.substring(3) );
@@ -786,16 +790,16 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                     // accumulate all peak period highway mode trips
                     if ( tripStartsInCurrentPeriod ( startTime ) ) {
     
-                        tripTable[group-1][o][d] += tripFactor;
-                        tripsByUserClass[mode-1] += tripFactor;
-                        tripsByAssignmentGroup[group-1] += tripFactor;
+                        tripTable[group-1][o][d] += truckVolume*tripFactor;
+                        tripsByUserClass[mode-1] += truckVolume*tripFactor;
+                        tripsByAssignmentGroup[group-1] += truckVolume*tripFactor;
 
                         // accumulate district/district trip summaries by user class
-                        multiclassVehicleDistrictTable[group][alphaDistrictIndex[orig]][alphaDistrictIndex[dest]] += ET_DEFAULT_TRUCK_FACTOR;
+                        multiclassVehicleDistrictTable[group][alphaDistrictIndex[orig]][alphaDistrictIndex[dest]] += truckVolume*tripFactor;
                         
                     }
                     
-                    allTruckTripCount += ET_DEFAULT_TRUCK_FACTOR;
+                    allTruckTripCount += truckVolume*tripFactor;
     
                 }
     
