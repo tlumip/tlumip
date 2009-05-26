@@ -75,7 +75,7 @@ public class SPGnew extends SPG {
     }
 
 	
-    private void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String baseYear, String currentYear ) {
+    public void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String baseYear, String currentYear ) {
         IndustryOccupationSplitIndustryReference ref = new IndustryOccupationSplitIndustryReference((String) globalPropertyMap.get("industry.occupation.to.split.industry.correspondence"));
         IncomeSize incSize = new IncomeSize( Double.parseDouble( (String)spgPropertyMap.get("convertTo2000Dollars") ) );
         SwIndustry ind = new Industry( (String)globalPropertyMap.get("sw_pums_industry.correspondence.fileName"), baseYear, ref );
