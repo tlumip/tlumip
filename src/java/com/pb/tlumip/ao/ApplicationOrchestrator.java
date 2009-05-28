@@ -27,6 +27,7 @@ import com.pb.tlumip.ed.EDControl;
 import com.pb.tlumip.et.ETModel;
 import com.pb.tlumip.spg.SPGnew;
 import com.pb.tlumip.ts.TSModelComponent;
+import com.pb.tlumip.epf.EdPiFeedback;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -97,6 +98,8 @@ public class ApplicationOrchestrator {
                 runLogWriter.write("GLOBAL.TEMPLATE.INTERVAL=0");
 	            runLogWriter.newLine();
                 runLogWriter.write("ED.LAST.RUN=0");
+                runLogWriter.newLine();
+                runLogWriter.write("EPF.LAST.RUN=0");
                 runLogWriter.newLine();
                 runLogWriter.write("ALD.LAST.RUN=0");
                 runLogWriter.newLine();
@@ -375,6 +378,13 @@ public class ApplicationOrchestrator {
 
     }
 
+    public void runEPFModel(int baseYear, int timeInterval, ResourceBundle appRb){
+
+        ModelComponent comp = new EdPiFeedback(appRb);
+        comp.startModel(baseYear, timeInterval);
+
+    }
+
     public void runALDModel(int baseYear, int timeInterval, ResourceBundle appRb){
         ModelComponent comp = new ALDModel();
         comp.setApplicationResourceBundle(appRb);
@@ -536,6 +546,9 @@ public class ApplicationOrchestrator {
             if(appName.equalsIgnoreCase("ED")){
                 logger.info("AO will now start ED for simulation year " + (baseYear+t));
                 ao.runEDModel(baseYear, t, appRb);
+            }else if(appName.equalsIgnoreCase("EPF")){
+                logger.info("AO will now start EPF for simulation year " + (baseYear+t));
+                ao.runEPFModel(baseYear, t, appRb);
             }else if(appName.equalsIgnoreCase("ALD")){
                 logger.info("AO will now start ALD for simulation year " + (baseYear+t));
                 ao.runALDModel(baseYear, t, appRb);
