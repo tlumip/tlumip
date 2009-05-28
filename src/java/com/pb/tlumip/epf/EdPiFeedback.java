@@ -16,6 +16,7 @@
  */
 package com.pb.tlumip.epf;
 
+import com.borland.dx.dataset.Column;
 import com.pb.models.reference.ModelComponent;
 import com.pb.common.datafile.TableDataSetLoader;
 import com.pb.common.datafile.TableDataSet;
@@ -105,19 +106,35 @@ public class EdPiFeedback extends ModelComponent {
         double previousPreviousRefC;      //utility of timeInteval - 2 for pi Activity from Reference Scenario
 
         for(String piActivity: edPiFeedParams.getColumnAsString("PI_Activity")){
-            eta = getStringIndexedValue(piActivity, edPiFeedParams, "Eta Utility Scaling");
-            previousC = getStringIndexedValue(piActivity, piTMinus1ActSummary, "CompositeUtility");
-            previousPreviousC = getStringIndexedValue(piActivity, piTMinus2ActSummary, "CompositeUtility");
-            previousRefC = getStringIndexedValue(piActivity, actSumRefTable, ""+ (timeInterval-1)+"_CompositeUtility");
-            previousPreviousRefC = getStringIndexedValue(piActivity, actSumRefTable, ""+ (timeInterval-2)+"_CompositeUtility");
+            eta = getStringIndexedValue(piActivity, "PI_Activity", edPiFeedParams, "Eta Utility Scaling");
+            previousC = getStringIndexedValue(piActivity, "Activity", piTMinus1ActSummary, "CompositeUtility");
+            previousPreviousC = getStringIndexedValue(piActivity, "Activity", piTMinus2ActSummary, "CompositeUtility");
+            previousRefC = getStringIndexedValue(piActivity, "Activity", actSumRefTable, ""+ (timeInterval-1)+"_CompositeUtility");
+            previousPreviousRefC = getStringIndexedValue(piActivity, "Activity", actSumRefTable, ""+ (timeInterval-2)+"_CompositeUtility");
 
         }
     }
 
-    private double getStringIndexedValue(String actName, TableDataSet table, String colToGetDataFrom){
-        
-        return 0.00;    
+    private double getStringIndexedValue(String actName, String colToFindActNameIn, 
+    									TableDataSet table, String colToGetDataFrom){
+        //To get the value in the colToGetDataFrom, first loop through the elements 
+    	//in the colToFindActNameIn column in search of the specific actName,
+
+    	String[] activityNames = table.getColumnAsString(colToFindActNameIn);
+    	for(int i = 0; i < activityNames.length; i++){
+    		if( activityNames[i] == actName){
+    			int rowNumber=i;
+    			break;
+    		}
+    	}
+    		
+    	//get the column called colToGetDataFrom from the table
+    	//from the array get element[rowNumber]
+    	double[] activityValue = table.getColumnAsDoubleFromDouble(colToGetDataFrom);
+        return activityValue[rowNumber];    
     }
 
+    private HashMap getSpgMapping()
+    
 
 }
