@@ -16,7 +16,7 @@
  */
 package com.pb.tlumip.epf;
 
-import com.borland.dx.dataset.Column;
+
 import com.pb.models.reference.ModelComponent;
 import com.pb.common.datafile.TableDataSetLoader;
 import com.pb.common.datafile.TableDataSet;
@@ -119,11 +119,11 @@ public class EdPiFeedback extends ModelComponent {
     									TableDataSet table, String colToGetDataFrom){
         //To get the value in the colToGetDataFrom, first loop through the elements 
     	//in the colToFindActNameIn column in search of the specific actName,
-
+    	int rowNumber = -1;
     	String[] activityNames = table.getColumnAsString(colToFindActNameIn);
     	for(int i = 0; i < activityNames.length; i++){
-    		if( activityNames[i] == actName){
-    			int rowNumber=i;
+    		if( activityNames[i].equals(actName)){
+    			rowNumber = i;
     			break;
     		}
     	}
