@@ -134,7 +134,9 @@ public class EdPiFeedback extends ModelComponent {
         return activityValue[rowNumber];    
     }
 
-    private HashMap getSpgMapping()
+    private HashMap getSpgMapping(){
+    	return null;
+    }
     
 
 }
