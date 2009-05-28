@@ -23,6 +23,8 @@ import com.pb.common.datafile.TableDataSet;
 
 import java.util.ResourceBundle;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
@@ -112,6 +114,9 @@ public class EdPiFeedback extends ModelComponent {
             previousRefC = getStringIndexedValue(piActivity, "Activity", actSumRefTable, ""+ (timeInterval-1)+"_CompositeUtility");
             previousPreviousRefC = getStringIndexedValue(piActivity, "Activity", actSumRefTable, ""+ (timeInterval-2)+"_CompositeUtility");
 
+            double lValue = eta * ((previousC - previousPreviousC) - (previousRefC - previousPreviousRefC));
+            lCalculationsMap.put(piActivity, lValue);
+
         }
     }
 
@@ -135,8 +140,32 @@ public class EdPiFeedback extends ModelComponent {
     }
 
     private HashMap getSpgMapping(){
-    	return null;
+        return null;
     }
     
+
+    private double calculatePIF(ArrayList industriesAndOfficePercent){
+        //get parameters and L values from the arraylist.
+        //For the PIF calculation we need delta, mu, sizes and L
+        int numPiIndustries = industriesAndOfficePercent.size()-1;
+        double[] deltas = new double[numPiIndustries];
+        double[] mus = new double[numPiIndustries];
+        double[] ls = new double[numPiIndustries];
+
+        Iterator iter = industriesAndOfficePercent.iterator();
+
+
+        if(industriesAndOfficePercent.size() == 1){
+            
+        }
+        double pif = 0.00;
+
+        //double delta = getStringIndexedValue(piActivity, edPiFeedParams, "Eta Utility Scaling");
+        return pif;
+    }
+
+
+
+
 
 }
