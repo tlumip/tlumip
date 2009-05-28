@@ -115,6 +115,7 @@ public class EdPiFeedback extends ModelComponent {
     }
 
     private double getStringIndexedValue(String actName, TableDataSet table, String colToGetDataFrom){
+        
         return 0.00;    
     }
 
