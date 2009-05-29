@@ -21,10 +21,11 @@ import com.pb.models.reference.ModelComponent;
 import com.pb.common.datafile.TableDataSetLoader;
 import com.pb.common.datafile.TableDataSet;
 
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Iterator;
+
+
 
 import org.apache.log4j.Logger;
 
@@ -114,14 +115,15 @@ public class EdPiFeedback extends ModelComponent {
             previousRefC = getStringIndexedValue(piActivity, "Activity", actSumRefTable, ""+ (timeInterval-1)+"_CompositeUtility");
             previousPreviousRefC = getStringIndexedValue(piActivity, "Activity", actSumRefTable, ""+ (timeInterval-2)+"_CompositeUtility");
 
-            double lValue = eta * ((previousC - previousPreviousC) - (previousRefC - previousPreviousRefC));
-            lCalculationsMap.put(piActivity, lValue);
+
+
 
         }
     }
 
     private double getStringIndexedValue(String actName, String colToFindActNameIn, 
     									TableDataSet table, String colToGetDataFrom){
+    private double getStringIndexedValue(String actName, String colToFindActNameIn, TableDataSet table, String colToGetDataFrom){
         //To get the value in the colToGetDataFrom, first loop through the elements 
     	//in the colToFindActNameIn column in search of the specific actName,
     	int rowNumber = -1;
@@ -140,29 +142,79 @@ public class EdPiFeedback extends ModelComponent {
     }
 
     private HashMap getSpgMapping(){
-        return null;
+    	return null;
+    	//To get the SPG mapping and office share percentages
+    	//create an array of the SPG_Industry names so it can be indexed and looped through.
+    	HashMap spgMapping = new HashMap();
+    	
+    	String[] spgIndustryNames = edPiFeedParams.getColumnAsString("SPG_industry");
+    	double[] officeSharePercent = edPiFeedParams.getColumnAsDoubleFromDouble("SPG_officeShare");
+    	String[] piActivityNames = edPiFeedParams.getColumnAsString("PI_Activity");
+
+    	for( int i = 0; i < spgIndustryNames.length; i++){
+    		if(!spgIndustryNames[i].equals("NA")){
+    			ArrayList industryAndOfficePercentList = new ArrayList();
+    			
+    			if (officeSharePercent[i]== 0){     
+    				industryAndOfficePercentList.add(piActivityNames[i]);
+    				industryAndOfficePercentList.add(0.00);
+    				spgMapping.put(spgIndustryNames[i], industryAndOfficePercentList);
+                }else if (officeSharePercent[i] > 0){
+                	int hyph = piActivityNames[i].indexOf("-");
+                	industryAndOfficePercentList.add(piActivityNames[i]);
+                	industryAndOfficePercentList.add("" + piActivityNames[i].substring(0, hyph) + "-Office" );
+    				industryAndOfficePercentList.add(officeSharePercent[i]);
+                	spgMapping.put(spgIndustryNames[i], industryAndOfficePercentList);
+                }
+
+    		}
+    	}
+
+ 	 
+    	return spgMapping;                   
+	 }
+    
+    private HashMap getAldMapping(){
+    	HashMap aldMapping = new HashMap();
+    	String[] piActivityNames = edPiFeedParams.getColumnAsString("PI_Activity");
+    	String[] aldActivityNames = edPiFeedParams.getColumnAsString("ALD_category");
+    	
+		ArrayList nonResList = new ArrayList();
+		ArrayList resList = new ArrayList();
+		
+    	for(int i = 0; i < aldActivityNames.length; i++){
+    		if (aldActivityNames[i].equals("NRES")){
+    			nonResList.add(piActivityNames[i]);
+    			
+    		}else if (aldActivityNames[i].equals("RES")){
+    			resList.add(piActivityNames[i]);
+    		}
+    	}
+    	aldMapping.put("Non-residential Construction", nonResList);
+    	aldMapping.put("Residential Construction", resList);
+    	return aldMapping;
     }
     
 
-    private double calculatePIF(ArrayList industriesAndOfficePercent){
-        //get parameters and L values from the arraylist.
-        //For the PIF calculation we need delta, mu, sizes and L
-        int numPiIndustries = industriesAndOfficePercent.size()-1;
-        double[] deltas = new double[numPiIndustries];
-        double[] mus = new double[numPiIndustries];
-        double[] ls = new double[numPiIndustries];
-
-        Iterator iter = industriesAndOfficePercent.iterator();
 
 
-        if(industriesAndOfficePercent.size() == 1){
-            
-        }
-        double pif = 0.00;
 
-        //double delta = getStringIndexedValue(piActivity, edPiFeedParams, "Eta Utility Scaling");
-        return pif;
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
