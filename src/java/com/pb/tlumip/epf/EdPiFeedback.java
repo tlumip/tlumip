@@ -72,6 +72,7 @@ public class EdPiFeedback extends ModelComponent {
 
         //This method will involve creating some mappings
         //between the PI industries and the SPG and ALD industries
+        logger.info("Creating SPG and ALD mappings to PI Industries");
         HashMap<String, ArrayList> spgToPiIndustries = getSpgMapping();
         HashMap<String, ArrayList> aldToPiIndustries = getAldMapping();
 
@@ -89,18 +90,24 @@ public class EdPiFeedback extends ModelComponent {
 
         //For each PI Industry in the ED_PIFeedbackParametersI file,
         //calculate L and store in HashMap.
+        logger.info("Calculating L values for each PI industry");
         calculateL();
+        System.out.println("Agriculture and Mining-Agriculture L: " + lCalculationsMap.get("AGRICULTURE AND MINING-Agriculture"));
+
 
         //Read in the 3 ED output files - ActivityDollarDataForPi
         //JobDataForSPG1 and ConstructionDollarDataForALD for the
         //current time interval
-        logger.info("Reading in the ActivityDollarDataForPi file for timeInterval");
-        activityDollarDataForPi = TableDataSetLoader.loadTableDataSet(appRb, "epf.activityDollarDataForPi");
-        calculatePIFsForPIIndustries();
+//        logger.info("Reading in the ActivityDollarDataForPi file for timeInterval");
+//        activityDollarDataForPi = TableDataSetLoader.loadTableDataSet(appRb, "epf.activityDollarDataForPi");
+//        calculatePIFsForPIIndustries();
+//        System.out.println("Agriculture and Mining-Agriculture PIF: " + piPIFCalculations.get("AGRICULTURE AND MINING-Agriculture"));
 
-        logger.info("Reading in the JobDataForSpg file for timeInterval");
-        jobDataForSpg = TableDataSetLoader.loadTableDataSet(appRb, "epf.jobDataForSpg");
-        calculatePIFsForSPGIndustries(spgToPiIndustries);
+//        logger.info("Reading in the JobDataForSpg file for timeInterval");
+//        jobDataForSpg = TableDataSetLoader.loadTableDataSet(appRb, "epf.jobDataForSpg");
+//        calculatePIFsForSPGIndustries(spgToPiIndustries);
+//        System.out.println("Lower Education PIF: " + spgPIFCalculations.get("LOWER EDUCATION"));
+
 
         logger.info("Reading in the ConstructionDollarDataForAld file for timeInterval");
         constructionDollarDataForAld = TableDataSetLoader.loadTableDataSet(appRb, "epf.constructionDollarDataForAld");
@@ -149,7 +156,7 @@ public class EdPiFeedback extends ModelComponent {
     		
     	//get the column called colToGetDataFrom from the table
     	//from the array get element[rowNumber]
-    	double[] activityValue = table.getColumnAsDoubleFromDouble(colToGetDataFrom);
+    	double[] activityValue = table.getColumnAsDouble(colToGetDataFrom);
         return activityValue[rowNumber];    
     }
 
@@ -159,7 +166,7 @@ public class EdPiFeedback extends ModelComponent {
     	HashMap<String, ArrayList> spgMapping = new HashMap<String, ArrayList>();
     	
     	String[] spgIndustryNames = edPiFeedParams.getColumnAsString("SPG_industry");
-    	double[] officeSharePercent = edPiFeedParams.getColumnAsDoubleFromDouble("SPG_officeShare");
+    	double[] officeSharePercent = edPiFeedParams.getColumnAsDouble("SPG_officeShare");
     	String[] piActivityNames = edPiFeedParams.getColumnAsString("PI_Activity");
 
     	for( int i = 0; i < spgIndustryNames.length; i++){
@@ -210,6 +217,7 @@ public class EdPiFeedback extends ModelComponent {
     private void calculatePIFsForSPGIndustries (HashMap<String, ArrayList> spgToPiMapping){
         //loop thru each SPG industry and calculate the PIF value.
         for (String spgIndustry : spgToPiMapping.keySet() ){
+            System.out.println("SPG Industry: " + spgIndustry);
             ArrayList piActivitiesAndOfficePercent = spgToPiMapping.get(spgIndustry);
             //get parameters and L values for each industry in the arraylist.
             //For the PIF calculation we need delta, mu, sizes and L
@@ -220,16 +228,6 @@ public class EdPiFeedback extends ModelComponent {
             double[] ls = new double[numPiIndustries];
 
             double officePercent = (Double) piActivitiesAndOfficePercent.get(numPiIndustries);
-            //adjust the office size by the office percent if the office percent is greater than 0
-            if(numPiIndustries > 1){
-                //true implies the spg industry is the aggregation of the piIndustry and the piIndustry-Office.
-                //so adjust the size term of the office industry by the office percent.
-                sizes[sizes.length-1] *= officePercent;
-            }
-            double denominator = 0.0;
-            for(double size : sizes){
-                denominator += size;
-            }
 
             //get the delta, mu, size and l value.
             int i = 0;
@@ -243,12 +241,28 @@ public class EdPiFeedback extends ModelComponent {
                     mus[i] = getStringIndexedValue(piActivityName, "PI_Activity", edPiFeedParams, "Mu Linear Term Coeff");
                     sizes[i] = getStringIndexedValue(piActivityName, "Activity", piTMinus1ActSummary, "Size");
                     ls[i] = lCalculationsMap.get(piActivityName);
+//                    System.out.println("Pi Industry: " + piActivityName);
+//                    System.out.println(" deltas: " + deltas[i]);
+//                    System.out.println(" mus[i]: " + mus[i]);
+//                    System.out.println(" sizes[i]: " + sizes[i]);
+//                    System.out.println(" ls[i]: " + ls[i]);
                     i++;
 
                 } catch (Exception e) {
                     //end of industries has been reached, the last entry in
                     //array is the officePercent value so loop should exit
                 }
+            }
+
+            //adjust the office size by the office percent if the office percent is greater than 0
+            if(numPiIndustries > 1){
+                //true implies the spg industry is the aggregation of the piIndustry and the piIndustry-Office.
+                //so adjust the size term of the office industry by the office percent.
+                sizes[sizes.length-1] *= officePercent;
+            }
+            double denominator = 0.0;
+            for(double size : sizes){
+                denominator += size;
             }
 
             //calculate the weight-averaged pif.  The size term is used for the weighting.
@@ -258,6 +272,9 @@ public class EdPiFeedback extends ModelComponent {
             }
 
             spgPIFCalculations.put(spgIndustry, pif/denominator);
+//            System.out.println("PIF for Lower Education: " + spgPIFCalculations.get("LOWER EDUCATION"));
+//            System.out.println("PIF for Food Products - Heavy Industry: " + spgPIFCalculations.get("FOOD PRODUCTS-Heavy Industry"));
+//            System.out.println("PIF for Food Products - Light Industry: " + spgPIFCalculations.get("FOOD PRODUCTS-Light Industry"));
         }
     }
 
@@ -267,14 +284,19 @@ public class EdPiFeedback extends ModelComponent {
         double mu;
         double l;
         for (String piIndustry : activityDollarDataForPi.getColumnAsString("Activity")){
+            System.out.println("Pi Industry: " + piIndustry);
             try {
                 delta = getStringIndexedValue(piIndustry, "PI_Activity", edPiFeedParams, "Delta Exp Term Coeff");
                 mu = getStringIndexedValue(piIndustry, "PI_Activity", edPiFeedParams, "Mu Linear Term Coeff");
                 l = lCalculationsMap.get(piIndustry);
+                System.out.println("\tDelta: " + delta);
+                System.out.println("\tMu " + mu);
+                System.out.println("\tl " + l);
 
                 //calculate the pif.  No weighting for Pi calculations
                 //since there is a 1-1 mapping.
                 double pif = calculateA(delta, l, mu);
+                System.out.println("\tPIF: " + pif);
                 piPIFCalculations.put(piIndustry, pif);
 
             } catch (Exception e) { //these 2 piIndustries are not included in these calculations.
