@@ -20,10 +20,13 @@ package com.pb.tlumip.epf;
 import com.pb.models.reference.ModelComponent;
 import com.pb.common.datafile.TableDataSetLoader;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.datafile.CSVFileWriter;
 
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.HashMap;
+import java.io.IOException;
+import java.io.File;
 
 import org.apache.log4j.Logger;
 
@@ -48,9 +51,9 @@ public class EdPiFeedback extends ModelComponent {
     TableDataSet constructionDollarDataForAld;
 
     HashMap<String, Double> lCalculationsMap = new HashMap <String, Double>();
-    HashMap<String, Double> spgPIFCalculations = new HashMap <String, Double>();
-    HashMap<String, Double> piPIFCalculations = new HashMap <String, Double>();
-    HashMap<String, Double> aldPIFCalculations = new HashMap <String, Double>();
+    HashMap<String, Float> spgPIFCalculations = new HashMap <String, Float>();
+    HashMap<String, Float> piPIFCalculations = new HashMap <String, Float>();
+    HashMap<String, Float> aldPIFCalculations = new HashMap <String, Float>();
 
 
     public EdPiFeedback(ResourceBundle appRb){
@@ -113,9 +116,27 @@ public class EdPiFeedback extends ModelComponent {
         constructionDollarDataForAld = TableDataSetLoader.loadTableDataSet(appRb, "epf.constructionDollarDataForAld");
         calculatePIFsForALDIndustries(aldToPiIndustries);
 
+        //Once PIF calcs are done for PI, SPG and ALD I need to update the table so that it can
+        //be used for the final calculations.  It also needs to be written out to disk.
+        updatePIFTable();
+
+        //Build index on the PIF table so that we can
+        //pull values to make the final calculations
+        edPiInflFactors.buildIndex(1);
+
         //For each of the output files, loop thru the industries
         //and calculate the new values.  Store in TableDataSet and
         //write to CSV at the end.
+        HashMap finalPiCalcs = getFinalCalculation("PI", activityDollarDataForPi);
+        writeOutUpdatedValues("PI", finalPiCalcs, activityDollarDataForPi, "NewFactor");
+
+        HashMap finalSpgCalcs = getFinalCalculation("SPG", jobDataForSpg);
+        writeOutUpdatedValues("SPG", finalSpgCalcs, jobDataForSpg, "NewEmployment");
+
+        HashMap finalAldCalcs = getFinalCalculation("ALD", constructionDollarDataForAld);
+        writeOutUpdatedValues("ALD", finalAldCalcs, constructionDollarDataForAld, "NewTotalDollars");
+
+
 
     }
 
@@ -271,7 +292,7 @@ public class EdPiFeedback extends ModelComponent {
                 pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i]);
             }
 
-            spgPIFCalculations.put(spgIndustry, pif/denominator);
+            spgPIFCalculations.put(spgIndustry, (float) (pif/denominator));
 //            System.out.println("PIF for Lower Education: " + spgPIFCalculations.get("LOWER EDUCATION"));
 //            System.out.println("PIF for Food Products - Heavy Industry: " + spgPIFCalculations.get("FOOD PRODUCTS-Heavy Industry"));
 //            System.out.println("PIF for Food Products - Light Industry: " + spgPIFCalculations.get("FOOD PRODUCTS-Light Industry"));
@@ -297,7 +318,7 @@ public class EdPiFeedback extends ModelComponent {
                 //since there is a 1-1 mapping.
                 double pif = calculateA(delta, l, mu);
                 System.out.println("\tPIF: " + pif);
-                piPIFCalculations.put(piIndustry, pif);
+                piPIFCalculations.put(piIndustry, (float) pif);
 
             } catch (Exception e) { //these 2 piIndustries are not included in these calculations.
                 if(!piIndustry.equals("Capitalists") && !piIndustry.equals("GovInstitutions"))
@@ -329,11 +350,6 @@ public class EdPiFeedback extends ModelComponent {
                     sizes[i] = getStringIndexedValue(piActivityName, "Activity", piTMinus1ActSummary, "Size");
                     mus[i] = getStringIndexedValue(piActivityName, "PI_Activity", edPiFeedParams, "Mu Linear Term Coeff");
                     ls[i] = lCalculationsMap.get(piActivityName);
-                    System.out.println("Pi Industry: " + piActivityName);
-                    System.out.println(" deltas: " + deltas[i]);
-                    System.out.println(" mus[i]: " + mus[i]);
-                    System.out.println(" sizes[i]: " + sizes[i]);
-                    System.out.println(" ls[i]: " + ls[i]);
                     i++;
 
                 }
@@ -348,43 +364,113 @@ public class EdPiFeedback extends ModelComponent {
                     pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i]);
                 }
 
-                aldPIFCalculations.put(aldIndustry, pif/denominator);
+                aldPIFCalculations.put(aldIndustry, (float)(pif/denominator));
             }
-            
-            System.out.println("PIF for Non-residential Construction: " + aldPIFCalculations.get("Non-residential Construction"));
-            System.out.println("PIF for Residential Construction: " + aldPIFCalculations.get("Residential Construction"));
         }
 
     private double calculateA(double delta, double l, double mu){
             return (1.0 + delta * ((1.0 - Math.exp(l)) / (1.0 + Math.exp(l))) + mu * l);
     }
     
-    private HashMap<String, Double> getFinalCalculation(){
-    	HashMap<String, Double> finalCalculation = new HashMap<String, Double>();
-    	String[] activityNames = activityDollarDataForPi.getColumnAsString("Activity");
+    private HashMap<String, Float> getFinalCalculation(String module, TableDataSet table){
+    	HashMap<String, Float> finalCalculation = new HashMap<String, Float>();
+        String columnName = "";
+        String valueColumnName = "";
+        if(module.equals("PI")){
+            columnName = "Activity";
+            valueColumnName = "Factor";
+        }else if(module.equals("SPG")){
+            columnName = "SPG Sector";
+            valueColumnName = "Employment";
+        }else if(module.equals("ALD")){
+            columnName = "ConstructionType";
+            valueColumnName = "TotalDollars";
+        }
+
+        String[] activityNames = table.getColumnAsString(columnName);
     	
-       	edPiInflFactors.buildIndex(1);
+
        	for(String actName : activityNames ){
+               //This is for PI but it doesn't hurt for SPG or ALD
+            if(actName.equals("Capitalists") || actName.equals("GovInstitutions"))
+                continue;
        		double calcResult;
        		double pifValue;
-       		calcResult = getStringIndexedValue(actName, "Activity", activityDollarDataForPi, "Factor");
-       		for (int t = timeInterval; t >= 1; t--){
-       			String newActName = "PI_" + actName;
+       		calcResult = getStringIndexedValue(actName, columnName, table, valueColumnName);
+       		   String newActName = null;
+               for (int t = timeInterval; t >= 1; t--){
+       			newActName = module + "_" + actName;
        			pifValue = edPiInflFactors.getIndexedValueAt(t, newActName);
        			calcResult *= pifValue;
        		}
        		
-       		finalCalculation.put(actName, calcResult);
-    		System.out.println("New Value for AGRICULTURE AND MINING-Agriculture" + finalCalculation.get("AGRICULTURE AND MINING-Agriculture"));
+       		finalCalculation.put(newActName, (float) calcResult);
 
-       		}
-		return finalCalculation;
-		
-       	
-       	}
-       	
-		
-		
-		
+        }
+        return finalCalculation;
+    }
+
+
+    //This method assumes that the first 2 columns in the PIF file store
+    //the timeInterval and the timeInterval - 1 values.  After
+    //that this method is not sensitive to the column order.
+    private void updatePIFTable(){
+        //make a HashMap of new Row Data
+        HashMap newData = new HashMap();
+        String[] headers = edPiInflFactors.getColumnLabels();
+        for(String header : headers){
+            System.out.println("Header: " + header);
+            if(header.equals("1st Year Applied (i)")){
+                newData.put(header, (float) timeInterval);
+            }else if(header.equals("PI Data Year  (i-1)")){
+                newData.put(header, (float) (timeInterval-1));
+            }else {
+//                System.out.println("Header: " + header);
+//                System.out.println("Substring: " + header.substring(3));
+                if(header.startsWith("PI")){
+                    newData.put(header, piPIFCalculations.get(header.substring(3)));
+                }else if(header.startsWith("SPG")){
+                    newData.put(header, spgPIFCalculations.get(header.substring(4)));
+                }else
+                    newData.put(header, aldPIFCalculations.get(header.substring(4)));
+            }
+
+        }
+        edPiInflFactors.appendRow(newData);
+        CSVFileWriter fileWriter = new CSVFileWriter();
+        try {
+            fileWriter.writeFile(edPiInflFactors, new File(appRb.getString("epf.current.influence.factors")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void writeOutUpdatedValues(String module, HashMap finalCalculations,
+                                      TableDataSet originalTable, String newColLabel){
+        String outputPath = appRb.getString(module.toLowerCase() + ".working.file");
+        String[] actNames = originalTable.getColumnAsString(1);
+        float[] newValues = new float[actNames.length];
+
+        //build up an array of new values that i will
+        //append to the table
+        int index = 0;
+        for(String actName : actNames){
+            if(actName.equals("Capitalists") || actName.equals("GovInstitutions")){
+                newValues[index] = originalTable.getColumnAsFloat(2)[index];
+            }else {
+                newValues[index] = (Float) finalCalculations.get(module + "_" + actName);
+            }
+            index++;
+        }
+
+        originalTable.appendColumn(newValues, newColLabel);
+        CSVFileWriter fileWriter = new CSVFileWriter();
+        try {
+            fileWriter.writeFile(originalTable, new File(outputPath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 }
