@@ -98,15 +98,15 @@ public class EdPiFeedback extends ModelComponent {
         //Read in the 3 ED output files - ActivityDollarDataForPi
         //JobDataForSPG1 and ConstructionDollarDataForALD for the
         //current time interval
-//        logger.info("Reading in the ActivityDollarDataForPi file for timeInterval");
-//        activityDollarDataForPi = TableDataSetLoader.loadTableDataSet(appRb, "epf.activityDollarDataForPi");
-//        calculatePIFsForPIIndustries();
-//        System.out.println("Agriculture and Mining-Agriculture PIF: " + piPIFCalculations.get("AGRICULTURE AND MINING-Agriculture"));
+        logger.info("Reading in the ActivityDollarDataForPi file for timeInterval");
+        activityDollarDataForPi = TableDataSetLoader.loadTableDataSet(appRb, "epf.activityDollarDataForPi");
+        calculatePIFsForPIIndustries();
+        System.out.println("Agriculture and Mining-Agriculture PIF: " + piPIFCalculations.get("AGRICULTURE AND MINING-Agriculture"));
 
-//        logger.info("Reading in the JobDataForSpg file for timeInterval");
-//        jobDataForSpg = TableDataSetLoader.loadTableDataSet(appRb, "epf.jobDataForSpg");
-//        calculatePIFsForSPGIndustries(spgToPiIndustries);
-//        System.out.println("Lower Education PIF: " + spgPIFCalculations.get("LOWER EDUCATION"));
+        logger.info("Reading in the JobDataForSpg file for timeInterval");
+        jobDataForSpg = TableDataSetLoader.loadTableDataSet(appRb, "epf.jobDataForSpg");
+        calculatePIFsForSPGIndustries(spgToPiIndustries);
+        System.out.println("Lower Education PIF: " + spgPIFCalculations.get("LOWER EDUCATION"));
 
 
         logger.info("Reading in the ConstructionDollarDataForAld file for timeInterval");
@@ -318,6 +318,7 @@ public class EdPiFeedback extends ModelComponent {
                 double[] deltas = new double[numPiIndustries];
                 double[] mus = new double[numPiIndustries];
                 double[] ls = new double[numPiIndustries];
+                double[] sizes = new double[numPiIndustries];
 
                 //get the delta, mu, size and l value.
                 int i = 0;
@@ -325,23 +326,65 @@ public class EdPiFeedback extends ModelComponent {
                 for (Object aPiActivityName : piActivitiesList) {
                     piActivityName = (String) aPiActivityName;
                     deltas[i] = getStringIndexedValue(piActivityName, "PI_Activity", edPiFeedParams, "Delta Exp Term Coeff");
+                    sizes[i] = getStringIndexedValue(piActivityName, "Activity", piTMinus1ActSummary, "Size");
                     mus[i] = getStringIndexedValue(piActivityName, "PI_Activity", edPiFeedParams, "Mu Linear Term Coeff");
                     ls[i] = lCalculationsMap.get(piActivityName);
+                    System.out.println("Pi Industry: " + piActivityName);
+                    System.out.println(" deltas: " + deltas[i]);
+                    System.out.println(" mus[i]: " + mus[i]);
+                    System.out.println(" sizes[i]: " + sizes[i]);
+                    System.out.println(" ls[i]: " + ls[i]);
                     i++;
 
                 }
-
+                
+                double denominator = 0.0;
+                for(double size : sizes){
+                    denominator += size;
+                }
+                
                 double pif = 0.00;
                 for(i=0; i < numPiIndustries; i++){
-                    pif += calculateA(deltas[i], ls[i], mus[i]);
+                    pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i]);
                 }
 
-                aldPIFCalculations.put(aldIndustry, pif);
+                aldPIFCalculations.put(aldIndustry, pif/denominator);
             }
+            
+            System.out.println("PIF for Non-residential Construction: " + aldPIFCalculations.get("Non-residential Construction"));
+            System.out.println("PIF for Residential Construction: " + aldPIFCalculations.get("Residential Construction"));
         }
 
     private double calculateA(double delta, double l, double mu){
             return (1.0 + delta * ((1.0 - Math.exp(l)) / (1.0 + Math.exp(l))) + mu * l);
     }
+    
+    private HashMap<String, Double> getFinalCalculation(){
+    	HashMap<String, Double> finalCalculation = new HashMap<String, Double>();
+    	String[] activityNames = activityDollarDataForPi.getColumnAsString("Activity");
+    	
+       	edPiInflFactors.buildIndex(1);
+       	for(String actName : activityNames ){
+       		double calcResult;
+       		double pifValue;
+       		calcResult = getStringIndexedValue(actName, "Activity", activityDollarDataForPi, "Factor");
+       		for (int t = timeInterval; t >= 1; t--){
+       			String newActName = "PI_" + actName;
+       			pifValue = edPiInflFactors.getIndexedValueAt(t, newActName);
+       			calcResult *= pifValue;
+       		}
+       		
+       		finalCalculation.put(actName, calcResult);
+    		System.out.println("New Value for AGRICULTURE AND MINING-Agriculture" + finalCalculation.get("AGRICULTURE AND MINING-Agriculture"));
+
+       		}
+		return finalCalculation;
+		
+       	
+       	}
+       	
+		
+		
+		
 
 }
