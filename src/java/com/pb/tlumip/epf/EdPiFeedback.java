@@ -115,7 +115,9 @@ public class EdPiFeedback extends ModelComponent {
         logger.info("Reading in the ConstructionDollarDataForAld file for timeInterval");
         constructionDollarDataForAld = TableDataSetLoader.loadTableDataSet(appRb, "epf.constructionDollarDataForAld");
         calculatePIFsForALDIndustries(aldToPiIndustries);
-
+        System.out.println("Residential Construction PIF: " + aldPIFCalculations.get("Residential Construction"));
+        System.out.println("Non-Residential Construction PIF: " + aldPIFCalculations.get("Non-residential Construction"));
+        
         //Once PIF calcs are done for PI, SPG and ALD I need to update the table so that it can
         //be used for the final calculations.  It also needs to be written out to disk.
         updatePIFTable();
@@ -128,13 +130,13 @@ public class EdPiFeedback extends ModelComponent {
         //and calculate the new values.  Store in TableDataSet and
         //write to CSV at the end.
         HashMap finalPiCalcs = getFinalCalculation("PI", activityDollarDataForPi);
-        writeOutUpdatedValues("PI", finalPiCalcs, activityDollarDataForPi, "NewFactor");
+        writeOutUpdatedValues("PI", finalPiCalcs, activityDollarDataForPi, "Factor");
 
         HashMap finalSpgCalcs = getFinalCalculation("SPG", jobDataForSpg);
-        writeOutUpdatedValues("SPG", finalSpgCalcs, jobDataForSpg, "NewEmployment");
+        writeOutUpdatedValues("SPG", finalSpgCalcs, jobDataForSpg, "Employment");
 
         HashMap finalAldCalcs = getFinalCalculation("ALD", constructionDollarDataForAld);
-        writeOutUpdatedValues("ALD", finalAldCalcs, constructionDollarDataForAld, "NewTotalDollars");
+        writeOutUpdatedValues("ALD", finalAldCalcs, constructionDollarDataForAld, "TotalDollars");
 
 
 
@@ -334,14 +336,15 @@ public class EdPiFeedback extends ModelComponent {
             for (String aldIndustry : aldToPiMapping.keySet() ){
                 ArrayList piActivitiesList = aldToPiMapping.get(aldIndustry);
                 //get parameters and L values for each industry in the arraylist.
-                //For the PIF calculation we need delta, mu, sizes and L
+                //For the PIF calculation we need delta, mu, sizes, hh unit conversion factor, and L
                 int numPiIndustries = piActivitiesList.size();
                 double[] deltas = new double[numPiIndustries];
                 double[] mus = new double[numPiIndustries];
                 double[] ls = new double[numPiIndustries];
                 double[] sizes = new double[numPiIndustries];
+                int hh = Integer.parseInt( appRb.getString( "epf.hh.units.conversion.factor") );
 
-                //get the delta, mu, size and l value.
+                //get the delta, mu, size, l, and hh unit conversion factor value.
                 int i = 0;
                 String piActivityName;
                 for (Object aPiActivityName : piActivitiesList) {
@@ -361,9 +364,14 @@ public class EdPiFeedback extends ModelComponent {
                 
                 double pif = 0.00;
                 for(i=0; i < numPiIndustries; i++){
-                    pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i]);
+                	if (aldIndustry.equals("Non-residential Construction")){
+                		pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i]);
+                	} else{
+                		pif += sizes[i] * calculateA(deltas[i], ls[i] / hh, mus[i]);
+                	}                  
+                	
                 }
-
+               
                 aldPIFCalculations.put(aldIndustry, (float)(pif/denominator));
             }
         }
@@ -462,7 +470,19 @@ public class EdPiFeedback extends ModelComponent {
             }
             index++;
         }
+        String[] oldColLabels = originalTable.getColumnLabels();
+        String[] newLabels = new String[oldColLabels.length];
+        int i = 0;
+        for (String oldLabels : oldColLabels){
+        	if (oldLabels.equals(newColLabel)){
+        		newLabels[i] = "Old"+ oldLabels;
+        	}else{
+        		newLabels[i] = oldLabels;
+        	}
+        	i++;
+        }
 
+        originalTable.setColumnLabels(newLabels);
         originalTable.appendColumn(newValues, newColLabel);
         CSVFileWriter fileWriter = new CSVFileWriter();
         try {
