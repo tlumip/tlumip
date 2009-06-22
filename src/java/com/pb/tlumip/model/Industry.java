@@ -36,7 +36,7 @@ public class Industry extends SwIndustry {
     public float[] getIndustryEmployment( String fileName, String columnIndicator) {
 
         TableDataSet table = getIndustryEmploymentTableData( fileName );
-        return getIndustryEmploymentForColumn( table, 2 );
+        return getIndustryEmploymentForColumn( table, "Employment" );
         
     }
 
