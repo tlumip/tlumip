@@ -253,7 +253,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                 //header row does not count in row count
                 for(int r = 0; r < dollars.getRowCount(); r++){
                     String splitIndustryLabel = dollars.getStringValueAt(r + 1, 1);//Activity Name
-                    dollarsByIndustry.put(splitIndustryLabel, dollars.getValueAt(r + 1, 2)); //Total Dollars
+                    dollarsByIndustry.put(splitIndustryLabel, dollars.getValueAt(r + 1, "Factor")); //Total Dollars
                 }
 
                 if (readEDDollarFile) {
