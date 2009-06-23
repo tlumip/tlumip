@@ -81,6 +81,8 @@ public class SpBuildLoadMt implements Runnable
                 totalFlow += aonFlows[k];
             }
                   
+            spBuildLoadShared.setShortestPathTree( userClass, origin, sp[userClass].getPredecessorLink() );
+
             if ( logger.isDebugEnabled() )
                 logger.debug( i + ": " + ", origin=" + origin + ", sum=" + sum + ", totalFlow=" + totalFlow );
 

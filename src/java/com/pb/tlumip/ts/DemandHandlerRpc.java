@@ -194,7 +194,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     }
     
 
-    public double[][] getTripTablesForModes ( ArrayList tripModes ) {
+    public double[][] getTripTablesForModes ( ArrayList<String> tripModes ) {
     
         double[][] returnArray = null;
         

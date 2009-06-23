@@ -135,6 +135,12 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     
     
     
+    public int[] getShortestPathTree ( int userClassIndex, int internalOriginTazIndex ) {
+        return spCommon.getShortestPathTree ( userClassIndex, internalOriginTazIndex );
+    }
+
+    
+    
     public boolean handlerIsFinished() {
         // check to see if all handler threads have completed.
         boolean result = false;

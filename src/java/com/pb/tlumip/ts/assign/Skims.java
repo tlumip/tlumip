@@ -39,6 +39,8 @@ public class Skims {
 
 	protected static Logger logger = Logger.getLogger(Skims.class);
 
+	private static int MAX_SKIM_VALUE = 1000;
+	
 	HashMap tsPropertyMap;
     HashMap globalPropertyMap;
 
@@ -543,10 +545,13 @@ public class Skims {
 		double disconnected = 0;
 		double tripSkim = 0.0;
 		double totalTrips = 0.0;
-		float matrixValue;
 		
-        int maxElement = (int)skimMatrix.getMax() + 1;
-        skimTripFreqs = new double[maxElement];
+        float matrixValue = skimMatrix.getMax();
+        if ( matrixValue > MAX_SKIM_VALUE )
+            matrixValue = MAX_SKIM_VALUE;
+
+        int maxElement = (int)( matrixValue ) + 1;
+        skimTripFreqs = new double[maxElement+1];
         
 		for (int r=1; r <= skimMatrix.getRowCount(); r++) {
 			for (int c=1; c <= skimMatrix.getColumnCount(); c++) {
@@ -557,7 +562,11 @@ public class Skims {
                 matrixValue = skimMatrix.getValueAt(iTaz,jTaz);
 				if ( trips[i][j] > 0.0 ) {
 					if ( matrixValue != Double.NEGATIVE_INFINITY ) {
-						tripSkim += trips[i][j]*matrixValue;
+
+				        if ( matrixValue > MAX_SKIM_VALUE )
+				            matrixValue = MAX_SKIM_VALUE;
+				        
+					    tripSkim += trips[i][j]*matrixValue;
 						totalTrips += trips[i][j];
                         
                         skimTripFreqs[(int)matrixValue] += trips[i][j];

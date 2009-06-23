@@ -18,6 +18,11 @@ package com.pb.tlumip.ts;
 
 import com.pb.common.datafile.DataWriter;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -49,6 +54,7 @@ public class FW {
     double fwGap;
 
     String timePeriod;
+    String pathDiskObjectFile;
 
     
    
@@ -75,6 +81,15 @@ public class FW {
 
         timePeriod = nh.getTimePeriod();
 
+        // get the location of the file for storing the shortest path tree data
+        try {
+            pathDiskObjectFile = componentRb.getString("diskObject.pathName");
+        }
+        catch ( MissingResourceException e ) {
+            // do nothing; missing key is valid; no file will be written.
+        }
+
+                
     }
 
     
@@ -85,7 +100,9 @@ public class FW {
 	public void iterate () {
 
         int iterationsCompleted = 0;
-		
+        int[][][] pathTrees = null;
+        
+        
         try {
             
             double lub = 0.0;
@@ -165,8 +182,13 @@ public class FW {
                 long startTime = System.currentTimeMillis();
                 double[][] aonFlow = ah.getMulticlassAonLinkFlows ();
                 logger.info( ((System.currentTimeMillis() - startTime) / 1000.0) + " seconds to build and load shortest path trees." );
-                
+            
+                if ( pathDiskObjectFile != null ) {
+                    pathTrees = ah.getSavedShortestPathTrees();
+                    saveShortestPathTreeFile( pathDiskObjectFile, iter, pathTrees );
+                }
 
+                
                 for (int i=0; i < aonFlow.length; i++) {
                     double tot = 0.0;
                     for (int k=0; k < aonFlow[i].length; k++)
@@ -454,4 +476,50 @@ public class FW {
     }
 
     
+    private void saveShortestPathTreeFile( String pathName, int iteration, int[][][] savedTrees ){
+
+        FileWriter writer;
+        PrintWriter outStream = null;
+        
+        char[] userClassChars = nh.getUserClasses();
+        int numZones = nh.getNumCentroids();
+        int numNodes = nh.getNodeCount();
+        
+        
+        for ( int h=0; h < savedTrees.length; h++ ) {
+            
+            String fileName = pathName + "savedTrees_" + userClassChars[h] + "_" + iteration;
+            
+            
+            try {
+                writer = new FileWriter(new File( fileName ));
+                outStream = new PrintWriter (new BufferedWriter( writer ) );
+            }
+            catch(IOException e){
+                logger.fatal( String.format( "Exception occurred opening saved shortest path tree file: %s.", fileName ) );
+                throw new RuntimeException(e);
+            }
+            
+
+            String headerRecord = String.format("predecessorLinkId Arrays by origin for: iteration=%d, userClass=%c, numZones=%d, numNodes=%d", iteration, userClassChars[h], numZones, numNodes );
+            outStream.println( headerRecord );                    
+            
+            for( int i=0; i < savedTrees[h].length; i++ ) {
+                
+                if ( savedTrees[h][i] != null ) {
+                    outStream.print( i );
+                    for ( int j=1; j < savedTrees[h][i].length; j++ )
+                        outStream.print( savedTrees[h][i][j] );
+                }
+                
+            }
+            
+            outStream.close();
+            logger.info( "done writing " + fileName );
+
+        }
+
+    }
+
+
 }

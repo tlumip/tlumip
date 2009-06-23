@@ -272,7 +272,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 		if ( assignmentGroupContainsAuto ) {
 			myDateString = DateFormat.getDateTimeInstance().format(new Date());
             logger.info ( String.format("reading %s PT trip list at: %s, %d zones in trip tables.", timePeriod, myDateString, networkNumCentroids ) );
-            ArrayList tripModeList = new ArrayList();
+            ArrayList<String> tripModeList = new ArrayList<String>();
             tripModeList.add( String.valueOf(TripModeType.DA) );
             tripModeList.add( String.valueOf(TripModeType.SR2) );
             tripModeList.add( String.valueOf(TripModeType.SR3P) );
@@ -318,7 +318,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
         // this method gets called for each modal transit assignment - it does not get called when reading highway demand
         multiclassVehicleDistrictTable = new double[1][maxDistrict+1][maxDistrict+1];
         
-        ArrayList tripModes = new ArrayList();
+        ArrayList<String> tripModes = new ArrayList<String>();
         tripModes.add(tripModeString);
         
         return getTripTablesForModes ( tripModes );
@@ -326,7 +326,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     }
 
     
-    public double[][] getTripTablesForModes ( ArrayList tripModes ) {
+    public double[][] getTripTablesForModes ( ArrayList<String> tripModes ) {
         
         double[][] sdtTripTable = getTripTableFromSdtLdtListsForModes ( tripModes, sdtFileName );
         double[][] ldtTripTable = getTripTableFromSdtLdtListsForModes ( tripModes, ldtFileName );
@@ -341,7 +341,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     }
     
 
-    private double[][] getTripTableFromSdtLdtListsForModes ( ArrayList tripModes, String fileName ) {
+    private double[][] getTripTableFromSdtLdtListsForModes ( ArrayList<String> tripModes, String fileName ) {
         
         int orig;
         int dest;
@@ -367,8 +367,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
             throw new RuntimeException();
         }
 
-        TreeMap totalModeFreqMap = new TreeMap();
-        TreeMap periodModeFreqMap = new TreeMap();
+        TreeMap<String, Integer> totalModeFreqMap = new TreeMap<String, Integer>();
+        TreeMap<String, Integer> periodModeFreqMap = new TreeMap<String, Integer>();
 
         
 
@@ -516,8 +516,8 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
 
         
-        Set keys = periodModeFreqMap.keySet();
-        Iterator it = keys.iterator();
+        Set<String> keys = periodModeFreqMap.keySet();
+        Iterator<String> it = keys.iterator();
         logger.info ( "");
         logger.info ( String.format ("Mode Frequency Table of %s Trip File for %d to %d Period Trips:", fileName, startHour, endHour) );
         logger.info ( String.format ( "%-12s %8s %16s %16s", "mode", "freq", "pct", "cumPct" ) );

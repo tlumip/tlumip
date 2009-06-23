@@ -148,4 +148,19 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
         return returnValue;
     }
 
+    public int[] getShortestPathTree ( int userClassIndex, int internalOriginTazIndex ) {
+        int[] returnValue = null;
+        try {
+            Vector params = new Vector();
+            params.add( userClassIndex );
+            params.add( internalOriginTazIndex );
+            returnValue = (int[])rc.execute(handlerName+".getShortestPathTree", params );
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        return returnValue;
+    }
+    
 }

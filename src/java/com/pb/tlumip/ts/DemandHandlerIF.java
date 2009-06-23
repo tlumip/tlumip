@@ -14,6 +14,6 @@ public interface DemandHandlerIF {
     public double[][] getTripTableRowSums();
     public double[] getTripTableRow(int userClass, int row);
     public double[][] getTripTableForMode ( String tripMode );
-    public double[][] getTripTablesForModes ( ArrayList tripModes );
+    public double[][] getTripTablesForModes ( ArrayList<String> tripModes );
     
 }

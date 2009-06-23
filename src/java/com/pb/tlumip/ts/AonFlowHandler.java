@@ -367,4 +367,27 @@ public class AonFlowHandler implements AonFlowHandlerIF {
         
     }
     
+
+    public int[][][] getSavedShortestPathTrees () {
+        
+        int[][][] savedTrees = new int[networkNumUserClasses][networkNumCentroids][];
+        
+        // loop over shortest path tree handler objects
+        for ( int h=0; h < sp.length; h++ ) {
+
+            // get all the shortest path trees computed on this handler
+            for (int m=0; m < networkNumUserClasses; m++) {
+                for (int i=0; i < networkNumCentroids; i++) {
+                    int[] pathTree = sp[h].getShortestPathTree( m, i );
+                    if ( pathTree != null )
+                        savedTrees[m][i] = pathTree;
+                }
+            }
+            
+        }
+        
+        return savedTrees;
+
+    }
+    
 }

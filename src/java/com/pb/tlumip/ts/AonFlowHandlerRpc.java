@@ -105,4 +105,21 @@ public class AonFlowHandlerRpc implements AonFlowHandlerIF {
         
     }
 
+
+    public int[][][] getSavedShortestPathTrees () {
+
+        int[][][] returnArray = null;
+        
+        try {
+            returnArray = (int[][][])rc.execute(HANDLER_NAME+".getSavedShortestPathTrees", new Vector());
+        } catch (RpcException e) {
+            logger.error( e );
+        } catch (IOException e) {
+            logger.error(  e );
+        }
+        
+        // convert List to array
+        return returnArray;
+
+    }
 }

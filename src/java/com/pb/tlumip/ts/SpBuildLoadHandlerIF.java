@@ -9,5 +9,5 @@ public interface SpBuildLoadHandlerIF {
     public double[][] getResults();
     public boolean handlerIsFinished();
     public int getNumberOfThreads();
-    
+    public int[] getShortestPathTree ( int userClassIndex, int internalOriginTazIndex );    
 }

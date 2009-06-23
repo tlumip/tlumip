@@ -42,7 +42,9 @@ public class SpBuildLoadCommon {
     private int[][][] workElements;
     private double[][][] workElementsDemand;
     private double[][][] cumulativeBuildLoadResults;
-    
+
+    // shortest path trees computed by this node are saved by user class and origin taz (internal index)
+    private int[][][] savedPaths;
     
     private String handlerName;
     private int numThreads;
@@ -86,6 +88,10 @@ public class SpBuildLoadCommon {
                 sp[i][j].setLinkCost( linkCost );
             }
         }
+
+        
+        savedPaths = new int[numUserClasses][numZones][];
+        
         
         logger.info( handlerName + " SpBuildLoadCommon.setup() calling reset()." );        
         reset( linkCost );
@@ -198,6 +204,16 @@ public class SpBuildLoadCommon {
         
     }
 
+    
+    public int[] getShortestPathTree ( int userClassIndex, int internalOriginTazIndex ) {
+        return savedPaths[userClassIndex][internalOriginTazIndex];
+    }
+    
+    
+    public void setShortestPathTree ( int userClassIndex, int internalOriginTazIndex, int[] shortestPathTree ) {
+        savedPaths[userClassIndex][internalOriginTazIndex] = shortestPathTree;
+    }
+    
     
     public String getHandlerName() {
         return handlerName;
