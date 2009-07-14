@@ -1212,11 +1212,11 @@ public class TrRoute implements Serializable {
                         dwf = ts.getDwf();
                         tdwt = ts.getTdwt();
                         if ( dwt < 0 )
-                            ts.setDwt ( -dwt*dist[k] );
+                            ts.setDwt ( -dwt );
                         if ( dwf < 0 )
                             ts.setDwt ( -dwf*dist[k] );
                         if ( tdwt < 0 )
-                            ts.setTdwt ( -tdwt*dist[k] );
+                            ts.setTdwt ( -tdwt );
                         linkFound = true;
 
                         if ( drops[k] == 1 ) {

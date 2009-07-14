@@ -549,7 +549,7 @@ public class OptimalStrategy {
 
 
         // allocate an array to store boardings by route to be passed back to calling method.
-        double[] routeBoardingsToDest = new double[AuxTrNet.MAX_ROUTES];
+        double[] routeBoardingsToDest = new double[nh.getAuxNumRoutes(identifier)];
         
         
         // loop through links in optimal strategy in reverse order and allocate
@@ -808,6 +808,10 @@ public class OptimalStrategy {
                     nodeSkims[TWT][ia[k]] = freq[k]*(AuxTrNet.ALPHA/nodeFreq[ia[k]])/nodeFreq[ia[k]];
                     nodeSkims[BRD][ia[k]] = freq[k]/nodeFreq[ia[k]];
                     
+                    int dummy = 0;
+                    if ( nodeSkims[TWT][ia[k]] < 0 )
+                        dummy = 1;
+                    
                     // if link mode is air or hsr, accumulate fare.
                     if ( rteMode[k] == 'n' )
                         nodeSkims[AIR$][ia[k]] = cost[k];
@@ -824,6 +828,10 @@ public class OptimalStrategy {
                     nodeSkims[TWT][ia[k]] = nodeSkims[TWT][ib[k]] + freq[k]*AuxTrNet.ALPHA/nodeFreq[ia[k]];
                     nodeSkims[BRD][ia[k]] = nodeSkims[BRD][ib[k]] + freq[k]/nodeFreq[ia[k]];
 
+                    int dummy = 0;
+                    if ( nodeSkims[TWT][ia[k]] < 0 )
+                        dummy = 1;
+                    
                     if ( rteMode[k] == 'm' )
                         nodeSkims[BRD_HSR][ia[k]] ++;
 
@@ -874,6 +882,10 @@ public class OptimalStrategy {
                 tranIvt[ia[k]] = tranIvt[ib[k]];
             }
             else if ( linkType[k] == AuxTrNet.IN_VEHICLE_TYPE ) {
+
+                int dummy = 0;
+                if ( dwellTime[k] < 0 )
+                    dummy = 1;
                 
                 nodeSkims[IVT][ia[k]] = nodeSkims[IVT][ib[k]] + invTime[k];
                 nodeSkims[FWT][ia[k]] = nodeSkims[FWT][ib[k]];

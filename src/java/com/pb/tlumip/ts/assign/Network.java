@@ -972,10 +972,19 @@ public class Network implements Serializable {
                         if ( tableContainsDropsColumn )
                             drop = (int)table.getValueAt( i+1, "DROPLINK" );
         
+
+                        
+                        int dummy = 0;
+                        if ( an == 48889 && bn == 48810 ) {
+                            dummy = 1;
+                        }
+                        
+
                         int k = getLinkIndex(an,bn);
                         
                         tazs[k] = taz;
-
+                        
+                        
                         if ( tableContainsRevisedModeColumn )
                             revMode[k] = table.getStringValueAt( i+1, "REVISED_MODES" );
                         
@@ -1334,8 +1343,33 @@ public class Network implements Serializable {
 		int[] ia = new int[linkTable.getRowCount()];
 		int[] ib = new int[linkTable.getRowCount()];
 
+        int[] an = linkTable.getColumnAsInt( "anode" );
+        int[] bn = linkTable.getColumnAsInt( "bnode" );
+
 		maxNode = getMaxNode();
 		
+		int count = 0;
+		HashMap<Integer, Integer> tempHashMap = new HashMap<Integer, Integer>();
+        for ( int i : an ) {
+            count = 0;
+            if ( tempHashMap.containsKey( i ))
+                count = tempHashMap.get( i );
+            tempHashMap.put( i, ++count );
+        }
+        for ( int i : bn ) {
+            count = 0;
+            if ( tempHashMap.containsKey( i ))
+                count = tempHashMap.get( i );
+            tempHashMap.put( i, ++count );
+        }
+        count = 0;
+        for ( int i : tempHashMap.keySet() ) {
+            if ( tempHashMap.get( i ) == 1 )
+                count++;
+        }
+        int nNodes = tempHashMap.size();
+
+        
 		indexNode = new int[nodeTable.getRowCount()+1];
 		nodeIndex = new int[maxNode+1];
 		int[] usedNodes = new int[maxNode+1];
@@ -1343,9 +1377,6 @@ public class Network implements Serializable {
 		Arrays.fill ( indexNode, 0 );
 		Arrays.fill ( nodeIndex, -1 );
 		Arrays.fill ( usedNodes, -1 );
-
-		int[] an = linkTable.getColumnAsInt( "anode" );
-		int[] bn = linkTable.getColumnAsInt( "bnode" );
 
 
 		// renumber centroid nodes first
@@ -1374,6 +1405,12 @@ public class Network implements Serializable {
 		// now renumber regular nodes and set the internal node number array and correspondence array values
 		for (int i=0; i < linkTable.getRowCount(); i++) {
             
+		    int dummy = 0;
+		    if ( an[i] == 48889 && bn[i] == 48810 ) {
+		        dummy = 1;
+		    }
+		        
+
 			if (usedNodes[an[i]] < 0)
 				usedNodes[an[i]] = nextNode++;
 			if (usedNodes[bn[i]] < 0)

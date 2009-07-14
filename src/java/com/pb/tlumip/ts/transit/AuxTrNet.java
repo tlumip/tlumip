@@ -55,8 +55,6 @@ public class AuxTrNet implements Serializable {
 	public static final int LAYOVER_TYPE = 3;
 	public static final int AUXILIARY_TYPE = 4;
 
-	public static final int MAX_ROUTES = 500;
-
     static final String[] routeTypeStrings = { "air", "hsr", "intercity", "intracity" };
 
 	static final double ALPHA = 0.5;
@@ -1263,7 +1261,7 @@ public class AuxTrNet implements Serializable {
             waitTime[aux] = 0.0;
             
             int dummy=0;
-            if ( aux == 18505 ){
+            if ( aux == 281 ){
                 dummy = 1;
             }
             
@@ -1280,7 +1278,11 @@ public class AuxTrNet implements Serializable {
                 dwellTime[aux] = tsNext.getDwt();
             }
             else {
-                dwellTime[aux] = -ts.getDwt()/gDist[ts.link];
+                double dt = ts.getDwt();
+                if ( dt < 0 )
+                    dwellTime[aux] = -dt;
+                else
+                    dwellTime[aux] = dt;
             }
             
             rteMode[aux] = mode;
