@@ -266,7 +266,9 @@ public class FW {
             createSelectLinkAnalysisDiskObject( fwFlowProps );
             
             
-    
+            saveProportionsFile( fwFlowProps );
+            
+            
             logger.info ("");
             logger.info ( String.format( "%5s %12s %12s", "iter", "lambdas", "Flow Props" ) );
             for (int i=0; i < iterationsCompleted; i++)
@@ -508,8 +510,13 @@ public class FW {
                 
                 if ( savedTrees[h][i] != null ) {
                     outStream.print( i );
-                    for ( int j=1; j < savedTrees[h][i].length; j++ )
+                    outStream.print( " " );
+                    for ( int j=1; j < savedTrees[h][i].length - 1 ; j++ ) {
                         outStream.print( savedTrees[h][i][j] );
+                        outStream.print( " " );
+                    }
+                    outStream.print( savedTrees[h][i][savedTrees[h][i].length - 1] );
+                    outStream.print( "\n" );
                 }
                 
             }
@@ -518,6 +525,48 @@ public class FW {
             logger.info( "done writing " + fileName );
 
         }
+
+    }
+
+
+    private void saveProportionsFile( double[] fwFlowProps ){
+
+        FileWriter writer;
+        PrintWriter outStream = null;
+
+        String proportionsFolder = null;
+        try {
+            proportionsFolder = componentRb.getString("SavedProportions.folder");
+        }
+        catch ( MissingResourceException e ) {
+            return;
+        }
+        
+        String fileName = proportionsFolder + "savedProportions_" + timePeriod;
+
+        
+        try {
+            writer = new FileWriter(new File( fileName ));
+            outStream = new PrintWriter (new BufferedWriter( writer ) );
+        }
+        catch(IOException e){
+            logger.fatal( String.format( "Exception occurred opening saved proportions file: %s.", fileName ) );
+            throw new RuntimeException(e);
+        }
+        
+
+        String headerRecord = "iteration, lambdas, flowProportions";
+        outStream.println( headerRecord );                    
+        
+        for( int i=0; i < fwFlowProps.length; i++ ) {
+            String outputRecord = String.format( "%d,%.8f,%.8f", i+1, lambdas[i], fwFlowProps[i] ); 
+            outStream.println( outputRecord );
+        }
+        
+        outStream.close();
+
+        logger.info( "done writing saved propertions file: " + fileName );
+
 
     }
 
