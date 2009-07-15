@@ -520,7 +520,7 @@ public class OptimalStrategy {
 
 
 
-    public double[] loadOptimalStrategyDest (double[] tripColumn) {
+    public double[] loadOptimalStrategyDest ( double[] tripColumn, int maxRoutes ) {
 
         // tripColumn is the column of the trip table for the destination zone for this optimal strategy 
         int k, m;
@@ -549,7 +549,7 @@ public class OptimalStrategy {
 
 
         // allocate an array to store boardings by route to be passed back to calling method.
-        double[] routeBoardingsToDest = new double[nh.getAuxNumRoutes(identifier)];
+        double[] routeBoardingsToDest = new double[maxRoutes];
         
         
         // loop through links in optimal strategy in reverse order and allocate

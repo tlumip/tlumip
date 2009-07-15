@@ -948,7 +948,7 @@ public class TransitAssignAndSkimManager {
                 double destBoardings = 0.0;
                 if ( tripSum > 0 ) {
     
-                    double[] routeBoardingsToDest = os.loadOptimalStrategyDest( tripTableColumn );
+                    double[] routeBoardingsToDest = os.loadOptimalStrategyDest( tripTableColumn, maxRoutes );
                     
                     for (int r=0; r < routeBoardings.length; r++) {
                         routeBoardings[r] += routeBoardingsToDest[r];
