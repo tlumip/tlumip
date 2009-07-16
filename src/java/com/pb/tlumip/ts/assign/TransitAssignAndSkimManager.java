@@ -225,49 +225,80 @@ public class TransitAssignAndSkimManager {
         catch ( MissingResourceException e ) {
         }
 
+        
+        
+        String intracityTransitIdentifier = "";
+        try {
+            intracityTransitIdentifier = appRb.getString("intracityTransit.identifier");        
+        }
+        catch ( MissingResourceException e ) {
+        }
+
+        String intercityTransitIdentifier = "";
+        try {
+            intercityTransitIdentifier = appRb.getString("intercityTransit.identifier");        
+        }
+        catch ( MissingResourceException e ) {
+        }
+
+        String hsrTransitTransitIdentifier = "";
+        try {
+            hsrTransitTransitIdentifier = appRb.getString("hsrTransit.identifier");        
+        }
+        catch ( MissingResourceException e ) {
+        }
+
+        String airTransitIdentifier = "";
+        try {
+            airTransitIdentifier = appRb.getString("airTransit.identifier");        
+        }
+        catch ( MissingResourceException e ) {
+        }
 
         
+
         // drive access air loading and skims
         String[] drAirTypesIn = { "air" }; 
         String[] drAirTypes = getServiceTypeRouteFilesSpecified( drAirTypesIn, period );
-        if ( drAirTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") )
+        if ( drAirTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && airTransitIdentifier.equalsIgnoreCase("air") )
             results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
         
         // drive access hsr loading and skims
         String[] drHsrTypesIn = { "hsr", "intercity" }; 
         String[] drHsrTypes = getServiceTypeRouteFilesSpecified( drHsrTypesIn, period );
-        if ( drHsrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") )
+        if ( drHsrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && hsrTransitTransitIdentifier.equalsIgnoreCase("hsr") )
             results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name() ) ) );
         
         // drive access intercity bus/rail loading and skims
         String[] drIcTypesIn = { "intercity" }; 
         String[] drIcTypes = getServiceTypeRouteFilesSpecified( drIcTypesIn, period );
-        if ( drIcTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") )
+        if ( drIcTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && intercityTransitIdentifier.equalsIgnoreCase("ic") )
             results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
 
         // drive access intracity transit loading and skims
         String[] drTrTypesIn = { "intracity" }; 
         String[] drTrTypes = getServiceTypeRouteFilesSpecified( drTrTypesIn, period );
-        if ( drTrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") )
+        if ( drTrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && intracityTransitIdentifier.equalsIgnoreCase("t") )
             results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name() ) ) );
 
         // walk access hsr loading and skims
         String[] wkHsrTypesIn = { "hsr", "intercity", "intracity" }; 
         String[] wkHsrTypes = getServiceTypeRouteFilesSpecified( wkHsrTypesIn, period );
-        if ( wkHsrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") )
+        if ( wkHsrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && hsrTransitTransitIdentifier.equalsIgnoreCase("hsr") )
             results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name() ) ) );
 
         // walk access intercity loading and skims
         String[] wkIcTypesIn = { "intercity", "intracity" }; 
         String[] wkIcTypes = getServiceTypeRouteFilesSpecified( wkIcTypesIn, period );
-        if ( wkIcTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") )
+        if ( wkIcTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && intercityTransitIdentifier.equalsIgnoreCase("ic") )
             results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
 
         // walk access intracity loading and skims
         String[] wkTrTypesIn = { "intracity" }; 
         String[] wkTrTypes = getServiceTypeRouteFilesSpecified( wkTrTypesIn, period );
-        if ( wkTrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") )
+        if ( wkTrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && intracityTransitIdentifier.equalsIgnoreCase("t") )
             results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+
         
         
         
@@ -275,8 +306,11 @@ public class TransitAssignAndSkimManager {
         // walk access hsr loading and skims
         String[] wkTrTypesIn = { "intracity" }; 
         String[] wkTrTypes = getServiceTypeRouteFilesSpecified( wkTrTypesIn, period );
-        if ( wkTrTypes.length > 0 )
-            results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+        results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+
+        String[] drTrTypesIn = { "intracity" }; 
+        String[] drTrTypes = getServiceTypeRouteFilesSpecified( drTrTypesIn, period );
+        results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name() ) ) );
 */        
         
         
