@@ -52,7 +52,7 @@ public class TS {
 	protected static Logger logger = Logger.getLogger(TS.class);
     
 
-	static final String VERSION = "TS version 14 nov 2008, 5";
+	static final String VERSION = "TS version 15 jul 2009, 1";
 	
     static final boolean CREATE_NEW_NETWORK = true;
     public boolean SKIM_ONLY = false;
@@ -575,15 +575,15 @@ public class TS {
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
         tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "ampeak" );
-        nhPeak.checkForIsolatedLinks();
+//        nhPeak.checkForIsolatedLinks();
         nhPeak.startDataServer();
         logger.info ("Network data server running...");
 
 //        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
 //        char[] hwyModeChars = { 'a', 'd', 'e', 'f' };
 //        tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
+
         tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
-        
         tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
       
        
