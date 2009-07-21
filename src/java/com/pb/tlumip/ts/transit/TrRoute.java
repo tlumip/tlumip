@@ -1203,7 +1203,14 @@ public class TrRoute implements Serializable {
                 }
                 
                 linkFound = false;
-                for (int i=ip[ia]; i < ip[ia+1]; i++) {
+                int offset = 1;
+                int start = ip[ia];
+                int end = ip[ia + offset++];
+                while ( end <= 0 )
+                    end = ip[ia + offset++];
+
+                for (int i=start; i < end; i++) {
+                    
                     k = sortedLinkIndex[i];
 
                     if (indexNode[ib[k]] == ts.bn) {
