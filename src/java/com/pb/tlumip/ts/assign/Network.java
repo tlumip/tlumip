@@ -1347,16 +1347,13 @@ public class Network implements Serializable {
         int[] bn = linkTable.getColumnAsInt( "bnode" );
 
 		maxNode = getMaxNode();
-		
-		int count = 0;
-		HashMap<Integer, Integer> tempHashMap = new HashMap<Integer, Integer>();
-        for ( int i : an ) {
-            count = 0;
-            if ( tempHashMap.containsKey( i ))
-                count = tempHashMap.get( i );
-            tempHashMap.put( i, ++count );
-        }
-        for ( int i : bn ) {
+
+
+        int count = 0;
+        HashMap<Integer, Integer> tempHashMap = new HashMap<Integer, Integer>();
+
+        /* check for duplicate node entries in node table
+        for ( int i : getNodes() ) {
             count = 0;
             if ( tempHashMap.containsKey( i ))
                 count = tempHashMap.get( i );
@@ -1364,11 +1361,44 @@ public class Network implements Serializable {
         }
         count = 0;
         for ( int i : tempHashMap.keySet() ) {
-            if ( tempHashMap.get( i ) == 1 )
+            if ( tempHashMap.get( i ) == 0 )
                 count++;
         }
-        int nNodes = tempHashMap.size();
+		*/
+		
+        
+        /* check for nodes with multiple links entering, none leaving and multiple links leaving, but none entering
+		int aCount = 0;
+		HashMap<Integer, Integer> aTempHashMap = new HashMap<Integer, Integer>();
+        for ( int i : an ) {
+            aCount = 0;
+            if ( aTempHashMap.containsKey( i ))
+                aCount = aTempHashMap.get( i );
+            aTempHashMap.put( i, ++aCount );
+        }
 
+        int bCount = 0;
+        HashMap<Integer, Integer> bTempHashMap = new HashMap<Integer, Integer>();
+        for ( int i : bn ) {
+            bCount = 0;
+            if ( bTempHashMap.containsKey( i ))
+                bCount = bTempHashMap.get( i );
+            bTempHashMap.put( i, ++bCount );
+        }
+        
+        aCount = 0;
+        for ( int i : aTempHashMap.keySet() ) {
+            if ( aTempHashMap.get( i ) > 1 && ! bTempHashMap.containsKey( i ) )
+                aCount++;
+        }
+        bCount = 0;
+        for ( int i : bTempHashMap.keySet() ) {
+            if ( bTempHashMap.get( i ) > 1 && ! aTempHashMap.containsKey( i ) )
+                bCount++;
+        }
+         */
+        
+        
         
 		indexNode = new int[nodeTable.getRowCount()+1];
 		nodeIndex = new int[maxNode+1];
@@ -1405,12 +1435,6 @@ public class Network implements Serializable {
 		// now renumber regular nodes and set the internal node number array and correspondence array values
 		for (int i=0; i < linkTable.getRowCount(); i++) {
             
-		    int dummy = 0;
-		    if ( an[i] == 48889 && bn[i] == 48810 ) {
-		        dummy = 1;
-		    }
-		        
-
 			if (usedNodes[an[i]] < 0)
 				usedNodes[an[i]] = nextNode++;
 			if (usedNodes[bn[i]] < 0)
@@ -1427,6 +1451,7 @@ public class Network implements Serializable {
 		}
         
         
+		
 		// add new link node fields to TableDataSet
 		linkTable.appendColumn( ia, "ia" );
 		linkTable.appendColumn( ib, "ib" );
@@ -1452,6 +1477,13 @@ public class Network implements Serializable {
 			}
 		}
 		ip[old+1] = nodes.length;
+		
+		/* count number of nodes which have no children
+		int count = 0;
+		for ( int i=0; i < ip.length; i++ )
+		    if ( ip[i] == 0 )
+		        count++;
+		*/
 		
 		return ip;
 
@@ -1749,9 +1781,11 @@ public class Network implements Serializable {
         
         // search through bnodes for the given anode to find the link and return its index
         int start = ipa[nodeIndex[an]];
-        int end = ipa[nodeIndex[an] + 1];
-        if ( end <= 0 )
-            end = start + 1;
+        
+        int offset = 1;
+        int end = ipa[nodeIndex[an] + offset++];
+        while ( end <= 0 )
+            end = ipa[nodeIndex[an] + offset++];
 
         for (int i=start; i < end; i++) {
             
@@ -1768,29 +1802,29 @@ public class Network implements Serializable {
         }
 
         
-        if ( returnValue == 0 ) {
-            
-            // search through bnodes for the given anode to find the link and return its index
-            start = ipb[nodeIndex[bn]];
-            end = ipb[nodeIndex[bn] + 1];
-            if ( end <= 0 )
-                end = start + 1;
-
-            for (int i=start; i < end; i++) {
-                
-                k = sortedLinkIndexB[i];
-                
-                if(logger.isDebugEnabled()) {
-                    logger.debug ("i=" + i + ", k=" + k + ", an=" + nodeIndex[an] + ", bn=" + nodeIndex[bn] + ", ia[k=" + k + "]=" + ia + ", ib[k=" + k + "]=" + ib );
-                }
-                
-                if ( ia[k] == nodeIndex[an] ) {
-                    returnValue = k;
-                    break;
-                }
-            }
-
-        }
+//        if ( returnValue == 0 ) {
+//            
+//            // search through anodes for the given bnode to find the link and return its index
+//            start = ipb[nodeIndex[bn]];
+//            end = ipb[nodeIndex[bn] + 1];
+//            if ( end <= 0 )
+//                end = start + 1;
+//
+//            for (int i=start; i < end; i++) {
+//                
+//                k = sortedLinkIndexB[i];
+//                
+//                if(logger.isDebugEnabled()) {
+//                    logger.debug ("i=" + i + ", k=" + k + ", an=" + nodeIndex[an] + ", bn=" + nodeIndex[bn] + ", ia[k=" + k + "]=" + ia + ", ib[k=" + k + "]=" + ib );
+//                }
+//                
+//                if ( ia[k] == nodeIndex[an] ) {
+//                    returnValue = k;
+//                    break;
+//                }
+//            }
+//
+//        }
         
 
         return returnValue;
@@ -1799,23 +1833,32 @@ public class Network implements Serializable {
 
     
     
+    /** takes external node number and returns link indices entering that node
+     * 
+     * @param n external node number.
+     * @return array of link indices for links entering node n.
+     */
     public int[] getLinksEnteringNode( int n ) {
 
-        // takes external node number and returns link indices entering that node
-        
-        int numLinksEntering = ipb[nodeIndex[n]+1] - ipb[nodeIndex[n]];
+        // search through anodes for the given bnode to collect link indices in an array
+        int offset = 1;
+        int start = ipb[nodeIndex[n]];
+        int end = ipb[nodeIndex[n] + offset++];
+        while ( end <= 0 )
+            end = ipb[nodeIndex[n] + offset++];
+
+        // create an array to hold link indices returned
+        int numLinksEntering = end - start;
         int[] result = new int[numLinksEntering];
-                               
+
+        // loop through liks entering n and store link indices.
         int count = 0;
-        for (int i=ipb[nodeIndex[n]]; i < ipb[nodeIndex[n]+1]; i++) {
-            
+        for (int i=start; i < end; i++) {
             int k = sortedLinkIndexB[i];
             
             int an = indexNode[ia[k]];
             int id = getLinkIndex( an, n );
-            result[count] = id;
-            count++;
-            
+            result[count++] = id;
         }
 
         return result;
@@ -1824,23 +1867,32 @@ public class Network implements Serializable {
 
     
     
-    public int[] getLinksExitingNode( int an ) {
+    /** takes external node number and returns link indices exiting that node
+     * 
+     * @param n external node number.
+     * @return array of link indices for links exiting node n.
+     */
+    public int[] getLinksExitingNode( int n ) {
 
-        // takes external node number and returns link indices exiting that node
-        
-        int numLinksExiting = ipa[nodeIndex[an]+1] - ipa[nodeIndex[an]];
-        int[] result = new int[numLinksExiting];
-                               
+        // search through bnodes for the given anode to collect link indices in an array
+        int offset = 1;
+        int start = ipa[nodeIndex[n]];
+        int end = ipa[nodeIndex[n] + offset++];
+        while ( end <= 0 )
+            end = ipa[nodeIndex[n] + offset++];
+
+        // create an array to hold link indices returned
+        int numLinksEntering = end - start;
+        int[] result = new int[numLinksEntering];
+
+        // loop through liks entering n and store link indices.
         int count = 0;
-        for (int i=ipa[nodeIndex[an]]; i < ipa[nodeIndex[an]+1]; i++) {
-            
+        for (int i=start; i < end; i++) {
             int k = sortedLinkIndexA[i];
             
             int bn = indexNode[ib[k]];
-            int id = getLinkIndex( an, bn );
-            result[count] = id;
-            count++;
-            
+            int id = getLinkIndex( n, bn );
+            result[count++] = id;
         }
 
         return result;
