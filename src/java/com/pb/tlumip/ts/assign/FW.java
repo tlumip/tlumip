@@ -19,6 +19,7 @@ package com.pb.tlumip.ts.assign;
 import com.pb.common.datafile.DataWriter;
 import com.pb.common.datafile.DiskObjectArray;
 import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.ShortestPathTreeH;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -37,7 +38,7 @@ public class FW {
 	static final int SIZEOF_INT = 4;
 	static final int MAX_LINK_TYPE = 1000;
 
-	HashMap propertyMap;
+	HashMap<String,String> propertyMap;
 	
     NetworkHandlerIF nh;
 
@@ -65,7 +66,7 @@ public class FW {
     }
 
 
-    public void initialize ( HashMap tsPropertyMap, NetworkHandlerIF nh ) {
+    public void initialize ( HashMap<String,String> tsPropertyMap, NetworkHandlerIF nh ) {
 
 		this.propertyMap = tsPropertyMap;
 		this.nh = nh;

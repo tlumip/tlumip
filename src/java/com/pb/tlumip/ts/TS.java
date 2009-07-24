@@ -52,7 +52,7 @@ public class TS {
 	protected static Logger logger = Logger.getLogger(TS.class);
     
 
-	static final String VERSION = "TS version 15 jul 2009, 1";
+	static final String VERSION = "TS version 24 jul 2009, 1";
 	
     static final boolean CREATE_NEW_NETWORK = true;
     public boolean SKIM_ONLY = false;
@@ -153,13 +153,15 @@ public class TS {
     
     public void checkAllODPairsForNetworkConnectivity (NetworkHandlerIF nh) {
     	
+        String assignmentPeriod = nh.getTimePeriod();
+        
         double[][][] dummyTripTable = new double[nh.getUserClasses().length][nh.getNumCentroids()+1][nh.getNumCentroids()+1];
 		for(int i=0; i < nh.getUserClasses().length - 1; i++) {
 			for(int j=0; j < nh.getNumCentroids() + 1; j++) {
 				Arrays.fill(dummyTripTable[i][j], 1.0);
 			}
 		}
-		checkODConnectivity(nh, dummyTripTable, "amPeak");
+		checkODConnectivity( nh, dummyTripTable, assignmentPeriod );
 
     }
     
@@ -574,17 +576,32 @@ public class TS {
         // TS Example 2 - Read peak highway assignment results into NetworkHandler, then load and skim transit network
         NetworkHandlerIF nhPeak = NetworkHandler.getInstance( rpcConfigFileName );
         nhPeak.setRpcConfigFileName( rpcConfigFileName );
-        tsMain.setupHighwayNetwork( nhPeak, ResourceUtil.getResourceBundleAsHashMap(args[0]), ResourceUtil.getResourceBundleAsHashMap(args[1]), "ampeak" );
+        
+        HashMap<String,String> appMap = ResourceUtil.getResourceBundleAsHashMap(args[0]);
+        HashMap<String,String> globalMap = ResourceUtil.getResourceBundleAsHashMap(args[1]);
+        //tsMain.setupHighwayNetwork( nhPeak, appMap, globalMap, "ampeak" );
+        tsMain.setupHighwayNetwork( nhPeak, appMap, globalMap, "mdoffpeak" );
 //        nhPeak.checkForIsolatedLinks();
         nhPeak.startDataServer();
         logger.info ("Network data server running...");
 
-//        tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
-//        char[] hwyModeChars = { 'a', 'd', 'e', 'f' };
-//        tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
+        boolean runAssignment = false;
+        String value = appMap.get("skimsOnly.flag");
+        if ( value == null ) 
+            runAssignment = true;
+        else if ( value.equalsIgnoreCase( "false") )
+            runAssignment = true; 
+        
+        if ( runAssignment )
+            tsMain.multiclassEquilibriumHighwayAssignment( nhPeak, nhPeak.getTimePeriod() );
+        else
+            tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
 
-        tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
-        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
+        //char[] hwyModeChars = { 'a', 'd' };
+        char[] hwyModeChars = { 'a' };
+        tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
+
+//        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
       
        
         

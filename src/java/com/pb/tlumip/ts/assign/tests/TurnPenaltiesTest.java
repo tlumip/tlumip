@@ -26,7 +26,7 @@ package com.pb.tlumip.ts.assign.tests;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.assign.ShortestPathTreeH;
+import com.pb.tlumip.ts.ShortestPathTreeH;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -80,7 +80,7 @@ public class TurnPenaltiesTest {
 	}
 
 
-    private void setupNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+    private void setupNetwork ( NetworkHandlerIF nh, HashMap<String,String> appMap, HashMap<String,String> globalMap, String timePeriod ) {
         
         String networkFileName = (String)appMap.get("d211.fileName");
         String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");

@@ -17,7 +17,7 @@
 package com.pb.tlumip.ts.transit;
 
 import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.assign.ShortestPathTreeH;
+import com.pb.tlumip.ts.ShortestPathTreeH;
 import com.pb.tlumip.ts.assign.TransitAssignAndSkimManager;
 
 import com.pb.common.util.IndexSort;
@@ -134,7 +134,7 @@ public class AuxTrNet implements Serializable {
 	String accessMode = null;
     String period = null;
 
-    HashMap<String, Integer> routeTypeMap = new HashMap();
+    HashMap<String, Integer> routeTypeMap = new HashMap<String, Integer>();
 
     
     

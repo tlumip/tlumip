@@ -27,6 +27,8 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 import com.pb.tlumip.ts.NetworkHandler;
 import com.pb.tlumip.ts.NetworkHandlerIF;
+import com.pb.tlumip.ts.ShortestPathTreeH;
+
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -37,12 +39,13 @@ import java.util.ResourceBundle;
 
 public class Skims {
 
-	protected static Logger logger = Logger.getLogger(Skims.class);
+    private Logger logger = Logger.getLogger(Skims.class);
+    private Logger skimLogger = Logger.getLogger( "skimLogger" );
 
 	private static int MAX_SKIM_VALUE = 1000;
 	
-	HashMap tsPropertyMap;
-    HashMap globalPropertyMap;
+	HashMap<String,String> tsPropertyMap;
+    HashMap<String,String> globalPropertyMap;
 
     ResourceBundle tsRb;
     ResourceBundle globalRb;
@@ -93,7 +96,7 @@ public class Skims {
 
 
 
-    private void setupNetwork ( HashMap appMap, HashMap globalMap, String timePeriod ) {
+    private void setupNetwork ( HashMap<String,String> appMap, HashMap<String,String> globalMap, String timePeriod ) {
         
         String networkFileName = (String)appMap.get("d211.fileName");
         String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
@@ -314,6 +317,10 @@ public class Skims {
 		for (int i=0; i < skimType.length; i++) {
 			
             logger.info( String.format( "writing %s" + matrixExtension+ " skim matrix file.", matrixName[i] ) );
+
+            
+            skimLogger.info( fileName[i] );
+            newSkimMatrices[i].logMatrixStatsToInfo( skimLogger );
             
 			// write alpha zone skim matrix
 	        MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fileName[i]) );
@@ -596,10 +603,10 @@ public class Skims {
 	public static void main(String[] args) {
 
     	
-    	logger.info ("creating Skims object.");
+    	System.out.println ("creating Skims object.");
         Skims s = new Skims ( ResourceBundle.getBundle("ts"), ResourceBundle.getBundle ("global"), "peak" );
 
-    	logger.info ("skimming network and creating Matrix object for peak auto time.");
+        System.out.println ("skimming network and creating Matrix object for peak auto time.");
         double[][] linkAttribs = new double[1][];
         linkAttribs[0] = s.nh.getCongestedTime();
         
@@ -612,7 +619,7 @@ public class Skims {
         Matrix[] m = s.getHwySkimMatrices ( "peak", linkAttribs, matrixName, matrixDescription, 'a' );
         m[0].logMatrixStatsToInfo();
 
-    	logger.info ("squeezing the alpha matrix to a beta matrix.");
+        System.out.println ("squeezing the alpha matrix to a beta matrix.");
     	Matrix mSqueezed = s.getBetaSkimMatrix( m[0] );
         mSqueezed.logMatrixStatsToInfo();
         

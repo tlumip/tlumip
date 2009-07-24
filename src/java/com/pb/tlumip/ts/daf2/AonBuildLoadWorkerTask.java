@@ -24,8 +24,7 @@ import com.pb.common.daf.MessageFactory;
 import com.pb.common.daf.MessageProcessingTask;
 
 import com.pb.tlumip.ts.NetworkHandler;
-import com.pb.tlumip.ts.assign.Network;
-import com.pb.tlumip.ts.assign.ShortestPathTreeH;
+import com.pb.tlumip.ts.ShortestPathTreeH;
 import com.pb.tlumip.ts.daf2.MessageID;
 
 /**

@@ -170,8 +170,12 @@ public class FW {
             
             
             // loop thru FW iterations
-            // loop thru FW iterations
             for (int iter=0; iter < maxFwIters; iter++) {
+                
+                int dummy=0;
+                if ( iter == 25 )
+                    dummy++;
+                
                 
                 if(logger.isDebugEnabled()) {
                     logger.debug("Iteration = " + iter);
@@ -241,6 +245,14 @@ public class FW {
                 nh.setVolau(totalLinkFlow);
                 nh.applyVdfs();
 
+
+                double[] assignedTime = nh.getCongestedTime();
+                double tot = 0.0;
+                for (int k=0; k < assignedTime.length; k++)
+                    tot += assignedTime[k];
+                logger.info( " total assignedTime: " + tot);
+                    
+                
                 
                 iterationsCompleted++;
                 
@@ -432,7 +444,8 @@ public class FW {
         double gap = 0.0;
         for (int k=0; k < totalLinkFlow.length; k++)
             if ( validLinks[k] )
-                gap += cTime[k]*(totAonFlow[k] - totalLinkFlow[k]) + totalLinkCost[k]*(1.0 - x);
+                gap += ( cTime[k] + totalLinkCost[k] )*( totAonFlow[k] - totalLinkFlow[k] );
+                //gap += cTime[k]*(totAonFlow[k] - totalLinkFlow[k]) + totalLinkCost[k]*(1.0 - x);
 
 
         return(gap);

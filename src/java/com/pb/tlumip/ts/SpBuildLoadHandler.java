@@ -37,7 +37,7 @@ public class SpBuildLoadHandler implements SpBuildLoadHandlerIF {
     private SpBuildLoadCommon spCommon = null;
     
     private int numberOfThreads = java.lang.Runtime.getRuntime().availableProcessors();
-//    private int numberOfThreads = 4;
+//    private int numberOfThreads = 1;
     
 
 

@@ -61,7 +61,8 @@ import org.apache.log4j.Logger;
 
 public class TransitAssignAndSkimManager {
 
-	protected static Logger logger = Logger.getLogger(TransitAssignAndSkimManager.class);
+    private Logger logger = Logger.getLogger(TransitAssignAndSkimManager.class);
+    private Logger skimLogger = Logger.getLogger( "skimLogger" );
 
     static final boolean CREATE_NEW_NETWORK = true;
     boolean SKIM_ONLY = false;
@@ -513,16 +514,24 @@ public class TransitAssignAndSkimManager {
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ivtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.IVT.ordinal()] );
-
+        skimLogger.info( ivtFilename );
+        skimMatrices[SkimType.IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
+        
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fwtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.FWT.ordinal()] );
+        skimLogger.info( fwtFilename );
+        skimMatrices[SkimType.FWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AIR$.ordinal()] );
+        skimLogger.info( farFilename );
+        skimMatrices[SkimType.AIR$.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         Matrix m = skimMatrices[SkimType.ACC.ordinal()].add(skimMatrices[SkimType.EGR.ordinal()] );   // for drive air, drv is acc + egr drive time
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(drvFilename) );
         mw.writeMatrix( m );
+        skimLogger.info( drvFilename );
+        m.logMatrixStatsToInfo( skimLogger );
 
         logger.info ("done writing " + period + " drive air skims files.");
             
@@ -560,29 +569,45 @@ public class TransitAssignAndSkimManager {
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ivtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.IVT.ordinal()] );
+        skimLogger.info( ivtFilename );
+        skimMatrices[SkimType.IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fwtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.FWT.ordinal()] );
+        skimLogger.info( fwtFilename );
+        skimMatrices[SkimType.FWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(twtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.TWT.ordinal()] );
+        skimLogger.info( twtFilename );
+        skimMatrices[SkimType.TWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(xwkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AUX.ordinal()] );
+        skimLogger.info( xwkFilename );
+        skimMatrices[SkimType.AUX.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(hsrIvtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.HSR_IVT.ordinal()] );
+        skimLogger.info( hsrIvtFilename );
+        skimMatrices[SkimType.HSR_IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(hsrBrdFilename) );
         mw.writeMatrix( skimMatrices[SkimType.BRD_HSR.ordinal()] );
+        skimLogger.info( hsrBrdFilename );
+        skimMatrices[SkimType.BRD_HSR.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         Matrix m = skimMatrices[SkimType.HSR$.ordinal()].add( skimMatrices[SkimType.BUS$.ordinal()].add( skimMatrices[SkimType.RAIL$.ordinal()] ) );   // for drive hsr, far combines hsr$, bus$, and rail$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
         mw.writeMatrix( m );
+        skimLogger.info( farFilename );
+        m.logMatrixStatsToInfo( skimLogger );
 
         m = skimMatrices[SkimType.ACC.ordinal()].add( skimMatrices[SkimType.EGR.ordinal()] );   // for drive hsr, drv is acc + egr drive time
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(drvFilename) );
         mw.writeMatrix( m );
+        skimLogger.info( drvFilename );
+        m.logMatrixStatsToInfo( skimLogger );
 
         logger.info ("done writing " + period + " drive high speed rail skims files.");
             
@@ -620,29 +645,45 @@ public class TransitAssignAndSkimManager {
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ivtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.IVT.ordinal()] );
+        skimLogger.info( farFilename );
+        skimMatrices[SkimType.IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fwtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.FWT.ordinal()] );
+        skimLogger.info( fwtFilename );
+        skimMatrices[SkimType.FWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(twtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.TWT.ordinal()] );
+        skimLogger.info( twtFilename );
+        skimMatrices[SkimType.TWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(xwkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AUX.ordinal()] );
+        skimLogger.info( xwkFilename );
+        skimMatrices[SkimType.AUX.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(busIvtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.BUS_IVT.ordinal()] );
+        skimLogger.info( busIvtFilename );
+        skimMatrices[SkimType.BUS_IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(railIvtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.RAIL_IVT.ordinal()] );
+        skimLogger.info( railIvtFilename );
+        skimMatrices[SkimType.RAIL_IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         Matrix m = skimMatrices[SkimType.BUS$.ordinal()].add( skimMatrices[SkimType.RAIL$.ordinal()] );   // for drive intercity, far combines bus$ and rail$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
         mw.writeMatrix( m );
+        skimLogger.info( farFilename );
+        m.logMatrixStatsToInfo( skimLogger );
 
         m = skimMatrices[SkimType.ACC.ordinal()].add( skimMatrices[SkimType.EGR.ordinal()] );   // for drive intercity, drv is acc + egr drive time
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(drvFilename) );
         mw.writeMatrix( m );
+        skimLogger.info( drvFilename );
+        m.logMatrixStatsToInfo( skimLogger );
 
         logger.info ("done writing " + period + " drive intercity bus/rail skims files.");
             
@@ -681,27 +722,43 @@ public class TransitAssignAndSkimManager {
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ivtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.IVT.ordinal()] );
+        skimLogger.info( ivtFilename );
+        skimMatrices[SkimType.IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fwtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.FWT.ordinal()] );
+        skimLogger.info( fwtFilename );
+        skimMatrices[SkimType.FWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(twtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.TWT.ordinal()] );
+        skimLogger.info( twtFilename );
+        skimMatrices[SkimType.TWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(drvFilename) );
         mw.writeMatrix( skimMatrices[SkimType.ACC.ordinal()] );
+        skimLogger.info( drvFilename );
+        skimMatrices[SkimType.ACC.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(xwkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AUX.ordinal()] );
+        skimLogger.info( xwkFilename );
+        skimMatrices[SkimType.AUX.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ewkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.EGR.ordinal()] );
+        skimLogger.info( ewkFilename );
+        skimMatrices[SkimType.EGR.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(brdFilename) );
         mw.writeMatrix( skimMatrices[SkimType.BRD.ordinal()] );
+        skimLogger.info( brdFilename );
+        skimMatrices[SkimType.BRD.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
         mw.writeMatrix( skimMatrices[SkimType.TRAN$.ordinal()] );
+        skimLogger.info( farFilename );
+        skimMatrices[SkimType.TRAN$.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         logger.info ("done writing " + period + " drive intracity transit skims files.");
             
@@ -740,31 +797,49 @@ public class TransitAssignAndSkimManager {
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ivtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.IVT.ordinal()] );
+        skimLogger.info( ivtFilename );
+        skimMatrices[SkimType.IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fwtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.FWT.ordinal()] );
+        skimLogger.info( fwtFilename );
+        skimMatrices[SkimType.FWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(twtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.TWT.ordinal()] );
+        skimLogger.info( twtFilename );
+        skimMatrices[SkimType.TWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(awkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.ACC.ordinal()] );
+        skimLogger.info( awkFilename );
+        skimMatrices[SkimType.ACC.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(xwkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AUX.ordinal()] );
+        skimLogger.info( xwkFilename );
+        skimMatrices[SkimType.AUX.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ewkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.EGR.ordinal()] );
+        skimLogger.info( ewkFilename );
+        skimMatrices[SkimType.EGR.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(hsrIvtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.HSR_IVT.ordinal()] );
+        skimLogger.info( hsrIvtFilename );
+        skimMatrices[SkimType.HSR_IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(hsrBrdFilename) );
         mw.writeMatrix( skimMatrices[SkimType.BRD_HSR.ordinal()] );
+        skimLogger.info( hsrBrdFilename );
+        skimMatrices[SkimType.BRD_HSR.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         Matrix m = skimMatrices[SkimType.HSR$.ordinal()].add( skimMatrices[SkimType.BUS$.ordinal()] ).add( skimMatrices[SkimType.RAIL$.ordinal()] ).add( skimMatrices[SkimType.TRAN$.ordinal()] );   // for walk hsr, far combines hsr$, bus$, $rail and tran$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
         mw.writeMatrix( m );
+        skimLogger.info( farFilename );
+        m.logMatrixStatsToInfo( skimLogger );
 
         logger.info ("done writing " + period + " walk high speed rail skims files.");
             
@@ -805,34 +880,54 @@ public class TransitAssignAndSkimManager {
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ivtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.IVT.ordinal()] );
+        skimLogger.info( ivtFilename );
+        skimMatrices[SkimType.IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fwtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.FWT.ordinal()] );
+        skimLogger.info( fwtFilename );
+        skimMatrices[SkimType.FWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(twtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.TWT.ordinal()] );
+        skimLogger.info( twtFilename );
+        skimMatrices[SkimType.TWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(awkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.ACC.ordinal()] );
+        skimLogger.info( awkFilename );
+        skimMatrices[SkimType.ACC.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(xwkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AUX.ordinal()] );
+        skimLogger.info( xwkFilename );
+        skimMatrices[SkimType.AUX.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ewkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.EGR.ordinal()] );
+        skimLogger.info( ewkFilename );
+        skimMatrices[SkimType.EGR.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(brdFilename) );
         mw.writeMatrix( skimMatrices[SkimType.BRD.ordinal()] );
+        skimLogger.info( brdFilename );
+        skimMatrices[SkimType.BRD.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(busIvtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.BUS_IVT.ordinal()] );
+        skimLogger.info( busIvtFilename );
+        skimMatrices[SkimType.BUS_IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(railIvtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.RAIL_IVT.ordinal()] );
+        skimLogger.info( railIvtFilename );
+        skimMatrices[SkimType.RAIL_IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         Matrix m = skimMatrices[SkimType.BUS$.ordinal()].add( skimMatrices[SkimType.RAIL$.ordinal()] ).add( skimMatrices[SkimType.TRAN$.ordinal()] );   // for walk intercity, far combines bus$, $rail and tran$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
         mw.writeMatrix( m );
+        skimLogger.info( farFilename );
+        m.logMatrixStatsToInfo( skimLogger );
 
         logger.info ("done writing " + period + " walk intercity bus/rail skims files.");
             
@@ -871,28 +966,44 @@ public class TransitAssignAndSkimManager {
         // aggregate skim tables if necessary and prepare final Matrix objects to be written out
         MatrixWriter mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ivtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.IVT.ordinal()] );
+        skimLogger.info( ivtFilename );
+        skimMatrices[SkimType.IVT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(fwtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.FWT.ordinal()] );
+        skimLogger.info( fwtFilename );
+        skimMatrices[SkimType.FWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(twtFilename) );
         mw.writeMatrix( skimMatrices[SkimType.TWT.ordinal()] );
+        skimLogger.info( twtFilename );
+        skimMatrices[SkimType.TWT.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(awkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.ACC.ordinal()] );
+        skimLogger.info( awkFilename );
+        skimMatrices[SkimType.ACC.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(xwkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.AUX.ordinal()] );
+        skimLogger.info( xwkFilename );
+        skimMatrices[SkimType.AUX.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(ewkFilename) );
         mw.writeMatrix( skimMatrices[SkimType.EGR.ordinal()] );
+        skimLogger.info( ewkFilename );
+        skimMatrices[SkimType.EGR.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(brdFilename) );
         mw.writeMatrix( skimMatrices[SkimType.BRD.ordinal()] );
+        skimLogger.info( brdFilename );
+        skimMatrices[SkimType.BRD.ordinal()].logMatrixStatsToInfo( skimLogger );
 
         Matrix m = skimMatrices[SkimType.TRAN$.ordinal()];   // for walk intracity, far is tran$
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(farFilename) );
         mw.writeMatrix( m );
+        skimLogger.info( farFilename );
+        m.logMatrixStatsToInfo( skimLogger );
 
         logger.info ("done writing " + period + " walk intracity transit skims files.");
             

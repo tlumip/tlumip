@@ -21,6 +21,8 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
+import com.pb.common.util.IndexSort;
+
 /**
  * Class for shortest path trees.
  *
@@ -28,43 +30,47 @@ import org.apache.log4j.Logger;
 
 public class ShortestPathTreeH {
 
-	protected static Logger logger = Logger.getLogger(ShortestPathTreeH.class);
+    private Logger logger = Logger.getLogger(ShortestPathTreeH.class);
+    private Logger spDebugLogger = Logger.getLogger("spDebugLogger");
 
     static final double COMPARE_EPSILON = 1.0e-07;
     static final int MAX_PATH_LENGTH = 500;
 
-    int inOrigin;
-    int inDestination;
+    private int inOrigin;
+    private int inDestination;
 
-	int[] ia;
-	int[] ib;
-	int[] ip;
-	int[] indexNode;
-	int[] nodeIndex;
-    int[] sortedLinkIndex;
-    int[][] turnPenaltyIndices;
-    float[][] turnPenaltyArray;
-	boolean[] centroid;
-	boolean[] validLink;
-	double[] linkCost;
-	double[] aonFlow;	
+    private int[] ia;
+    private int[] ib;
+    private int[] ip;
+    private int[] indexNode;
+    private int[] nodeIndex;
+    private int[] sortedLinkIndex;
+    private int[][] turnPenaltyIndices;
+    private float[][] turnPenaltyArray;
+    private boolean[] centroid;
+    private boolean[] validLink;
+    private double[] linkCost;
+	private double[] aonFlow;	
 	
 	
-    int[] nodeLabeled;
-    double[] nodeLabels;
-    int[] predecessorLink;
+	private int[] nodeLabeled;
+	private double[] nodeLabels;
+	private int[] predecessorLink;
 
-    int numLinks;
-    int numNodes;
-    int numZones;
+	private int numLinks;
+	private int numNodes;
+	private int numZones;
 
-    long initTime = 0;
-    long buildTime = 0;
-    long loadTime = 0;
+	private long initTime = 0;
+	private long buildTime = 0;
+	private long loadTime = 0;
 
-    Heap candidateHeap;
-    int[] heapContents;
+	private Heap candidateHeap;
+	private int[] heapContents;
 
+    private boolean debug = false;
+    
+    
 
     public ShortestPathTreeH ( NetworkHandlerIF nh ) {
 
@@ -160,12 +166,8 @@ public class ShortestPathTreeH {
         // continue labeling until candidateHeap is empty
 		int k;
         while ((k = candidateHeap.remove()) >= 0) {
-
             setTreeRootLabels ( ib[k] );
 			nodeLabeled[ib[k]] = 1;
-			if(logger.isDebugEnabled()) {
-                candidateHeap.dataPrint();
-            }
         }
 
         buildTime += (System.currentTimeMillis() - start);
@@ -179,7 +181,10 @@ public class ShortestPathTreeH {
         this.inOrigin = inOrigin;
         this.inDestination = inDestination;
 
-        if (debug) logger.debug ("building path from " + inOrigin + "(" + indexNode[inOrigin] + ")" + " to " + inDestination + "(" + indexNode[inDestination] + ")");
+        if (debug) {
+            logger.debug ("building path from " + inOrigin + "(" + indexNode[inOrigin] + ")" + " to " + inDestination + "(" + indexNode[inDestination] + ")");
+            spDebugLogger.info ("building path from " + inOrigin + "(" + indexNode[inOrigin] + ")" + " to " + inDestination + "(" + indexNode[inDestination] + ")");
+        }
         initData();
 
         // set labels for links eminating from the origin node
@@ -188,15 +193,22 @@ public class ShortestPathTreeH {
 
         // continue labeling until candidateHeap is empty
         k = candidateHeap.remove();
-        if (debug) logger.debug ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
+        if (debug) {
+            logger.debug ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
+            spDebugLogger.info ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
+        }
         while (ib[k] != inDestination) {
             setPathRootLabels (ib[k], inDestination);
             if (debug) candidateHeap.dataPrint();
             nodeLabeled[ib[k]] = 1;
             k = candidateHeap.remove();
-            if (k == -1)
+            if (k == -1) {
                 return false;
-            if (debug) logger.debug ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
+            }
+            if (debug) {
+                logger.debug ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
+                spDebugLogger.info ("removed k=" + k + ", ia=" + ia[k] + "(" + indexNode[ia[k]] + ")" + ", ib=" + ib[k] + "(" + indexNode[ib[k]] + ")");
+            }
         }
 
         return true;
@@ -223,22 +235,50 @@ public class ShortestPathTreeH {
         double turnPenalty;
 
         
-        if(logger.isDebugEnabled()) {
-            logger.debug ("rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)]);
-        }
+//        if(logger.isDebugEnabled())
+//            logger.debug ("rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)]);
+
+
+        // if the rootNode has no outgoing links, nothing to do
+        int start = ip[rootNode];
+        //if ( start == 0 && rootNode > 0 && rootNode != 22654 )
+        //    start = 0;
         
-        for (int i=ip[rootNode]; i < ip[rootNode+1]; i++) {
+        if ( start == 0 && rootNode > 0 )
+            return;
+        
+        // determine the last index for outgoing links from this rootNode
+        int offset = 1;
+        int end = ip[rootNode + offset++];
+        while ( end <= 0 )
+            end = ip[rootNode + offset++];
+
+//        if( debug )
+//            spDebugLogger.info ("[rootNode]:  rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)] + ", start=" + start + ", end=" + end + ", offset=" + offset );
+        
+        boolean first = true;
+        for (int i=start; i < end; i++) {
             
             k = sortedLinkIndex[i];
             
-            
+//            if ( inOrigin == 1547 && indexNode[ib[k]] == 27746 ) {
+//                debug = true;
+//
+//                if( first )
+//                    spDebugLogger.info ("[rootNode]:  rootNode=" + indexNode[rootNode] +"(external node label)" + ", ip[" + rootNode + "]=" + ip[rootNode] + ", ip[" + (rootNode+1) + "]=" + ip[(rootNode+1)] + ", start=" + start + ", end=" + end + ", offset=" + offset );
+//                
+//                first = false;
+//            }
+
             turnPenalty = 0.0;
             if ( turnPenaltyIndices != null && turnPenaltyIndices.length > 0 && predecessorLink[ia[k]] >= 0 )
                 turnPenalty = getTurnPenalty( k, predecessorLink[ia[k]] );
 
-            if(logger.isDebugEnabled()) {
-                logger.debug ("i=" + i + ", k=" + k + ", ia[k=" + k + "]=" + ia[k] + ", ib[k=" + k + "]=" + ib[k] + ", an[k=" + k + "]=" + indexNode[ia[k]] + ", bn[k=" + k + "]=" + indexNode[ib[k]] + ", linkCost[k=" + k + "]=" + linkCost[k] +  ", nodeLabeled[ib[k]=" + ib[k] + "]=" +  nodeLabeled[ib[k]] +  ", nodeLabels[ib[k]=" + ib[k] + "]=" + nodeLabels[ib[k]] + ", validLink[k=" + k + "]=" + validLink[k] + ", turnPenalty=" + turnPenalty);
-            }
+//            if(logger.isDebugEnabled())
+//                logger.debug ("i=" + i + ", k=" + k + ", ia[k=" + k + "]=" + ia[k] + ", ib[k=" + k + "]=" + ib[k] + ", an[k=" + k + "]=" + indexNode[ia[k]] + ", bn[k=" + k + "]=" + indexNode[ib[k]] + ", linkCost[k=" + k + "]=" + linkCost[k] +  ", nodeLabeled[ib[k]=" + ib[k] + "]=" +  nodeLabeled[ib[k]] +  ", nodeLabels[ib[k]=" + ib[k] + "]=" + nodeLabels[ib[k]] +  ", nodeLabels[ia[k]=" + ia[k] + "]=" + nodeLabels[ia[k]] + ", validLink[k=" + k + "]=" + validLink[k] + ", turnPenalty=" + turnPenalty);
+//
+//            if( debug )
+//                spDebugLogger.info ("[forward star]:  i=" + i + ", k=" + k + ", ia[k=" + k + "]=" + ia[k] + ", ib[k=" + k + "]=" + ib[k] + ", an[k=" + k + "]=" + indexNode[ia[k]] + ", bn[k=" + k + "]=" + indexNode[ib[k]] + ", linkCost[k=" + k + "]=" + linkCost[k] +  ", nodeLabeled[ib[k]=" + ib[k] + "]=" +  nodeLabeled[ib[k]] +  ", nodeLabels[ib[k]=" + ib[k] + "]=" + nodeLabels[ib[k]] +  ", nodeLabels[ia[k]=" + ia[k] + "]=" + nodeLabels[ia[k]] + ", validLink[k=" + k + "]=" + validLink[k] + ", turnPenalty=" + turnPenalty);
             
             if ( validLink[k] && turnPenalty >= 0 ) {
                 if (nodeLabeled[ib[k]] == 0) {
@@ -247,18 +287,29 @@ public class ShortestPathTreeH {
                         nodeLabels[ib[k]] = label;
                         if (!centroid[k] || rootNode == inOrigin || ib[k] == destNode) {
                             candidateHeap.add(k);
+
+//                            if (debug)
+//                                candidateHeap.dataPrint( true );
                         }
+
                         predecessorLink[ib[k]] = k;
-                        if(logger.isDebugEnabled()) {
-                            logger.debug ("predecessor[" + indexNode[ib[k]] + "]=" + k + "   (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ")");
-                        }
+
+//                        if(logger.isDebugEnabled())
+//                            logger.debug ("predecessor[" + indexNode[ib[k]] + "]=" + k + "   (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ")");
+//                        
+//                        if( debug )
+//                            spDebugLogger.info ("[predecessor set]:  predecessor[" + indexNode[ib[k]] + "]=" + k + "   (" + indexNode[ia[k]] + "," + indexNode[ib[k]] + ")");
+                        
                     }
                 }
             }
         }
-        if(logger.isDebugEnabled()) {
-            logger.debug ("");
-        }
+//        if(logger.isDebugEnabled()) {
+//            logger.debug ("");
+//        }
+
+        if ( inOrigin != 1547 )
+            debug = false;
     }
 
 
@@ -473,6 +524,62 @@ public class ShortestPathTreeH {
 
     
     
+    /**
+     * Returns an ArrayList of arrays containing (internal node id, shortest path cost), for links where one of the nodes has a nodeLabel
+     * less than the threshold value, and the node is valid.
+     */
+    public ArrayList<double[]> getNodesWithinCost ( double costThreshold, boolean[] validNode ) {
+
+        ArrayList<double[]> tempList = new ArrayList<double[]>();
+        int[] tempData = new int[nodeLabels.length];
+        
+        int k = 0;
+        for (int i=0; i < nodeLabels.length; i++) {
+            if ( validNode[i] && nodeLabels[i] < costThreshold  ) {
+                double[] nodeData = new double[2];
+                nodeData[0] = i;
+                nodeData[1] = nodeLabels[i];
+                tempData[k++] = (int)(nodeLabels[i]*100000);
+                tempList.add( nodeData );
+            }
+        }
+
+        int[] sortData = new int[k];
+        for (int i=0; i < k; i++)
+            sortData[i] = tempData[i];
+        
+        // sort the node list by node label and return a sorted ArrayList with nodes sorted by shortest path cost from origin 
+        int[] sortIndices = IndexSort.indexSort( sortData );
+        ArrayList<double[]> nodeList = new ArrayList<double[]>(k);
+        for (int i=0; i < tempList.size(); i++)
+            nodeList.add( tempList.get(sortIndices[i]));
+        
+        return nodeList;
+    }
+    
+    
+    // return an ArrayList of arrays containing (internal node id, shortest path cost), for links where one of the nodes has a nodeLabel
+    // greater than the min and less than the max threshold values, and the node is valid.
+    public ArrayList<double[]> getNodesWithinCosts ( double minThreshold, double maxThreshold, boolean[] validNode ) {
+
+        ArrayList<double[]> nodeList = new ArrayList<double[]>();
+        
+        for (int i=0; i < nodeLabels.length; i++) {
+            
+            if ( validNode[i] && nodeLabels[i] >= minThreshold && nodeLabels[i] < maxThreshold ) {
+                double[] nodeData = new double[2];
+                nodeData[0] = i;
+                nodeData[1] = nodeLabels[i];
+                nodeList.add( nodeData );
+            }
+        }
+
+        return nodeList;
+    }
+    
+    
+    
+    
     private float getTurnPenalty( int k, int predecessorLink ) {
         
         float penalty = 0.0f;
@@ -546,7 +653,7 @@ public class ShortestPathTreeH {
 
         int k;
 
-        ArrayList pathLinksList = new ArrayList(MAX_PATH_LENGTH);
+        ArrayList<Integer> pathLinksList = new ArrayList<Integer>(MAX_PATH_LENGTH);
         
         k = predecessorLink[inDestination];
         while (ia[k] != inOrigin) {
@@ -762,15 +869,26 @@ public class ShortestPathTreeH {
 
 
 		//Print heap contents to console (note in sorted order)
-		public void dataPrint() {
-			int k;
+        public void dataPrint() {
+            int k;
 
-			for (int i = 0; i <= last; i++) {
-				k = data[i];
-				logger.debug("i=" + i + ", k=" + k + ", ib[k]=" + ib[k] + ", an=" + indexNode[ia[k]] + ", bn=" + indexNode[ib[k]] + ", nodeLabels[ib]=" + nodeLabels[ib[k]] + ", nodeLabeled[ib]=" + nodeLabeled[ib[k]]);
-			}
-			logger.debug("");
-		}
+            for (int i = 0; i <= last; i++) {
+                k = data[i];
+                logger.debug("i=" + i + ", k=" + k + ", ib[k]=" + ib[k] + ", an=" + indexNode[ia[k]] + ", bn=" + indexNode[ib[k]] + ", nodeLabels[ib]=" + nodeLabels[ib[k]] + ", nodeLabeled[ib]=" + nodeLabeled[ib[k]]);
+            }
+            logger.debug("");
+        }
+
+
+        public void dataPrint( boolean isTrue ) {
+            int k;
+
+            for (int i = 0; i <= last; i++) {
+                k = data[i];
+                spDebugLogger.info("[heap]:  i=" + i + ", k=" + k + ", ib[k]=" + ib[k] + ", an=" + indexNode[ia[k]] + ", bn=" + indexNode[ib[k]] + ", nodeLabels[ib]=" + nodeLabels[ib[k]] + ", nodeLabeled[ib]=" + nodeLabeled[ib[k]]);
+            }
+            spDebugLogger.info("");
+        }
 
 
         /*
