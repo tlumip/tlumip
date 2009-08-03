@@ -145,20 +145,18 @@ public class EdPiFeedback extends ModelComponent {
     //For each PI Industry in the ED_PIFeedbackParametersI file,
     //calculate L and store in HashMap.
     private void calculateL(){
-        double eta;         //Exp Term Coeff
         double previousC;      //utility of timeInteval - 1 for pi Activity from ActivitySummary
         double previousPreviousC;   //utility of timeInteval - 2 for pi Activity from PreviousActivitySummary
         double previousRefC;        //utility of timeInteval - 1 for pi Activity from Reference Scenario
         double previousPreviousRefC;      //utility of timeInteval - 2 for pi Activity from Reference Scenario
 
         for(String piActivity: edPiFeedParams.getColumnAsString("PI_Activity")){
-            eta = getStringIndexedValue(piActivity, "PI_Activity", edPiFeedParams, "Eta Utility Scaling");
             previousC = getStringIndexedValue(piActivity, "Activity", piTMinus1ActSummary, "CompositeUtility");
             previousPreviousC = getStringIndexedValue(piActivity, "Activity", piTMinus2ActSummary, "CompositeUtility");
             previousRefC = getStringIndexedValue(piActivity, "Activity", actSumRefTable, ""+ (timeInterval-1)+"_CompositeUtility");
             previousPreviousRefC = getStringIndexedValue(piActivity, "Activity", actSumRefTable, ""+ (timeInterval-2)+"_CompositeUtility");
 
-            double lValue = eta * ((previousC - previousPreviousC) - (previousRefC - previousPreviousRefC));
+            double lValue = ((previousC - previousPreviousC) - (previousRefC - previousPreviousRefC));
             lCalculationsMap.put(piActivity, lValue);
 
         }
@@ -243,12 +241,13 @@ public class EdPiFeedback extends ModelComponent {
             System.out.println("SPG Industry: " + spgIndustry);
             ArrayList piActivitiesAndOfficePercent = spgToPiMapping.get(spgIndustry);
             //get parameters and L values for each industry in the arraylist.
-            //For the PIF calculation we need delta, mu, sizes and L
+            //For the PIF calculation we need delta, mu, sizes,  eta, and L
             int numPiIndustries = piActivitiesAndOfficePercent.size()-1;
             double[] deltas = new double[numPiIndustries];
             double[] mus = new double[numPiIndustries];
             double[] sizes = new double[numPiIndustries];
             double[] ls = new double[numPiIndustries];
+            double[] etas = new double[numPiIndustries];
 
             double officePercent = (Double) piActivitiesAndOfficePercent.get(numPiIndustries);
 
@@ -264,6 +263,7 @@ public class EdPiFeedback extends ModelComponent {
                     mus[i] = getStringIndexedValue(piActivityName, "PI_Activity", edPiFeedParams, "Mu Linear Term Coeff");
                     sizes[i] = getStringIndexedValue(piActivityName, "Activity", piTMinus1ActSummary, "Size");
                     ls[i] = lCalculationsMap.get(piActivityName);
+                    etas[i] = getStringIndexedValue(piActivityName, "PI_Activity", edPiFeedParams, "Eta Utility Scaling");
 //                    System.out.println("Pi Industry: " + piActivityName);
 //                    System.out.println(" deltas: " + deltas[i]);
 //                    System.out.println(" mus[i]: " + mus[i]);
@@ -291,7 +291,7 @@ public class EdPiFeedback extends ModelComponent {
             //calculate the weight-averaged pif.  The size term is used for the weighting.
             double pif = 0.00;
             for(i=0; i < numPiIndustries; i++){
-                pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i]);
+                pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i], etas[i]);
             }
 
             spgPIFCalculations.put(spgIndustry, (float) (pif/denominator));
@@ -306,19 +306,21 @@ public class EdPiFeedback extends ModelComponent {
         double delta;
         double mu;
         double l;
+        double eta;
         for (String piIndustry : activityDollarDataForPi.getColumnAsString("Activity")){
             System.out.println("Pi Industry: " + piIndustry);
             try {
                 delta = getStringIndexedValue(piIndustry, "PI_Activity", edPiFeedParams, "Delta Exp Term Coeff");
                 mu = getStringIndexedValue(piIndustry, "PI_Activity", edPiFeedParams, "Mu Linear Term Coeff");
                 l = lCalculationsMap.get(piIndustry);
+                eta = getStringIndexedValue(piIndustry, "PI_Activity", edPiFeedParams, "Eta Utility Scaling");
                 System.out.println("\tDelta: " + delta);
                 System.out.println("\tMu " + mu);
                 System.out.println("\tl " + l);
 
                 //calculate the pif.  No weighting for Pi calculations
                 //since there is a 1-1 mapping.
-                double pif = calculateA(delta, l, mu);
+                double pif = calculateA(delta, l, mu, eta);
                 System.out.println("\tPIF: " + pif);
                 piPIFCalculations.put(piIndustry, (float) pif);
 
@@ -342,9 +344,10 @@ public class EdPiFeedback extends ModelComponent {
                 double[] mus = new double[numPiIndustries];
                 double[] ls = new double[numPiIndustries];
                 double[] sizes = new double[numPiIndustries];
+                double[] etas = new double[numPiIndustries];
                 int hh = Integer.parseInt( appRb.getString( "epf.hh.units.conversion.factor") );
 
-                //get the delta, mu, size, l, and hh unit conversion factor value.
+                //get the delta, mu, size, eta, l, and hh unit conversion factor value.
                 int i = 0;
                 String piActivityName;
                 for (Object aPiActivityName : piActivitiesList) {
@@ -353,6 +356,7 @@ public class EdPiFeedback extends ModelComponent {
                     sizes[i] = getStringIndexedValue(piActivityName, "Activity", piTMinus1ActSummary, "Size");
                     mus[i] = getStringIndexedValue(piActivityName, "PI_Activity", edPiFeedParams, "Mu Linear Term Coeff");
                     ls[i] = lCalculationsMap.get(piActivityName);
+                    etas[i] = getStringIndexedValue(piActivityName, "PI_Activity", edPiFeedParams, "Eta Utility Scaling");
                     i++;
 
                 }
@@ -365,9 +369,9 @@ public class EdPiFeedback extends ModelComponent {
                 double pif = 0.00;
                 for(i=0; i < numPiIndustries; i++){
                 	if (aldIndustry.equals("Non-residential Construction")){
-                		pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i]);
+                		pif += sizes[i] * calculateA(deltas[i], ls[i], mus[i], etas[i]);
                 	} else{
-                		pif += sizes[i] * calculateA(deltas[i], ls[i] / hh, mus[i]);
+                		pif += sizes[i] * calculateA(deltas[i], ls[i] / hh, mus[i], etas[i]);
                 	}                  
                 	
                 }
@@ -376,8 +380,8 @@ public class EdPiFeedback extends ModelComponent {
             }
         }
 
-    private double calculateA(double delta, double l, double mu){
-            return (1.0 + delta * ((1.0 - Math.exp(l)) / (1.0 + Math.exp(l))) + mu * l);
+    private double calculateA(double delta, double l, double mu, double eta){
+            return (1.0 + delta * ((1.0 - Math.exp(l*eta)) / (1.0 + Math.exp(l*eta))) + mu * l);
     }
     
     private HashMap<String, Float> getFinalCalculation(String module, TableDataSet table){
