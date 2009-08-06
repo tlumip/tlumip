@@ -30,14 +30,14 @@
 #------
 
      # All the analysis summary tables for all scenarios are located in this dir
-     baseDir <- "C:/models/TLUMIP/ED_PIFeedbackData/Base/"
+     baseDir <- 
 
      # Refernce Directory, which will be compared to
-     refDir <- "Reference"
+     refDir <- 
      refDir <- paste(baseDir, refDir, sep="")
      
      # Directory to comapare to the reference
-     scenDir <- "Test"
+     scenDir <- 
      scenDir <- paste(baseDir, scenDir, sep="")
 
 #Inputs to customize plots
@@ -72,8 +72,8 @@
 
 #Source in Map Plotting Functions
 #====
-
-     source("C:/models/TLUMIP/ED_PIFeedbackData/Base/resultScripts/DoNotUsemapPlotte.R")
+#This is the file location of the mainMapPlotte.R script.
+     source()
      
 #Load shapefiles needed
 #====

@@ -2,9 +2,6 @@
 # 
 # Author: Carlee
 ###############################################################################
-#Call the function that will produce the line graphs.
-indLegend <- (0.60)
-hhLegend <- (1.25)
 
 #Create line graphs function.
 lineGraphs = function(fileName, outputFileName, graphTitle, legendSize){
@@ -44,6 +41,13 @@ lineGraphs = function(fileName, outputFileName, graphTitle, legendSize){
 	#Turn off the pdf device.
 	dev.off()	
 }
+#Calls the function that will produce the line graphs.
+#These are the inputs the function will be looking for:
+#fileName, outputFileName, graphTitle, legendSize
+
+indLegend <- (0.60)
+hhLegend <- (1.25)
+
 lineGraphs("c:/models/TLUMIP/ED_PIFeedbackData/Base/Test/Rdata/t0/PercentChangeTableIndustry.csv", "c:/models/TLUMIP/ED_PIFeedbackData/Base/Test/Rdata/t0/PercentChangeIndustryGraphs.pdf",
 		' - Employment', indLegend)
 lineGraphs("c:/models/TLUMIP/ED_PIFeedbackData/Base/Test/Rdata/t0/PercentChangeTableHH.csv", "c:/models/TLUMIP/ED_PIFeedbackData/Base/Test/Rdata/t0/PercentChangeHHGraphs.pdf",

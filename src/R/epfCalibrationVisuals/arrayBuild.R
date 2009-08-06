@@ -1,13 +1,13 @@
 #First the scenario directory needs to be set  
 #Choose the main directory for the desired scenario 
  
-    	baseDir <- "C:/models/TLUMIP/ED_PIFeedbackData/Base/"
-	calibScenario <- "Test/Rdata/"
-	refScenario <- "Reference/Rdata/"
+    	baseDir <- 
+	calibScenario <- 
+	refScenario <- 
 
    	yrList <- paste("t", seq(1,6, by=1), sep="")
 
-#singleYr, function to create Rdata file of the existing csv file output by our java script.
+#singleYr, function to create a 2D array as an Rdata file from the existing csv file output by our java script.
 	singleYr <- function(fileLocation, fileName){
 		for(i in yrList){
 			data = read.csv(paste(baseDir, fileLocation, i, "/", fileName, ".csv", sep = "")) 
@@ -19,6 +19,7 @@
 		}
 	}
 
+#
 singleYr (calibScenario , "DotMapsTableIndustry")
 singleYr (calibScenario , "DotMapsTableHH")
 singleYr (refScenario , "DotMapsTableIndustry")
@@ -64,6 +65,7 @@ for(yr in yrList){
 	if(!file.exists(paste(baseDir, calibScenario, yr, sep="/"))) dir.create(paste(baseDir, calibScenario, yr, sep="/")) 
 	if(!file.exists(paste(baseDir, refScenario, yr, sep="/"))) dir.create(paste(baseDir, refScenario, yr, sep="/")) 
 
+	#Load the specific 2D arrays and then call the function allYrs to create the 3D array
 	load(paste(baseDir, calibScenario , yr, "/", "DotMapsTableIndustry.RData", sep = ""))
 	allYrs(get(paste("DotMapsTableIndustry", yr, sep = "")), "DotMapsTableIndustry", calibScenario , yr) 
 	
