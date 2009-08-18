@@ -41,16 +41,18 @@ public class EPF_DotMaps {
     	
     	//get the beta zone activity quantity hash maps for both HH and Industries.
     	getBetaZoneActQtyHashMap(actLocCalibration, helper.scenarioName);
-    	getBetaZoneActQtyHashMap(actLocReference, helper.referenceScenarioName);  
+    	getBetaZoneActQtyHashMap(actLocReference, helper.referenceScenarioName); 
     	
     	//call the R script that produces the 2D and then the 3D arrays that are used to create the 
         //Dot Maps.
     	helper.runRScript("run.array.build.Rscript");
+    	System.out.println("The Arrays have been built.");
     	
         
     	//call the R script that uses the previous arrays to create the Dot Maps.
     	//This script is specific to mapping the state of OR and the halo regions.
     	helper.runRScript("run.map.plotter.Rscript");
+    	System.out.println("The plots have been built.");
     	
     }   	
 	
@@ -82,12 +84,12 @@ public class EPF_DotMaps {
     	    		}
     	    		actWithQty = betaZoneActQty.get(zoneNumber);
     	    		double value = nameOfTableDataSet.getValueAt(row, "Quantity");
-    	    		System.out.println("The Activity: " + nameOfTableDataSet.getStringValueAt(row, "Activity"));
-    	    		System.out.println("The Quantity: " + value);
+//    	    		System.out.println("The Activity: " + nameOfTableDataSet.getStringValueAt(row, "Activity"));
+//    	    		System.out.println("The Quantity: " + value);
     	    		actWithQty.put(nameOfTableDataSet.getStringValueAt(row, "Activity"), value);
     	    		if (nameOfTableDataSet.getStringValueAt(row, "Activity").startsWith("HH")){
     	    			String hhName = nameOfTableDataSet.getStringValueAt(row, "Activity");
-    	    			System.out.println("The hh name is: " + hhName);
+//    	    			System.out.println("The hh name is: " + hhName);
     	    			if (!countedHhName && !hhNames.contains(hhName)){
 							hhNames.add(hhName);   	    			
 						}
@@ -115,32 +117,32 @@ public class EPF_DotMaps {
     	String[] industryColumnHeader = new String [helper.getIndustryNames().size() + 2];
     	String[] hhColumnHeader = new String [hhNames.size() + 2];
     	
-    	for(String hh : hhNames){
-			System.out.println("Column header: " + hh);
-		}
+//    	for(String hh : hhNames){
+//			System.out.println("Column header: " + hh);
+//		}
     	
     	//print array size for test.
-    	System.out.println("The size of industry names list: " + industryColumnHeader.length);
-       	System.out.println("The size of hh names list: " + hhColumnHeader.length);
+//    	System.out.println("The size of industry names list: " + industryColumnHeader.length);
+//      System.out.println("The size of hh names list: " + hhColumnHeader.length);
     	   	
     	getColumnHeaders(helper.getIndustryNames(), industryColumnHeader);
     	getColumnHeaders(hhNames, hhColumnHeader);
     	
-    	//Print out headers for testing.
-    	for(String header : industryColumnHeader){
-			System.out.println("Column header: " + header);
-		}
-		for(String header : hhColumnHeader){
-			System.out.println("Column header: " + header);
-		}
+//    	//Print out headers for testing.
+//    	for(String header : industryColumnHeader){
+//			System.out.println("Column header: " + header);
+//		}
+//		for(String header : hhColumnHeader){
+//			System.out.println("Column header: " + header);
+//		}
 		
 		//Creating a 2D array that contains the data that goes into our TableDataSet.
     	String[][] finalDataIndustry = new String[betaZoneActQty.keySet().size()][industryColumnHeader.length];
     	String[][] finalDataHH = new String[betaZoneActQty.keySet().size()][hhColumnHeader.length];
-    	System.out.println("The number of rows is: " + finalDataIndustry.length);
-		System.out.println("The number of cols is: " + finalDataIndustry[0].length);
-    	System.out.println("The number of rows is: " + finalDataHH.length);
-		System.out.println("The number of cols is: " + finalDataHH[0].length);
+//    	System.out.println("The number of rows is: " + finalDataIndustry.length);
+//		System.out.println("The number of cols is: " + finalDataIndustry[0].length);
+//    	System.out.println("The number of rows is: " + finalDataHH.length);
+//		System.out.println("The number of cols is: " + finalDataHH[0].length);
 
 		get2DArray(finalDataIndustry, helper.industryNames);
 		get2DArray(finalDataHH, hhNames);
@@ -158,22 +160,22 @@ public class EPF_DotMaps {
 		
 		for (String betaZone : betaZoneActQty.keySet()){
 			double totalEmp = 0;
-			System.out.println("The Beta Zone: " + betaZone);
+//			System.out.println("The Beta Zone: " + betaZone);
 			HashMap<String, Double> activityQuantities = betaZoneActQty.get(betaZone);
-			System.out.println("Length of Activity Quantities key set: " + activityQuantities.keySet().size());
+//			System.out.println("Length of Activity Quantities key set: " + activityQuantities.keySet().size());
     		for (String activity : activityQuantities.keySet()){
     			if(listOfActNames.contains(activity)){
-    				System.out.print("The Activity: " + activity + "\n");
+//    				System.out.print("The Activity: " + activity + "\n");
     				int listPosition = listOfActNames.indexOf(activity);
     				nameOfTwoDArray[rowCounter][0] = betaZone;
     				if(nameOfTwoDArray.equals(helper.industryNames)){
     					nameOfTwoDArray[rowCounter][listPosition + 1] = Double.toString(activityQuantities.get(activity) / employees);
     				}
     				nameOfTwoDArray[rowCounter][listPosition + 1] = Double.toString(activityQuantities.get(activity));
-    				System.out.println("The quantity: " + activityQuantities.get(activity));
+//    				System.out.println("The quantity: " + activityQuantities.get(activity));
     				totalEmp += activityQuantities.get(activity);
     				nameOfTwoDArray[rowCounter][nameOfTwoDArray[0].length - 1] = Double.toString(totalEmp);
-    				System.out.println("The total for " + betaZone + " is " + totalEmp + "\n");	
+//    				System.out.println("The total for " + betaZone + " is " + totalEmp + "\n");	
     			}
     		}
 			rowCounter++;			
@@ -187,10 +189,10 @@ public class EPF_DotMaps {
 		for(int i = 0; i < (activitiesList.size()); i++){
 			newArrayName[i + 1] = activitiesList.get(i);
 		}		
-		//Print out headers for testing.
-		for(String header : newArrayName){
-			System.out.println("Column header: " + header);									
-		}
+//		//Print out headers for testing.
+//		for(String header : newArrayName){
+//			System.out.println("Column header: " + header);									
+//		}
 	}
 	
     public static void main(String[] args){
