@@ -1775,31 +1775,49 @@ public class Network implements Serializable {
     public int getLinkIndex( int an, int bn ) {
 
         // takes external node numbers and returns link index
+        int i = 0;
         int k = 0;
-        int returnValue = 0;
-        
+        int start = 0;
+        int end = 0;
+        int offset = 0;
+
+        int returnValue = -1;
         
         // search through bnodes for the given anode to find the link and return its index
-        int start = ipa[nodeIndex[an]];
-        
-        int offset = 1;
-        int end = ipa[nodeIndex[an] + offset++];
-        while ( end <= 0 )
-            end = ipa[nodeIndex[an] + offset++];
+        try {
 
-        for (int i=start; i < end; i++) {
+            // if an is not in network, link is not either
+            if ( nodeIndex[an] < 0 )
+                return -1;
             
-            k = sortedLinkIndexA[i];
+            start = ipa[nodeIndex[an]];
             
-            if(logger.isDebugEnabled()) {
-                logger.debug ("i=" + i + ", k=" + k + ", an=" + nodeIndex[an] + ", bn=" + nodeIndex[bn] + ", ia[k=" + k + "]=" + ia + ", ib[k=" + k + "]=" + ib );
+            offset = 1;
+            end = ipa[nodeIndex[an] + offset++];
+            while ( end <= 0 )
+                end = ipa[nodeIndex[an] + offset++];
+
+            for (i=start; i < end; i++) {
+                
+                k = sortedLinkIndexA[i];
+                
+                if(logger.isDebugEnabled()) {
+                    logger.debug ("i=" + i + ", k=" + k + ", an=" + an + ", bn=" + bn + ", ia=" + nodeIndex[an] + ", ib=" + nodeIndex[bn] + ", start=" + start + ", end=" + end + ", offset=" + offset );
+                }
+                
+                if ( ib[k] == nodeIndex[bn] ) {
+                    returnValue = k;
+                    break;
+                }
             }
-            
-            if ( ib[k] == nodeIndex[bn] ) {
-                returnValue = k;
-                break;
-            }
+
         }
+        catch ( Exception e ) {
+            logger.error ("problem getting link id for: an=" + an + ", bn=" + bn + "." );
+            logger.error ("i=" + i + ", k=" + k + ", an=" + an + ", bn=" + bn + ", ia=" + nodeIndex[an] + ", ib=" + nodeIndex[bn] + ", start=" + start + ", end=" + end + ", offset=" + offset );
+            throw new RuntimeException();
+        }
+        
 
         
 //        if ( returnValue == 0 ) {
