@@ -65,12 +65,14 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     int networkNumCentroids;
     int networkNumUserClasses;
     int[] networkNodeIndexArray;
+    int[] networkIndexNodeArray;
     boolean networkUserClassesIncludeTruck;
     char[] highwayModeCharacters;
     char[][] networkAssignmentGroupChars;
     
     double ptSampleRate;
     
+    String demandOutputFileName;
     String sdtFileName;
     String ldtFileName;
     String ctFileName;
@@ -126,16 +128,18 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
 
    
-    public boolean setup( float[] userClassPces, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( float[] userClassPces, String demandOutputFileName, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] indexNodeArray, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
         this.userClassPces =  userClassPces; 
         networkNumCentroids = numCentroids;
         networkNumUserClasses = numUserClasses;
         networkAssignmentGroupChars = assignmentGroupChars;
         networkNodeIndexArray = nodeIndexArray;
+        networkIndexNodeArray = indexNodeArray;
         networkUserClassesIncludeTruck = userClassesIncludeTruck;
         this.highwayModeCharacters = highwayModeCharacters;
         this.timePeriod = timePeriod;
+        this.demandOutputFileName = demandOutputFileName;
         this.sdtFileName = sdtFileName;
         this.ldtFileName = ldtFileName;
         this.ctFileName = ctFileName;
@@ -159,9 +163,9 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( float[] userClassPces, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setupRpc( float[] userClassPces, String demandOutputFileName, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] indexNodeArray, int[] nodeIndexArray, int[] alphaDistrictArray, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
         
-        return setup( userClassPces, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, nodeIndexArray, alphaDistrictArray, alphaDistrictNames, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
+        return setup( userClassPces, demandOutputFileName, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, numCentroids, numUserClasses, indexNodeArray, nodeIndexArray, alphaDistrictArray, alphaDistrictNames, assignmentGroupChars, highwayModeCharacters, userClassesIncludeTruck );
     
     }
     
@@ -305,6 +309,57 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
 
 
+        // if a file name has been specified for the output demand file, write the file.
+        if ( demandOutputFileName != null ){
+            
+            String baseName = "";
+            String extName = "";
+            int dotIndex = demandOutputFileName.indexOf( '.' );
+            if ( dotIndex < 0 ) {
+                baseName = demandOutputFileName;
+                extName = "";
+            }
+            else {
+                baseName = demandOutputFileName.substring( 0, dotIndex );
+                extName = demandOutputFileName.substring( dotIndex );
+            }
+            
+            String outputFilename = baseName + "_" + timePeriod + extName;
+            
+            
+            
+            FileWriter writer;
+            PrintWriter outStream = null;
+            
+            try {
+                writer = new FileWriter(new File( outputFilename ));
+                outStream = new PrintWriter (new BufferedWriter( writer ) );
+            }
+            catch(IOException e){
+                logger.fatal( String.format( "Exception occurred opening saved demand table file: %s.", outputFilename ) );
+                throw new RuntimeException(e);
+            }
+            
+
+            String headerRecord = "userclass,orig,dest,trips";
+            outStream.println( headerRecord );                    
+            
+            for( int m=0; m < multiclassTripTable.length; m++ ) {
+                for( int i=0; i < multiclassTripTable[m].length; i++ ) {
+                    for( int j=0; j < multiclassTripTable[m][i].length; j++ ) {
+                
+                        String outputRecord = highwayModeCharacters[m] + "," + networkIndexNodeArray[i] + "," + networkIndexNodeArray[j] + multiclassTripTable[m][i][j];
+                        outStream.println( outputRecord );
+                        
+                    }
+                }
+            }
+                                      
+            outStream.close();
+            logger.info( "done writing " + outputFilename );
+            
+        }
+        
 
         return multiclassTripTable;
 		

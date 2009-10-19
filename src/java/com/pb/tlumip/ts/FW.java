@@ -166,16 +166,21 @@ public class FW {
                 // do nothing, filename can be null.
             }
             
-            ah.setup( summaryFile, nh.getRpcConfigFileName(), globalRb.getString("sdt.person.trips"), globalRb.getString("ldt.vehicle.trips"), ptSampleRate, globalRb.getString("ct.truck.trips"), globalRb.getString("et.truck.trips"), startHour, endHour, highwayModeCharacters, nh );
+            String demandOutputFile = null;
+            try {
+                demandOutputFile = componentRb.getString("demand.output.filename");
+            }
+            catch (MissingResourceException e) {
+                // do nothing, filename can be null.
+            }
+            
+            
+            
+            ah.setup( summaryFile, nh.getRpcConfigFileName(), demandOutputFile, globalRb.getString("sdt.person.trips"), globalRb.getString("ldt.vehicle.trips"), ptSampleRate, globalRb.getString("ct.truck.trips"), globalRb.getString("et.truck.trips"), startHour, endHour, highwayModeCharacters, nh );
             
             
             // loop thru FW iterations
             for (int iter=0; iter < maxFwIters; iter++) {
-                
-                int dummy=0;
-                if ( iter == 25 )
-                    dummy++;
-                
                 
                 if(logger.isDebugEnabled()) {
                     logger.debug("Iteration = " + iter);

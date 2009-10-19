@@ -92,7 +92,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
 
     // this setup method called by methods running in the same VM as this object
-    public boolean setup( String reportFileName, String rpcConfigFile, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
+    public boolean setup( String reportFileName, String rpcConfigFile, String demandOutputFileName, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, char[] highwayModeCharacters, NetworkHandlerIF nh ) {
 
         this.nh = nh;
         
@@ -105,7 +105,7 @@ public class AonFlowHandler implements AonFlowHandlerIF {
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF dh = DemandHandler.getInstance( rpcConfigFile );
-        dh.setup( userClassPces, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
+        dh.setup( userClassPces, demandOutputFileName, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, networkNumCentroids, networkNumUserClasses, nh.getIndexNode(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), highwayModeCharacters, nh.userClassesIncludeTruck() );
         dh.buildHighwayDemandObject();
         dh.logDistrictReport();
         
@@ -121,11 +121,11 @@ public class AonFlowHandler implements AonFlowHandlerIF {
     
     
     // this method called by methods running in a different VM and thus making a remote method call to setup this object
-    public boolean setupRpc( String reportFileName, String rpcConfigFile, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, char[] highwayModeCharacters ) {
+    public boolean setupRpc( String reportFileName, String rpcConfigFile, String demandOutputFileName, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, char[] highwayModeCharacters ) {
 
         nh = NetworkHandler.getInstance(rpcConfigFile);
         
-        return setup( reportFileName, rpcConfigFile, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, highwayModeCharacters, nh );        
+        return setup( reportFileName, rpcConfigFile, demandOutputFileName, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, highwayModeCharacters, nh );        
         
     }
     

@@ -56,14 +56,15 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     
     
    
-    public boolean setup( float[] userClassPces, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] nodeIndexArray, int[] alphaDistrictIndex, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
+    public boolean setup( float[] userClassPces, String demandOutputFileName, String sdtFileName, String ldtFileName, double ptSampleRate, String ctFileName, String etFileName, int startHour, int endHour, String timePeriod, int numCentroids, int numUserClasses, int[] indexNodeArray, int[] nodeIndexArray, int[] alphaDistrictIndex, String[] alphaDistrictNames, char[][] assignmentGroupChars, char[] highwayModeCharacters, boolean userClassesIncludeTruck ) {
 
         boolean returnValue = false;
 
         try {
             
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.add(userClassPces);
+            params.add(demandOutputFileName);
             params.add(sdtFileName);
             params.add(ldtFileName);
             params.add(ptSampleRate);
@@ -74,6 +75,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
             params.add(timePeriod);
             params.add(numCentroids);
             params.add(numUserClasses);
+            params.add(indexNodeArray);
             params.add(nodeIndexArray);
             params.add(alphaDistrictIndex);
             params.add(alphaDistrictNames);
@@ -97,7 +99,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         
         int returnValue = -1;
         try {
-            returnValue = (Integer)rc.execute(HANDLER_NAME+".logDistrictReport", new Vector());
+            returnValue = (Integer)rc.execute(HANDLER_NAME+".logDistrictReport", new Vector<Object>());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
@@ -111,7 +113,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
     public int writeDistrictReport ( String fileName ) {
         
         int returnValue = -1;
-        Vector params = new Vector();
+        Vector<Object> params = new Vector<Object>();
         params.add(fileName);
         try {
             rc.execute(HANDLER_NAME+".writeDistrictReport", params);
@@ -129,7 +131,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         
         boolean returnValue = false;
         try {
-            returnValue = (Boolean)rc.execute(HANDLER_NAME+".buildHighwayDemandObject", new Vector());
+            returnValue = (Boolean)rc.execute(HANDLER_NAME+".buildHighwayDemandObject", new Vector<Object>());
         } catch (RpcException e) {
             logger.error( e.getCause().getMessage(), e );
         } catch (IOException e) {
@@ -145,7 +147,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         double[] returnArray = null;
         
         try {
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.add(userClass);
             params.add(row);
             returnArray = (double[])rc.execute(HANDLER_NAME+".getTripTableRowRpc", params);
@@ -165,7 +167,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         double[][][] returnArray = null;
         
         try {
-            returnArray = (double[][][])rc.execute(HANDLER_NAME+".getMulticlassTripTablesRpc", new Vector());
+            returnArray = (double[][][])rc.execute(HANDLER_NAME+".getMulticlassTripTablesRpc", new Vector<Object>());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -182,7 +184,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         double[][] returnArray = null;
         
         try {
-            returnArray = (double[][])rc.execute(HANDLER_NAME+".getTripTableRowSumsRpc", new Vector());
+            returnArray = (double[][])rc.execute(HANDLER_NAME+".getTripTableRowSumsRpc", new Vector<Object>());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -199,7 +201,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         double[][] returnArray = null;
         
         try {
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.add(tripModes);
             returnArray = (double[][])rc.execute(HANDLER_NAME+".getTripTablesForModes", params);
         } catch (RpcException e) {
@@ -217,7 +219,7 @@ public class DemandHandlerRpc implements DemandHandlerIF, Serializable {
         double[][] returnArray = null;
         
         try {
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.add(tripMode);
             returnArray = (double[][])rc.execute(HANDLER_NAME+".getTripTableForMode", params);
         } catch (RpcException e) {

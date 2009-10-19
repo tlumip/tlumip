@@ -55,12 +55,12 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     
     
     // when an instance of this rpc handler is used to call the setup method of an SpBuildLoadHandler running in
-    // another VM, the primitive data type arguments are placed in the params Vector as objects, so the alternate setupRpc remote method is called.  
+    // another VM, the primitive data type arguments are placed in the params Vector<Object> as objects, so the alternate setupRpc remote method is called.  
     public int setup( String handlerName, String rpcConfigFile, int[][][] workElements, double[][][] workElementsDemand, int numUserClasses, int numLinks, int numNodes, int numZones, int[] ia, int[] ib, int[] ipa, int[] sortedLinkIndexA, int[] indexNode, int[] nodeIndex, boolean[] centroid, boolean[][] validLinksForClasses, double[] linkCost, int[][] turnPenaltyIndices, float[][] turnPenaltyArray ) {
 
         int returnValue = -1;
         try {
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.add(handlerName);
             params.add(rpcConfigFile);
             params.add(workElements);
@@ -94,7 +94,7 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     public int start( double[] linkCost ) {
         int returnValue = -1;
         try {
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.add(linkCost);
             returnValue = (Integer)rc.execute(handlerName+".start", params );
         } catch (RpcException e) {
@@ -111,7 +111,7 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
         double[][] returnArray = null;
         
         try {
-            returnArray = (double[][])rc.execute(handlerName+".getResults", new Vector());
+            returnArray = (double[][])rc.execute(handlerName+".getResults", new Vector<Object>());
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -126,7 +126,7 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     public boolean handlerIsFinished() {
         boolean returnValue = false;
         try {
-            returnValue = (Boolean)rc.execute(handlerName+".handlerIsFinished", new Vector() );
+            returnValue = (Boolean)rc.execute(handlerName+".handlerIsFinished", new Vector<Object>() );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -139,7 +139,7 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     public int getNumberOfThreads() {
         int returnValue = -1;
         try {
-            returnValue = (Integer)rc.execute(handlerName+".getNumberOfThreads", new Vector() );
+            returnValue = (Integer)rc.execute(handlerName+".getNumberOfThreads", new Vector<Object>() );
         } catch (RpcException e) {
             logger.error( e );
         } catch (IOException e) {
@@ -151,7 +151,7 @@ public class SpBuildLoadHandlerRpc implements SpBuildLoadHandlerIF {
     public int[] getShortestPathTree ( int userClassIndex, int internalOriginTazIndex ) {
         int[] returnValue = null;
         try {
-            Vector params = new Vector();
+            Vector<Object> params = new Vector<Object>();
             params.add( userClassIndex );
             params.add( internalOriginTazIndex );
             returnValue = (int[])rc.execute(handlerName+".getShortestPathTree", params );

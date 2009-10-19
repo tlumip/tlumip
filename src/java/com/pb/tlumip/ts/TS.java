@@ -169,7 +169,7 @@ public class TS {
     
     public void checkODPairsWithTripsForNetworkConnectivity (NetworkHandlerIF nh) {
         
-        HashMap globalMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
+        HashMap<String, String> globalMap = ResourceUtil.changeResourceBundleIntoHashMap(globalRb);
 
         String timePeriod = nh.getTimePeriod();
         int startHour = -1;
@@ -199,7 +199,7 @@ public class TS {
 
         logger.info( "requesting that demand matrices get built." );
         DemandHandlerIF d = DemandHandler.getInstance();
-        d.setup( nh.getUserClassPces(), (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), (String)globalMap.get("et.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        d.setup( nh.getUserClassPces(), null, (String)globalMap.get("sdt.person.trips"), (String)globalMap.get("ldt.vehicle.trips"), Double.parseDouble((String)globalMap.get("pt.sample.rate")), (String)globalMap.get("ct.truck.trips"), (String)globalMap.get("et.truck.trips"), startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getIndexNode(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         d.buildHighwayDemandObject();
 
         double[][][] multiclassTripTable = d.getMulticlassTripTables();
@@ -263,7 +263,7 @@ public class TS {
 
                 
                 
-                HashMap appMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
+                HashMap<String, String> appMap = ResourceUtil.changeResourceBundleIntoHashMap(appRb);
                 String fileName = (String)appMap.get("timeDistTripFreqs.fileName");
                 
                 if ( fileName != null ) {
@@ -369,7 +369,7 @@ public class TS {
         String resultsString = nh.getAssignmentResultsString();
         String[] columnNames = assignmentResults.getColumnLabels();
         
-        ArrayList flowColumnNames = new ArrayList();
+        ArrayList<String> flowColumnNames = new ArrayList<String>();
         for (int i=0; i < columnNames.length; i++) {
             if ( columnNames[i].startsWith( resultsString ) )
                 flowColumnNames.add( columnNames[i] );
@@ -404,7 +404,7 @@ public class TS {
     
     
     
-    public int setupHighwayNetwork ( NetworkHandlerIF nh, HashMap appMap, HashMap globalMap, String timePeriod ) {
+    public int setupHighwayNetwork ( NetworkHandlerIF nh, HashMap<String,String> appMap, HashMap<String,String> globalMap, String timePeriod ) {
         
         String networkFileName = (String)appMap.get("d211.fileName");
         String networkDiskObjectFileName = (String)appMap.get("NetworkDiskObject.file");
@@ -598,8 +598,8 @@ public class TS {
             tsMain.loadAssignmentResults ( nhPeak, ResourceBundle.getBundle(args[0]) );
 
         //char[] hwyModeChars = { 'a', 'd' };
-        char[] hwyModeChars = { 'a' };
-        tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
+        //char[] hwyModeChars = { 'a' };
+        //tsMain.writeHighwaySkimMatrices ( nhPeak, hwyModeChars );
 
 //        tsMain.assignAndSkimTransit ( nhPeak, ResourceBundle.getBundle(args[0]), ResourceBundle.getBundle(args[1]) );
       
