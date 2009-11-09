@@ -20,6 +20,7 @@ import com.pb.common.rpc.DafNode;
 import com.pb.common.util.DosCommand;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.reference.ModelComponent;
+import com.pb.models.utils.StatusLogger;
 import org.apache.log4j.Logger;
 
 import java.net.MalformedURLException;
@@ -123,8 +124,10 @@ public class TSModelComponent extends ModelComponent {
 
         // if SKIM_ONLY is false (set by skimOnly.flag TS property map key missing or set equal to false)
         // then skip the trip assignment step.
-        if ( ! ts.SKIM_ONLY )
+        if ( ! ts.SKIM_ONLY ) {
+            StatusLogger.logText("TS","Running highway assignment for " + period);
             ts.runHighwayAssignment( nh );
+        }
         
 
         
@@ -141,7 +144,8 @@ public class TSModelComponent extends ModelComponent {
             System.exit(-1);
         }
 
-        
+
+        StatusLogger.logText("TS","Running highway skimming for " + period);
         ts.loadAssignmentResults(nh_new, appRb);
         runLinkSummaries ( nh_new );
         
@@ -150,6 +154,7 @@ public class TSModelComponent extends ModelComponent {
         ts.writeHighwaySkimMatrices ( nh_new, hwyModeChars );
 
 
+        StatusLogger.logText("TS","Running transit assignment and skimming for " + period);
         ts.assignAndSkimTransit ( nh_new,  appRb, globalRb );
         
     }
