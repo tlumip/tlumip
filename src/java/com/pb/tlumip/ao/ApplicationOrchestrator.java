@@ -25,16 +25,14 @@ import com.pb.tlumip.ald.ALDModel;
 import com.pb.tlumip.ct.CTModel;
 import com.pb.tlumip.ed.EDControl;
 import com.pb.tlumip.et.ETModel;
+import com.pb.tlumip.et.ETPythonModel;
 import com.pb.tlumip.spg.SPGnew;
 import com.pb.tlumip.ts.TSModelComponent;
 import com.pb.tlumip.epf.EdPiFeedback;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.ResourceBundle;
+import java.util.*;
 
 
 /**
@@ -231,6 +229,9 @@ public class ApplicationOrchestrator {
         //Get Template File
         File appPropertyTemplate = findTemplateFileRecursively(appName);
 
+        //A series of update files may be used, the more recent ones are loaded second, so their values supercede older ones
+        List<File> appPropertyUpdates = findTemplatUpdateFiles(appName);
+
         String appPropertyTemplateName = appPropertyTemplate.getName();
         //The property file will have the same name as the template file minus the 'Template' part.
 
@@ -246,6 +247,9 @@ public class ApplicationOrchestrator {
         Properties appDefaultProps = new Properties();
         try {
             appDefaultProps.load(new FileInputStream(appPropertyTemplate));
+            //load updates second, to override current values
+            for (File f : appPropertyUpdates)
+                appDefaultProps.load(new FileInputStream(f));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -281,7 +285,17 @@ public class ApplicationOrchestrator {
         return (appPropertyFilePath);
     }
 
-
+    private List<File> findTemplatUpdateFiles(String appName) {
+        List<File> templateUpdateFiles = new LinkedList<File>();
+        String templateUpdatePathPrefix = rootDir + "/user_inputs/" + scenarioOutputs + "/t";
+        String templateUpdatePathSuffix = "/" + appName + "TemplateUpdate.properties";
+        for (int i = 0; i <= t; i++) {
+            File templateUpdateFile = new File(templateUpdatePathPrefix + i + templateUpdatePathSuffix);
+            if (templateUpdateFile.exists())
+                templateUpdateFiles.add(templateUpdateFile); 
+        }
+        return templateUpdateFiles;
+    }
 
     public File findTemplateFileRecursively(String appName) {
         String templateSuffix = "Template.properties";
@@ -448,7 +462,8 @@ public class ApplicationOrchestrator {
     }
 
     public void runETModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
-        ETModel et = new ETModel(appRb, globalRb);
+//        ETModel et = new ETModel(appRb, globalRb);
+        ETPythonModel et = new ETPythonModel(appRb,globalRb);
 
         et.startModel(baseYear, timeInterval);
     }
@@ -591,10 +606,11 @@ public class ApplicationOrchestrator {
 
             ao.logAppRun(appName);
             logger.info(appName + " is complete");
-            StatusLogger.logText(appName.toLowerCase(),appName + " has finished for t" + t + ".");
+            StatusLogger.logText(appName.toLowerCase(),appName + " has finished for t" + t + "."); 
 
         } catch (Exception e) {
             logger.fatal("An application threw the following error",e);
+            StatusLogger.logText("unknown","Application did not finish due to an exception (check log files).");
             throw new RuntimeException("An application threw the following error", e);
         }
     }

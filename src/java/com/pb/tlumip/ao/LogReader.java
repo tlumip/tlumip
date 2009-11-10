@@ -23,6 +23,7 @@ public class LogReader {
 
     private static final String MODULE_SUMMARY_FILE_NAME = "ModuleSummary.csv";
     private static final String PI_ITERATION_SUMMARY_FILE_NAME = "PiIterationSummary.txt";
+    private static final String PI_CONVERGENCE_SUMMARY_FILE_NAME = "PiConvergenceSummary.txt";
     private static final String PT_SUMMARY_FILE_NAME = "PtIterationSummary.txt";
     private static final String TS_SUMMARY_FILE_NAME = "TsSummary.txt";
 
@@ -42,15 +43,21 @@ public class LogReader {
      *
      * @param outputsDirectory
      *        The directory where the output files are to be put.
+    *
+     * @param full
+     *        {@code true} if full report is desired, {@code false} for a basic report.
      */
-    public void readLogsAndReport(String logDirectory, String logBaseName, String outputsDirectory) {
+    public void readLogsAndReport(String logDirectory, String logBaseName, String outputsDirectory, boolean full) {
         readLogs(getFileList(logDirectory, logBaseName));
         this.outputsDirectory = new File(outputsDirectory);
         if (!this.outputsDirectory.exists())
             throw new IllegalArgumentException("Outputs directory must exists: " + outputsDirectory);
         if (!this.outputsDirectory.isDirectory())
             throw new IllegalArgumentException("Outputs directory must be a directory: " + outputsDirectory);
-        writeSummaries();
+        if (full)
+            writeSummaries();
+        else
+            writeModuleSummary();
     }
 
     private File[] getFileList(String logDirectory,String logBaseName) {
@@ -66,7 +73,22 @@ public class LogReader {
             };
 
 
-            SortedMap<String,File> nameList = new TreeMap<String,File>();
+            SortedMap<String,File> nameList = new TreeMap<String,File>(new Comparator<String>() {
+                public int compare(String o1, String o2) {
+                    String[] subo1 = o1.split("[.]");
+                    String[] subo2 = o2.split("[.]");
+                    int c = subo1[0].compareTo(subo2[0]);
+                    if (subo1.length != subo2.length)
+                        c = o1.length() < o2.length() ? -1 : 1;
+                    else if (c == 0)
+                        try {
+                            c = new Integer(subo1[subo1.length-1]).compareTo(new Integer(subo2[subo2.length-1]));
+                        } catch (Exception e) {
+                            //swallow
+                        }
+                    return c;
+                }
+            });
             for (File f : (new File(logDirectory)).listFiles(ff)) {
                 nameList.put(f.getName(),f);
             }
@@ -77,6 +99,11 @@ public class LogReader {
         }
 
         return fileList.toArray(new File[fileList.size()]);
+//        File[] test = new File[1];
+//        test[0] = fileList.get(0);
+//        test[0] = fileList.get(fileList.size() - 1);
+//        return test;
+
     }
 
     private void readLogs(File[] fileList) {
@@ -194,6 +221,8 @@ public class LogReader {
                 startEndMap.put(currentPiSegment,new Calendar[2]);
                 startEndMap.get(currentPiSegment)[0] = si.start;
             } else if (si.segment == Segment.PI_ITERATION) {
+               if (currentPiSegment == null)
+                   continue;
                int iteration = Integer.valueOf(si.startCapturedGroups[2]);
                 //if new iterations, then restart
                 if (currentIteration > iteration) {
@@ -205,7 +234,6 @@ public class LogReader {
                     currentCalibrationIteration = calibrationIteration;
                 }
                 currentIteration = iteration;
-
                 if (si.endCapturedGroups != null)
                     iterationTimes.get(currentPiSegment).get(currentCalibrationIteration).add((long) (Float.valueOf(si.endCapturedGroups[2])*1000.0f));
                 previousEnd = si.end;
@@ -213,6 +241,8 @@ public class LogReader {
                     startEndMap.get(currentPiSegment)[1] = si.end;
                 }
             } else if (si.segment == Segment.PI_GLOBAL_SEARCH) {
+               if (currentPiSegment == null)
+                   continue;
                 if (si.end != null) {
                     //peculiarities of logging may allow reverse times
                     long start = si.start.getTime().getTime();
@@ -224,7 +254,8 @@ public class LogReader {
                 }
             }
         }
-        startEndMap.get(currentPiSegment)[1] = previousEnd;
+        if (currentPiSegment != null)
+            startEndMap.get(currentPiSegment)[1] = previousEnd;
 
         TextFile piIterationSummary = new TextFile();
         piIterationSummary.addLine("**PI Iteration Summary**\n");
@@ -483,9 +514,39 @@ public class LogReader {
         tsSummary.writeTo(outputsDirectory.toString() + File.separator + TS_SUMMARY_FILE_NAME);
     }
 
+    private void writePiConvergenceSumary() {
+        Map<Integer,String> results = new TreeMap<Integer,String>();
+        for (SegmentInformation si : segments) {
+            Segment s = si.segment;
+            if (s == Segment.PI_CONVERGENCE) {
+                int year = Integer.parseInt(si.startCapturedGroups[1]);
+                if (si.segmentFinished()) {
+                    if (si.endCapturedGroups[1] != null)
+                        results.put(year,"PI has reached " + si.endCapturedGroups[1] + " in " + si.endCapturedGroups[2] + " iterations and " + si.endCapturedGroups[3] + " seconds");
+                    else
+                        results.put(year,"PI has reached " + si.endCapturedGroups[4] + " in " + si.endCapturedGroups[5] + " seconds");
+                } else {
+                    results.put(year,null);
+                }
+            } else if (s == Segment.PI_MERIT_MEASURE) {
+                int year = Integer.parseInt(si.startCapturedGroups[1]);
+                if (results.get(year) == null)
+                    results.put(year,"unfinished");
+                else
+                    results.put(year,results.get(year) + " (final merit measure: " + si.endCapturedGroups[1] + ")");
+            }
+        }
+        TextFile tf = new TextFile();
+        tf.addLine("year: report");
+        for (int year : results.keySet())
+            tf.addLine("" + year + ": " + results.get(year));
+        tf.writeTo(outputsDirectory.toString() + File.separator + PI_CONVERGENCE_SUMMARY_FILE_NAME);
+    }
+
     private void writeSummaries() {
         writeModuleSummary();
         writePiIterationSummary();
+        writePiConvergenceSumary();
         writePtSummary();
         writeTsSummary();
     }
@@ -549,6 +610,10 @@ public class LogReader {
         MODULE("AO will now start (.[^iI].*) for simulation year (\\d\\d\\d\\d)","(.+) is complete"),
         PI_ITERATION(".*Starting iteration (\\d+)-(\\d+).*",".*End of iteration (\\d+).  Time in seconds: (\\d+\\.\\d+).*"),
         PI_GLOBAL_SEARCH("Calculating average commodity price change","Finished calculating average commodity price change"),
+//        PI_CONVERGENCE("com.pb.models.pt.daf.PTMasterTask,               Time Interval: (\\d+)","PI has reached (equilibrium) in (\\d+). Time in seconds: (\\d+)|PI has reached (maxIterations). Time in seconds: (\\d+)"),
+//        PI_CONVERGENCE("Time Interval: (\\d+)","PI has reached (equilibrium) in (\\d+). Time in seconds: (\\d+)|PI has reached (maxIterations). Time in seconds: (\\d+)"),
+        PI_CONVERGENCE("Writing ActivitiesW file: .*t(\\d+)/ActivitiesW.csv","\\*   PI has reached (equilibrium) in (\\d+). Time in seconds: (\\d+)|\\*   PI has reached (maxIterations). Time in seconds: (\\d+)"),
+        PI_MERIT_MEASURE("Writing ActivitiesW file: .*t(\\d+)/ActivitiesW.csv","\\*   Final merit measure is (\\d+\\.\\d+E\\d+)"),
         PT_MC_LOGSUM("MasterTask, Sending out mode choice logsum calculation work","MasterTask, Signaling that the ModeChoice Logsums are finished."),
         PT_AUTO_OWNERSHIP("MasterTask, Sending out auto-ownership work","MasterTask, Signaling that the AutoOwnership is finished."),
         PT_WORKPLACE_LOCATION("MasterTask, Sending calculate workplace location work","MasterTask, Signaling that the Workplace Location is finished."),
@@ -668,10 +733,28 @@ public class LogReader {
      *
      * @param outputFileName
      *        The full path and filename of the output file to put the summary csv file.
+     *
+     * @param full
+     *        {@code true} if full report is desired, {@code false} for a basic report.
      */
-    public static void readAndReportLogs(String logDirectory, String logBaseName, String outputFileName) {
+    public static void readAndReportLogs(String logDirectory, String logBaseName, String outputFileName,boolean full) {
         LogReader lr = new LogReader();
-        lr.readLogsAndReport(logDirectory,logBaseName,outputFileName);
+        lr.readLogsAndReport(logDirectory,logBaseName,outputFileName,full);
+    }
+
+    public static void readAndReportLogs(String logDirectory, String logBaseName, String outputFileName) {
+        readAndReportLogs(logDirectory,logBaseName,outputFileName,true);
+    }
+
+    public static String usage() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LogReader: Reads TLUMIP log files and creates runtime reports (still beta).\n");
+        sb.append("  usage: java -classpath [...] com.pb.tlumip.ao.LogReader [log directory] [output directory] (-f)\n");
+        sb.append("    where:\n");
+        sb.append("    [log directory] = the directory where the log files are located\n");
+        sb.append("    [output directory] = the directory where the output files are to be placed\n");
+        sb.append("    -f = optional parameter which forces the reader to do a full summary (less reliable)");
+        return sb.toString();
     }
 
     public static void main(String ... args) {
@@ -679,12 +762,35 @@ public class LogReader {
         //readAndReportLogs("c:\\transfers\\logtest","main_event.log,node0_event.log", "c:\\transfers\\logtest");
         //readAndReportLogs("c:\\transfers\\logtesthhhertergfe","main_event_4period.log,node0_event_4period.log", "c:\\transfers\\logtest");
         //readAndReportLogs("C:\\Models\\TLUMIP\\final_deliverable_logs\\fd_runtime","main_event.log,node0_event.log", "C:\\Models\\TLUMIP\\final_deliverable_logs\\fd_runtime");
-        String base = "C:\\Models\\TLUMIP\\runtime_comparisons\\daf_configuration\\";
-        String[] base_folders = {"base","conf1","conf2"};
-        for (String folder : base_folders)
-            readAndReportLogs(base + folder,"main_event.log,node0_event.log", base + folder);
+//        String base = "C:\\chris\\projects\\tlumip\\gui\\FinalDistributions\\Gui\\temp";
+//        String[] base_folders = {"base","conf1","conf2"};
+//        for (String folder : base_folders)
+//            readAndReportLogs(base + folder,"main_event.log,node0_event.log", base + folder);
+//        readAndReportLogs(base,"main_event.log,node0_event.log", base);
 //        System.out.println(new Date());
-        
+
+        String logDirectory;
+        String outputDirectory;
+        boolean full = false;
+        switch (args.length) {
+            case 3 :
+                if (args[2].equals("-f"))
+                    full = true;
+                else
+                    throw new IllegalArgumentException("Unknown argument: " + args[2]);
+            case 2 :
+                logDirectory = args[0];
+                outputDirectory = args[1];
+                break;
+            default:
+                System.out.println("Invalid argument count!");
+                System.out.println(usage());
+                return;
+        }
+        String logBase = "main_event.log";
+        if (full)
+            logBase += ",node0_event.log";
+        readAndReportLogs(logDirectory,logBase,outputDirectory,full);
     }
 
 

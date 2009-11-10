@@ -30,6 +30,8 @@ import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 
 import com.pb.common.rpc.DafNode;
+import com.pb.common.matrix.ZipMatrixWriter;
+import com.pb.common.matrix.Matrix;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,6 +56,9 @@ import org.apache.log4j.Logger;
 public class DemandHandler implements DemandHandlerIF, Serializable {
 
 	protected static transient Logger logger = Logger.getLogger(DemandHandler.class);
+
+    public static final String DEMAND_OUTPUT_MODE_STRING = "{MODE}";
+    public static final String DEMAND_OUTPUT_TIME_PERIOD_STRING = "{PERIOD}";
 
     static final double AVERAGE_SR3P_AUTO_OCCUPANCY = 3.33;
     static final int MAX_TRUCK_CLASSES = 5;
@@ -311,53 +316,19 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
 
         // if a file name has been specified for the output demand file, write the file.
         if ( demandOutputFileName != null ){
-            
-            String baseName = "";
-            String extName = "";
-            int dotIndex = demandOutputFileName.indexOf( '.' );
-            if ( dotIndex < 0 ) {
-                baseName = demandOutputFileName;
-                extName = "";
-            }
-            else {
-                baseName = demandOutputFileName.substring( 0, dotIndex );
-                extName = demandOutputFileName.substring( dotIndex );
-            }
-            
-            String outputFilename = baseName + "_" + timePeriod + extName;
-            
-            
-            
-            FileWriter writer;
-            PrintWriter outStream = null;
-            
-            try {
-                writer = new FileWriter(new File( outputFilename ));
-                outStream = new PrintWriter (new BufferedWriter( writer ) );
-            }
-            catch(IOException e){
-                logger.fatal( String.format( "Exception occurred opening saved demand table file: %s.", outputFilename ) );
-                throw new RuntimeException(e);
-            }
-            
-
-            String headerRecord = "userclass,orig,dest,trips";
-            outStream.println( headerRecord );                    
-            
             for( int m=0; m < multiclassTripTable.length; m++ ) {
-                for( int i=0; i < multiclassTripTable[m].length; i++ ) {
-                    for( int j=0; j < multiclassTripTable[m][i].length; j++ ) {
-                
-                        String outputRecord = highwayModeCharacters[m] + "," + networkIndexNodeArray[i] + "," + networkIndexNodeArray[j] + multiclassTripTable[m][i][j];
-                        outStream.println( outputRecord );
-                        
-                    }
-                }
+                File outputFile = new File(demandOutputFileName.replace(DEMAND_OUTPUT_MODE_STRING,"" + highwayModeCharacters[m])
+                                                               .replace(DEMAND_OUTPUT_TIME_PERIOD_STRING,timePeriod));
+                logger.info("Writing demand matrix: " + outputFile);
+                float[][] demandMatrix = new float[multiclassTripTable[m].length][multiclassTripTable[m][0].length];
+                for (int i = 0; i < demandMatrix.length; i++)
+                    for (int j = 0; j < demandMatrix[0].length; j++)
+                        demandMatrix[i][j] = (float) multiclassTripTable[m][i][j];
+                ZipMatrixWriter zmw = new ZipMatrixWriter(outputFile);
+                String mName = outputFile.getName();
+                mName = mName.substring(0,mName.indexOf("."));
+                zmw.writeMatrix(new Matrix(mName,mName,demandMatrix));
             }
-                                      
-            outStream.close();
-            logger.info( "done writing " + outputFilename );
-            
         }
         
 

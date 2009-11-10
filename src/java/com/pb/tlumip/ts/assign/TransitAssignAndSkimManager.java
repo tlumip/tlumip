@@ -28,13 +28,13 @@ import com.pb.models.pt.ldt.LDTripModeType;
 import com.pb.tlumip.ts.DemandHandler;
 import com.pb.tlumip.ts.DemandHandlerIF;
 import com.pb.tlumip.ts.NetworkHandlerIF;
-import com.pb.tlumip.ts.transit.AuxTrNet;
 import com.pb.tlumip.ts.transit.OptimalStrategy;
 import com.pb.common.datafile.OLD_CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixType;
 import com.pb.common.matrix.MatrixWriter;
+import com.pb.common.matrix.ZipMatrixWriter;
 
 
 import java.util.ArrayList;
@@ -182,7 +182,7 @@ public class TransitAssignAndSkimManager {
         
         
         dh = DemandHandler.getInstance( rpcConfigFile );
-        dh.setup( nh.getUserClassPces(), sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
+        dh.setup( nh.getUserClassPces(), null, sdtFileName, ldtFileName, ptSampleRate, ctFileName, etFileName, startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(), nh.getIndexNode(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(), nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck() );
         
     }
 
@@ -256,49 +256,56 @@ public class TransitAssignAndSkimManager {
         catch ( MissingResourceException e ) {
         }
 
+        String demandMatricesPath = null;
+        try {
+            demandMatricesPath = appRb.getString("demand.output.filename");
+        }
+        catch (MissingResourceException e) {
+            // do nothing, filename can be null.
+        }
         
 
         // drive access air loading and skims
         String[] drAirTypesIn = { "air" }; 
         String[] drAirTypes = getServiceTypeRouteFilesSpecified( drAirTypesIn, period );
         if ( drAirTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && airTransitIdentifier.equalsIgnoreCase("air") )
-            results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name() ) ) );
+            results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name(),demandMatricesPath) ) );
         
         // drive access hsr loading and skims
         String[] drHsrTypesIn = { "hsr", "intercity" }; 
         String[] drHsrTypes = getServiceTypeRouteFilesSpecified( drHsrTypesIn, period );
         if ( drHsrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && hsrTransitTransitIdentifier.equalsIgnoreCase("hsr") )
-            results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name() ) ) );
+            results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name(),demandMatricesPath) ) );
         
         // drive access intercity bus/rail loading and skims
         String[] drIcTypesIn = { "intercity" }; 
         String[] drIcTypes = getServiceTypeRouteFilesSpecified( drIcTypesIn, period );
         if ( drIcTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && intercityTransitIdentifier.equalsIgnoreCase("ic") )
-            results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name() ) ) );
+            results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name(),demandMatricesPath) ) );
 
         // drive access intracity transit loading and skims
         String[] drTrTypesIn = { "intracity" }; 
         String[] drTrTypes = getServiceTypeRouteFilesSpecified( drTrTypesIn, period );
         if ( drTrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && intracityTransitIdentifier.equalsIgnoreCase("t") )
-            results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name() ) ) );
+            results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name(),demandMatricesPath) ) );
 
         // walk access hsr loading and skims
         String[] wkHsrTypesIn = { "hsr", "intercity", "intracity" }; 
         String[] wkHsrTypes = getServiceTypeRouteFilesSpecified( wkHsrTypesIn, period );
         if ( wkHsrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && hsrTransitTransitIdentifier.equalsIgnoreCase("hsr") )
-            results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name() ) ) );
+            results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name(),demandMatricesPath) ) );
 
         // walk access intercity loading and skims
         String[] wkIcTypesIn = { "intercity", "intracity" }; 
         String[] wkIcTypes = getServiceTypeRouteFilesSpecified( wkIcTypesIn, period );
         if ( wkIcTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && intercityTransitIdentifier.equalsIgnoreCase("ic") )
-            results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name() ) ) );
+            results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name(),demandMatricesPath) ) );
 
         // walk access intracity loading and skims
         String[] wkTrTypesIn = { "intracity" }; 
         String[] wkTrTypes = getServiceTypeRouteFilesSpecified( wkTrTypesIn, period );
         if ( wkTrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && intracityTransitIdentifier.equalsIgnoreCase("t") )
-            results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name() ) ) );
+            results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name(),demandMatricesPath) ) );
 
         
         
@@ -1011,9 +1018,25 @@ public class TransitAssignAndSkimManager {
 
     
 
+
+     public void writeDemandMatrices(String demandMatricesPath, String mode, String timePeriod, double[][] table) {
+         //writes demand matrices using path but replacing the DEMAND_MATRIX_MODE_CLASS_REPLACEMENT_STRING in the pathstring
+         File outputMatrix = new File(demandMatricesPath.replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,mode)
+                                                        .replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,timePeriod));
+         logger.info("Writing demand matrix: " + outputMatrix);
+         float[][] data = new float[table.length][table[0].length];
+         for (int r = 0; r < table.length; r++)
+            for (int c = 0; c < table[0].length; c++)
+                data[r][c] = (float) table[r][c];
+         String mName = outputMatrix.getName();
+         mName = mName.substring(0,mName.indexOf("."));
+         Matrix m = new Matrix(mName,mName,data);
+         ZipMatrixWriter zmw = new ZipMatrixWriter(outputMatrix);
+         zmw.writeMatrix(m);
+     }
     
     
-    private Matrix[] runTransitAssignment ( String identifier, NetworkHandlerIF nh, String timePeriod, String accessMode, String routeType, String tripMode ) {
+    private Matrix[] runTransitAssignment ( String identifier, NetworkHandlerIF nh, String timePeriod, String accessMode, String routeType, String tripMode , String demandMatricesPath) {
         
         double[][] tripTable = null;  
         double[] tripTableColumn = null;
@@ -1025,6 +1048,9 @@ public class TransitAssignAndSkimManager {
             tripTable = dh.getTripTableForMode ( tripMode );
 
             tripTableColumn = new double[tripTable[0].length];
+
+            if (demandMatricesPath != null)
+                writeDemandMatrices(demandMatricesPath,identifier,timePeriod,tripTable);
         }
         
         
@@ -1792,8 +1818,9 @@ public class TransitAssignAndSkimManager {
         private String tripModeName;        // LDTripModeType or TripModeType trip mode name
         
         private String identifier;          // unique String to distinguish the 7 types of transit assignments.
+        private String demandMatricesPath;  // path to write demand matrices to; if null, they won't be written
         
-        public AssignSkimTask( NetworkHandlerIF nh, String[] serviceTypes, String period, String accessMode, String accessModeType, String specificServiceType, String tripModeName ) {
+        public AssignSkimTask( NetworkHandlerIF nh, String[] serviceTypes, String period, String accessMode, String accessModeType, String specificServiceType, String tripModeName , String demandMatricesPath) {
             this.nh = nh;
             this.serviceTypes = serviceTypes;
             this.specificServiceType = specificServiceType;
@@ -1803,6 +1830,8 @@ public class TransitAssignAndSkimManager {
             this.tripModeName = tripModeName;
             
             this.identifier = accessMode + "_" + specificServiceType;
+
+            this.demandMatricesPath = demandMatricesPath;
             
             logger.info( String.format( "task created to load and skim %s period %s access %s transit using %s access network for %s trips", period, accessModeType, specificServiceType, accessMode ,tripModeName ) );
         }
@@ -1813,7 +1842,7 @@ public class TransitAssignAndSkimManager {
                 
                 // transit loading and skims
                 setupTransitNetwork( identifier, nh, period, accessMode, serviceTypes );
-                Matrix[] skims = runTransitAssignment ( identifier, nh, period, accessModeType, specificServiceType, tripModeName );
+                Matrix[] skims = runTransitAssignment ( identifier, nh, period, accessModeType, specificServiceType, tripModeName , demandMatricesPath);
                 writeSkims ( skims, period, accessModeType, specificServiceType );
                 
             }
