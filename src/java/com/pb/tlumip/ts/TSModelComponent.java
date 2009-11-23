@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import java.net.MalformedURLException;
 import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 
 
 /**
@@ -96,9 +97,103 @@ public class TSModelComponent extends ModelComponent {
         if ( dailyModel && ! ts.SKIM_ONLY ) {
             assignAndSkimHwyAndTransit("pmpeak");
             assignAndSkimHwyAndTransit("ntoffpeak");
+        } else {
+            //these won't write if the demand output file is not defined, so calling them is ok here
+            createAndWriteHwyAndTransitDemandMatrices("pmpeak");
+            createAndWriteHwyAndTransitDemandMatrices("ntoffpeak");
         }
 
     }
+
+    private void createAndWriteHwyAndTransitDemandMatrices(String period) {
+        //this whole method just pulls out what is needed from various places in TS to create a demand handler
+        // object to create demand matrices for writing out
+        String demandOutputFile = null;
+        try {
+            demandOutputFile = appRb.getString("demand.output.filename");
+        }
+        catch (MissingResourceException e) {
+            // do nothing, filename can be null.
+        }
+        if (ts.SKIM_ONLY || demandOutputFile == null)
+            return; //if skim only or not writing no reason to create demand matrices
+
+        NetworkHandlerIF nh = NetworkHandler.getInstance(configFileName);
+
+        if ( nh.getStatus() )
+            logger.info ( nh.getClass().getCanonicalName() + " instance created, and handler is active." );
+
+        try {
+            nh.setRpcConfigFileName( configFileName );
+            if ( ts.setupHighwayNetwork( nh, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
+                throw new Exception();
+            logger.info ("created " + period + " Highway NetworkHandler object: " + nh.getNodeCount() + " highway nodes, " + nh.getLinkCount() + " highway links." );
+
+        }
+        catch (Exception e) {
+            logger.error ( "Exception caught setting up network in " + nh.getClass().getCanonicalName(), e );
+            System.exit(-1);
+        }
+
+
+        double ptSampleRate = 1.0;
+        String rateString = globalRb.getString( "pt.sample.rate" );
+        if ( rateString != null )
+            ptSampleRate = Double.parseDouble( rateString );
+
+        String timePeriod = nh.getTimePeriod();
+        int startHour = 0;
+        int endHour = 0;
+        if ( timePeriod.equalsIgnoreCase( "ampeak" ) ) {
+            // get am peak period definitions from property files
+            startHour = Integer.parseInt( globalRb.getString( "am.peak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "am.peak.end" ) );
+        }
+        else if ( timePeriod.equalsIgnoreCase( "pmpeak" ) ) {
+            // get pm peak period definitions from property files
+            startHour = Integer.parseInt( globalRb.getString( "pm.peak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "pm.peak.end" ) );
+        }
+        else if ( timePeriod.equalsIgnoreCase( "mdoffpeak" ) ) {
+            // get md off-peak period definitions from property files
+            startHour = Integer.parseInt( globalRb.getString( "md.offpeak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "md.offpeak.end" ) );
+        }
+        else if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
+            // get nt off-peak period definitions from property files
+            startHour = Integer.parseInt( globalRb.getString( "nt.offpeak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "nt.offpeak.end" ) );
+        }
+
+        DemandHandlerIF dh = DemandHandler.getInstance(nh.getRpcConfigFileName());
+        dh.setup(nh.getUserClassPces(), demandOutputFile,
+                globalRb.getString("sdt.person.trips"), globalRb.getString("ldt.vehicle.trips"), ptSampleRate,
+                globalRb.getString("ct.truck.trips"), globalRb.getString("et.truck.trips"),
+                startHour, endHour, timePeriod, nh.getNumCentroids(), nh.getNumUserClasses(),
+                nh.getIndexNode(), nh.getNodeIndex(), nh.getAlphaDistrictIndex(), nh.getDistrictNames(),
+                nh.getAssignmentGroupChars(), nh.getHighwayModeCharacters(), nh.userClassesIncludeTruck());
+        dh.buildHighwayDemandObject();
+
+
+
+        //This will return a local network handler.  Jim needs to
+        //test the remote network handler for transit skim building.
+        NetworkHandlerIF nh_new = NetworkHandler.getInstance(null);
+        try {
+            if ( ts.setupHighwayNetwork( nh_new, ResourceUtil.changeResourceBundleIntoHashMap(appRb), ResourceUtil.changeResourceBundleIntoHashMap(globalRb), period ) < 0 )
+                throw new Exception();
+            logger.info ("created " + period + " Highway NetworkHandler object: " + nh_new.getNodeCount() + " highway nodes, " + nh_new.getLinkCount() + " highway links." );
+        }
+        catch (Exception e) {
+            logger.error ( "Exception caught setting up network in " + nh_new.getClass().getCanonicalName(), e );
+            System.exit(-1);
+        }
+
+        StatusLogger.logText("TS","Running transit assignment and skimming for " + period);
+        ts.assignAndSkimTransit ( nh_new, appRb,globalRb,true);
+    }
+
+
 
     private void assignAndSkimHwyAndTransit(String period){
 
@@ -155,7 +250,7 @@ public class TSModelComponent extends ModelComponent {
 
 
         StatusLogger.logText("TS","Running transit assignment and skimming for " + period);
-        ts.assignAndSkimTransit ( nh_new,  appRb, globalRb );
+        ts.assignAndSkimTransit ( nh_new,  appRb, globalRb, false);
         
     }
 

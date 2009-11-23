@@ -326,7 +326,7 @@ public class TS {
 
 
     
-    public void assignAndSkimTransit ( NetworkHandlerIF nh, ResourceBundle appRb, ResourceBundle globalRb ) {
+    public void assignAndSkimTransit ( NetworkHandlerIF nh, ResourceBundle appRb, ResourceBundle globalRb, boolean demandOnly) {
 
         String assignmentPeriod = nh.getTimePeriod();
         
@@ -334,11 +334,11 @@ public class TS {
         TransitAssignAndSkimManager tsm = new TransitAssignAndSkimManager( nh, appRb, globalRb );
         
         if ( SKIM_ONLY ) {
-            tsm.assignAndSkimTransit ( nh, assignmentPeriod, true );
+            tsm.assignAndSkimTransit ( nh, assignmentPeriod, true, demandOnly);
             logger.info ("done with " + assignmentPeriod + " period transit skimming.");
         }
         else {
-            tsm.assignAndSkimTransit ( nh, assignmentPeriod, false);
+            tsm.assignAndSkimTransit ( nh, assignmentPeriod, false, demandOnly);
             logger.info ("done with " + assignmentPeriod + " period transit loading and skimming.");
         }
         

@@ -320,10 +320,10 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                 File outputFile = new File(demandOutputFileName.replace(DEMAND_OUTPUT_MODE_STRING,"" + highwayModeCharacters[m])
                                                                .replace(DEMAND_OUTPUT_TIME_PERIOD_STRING,timePeriod));
                 logger.info("Writing demand matrix: " + outputFile);
-                float[][] demandMatrix = new float[multiclassTripTable[m].length][multiclassTripTable[m][0].length];
+                float[][] demandMatrix = new float[multiclassTripTable[m].length-1][multiclassTripTable[m][0].length-1];
                 for (int i = 0; i < demandMatrix.length; i++)
                     for (int j = 0; j < demandMatrix[0].length; j++)
-                        demandMatrix[i][j] = (float) multiclassTripTable[m][i][j];
+                        demandMatrix[i][j] = (float) multiclassTripTable[m][i+1][j+1];
                 ZipMatrixWriter zmw = new ZipMatrixWriter(outputFile);
                 String mName = outputFile.getName();
                 mName = mName.substring(0,mName.indexOf("."));
