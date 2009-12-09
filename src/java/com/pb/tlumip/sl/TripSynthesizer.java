@@ -150,12 +150,9 @@ public class TripSynthesizer {
         int counter = 1;
         for (String s : extNums)
             zoneMatrixMap.put(s,counter++);
-        logger.info("Ext numcount = " + extNums.size());
         Matrix newDemand = new Matrix(extNums.size(),extNums.size());
         float[][] values = newDemand.getValues();
         float[][] baseValues = demand.getValues();
-        logger.info("base value count = " + demand.getRowCount());
-        logger.info("value count = " + newDemand.getRowCount());
 
         for (int i = 0; i < demand.getRowCount(); i++)
             System.arraycopy(baseValues[i],0,values[i],0,baseValues[i].length);
