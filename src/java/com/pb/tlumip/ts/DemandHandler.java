@@ -60,7 +60,7 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
     public static final String DEMAND_OUTPUT_MODE_STRING = "{MODE}";
     public static final String DEMAND_OUTPUT_TIME_PERIOD_STRING = "{PERIOD}";
 
-    static final double AVERAGE_SR3P_AUTO_OCCUPANCY = 3.33;
+    public static final double AVERAGE_SR3P_AUTO_OCCUPANCY = 3.33;
     static final int MAX_TRUCK_CLASSES = 5;
     
     
