@@ -135,6 +135,9 @@ public class DiscreteShipments2 {
                     destinationBeta = di.readInt();
                     weeklyTons = di.readDouble();
 
+                    // Note that ww're passing tons to this method, but it is returning pounds for
+                    // weight of each shipment (i.e., conversion from tons to pounds occurs in
+                    // getShipmentList(); see code for that above)
                     shipmentList = getShipmentList(commodity, weeklyTons);
                     for (double aShipmentList : shipmentList) {
                         ++weeklyShipments;

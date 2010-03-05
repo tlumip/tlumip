@@ -305,6 +305,12 @@ public class FreightDemand3 {
           m.cell[p][q] *= scalingFactor;
           // We need to eliminate extremely small shipments, which are an artifact of
           // equilibrium nature of PI rather than real demand at that level.
+          //--------------------------------------------------------------------------------
+          // TODO Use a minimum allowable tonnage specific to each commodity, which we'll
+          // derive from either the 1997 Oregon survey or summary tables from CFS02. Thus,
+          // this part of the code will need to use a vector, and we'll need to change the
+          // format of the parameter file and the code that reads it.
+          //--------------------------------------------------------------------------------
           if (m.cell[p][q]<SMALLEST_ALLOWABLE_TONNAGE) {
             residual += m.cell[p][q];
             m.cell[p][q] = 0.0;
@@ -403,6 +409,8 @@ public class FreightDemand3 {
     if(logger.isDebugEnabled()) {
         logger.debug("filterExternalData() run time: "+CTHelper.elapsedTime(start, next));
     }
+    //TODO Create a summary file of all the SCTGXX.txt files.
+
     calculateTonnage();
     writeWeeklyTons();  //this writes a CSV file that has all the commodities as columns.
     if(logger.isDebugEnabled()) {
