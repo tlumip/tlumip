@@ -46,7 +46,7 @@ public class SelectLink {
         switch (stage) {
             case GENERATE_PATHS : generatePaths(); break;
             case GENERATE_SELECT_LINK_DATA : generateSelectLinkData(); break;
-            case SYNTHESIZE_TRIPS : synthesizeTrips(); break;
+            case CREATE_SUBAREA_MATRIX : createSubAreaMatrix(); break;
         }
     }
 
@@ -58,10 +58,9 @@ public class SelectLink {
         runRScript("sl.select.link.data.r.file","generate select link data");
     }
 
-    private void synthesizeTrips() {
-        TripSynthesizer ts = new TripSynthesizer(rb);
-        ts.synthesizeTrips();
-        ts.writeSynthesizedTrips();
+    private void createSubAreaMatrix() {
+        SubAreaMatrixCreator samc = new SubAreaMatrixCreator(rb);
+        samc.createSubAreaMatrices();
     }
 
     private void runRScript(String rScriptKey, String name) {

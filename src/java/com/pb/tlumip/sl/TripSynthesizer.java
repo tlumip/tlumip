@@ -2,10 +2,7 @@ package com.pb.tlumip.sl;
 
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.datafile.TextFile;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.ZipMatrixReader;
-import com.pb.common.matrix.ZipMatrixWriter;
+import com.pb.common.matrix.*;
 import com.pb.tlumip.ts.DemandHandler;
 
 import java.io.BufferedReader;
@@ -21,146 +18,110 @@ import java.util.*;
 public class TripSynthesizer {
     private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(TripSynthesizer.class);
 
-    public static final String SL_AUTO_ASSIGN_CLASS = "a";
-    public static final String SL_TRUCK_ASSIGN_CLASS = "d";
-
-    public static final String AM_STRING_NAME = "ampeak";
-    public static final String MD_STRING_NAME = "mdoffpeak";
-    public static final String PM_STRING_NAME = "pmpeak";
-    public static final String NT_STRING_NAME = "ntoffpeak";
-
-    private final OdMatrixGroup autoMatrices;
-    private final OdMatrixGroup truckMatrices;
+//    private OdMatrixGroup autoMatrices;
+//    private OdMatrixGroup truckMatrices;
+    private OdMatrixGroup.OdMatrixGroupCollection autoMatrices;
+    private OdMatrixGroup.OdMatrixGroupCollection truckMatrices;
     private final SelectLinkData autoSelectLinkData;
     private final SelectLinkData truckSelectLinkData;
     private final ResourceBundle rb;
-    private Map<String,Integer> autoZoneMatrixMap;
-    private Map<String,Integer> truckZoneMatrixMap;
+    
+    private final TripFile sdtTripFile;
+    private final TripFile ldtTripFile;
+    private final TripFile ctTripFile;
+    private final TripFile etTripFile;
 
-    private boolean initialized = false;
     private final double[] factors;
 
-    public TripSynthesizer(ResourceBundle rb, int autoGroups, int truckGroups) {
+    public TripSynthesizer(ResourceBundle rb, SelectLinkData autoSelectLinkData, SelectLinkData truckSelectLinkData, TripClassifier sdtClassifier, TripClassifier ldtClassifier, TripClassifier ctClassifier, TripClassifier etClassifier) {
         logger.info("Initializing SL Synthesizer");
         this.rb = rb;
-        String dataFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.results");
-        autoSelectLinkData = new SelectLinkData(dataFile,SL_AUTO_ASSIGN_CLASS);
-        truckSelectLinkData = new SelectLinkData(dataFile,SL_TRUCK_ASSIGN_CLASS);
-        autoMatrices = new OdMatrixGroup(autoGroups);
-        truckMatrices = new OdMatrixGroup(truckGroups);
+        this.autoSelectLinkData = autoSelectLinkData;
+        this.truckSelectLinkData = truckSelectLinkData;
+//        autoMatrices = new OdMatrixGroup.OdMarginalMatrixGroup();
+//        truckMatrices = new OdMatrixGroup.OdMarginalMatrixGroup();
         factors = formTripFactorLookup(rb);
+        
+        sdtTripFile = new SDTTripFile(rb,sdtClassifier);
+        ldtTripFile = new LDTTripFile(rb,ldtClassifier);
+        ctTripFile = new CTTripFile(rb,ctClassifier);
+        etTripFile = new ETTripFile(rb,etClassifier);
+    }
+              
+    OdMatrixGroup.OdMatrixGroupCollection getSynthesizedMatrices(boolean auto) {
+        return auto ? autoMatrices : truckMatrices;
     }
 
-    //convenience for simplest use case with one class for auto or truck
-    public TripSynthesizer(ResourceBundle rb) {
-        this(rb,1,1);
-    }
-
-    public void synthesizeTrips() {
-        if (!initialized)
-            initializeMatrices();
+    void synthesizeTrips() {
+        initializeMatrices();
         logger.info("Synthesizing SDT");
-        synthesizeTrips(new SDTTripFile(rb),true);
+        //synthesizeTrips(sdtTripFile,true);
         logger.info("Synthesizing LDT");
-        synthesizeTrips(new LDTTripFile(rb),true);
+        synthesizeTrips(ldtTripFile,true);
         logger.info("Synthesizing CT");
-        synthesizeTrips(new CTTripFile(rb),false);
+        synthesizeTrips(ctTripFile,false);
         logger.info("Synthesizing ET");
-        synthesizeTrips(new ETTripFile(rb),false);
-    }
+        synthesizeTrips(etTripFile,false);
 
-    public void writeSynthesizedTrips() {
-        logger.info("Writing sl trips");
-        String tazListFile = rb.getString("sl.taz.list.output.filename");
-        //todo: deal with classes - constructor needs class names?
-        for (Matrix[] m : autoMatrices.matrices) {
-            String baseOutFile = rb.getString("sl.link.demand.output.filename").replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,SL_AUTO_ASSIGN_CLASS);
-            for (int i = 0; i < 4; i++) {
-                String outFile;
-                switch (i) {
-                    case 0 : outFile = baseOutFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,AM_STRING_NAME); break;
-                    case 1 : outFile = baseOutFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,MD_STRING_NAME); break;
-                    case 2 : outFile = baseOutFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,PM_STRING_NAME); break;
-                    case 3 : outFile = baseOutFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,NT_STRING_NAME); break;
-                    default : throw new RuntimeException("invalid time period: " + i);
-                }
-                ZipMatrixWriter writer = new ZipMatrixWriter(new File(outFile));
-                writer.writeMatrix(m[i]);
-            }
+//        logger.info("Balancing auto trips");
+//        autoMatrices = balanceTrips((OdMatrixGroup.OdMarginalMatrixGroup) autoMatrices);
+        for (String type : autoMatrices.keySet()) {
+            logger.info("Balancing auto trips for " + type);
+            autoMatrices.put(type,balanceTrips((OdMatrixGroup.OdMarginalMatrixGroup) autoMatrices.get(type)));
         }
-        writeTazList(tazListFile,true);
-        for (Matrix[] m : truckMatrices.matrices) {
-            for (int i = 0; i < 4; i++) {
-                String outFile = rb.getString("demand.output.filename").replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,SL_TRUCK_ASSIGN_CLASS).replace("demand","synthdemand");
-                switch (i) {
-                    case 0 : outFile = outFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,AM_STRING_NAME); break;
-                    case 1 : outFile = outFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,MD_STRING_NAME); break;
-                    case 2 : outFile = outFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,PM_STRING_NAME); break;
-                    case 3 : outFile = outFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,NT_STRING_NAME); break;
-                }
-                ZipMatrixWriter writer = new ZipMatrixWriter(new File(outFile));
-                writer.writeMatrix(m[i]);
-            }
+//        logger.info("Balancing truck trips");
+//        truckMatrices = balanceTrips((OdMatrixGroup.OdMarginalMatrixGroup) truckMatrices);
+        for (String type : autoMatrices.keySet()) {
+            logger.info("Balancing truck trips for " + type);
+            truckMatrices.put(type,balanceTrips((OdMatrixGroup.OdMarginalMatrixGroup) truckMatrices.get(type)));
         }
-        writeTazList(tazListFile,false);
-    }
-
-    private void writeTazList(String baseFile, boolean auto) {
-        Map<String,Integer> tazMatrixMap = auto ? autoZoneMatrixMap : truckZoneMatrixMap;
-        baseFile = baseFile.replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,auto ? SL_AUTO_ASSIGN_CLASS : SL_TRUCK_ASSIGN_CLASS);
-        Map<Integer,String> matrixTazMap = new TreeMap<Integer,String>();
-        for (String taz : tazMatrixMap.keySet())
-            matrixTazMap.put(tazMatrixMap.get(taz),taz);
-        TextFile file = new TextFile();
-        file.addLine("Index,TAZ");
-        for (int matrixId : matrixTazMap.keySet())
-            file.addLine(matrixId + "," + matrixTazMap.get(matrixId));
-        file.writeTo(baseFile);
     }
 
     private void initializeMatrices() {
         logger.info("Initializing SL matrices");
+        OdMatrixGroup a = new OdMatrixGroup.OdMarginalMatrixGroup();
+        OdMatrixGroup t = new OdMatrixGroup.OdMarginalMatrixGroup();
         for (int i = 0; i < 4; i++) {
-            initializeMatrices(i,true);
-            initializeMatrices(i,false);
+            initializeMatrices(i,true,a);
+            initializeMatrices(i,false,t);
         }
+        autoMatrices = new OdMatrixGroup.OdMatrixGroupCollection(a);
+        truckMatrices = new OdMatrixGroup.OdMatrixGroupCollection(t);
     }
 
     //returns mapping from zone/link name to matrix index
-    private void initializeMatrices(int period, boolean auto) {
+    private void initializeMatrices(int period, boolean auto, OdMatrixGroup omg) {
+//    private void initializeMatrices(int period, boolean auto) {
         SelectLinkData sld = auto ? autoSelectLinkData : truckSelectLinkData;
-        OdMatrixGroup omg = auto ? autoMatrices : truckMatrices;
+//        OdMatrixGroup omg = auto ? autoMatrices : truckMatrices;
         // file name = demand_matrix_{MODE}_{PERIOD}.zmx
-        String matrixFile = rb.getString("demand.output.filename");
+//        String matrixFile = rb.getString("demand.output.filename");
         //note: the select link stuff essentially assumes 1 truck class, so this cannot handle multi truck assignment
-        matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,auto ? SL_AUTO_ASSIGN_CLASS : SL_TRUCK_ASSIGN_CLASS);
-        switch (period) {
-            case 0 : matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,AM_STRING_NAME); break;
-            case 1 : matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,MD_STRING_NAME); break;
-            case 2 : matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,PM_STRING_NAME); break;
-            case 3 : matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,NT_STRING_NAME); break;
-        }
-        Matrix demand = new ZipMatrixReader(new File(matrixFile)).readMatrix();
+//        matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,auto ? SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS : SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS);
+//        switch (period) {
+//            case 0 : matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,SubAreaMatrixCreator.AM_STRING_NAME); break;
+//            case 1 : matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,SubAreaMatrixCreator.MD_STRING_NAME); break;
+//            case 2 : matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,SubAreaMatrixCreator.PM_STRING_NAME); break;
+//            case 3 : matrixFile = matrixFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,SubAreaMatrixCreator.NT_STRING_NAME); break;
+//        }
+//        Matrix demand = new ZipMatrixReader(new File(matrixFile)).readMatrix();
 
         //create external numbers and mapping to internal numbers
         List<String> extNums = formBaseExternalNumbers();
-        for (String s : sld.getLinkList())
+        for (String s : sld.getExternalStationList())
             extNums.add(s);
         Map<String,Integer> zoneMatrixMap = new HashMap<String, Integer>();
         int counter = 1;
         for (String s : extNums)
             zoneMatrixMap.put(s,counter++);
         Matrix newDemand = new Matrix(extNums.size(),extNums.size());
-        float[][] values = newDemand.getValues();
-        float[][] baseValues = demand.getValues();
+//        float[][] values = newDemand.getValues();
+//        float[][] baseValues = demand.getValues();
 
-        for (int i = 0; i < demand.getRowCount(); i++)
-            System.arraycopy(baseValues[i],0,values[i],0,baseValues[i].length);
+//        for (int i = 0; i < demand.getRowCount(); i++)
+//            System.arraycopy(baseValues[i],0,values[i],0,baseValues[i].length);
         omg.initMatrix(newDemand,period);
-        if (auto)
-            autoZoneMatrixMap = zoneMatrixMap;
-        else
-            truckZoneMatrixMap = zoneMatrixMap;
+        omg.setZoneMatrixMap(zoneMatrixMap);
     }
 
     private List<String> formBaseExternalNumbers() {
@@ -180,18 +141,29 @@ public class TripSynthesizer {
 
     private void synthesizeTrips(TripFile tripFile, boolean autoClass) {
         SelectLinkData sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
-        OdMatrixGroup mg = autoClass ? autoMatrices : truckMatrices;
-        Map<String,Integer> zoneMatrixMap = autoClass ? autoZoneMatrixMap : truckZoneMatrixMap;
+        //OdMatrixGroup.OdMarginalMatrixGroup omg = (OdMatrixGroup.OdMarginalMatrixGroup) (autoClass ? autoMatrices : truckMatrices);
+        OdMatrixGroup.OdMatrixGroupCollection omc = autoClass ? autoMatrices : truckMatrices;
+        Map<String,Integer> zoneMatrixMap = omc.getTemplate().getZoneMatrixMap();
+
+        double tripsLostToWeaving = 0.0; //trips that can't be used because od has a weaving path
+
+        Set<String> exteriorZones = sld.getExteriorZones();
+        //crazy mapping: [Matrix : [od : [in/out/total : [link/(total in/out) : (link percentage)/(total trips)]]]]
+        Map<Matrix,Map<String,Map<String,Map<String,Double>>>> eeTracker = new HashMap<Matrix,Map<String,Map<String,Map<String,Double>>>>();
 
         int originId = -1;
         int destId = -1;
-        int counter = 0;
+        double tripCounter = 0;
+        double eeTripCounter = 0;
+        double iiTripCounter = 0;
+        double eiTripCounter = 0;
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(tripFile.path));
             String line = reader.readLine();
 
             String[] header;
+            int counter = 0;
             header = line.trim().split(",");
             for (String h : header) {
                 if (h.equals(tripFile.originField))
@@ -201,53 +173,141 @@ public class TripSynthesizer {
                 counter++;
             }
 
+            counter = 0;
             while ((line = reader.readLine()) != null) {
+                if (++counter % 100000 == 0 && counter < 1000000)
+                    logger.info("\tProcessed " + counter + " Trips.");
+                if (counter % 1000000 == 0)
+                    logger.info("\tProcessed " + counter + " Trips.");
+
                 String[] tripFileLine = line.trim().split(",");
                 String origin = tripFileLine[originId];
                 String dest = tripFileLine[destId];
                 String od = SelectLinkData.formODLookup(origin,dest);
                 if (!sld.containsOd(od))
                     continue;
+
+                //trips = trips from record * scaling factor from model * exogenous scaling factor
                 double trips = tripFile.getTripFromRecord(tripFileLine)*factors[tripFile.getModeIdFromRecord(tripFileLine)];
                 if (trips == 0.0)
                     continue;
-                Matrix ofInterest = mg.matrices[tripFile.classifier.getClass(tripFileLine)][tripFile.getTimePeriodFromRecord(tripFileLine)];
+                tripCounter += trips;
+                if (sld.getWeavingZones().contains(od)) {
+                    tripsLostToWeaving += trips;
+                    continue;
+                }
+//                Matrix ofInterest = omg.getMatrix(tripFile.classifier.getFactor(tripFileLine),tripFile.getTimePeriodFromRecord(tripFileLine));
+                OdMatrixGroup.OdMarginalMatrixGroup omg = (OdMatrixGroup.OdMarginalMatrixGroup) omc.get(tripFile.getNormalizedTripTypeFromRecord(tripFileLine));
+                int period = tripFile.getTimePeriodFromRecord(tripFileLine);
+                Matrix ofInterest = omg.getMatrix(period);
+                ColumnVector originMarginals = omg.getOriginMarginals(period);
+                RowVector destMarginals = omg.getDestinationMarginals(period);
                 int mo = zoneMatrixMap.get(origin);
                 int md = zoneMatrixMap.get(dest);
+
+                //set interior/exterior
+                boolean ee = exteriorZones.contains(origin) && exteriorZones.contains(dest);
+                boolean ii = !exteriorZones.contains(origin) && !exteriorZones.contains(dest);
+                if (ee)
+                    eeTripCounter += trips;
+                else if (ii)
+                    iiTripCounter += trips;
+                else
+                    eiTripCounter += trips;
+
+                // exogenous scaling factors for o/d marginals
+                double originFactor = tripFile.classifier.getOriginFactor(sld,tripFileLine);
+                double destinationFactor = tripFile.classifier.getDestinationFactor(sld,tripFileLine);
+                //next two numbers say how to factor the "link zone" trips in the marginals
+                double linkOriginFactor = 1.0;
+                double linkDestinationFactor = 1.0;
+
                 //subtract from original od in matrix
                 List<SelectLinkData.LinkData> linkData = sld.getDataForOd(od);
                 for (SelectLinkData.LinkData ld : linkData) {
                     int lid = zoneMatrixMap.get(ld.getMatrixEntryName());
                     double linkTrips = ld.getOdPercentage(od)*trips;
-                    ofInterest.setValueAt(mo,md,(float) (ofInterest.getValueAt(mo,md)-linkTrips));
-                    ofInterest.setValueAt(mo,lid,(float) (ofInterest.getValueAt(mo,lid)+linkTrips));
-                    ofInterest.setValueAt(lid,md,(float) (ofInterest.getValueAt(lid,md)+linkTrips));
+//                    ofInterest.setValueAt(mo,md,(float) (ofInterest.getValueAt(mo,md)-linkTrips));   do we need to deal with og values?
+                    if (ii) {
+                        //pass for now, but need to reconcile
+                        if (ld.getIn()) {
+                            ofInterest.setValueAt(lid,md,(float) (ofInterest.getValueAt(lid,md)+linkTrips));
+                            originMarginals.setValueAt(lid,(float) (originMarginals.getValueAt(lid)+linkTrips*linkOriginFactor));
+                            destMarginals.setValueAt(md,(float) (destMarginals.getValueAt(md)+linkTrips*destinationFactor));
+                        } else {
+                            ofInterest.setValueAt(mo,lid,(float) (ofInterest.getValueAt(mo,lid)+linkTrips));
+                            originMarginals.setValueAt(mo,(float) (originMarginals.getValueAt(mo)+linkTrips*originFactor));
+                            destMarginals.setValueAt(lid,(float) (destMarginals.getValueAt(lid)+linkTrips*linkDestinationFactor));
+                        }
+                    } else {
+                        ofInterest.setValueAt(mo,lid,(float) (ofInterest.getValueAt(mo,lid)+linkTrips));
+                        ofInterest.setValueAt(lid,md,(float) (ofInterest.getValueAt(lid,md)+linkTrips));
+                        originMarginals.setValueAt(mo,(float) (originMarginals.getValueAt(mo)+linkTrips*originFactor));
+                        originMarginals.setValueAt(lid,(float) (originMarginals.getValueAt(lid)+linkTrips*linkOriginFactor));
+                        destMarginals.setValueAt(lid,(float) (destMarginals.getValueAt(lid)+linkTrips*linkDestinationFactor));
+                        destMarginals.setValueAt(md,(float) (destMarginals.getValueAt(md)+linkTrips*destinationFactor));
+                    }
+                    if (ee) {
+                        //put data into tracker
+                        if (!eeTracker.containsKey(ofInterest))
+                            eeTracker.put(ofInterest,new HashMap<String,Map<String,Map<String,Double>>>());
+                        Map<String,Map<String,Map<String,Double>>> eeSub = eeTracker.get(ofInterest);
+                        if (!eeSub.containsKey(od)) {
+                            Map<String,Map<String,Double>> subTracker = new HashMap<String,Map<String,Double>>();
+                            subTracker.put("in",new HashMap<String,Double>());
+                            subTracker.put("out",new HashMap<String,Double>());
+                            subTracker.put("total",new HashMap<String,Double>());
+                            subTracker.get("total").put("in",0.0);
+                            subTracker.get("total").put("out",0.0);
+                            eeSub.put(od,subTracker);
+                        }
+                        if (ld.getIn()) {
+                            //subtract off second leg
+                            ofInterest.setValueAt(lid,md,(float) (ofInterest.getValueAt(lid,md)-linkTrips));
+                            destMarginals.setValueAt(md,(float) (destMarginals.getValueAt(md)-linkTrips*destinationFactor));
+                            eeSub.get(od).get("in").put(ld.getMatrixEntryName(),ld.getOdPercentage(od));
+                            eeSub.get(od).get("total").put("in",linkTrips+eeSub.get(od).get("total").get("in"));
+                        } else {
+                            //subtract off first leg
+                            ofInterest.setValueAt(mo,lid,(float) (ofInterest.getValueAt(mo,lid)-linkTrips));
+                            originMarginals.setValueAt(mo,(float) (originMarginals.getValueAt(mo)-linkTrips*originFactor));
+                            eeSub.get(od).get("out").put(ld.getMatrixEntryName(),ld.getOdPercentage(od));
+                            eeSub.get(od).get("total").put("out",linkTrips+eeSub.get(od).get("total").get("out"));
+                        }
+
+                    }
                 }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-    }
+        //deal with ee trips
+        for (Matrix ofInterest : eeTracker.keySet()) {
+            Map<String,Map<String,Map<String,Double>>> eeSub = eeTracker.get(ofInterest);
+            for (String od : eeSub.keySet()) {
+                //check in/out total equality
+                double totalTrips =  eeSub.get(od).get("total").get("in");
+                if (totalTrips != eeSub.get(od).get("total").get("out"))
+                    logger.warn("Total ee trips for od " + od + " not equal for in (" + eeSub.get(od).get("total").get("in") + ") and out (" + eeSub.get(od).get("total").get("out") + ").");
 
-    private class OdMatrixGroup {
-        private final Matrix[][] matrices;
-
-        private OdMatrixGroup(int classes) {
-            matrices = new Matrix[classes][4];
-        }
-
-        void initMatrix(Matrix baseMatrix, int period) {
-            for (int i = 0; i < matrices.length; i++) {
-                Matrix m = new Matrix(baseMatrix.getRowCount(),baseMatrix.getColumnCount());
-                float[][] values = m.getValues();
-                float[][] baseValues = baseMatrix.getValues();
-
-                for (int j = 0; j < baseMatrix.getRowCount(); j++)
-                    System.arraycopy(baseValues[j],0,values[j],0,baseValues[j].length);
-                matrices[i][period] = m;
+                for (String linkIn : eeSub.get(od).get("in").keySet()) {
+                    double ip = eeSub.get(od).get("in").get(linkIn);
+                    int origin = zoneMatrixMap.get(linkIn);
+                    for (String linkOut : eeSub.get(od).get("out").keySet()) {
+                        double trips = eeSub.get(od).get("out").get(linkOut)*ip*totalTrips;
+                        int dest = zoneMatrixMap.get(linkOut);
+                        ofInterest.setValueAt(origin,dest,(float) (ofInterest.getValueAt(origin,dest)+trips));
+                    }
+                }
             }
         }
+
+        logger.info("Total ee trips tallied: " + Math.round(eeTripCounter));
+        logger.info("Total ei/ie trips tallied: " + Math.round(eiTripCounter));
+        logger.info("Total ii trips tallied: " + Math.round(iiTripCounter));
+        logger.info("Total trips tallied: " + Math.round(tripCounter));
+        logger.info(String.format("Trips lost to weaving: %.2f (%.2f%%)",tripsLostToWeaving,tripsLostToWeaving / tripCounter * 100));
     }
 
     public abstract static class TripFile {
@@ -274,6 +334,7 @@ public class TripSynthesizer {
         }
 
         abstract int getTripTimeFromRecord(String ... data);
+        abstract String getTripTypeFromRecord(String ... data);
 
         double getTripFromRecord(String ... data) {
             return 1;
@@ -296,10 +357,10 @@ public class TripSynthesizer {
             else
                 return 3;
         }
-    }
 
-    public static interface TripClassifier {
-        int getClass(String ... data);
+        public String getNormalizedTripTypeFromRecord(String ... data) {
+            return getTripTypeFromRecord(data).toLowerCase().replace(" ","_");
+        }
     }
 
     //todo: confirm this is correct   - right, I think
@@ -325,6 +386,72 @@ public class TripSynthesizer {
         return factorArray;
     }
 
+    private OdMatrixGroup balanceTrips(OdMatrixGroup.OdMarginalMatrixGroup trips) {
+        OdMatrixGroup omg = new OdMatrixGroup();
+        omg.setZoneMatrixMap(trips.getZoneMatrixMap());
+        for (int p = 0; p < 4; p++) {
+            ColumnVector originMarginal = trips.getOriginMarginals(p);
+            RowVector destMarginal = trips.getDestinationMarginals(p);
+            double originMarginalSum = originMarginal.getSum(); //0.0;
+            double destMarginalSum = destMarginal.getSum(); //0.0;
+            Matrix mat = trips.getMatrix(p);
+            //first clear out any zero marginal trips - necessary?
+//            for (int i = 1; i <= originMarginal.size(); i++)
+//                if (originMarginal.getValueAt(i) == 0.0)
+//                    for (int j = 1; j <= mat.getColumnCount(); j++)
+//                        mat.setValueAt(i,j,0.0f);
+//                else
+//                    originMarginalSum += originMarginal.getValueAt(i);
+//            for (int j = 1; j <= destMarginal.size(); j++)
+//                if (destMarginal.getValueAt(j) == 0.0)
+//                    for (int i = 1; i <= mat.getRowCount(); i++)
+//                        mat.setValueAt(i,j,0.0f);
+//                else
+//                    destMarginalSum += destMarginal.getValueAt(j);
+            List<Integer> modelZones = new LinkedList<Integer>();
+            List<Integer> linkZones = new LinkedList<Integer>();
+            for (String zone : trips.getZoneMatrixMap().keySet()) {
+                if (SelectLinkData.isLinkZone(zone))
+                    linkZones.add(trips.getZoneMatrixMap().get(zone));
+                else
+                    modelZones.add(trips.getZoneMatrixMap().get(zone));
+            }                                                     
+            //zero out ii trips, and sum total trips for marginal check
+            double tripSum = 0.0;
+            for (int mz : modelZones) {
+                for (int mz2 : modelZones)
+                    mat.setValueAt(mz,mz2,0.0f);
+                for (int lz : linkZones) {
+                    tripSum += mat.getValueAt(mz,lz);
+                    tripSum += mat.getValueAt(lz,mz);
+                }
+            }                                          
+            //have to sum link-link trips
+            for (int lz1 : linkZones) 
+                for (int lz2 : linkZones)
+                    tripSum += mat.getValueAt(lz1,lz2);
+            //renormalize marginals
+            if (Math.abs(tripSum - originMarginalSum) > 1.0) {
+                logger.info("Trip sum and origin marginal sum mismatch for period " + p + ", will normalize: " + tripSum + " " + originMarginalSum);
+                double originFactor = tripSum / originMarginalSum;
+                for (int i = 1; i <= originMarginal.size(); i++)
+                    originMarginal.setValueAt(i,(float) (originMarginal.getValueAt(i) * originFactor));
+            }                                                                         
+            if (Math.abs(tripSum - destMarginalSum) > 1.0) {
+                logger.info("Trip sum and destination marginal sum mismatch for period " + p + ", will normalize: " + tripSum + " " + destMarginalSum);
+                double destFactor = tripSum / destMarginalSum;
+                for (int i = 1; i <= destMarginal.size(); i++)
+                    destMarginal.setValueAt(i,(float) (destMarginal.getValueAt(i) * destFactor));
+            }
+            logger.info("Origin marginal sum: " + originMarginalSum);
+            logger.info("Destination marginal sum: " + destMarginalSum);
+            logger.info("\tBalancing trips for period " + p);
+            MatrixBalancerRM mb = new MatrixBalancerRM(mat,originMarginal,destMarginal,0.1,20,MatrixBalancerRM.ADJUST.NONE);
+            omg.initMatrix(mb.balance(),p);
+        }
+        return omg;
+    }
+
     private class SDTTripFile extends TripFile {
         private final String daId;
         private final String sr2Id;
@@ -333,8 +460,8 @@ public class TripSynthesizer {
         private final double sr2Trip = 0.5;
         private final double sr3Trip = 1/ DemandHandler.AVERAGE_SR3P_AUTO_OCCUPANCY;
 
-        private SDTTripFile(ResourceBundle rb) {
-            super(rb.getString("sdt.person.trips"),"origin","destination",getSDTClassifier(),rb);
+        private SDTTripFile(ResourceBundle rb, TripClassifier classifier) {
+            super(rb.getString("sdt.person.trips"),"origin","destination",classifier,rb);
             this.daId = rb.getString("driveAlone.identifier");
             this.sr2Id = rb.getString("sharedRide2.identifier");
             this.sr3Id = rb.getString("sharedRide3p.identifier");
@@ -343,10 +470,8 @@ public class TripSynthesizer {
         double getTripFromRecord(String ... data) {
             //0      1            2                  3       4               5            6         7            8        9         10       11          12               13         14          15          16      17  18     19
             //hhID	memberID	weekdayTour(yes/no)	tour#	subTour(yes/no)	tourPurpose	tourSegment	tourMode	origin	destination	time	distance	tripStartTime	tripEndTime	tripPurpose	tripMode	income	age	enroll	esr
-            //driveAlone.identifier = da
-            //sharedRide2.identifier = sr2
-            //sharedRide3p.identifier
             String mode = data[15];
+//            System.out.println(data[5] + " " + data[14]);
             if (mode.equalsIgnoreCase(daId)) return daTrip;
             else if (mode.equalsIgnoreCase(sr2Id)) return sr2Trip;
             else if (mode.equalsIgnoreCase(sr3Id)) return sr3Trip;
@@ -356,25 +481,33 @@ public class TripSynthesizer {
         int getTripTimeFromRecord(String ... data) {
             return (int) Double.parseDouble(data[12]);
         }
+
+        String getTripTypeFromRecord(String ... data) {
+            return "";//data[14];
+        }
     }
 
     private class LDTTripFile extends TripFile {
-        private LDTTripFile(ResourceBundle rb) {
-            //0        1         2       3        4          5              6      7                     8       9               10           11         12
+        private LDTTripFile(ResourceBundle rb, TripClassifier classifier) {
+            //0        1         2       3        4          5              6      7           8       9               10           11         12
             //hhID	memberID	tourID	income	tourPurpose	tourMode	origin	destination	distance	time	tripStartTime	tripPurpose	tripMode	vehicleTrip
-            super(rb.getString("ldt.vehicle.trips"),"origin","destination",getLDTClassifier(),rb);
+            super(rb.getString("ldt.vehicle.trips"),"origin","destination",classifier,rb);
         }
 
         int getTripTimeFromRecord(String ... data) {
-            return (int) Double.parseDouble(data[9]);
+            return (int) Double.parseDouble(data[10]);
+        }
+
+        String getTripTypeFromRecord(String ... data) {
+            return "";//data[11];
         }
     }
 
     private class CTTripFile extends TripFile {
-        private CTTripFile(ResourceBundle rb) {
+        private CTTripFile(ResourceBundle rb, TripClassifier classifier) {
             //0          1                   2       3           4          5              6              7     8        9               10        11         12
             //origin	tripStartTime	duration	destination	tourMode	tripMode	tripFactor	truckID	truckType	carrierType	commodity	weight	distance
-            super(rb.getString("ct.truck.trips"),"origin","destination",getCTClassifier(),rb);
+            super(rb.getString("ct.truck.trips"),"origin","destination",classifier,rb);
         }
 
         int getTripTimeFromRecord(String ... data) {
@@ -384,14 +517,17 @@ public class TripSynthesizer {
         public int getModeIdFromRecord(String ... data) {
             return Integer.parseInt(data[8].substring(3));
         }
+
+        String getTripTypeFromRecord(String ... data) {
+            return "";
+        }
     }
 
     private class ETTripFile extends TripFile {
-        private ETTripFile(ResourceBundle rb) {
+        private ETTripFile(ResourceBundle rb, TripClassifier classifier) {
             //0          1                   2       3           4
             //origin	destination	tripStartTime	truckClass	truckVolume
-
-            super(rb.getString("et.truck.trips"),"origin","destination",getETClassifier(),rb);
+            super(rb.getString("et.truck.trips"),"origin","destination",classifier,rb);
         }
 
         double getTripFromRecord(String ... data) {
@@ -405,37 +541,9 @@ public class TripSynthesizer {
         public int getModeIdFromRecord(String ... data) {
             return Integer.parseInt(data[3].substring(3));
         }
-    }
 
-    private TripClassifier getSDTClassifier() {
-        return new TripClassifier() {
-            public int getClass(String ... data) {
-                return 0;
-            }
-        };
-    }
-
-    private TripClassifier getLDTClassifier() {
-        return new TripClassifier() {
-            public int getClass(String ... data) {
-                return 0;
-            }
-        };
-    }
-
-    private TripClassifier getCTClassifier() {
-        return new TripClassifier() {
-            public int getClass(String ... data) {
-                return 0;
-            }
-        };
-    }
-
-    private TripClassifier getETClassifier() {
-        return new TripClassifier() {
-            public int getClass(String ... data) {
-                return 0;
-            }
-        };
+        String getTripTypeFromRecord(String ... data) {
+            return "";
+        }
     }
 }

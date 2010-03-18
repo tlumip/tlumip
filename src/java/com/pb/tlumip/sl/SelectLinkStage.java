@@ -8,7 +8,7 @@ public enum SelectLinkStage {
     //the order here is the order these should be run in
     GENERATE_PATHS('g'),
     GENERATE_SELECT_LINK_DATA('d'),
-    SYNTHESIZE_TRIPS('s');
+    CREATE_SUBAREA_MATRIX('s');
 
 
     private final char stageChar;
