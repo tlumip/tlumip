@@ -35,7 +35,7 @@ public class SubAreaMatrixCreator {
     }
 
     public void createSubAreaMatrices() {
-        TripSynthesizerV2 ts = synthesizeTrips();
+        TripSynthesizer ts = synthesizeTrips();
         for (boolean auto : new boolean[] {true,false}) {
             OdMatrixGroup.OdMatrixGroupCollection omc = ts.getSynthesizedMatrices(auto);
             for (String type : omc.keySet()) {
@@ -49,8 +49,8 @@ public class SubAreaMatrixCreator {
         }
     }
 
-    private TripSynthesizerV2 synthesizeTrips() {
-        TripSynthesizerV2 ts = new TripSynthesizerV2(rb,autoSelectLinkData,truckSelectLinkData,
+    private TripSynthesizer synthesizeTrips() {
+        TripSynthesizer ts = new TripSynthesizer(rb,autoSelectLinkData,truckSelectLinkData,
                 TripClassifier.getClassifier(rb,"SDT"),
                 TripClassifier.getClassifier(rb,"LDT"),
                 TripClassifier.getClassifier(rb,"CT"),

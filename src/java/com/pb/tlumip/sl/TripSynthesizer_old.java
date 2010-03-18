@@ -15,8 +15,8 @@ import java.util.*;
  * @author crf <br/>
  *         Started: Dec 1, 2009 1:34:52 PM
  */
-public class TripSynthesizer {
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(TripSynthesizer.class);
+public class TripSynthesizer_old {
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(TripSynthesizer_old.class);
 
 //    private OdMatrixGroup autoMatrices;
 //    private OdMatrixGroup truckMatrices;
@@ -33,7 +33,7 @@ public class TripSynthesizer {
 
     private final double[] factors;
 
-    public TripSynthesizer(ResourceBundle rb, SelectLinkData autoSelectLinkData, SelectLinkData truckSelectLinkData, TripClassifier sdtClassifier, TripClassifier ldtClassifier, TripClassifier ctClassifier, TripClassifier etClassifier) {
+    public TripSynthesizer_old(ResourceBundle rb, SelectLinkData autoSelectLinkData, SelectLinkData truckSelectLinkData, TripClassifier sdtClassifier, TripClassifier ldtClassifier, TripClassifier ctClassifier, TripClassifier etClassifier) {
         logger.info("Initializing SL Synthesizer");
         this.rb = rb;
         this.autoSelectLinkData = autoSelectLinkData;
@@ -47,7 +47,7 @@ public class TripSynthesizer {
         ctTripFile = new CTTripFile(rb,ctClassifier);
         etTripFile = new ETTripFile(rb,etClassifier);
     }
-              
+
     OdMatrixGroup.OdMatrixGroupCollection getSynthesizedMatrices(boolean auto) {
         return auto ? autoMatrices : truckMatrices;
     }
