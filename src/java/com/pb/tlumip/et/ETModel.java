@@ -33,10 +33,13 @@ import java.util.ResourceBundle;
 /**
  * ETModel is a class that generates the external trips for the TLUMIP model, primarily by calling EIModel and EEModel.
  *
+ * Do not use this code; it was replaced by Michalis’ python code, which was replaced by ET EE component implementation only
+ *
  * @author Kimberly Grommes
  * @version 1.0, Jan 23, 2007
  * Created by IntelliJ IDEA.
  */
+@Deprecated
 public class ETModel extends ModelComponent {
 
     Logger logger = Logger.getLogger(ETModel.class);

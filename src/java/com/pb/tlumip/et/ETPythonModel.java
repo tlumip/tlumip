@@ -13,7 +13,14 @@ import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 
 /**
- * @author crf <br/>
+ * At 3/4/10 ABQ meeting it was decided by Rick, Tara, Erin, & Michalis, that ET would only cover EE trucks as
+ * temporarily implemented (for Oregon Freight Plan Application).   All prior code ET code (by Kim Grommes in
+ * java and Michalis Xyntarakis in python) would be dropped.  If it is desired to implement ET IE/EI flows to/from
+ * World Market 6006 (PI buying flows), it is recommended to use CT with extra code written to assign ET IE/EI flows
+ * to the closest small road ExternalStation.  If the python ET code is to be used, the growth rate methods and
+ * calibration targets from the External Stations should be checked.
+ *
+ *  @author crf <br/>
  *         Started: Jan 6, 2009 2:12:18 PM
  */
 public class ETPythonModel extends ModelComponent  {
@@ -26,16 +33,46 @@ public class ETPythonModel extends ModelComponent  {
     public void startModel(int baseYear, int timeInterval) {
         logger.info("Starting ET Model.");
         StatusLogger.logText("et","ET started for year t" + timeInterval);
+
+    /* ***********start old python code******************* */
+    /* Do not use this code; it was replaced by ET EE component implementation only.
+       If this code were to be reused, the recent growth rate functionality should be checked and the targets
+       (ExtSta counts) used in calibration should be verified against the PI module all commodity IE/EI flows for the
+       share of CT vs. ET IE/EI shares. */
+
+//        String etPythonCommand =  ResourceUtil.getProperty(appRb, "et.python.command");
+//        String etPropertyFile = ResourceUtil.getProperty(appRb, "et.property");
+//
+//        ProcessBuilder pb = new ProcessBuilder(
+//                "python",
+//                etPythonCommand,
+//                etPropertyFile);
+
+    /* ***********end old python code******************* */
+
+
+    /* ***********start new python code******************* */
+    /* This code implements EE Truck Trips.  It starts with a seed OD matrix of EE flows between External Stations
+       (developed from ….), which is IPFed to match marginals which are 2000 External Station counts with growth rates
+       applied per properties files (rates vary for large and small roads). */
+
         String etPythonCommand =  ResourceUtil.getProperty(appRb, "et.python.command");
-        String etPropertyFile = ResourceUtil.getProperty(appRb, "et.property");
+        String etOut = ResourceUtil.getProperty(appRb,"et.truck.trips");
+        String etBasis = ResourceUtil.getProperty(appRb,"et.basis.matrix");
+        String etBasisYear = ResourceUtil.getProperty(appRb,"et.basis.year");
 
         ProcessBuilder pb = new ProcessBuilder(
                 "python",
                 etPythonCommand,
-                etPropertyFile);
+                etOut,
+                etBasis,
+                etBasisYear,
+                "" + timeInterval);
+
+    /* ***********end new python code******************* */
+
         pb.redirectErrorStream(true);
         final Process p;
-//        System.out.println(Arrays.toString(pb.command().toArray(new String[0])));
         try {
             p = pb.start();
             //log error stream
@@ -48,7 +85,7 @@ public class ETPythonModel extends ModelComponent  {
             if (p.waitFor() != 0)
                 indicateEtErrors();
         } catch (IOException e) {
-            logger.error("An IO exception occured while trying to run ET model",e);
+            logger.error("An IO exception occurred while trying to run ET model",e);
             indicateEtErrors();
         } catch (InterruptedException e) {
             logger.error("Interrupted exception caught waiting for ET model to finish",e);
