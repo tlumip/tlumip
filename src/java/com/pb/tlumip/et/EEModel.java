@@ -40,6 +40,7 @@ import java.util.ResourceBundle;
  * @version 1.0, Jul 3, 2007
  *          Created by IntelliJ IDEA.
  */
+@Deprecated
 public class EEModel {
 
     Logger logger = Logger.getLogger(EEModel.class);

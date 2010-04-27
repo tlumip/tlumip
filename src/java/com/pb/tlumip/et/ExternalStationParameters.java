@@ -28,6 +28,7 @@ import java.util.HashMap;
  * @version 1.0, Oct 26, 2007
  *          Created by IntelliJ IDEA.
  */
+@Deprecated
 public class ExternalStationParameters {
 
     Logger logger = Logger.getLogger(ExternalStationParameters.class);

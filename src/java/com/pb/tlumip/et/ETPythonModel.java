@@ -56,17 +56,16 @@ public class ETPythonModel extends ModelComponent  {
        (developed from ….), which is IPFed to match marginals which are 2000 External Station counts with growth rates
        applied per properties files (rates vary for large and small roads). */
 
+        String etProperties = ResourceUtil.getProperty(appRb,"et.property");
         String etPythonCommand =  ResourceUtil.getProperty(appRb, "et.python.command");
-        String etOut = ResourceUtil.getProperty(appRb,"et.truck.trips");
-        String etBasis = ResourceUtil.getProperty(appRb,"et.basis.matrix");
-        String etBasisYear = ResourceUtil.getProperty(appRb,"et.basis.year");
+//        String etOut = ResourceUtil.getProperty(appRb,"et.truck.trips");
+//        String etBasis = ResourceUtil.getProperty(appRb,"et.basis.matrix");
+//        String etBasisYear = ResourceUtil.getProperty(appRb,"et.basis.year");
 
         ProcessBuilder pb = new ProcessBuilder(
                 "python",
                 etPythonCommand,
-                etOut,
-                etBasis,
-                etBasisYear,
+                etProperties,
                 "" + timeInterval);
 
     /* ***********end new python code******************* */

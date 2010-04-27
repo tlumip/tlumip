@@ -45,6 +45,7 @@ import java.util.StringTokenizer;
  * @version 1.0, Aug 8, 2007
  * Created by IntelliJ IDEA.
  */
+@Deprecated
 public class EIModel {
 
     Logger logger = Logger.getLogger(EIModel.class);

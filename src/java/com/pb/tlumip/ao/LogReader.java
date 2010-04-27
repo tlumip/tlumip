@@ -23,6 +23,8 @@ public class LogReader {
 
     private static final String MODULE_SUMMARY_FILE_NAME = "ModuleSummary.csv";
     private static final String PI_ITERATION_SUMMARY_FILE_NAME = "PiIterationSummary.txt";
+    private static final String PI_MERIT_MEASURES_FILE_NAME = "PiMeritMeasures.csv";
+    private static final String PI_MAX_SURPLUS_SUMMARY_FILE_NAME = "PiMaxSurplus.csv";
     private static final String PI_CONVERGENCE_SUMMARY_FILE_NAME = "PiConvergenceSummary.txt";
     private static final String PT_SUMMARY_FILE_NAME = "PtIterationSummary.txt";
     private static final String TS_SUMMARY_FILE_NAME = "TsSummary.txt";
@@ -204,12 +206,11 @@ public class LogReader {
         Map<SegmentInformation,List<List<Long>>> globalSearchTimes = new LinkedHashMap<SegmentInformation,List<List<Long>>>();
         Map<SegmentInformation,Calendar[]> startEndMap = new HashMap<SegmentInformation,Calendar[]>();
         Calendar previousEnd = null;
-
+        //mapped value will be [iteration#,merit measure]
+        Map<SegmentInformation,List<double[]>> meritMeasures = new LinkedHashMap<SegmentInformation,List<double[]>>();
+        //mapped value will be [iteration#,max surplus
+        Map<SegmentInformation,List<Object[]>> maxSurplus = new LinkedHashMap<SegmentInformation,List<Object[]>>();
         SegmentInformation currentPiSegment = null;
-
-//        for (SegmentInformation si : segments) {
-//            System.out.println(si.segment + ":" + si.start.getTime());
-//        }
 
         for (SegmentInformation si : segments) {
             if (si.segment == Segment.PI)  {
@@ -220,6 +221,8 @@ public class LogReader {
                 globalSearchTimes.get(currentPiSegment).add(new LinkedList<Long>());
                 startEndMap.put(currentPiSegment,new Calendar[2]);
                 startEndMap.get(currentPiSegment)[0] = si.start;
+                meritMeasures.put(currentPiSegment,new LinkedList<double[]>());
+                maxSurplus.put(currentPiSegment,new LinkedList<Object[]>());
             } else if (si.segment == Segment.PI_ITERATION) {
                if (currentPiSegment == null)
                    continue;
@@ -240,6 +243,8 @@ public class LogReader {
                 if (si.end != null) {
                     startEndMap.get(currentPiSegment)[1] = si.end;
                 }
+                //fill in merit measure information
+                meritMeasures.get(currentPiSegment).add(new double[] {iteration,Double.parseDouble(si.startCapturedGroups[3])});
             } else if (si.segment == Segment.PI_GLOBAL_SEARCH) {
                if (currentPiSegment == null)
                    continue;
@@ -252,6 +257,13 @@ public class LogReader {
 //                    else
 //                        System.out.println("Iteration #" + currentIteration + "; start time: " + start + "; end time: " + end);
                 }
+            } else if (si.segment == Segment.PI_MAX_SURPLUS) {
+                if (currentPiSegment == null)
+                    continue;
+                if (currentIteration == 9999)
+                    continue;
+                maxSurplus.get(currentPiSegment).add(new Object[] {currentIteration,si.startCapturedGroups[2],Double.parseDouble(si.startCapturedGroups[1])});
+
             }
         }
         if (currentPiSegment != null)
@@ -264,6 +276,19 @@ public class LogReader {
         }
         piIterationSummary.writeTo(outputsDirectory.toString() + File.separator + PI_ITERATION_SUMMARY_FILE_NAME);
 
+        TextFile mmSummary = new TextFile();
+        mmSummary.addLine("Year,Iteration,Merit Measure");
+        for (SegmentInformation piSegment : meritMeasures.keySet())
+            for (double[] data : meritMeasures.get(piSegment))
+                mmSummary.addLine(piSegment.startCapturedGroups[1] + "," + data[0] + "," + data[1]);
+        mmSummary.writeTo(outputsDirectory.toString() + File.separator + PI_MERIT_MEASURES_FILE_NAME);
+
+        TextFile msSummary = new TextFile();
+        msSummary.addLine("Year,Iteration,Commodity,Max Surplus");
+        for (SegmentInformation piSegment : maxSurplus.keySet())
+            for (Object[] data : maxSurplus.get(piSegment))
+                msSummary.addLine(piSegment.startCapturedGroups[1] + "," + data[0] + "," + data[1] + "," + data[2]);
+        msSummary.writeTo(outputsDirectory.toString() + File.separator + PI_MAX_SURPLUS_SUMMARY_FILE_NAME);
     }
 
     private String getPiIterationSummary(List<List<Long>> iterationTimesArray, List<List<Long>> globalSearchTimesArray, Calendar start, Calendar end, SegmentInformation piSegment) {
@@ -530,7 +555,7 @@ public class LogReader {
                 }
             } else if (s == Segment.PI_MERIT_MEASURE) {
                 int year = Integer.parseInt(si.startCapturedGroups[1]);
-                if (results.get(year) == null)
+                if (results.get(year) == null || si.endCapturedGroups == null)
                     results.put(year,"unfinished");
                 else
                     results.put(year,results.get(year) + " (final merit measure: " + si.endCapturedGroups[1] + ")");
@@ -604,11 +629,12 @@ public class LogReader {
             return "Unfinished";
         return time.getTime().toString();
     }
-
+    //7.687982e+17
     private enum Segment {
         PI("AO will now start PI.*? for simulation year (\\d\\d\\d\\d)","pi.*? is complete"),
         MODULE("AO will now start (.[^iI].*) for simulation year (\\d\\d\\d\\d)","(.+) is complete"),
-        PI_ITERATION(".*Starting iteration (\\d+)-(\\d+).*",".*End of iteration (\\d+).  Time in seconds: (\\d+\\.\\d+).*"),
+        PI_ITERATION(".*Starting iteration (\\d+)-(\\d+).*?(\\d+\\.\\d+e\\+\\d+).*",".*End of iteration (\\d+).  Time in seconds: (\\d+\\.\\d+).*"),
+        PI_MAX_SURPLUS(".*maxSurp: (\\d+\\.\\d+).*?:.*?:(\\w+?)\\..*",".*Weighted Commodity Merit Measure is (\\d+\\.\\d+).*"),
         PI_GLOBAL_SEARCH("Calculating average commodity price change","Finished calculating average commodity price change"),
 //        PI_CONVERGENCE("com.pb.models.pt.daf.PTMasterTask,               Time Interval: (\\d+)","PI has reached (equilibrium) in (\\d+). Time in seconds: (\\d+)|PI has reached (maxIterations). Time in seconds: (\\d+)"),
 //        PI_CONVERGENCE("Time Interval: (\\d+)","PI has reached (equilibrium) in (\\d+). Time in seconds: (\\d+)|PI has reached (maxIterations). Time in seconds: (\\d+)"),
@@ -622,8 +648,7 @@ public class LogReader {
         //TSDAF_HWY("AO will now start TS DAF for simulation year (\\d\\d\\d\\d)|AO will now start TS DAF peak & offPeak periods models for simulation year (\\d\\d\\d\\d)|done with (.*) period transit loading and skimming\\.","done with (.*peak) highway assignment\\."),
         TSDAF_HWY("AO will now start TS DAF peak & offPeak periods models for simulation year (\\d\\d\\d\\d)|done with (.*) period transit loading and skimming\\.","done with (.*peak) highway assignment\\."),
         TS_TRANSIT("done with (.*peak) highway assignment\\.|done with (.*peak) period transit loading and skimming\\.","done with (.*peak) period (transit) loading and skimming\\."),
-        TS_SUB_TRANSIT("AIR|HSR_DRIVE|TRANSIT_DRIVE|DR_TRAN|HSR_WALK|TRANSIT_WALK|WK_TRAN","AIR|HSR_DRIVE|TRANSIT_DRIVE|DR_TRAN|HSR_WALK|TRANSIT_WALK|WK_TRAN|(.*)peak period walk access intracity task finished\\.")
-        ;
+        TS_SUB_TRANSIT("AIR|HSR_DRIVE|TRANSIT_DRIVE|DR_TRAN|HSR_WALK|TRANSIT_WALK|WK_TRAN","AIR|HSR_DRIVE|TRANSIT_DRIVE|DR_TRAN|HSR_WALK|TRANSIT_WALK|WK_TRAN|(.*)peak period walk access intracity task finished\\.");
 
 
         private Pattern messageStartRegexp;

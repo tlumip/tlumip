@@ -29,6 +29,7 @@ import com.pb.tlumip.et.ETPythonModel;
 import com.pb.tlumip.spg.SPGnew;
 import com.pb.tlumip.ts.TSModelComponent;
 import com.pb.tlumip.epf.EdPiFeedback;
+import com.pb.tlumip.sl.SelectLink;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -480,6 +481,11 @@ public class ApplicationOrchestrator {
         tsModel.startModel(baseYear, timeInterval);
     }
 
+    public void runSLModel(int timeInterval, ResourceBundle rb, String slMode) {
+        SelectLink sl = new SelectLink(rb,timeInterval);
+        sl.runStages(slMode);
+    }
+
     private void logAppRun(String appName){
         if (appName.endsWith("daf")) {
             appName = appName.substring(0,(appName.length()-3));
@@ -520,9 +526,15 @@ public class ApplicationOrchestrator {
             logger.info("Base Year: " + baseYear);
             logger.info("Time Interval: " + t);
             String configFileOrNodeName = null; //nodeName is for daf2, configFile is for daf3
+            String slMode = null; //mode for sl
             if(args.length >= 7 ){
-                configFileOrNodeName = args[6];
-                logger.info("Daf Property: "+ configFileOrNodeName);
+                if (appName.equalsIgnoreCase("SL")) {
+                    slMode = args[6];
+                    logger.info("Select Link mode: " + slMode);
+                } else {
+                    configFileOrNodeName = args[6];
+                    logger.info("Daf Property: "+ configFileOrNodeName);
+                }
             }
             Boolean tsDaily = null;
             if (args.length == 8) {
@@ -600,6 +612,9 @@ public class ApplicationOrchestrator {
                     throw new RuntimeException("'daily' jvm argument required for TS not present, application will exit.");
                 }
                 ao.runTSDAFModel(baseYear, t, pathToAppRb, pathToAppRb, configFileOrNodeName,tsDaily);
+            }else if(appName.equalsIgnoreCase("SL")){
+                logger.info("AO will now start SL for simulation year " + (baseYear+t));
+                ao.runSLModel(t,appRb,slMode);
             }else {
                 logger.fatal("AppName not recognized");
             }

@@ -1,9 +1,11 @@
 package com.pb.tlumip.sl;
 
+import com.pb.common.matrix.CSVMatrixWriter;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.ZipMatrixWriter;
 import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.DemandHandler;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.*;
@@ -13,7 +15,7 @@ import java.util.*;
  *         Started: Dec 9, 2009 8:57:53 PM
  */
 public class SubAreaMatrixCreator {
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SubAreaMatrixCreator.class);
+    private static final Logger logger = org.apache.log4j.Logger.getLogger(SubAreaMatrixCreator.class);
 
     public static final String SL_AUTO_ASSIGN_CLASS = "a";
     public static final String SL_TRUCK_ASSIGN_CLASS = "d";
@@ -21,6 +23,7 @@ public class SubAreaMatrixCreator {
     public static final String MD_STRING_NAME = "mdoffpeak";
     public static final String PM_STRING_NAME = "pmpeak";
     public static final String NT_STRING_NAME = "ntoffpeak";
+    public static final String OUTPUT_MATRIX_TYPE_STRING = "{TYPE}";
 
     private final ResourceBundle rb;
     private final SelectLinkData autoSelectLinkData;
@@ -29,24 +32,50 @@ public class SubAreaMatrixCreator {
     public SubAreaMatrixCreator(ResourceBundle rb) {
         this.rb = rb;
         String dataFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.results");
-        autoSelectLinkData = new SelectLinkData(dataFile,SL_AUTO_ASSIGN_CLASS);
-        truckSelectLinkData = new SelectLinkData(dataFile,SL_TRUCK_ASSIGN_CLASS);
+        autoSelectLinkData = new SelectLinkData(dataFile,SL_AUTO_ASSIGN_CLASS,rb);
+        truckSelectLinkData = new SelectLinkData(dataFile,SL_TRUCK_ASSIGN_CLASS,rb);
 
     }
 
     public void createSubAreaMatrices() {
         TripSynthesizer ts = synthesizeTrips();
+        List<String> matrixNames = new LinkedList<String>();
+        List<Matrix> matrices = new LinkedList<Matrix>();
         for (boolean auto : new boolean[] {true,false}) {
             OdMatrixGroup.OdMatrixGroupCollection omc = ts.getSynthesizedMatrices(auto);
             for (String type : omc.keySet()) {
                 logger.info("Forming subarea matrices for " + (auto ? "auto " : "truck ") + type);
                 OdMatrixGroup subAreaMatrices = formSubAreaMatrices(omc.get(type),auto ? autoSelectLinkData : truckSelectLinkData);
-                writeSubAreaMatrices(subAreaMatrices,auto,type);
+                int[] externals = getExternalNumbers(subAreaMatrices.getZoneMatrixMap());
+                String baseOutFile = formOutputMatrixTemplateName(auto,type);
+                baseOutFile = baseOutFile.substring(baseOutFile.lastIndexOf('/')+1,baseOutFile.lastIndexOf('.'));
+                for (int i = 0; i < 4; i++) {
+                    String outFile;
+                    switch (i) {
+                        case 0 : outFile = baseOutFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,AM_STRING_NAME); break;
+                        case 1 : outFile = baseOutFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,MD_STRING_NAME); break;
+                        case 2 : outFile = baseOutFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,PM_STRING_NAME); break;
+                        case 3 : outFile = baseOutFile.replace(DemandHandler.DEMAND_OUTPUT_TIME_PERIOD_STRING,NT_STRING_NAME); break;
+                        default : throw new RuntimeException("invalid time period: " + i);
+                    }
+                    subAreaMatrices.getMatrix(i).setExternalNumbers(externals);
+                    matrixNames.add(outFile);
+                    matrices.add(subAreaMatrices.getMatrix(i));
+                }
             }
-//            logger.info("Forming subarea matrices for " + (auto ? "auto" : "truck"));
-//            OdMatrixGroup subAreaMatrices = formSubAreaMatrices(ts.getSynthesizedMatrices(auto),auto ? autoSelectLinkData : truckSelectLinkData);
-//            writeSubAreaMatrices(subAreaMatrices,auto);
         }
+        writeMatrices(rb.getString("sl.link.demand.output.filename"),matrixNames.toArray(new String[matrixNames.size()]),matrices.toArray(new Matrix[matrices.size()]));
+//        for (boolean auto : new boolean[] {true,false}) {
+//            OdMatrixGroup.OdMatrixGroupCollection omc = ts.getSynthesizedMatrices(auto);
+//            for (String type : omc.keySet()) {
+//                logger.info("Forming subarea matrices for " + (auto ? "auto " : "truck ") + type);
+//                OdMatrixGroup subAreaMatrices = formSubAreaMatrices(omc.get(type),auto ? autoSelectLinkData : truckSelectLinkData);
+//                writeSubAreaMatrices(subAreaMatrices,auto,type);
+//            }
+////            logger.info("Forming subarea matrices for " + (auto ? "auto" : "truck"));
+////            OdMatrixGroup subAreaMatrices = formSubAreaMatrices(ts.getSynthesizedMatrices(auto),auto ? autoSelectLinkData : truckSelectLinkData);
+////            writeSubAreaMatrices(subAreaMatrices,auto);
+//        }
     }
 
     private TripSynthesizer synthesizeTrips() {
@@ -110,7 +139,16 @@ public class SubAreaMatrixCreator {
     private String formOutputMatrixTemplateName(boolean auto, String type) {
 //        String typeString = type.toLowerCase().replace(" ","_");
         //return rb.getString("sl.link.demand.output.filename").replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,auto ? SL_AUTO_ASSIGN_CLASS : SL_TRUCK_ASSIGN_CLASS);
-        return rb.getString("sl.link.demand.output.filename").replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,(auto ? SL_AUTO_ASSIGN_CLASS : SL_TRUCK_ASSIGN_CLASS) + (type.length() == 0 ? "" : "_" + type));
+        return rb.getString("sl.link.demand.output.matrix.names").replace(DemandHandler.DEMAND_OUTPUT_MODE_STRING,(auto ? SL_AUTO_ASSIGN_CLASS : SL_TRUCK_ASSIGN_CLASS))
+                                                                 .replace(OUTPUT_MATRIX_TYPE_STRING,type);
+
+    }
+
+    private void writeMatrices(String matrixFile, String[] names, Matrix[] matrices) {
+        for (int i = 0; i < matrices.length; i++)
+            matrices[i].setName(names[i]);
+        CSVMatrixWriter writer = new CSVMatrixWriter(new File(matrixFile));
+        writer.writeMatrices(null,matrices);
     }
 
 //    private void writeOdMatrix(OdMatrixGroup matrices, boolean auto) {

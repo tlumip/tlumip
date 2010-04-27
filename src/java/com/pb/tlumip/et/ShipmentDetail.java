@@ -23,6 +23,7 @@ package com.pb.tlumip.et;
  * @version 1.0, Sep 24, 2007
  *          Created by IntelliJ IDEA.
  */
+@Deprecated
 public class ShipmentDetail {
 
     private int intOrigination;

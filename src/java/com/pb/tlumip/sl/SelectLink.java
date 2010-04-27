@@ -2,13 +2,10 @@ package com.pb.tlumip.sl;
 
 import org.apache.log4j.Logger;
 
+import java.io.*;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 import com.pb.models.utils.StatusLogger;
 import com.pb.common.util.ResourceUtil;
@@ -63,16 +60,25 @@ public class SelectLink {
         samc.createSubAreaMatrices();
     }
 
-    private void runRScript(String rScriptKey, String name) {
+    void runRScript(String rScriptKey, String name, String ... additionalArgs) {
         logger.info("Starting " + name);
         StatusLogger.logText("sl",name + " started for " + year);
+        runRScript(rScriptKey,name,rb,additionalArgs);
+        StatusLogger.logText("sl",name + " finished.");
+    }
+
+    static void runRScript(String rScriptKey, String name, ResourceBundle rb, String ... additionalArgs) {
 
         String rFile = ResourceUtil.getProperty(rb,rScriptKey);
         String scenPathKey = ResourceUtil.getProperty(rb,"sl.scenario.path.key");
-        ProcessBuilder pb = new ProcessBuilder(
-                "R","--no-save","<",
-                ResourceUtil.getProperty(rb,"sl.code.path") + rFile,
-                scenPathKey + "=" + ResourceUtil.getProperty(rb,"sl.current.directory"));
+        String[] processArgs = new String[additionalArgs.length+5];
+        processArgs[0] = "R";
+        processArgs[1] = "--no-save";
+        processArgs[2] = "<";
+        processArgs[3] = ResourceUtil.getProperty(rb,"sl.code.path") + rFile;
+        processArgs[4] = scenPathKey + "=" + ResourceUtil.getProperty(rb,"sl.current.directory");
+        System.arraycopy(additionalArgs, 0, processArgs, 5, additionalArgs.length);
+        ProcessBuilder pb = new ProcessBuilder(processArgs);
         pb.redirectErrorStream(true);
         final Process p;
         try {
@@ -92,15 +98,14 @@ public class SelectLink {
             slFatalError("Interrupted exception caught waiting for " + name + " to finish",e);
         }
         logger.info(name + " finished.");
-        StatusLogger.logText("sl",name + " finished.");
     }
 
 
-    private void slFatalError(String message) {
+    private static void slFatalError(String message) {
         slFatalError(message,null);
     }
 
-    private void slFatalError(String message, Exception e) {
+    private static void slFatalError(String message, Exception e) {
         if (e != null)
             logger.fatal(message, e);
         else
@@ -108,7 +113,7 @@ public class SelectLink {
         throw new RuntimeException(message);
     }
 
-    private void logInputStream(InputStream stream, boolean error) {
+    private static void logInputStream(InputStream stream, boolean error) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
         try {
             String line;
@@ -128,7 +133,23 @@ public class SelectLink {
         }
     }
 
-
+    public static void main(String ... args) throws IOException {
+        long startTime = System.currentTimeMillis();
+        String bpath = args[0].replace("\\","/");
+        if (bpath.endsWith("/"))
+            bpath = bpath.substring(0,bpath.length()-1);
+        BufferedReader reader = new BufferedReader(new FileReader(new File(bpath,"sl.properties.template")));
+        PrintWriter writer = new PrintWriter(new FileWriter(new File(bpath,"global.properties")));
+        String line;
+        while ((line = reader.readLine()) != null)
+            writer.println(line.replace("@@base_path@@",bpath));
+        reader.close();
+        writer.close();
+        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File(bpath,"global.properties"));
+        SelectLink sl = new SelectLink(rb,-1);
+        sl.runStages(args[1]);
+        logger.info("Total Time: " + ((System.currentTimeMillis() - startTime)/1000) + " seconds.");
+    }
     
 
 }

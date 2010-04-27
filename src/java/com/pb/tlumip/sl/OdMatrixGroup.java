@@ -12,7 +12,7 @@ class OdMatrixGroup {
     private Map<String,Integer> zoneMatrixMap;
 
     OdMatrixGroup() {
-        matrices = new Matrix[4];
+        matrices = new Matrix[4]; //one for each time period - hardcoded, but that is ok, I guess
     }
 
     public int getClassCount() {

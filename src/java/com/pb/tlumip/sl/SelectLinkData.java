@@ -3,10 +3,14 @@ package com.pb.tlumip.sl;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.TextFile;
+import com.pb.common.util.ResourceUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.*;
 
 /**
@@ -34,9 +38,10 @@ public class SelectLinkData {
     private Set<String> internalZones = null;
     private Set<String> externalZones = null;
     private Set<String> weavingZones = null;
+    Map<String,List<WeavingData>> odWeavingMap = null;
 
-    public SelectLinkData(String linkDataFile, String assignClass) {
-        loadLinkData(linkDataFile,assignClass);
+    public SelectLinkData(String linkDataFile, String assignClass, ResourceBundle rb) {
+        loadLinkData(linkDataFile,assignClass,rb);
     }
 
     public boolean containsOd(String od) {
@@ -51,7 +56,11 @@ public class SelectLinkData {
         return externalStationList;
     }
 
-    private void loadLinkData(String linkDataFile,String assignClass) {
+    public List<WeavingData> getWeavingData(String od) {
+        return odWeavingMap.get(od);
+    }
+
+    private void loadLinkData(String linkDataFile,String assignClass, ResourceBundle rb) {
         String assignClassFieldName = "ASSIGNCLASS";
         String linkFieldName = "FROMNODETONODE";
         String directionFieldName = "DIRECTION";
@@ -96,9 +105,11 @@ public class SelectLinkData {
         }
 
         externalStationList = new LinkedList<String>(links);
+
+        setInteriorExteriorZones(rb,assignClass);
     }
 
-    public void setInteriorExteriorZones() {
+    private void setInteriorExteriorZones(ResourceBundle rb, String mode) {
         //algorithm:
         //  1) got through all ods
         //  2) if od pair uses in and out links, skip it
@@ -124,28 +135,6 @@ public class SelectLinkData {
                               eeiiZones.add(od);
             }
         }
-        //write weaving zone data - will eventually work this out using Ben's code
-        TextFile tf = new TextFile();
-        tf.addLine("od,links,percentage");
-        for (String od : weavingZones.keySet()) {
-            Map<Double,List<String>> weavingLinks = new HashMap<Double,List<String>>();
-            for (LinkData ld : linkData.get(od)) {
-                double percentage = ld.getOdPercentage(od);
-                if (!weavingLinks.containsKey(percentage))
-                    weavingLinks.put(percentage,new LinkedList<String>());
-                weavingLinks.get(percentage).add(ld.getFromNodeToNode());
-            }
-            for (double percentage : weavingLinks.keySet()) {
-                StringBuffer sb = new StringBuffer();
-                sb.append(od).append(",");
-                Iterator<String> links = weavingLinks.get(percentage).iterator();
-                sb.append(links.next());
-                while(links.hasNext())
-                    sb.append(";").append(links.next());
-                tf.addLine(sb.append(",").append(percentage).toString());
-            }
-        }
-        tf.writeTo("C:\\chris\\projects\\tlumip\\path_analysis\\sl_weaving.csv");
 
         //checking
         for (String od : eeiiZones)
@@ -168,15 +157,94 @@ public class SelectLinkData {
         for (String zone : internalZones)
             externalZones.remove(zone);
 
+
+        setWeavingData(rb,weavingZones,mode);
+    }
+
+    private void setWeavingData(ResourceBundle rb, Map<String,Double> weavingZones, String mode) {
         //log weaves
         for (String od : weavingZones.keySet())
             logger.debug("Weaving zone: " + od + " (link percentage: " + weavingZones.get(od) + ")");
         this.weavingZones = weavingZones.keySet();
+        System.out.println("Weaving zone count: " + this.weavingZones.size());
+
+        //write weaving zone data - will eventually work this out using Ben's code
+        TextFile tf = new TextFile();
+        tf.addLine("od,links,percentage");
+        for (String od : weavingZones.keySet()) {
+            Map<Double,List<String>> weavingLinks = new HashMap<Double,List<String>>();
+            for (LinkData ld : linkData.get(od)) {
+                double percentage = ld.getOdPercentage(od);
+                if (!weavingLinks.containsKey(percentage))
+                    weavingLinks.put(percentage,new LinkedList<String>());
+                weavingLinks.get(percentage).add(ld.getFromNodeToNode());
+            }
+            for (double percentage : weavingLinks.keySet()) {
+                StringBuffer sb = new StringBuffer();
+                sb.append(od).append(",");
+                Iterator<String> links = weavingLinks.get(percentage).iterator();
+                sb.append(links.next());
+                while(links.hasNext())
+                    sb.append(";").append(links.next());
+                tf.addLine(sb.append(",").append(percentage).toString());
+            }
+        }
+//        String weavingFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.weaving").replace(".csv","_" + mode + ".csv");
+        //todo: above line for testing - delete and uncomment next two lines and 5th line down and copyt file at end of method for production
+        String weavingFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.weaving");
+        tf.writeTo(weavingFile);
+
+        //generate weaving paths
+        SelectLink.runRScript("sl.select.link.node.sequence.r.file","generate select link weaving paths",rb,ResourceUtil.getProperty(rb,"sl.mode.key") + "=" + mode);
+
+        odWeavingMap = new HashMap<String,List<WeavingData>>();
+
+        CSVFileReader reader = new CSVFileReader();
+        try {
+            TableDataSet tds = reader.readFile(new File(weavingFile));
+            for (int i = 1; i <= tds.getRowCount(); i++) {
+                String od = tds.getStringValueAt(i,"od");
+                if (!odWeavingMap.containsKey(od))
+                    odWeavingMap.put(od,new LinkedList<WeavingData>());
+                String[] links = tds.getStringValueAt(i,"links").split(";");
+                String[] order = tds.getStringValueAt(i,"ordering").split("\\s");
+                String[] orderedLinks = new String[links.length];
+                for (int k = 0; k < orderedLinks.length; k++)
+                    orderedLinks[Integer.parseInt(order[k])-1] = links[k];
+                odWeavingMap.get(od).add(new WeavingData(od,(double) tds.getValueAt(i,"percentage"),orderedLinks));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        copyFile(new File(weavingFile), new File(weavingFile.replace(".csv","_" + mode + ".csv")));
+    }
+
+    private void copyFile(File sourceFile, File destFile) {
+
+        FileChannel source = null;
+        FileChannel destination = null;
+        try {
+            if(!destFile.exists())
+                destFile.createNewFile();
+            source = new FileInputStream(sourceFile).getChannel();
+            destination = new FileOutputStream(destFile).getChannel();
+            destination.transferFrom(source, 0, source.size());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if(source != null)
+                try {
+                source.close();
+                } catch (IOException e) {/*swallow*/}
+            if(destination != null)
+                try {
+                    destination.close();
+                } catch (IOException e) {/*swallow*/}
+        }
     }
 
     public Set<String> getInteriorZones() {
-        if (internalZones == null)
-            setInteriorExteriorZones();
         return internalZones;
     }
 
@@ -196,24 +264,10 @@ public class SelectLinkData {
     }
 
     public Set<String> getExteriorZones() {
-        if (externalZones == null)
-            setInteriorExteriorZones();
-        return externalZones;  
-//        Set<String> zones = new HashSet<String>();
-//        //add all zones
-//        for (String od : linkData.keySet()) {
-//            zones.add(getZoneFromLookup(od,true));
-//            zones.add(getZoneFromLookup(od,false));
-//        }
-//        //remove interior zones
-//        for (String zone : getInteriorZones())
-//            zones.remove(zone);
-//        return zones;
+        return externalZones;
     }
 
     public Set<String> getWeavingZones() {
-        if (weavingZones == null)
-            setInteriorExteriorZones();
         return weavingZones;
     }
 
@@ -222,11 +276,86 @@ public class SelectLinkData {
         return Integer.parseInt(externalStationName.startsWith(LINK_MATRIX_ENTRY_PREFIX) ? externalStationName.substring(LINK_MATRIX_ENTRY_PREFIX.length()) : externalStationName);
     }
 
+    //holds data for a given od and links>3 in path: need to know the order the links are traversed in the path, so this object'll hold this
+    class WeavingData {
+        private final String od;
+        private final List<String> fromNodeToNodes;
+        private final double percentage;
+        private final LinkData[] linkDataList;
+        private final boolean invalid;
+
+        public WeavingData(String od, double percentage, String ... links) {
+            this.od = od;
+            this.percentage = percentage;
+            linkDataList = new LinkData[links.length];
+
+            boolean first = true;
+            boolean in = false;
+            boolean error = false;
+            String message = "";
+            String message2 = "";
+            if (!linkData.containsKey(od)) {
+                logger.warn("Weaving od not found: " + od);
+                invalid = true;
+            } else {
+                for (int i = 0; i < links.length; i++) {
+                    for (LinkData ld : linkData.get(od)) {
+                        if (links[i].equals(ld.fromNodeToNode)) {
+                            linkDataList[i] = ld;
+                            if (first) {
+                                first = false;
+                                in = ld.getIn();
+                            } else {
+                                error |= in == ld.getIn(); //same as last - impossible for weaving
+                                in = ld.getIn();
+                                message += ",";
+                                message2 += ",";
+                            }
+                            message += ld.getIn() ? "IN" : "OUT";
+                            message2 += links[i];
+                            break;
+                        }
+                    }
+                }
+
+                if (error)
+                    logger.error("Invalid weaving path for od " + od + ": [" + message2 + "] is (" + message + ")");
+                invalid = error;
+            }
+
+            fromNodeToNodes = Arrays.asList(links);
+        }
+        public String getOd() {
+            return od;
+        }
+
+        public List<String> getFromNodeToNodes() {
+            return fromNodeToNodes;
+        }
+
+        public double getPercentage() {
+            return percentage;
+        }
+
+        public boolean isFirstLinkIn() {
+            return linkDataList[0].getIn();
+        }
+
+        public LinkData getRepresentativeLinkData(int linkIndex) {
+            return linkDataList[linkIndex];
+        }
+
+        public boolean isInvalid() {
+            return invalid;
+        }
+    }
+
+    //holds data about a link, including the od's whose paths it is used in (and the percentage of trips using this path)
     class LinkData {
         private final String fromNodeToNode;
-        private final Map<String,Double> odPercentages;
-        private final boolean in;
-        private final int externalStation;
+        private final Map<String,Double> odPercentages; //map from od name to percentage of trips between o & d using link
+        private final boolean in; //is incoming or outgoing - supplied externally
+        private final int externalStation; //external station # used in output matrix
 
         public LinkData(String fromNodeToNode, boolean in, int externalStation) {
             this.fromNodeToNode = fromNodeToNode;
@@ -245,7 +374,6 @@ public class SelectLinkData {
 
         public String getMatrixEntryName() {
             return LINK_MATRIX_ENTRY_PREFIX + externalStation;
-//            return LINK_MATRIX_ENTRY_PREFIX + fromNodeToNode;
         }
 
         public double getOdPercentage(String od) {
