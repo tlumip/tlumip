@@ -30,14 +30,19 @@ public class TripSynthesizer {
     private final TripFile ctTripFile;
     private final TripFile etTripFile;
 
-    private final double[] factors;
+    //private final double[] factors; - not needed; want vehicles, not auto-equivalent trips
+
+    private String lastSdtTripHhId;
+    private String lastSdtTripTourId;
+    private String lastSdtTripPersonId;
+    private String lastSdtTripType;
 
     public TripSynthesizer(ResourceBundle rb, SelectLinkData autoSelectLinkData, SelectLinkData truckSelectLinkData, TripClassifier sdtClassifier, TripClassifier ldtClassifier, TripClassifier ctClassifier, TripClassifier etClassifier) {
         logger.info("Initializing SL Synthesizer");
         this.rb = rb;
         this.autoSelectLinkData = autoSelectLinkData;
         this.truckSelectLinkData = truckSelectLinkData;
-        factors = formTripFactorLookup(rb);
+//        factors = formTripFactorLookup(rb);
 
         sdtTripFile = new SDTTripFile(rb,sdtClassifier);
         ldtTripFile = new LDTTripFile(rb,ldtClassifier);
@@ -53,6 +58,12 @@ public class TripSynthesizer {
     }
 
     void synthesizeTrips() {
+        test(true);
+        test(false);
+        for (String link : f.keySet())
+            System.out.println(link + ": " + f.get(link));
+//        System.exit(0);
+
         initializeMatrices();
         logger.info("Synthesizing SDT");
         synthesizeTrips(sdtTripFile,true);
@@ -124,6 +135,61 @@ public class TripSynthesizer {
         return orderedTazs;
     }
 
+    Map<String,Double> f = new HashMap<String,Double>();
+    private void test(boolean autoClass) {
+        SelectLinkData sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
+        if (autoClass) {
+        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_ampeak.zmx"),""));
+        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_pmpeak.zmx"),""));
+        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_mdoffpeak.zmx"),""));
+        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_ntoffpeak.zmx"),""));
+        } else {
+        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_ampeak.zmx"),""));
+        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_pmpeak.zmx"),""));
+        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_mdoffpeak.zmx"),""));
+        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_ntoffpeak.zmx"),""));
+        }
+    }
+    private void testm(SelectLinkData sld,Matrix m) {
+//        StringBuilder sb = new StringBuilder();
+//        try{
+//        FileReader reader = new FileReader(new File(rb.getString("sl.current.directory"),"_external row numbers"));
+//        char[] buffer = new char[1024];
+//        int amount;
+//
+//        while ((amount = reader.read(buffer)) > -1) {
+//            sb.append(buffer,0,amount);
+//        }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        String[] sexternals = sb.toString().trim().split(",");
+//        int[] externals = new int[sexternals.length+1];
+//        for (int i = 0; i < sexternals.length; i++)
+//            externals[i+1] = Integer.parseInt(sexternals[i]);
+
+
+        int[] extNum = m.getExternalNumbers();
+
+        for (int i = 1; i < extNum.length; i++) {
+            for (int j = 1; j < extNum.length; j++) {
+                String od = "" + extNum[i] + " " + extNum[j];
+                if (sld.containsOd(od)) {
+                    for (SelectLinkData.LinkData ld : sld.getDataForOd(od)) {
+                        String e = ld.getMatrixEntryName() + (ld.getIn() ? "_in" : "_out");
+                        if (!f.containsKey(e))
+                            f.put(e,0.0);
+//                        f.put(e,f.get(e)+m.getValueAt(i,j));
+                        f.put(e,f.get(e)+m.getValueAt(extNum[i],extNum[j]));
+//                        if (e.equals("_17_in") && m.getValueAt(extNum[i],extNum[j]) > 0.0) {
+//                            System.out.println("17: " + extNum[i] + " " + extNum[j] + " - " + m.getValueAt(extNum[i],extNum[j]));
+//                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void synthesizeTrips(TripFile tripFile, boolean autoClass) {
         SelectLinkData sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
         OdMatrixGroup.OdMatrixGroupCollection omc = autoClass ? autoMatrices : truckMatrices;
@@ -144,6 +210,19 @@ public class TripSynthesizer {
         double iiTripCounter = 0;
         double eiTripCounter = 0;
 
+        String traceZone1 = "2";
+        String traceZone2 = "3";
+        String slOd = "_17";
+        double[] slOdTraceIn = {0,0,0};
+        double[] slOdTraceOut = {0,0,0};
+        double[] tripsTrace = {0,0,0,0};
+        double[] tripsCountedTrace = {0,0,0,0};
+        boolean getTotalDemand = true;
+        double[] totalDemand = {0,0,0,0};
+
+        //initialize sdt info, even if not using them
+        lastSdtTripHhId = lastSdtTripTourId = lastSdtTripType = lastSdtTripPersonId = "";
+
         try {
             BufferedReader reader = new BufferedReader(new FileReader(tripFile.path));
             String line = reader.readLine();
@@ -159,6 +238,7 @@ public class TripSynthesizer {
                     destId = counter;
                 counter++;
             }
+            logger.info("origin dest fields " + originId + " " + destId);
 
             //read trips
             counter = 0;
@@ -171,19 +251,46 @@ public class TripSynthesizer {
                 String[] tripFileLine = line.trim().split(",");
                 String origin = tripFileLine[originId];
                 String dest = tripFileLine[destId];
+                if (origin.equals(traceZone1) && dest.equals(traceZone2)) {
+//                    logger.info(Arrays.toString(tripFileLine));
+                    tripsTrace[tripFile.getTimePeriodFromRecord(tripFileLine)] += tripFile.getTripFromRecord(tripFileLine);//*factors[tripFile.getModeIdFromRecord(tripFileLine)];
+                }
                 String od = SelectLinkData.formODLookup(origin,dest);
                 tripFile.classifier.setExtraData(sld,tripFileLine);
+
+                if (getTotalDemand) {
+                    totalDemand[tripFile.getTimePeriodFromRecord(tripFileLine)] += tripFile.getTripFromRecord(tripFileLine);//*factors[tripFile.getModeIdFromRecord(tripFileLine)];
+                }
+
+                //do this here to update last trip
+                String omcType = (tripFile.getTourTypeFromRecord(tripFileLine) + "_" +
+                                  tripFile.getOriginTripFromRecord(tripFileLine) + "_" +
+                                  tripFile.getDestTripFromRecord(tripFileLine)).toLowerCase().replace(" ","_");
+//                if (tripFileLine[0].equals("2137")) System.out.println(Arrays.toString(tripFileLine));
+                lastSdtTripType = tripFile.getTripTypeFromRecord(tripFileLine); //for next trip
                 if (!sld.containsOd(od))
                     continue;
 
                 //trips = trips from record * scaling factor from model * exogenous scaling factor
-                double trips = tripFile.getTripFromRecord(tripFileLine)*factors[tripFile.getModeIdFromRecord(tripFileLine)];
+                double trips = tripFile.getTripFromRecord(tripFileLine);//*factors[tripFile.getModeIdFromRecord(tripFileLine)];
                 if (trips == 0.0)
                     continue;
+
                 tripCounter += trips;
-                OdMatrixGroup.OdMarginalMatrixGroup omg = (OdMatrixGroup.OdMarginalMatrixGroup) omc.get(tripFile.getNormalizedTripTypeFromRecord(tripFileLine));
+                //OdMatrixGroup.OdMarginalMatrixGroup omg = (OdMatrixGroup.OdMarginalMatrixGroup) omc.get(tripFile.getNormalizedTripTypeFromRecord(tripFileLine));
+                if (omcType.equals("gradeschool_work_based_college") || omcType.equals("recreate_work_based_other"))
+                    logger.info(Arrays.toString(tripFileLine));
+
+                OdMatrixGroup.OdMarginalMatrixGroup omg = (OdMatrixGroup.OdMarginalMatrixGroup) omc.get(omcType);
+
                 int period = tripFile.getTimePeriodFromRecord(tripFileLine);
+
+                if (origin.equals(traceZone1) && dest.equals(traceZone2)) tripsCountedTrace[period] += trips;
+
                 Matrix ofInterest = omg.getMatrix(period);
+                PATripType tt = tripFile.getPATripTypeFromRecord(tripFileLine);
+                Matrix paOfInterest = omc.get(tt.toString()).getMatrix(period);
+                boolean endsAtHome = tripFile.tripEndsAtHome(tripFileLine);
                 ColumnVector originMarginals = omg.getOriginMarginals(period);
                 RowVector destMarginals = omg.getDestinationMarginals(period);
                 int mo = zoneMatrixMap.containsKey(origin) ? zoneMatrixMap.get(origin) : -1;
@@ -215,11 +322,23 @@ public class TripSynthesizer {
                         boolean skip = wd.isFirstLinkIn();  //skip trips that are outside the region
                         int lcounter = 0;
                         int lastId = mo;
+                        Matrix paOfInterestTemp;
                         for (String link : links) {
                             SelectLinkData.LinkData ld = wd.getRepresentativeLinkData(lcounter);
                             int lid = zoneMatrixMap.get(ld.getMatrixEntryName());
                             if (!skip) {
-                                    ofInterest.setValueAt(lastId,lid,(float) (ofInterest.getValueAt(lastId,lid)+linkTrips));
+                                ofInterest.setValueAt(lastId,lid,(float) (ofInterest.getValueAt(lastId,lid)+linkTrips));
+                                if (tt == PATripType.HBW || tt == PATripType.HBO) { //if coming in, then first trip is home-based, if going out, last one is
+                                    if ((endsAtHome && lcounter >= links.size()-2) ||
+                                        (!endsAtHome && lcounter < 2))
+                                        paOfInterestTemp = paOfInterest;
+                                    else  //otherwise trip is non-home-based
+                                        paOfInterestTemp = omc.get(PATripType.NHB.toString()).getMatrix(period);
+
+                                } else {
+                                    paOfInterestTemp = paOfInterest;
+                                }
+                                paOfInterestTemp.setValueAt(lastId,lid,(float) (paOfInterestTemp.getValueAt(lastId,lid)+linkTrips));
                                 if (balanceOn) {
                                     //todo - not clear that there is a consistent way to do this
                                 }
@@ -248,17 +367,30 @@ public class TripSynthesizer {
                 List<SelectLinkData.LinkData> linkData = sld.getDataForOd(od);
                 for (SelectLinkData.LinkData ld : linkData) {
                     int lid = zoneMatrixMap.get(ld.getMatrixEntryName());
+                    if (slOd.equals(ld.getMatrixEntryName())) {
+                        if (ld.getIn()) {
+                            slOdTraceIn[0] += trips;
+                            slOdTraceIn[1] += ld.getOdPercentage(od)*trips;
+                            slOdTraceIn[2] += ld.getOdPercentage(od)*trips * (balanceOn ? 1.0 : originFactor);
+                        } else {
+                            slOdTraceOut[0] += trips;
+                            slOdTraceOut[1] += ld.getOdPercentage(od)*trips;
+                            slOdTraceOut[2] += ld.getOdPercentage(od)*trips * (balanceOn ? 1.0 : originFactor);
+                        }
+                    }
                     double linkTrips = ld.getOdPercentage(od)*trips * (balanceOn ? 1.0 : originFactor);
                     //marginals don't matter if not balancing, so ignore them
                     if (ii) {
                         if (ld.getIn()) {
                             ofInterest.setValueAt(lid,md,(float) (ofInterest.getValueAt(lid,md)+linkTrips));
+                            paOfInterest.setValueAt(lid,md,(float) (paOfInterest.getValueAt(lid,md)+linkTrips));
                             if (balanceOn) {
                                 originMarginals.setValueAt(lid,(float) (originMarginals.getValueAt(lid)+linkTrips*originFactor));
                                 destMarginals.setValueAt(md,(float) (destMarginals.getValueAt(md)+linkTrips*destinationFactor));
                             }
                         } else {
                             ofInterest.setValueAt(mo,lid,(float) (ofInterest.getValueAt(mo,lid)+linkTrips));
+                            paOfInterest.setValueAt(mo,lid,(float) (paOfInterest.getValueAt(mo,lid)+linkTrips));
                             if (balanceOn) {
                                 originMarginals.setValueAt(mo,(float) (originMarginals.getValueAt(mo)+linkTrips*originFactor));
                                 destMarginals.setValueAt(lid,(float) (destMarginals.getValueAt(lid)+linkTrips*destinationFactor));
@@ -267,12 +399,14 @@ public class TripSynthesizer {
                     } else {
                         if (exteriorZones.contains(origin) && !exteriorZones.contains(dest)) {
                             ofInterest.setValueAt(lid,md,(float) (ofInterest.getValueAt(lid,md)+linkTrips));
+                            paOfInterest.setValueAt(lid,md,(float) (paOfInterest.getValueAt(lid,md)+linkTrips));
                             if (balanceOn) {
                                 originMarginals.setValueAt(lid,(float) (originMarginals.getValueAt(lid)+linkTrips*originFactor));
                                 destMarginals.setValueAt(md,(float) (destMarginals.getValueAt(md)+linkTrips*destinationFactor));
                             }
                         } else if (!exteriorZones.contains(origin) && exteriorZones.contains(dest)) {
                             ofInterest.setValueAt(mo,lid,(float) (ofInterest.getValueAt(mo,lid)+linkTrips));
+                            paOfInterest.setValueAt(mo,lid,(float) (paOfInterest.getValueAt(mo,lid)+linkTrips));
                             if (balanceOn) {
                                 originMarginals.setValueAt(mo,(float) (originMarginals.getValueAt(mo)+linkTrips*originFactor));
                                 destMarginals.setValueAt(lid,(float) (destMarginals.getValueAt(lid)+linkTrips*destinationFactor));
@@ -280,31 +414,33 @@ public class TripSynthesizer {
                         }
                     }
                     if (ee) {
-                        //put data into tracker
-                        if (!eeTracker.containsKey(ofInterest)) {
-                            eeTracker.put(ofInterest,new HashMap<String,Map<String,Map<String,Double>>>());
-                            marginalMap.put(ofInterest,new Matrix[] {originMarginals,destMarginals});
+                        for (Matrix oi : new Matrix[] {ofInterest,paOfInterest}) {
+                            //put data into tracker
+                            if (!eeTracker.containsKey(oi)) {
+                                eeTracker.put(oi,new HashMap<String,Map<String,Map<String,Double>>>());
+                                if (oi == ofInterest)
+                                    marginalMap.put(oi,new Matrix[] {originMarginals,destMarginals});
+                            }
+                            Map<String,Map<String,Map<String,Double>>> eeSub = eeTracker.get(oi);
+                            if (!eeSub.containsKey(od)) {
+                                Map<String,Map<String,Double>> subTracker = new HashMap<String,Map<String,Double>>();
+                                subTracker.put("in",new HashMap<String,Double>());
+                                subTracker.put("out",new HashMap<String,Double>());
+                                subTracker.put("total",new HashMap<String,Double>());
+                                subTracker.get("total").put("in",0.0);
+                                subTracker.get("total").put("out",0.0);
+                                eeSub.put(od,subTracker);
+                            }
+                            if (ld.getIn()) {
+                                //originMarginals.setValueAt(lid,(float) (originMarginals.getValueAt(lid)+linkTrips*linkOriginFactor));
+                                eeSub.get(od).get("in").put(ld.getMatrixEntryName(),ld.getOdPercentage(od));
+                                eeSub.get(od).get("total").put("in",linkTrips+eeSub.get(od).get("total").get("in"));
+                            } else {
+                                //destMarginals.setValueAt(lid,(float) (destMarginals.getValueAt(lid)+linkTrips*linkDestinationFactor));
+                                eeSub.get(od).get("out").put(ld.getMatrixEntryName(),ld.getOdPercentage(od));
+                                eeSub.get(od).get("total").put("out",linkTrips+eeSub.get(od).get("total").get("out"));
+                            }
                         }
-                        Map<String,Map<String,Map<String,Double>>> eeSub = eeTracker.get(ofInterest);
-                        if (!eeSub.containsKey(od)) {
-                            Map<String,Map<String,Double>> subTracker = new HashMap<String,Map<String,Double>>();
-                            subTracker.put("in",new HashMap<String,Double>());
-                            subTracker.put("out",new HashMap<String,Double>());
-                            subTracker.put("total",new HashMap<String,Double>());
-                            subTracker.get("total").put("in",0.0);
-                            subTracker.get("total").put("out",0.0);
-                            eeSub.put(od,subTracker);
-                        }
-                        if (ld.getIn()) {
-                            //originMarginals.setValueAt(lid,(float) (originMarginals.getValueAt(lid)+linkTrips*linkOriginFactor));
-                            eeSub.get(od).get("in").put(ld.getMatrixEntryName(),ld.getOdPercentage(od));
-                            eeSub.get(od).get("total").put("in",linkTrips+eeSub.get(od).get("total").get("in"));
-                        } else {
-                            //destMarginals.setValueAt(lid,(float) (destMarginals.getValueAt(lid)+linkTrips*linkDestinationFactor));
-                            eeSub.get(od).get("out").put(ld.getMatrixEntryName(),ld.getOdPercentage(od));
-                            eeSub.get(od).get("total").put("out",linkTrips+eeSub.get(od).get("total").get("out"));
-                        }
-
                     }
                 }
             }
@@ -342,6 +478,12 @@ public class TripSynthesizer {
         logger.info("Total ii trips tallied: " + Math.round(iiTripCounter));
         logger.info("Total trips tallied: " + Math.round(tripCounter));
         logger.info(String.format("Trips lost to weaving: %.2f (%.2f%%)",tripsLostToWeaving,tripsLostToWeaving / tripCounter * 100));
+        logger.info("Trips trace for " + traceZone1 + "-" + traceZone2 + ": " + Arrays.toString(tripsTrace));
+        logger.info("Trips counted trace for " + traceZone1 + "-" + traceZone2 + ": " + Arrays.toString(tripsCountedTrace));
+        logger.info("Link " + slOd + " (in) trace: " + Arrays.toString(slOdTraceIn));
+        logger.info("Link " + slOd + " (out) trace: " + Arrays.toString(slOdTraceOut));
+        if (getTotalDemand)
+            logger.info("Total trip demand: " + Arrays.toString(totalDemand));
     }
 
     public abstract static class TripFile {
@@ -369,6 +511,8 @@ public class TripSynthesizer {
 
         abstract int getTripTimeFromRecord(String ... data);
         abstract String getTripTypeFromRecord(String ... data);
+        abstract PATripType getPATripTypeFromRecord(String ... data);
+        abstract boolean tripEndsAtHome(String ... data);
 
         double getTripFromRecord(String ... data) {
             return 1;
@@ -392,8 +536,16 @@ public class TripSynthesizer {
                 return 3;
         }
 
-        public String getNormalizedTripTypeFromRecord(String ... data) {
-            return getTripTypeFromRecord(data).toLowerCase().replace(" ","_");
+        public String getTourTypeFromRecord(String ... data) {
+            return "";
+        }
+
+        public String getOriginTripFromRecord(String ... data) {
+            return "";
+        }
+
+        public String getDestTripFromRecord(String ... data) {
+            return "";
         }
     }
 
@@ -494,6 +646,7 @@ public class TripSynthesizer {
             if (mode.equalsIgnoreCase(daId)) return daTrip;
             else if (mode.equalsIgnoreCase(sr2Id)) return sr2Trip;
             else if (mode.equalsIgnoreCase(sr3Id)) return sr3Trip;
+//            logger.warn("Unknown sdt mode for trip: " + mode);
             return 0;
         }
 
@@ -504,13 +657,74 @@ public class TripSynthesizer {
         String getTripTypeFromRecord(String ... data) {
             return data[14];
         }
+
+        PATripType getPATripTypeFromRecord(String ... data) {
+            int tourSegment = Integer.parseInt(data[6]);
+            String tripPurpose = getTripTypeFromRecord(data);
+            String tourPurpose = getTourTypeFromRecord(data);
+            if (tourPurpose.equalsIgnoreCase("WORK") &&
+                    (tourSegment == 0 || tripPurpose.equalsIgnoreCase("HOME")))
+                return PATripType.HBW;
+            //else if (!tourPurpose.equalsIgnoreCase("WORK_BASED") &&
+            else if (data[4].equals("1") &&
+                    (tourSegment == 0 || tripPurpose.equalsIgnoreCase("HOME")))
+                return PATripType.HBO;
+            return PATripType.NHB;
+        }
+
+        boolean tripEndsAtHome(String ... data) {
+            return getTripTypeFromRecord(data).equalsIgnoreCase("HOME");
+        }
+
+        private void updateSdtTripInfo(String ... data) {
+            if (!lastSdtTripHhId.equals(data[0]) || !lastSdtTripPersonId.equals(data[1]) || !lastSdtTripTourId.equals(data[3])) {//new tour or hh
+                //lastSdtTripType = data[4].equals("1") && getTourTypeFromRecord(data).equals("WORK_BASED") ? "WORK_BASED" : "HOME";
+                lastSdtTripType = data[4].equals("1") ? getTourTypeFromRecord(data) : "HOME";
+                lastSdtTripHhId = data[0];
+                lastSdtTripPersonId = data[1];
+                lastSdtTripTourId = data[3];
+            }
+        }
+
+        public String getTourTypeFromRecord(String ... data) {
+            return data[5];
+        }
+
+        public String getOriginTripFromRecord(String ... data) {
+            updateSdtTripInfo(data);
+            return lastSdtTripType;
+        }
+
+        public String getDestTripFromRecord(String ... data) {
+            return getTripTypeFromRecord(data);
+        }
     }
 
     private class LDTTripFile extends TripFile {
+        private final String daId;
+        private final String sr2Id;
+        private final String sr3Id;
+        private final double daTrip = 1.0;
+        private final double sr2Trip = 0.5;
+        private final double sr3Trip = 1/ DemandHandler.AVERAGE_SR3P_AUTO_OCCUPANCY;
+        private final ResourceBundle rb;
         private LDTTripFile(ResourceBundle rb, TripClassifier classifier) {
             //0        1         2       3        4          5              6      7           8       9               10           11         12
             //hhID	memberID	tourID	income	tourPurpose	tourMode	origin	destination	distance	time	tripStartTime	tripPurpose	tripMode	vehicleTrip
             super(rb.getString("ldt.vehicle.trips"),"origin","destination",classifier,rb);
+            this.rb = rb;
+            this.daId = rb.getString("driveAlone.identifier");
+            this.sr2Id = rb.getString("sharedRide2.identifier");
+            this.sr3Id = rb.getString("sharedRide3p.identifier");
+        }
+
+        double getTripFromRecord(String ... data) {
+            String mode = data[12];
+            if (mode.equalsIgnoreCase(daId)) return daTrip;
+            else if (mode.equalsIgnoreCase(sr2Id)) return sr2Trip;
+            else if (mode.equalsIgnoreCase(sr3Id)) return sr3Trip;
+//            logger.warn("Unknown sdt mode for trip: " + mode);
+            return 0;
         }
 
         int getTripTimeFromRecord(String ... data) {
@@ -519,6 +733,31 @@ public class TripSynthesizer {
 
         String getTripTypeFromRecord(String ... data) {
             return data[11];
+        }
+
+        PATripType getPATripTypeFromRecord(String ... data) {
+            String homeTaz = "" + TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb);
+            String workType = "WORKRELATED";
+            if (data[6].equals(homeTaz) || data[7].equals(homeTaz))
+                return data[11].equals(workType) ? PATripType.HBW : PATripType.HBO;
+            return PATripType.NHB;
+        }
+
+        boolean tripEndsAtHome(String ... data) {
+            String homeTaz = "" + TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb);
+            return data[7].equals(homeTaz);
+        }
+
+        public String getTourTypeFromRecord(String ... data) {
+            return data[4];
+        }
+
+        public String getOriginTripFromRecord(String ... data) {
+            return data[6].equals("" + TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb)) ? "HOME" : getTripTypeFromRecord(data);
+        }
+
+        public String getDestTripFromRecord(String ... data) {
+            return data[7].equals("" + TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb)) ? "HOME" : getTripTypeFromRecord(data);
         }
     }
 
@@ -539,6 +778,14 @@ public class TripSynthesizer {
 
         String getTripTypeFromRecord(String ... data) {
             return "";
+        }
+
+        PATripType getPATripTypeFromRecord(String ... data) {
+            return PATripType.NHB;
+        }
+
+        boolean tripEndsAtHome(String ... data) {
+            return false;
         }
     }
 
@@ -564,5 +811,17 @@ public class TripSynthesizer {
         String getTripTypeFromRecord(String ... data) {
             return "";
         }
+
+        PATripType getPATripTypeFromRecord(String ... data) {
+            return PATripType.NHB;
+        }
+
+        boolean tripEndsAtHome(String ... data) {
+            return false;
+        }
+    }
+
+    private enum PATripType {
+        HBW,HBO,NHB
     }
 }

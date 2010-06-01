@@ -49,6 +49,13 @@ public abstract class TripClassifier {
         }
     }
 
+    //convenient to get this from here
+    static int getOriginZone(int hhId, ResourceBundle rb) {
+        if (hhData == null)
+            loadModelData(rb);
+        return ((int) hhData.getIndexedValueAt(hhId,"TAZ"));
+    }
+
     static TripClassifier getClassifier(ResourceBundle rb, String file) {
         if (hhData == null)
             loadModelData(rb);

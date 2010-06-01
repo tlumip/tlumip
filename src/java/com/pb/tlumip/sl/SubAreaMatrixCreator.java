@@ -34,7 +34,7 @@ public class SubAreaMatrixCreator {
         String dataFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.results");
         autoSelectLinkData = new SelectLinkData(dataFile,SL_AUTO_ASSIGN_CLASS,rb);
         truckSelectLinkData = new SelectLinkData(dataFile,SL_TRUCK_ASSIGN_CLASS,rb);
-
+        autoSelectLinkData.reconcileAgainstOtherSelectLinkData(truckSelectLinkData);
     }
 
     public void createSubAreaMatrices() {
@@ -48,7 +48,7 @@ public class SubAreaMatrixCreator {
                 OdMatrixGroup subAreaMatrices = formSubAreaMatrices(omc.get(type),auto ? autoSelectLinkData : truckSelectLinkData);
                 int[] externals = getExternalNumbers(subAreaMatrices.getZoneMatrixMap());
                 String baseOutFile = formOutputMatrixTemplateName(auto,type);
-                baseOutFile = baseOutFile.substring(baseOutFile.lastIndexOf('/')+1,baseOutFile.lastIndexOf('.'));
+                //baseOutFile = baseOutFile.substring(baseOutFile.lastIndexOf('/')+1,baseOutFile.lastIndexOf('.'));
                 for (int i = 0; i < 4; i++) {
                     String outFile;
                     switch (i) {

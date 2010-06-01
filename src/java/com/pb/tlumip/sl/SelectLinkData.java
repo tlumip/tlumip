@@ -119,6 +119,11 @@ public class SelectLinkData {
         internalZones = new TreeSet<String>(); //sort them correctly
         Set<String> eeiiZones = new HashSet<String>(); //for checking
         Map<String,Double> weavingZones = new HashMap<String,Double>(); //in-out-in-... or out-in-out-...
+
+        //next two maps used for error reporting guess
+        Map<String,Integer> internalZoneCounter = new HashMap<String,Integer>();
+        Map<String,Integer> externalZoneCounter = new HashMap<String,Integer>(); //may mislabel external zones if ii, but only used if inconsistent, so ok
+
         for (String od : linkData.keySet()) {
             byte mask = 0;
             double linkPercentage = 0.0;
@@ -126,25 +131,82 @@ public class SelectLinkData {
                 mask |= data.in ? 1 : 2;
                 linkPercentage += data.getOdPercentage(od);
             }
+            String o = getZoneFromLookup(od,true);
+            String d = getZoneFromLookup(od,false);
+            if (!internalZoneCounter.containsKey(o)) {
+                internalZoneCounter.put(o,0);
+                externalZoneCounter.put(o,0);
+            }
+            if (!internalZoneCounter.containsKey(d)) {
+                internalZoneCounter.put(d,0);
+                externalZoneCounter.put(d,0);
+            }
             switch (mask) {
-                case 1 : internalZones.add(getZoneFromLookup(od,false)); break;
-                case 2 : internalZones.add(getZoneFromLookup(od,true)); break;
-                default : if (linkPercentage > 2.01)  //for rounding errors, but want to capture small percentage weaving trips
-                              weavingZones.put(od,linkPercentage);
-                          else
-                              eeiiZones.add(od);
+                case 1 :
+                    internalZones.add(d);
+                    internalZoneCounter.put(d,internalZoneCounter.get(d)+1);
+                    externalZoneCounter.put(o,externalZoneCounter.get(o)+1);
+                    break;
+                case 2 :
+                    internalZones.add(getZoneFromLookup(od,true));
+                    internalZoneCounter.put(o,internalZoneCounter.get(o)+1);
+                    externalZoneCounter.put(d,externalZoneCounter.get(d)+1);
+                    break;
+                default :
+                    if (linkPercentage > 2.01) { //for rounding errors, but want to capture small percentage weaving trips
+                        weavingZones.put(od,linkPercentage);
+                    } else {
+                        eeiiZones.add(od);
+                        externalZoneCounter.put(o,externalZoneCounter.get(o)+1);
+                        externalZoneCounter.put(d,externalZoneCounter.get(d)+1);
+                    }
             }
         }
 
         //checking
-        for (String od : eeiiZones)
-            if (internalZones.contains(getZoneFromLookup(od,true)))
-                if (internalZones.contains(getZoneFromLookup(od,false)))
+        Set<String> problemOds = new HashSet<String>();
+        for (String od : eeiiZones) {
+            if (internalZones.contains(getZoneFromLookup(od,true))) {
+                if (internalZones.contains(getZoneFromLookup(od,false))) {
                     logger.info("ii pair: " + od);
-                else
+                } else {
                     logger.warn("Conflict for od " + od + "; set as ee/ii but found internal,external");
-            else if (internalZones.contains(getZoneFromLookup(od,false)))
+                    problemOds.add(od);
+                }
+            } else if (internalZones.contains(getZoneFromLookup(od,false))) {
                 logger.warn("Conflict for od " + od + "; set as ee/ii but found external,internal");
+                problemOds.add(od);
+            }
+        }
+
+        if (problemOds.size() > 0) {
+            //need to do further checking to give better error logging
+            Set<Integer> probablyProblems = new HashSet<Integer>();
+            for (String od : problemOds) {
+                for (String zone : new String[] {getZoneFromLookup(od,true),getZoneFromLookup(od,false)}) {
+                    if (externalZoneCounter.get(zone) > 0 && internalZoneCounter.get(zone) > 0) {
+                        boolean probablyEx = externalZoneCounter.get(zone) > internalZoneCounter.get(zone);
+                        for (String candidateOd : linkData.keySet()) {
+                            if (eeiiZones.contains(candidateOd))
+                                continue; //problems are more apparent from non ee/ii zones
+                            if (getZoneFromLookup(candidateOd,true).equals(zone)) {
+                                for (LinkData ld : linkData.get(candidateOd))
+                                    if ((probablyEx && !ld.in))
+                                        probablyProblems.add(ld.externalStation);
+                            } else if (getZoneFromLookup(candidateOd,false).equals(zone)) {
+                                for (LinkData ld : linkData.get(candidateOd))
+                                    if ((probablyEx && !ld.in))
+                                        probablyProblems.add(ld.externalStation);
+                            }
+                        }
+                    }
+                }
+            }
+            StringBuilder sb = new StringBuilder("Probable problem links (check select link specification file):\n\t");
+            for (Integer i : probablyProblems)
+                sb.append(" ").append(i);
+            logger.warn(sb.toString());
+        }
 
         //set external zones
         externalZones = new HashSet<String>();
@@ -166,7 +228,11 @@ public class SelectLinkData {
         for (String od : weavingZones.keySet())
             logger.debug("Weaving zone: " + od + " (link percentage: " + weavingZones.get(od) + ")");
         this.weavingZones = weavingZones.keySet();
+        odWeavingMap = new HashMap<String,List<WeavingData>>();
         System.out.println("Weaving zone count: " + this.weavingZones.size());
+        if (this.weavingZones.size() == 0)
+            return; //no need to continue
+
 
         //write weaving zone data - will eventually work this out using Ben's code
         TextFile tf = new TextFile();
@@ -197,7 +263,6 @@ public class SelectLinkData {
         //generate weaving paths
         SelectLink.runRScript("sl.select.link.node.sequence.r.file","generate select link weaving paths",rb,ResourceUtil.getProperty(rb,"sl.mode.key") + "=" + mode);
 
-        odWeavingMap = new HashMap<String,List<WeavingData>>();
 
         CSVFileReader reader = new CSVFileReader();
         try {
@@ -384,5 +449,51 @@ public class SelectLinkData {
         public boolean getIn() {
             return in;
         }
+    }
+
+
+
+//    private Map<String,List<LinkData>> linkData = new HashMap<String,List<LinkData>>();
+//    private List<String> externalStationList;
+//    private Set<String> internalZones = null;
+//    private Set<String> externalZones = null;
+//    private Set<String> weavingZones = null;
+
+    void reconcileAgainstOtherSelectLinkData(SelectLinkData ... slds) {
+        reconcileAgainstOtherSelectLinkData(true,slds);
+    }
+
+    private void reconcileAgainstOtherSelectLinkData(boolean recurse, SelectLinkData ... slds) {
+        //method: go through each sld and add any missing zones, then copy back (if necessary)
+        Set<String> ods = linkData.keySet();
+        for (SelectLinkData sld : slds)
+            for (String otherSldOd : sld.linkData.keySet())
+                if (!ods.contains(otherSldOd)) {
+                    linkData.put(otherSldOd,new LinkedList<LinkData>());
+                    LinkData ld = sld.linkData.get(otherSldOd).get(0);
+                    LinkData ldFake = new LinkData(ld.fromNodeToNode,ld.in,ld.externalStation); //clone, essentially
+                    ldFake.addOdPercentage(otherSldOd,0.0); //nothing travels on this placeholder
+                    linkData.get(otherSldOd).add(ldFake);
+                    String o = getZoneFromLookup(otherSldOd,true);
+                    String d = getZoneFromLookup(otherSldOd,false);
+                    if (sld.externalZones.contains(o) && !externalZones.contains(o))
+                        externalZones.add(o);                      
+                    if (sld.externalZones.contains(d) && !externalZones.contains(d))
+                        externalZones.add(d);
+                    if (sld.internalZones.contains(o) && !internalZones.contains(o))
+                        internalZones.add(o);                      
+                    if (sld.internalZones.contains(d) && !internalZones.contains(d))
+                        internalZones.add(d);
+                    //refresh with new key set with added od
+                    ods = linkData.keySet();
+                }
+//        for (String s : newOds.keySet()) System.out.println("Missing od: " + s);
+//        System.out.println(newOds.size());
+        
+        //copy back - if recurse
+        if (recurse)
+            for (SelectLinkData sld : slds)
+                sld.reconcileAgainstOtherSelectLinkData(false,this);
+
     }
 }
