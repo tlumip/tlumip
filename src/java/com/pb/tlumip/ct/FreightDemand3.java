@@ -38,6 +38,9 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 
 public class FreightDemand3 {
@@ -46,6 +49,7 @@ public class FreightDemand3 {
     static double SMALLEST_ALLOWABLE_TONNAGE;  // interzonal interchange threshold- read in from properties file
     ModalDistributions md;
     ValueDensityFunction vdf;
+    private final ValueDensityFunction_V2 vdf2;
    // Random rn;
     String inputPath;
     String outputPath;
@@ -76,6 +80,7 @@ public class FreightDemand3 {
         this.outputPath = ctOutputs;
         this.md = new ModalDistributions(inputPath+"ModalDistributionParameters.txt");
         this.vdf = new ValueDensityFunction(new File(inputPath + "ValueDensityParameters.txt"));
+        vdf2 = new ValueDensityFunction_V2(new File(inputPath + "ValueDensityParameters.csv")); //todo: get from property file
        
         wzUtil = new WorldZoneExternalZoneUtil(globalRb);
         int[] betaZones = a2b.getBetaExternals0Based();
@@ -305,12 +310,6 @@ public class FreightDemand3 {
           m.cell[p][q] *= scalingFactor;
           // We need to eliminate extremely small shipments, which are an artifact of
           // equilibrium nature of PI rather than real demand at that level.
-          //--------------------------------------------------------------------------------
-          // TODO Use a minimum allowable tonnage specific to each commodity, which we'll
-          // derive from either the 1997 Oregon survey or summary tables from CFS02. Thus,
-          // this part of the code will need to use a vector, and we'll need to change the
-          // format of the parameter file and the code that reads it.
-          //--------------------------------------------------------------------------------
           if (m.cell[p][q]<SMALLEST_ALLOWABLE_TONNAGE) {
             residual += m.cell[p][q];
             m.cell[p][q] = 0.0;
@@ -336,6 +335,286 @@ public class FreightDemand3 {
       putIntoTableDataSet(commodity, m);
     }
 
+  }
+
+  public void calculateTonnage_V2 () {
+    Matrix2d m = new Matrix2d(wzUtil.getHighestWZForCT()+1, wzUtil.getHighestWZForCT()+1, "");
+    BufferedReader br;
+    StringTokenizer st;
+    String s, activity, modeOfTransport;
+    int origin, destination;
+    double flow;
+
+    DecimalFormat dw = new DecimalFormat();
+    dw.setGroupingSize(3);
+    dw.setMaximumFractionDigits(0); dw.setMinimumFractionDigits(0);
+    DecimalFormat df = new DecimalFormat();
+    df.setGroupingSize(0);
+    df.setMaximumFractionDigits(3); df.setMinimumFractionDigits(3);
+    logger.info("Converting annual demand from PI to daily freight demand:");
+    logger.info(CTHelper.rightAlign("Group",6)+CTHelper.rightAlign("Production",15)+
+                CTHelper.rightAlign("Consumption",15)+CTHelper.rightAlign("Annual tons",15)+
+                CTHelper.rightAlign("Weekly tons",15)+CTHelper.rightAlign("Dissolved",10));
+
+
+
+    String modalDollarFile;
+    try {
+        modalDollarFile = globalRb.getString("ct.dollars.by.mode.flow.file");
+    } catch (MissingResourceException e) {
+        modalDollarFile = null;
+    }
+    final boolean recordDollarFlows = modalDollarFile != null;
+
+    int[] ext = new int[betaPlusWZsForCT.length+1];
+    System.arraycopy(betaPlusWZsForCT,0,ext,1,betaPlusWZsForCT.length);
+
+    Map<String,Map<String,Map<String,Matrix>>> dollarFlows = new TreeMap<String,Map<String,Map<String,Matrix>>>(); //commodity->mode->activity->matrix
+
+    Map<String,double[]> totalFlows = new LinkedHashMap<String,double[]>(); //commodity->[ie,ei,ii]
+
+    for (String commodity : commoditySet) {
+      String printString = "";
+      // Read the truck flows into a matrix, where we'll do the remainder of the work
+      File f = new File(outputPath+commodity+".txt");
+      f.deleteOnExit();
+      double totalProduction = 0.0, totalConsumption = 0.0, totalUndefined = 0.0;
+      double annualTons, weeklyTons, scalingFactor;
+
+      m.fill(0.0);   // clear values from previous commodity
+
+      if (recordDollarFlows)
+        dollarFlows.put(commodity,new HashMap<String,Map<String, Matrix>>());
+      Map<String,Map<String, Matrix>> dollarFlowsMap = dollarFlows.get(commodity);
+
+      try {
+        br = new BufferedReader(new FileReader(f));
+        while ((s = br.readLine()) != null) {
+          st = new StringTokenizer(s,",");
+          origin = Integer.parseInt(st.nextToken());
+          destination = Integer.parseInt(st.nextToken());
+          flow = Double.parseDouble(st.nextToken());
+          activity = st.nextToken();
+          modeOfTransport = st.nextToken();
+          if (recordDollarFlows) {
+              if (!dollarFlowsMap.containsKey(modeOfTransport))
+                  dollarFlowsMap.put(modeOfTransport,new HashMap<String,Matrix>());
+              Map<String,Matrix> nm = dollarFlowsMap.get(modeOfTransport);
+              if (!nm.containsKey(activity)) {
+                  Matrix mm = new Matrix(betaPlusWZsForCT.length,betaPlusWZsForCT.length);
+                  mm.setExternalNumbers(ext);
+                  nm.put(activity,mm);
+              }
+              Matrix mm = nm.get(activity);
+              mm.setValueAt(origin,destination,(float) (mm.getValueAt(origin,destination)+flow));
+          }
+            
+          if (!modeOfTransport.equals("STK"))
+              continue;   // keep only truck flows
+          if (activity.equals("P")) {
+              totalProduction += flow;
+          } else if (activity.equals("C")) {
+              totalConsumption += flow;
+              m.cell[origin][destination] += flow;
+          } else {
+              totalUndefined += flow;
+          }
+        }
+        br.close();
+      } catch (IOException e) {
+          throw new RuntimeException(e);
+      }
+
+
+      if (totalUndefined>0.0) printString += ("Error: flow="+totalUndefined+
+        " with undefined activity for "+commodity);
+      else printString += (commodity+
+        CTHelper.rightAlign(dw.format(totalProduction),15)+
+        CTHelper.rightAlign(dw.format(totalConsumption),15));
+      if ((totalProduction+totalConsumption)==0.0) {     // Nothing transported by truck
+          printString += ("");
+          logger.info(printString);
+          continue;
+      }
+
+      //get external zones
+      WorldZoneExternalZoneUtil wz = new WorldZoneExternalZoneUtil(globalRb);
+      Set<Integer> externalBetas = new HashSet<Integer>();
+      for (int i : wz.getWorldZonesForCT())
+          externalBetas.add(i);
+
+      double ieTotal = 0.0;
+      double eiTotal = 0.0;
+      double iiTotal = 0.0;
+
+      for (int p = 0; p < m.getRowSize(); p++) {
+          boolean pExternal = externalBetas.contains(p);  //is this alpha or beta?
+          for (int q = 0; q <m.getColumnSize(); q++) {
+              if (externalBetas.contains(q)) {
+                  if (!pExternal) {
+                      ieTotal += m.cell[p][q];
+                  }
+              } else {
+                  if (pExternal) {
+                      eiTotal += m.cell[p][q];
+                  } else {
+                      iiTotal += m.cell[p][q];
+                  }
+              }
+          }
+      }
+
+      totalFlows.put(commodity,new double[] {ieTotal,eiTotal,iiTotal});
+
+      String key = commodity+"STK";
+      if (vdf2.getVAF(key) == 0.0) {
+          m.fill(0.0);
+      } else {
+          double ieFactor = vdf2.getAnnualIETonsFactor(key);
+          double eiFactor = vdf2.getAnnualEITonsFactor(key);
+          double iiFactor = vdf2.getAnnualIITonsFactor(key);
+          double smallestAllowableTonnage = vdf2.getSmallestAllowableTonnage(key);
+          double ieResidual = 0.0;
+          double eiResidual = 0.0;
+          double iiResidual = 0.0;
+          //ieFactor = ieTotal*ieFactor/52.0/ieTotal; - without intercept, total is only useful for residuals
+          ieFactor /= 52.0;
+          iiFactor /= 52.0;
+          eiFactor /= 52.0;
+          for (int p = 0; p < m.getRowSize(); p++) {
+              boolean pExternal = externalBetas.contains(p);  //is this alpha or beta?
+              for (int q = 0; q <m.getColumnSize(); q++) {
+                  if (externalBetas.contains(q)) {
+                      if (!pExternal) {
+                          m.cell[p][q] *= ieFactor;
+                          if (m.cell[p][q]<smallestAllowableTonnage) {
+                            ieResidual += m.cell[p][q];
+                            m.cell[p][q] = 0.0;
+                          }
+                      }
+                  } else {
+                      if (pExternal) {
+                          m.cell[p][q] *= eiFactor;
+                          if (m.cell[p][q]<smallestAllowableTonnage) {
+                            eiResidual += m.cell[p][q];
+                            m.cell[p][q] = 0.0;
+                          }
+                      } else {
+                          m.cell[p][q] *= iiFactor;
+                          if (m.cell[p][q]<smallestAllowableTonnage) {
+                            iiResidual += m.cell[p][q];
+                            m.cell[p][q] = 0.0;
+                          }
+                      }
+                  }
+              }
+          }
+
+          double t = m.total();
+          logger.info("M total " + commodity + ": " + t);
+          printString += CTHelper.rightAlign(dw.format(t*52.0),15);
+          printString += CTHelper.rightAlign(dw.format(t),15);
+          printString += CTHelper.rightAlign(dw.format(ieResidual+eiResidual+iiResidual),15);
+          logger.info(printString);
+
+          ieFactor = eiTotal > 0.0 ? ieTotal/(ieTotal - ieResidual) : 0.0;
+          eiFactor = ieTotal > 0.0 ? eiTotal/(eiTotal - eiResidual) : 0.0;
+          iiFactor = iiTotal > 0.0 ? iiTotal/(iiTotal - iiResidual) : 0.0;
+          //redistribute residuals
+          for (int p = 0; p < m.getRowSize(); p++) {
+              boolean pExternal = externalBetas.contains(p);  //is this alpha or beta?
+              for (int q = 0; q <m.getColumnSize(); q++) {
+                  if (externalBetas.contains(q)) {
+                      if (!pExternal && ieResidual > 0.0) {
+                          m.cell[p][q] *= ieFactor;
+                      }
+                  } else {
+                      if (pExternal) {
+                          m.cell[p][q] *= eiFactor;
+                      } else {
+                          m.cell[p][q] *= iiFactor;
+                      }
+                  }
+              }
+          }
+      }
+
+      // And finally, let's write the data out to binary file that can be used later. We'll
+      // store the demand matrices in semi-permanent file because we'll probably want to
+      // create off-line queries and summaries later.
+      int commodityNumber = Integer.parseInt(commodity.substring(4));
+      System.out.println("Printing weekly tons for commodity: " + commodityNumber);
+      writeWeeklyTons(commodityNumber, m);
+      putIntoTableDataSet(commodity, m);
+    }
+
+    logger.info("Total flows by commodity:");
+    String format = "%10s %15.2f %15.2f %15.2f";
+    logger.info(String.format("%10s %15s %15s %15s","Commodity","IE Flow","EI Flow","II Flow"));
+    for (String c : totalFlows.keySet()) {
+        double[] flows = totalFlows.get(c);
+        logger.info(String.format(format,c,flows[0],flows[1],flows[2]));
+    }
+
+
+
+    if (recordDollarFlows) {
+        //it'll be a zipped csv file
+        PrintWriter w = null;
+        ZipOutputStream zos = null;
+        try {
+            zos  = new ZipOutputStream(new FileOutputStream(modalDollarFile + ".zip"));
+            zos.putNextEntry(new ZipEntry(new File(modalDollarFile).getName() + ".zip"));
+
+            w = new PrintWriter(zos);
+            String header = "mode,activity";
+            Set<String> modes = new TreeSet<String>();
+            Set<String> activities = new TreeSet<String>();
+            for (String commodity : dollarFlows.keySet()) {
+                header += "," + commodity;
+                for (String mode : dollarFlows.get(commodity).keySet()) {
+                    modes.add(mode);
+                    for (String act : dollarFlows.get(commodity).get(mode).keySet())
+                        activities.add(act);
+                }
+            }
+            for (String mode : modes) {
+                for (String act : activities) {
+                    for (int i : betaPlusWZsForCT) {
+                        for (int j : betaPlusWZsForCT) {
+                            StringBuilder sb = new StringBuilder(mode).append(",").append(act);
+                            for (String commodity : dollarFlows.keySet()) {
+                                sb.append(",");
+                                if (dollarFlows.get(commodity).containsKey(mode)) {
+                                    if (dollarFlows.get(commodity).get(mode).containsKey(act)) {
+                                        sb.append(dollarFlows.get(commodity).get(mode).get(act).getValueAt(i,j));
+                                    } else {
+                                        sb.append("0.0");
+                                    }
+                                } else {
+                                    sb.append("0.0");
+                                }
+                                w.println(sb);
+                            }
+                        }
+                    }
+                }
+            }
+            w.println(header);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (w != null)
+                w.close();
+            else if (zos != null) {
+                try {
+                    zos.close();
+                } catch (IOException e) {
+                    //swallow
+                }
+            }
+        }
+    }
   }
 
   public void writeWeeklyTons (int index, Matrix2d m) {
@@ -409,9 +688,8 @@ public class FreightDemand3 {
     if(logger.isDebugEnabled()) {
         logger.debug("filterExternalData() run time: "+CTHelper.elapsedTime(start, next));
     }
-    //TODO Create a summary file of all the SCTGXX.txt files.
-
-    calculateTonnage();
+//    calculateTonnage();
+    calculateTonnage_V2();
     writeWeeklyTons();  //this writes a CSV file that has all the commodities as columns.
     if(logger.isDebugEnabled()) {
         logger.debug(outputRecordsWritten+" OD records saved");

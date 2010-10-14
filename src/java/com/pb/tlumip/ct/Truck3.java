@@ -26,7 +26,12 @@ package com.pb.tlumip.ct;
 // @author "Rick Donnelly <rdonnelly@pbtfsc.com>
 // @version "1.0, 04/12/04"
 
+import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.ZipMatrixReader;
+
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Truck3 {
@@ -36,10 +41,14 @@ public class Truck3 {
     String truckType, carrierType;
     ArrayList shipments;
     ArrayList durations;
+    private List<Float> dwellTimes;
+    private List<Float> travelTimes;
 
     Truck3 (String vt, String ct, int loc, float g, float c, float shiftLength) {
         shipments = new ArrayList(DEFAULT_ARRAYLIST_SIZE);
         durations = new ArrayList(DEFAULT_ARRAYLIST_SIZE);
+        dwellTimes = new ArrayList<Float>();
+        travelTimes = new ArrayList<Float>();
         truckType = vt;
         carrierType = ct;
         currentZone = loc;
@@ -58,7 +67,10 @@ public class Truck3 {
         return reply;
     }
 
-    public void addShipment (Shipment s, float timeRequired) {
+    public void addShipment (Shipment s, float travelTime, float dwellTime) {
+        dwellTimes.add(dwellTime);
+        travelTimes.add(travelTime);
+        float timeRequired = travelTime + dwellTime;
         float pounds = (float)((Shipment)s).pounds;
         shipments.add(s);
         durations.add(new Integer((int)timeRequired));
@@ -109,10 +121,10 @@ public class Truck3 {
     // with several optional fields to the right of the required data.
     // @params seqnum : truck number (simply echoed back in the trip list),
     //         consolidateIntrazonalTrips : if true will omit intrazonal trips
-    public String getTripList (int seqnum, boolean consolidateIntrazonalTrips) {
+    public String getTripList (int seqnum, boolean consolidateIntrazonalTrips, Matrix alphaDistMatrix, Matrix offPeakSkim) {
         String s = "";
         int nShipments = shipments.size(), tourMode = 9, tripMode = 9;
-        float tripFactor = 1.20f;
+        //float tripFactor = 1.20f;
         // Assume that the optimization of the truck stops has left the truck at
         // the first shipment origin (so we don't need to move the truck there from
         // currentZone)
@@ -121,29 +133,27 @@ public class Truck3 {
         int originalOrigin = origin;
         int destination;
         int finalDestination = 0;
-        int totalDuration = 0;
-        float totalDistance = 0f;
 
         for (int n=0; n<nShipments; n++) {
             destination = ((Shipment)shipments.get(n)).getDestinationAlphaZone();
             // If the user hasn't asked for intrazonal trips then suppress them
             if (consolidateIntrazonalTrips & (origin==destination)) continue;
             finalDestination = destination;
-            totalDuration += Integer.parseInt(durations.get(n).toString());
-            totalDistance += ((Shipment)shipments.get(n)).getAlphaDistance();
             s += origin+","+
                     departureTime+","+
-                    durations.get(n)+","+
                     destination+","+
                     tourMode+","+
                     tripMode+","+
-                    tripFactor+" ,"+
+                    //tripFactor+" ,"+
                     seqnum+","+
                     truckType+","+
                     carrierType+","+
                     ((Shipment)shipments.get(n)).getCommodityCode()+","+
                     ((Shipment)shipments.get(n)).getWeight()+","+
-                    ((Shipment)shipments.get(n)).getAlphaDistance()+"\n";
+                    ((Shipment)shipments.get(n)).getAlphaDistance() + "," +
+                    travelTimes.get(n) + "," +
+                    dwellTimes.get(n) +
+                    "\n";
             // Note that duration includes both travel and dwell time, so no need to
             // separately account of the latter here
             departureTime = addMinutes(departureTime, (Integer) durations.get(n));
@@ -154,17 +164,20 @@ public class Truck3 {
             if (consolidateIntrazonalTrips & originalOrigin!=finalDestination)
                 s += finalDestination +","+
                         departureTime+","+
-                        totalDuration+","+
+                        //totalDuration+","+
                         originalOrigin+","+
                         tourMode+","+
                         tripMode+","+
-                        tripFactor+" ,"+
+                        //tripFactor+" ,"+
                         seqnum+","+
                         truckType+","+
                         carrierType+","+
                         0+","+
                         0+","+
-                        totalDistance+"\n";
+                        alphaDistMatrix.getValueAt(finalDestination,originalOrigin) + "," +
+                        offPeakSkim.getValueAt(finalDestination,originalOrigin) + "," +
+                        "0.0" +
+                        "\n";
 
         }
           return s;

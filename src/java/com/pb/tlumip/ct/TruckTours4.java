@@ -99,7 +99,7 @@ class TruckTours4 {
       float travelTime = offPeakSkim.getValueAt( zone, ((Shipment)shipments.get(0)).getDestinationAlphaZone());
 
 
-      truck.addShipment((Shipment)shipments.get(0), (dwellTime+travelTime));
+      truck.addShipment((Shipment)shipments.get(0),travelTime,dwellTime);
 
     // Process each shipment in turn
     for (int j=1; j<nShipments; j++) {
@@ -109,7 +109,7 @@ class TruckTours4 {
         // Convert string representation to integer for use later...
         cint = Integer.parseInt(commodity);
         dwellTime = ts.getDwellTime(truck);
-        travelTime = offPeakSkim.getValueAt( zone, ((Shipment)shipments.get(0)).getDestinationAlphaZone());
+        travelTime = offPeakSkim.getValueAt( zone, ((Shipment)shipments.get(j)).getDestinationAlphaZone());
 
       // Do we need a new truck? Handle the case that each zone,commodity pair
       // represents a separate notional shipper, as well as full trucks
@@ -118,13 +118,13 @@ class TruckTours4 {
         trucks.add(truck);
         currentCarrierType = ts.nextCarrierType(cint);
         truck = ts.nextTruck(currentCarrierType, cint, zone,
-          ((Shipment)shipments.get(0)).getWeight());
+          ((Shipment)shipments.get(j)).getWeight());
         currentZone = zone;
         currentCommodity = commodity;
       }
 
       // Finally, add the shipment to the current truck
-      truck.addShipment(((Shipment)shipments.get(j)), (dwellTime+travelTime));
+      truck.addShipment(((Shipment)shipments.get(j)),travelTime,dwellTime);
     }
 
     // Tell us what you did on your way out the door
@@ -135,17 +135,35 @@ class TruckTours4 {
 
 
   public void writeTours (File f, boolean collapseIntrazonalTrips) {
+    //need distance skim to get return trip distance
+    ZipMatrixReader zr = new ZipMatrixReader(new File(rb.getString("alpha.pk.dist.skim")  + globalRb.getString("matrix.extension")));
+    Matrix alphaDistMatrix = zr.readMatrix();
+
     try {
       BufferedWriter bw = new BufferedWriter(new FileWriter(f.getAbsolutePath()));
       int nTrucks = trucks.size();
       logger.info("Writing "+nTrucks+" truck tours to "+f);
 
-      bw.write("origin,tripStartTime,duration,destination,tourMode,tripMode,"+
-        "tripFactor,truckID,truckType,carrierType,commodity,weight,distance");
+      //bw.write("origin,tripStartTime,duration,destination,tourMode,tripMode,"+
+      //  "tripFactor,truckID,truckType,carrierType,commodity,weight,distance");
+        bw.write("origin,tripStartTime,destination,tourMode,tripMode,truckID,truckType,carrierType,commodity,weight,distance,travelTime,dwellTime");
       bw.newLine();
 
+
+      for (int n=0; n<nTrucks; n++) {
+          //debugging to see if trucks are exceeding capacity
+          for (Object shp : ((Truck3) trucks.get(n)).shipments) {
+              Truck3 t = (Truck3) trucks.get(n);
+              Shipment shipment = (Shipment) shp;
+              if (shipment.getWeight() > t.capacity)
+                  logger.error("Truck shipment exceeding capacity: type=" + t.truckType + ", capacity=" + t.capacity + ", shipment weight: " + shipment.getWeight());
+          }
+      }
+
+
+      Matrix offPeakSkim = new ZipMatrixReader(new File(ResourceUtil.getProperty(rb, "alpha.op.time.skim") + globalRb.getString("matrix.extension"))).readMatrix();
       for (int n=0; n<nTrucks; n++)
-        bw.write(((Truck3)trucks.get(n)).getTripList(n, collapseIntrazonalTrips));
+        bw.write(((Truck3)trucks.get(n)).getTripList(n, collapseIntrazonalTrips,alphaDistMatrix,offPeakSkim));
 
       bw.flush();
       bw.close();

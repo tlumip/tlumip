@@ -181,8 +181,8 @@ class TruckSelector {
     // Start by randomly choosing a truck from the cumulative probability
     // distribution associated with the given commodity
     int draws = 0, index = -1;
-    float r = SeededRandom.getRandomFloat();
     do {
+      float r = SeededRandom.getRandomFloat();
       // Since the upper ends of the cumulative probabilities are stored in the
       // arrays, we simply need to see if the random number is less or equal
       for (int p=0; p<pTruckType[commodity].length; p++)
