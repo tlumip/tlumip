@@ -1114,8 +1114,8 @@ public class OptimalStrategy {
         // if skim OD pair is connected by rail service, calculate distance based bus fare for OD pair
         if ( busDist[i] > 0 ) {
             
-            // the following rate function was estimated by ODOT and is in units of dollars per mile
-            fareRate = 1.9694*Math.pow(busDist[i], -0.4994); 
+            // the following rate function was estimated by ODOT and is in units of 1990 dollars per mile
+            fareRate = 1.4083*Math.pow(busDist[i], -0.4994);
             fare = fareRate * busDist[i];
         }
         
@@ -1133,8 +1133,8 @@ public class OptimalStrategy {
         // if skim OD pair is connected by rail service, calculate distance based rail fare for OD pair
         if ( railDist[i] > 0 ) {
 
-            // the following rate function was estimated by ODOT and is in units of dollars per mile
-            fareRate = 0.6823*Math.pow(railDist[i], -0.2989); 
+            // the following rate function was estimated by ODOT and is in units of 1990 dollars per mile
+            fareRate = 0.4879*Math.pow(railDist[i], -0.2989);
             fare = fareRate * railDist[i];
         }
         
