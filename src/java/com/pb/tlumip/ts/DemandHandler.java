@@ -321,13 +321,18 @@ public class DemandHandler implements DemandHandlerIF, Serializable {
                                                                .replace(DEMAND_OUTPUT_TIME_PERIOD_STRING,timePeriod));
                 logger.info("Writing demand matrix: " + outputFile);
                 float[][] demandMatrix = new float[multiclassTripTable[m].length-1][multiclassTripTable[m][0].length-1];
-                for (int i = 0; i < demandMatrix.length; i++)
+                int[] zones = new int[demandMatrix.length+1];
+                for (int i = 0; i < demandMatrix.length; i++) {
+                    zones[i+1] = networkIndexNodeArray[i];
                     for (int j = 0; j < demandMatrix[0].length; j++)
-                        demandMatrix[i][j] = (float) multiclassTripTable[m][i+1][j+1];
+                        demandMatrix[i][j] = (float) multiclassTripTable[m][i][j]/userClassPces[m]; //want actual vehicles, not passenger car equivalents
+                }
                 ZipMatrixWriter zmw = new ZipMatrixWriter(outputFile);
                 String mName = outputFile.getName();
                 mName = mName.substring(0,mName.indexOf("."));
-                zmw.writeMatrix(new Matrix(mName,mName,demandMatrix));
+                Matrix mat = new Matrix(mName,mName,demandMatrix);
+                mat.setExternalNumbers(zones);
+                zmw.writeMatrix(mat);
             }
         }
         
