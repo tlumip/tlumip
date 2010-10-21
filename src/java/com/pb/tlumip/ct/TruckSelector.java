@@ -30,7 +30,7 @@ class TruckSelector {
   // Define default parameters
     protected Logger logger = Logger.getLogger("com.pb.tlumip.ct");
   private final static int HIGHEST_COMMODITY_NUMBER = 49,
-    MAX_RANDOM_DRAWS = 99;
+    MAX_RANDOM_DRAWS = 300;
 
   // Define structures to hold the vehicle type attributes
   private String[] tf$label;
@@ -196,10 +196,9 @@ class TruckSelector {
     // It's possible that shipment is too heavy for any truck in the fleet (an
     // inconsistency in the shipment weight and vehicle payload distributions),
     // so we should check for that here...
-    if (draws==MAX_RANDOM_DRAWS) {    // Convert to exception later
-      System.err.println("Error: shipment w="+shipmentWeight+" for c="+
-        commodity+" too large for defined fleet");
-      System.exit(12);
+    if (draws>=MAX_RANDOM_DRAWS) {    // Convert to exception later
+        logger.error("Error: shipment w="+shipmentWeight+" for c="+ commodity+" too large for defined fleet, will place it in largest truck class");
+        index = pTruckType[commodity].length-1;
     }
 
     // Create a new truck of the type drawn from the commodity-specific

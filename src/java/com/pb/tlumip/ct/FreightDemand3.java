@@ -46,7 +46,7 @@ import java.util.zip.ZipOutputStream;
 public class FreightDemand3 {
     private static Logger logger = Logger.getLogger("com.pb.tlumip.ct");
     static int HIGHEST_BETA_ZONE;  //
-    static double SMALLEST_ALLOWABLE_TONNAGE;  // interzonal interchange threshold- read in from properties file
+//    static double SMALLEST_ALLOWABLE_TONNAGE;  // interzonal interchange threshold- read in from properties file
     ModalDistributions md;
     ValueDensityFunction vdf;
     private final ValueDensityFunction_V2 vdf2;
@@ -67,7 +67,7 @@ public class FreightDemand3 {
         //set the ctRb to the ct.properties resource bundle and get the smallest allowable tonnage from there.
         this.ctRb = appRb;
         this.globalRb = globalRb;
-        SMALLEST_ALLOWABLE_TONNAGE = Double.parseDouble(ResourceUtil.getProperty(ctRb, "SMALLEST_ALLOWABLE_TONNAGE"));
+//        SMALLEST_ALLOWABLE_TONNAGE = Double.parseDouble(ResourceUtil.getProperty(ctRb, "SMALLEST_ALLOWABLE_TONNAGE"));
 
         //from global.properties file we need the path to the alpha2beta file so that we can initialize the
         //highest beta zone number.
@@ -235,107 +235,107 @@ public class FreightDemand3 {
     }
 
 
-  public void calculateTonnage () {
-    Matrix2d m = new Matrix2d(wzUtil.getHighestWZForCT()+1, wzUtil.getHighestWZForCT()+1, "");
-    BufferedReader br;
-    StringTokenizer st;
-    String s, activity, modeOfTransport;
-    int origin, destination;
-    double flow;
-
-    DecimalFormat dw = new DecimalFormat();
-    dw.setGroupingSize(3);
-    dw.setMaximumFractionDigits(0); dw.setMinimumFractionDigits(0);
-    DecimalFormat df = new DecimalFormat();
-    df.setGroupingSize(0);
-    df.setMaximumFractionDigits(3); df.setMinimumFractionDigits(3);
-    logger.info("Converting annual demand from PI to daily freight demand:");
-    logger.info(CTHelper.rightAlign("Group",6)+CTHelper.rightAlign("Production",15)+
-                CTHelper.rightAlign("Consumption",15)+CTHelper.rightAlign("Annual tons",15)+
-                CTHelper.rightAlign("Weekly tons",15)+CTHelper.rightAlign("Dissolved",10));
-
-    for (String commodity : commoditySet) {
-      String printString = "";
-      // Read the truck flows into a matrix, where we'll do the remainder of the work
-      File f = new File(outputPath+commodity+".txt");
-      f.deleteOnExit();
-      double totalProduction = 0.0, totalConsumption = 0.0, totalUndefined = 0.0;
-      double annualTons, weeklyTons, scalingFactor;
-
-      m.fill(0.0);   // clear values from previous commodity
-
-      try {
-        br = new BufferedReader(new FileReader(f));
-        while ((s = br.readLine()) != null) {
-          st = new StringTokenizer(s,",");
-          origin = Integer.parseInt(st.nextToken());
-          destination = Integer.parseInt(st.nextToken());
-          flow = Double.parseDouble(st.nextToken());
-          activity = st.nextToken();
-          modeOfTransport = st.nextToken();
-          if (!modeOfTransport.equals("STK")) continue;   // keep only truck flows
-          if (activity.equals("P")) totalProduction += flow;
-          else if (activity.equals("C")) totalConsumption += flow;
-          else totalUndefined += flow;
-          m.cell[origin][destination] += flow;
-        }
-        br.close();
-      } catch (IOException e) { e.printStackTrace(); }
-
-
-      if (totalUndefined>0.0) printString += ("Error: flow="+totalUndefined+
-        " with undefined activity for "+commodity);
-      else printString += (commodity+
-        CTHelper.rightAlign(dw.format(totalProduction),15)+
-        CTHelper.rightAlign(dw.format(totalConsumption),15));
-      if ((totalProduction+totalConsumption)==0.0) {     // Nothing transported by truck
-          printString += ("");
-          logger.info(printString);
-          continue;
-      }
-
-      // Since the value density functions were derived at state level, we'll convert them
-      // there first, and then convert each cell in the matrix on the fly
-      annualTons = vdf.getAnnualTons(commodity+"STK", m.total());
-      weeklyTons = annualTons/52.0;
-      scalingFactor = weeklyTons/m.total();
-      printString += (CTHelper.rightAlign(dw.format(annualTons),15)+
-        CTHelper.rightAlign(dw.format(weeklyTons),15));
-
-      // Calculate daily demand for each origin-destination interchange
-      double residual = 0.0;
-      int p, q;   // matrix indices
-      for (p=0; p< m.getRowSize(); p++)
-        for (q=0; q<m.getColumnSize(); q++) {
-          m.cell[p][q] *= scalingFactor;
-          // We need to eliminate extremely small shipments, which are an artifact of
-          // equilibrium nature of PI rather than real demand at that level.
-          if (m.cell[p][q]<SMALLEST_ALLOWABLE_TONNAGE) {
-            residual += m.cell[p][q];
-            m.cell[p][q] = 0.0;
-          }
-        }
-
-      // If we found residuals we'll need to scale the remainder of the cells so that their
-      // sum equals the original weekly tons
-      printString += (CTHelper.rightAlign(dw.format(residual),10));
-        logger.info(printString);
-      if (residual>0.0) {
-        for (p=0; p<m.getRowSize(); p++)
-          for (q=0; q<m.getColumnSize(); q++)
-            if (m.cell[p][q]>0.0) m.cell[p][q] *= weeklyTons/(weeklyTons-residual);
-      }
-
-      // And finally, let's write the data out to binary file that can be used later. We'll
-      // store the demand matrices in semi-permanent file because we'll probably want to
-      // create off-line queries and summaries later.
-      int commodityNumber = Integer.parseInt(commodity.substring(4));
-      System.out.println("Printing weekly tons for commodity: " + commodityNumber);
-      writeWeeklyTons(commodityNumber, m);
-      putIntoTableDataSet(commodity, m);
-    }
-
-  }
+//  public void calculateTonnage () {
+//    Matrix2d m = new Matrix2d(wzUtil.getHighestWZForCT()+1, wzUtil.getHighestWZForCT()+1, "");
+//    BufferedReader br;
+//    StringTokenizer st;
+//    String s, activity, modeOfTransport;
+//    int origin, destination;
+//    double flow;
+//
+//    DecimalFormat dw = new DecimalFormat();
+//    dw.setGroupingSize(3);
+//    dw.setMaximumFractionDigits(0); dw.setMinimumFractionDigits(0);
+//    DecimalFormat df = new DecimalFormat();
+//    df.setGroupingSize(0);
+//    df.setMaximumFractionDigits(3); df.setMinimumFractionDigits(3);
+//    logger.info("Converting annual demand from PI to daily freight demand:");
+//    logger.info(CTHelper.rightAlign("Group",6)+CTHelper.rightAlign("Production",15)+
+//                CTHelper.rightAlign("Consumption",15)+CTHelper.rightAlign("Annual tons",15)+
+//                CTHelper.rightAlign("Weekly tons",15)+CTHelper.rightAlign("Dissolved",10));
+//
+//    for (String commodity : commoditySet) {
+//      String printString = "";
+//      // Read the truck flows into a matrix, where we'll do the remainder of the work
+//      File f = new File(outputPath+commodity+".txt");
+//      f.deleteOnExit();
+//      double totalProduction = 0.0, totalConsumption = 0.0, totalUndefined = 0.0;
+//      double annualTons, weeklyTons, scalingFactor;
+//
+//      m.fill(0.0);   // clear values from previous commodity
+//
+//      try {
+//        br = new BufferedReader(new FileReader(f));
+//        while ((s = br.readLine()) != null) {
+//          st = new StringTokenizer(s,",");
+//          origin = Integer.parseInt(st.nextToken());
+//          destination = Integer.parseInt(st.nextToken());
+//          flow = Double.parseDouble(st.nextToken());
+//          activity = st.nextToken();
+//          modeOfTransport = st.nextToken();
+//          if (!modeOfTransport.equals("STK")) continue;   // keep only truck flows
+//          if (activity.equals("P")) totalProduction += flow;
+//          else if (activity.equals("C")) totalConsumption += flow;
+//          else totalUndefined += flow;
+//          m.cell[origin][destination] += flow;
+//        }
+//        br.close();
+//      } catch (IOException e) { e.printStackTrace(); }
+//
+//
+//      if (totalUndefined>0.0) printString += ("Error: flow="+totalUndefined+
+//        " with undefined activity for "+commodity);
+//      else printString += (commodity+
+//        CTHelper.rightAlign(dw.format(totalProduction),15)+
+//        CTHelper.rightAlign(dw.format(totalConsumption),15));
+//      if ((totalProduction+totalConsumption)==0.0) {     // Nothing transported by truck
+//          printString += ("");
+//          logger.info(printString);
+//          continue;
+//      }
+//
+//      // Since the value density functions were derived at state level, we'll convert them
+//      // there first, and then convert each cell in the matrix on the fly
+//      annualTons = vdf.getAnnualTons(commodity+"STK", m.total());
+//      weeklyTons = annualTons/52.0;
+//      scalingFactor = weeklyTons/m.total();
+//      printString += (CTHelper.rightAlign(dw.format(annualTons),15)+
+//        CTHelper.rightAlign(dw.format(weeklyTons),15));
+//
+//      // Calculate daily demand for each origin-destination interchange
+//      double residual = 0.0;
+//      int p, q;   // matrix indices
+//      for (p=0; p< m.getRowSize(); p++)
+//        for (q=0; q<m.getColumnSize(); q++) {
+//          m.cell[p][q] *= scalingFactor;
+//          // We need to eliminate extremely small shipments, which are an artifact of
+//          // equilibrium nature of PI rather than real demand at that level.
+//          if (m.cell[p][q]<SMALLEST_ALLOWABLE_TONNAGE) {
+//            residual += m.cell[p][q];
+//            m.cell[p][q] = 0.0;
+//          }
+//        }
+//
+//      // If we found residuals we'll need to scale the remainder of the cells so that their
+//      // sum equals the original weekly tons
+//      printString += (CTHelper.rightAlign(dw.format(residual),10));
+//        logger.info(printString);
+//      if (residual>0.0) {
+//        for (p=0; p<m.getRowSize(); p++)
+//          for (q=0; q<m.getColumnSize(); q++)
+//            if (m.cell[p][q]>0.0) m.cell[p][q] *= weeklyTons/(weeklyTons-residual);
+//      }
+//
+//      // And finally, let's write the data out to binary file that can be used later. We'll
+//      // store the demand matrices in semi-permanent file because we'll probably want to
+//      // create off-line queries and summaries later.
+//      int commodityNumber = Integer.parseInt(commodity.substring(4));
+//      System.out.println("Printing weekly tons for commodity: " + commodityNumber);
+//      writeWeeklyTons(commodityNumber, m);
+//      putIntoTableDataSet(commodity, m);
+//    }
+//
+//  }
 
   public void calculateTonnage_V2 () {
     Matrix2d m = new Matrix2d(wzUtil.getHighestWZForCT()+1, wzUtil.getHighestWZForCT()+1, "");
