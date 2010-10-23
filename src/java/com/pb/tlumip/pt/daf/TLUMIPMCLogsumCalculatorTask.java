@@ -23,6 +23,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.MatrixCompression;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pt.ActivityPurpose;
+import com.pb.models.pt.PriceConverter;
 import com.pb.models.pt.daf.MCLogsumCalculatorTask;
 import com.pb.models.pt.daf.MessageID;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
@@ -65,7 +66,11 @@ public class TLUMIPMCLogsumCalculatorTask extends MCLogsumCalculatorTask {
 
                 localInitialized = true;
                 mcLogger.info(getName() + ", Finished initializing tlumip child object");
-            }
+            } 
+
+            //initialize price converter
+            PriceConverter.getInstance(ptRb,globalRb);
+
             wzEzUtil = new WorldZoneExternalZoneUtil(globalRb);
             matrixCompression = new MatrixCompression(a2bCorrespondence);
        }

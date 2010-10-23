@@ -56,7 +56,7 @@ public class TLUMIPLDExternalModeChoiceModel extends LDExternalModeChoiceModel {
         readParameters(); 
         
         // read the distance matrix
-        String skimPath = ResourceUtil.getProperty(rb, "assign.previous.skim.path");
+        String skimPath = ResourceUtil.getProperty(rb, "highway.assign.previous.skim.path");
         String[] fileNames = ResourceUtil.getArray(rb, "pt.car.offpeak.skims");
         distance = readTravelCost(skimPath + fileNames[1] + MATRIX_EXTENSION, "carOpDist");
     }

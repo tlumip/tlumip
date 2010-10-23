@@ -413,7 +413,18 @@ public class ApplicationOrchestrator {
 
         SPGnew spg = new SPGnew( appRb, globalRb, baseYearS, currentYear );
 
-        spg.getHHAttributesFromPUMS(baseYearS);
+
+        if (spg.isPersonAgeConstraintEnabled()) {
+            spg.getHHAttributesFromPUMS(baseYearS);
+            //run once with age constraint off to get population value
+            spg.disablePersonAgeConstraint();
+            spg.spg1(currentYear);
+            spg.setPopulationTotal(spg.getPopulationTotal());
+            //enable age constraint, for final run
+            spg.enablePersonAgeConstraint();
+            spg.resetSPG1BalancingCount();
+        }
+        spg.getHHAttributesFromPUMS(baseYearS); //reset for second spg run
         spg.spg1(currentYear);
         TableDataSet table = spg.sumHouseholdsByIncomeSize();
         spg.writePiInputFile(table);

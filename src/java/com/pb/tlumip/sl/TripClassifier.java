@@ -114,7 +114,8 @@ public abstract class TripClassifier {
                          return swimScaling.getIndexedValueAt(homeTaz,"LOCALHHS") / swimScaling.getIndexedValueAt(homeTaz,"SWIMHHS");
                      } else {
                          //try to scale to destination, otherwise to origin otherwise ee
-                         int eZone = Integer.parseInt(data[3]);
+                         //int eZone = Integer.parseInt(data[3]);
+                         int eZone = Integer.parseInt(data[3]); //removed duration value
                          if (!sld.getInteriorZones().contains("" + eZone))
                              eZone = Integer.parseInt(data[0]);
                          if (!sld.getInteriorZones().contains("" + eZone))

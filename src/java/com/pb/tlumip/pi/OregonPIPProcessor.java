@@ -217,7 +217,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                     e.printStackTrace();
                 }
 
-                IncomeSize inc = new IncomeSize();
+                IncomeSize inc = new IncomeSize(piRb);
                 householdsByIncomeSize = new int[hh.getRowCount()];
                 for (int r = 0; r < hh.getRowCount(); r++) {
                     int incomeSize = inc.getIncomeSizeIndex(hh.getStringValueAt(r + 1, 1)); //HHCategory
@@ -271,7 +271,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                 TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodity", "pi.base.data");
                 TableDataSet makeUse = loadTableDataSet("MakeUseI","pi.base.data");
                 HashMap<String, Float> importExportSize = new HashMap<String, Float>();
-                IncomeSize inc = new IncomeSize();
+                IncomeSize inc = new IncomeSize(piRb);
 
                 //Get the list of commodities that will be processed.
                 String commodity;
@@ -363,7 +363,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                     e.printStackTrace();
                 }
 
-                IncomeSize inc = new IncomeSize();
+                IncomeSize inc = new IncomeSize(piRb);
                 householdsByIncomeSize = new int[hh.getRowCount()];
                 for (int r = 0; r < hh.getRowCount(); r++) {
                     int incomeSize = inc.getIncomeSizeIndex(hh.getStringValueAt(r + 1, 1)); //HHCategory
@@ -408,7 +408,7 @@ public class OregonPIPProcessor extends PIPProcessor {
                 TableDataSet importShareByComm = loadTableDataSet("ImportShareByCommodity", "pi.base.data");
                 TableDataSet makeUse = loadTableDataSet("MakeUseI","pi.base.data");
                 HashMap<String, Float> importExportSize = new HashMap<String, Float>();
-                IncomeSize inc = new IncomeSize();
+                IncomeSize inc = new IncomeSize(piRb);
 
                 //Get the list of commodities that will be processed.
                 String commodity;
@@ -1092,7 +1092,7 @@ public class OregonPIPProcessor extends PIPProcessor {
         tempList.toArray(occupations);
 
 
-        String[] hhCategories = new IncomeSize().getIncomeSizeLabels();
+        String[] hhCategories = new IncomeSize(piRb).getIncomeSizeLabels();
 
 
         Set activities = indOccRef.getSplitIndustryLabels();

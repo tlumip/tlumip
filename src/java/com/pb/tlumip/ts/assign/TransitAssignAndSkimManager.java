@@ -610,6 +610,13 @@ public class TransitAssignAndSkimManager {
         skimLogger.info( farFilename );
         m.logMatrixStatsToInfo( skimLogger );
 
+        String accEgr = appRb.getString("hsr.acc.egr.matrices");
+        if (accEgr != null) {
+            mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(accEgr + "access.zmx"));
+            mw.writeMatrix(skimMatrices[SkimType.ACC.ordinal()]);
+            mw = MatrixWriter.createWriter(MatrixType.ZIP,new File(accEgr + "egress.zmx"));
+            mw.writeMatrix(skimMatrices[SkimType.EGR.ordinal()]);
+        }
         m = skimMatrices[SkimType.ACC.ordinal()].add( skimMatrices[SkimType.EGR.ordinal()] );   // for drive hsr, drv is acc + egr drive time
         mw = MatrixWriter.createWriter( MatrixType.ZIP, new File(drvFilename) );
         mw.writeMatrix( m );

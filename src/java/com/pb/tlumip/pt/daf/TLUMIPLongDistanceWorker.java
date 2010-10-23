@@ -20,6 +20,7 @@ import com.pb.common.daf.Message;
 import com.pb.common.daf.MessageFactory;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pt.PTHousehold;
+import com.pb.models.pt.PriceConverter;
 import com.pb.models.pt.daf.LongDistanceWorker;
 import com.pb.models.pt.daf.MessageID;
 import com.pb.models.pt.ldt.LDTour;
@@ -54,6 +55,9 @@ public class TLUMIPLongDistanceWorker extends LongDistanceWorker {
 
         String globalRbName = args[2];
         ResourceBundle globalRb = ResourceUtil.getResourceBundle(globalRbName);
+
+        //initialize price converter
+        PriceConverter.getInstance(rb,globalRb);
                 
         RunLDTModels ldtRunner = new RunLDTModels(PTOccupation.NONE);
         ldtRunner.setResourceBundles(rb, globalRb); 

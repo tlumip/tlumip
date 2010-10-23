@@ -17,6 +17,7 @@
 package com.pb.tlumip.pt;
 
 import com.pb.common.datafile.TableDataSet;
+import com.pb.models.pt.PriceConverter;
 import com.pb.models.pt.Taz;
 import com.pb.models.pt.TazManager;
 
@@ -41,17 +42,25 @@ public class TLUMIPTazManager extends TazManager {
      */
 
     public void setParkingCost(ResourceBundle appRb, ResourceBundle globalRb,String fileName) {
-        float conversionFactor = Float.parseFloat(globalRb.getString("cf.1990.to.2000.dollars"));
-        TableDataSet table = loadTableDataSet(appRb, fileName);
+//        float conversionFactor = Float.parseFloat(globalRb.getString("cf.1990.to.2000.dollars"));
+//        float conversionFactor = Float.parseFloat(globalRb.getString("convertTo2000Dollars"));
+        PriceConverter priceConverter = PriceConverter.getInstance(appRb,globalRb);
+
+        TableDataSet table = loadTableDataSet(globalRb, fileName);
         int workColumn = table.getColumnPosition("DayPark");
         int nonWorkColumn = table.getColumnPosition("HourPark");
-        int aZoneColumn = table.getColumnPosition("TAZ");
+        int aZoneColumn = table.getColumnPosition("Azone");
 
         for (int i = 1; i <= table.getRowCount(); i++) {
             if (tazData.containsKey((int)table.getValueAt(i, aZoneColumn))) {
                 Taz thisTaz = tazData.get((int)table.getValueAt(i, aZoneColumn));
-                thisTaz.workParkingCost = (table.getValueAt(i, workColumn))*conversionFactor * 100;
-                thisTaz.nonWorkParkingCost = (table.getValueAt(i, nonWorkColumn))*conversionFactor * 100;
+//                thisTaz.workParkingCost = (table.getValueAt(i, workColumn))*conversionFactor * 100;
+//                thisTaz.nonWorkParkingCost = (table.getValueAt(i, nonWorkColumn))*conversionFactor * 100;
+                //12/29/08 costs in dollars, not cents, now
+//                thisTaz.workParkingCost = (table.getValueAt(i, workColumn))*conversionFactor;
+//                thisTaz.nonWorkParkingCost = (table.getValueAt(i, nonWorkColumn))*conversionFactor;
+                thisTaz.workParkingCost = priceConverter.convertPrice(table.getValueAt(i, workColumn),PriceConverter.ConversionType.PRICE);
+                thisTaz.nonWorkParkingCost = priceConverter.convertPrice(table.getValueAt(i, nonWorkColumn),PriceConverter.ConversionType.PRICE);
             }
         }
     }

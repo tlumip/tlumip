@@ -765,6 +765,9 @@ public class TripSynthesizer {
         private CTTripFile(ResourceBundle rb, TripClassifier classifier) {
             //0          1                   2       3           4          5              6              7     8        9               10        11         12
             //origin	tripStartTime	duration	destination	tourMode	tripMode	tripFactor	truckID	truckType	carrierType	commodity	weight	distance
+            //old above, new below
+            //0          1                   2       3           4              5       6         7          8           9
+            //origin	tripStartTime	destination	tourMode	tripMode	truckID	truckType	carrierType	commodity	weight
             super(rb.getString("ct.truck.trips"),"origin","destination",classifier,rb);
         }
 
@@ -773,7 +776,8 @@ public class TripSynthesizer {
         }
 
         public int getModeIdFromRecord(String ... data) {
-            return Integer.parseInt(data[8].substring(3));
+            //return Integer.parseInt(data[8].substring(3));
+            return Integer.parseInt(data[6].substring(3));
         }
 
         String getTripTypeFromRecord(String ... data) {

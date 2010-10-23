@@ -16,10 +16,17 @@
  */
 package com.pb.tlumip.model;
 
+import com.pb.common.util.ResourceUtil;
 import com.pb.models.censusdata.SwIncomeSize;
+
+import java.util.ResourceBundle;
 
 
 public class IncomeSize extends SwIncomeSize {
+    public static final String INCOME_SIZE_CONVERSION_PROPERTY = "spg.income.size.conversion.factor";
+
+    private final double incomeSizeConversion;
+    private final boolean conversionOn;
 
     String[] incomeSizeLabels = {
 		"HH0to5k1to2",
@@ -44,11 +51,14 @@ public class IncomeSize extends SwIncomeSize {
     
     
     
-    public IncomeSize (double convertTo2000) {
-        super(convertTo2000);
+    public IncomeSize (double incomeSizeConversion) {
+        super();
+        this.incomeSizeConversion = incomeSizeConversion;
+        conversionOn = incomeSizeConversion != 1.0;
     }
 
-    public IncomeSize () {
+    public IncomeSize (ResourceBundle rb) {
+        this(ResourceUtil.getDoubleProperty(rb,INCOME_SIZE_CONVERSION_PROPERTY));
     }
 
     
@@ -86,11 +96,15 @@ public class IncomeSize extends SwIncomeSize {
         return incomeSizeLabels[incomeSizeIndex];
     }
 
+
+    public int getIncomeSize(int income, int hhSize) {
+        return conversionOn ? getIncomeSizeConverted(income,hhSize) : getIncomeSizeStraight(income,hhSize);
+    }
     
     
 	// return the IncomeSize category index given the pums IncomeSize code
 	// from the pums person record OCCUP field.    
-	public int getIncomeSize(int income, int hhSize) {
+	private int getIncomeSizeStraight(int income, int hhSize) {
 
 	    int returnValue=0;
 
@@ -139,6 +153,68 @@ public class IncomeSize extends SwIncomeSize {
 				returnValue = 13;
 		}
 		else if ( income < 70000 ) {
+			if ( hhSize < 3 )
+				returnValue = 14;
+			else
+				returnValue = 15;
+		}
+		else {
+			if ( hhSize < 3 )
+				returnValue = 16;
+			else
+				returnValue = 17;
+		}
+
+		return returnValue;
+	}
+
+    private int getIncomeSizeConverted(int income, int hhSize) {
+	    int returnValue=0;
+
+	    // define incomeSize indices for income and hh size ranges.
+		if ( income < Math.round(5000*incomeSizeConversion)) {
+		    if ( hhSize < 3 )
+		        returnValue = 0;
+		    else
+		        returnValue = 1;
+		}
+		else if ( income < Math.round(10000*incomeSizeConversion)) {
+			if ( hhSize < 3 )
+				returnValue = 2;
+			else
+				returnValue = 3;
+		}
+		else if ( income < Math.round(15000*incomeSizeConversion)) {
+			if ( hhSize < 3 )
+				returnValue = 4;
+			else
+				returnValue = 5;
+		}
+		else if ( income < Math.round(20000*incomeSizeConversion)) {
+			if ( hhSize < 3 )
+				returnValue = 6;
+			else
+				returnValue = 7;
+		}
+		else if ( income < Math.round(30000*incomeSizeConversion)) {
+			if ( hhSize < 3 )
+				returnValue = 8;
+			else
+				returnValue = 9;
+		}
+		else if ( income < Math.round(40000*incomeSizeConversion)) {
+			if ( hhSize < 3 )
+				returnValue = 10;
+			else
+				returnValue = 11;
+		}
+		else if ( income < Math.round(50000*incomeSizeConversion)) {
+			if ( hhSize < 3 )
+				returnValue = 12;
+			else
+				returnValue = 13;
+		}
+		else if ( income < Math.round(70000*incomeSizeConversion)) {
 			if ( hhSize < 3 )
 				returnValue = 14;
 			else

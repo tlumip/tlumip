@@ -119,6 +119,9 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
                 ptRb = ResourceUtil.getPropertyBundle(new File(pathToPtRb));
                 globalRb = ResourceUtil.getPropertyBundle(new File(
                                     pathToGlobalRb));
+            
+                //initialize price converter
+                PriceConverter.getInstance(ptRb,globalRb);
 
                 CALCULATE_SDT = ResourceUtil.getBooleanProperty(ptRb, "sdt.calculate.sdt", true);
                 if(!CALCULATE_SDT) sendQueue="ResultsWriterQueue";

@@ -30,6 +30,7 @@ public class LogReader {
     private static final String TS_SUMMARY_FILE_NAME = "TsSummary.txt";
 
     private SortedSet<SegmentInformation> segments = new TreeSet<SegmentInformation>();
+    private Set<SegmentInformation> unfinishedSegments = new TreeSet<SegmentInformation>();
     private File outputsDirectory;
     
 
@@ -124,7 +125,7 @@ public class LogReader {
         String message = parsedLine[3].trim();
         Matcher m = null;
         SegmentInformation si = null;
-        for (SegmentInformation tempSi : segments) {
+        for (SegmentInformation tempSi : unfinishedSegments) {
             if (!tempSi.segmentFinished()) {
                 Matcher mm = tempSi.segment.messageEndRegexp.matcher(message);
                 if (mm.matches()) {
@@ -133,16 +134,47 @@ public class LogReader {
                 }
             }
         }
-        if (si != null)
+        if (si != null) {
             si.segmentEnded(parsedLine[0].trim(),m);
+            unfinishedSegments.remove(si);
+        }
         //now check if something started
         for (Segment s : Segment.values()) {
             m = s.messageStartRegexp.matcher(message);
             if (m.matches()) {
-                segments.add(new SegmentInformation(s,parsedLine[0].trim(),m));
+                SegmentInformation newSi = new SegmentInformation(s,parsedLine[0].trim(),m);
+                unfinishedSegments.add(newSi);
+                segments.add(newSi);
             }
         }
     }
+
+//    private void checkLine(String line) {
+//        String[] parsedLine = line.split(",",4);
+//        if (parsedLine.length < 4)
+//            return;
+//        String message = parsedLine[3].trim();
+//        Matcher m = null;
+//        SegmentInformation si = null;
+//        for (SegmentInformation tempSi : segments) {
+//            if (!tempSi.segmentFinished()) {
+//                Matcher mm = tempSi.segment.messageEndRegexp.matcher(message);
+//                if (mm.matches()) {
+//                    si = tempSi;
+//                    m = mm;
+//                }
+//            }
+//        }
+//        if (si != null)
+//            si.segmentEnded(parsedLine[0].trim(),m);
+//        //now check if something started
+//        for (Segment s : Segment.values()) {
+//            m = s.messageStartRegexp.matcher(message);
+//            if (m.matches()) {
+//                segments.add(new SegmentInformation(s,parsedLine[0].trim(),m));
+//            }
+//        }
+//    }
 
     private EnumSet<Segment> getModuleSegments() {
         return EnumSet.of(Segment.MODULE,Segment.PI);
@@ -612,7 +644,8 @@ public class LogReader {
 
     private String getStringDuration(long duration) {
         if (duration < 0)
-            throw new IllegalArgumentException("Error: duration must be positive when calculating differences!");
+            return "Negative duration (-" + getStringDuration(-1*duration) + ")";
+//            throw new IllegalArgumentException("Error: duration must be positive when calculating differences!");
         long days = duration / MILLISECONDS_IN_A_DAY;
         long hours = (duration - days* MILLISECONDS_IN_A_DAY) / MILLISECONDS_IN_AN_HOUR;
         long minutes = (duration - days* MILLISECONDS_IN_A_DAY - hours* MILLISECONDS_IN_AN_HOUR) / MILLIESECONDS_IN_A_MINUTE;
