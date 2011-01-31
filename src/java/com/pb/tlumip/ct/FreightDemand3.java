@@ -562,51 +562,82 @@ public class FreightDemand3 {
         //it'll be a zipped csv file
         PrintWriter w = null;
         ZipOutputStream zos = null;
+        int counter = 0;
         try {
             zos  = new ZipOutputStream(new FileOutputStream(modalDollarFile + ".zip"));
-            zos.putNextEntry(new ZipEntry(new File(modalDollarFile).getName() + ".zip"));
-
-            w = new PrintWriter(zos);
-            String header = "mode,activity";
-            Set<String> modes = new TreeSet<String>();
-            Set<String> activities = new TreeSet<String>();
             for (String commodity : dollarFlows.keySet()) {
-                header += "," + commodity;
                 for (String mode : dollarFlows.get(commodity).keySet()) {
-                    modes.add(mode);
-                    for (String act : dollarFlows.get(commodity).get(mode).keySet())
-                        activities.add(act);
-                }
-            }
-            for (String mode : modes) {
-                for (String act : activities) {
-                    for (int i : betaPlusWZsForCT) {
-                        for (int j : betaPlusWZsForCT) {
-                            StringBuilder sb = new StringBuilder(mode).append(",").append(act);
-                            for (String commodity : dollarFlows.keySet()) {
-                                sb.append(",");
-                                if (dollarFlows.get(commodity).containsKey(mode)) {
-                                    if (dollarFlows.get(commodity).get(mode).containsKey(act)) {
-                                        sb.append(dollarFlows.get(commodity).get(mode).get(act).getValueAt(i,j));
-                                    } else {
-                                        sb.append("0.0");
-                                    }
-                                } else {
-                                    sb.append("0.0");
-                                }
-                                w.println(sb);
-                            }
+                    Map<String,Matrix> dFlows = dollarFlows.get(commodity).get(mode);
+                    //create header
+                    List<Matrix> matrices = new LinkedList<Matrix>();
+                    StringBuilder header = new StringBuilder("i,j");
+                    for (String act : dFlows.keySet()) {
+                        header.append(",").append(act);
+                        matrices.add(dFlows.get(act));
+                    }
+                    zos.putNextEntry(new ZipEntry(new File(modalDollarFile).getName() + "_" + commodity + "_" + mode + ".csv"));
+                    w = new PrintWriter(zos);
+                    w.println(header);
+                    int[] externals = matrices.get(0).getExternalRowNumbers();
+                    if (counter++ == 0)
+                        logger.info("Externals : " + Arrays.toString(externals));
+                    for (int i = 1; i < externals.length; i++) {
+                        for (int j = 1; j < externals.length; j++) {
+                            StringBuilder sb = new StringBuilder(i + "," + j);
+                            for (Matrix mat : matrices)
+                                sb.append(",").append(mat.getValueAt(externals[i],externals[j]));
+                            w.println(sb);
                         }
                     }
+                    w.flush();
+                    zos.closeEntry();
                 }
             }
-            w.println(header);
+//
+//
+//            zos.putNextEntry(new ZipEntry(new File(modalDollarFile).getName() + ".csv"));
+//
+//            String header = "mode,activity";
+//            Set<String> modes = new TreeSet<String>();
+//            Set<String> activities = new TreeSet<String>();
+//            for (String commodity : dollarFlows.keySet()) {
+//                header += "," + commodity;
+//                for (String mode : dollarFlows.get(commodity).keySet()) {
+//                    modes.add(mode);
+//                    for (String act : dollarFlows.get(commodity).get(mode).keySet())
+//                        activities.add(act);
+//                }
+//            }
+//            w.println(header);
+//            for (String mode : modes) {
+//                for (String act : activities) {
+//                    for (int i : betaPlusWZsForCT) {
+//                        for (int j : betaPlusWZsForCT) {
+//                            StringBuilder sb = new StringBuilder(mode).append(",").append(act);
+//                            for (String commodity : dollarFlows.keySet()) {
+//                                sb.append(",");
+//                                if (dollarFlows.get(commodity).containsKey(mode)) {
+//                                    if (dollarFlows.get(commodity).get(mode).containsKey(act)) {
+//                                        sb.append(dollarFlows.get(commodity).get(mode).get(act).getValueAt(i,j));
+//                                    } else {
+//                                        sb.append("0.0");
+//                                    }
+//                                } else {
+//                                    sb.append("0.0");
+//                                }
+//                                w.println(sb);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            zos.closeEntry();
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            if (w != null)
-                w.close();
-            else if (zos != null) {
+//            if (w != null)
+//                w.close();
+            if (zos != null) {
                 try {
                     zos.close();
                 } catch (IOException e) {

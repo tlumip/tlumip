@@ -268,44 +268,59 @@ public class TransitAssignAndSkimManager {
         // drive access air loading and skims
         String[] drAirTypesIn = { "air" }; 
         String[] drAirTypes = getServiceTypeRouteFilesSpecified( drAirTypesIn, period );
-        if ( drAirTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && airTransitIdentifier.equalsIgnoreCase("air") )
+        if (( drAirTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && airTransitIdentifier.equalsIgnoreCase("air") ))
             results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name(),demandMatricesPath,demandOnly)));
+        else //write demand matrices no matter what (this method will just pass if demandMatricesPath == null)
+            results.add ( exec.submit( new AssignSkimTask( nh, drAirTypes, period, "driveLdt", "drive", "air", LDTripModeType.AIR.name(),demandMatricesPath,true)));
+
         
         // drive access hsr loading and skims
         String[] drHsrTypesIn = { "hsr", "intercity" }; 
         String[] drHsrTypes = getServiceTypeRouteFilesSpecified( drHsrTypesIn, period );
-        if ( drHsrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && hsrTransitTransitIdentifier.equalsIgnoreCase("hsr") )
+        if (( drHsrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && hsrTransitTransitIdentifier.equalsIgnoreCase("hsr") ) || demandOnly)
             results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name(),demandMatricesPath,demandOnly)));
+        else //write demand matrices no matter what (this method will just pass if demandMatricesPath == null)
+            results.add ( exec.submit( new AssignSkimTask( nh, drHsrTypes, period, "driveLdt", "drive", "hsr", LDTripModeType.HSR_DRIVE.name(),demandMatricesPath,true)));
         
         // drive access intercity bus/rail loading and skims
         String[] drIcTypesIn = { "intercity" }; 
         String[] drIcTypes = getServiceTypeRouteFilesSpecified( drIcTypesIn, period );
-        if ( drIcTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && intercityTransitIdentifier.equalsIgnoreCase("ic") )
+        if (( drIcTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && intercityTransitIdentifier.equalsIgnoreCase("ic") ) || demandOnly)
             results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name(),demandMatricesPath,demandOnly)));
+        else //write demand matrices no matter what (this method will just pass if demandMatricesPath == null)
+            results.add ( exec.submit( new AssignSkimTask( nh, drIcTypes, period, "driveLdt", "drive", "intercity", LDTripModeType.TRANSIT_DRIVE.name(),demandMatricesPath,true)));
 
         // drive access intracity transit loading and skims
         String[] drTrTypesIn = { "intracity" }; 
         String[] drTrTypes = getServiceTypeRouteFilesSpecified( drTrTypesIn, period );
-        if ( drTrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && intracityTransitIdentifier.equalsIgnoreCase("t") )
+        if (( drTrTypes.length > 0 && driveAccessIdentifier.equalsIgnoreCase("d") && intracityTransitIdentifier.equalsIgnoreCase("t") ) || demandOnly)
             results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name(),demandMatricesPath,demandOnly)));
+        else //write demand matrices no matter what (this method will just pass if demandMatricesPath == null)
+            results.add ( exec.submit( new AssignSkimTask( nh, drTrTypes, period, "drive", "drive", "intracity", TripModeType.DR_TRAN.name(),demandMatricesPath,true)));
 
         // walk access hsr loading and skims
         String[] wkHsrTypesIn = { "hsr", "intercity", "intracity" }; 
         String[] wkHsrTypes = getServiceTypeRouteFilesSpecified( wkHsrTypesIn, period );
-        if ( wkHsrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && hsrTransitTransitIdentifier.equalsIgnoreCase("hsr") )
+        if (( wkHsrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && hsrTransitTransitIdentifier.equalsIgnoreCase("hsr") ) || demandOnly)
             results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name(),demandMatricesPath,demandOnly)));
+        else //write demand matrices no matter what (this method will just pass if demandMatricesPath == null)
+            results.add ( exec.submit( new AssignSkimTask( nh, wkHsrTypes, period, "walk", "walk", "hsr", LDTripModeType.HSR_WALK.name(),demandMatricesPath,true)));
 
         // walk access intercity loading and skims
         String[] wkIcTypesIn = { "intercity", "intracity" }; 
         String[] wkIcTypes = getServiceTypeRouteFilesSpecified( wkIcTypesIn, period );
-        if ( wkIcTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && intercityTransitIdentifier.equalsIgnoreCase("ic") )
+        if (( wkIcTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && intercityTransitIdentifier.equalsIgnoreCase("ic") ) || demandOnly)
             results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name(),demandMatricesPath,demandOnly)));
+        else //write demand matrices no matter what (this method will just pass if demandMatricesPath == null)
+            results.add ( exec.submit( new AssignSkimTask( nh, wkIcTypes, period, "walk", "walk", "intercity", LDTripModeType.TRANSIT_WALK.name(),demandMatricesPath,true)));
 
         // walk access intracity loading and skims
         String[] wkTrTypesIn = { "intracity" }; 
         String[] wkTrTypes = getServiceTypeRouteFilesSpecified( wkTrTypesIn, period );
-        if ( wkTrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && intracityTransitIdentifier.equalsIgnoreCase("t") )
+        if (( wkTrTypes.length > 0 && walkAccessIdentifier.equalsIgnoreCase("w") && intracityTransitIdentifier.equalsIgnoreCase("t") ) || demandOnly)
             results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name(),demandMatricesPath,demandOnly)));
+        else //write demand matrices no matter what (this method will just pass if demandMatricesPath == null)
+            results.add ( exec.submit( new AssignSkimTask( nh, wkTrTypes, period, "walk", "walk", "intracity", TripModeType.WK_TRAN.name(),demandMatricesPath,true)));
 
         
         
@@ -1833,7 +1848,7 @@ public class TransitAssignAndSkimManager {
         private String identifier;          // unique String to distinguish the 7 types of transit assignments.
         private String demandMatricesPath;  // path to write demand matrices to; if null, they won't be written
 
-        private boolean demandOnlyMode;     // if true, then this will be used only to extract and write transit demand matrices
+        private final boolean demandOnlyMode;     // if true, then this will be used only to extract and write transit demand matrices
         
         public AssignSkimTask( NetworkHandlerIF nh, String[] serviceTypes, String period, String accessMode, String accessModeType, String specificServiceType, String tripModeName , String demandMatricesPath, boolean demandOnlyMode) {
             this.nh = nh;

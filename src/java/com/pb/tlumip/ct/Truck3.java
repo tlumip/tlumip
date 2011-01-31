@@ -150,8 +150,8 @@ public class Truck3 {
                     carrierType+","+
                     ((Shipment)shipments.get(n)).getCommodityCode()+","+
                     ((Shipment)shipments.get(n)).getWeight()+","+
-                    ((Shipment)shipments.get(n)).getAlphaDistance() + "," +
-                    travelTimes.get(n) + "," +
+                    alphaDistMatrix.getValueAt(origin,destination) + "," +
+                    offPeakSkim.getValueAt(origin,destination) + "," +
                     dwellTimes.get(n) +
                     "\n";
             // Note that duration includes both travel and dwell time, so no need to
