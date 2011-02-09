@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.MissingResourceException;
@@ -418,21 +419,11 @@ public class TS {
         
         String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
         
-        // get peak or off-peak volume factor from properties file
-        String volumeFactor="";
-        if ( timePeriod.equalsIgnoreCase( "ampeak" ) )
-            volumeFactor = (String)globalMap.get("am.peak.volume.factor");
-        else if ( timePeriod.equalsIgnoreCase( "mdoffpeak" ) )
-            volumeFactor = (String)globalMap.get("md.offpeak.volume.factor");
-        else if ( timePeriod.equalsIgnoreCase( "pmpeak" ) )
-            volumeFactor = (String)globalMap.get("pm.peak.volume.factor");
-        else if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) )
-            volumeFactor = (String)globalMap.get("nt.offpeak.volume.factor");
-        else {
-            logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." );
-            System.exit(-1);
-        }
+        String todTripsFileName = (String) globalMap.get( "sdt.tod.trips.file" );
         
+        //get peak or off-peak volume factor
+        String volumeFactor = calcVolumeFactor(timePeriod, todTripsFileName).toString();
+                
         String userClassVotPk = (String)appMap.get("userClass.pk.vot");
         String userClassVotOp = (String)appMap.get("userClass.op.vot");
         String userClassOpCost = (String)appMap.get("userClass.operating.cost");
@@ -478,7 +469,101 @@ public class TS {
         
     }
     
+    public Double calcVolumeFactor(String timePeriod, String todTripsFileName) {
     
+    	Double volumeFactor = 0.0;
+    	int startHour = 0;
+        int endHour = 0;
+        double hours = 0.0;
+        
+        // get time period definitions from property files
+        if ( timePeriod.equalsIgnoreCase( "ampeak" ) ) {
+            startHour = Integer.parseInt( globalRb.getString( "am.peak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "am.peak.end" ) );
+            hours = (endHour + 41 - startHour) / 100.0; //convert 59th min to 100th min
+        }
+        else if ( timePeriod.equalsIgnoreCase( "pmpeak" ) ) {
+            startHour = Integer.parseInt( globalRb.getString( "pm.peak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "pm.peak.end" ) );
+            hours = (endHour + 41 - startHour) / 100.0; 
+        }
+        else if ( timePeriod.equalsIgnoreCase( "mdoffpeak" ) ) {
+            startHour = Integer.parseInt( globalRb.getString( "md.offpeak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "md.offpeak.end" ) );
+            hours = (endHour + 41 - startHour) / 100.0; 
+        }
+        else if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
+            startHour = Integer.parseInt( globalRb.getString( "nt.offpeak.start") );
+            endHour = Integer.parseInt( globalRb.getString( "nt.offpeak.end" ) );
+            hours = (endHour + 41 + (2400 - startHour)) / 100.0; 
+        } 
+        else {
+        	logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." );
+	        System.exit(-1);
+        } 
+        
+        //read PT time-of-day trips file
+        OLD_CSVFileReader csvReader = new OLD_CSVFileReader();
+        TableDataSet timePeriodPercents = new TableDataSet();
+        try {
+        	timePeriodPercents = csvReader.readFile( new File(todTripsFileName) );
+        } catch (IOException e) {
+            logger.error ( "IOException reading sdt trips by time-of-day: " + todTripsFileName, e );
+            System.exit(-1);
+        }
+        
+        //calculate volume factor based on PT time period
+        //identify peak 1 hour of demand, divide total volume of period by that 1 hour demand to get volume factor
+        int[] startTimes = timePeriodPercents.getColumnAsInt("TRIPSTARTTIME");
+        double[] trips = timePeriodPercents.getColumnAsDouble("TRIPS");
+        
+        //demand by hour
+        ArrayList<Double> hourTrips = new ArrayList<Double>();
+        for(int i=0; i<24; i++) {
+        	hourTrips.add(new Double(0));
+        }
+        for(int i=0; i<trips.length; i++) {
+        	int hourIndex = (int) (startTimes[i] / 100) - 1;
+        	hourTrips.set(hourIndex, trips[i] + hourTrips.get(hourIndex));
+        }
+        
+        //get max demand hour
+        double maxTrips = Collections.max(hourTrips);
+        int maxHour = hourTrips.indexOf(maxTrips);
+        
+        //sum demand in time period
+        double demandInTimePeriod = 0;
+        if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
+        	//assumes period extends to next morning
+        	for(int i=0; i<trips.length; i++) {
+            	if(startTimes[i] >= startHour) {
+            		demandInTimePeriod = demandInTimePeriod + trips[i];
+            	}
+            	if(startTimes[i] <= endHour) {
+            		demandInTimePeriod = demandInTimePeriod + trips[i];
+            	}
+            }
+        } else {
+        	for(int i=0; i<trips.length; i++) {
+            	if(startTimes[i] >= startHour & startTimes[i] <= endHour) {
+            		demandInTimePeriod = demandInTimePeriod + trips[i];
+            	}
+            }
+        }
+        
+        //calculate volume factor  
+        volumeFactor = maxTrips / demandInTimePeriod;
+        logger.info( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.info( "volume factor calculation based on sdt trip start times");
+        logger.info( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.info( "time period: " + timePeriod + " (" + startHour + "-" + endHour + ", " + hours + " hours )");
+        logger.info( "max demand hour of the day: " + maxHour + " hr (" + maxTrips + " trips )");
+        logger.info( "demand in time period: " + demandInTimePeriod);
+        logger.info( "calculated volume factor: " + volumeFactor);
+        logger.info( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+	    return(volumeFactor);
+	    
+    }
     
     public void bench ( ResourceBundle appRb, ResourceBundle globalRb, String rpcConfigFileName ) {
 
