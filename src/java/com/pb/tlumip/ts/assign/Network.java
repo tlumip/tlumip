@@ -991,8 +991,9 @@ public class Network implements Serializable {
                         int lanes = (int)linkTable.getValueAt( k+1, "lanes" );
                         originalCapacity[k] = cap;
                         capacity[k] = cap / volumeFactor;
+                        
                         // the following variables are needed for the VDF Integrals definitions
-                        totalCapacity[k] = 0.75 * capacity[k] * lanes;
+                        totalCapacity[k] = capacity[k] * lanes;
 
                         labels[k] = an + "_" + bn;
                         drops[k] = drop;
@@ -1122,7 +1123,7 @@ public class Network implements Serializable {
 
 			
 			// the following variables are needed for the VDF Integrals definitions
-			totalCapacity[i] = 0.75 * capacity[i] * lanes[i];
+			totalCapacity[i] = capacity[i] * lanes[i];
 			totalVolCapRatio[i] = 0.0;
 
             
