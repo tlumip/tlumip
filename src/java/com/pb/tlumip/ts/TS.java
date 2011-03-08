@@ -420,9 +420,10 @@ public class TS {
         String a2bFileName = (String) globalMap.get( "alpha2beta.file" );
         
         String todTripsFileName = (String) globalMap.get( "sdt.tod.trips.file" );
+        Double volumeFactorPercentile = Double.parseDouble((String) appMap.get( "volumeFactor.percentile" ));
         
         //get peak or off-peak volume factor
-        String volumeFactor = calcVolumeFactor(timePeriod, todTripsFileName).toString();
+        String volumeFactor = calcVolumeFactor(timePeriod, todTripsFileName, volumeFactorPercentile).toString();
                 
         String userClassVotPk = (String)appMap.get("userClass.pk.vot");
         String userClassVotOp = (String)appMap.get("userClass.op.vot");
@@ -469,33 +470,33 @@ public class TS {
         
     }
     
-    public Double calcVolumeFactor(String timePeriod, String todTripsFileName) {
+    public Double calcVolumeFactor(String timePeriod, String todTripsFileName, double volumeFactorPercentile) {
     
     	Double volumeFactor = 0.0;
     	int startHour = 0;
         int endHour = 0;
-        double hours = 0.0;
+        int hours = 0;
         
         // get time period definitions from property files
         if ( timePeriod.equalsIgnoreCase( "ampeak" ) ) {
             startHour = Integer.parseInt( globalRb.getString( "am.peak.start") );
             endHour = Integer.parseInt( globalRb.getString( "am.peak.end" ) );
-            hours = (endHour + 41 - startHour) / 100.0; //convert 59th min to 100th min
+            hours = (int)((endHour + 41 - startHour) / 100.0); //convert 59th min to 100th min
         }
         else if ( timePeriod.equalsIgnoreCase( "pmpeak" ) ) {
             startHour = Integer.parseInt( globalRb.getString( "pm.peak.start") );
             endHour = Integer.parseInt( globalRb.getString( "pm.peak.end" ) );
-            hours = (endHour + 41 - startHour) / 100.0; 
+            hours = (int)((endHour + 41 - startHour) / 100.0); 
         }
         else if ( timePeriod.equalsIgnoreCase( "mdoffpeak" ) ) {
             startHour = Integer.parseInt( globalRb.getString( "md.offpeak.start") );
             endHour = Integer.parseInt( globalRb.getString( "md.offpeak.end" ) );
-            hours = (endHour + 41 - startHour) / 100.0; 
+            hours = (int)((endHour + 41 - startHour) / 100.0); 
         }
         else if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
             startHour = Integer.parseInt( globalRb.getString( "nt.offpeak.start") );
             endHour = Integer.parseInt( globalRb.getString( "nt.offpeak.end" ) );
-            hours = (endHour + 41 + (2400 - startHour)) / 100.0; 
+            hours = (int)((endHour + 41 + (2400 - startHour)) / 100.0); 
         } 
         else {
         	logger.error ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." );
@@ -513,54 +514,66 @@ public class TS {
         }
         
         //calculate volume factor based on PT time period
-        //identify peak 1 hour of demand, divide total volume of period by that 1 hour demand to get volume factor
-        int[] startTimes = timePeriodPercents.getColumnAsInt("TRIPSTARTTIME");
-        double[] trips = timePeriodPercents.getColumnAsDouble("TRIPS");
+        int[] times = timePeriodPercents.getColumnAsInt("TIME");
+        double[] tripstarts = timePeriodPercents.getColumnAsDouble("TRIPSTARTS");
         
-        //demand by hour
-        ArrayList<Double> hourTrips = new ArrayList<Double>();
-        for(int i=0; i<24; i++) {
-        	hourTrips.add(new Double(0));
-        }
-        for(int i=0; i<trips.length; i++) {
-        	int hourIndex = (int) (startTimes[i] / 100) - 1;
-        	hourTrips.set(hourIndex, trips[i] + hourTrips.get(hourIndex));
-        }
-        
-        //get max demand hour
-        double maxTrips = Collections.max(hourTrips);
-        int maxHour = hourTrips.indexOf(maxTrips);
-        
-        //sum demand in time period
-        double demandInTimePeriod = 0;
-        if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
-        	//assumes period extends to next morning
-        	for(int i=0; i<trips.length; i++) {
-            	if(startTimes[i] >= startHour) {
-            		demandInTimePeriod = demandInTimePeriod + trips[i];
-            	}
-            	if(startTimes[i] <= endHour) {
-            		demandInTimePeriod = demandInTimePeriod + trips[i];
-            	}
-            }
-        } else {
-        	for(int i=0; i<trips.length; i++) {
-            	if(startTimes[i] >= startHour & startTimes[i] <= endHour) {
-            		demandInTimePeriod = demandInTimePeriod + trips[i];
-            	}
-            }
-        }
-        
-        //calculate volume factor  
-        volumeFactor = maxTrips / demandInTimePeriod;
+        //log results
         logger.info( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        logger.info( "volume factor calculation based on sdt trip start times");
+        logger.info( "volume factor calculation based on sdt trip times");
         logger.info( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         logger.info( "time period: " + timePeriod + " (" + startHour + "-" + endHour + ", " + hours + " hours )");
+        
+        //demand by hour and demand in time period
+        ArrayList<Double> hourTrips = new ArrayList<Double>();
+        ArrayList<Double> hourTripsInTimePeriod = new ArrayList<Double>();
+        for(int i=0; i<24; i++) {
+        	
+        	logger.info( "hour: " + times[i] + ", " + tripstarts[i] + " trips");
+        	
+        	//demand in each hour
+        	hourTrips.add(new Double(tripstarts[i]));
+ 
+        	//demand in time period
+        	if ( timePeriod.equalsIgnoreCase( "ntoffpeak" ) ) {
+            	if(times[i] >= startHour) {
+            		hourTripsInTimePeriod.add(new Double(tripstarts[i]));
+            	}
+            	if(times[i] <= endHour) {
+            		hourTripsInTimePeriod.add(new Double(tripstarts[i]));
+            	}
+            } else {
+            	if(times[i] >= startHour & times[i] <= endHour) {
+            		hourTripsInTimePeriod.add(new Double(tripstarts[i]));
+            	}
+            }
+        }
+        
+        //get max demand hour of the day
+        double maxTrips = Collections.max(hourTrips);
+        int maxHour = hourTrips.indexOf(maxTrips) + 1;
+        
+        //sort demand in time period and calculate demand based on percentile
+        double demandInTimePeriod = 0;
+        if(hours > 1) {
+	        Collections.sort(hourTripsInTimePeriod);
+	        double offset = volumeFactorPercentile * (hours - 1);
+	        double lower = hourTripsInTimePeriod.get((int)offset);
+	        double upper = hourTripsInTimePeriod.get((int)offset+1);
+	        double remainder = offset - Math.floor(offset);
+	        demandInTimePeriod = (lower + (upper - lower) * remainder) * hours;
+        } else {
+        	demandInTimePeriod = hourTripsInTimePeriod.get(0);
+        }
+               
+        //calculate volume factor  
+        volumeFactor = maxTrips / demandInTimePeriod;
+        
+        //log results
         logger.info( "max demand hour of the day: " + maxHour + " hr (" + maxTrips + " trips )");
+        logger.info( "volume factor percentile: " + volumeFactorPercentile);
         logger.info( "demand in time period: " + demandInTimePeriod);
         logger.info( "calculated volume factor: " + volumeFactor);
-        logger.info( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.info( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 	    return(volumeFactor);
 	    
     }
