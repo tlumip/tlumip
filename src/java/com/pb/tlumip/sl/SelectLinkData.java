@@ -170,11 +170,11 @@ public class SelectLinkData {
                 if (internalZones.contains(getZoneFromLookup(od,false))) {
                     logger.info("ii pair: " + od);
                 } else {
-                    logger.warn("Conflict for od " + od + "; set as ee/ii but found internal,external");
+                    logger.warn("Conflict for od " + od + "; check all o and d records in the select link results input file for consistency");
                     problemOds.add(od);
                 }
             } else if (internalZones.contains(getZoneFromLookup(od,false))) {
-                logger.warn("Conflict for od " + od + "; set as ee/ii but found external,internal");
+                logger.warn("Conflict for od " + od + "; check all o and d records in the select link results input file for consistency");
                 problemOds.add(od);
             }
         }
