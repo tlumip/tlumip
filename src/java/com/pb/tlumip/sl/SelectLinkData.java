@@ -255,8 +255,9 @@ public class SelectLinkData {
                 tf.addLine(sb.append(",").append(percentage).toString());
             }
         }
-//        String weavingFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.weaving").replace(".csv","_" + mode + ".csv");
-        //todo: above line for testing - delete and uncomment next two lines and 5th line down and copyt file at end of method for production
+        
+        //String weavingFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.weaving").replace(".csv","_" + mode + ".csv");
+        //todo: above line for testing - comment next two lines and 5th line down and copy file at end of method for production
         String weavingFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.weaving");
         tf.writeTo(weavingFile);
 
