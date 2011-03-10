@@ -109,9 +109,17 @@ public class SubAreaMatrixCreator {
             Matrix sourceMatrix = odMatrices.getMatrix(i);
             for (String origin : zoneSubMatrixMap.keySet()) {
                 int o = zoneSubMatrixMap.get(origin);
+                if (!zoneMatrixMap.containsKey(origin)) {
+                    logger.fatal("Cannot find origin in zone matrix mapping: " + origin);
+                    throw new IllegalArgumentException("Cannot find origin in zone matrix mapping: " + origin);
+                }
                 int so = zoneMatrixMap.get(origin);
                 for (String dest : zoneSubMatrixMap.keySet()) {
                     int d = zoneSubMatrixMap.get(dest);
+                    if (!zoneMatrixMap.containsKey(dest)) {
+                        logger.fatal("Cannot find destination in zone matrix mapping: " + dest);
+                        throw new IllegalArgumentException("Cannot find destination in zone matrix mapping: " + dest);
+                    }
                     int sd = zoneMatrixMap.get(dest);
                     m.setValueAt(o,d,sourceMatrix.getValueAt(so,sd));
                 }
