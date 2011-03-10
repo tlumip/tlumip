@@ -153,10 +153,45 @@ public class SubAreaMatrixCreator {
     }
 
     private void writeMatrices(String matrixFile, String[] names, Matrix[] matrices) {
+        reconcileMatrices(matrices);
         for (int i = 0; i < matrices.length; i++)
             matrices[i].setName(names[i]);
         CSVMatrixWriter writer = new CSVMatrixWriter(new File(matrixFile));
         writer.writeMatrices(null,matrices);
+    }
+
+    private void reconcileMatrices(Matrix[] matrices) {
+        //this is to make sure that all matrices are the same size and have same external #s, and then to flesh out those that do not
+        Set<Integer> externals = new TreeSet<Integer>(); //this will sort them automatically - we will make all of the zone numbers go in order
+        List<Set<Integer>> externalsByMatrix = new LinkedList<Set<Integer>>(); //one entry for each matrix, holding the externals
+        for (Matrix m : matrices) {
+            Set<Integer> mExternals = new TreeSet<Integer>();
+            int[] ext =  m.getExternalNumbers();
+            for (int i = 1; i < ext.length; i++) //indexed by 1
+                mExternals.add(ext[i]);
+            externalsByMatrix.add(mExternals);
+            externals.addAll(mExternals); //running collection of all externals
+        }
+        //create external station array
+        int[] externalStations = new int[externals.size()+1];
+        int counter = 1;
+        for (int i : externals)
+            externalStations[counter++] = i;
+        //now go through and make a new matrix if we need to for those which are missing zones
+        for (int i = 0; i < matrices.length; i++) {
+            Set<Integer> origExternals = externalsByMatrix.get(i);
+            if (!origExternals.equals(externals)) { //if they are equal, then don't copy matrix
+                Matrix mOld = matrices[i];
+                Matrix mNew = new Matrix(externals.size(),externals.size());
+                mNew.setExternalNumbers(externalStations);
+                //loop over old matrix externals and fill in those values
+                for (int o : origExternals)
+                    for (int d : origExternals)
+                        mNew.setValueAt(o,d,mOld.getValueAt(o,d));
+                //replace matrix
+                matrices[i] = mNew;
+            }
+        }
     }
 
 //    private void writeOdMatrix(OdMatrixGroup matrices, boolean auto) {
