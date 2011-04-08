@@ -78,9 +78,15 @@ public class SPGnew extends SPG {
     public void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String baseYear, String currentYear ) {
         IndustryOccupationSplitIndustryReference ref = new IndustryOccupationSplitIndustryReference((String) globalPropertyMap.get("industry.occupation.to.split.industry.correspondence"));
         //IncomeSize incSize = new IncomeSize( Double.parseDouble( (String)spgPropertyMap.get("convertTo2000Dollars") ) );
+        boolean usingAcs = useAcs(globalPropertyMap);
         IncomeSize incSize = new IncomeSize(Double.parseDouble((String)spgPropertyMap.get(IncomeSize.INCOME_SIZE_CONVERSION_PROPERTY)));
-        SwIndustry ind = new Industry( (String)globalPropertyMap.get("sw_pums_industry.correspondence.fileName"), baseYear, ref );
-        SwOccupation occ = new SwOccupation( (String)globalPropertyMap.get("sw_pums_occupation.correspondence.fileName"), baseYear, ref );
+        String industryCorrespondenceFile = usingAcs ? (String) globalPropertyMap.get("acs.sw.industry.correspondence.file.name") :
+                                                       (String) globalPropertyMap.get("sw_pums_industry.correspondence.fileName");
+        String occupCorrespondenceFile = usingAcs ? (String) globalPropertyMap.get("acs.sw.occupation.correspondence.file.name") :
+                                                    (String) globalPropertyMap.get("sw_pums_occupation.correspondence.fileName");
+
+        SwIndustry ind = new Industry(industryCorrespondenceFile,baseYear,ref,usingAcs);
+        SwOccupation occ = new SwOccupation(occupCorrespondenceFile,baseYear,ref,usingAcs);
         
         spgInit ( spgPropertyMap, globalPropertyMap, incSize, ind, occ, currentYear );
         

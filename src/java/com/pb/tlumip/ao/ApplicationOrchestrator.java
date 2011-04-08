@@ -415,7 +415,7 @@ public class ApplicationOrchestrator {
 
 
         if (spg.isPersonAgeConstraintEnabled()) {
-            spg.getHHAttributesFromPUMS(baseYearS);
+            spg.getHHAttributeData(baseYearS);
             //run once with age constraint off to get population value
             spg.disablePersonAgeConstraint();
             spg.spg1(currentYear);
@@ -424,7 +424,7 @@ public class ApplicationOrchestrator {
             spg.enablePersonAgeConstraint();
             spg.resetSPG1BalancingCount();
         }
-        spg.getHHAttributesFromPUMS(baseYearS); //reset for second spg run
+        spg.getHHAttributeData(baseYearS); //reset for second spg run
         spg.spg1(currentYear);
         TableDataSet table = spg.sumHouseholdsByIncomeSize();
         spg.writePiInputFile(table);
@@ -456,7 +456,7 @@ public class ApplicationOrchestrator {
 
         spg.spg2();
         spg.writeZonalSummaryToCsvFile();
-        spg.writeHHOutputAttributesFromPUMS(baseYear);
+        spg.writeHHOutputAttributes(baseYear);
 
     }
 
