@@ -24,6 +24,7 @@ import com.pb.models.utils.StatusLogger;
 import com.pb.tlumip.ald.ALDModel;
 import com.pb.tlumip.ct.CTModel;
 import com.pb.tlumip.ed.EDControl;
+import com.pb.tlumip.ed.NEDModel;
 import com.pb.tlumip.et.ETModel;
 import com.pb.tlumip.et.ETPythonModel;
 import com.pb.tlumip.spg.SPGnew;
@@ -393,6 +394,12 @@ public class ApplicationOrchestrator {
 
     }
 
+
+    public void runNEDModel(int baseYear, int timeInterval, ResourceBundle appRb){
+        ModelComponent comp = new NEDModel(appRb,appRb);
+        comp.startModel(baseYear, timeInterval);
+    }
+
     public void runEPFModel(int baseYear, int timeInterval, ResourceBundle appRb){
 
         ModelComponent comp = new EdPiFeedback(appRb);
@@ -584,6 +591,9 @@ public class ApplicationOrchestrator {
             if(appName.equalsIgnoreCase("ED")){
                 logger.info("AO will now start ED for simulation year " + (baseYear+t));
                 ao.runEDModel(baseYear, t, appRb);
+            }else if(appName.equalsIgnoreCase("NED")){
+                logger.info("AO will now start NED for simulation year " + (baseYear+t));
+                ao.runNEDModel(baseYear, t, appRb);
             }else if(appName.equalsIgnoreCase("EPF")){
                 logger.info("AO will now start EPF for simulation year " + (baseYear+t));
                 ao.runEPFModel(baseYear, t, appRb);
