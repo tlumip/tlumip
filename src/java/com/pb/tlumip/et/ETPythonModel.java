@@ -108,7 +108,7 @@ public class ETPythonModel extends ModelComponent  {
                 else
                     logger.info(line);
         } catch (IOException e) {
-            logger.error("An IO exception occured while logging ET model output",e);
+            logger.error("An IO exception occurred while logging ET model output",e);
         } finally {
             try {
                 reader.close();

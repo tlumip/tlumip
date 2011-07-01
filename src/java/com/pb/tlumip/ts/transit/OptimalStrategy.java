@@ -16,15 +16,11 @@
  */
 package com.pb.tlumip.ts.transit;
 
+import com.pb.common.util.ResourceUtil;
 import com.pb.tlumip.ts.NetworkHandlerIF;
 import com.pb.tlumip.ts.assign.TransitAssignAndSkimManager;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -36,6 +32,11 @@ public class OptimalStrategy {
     protected static Logger logger = Logger.getLogger(OptimalStrategy.class);
     protected static Logger debugLogger = Logger.getLogger("debugLogger");
     //protected static Logger debugLogger = logger;
+
+    public static final String BUS_FARE_ALPHA_PROPRERTY = "ts.bus.fare.alpha";
+    public static final String BUS_FARE_BETA_PROPRERTY = "ts.bus.fare.beta";
+    public static final String RAIL_FARE_ALPHA_PROPRERTY = "ts.rail.fare.alpha";
+    public static final String RAIL_FARE_BETA_PROPRERTY = "ts.rail.fare.beta";
 
 	int IVT = TransitAssignAndSkimManager.SkimType.IVT.ordinal();      // in-vehicle time
 	int FWT = TransitAssignAndSkimManager.SkimType.FWT.ordinal();      // first wait
@@ -127,10 +128,17 @@ public class OptimalStrategy {
 	
     boolean classDebug = false;
     //boolean classDebug = true;
-	
-	
+
+    double busFareAlpha = 1.4083;
+    double busFareBeta = -0.4994;
+    double railFareAlpha = 0.4879;
+    double railFareBeta = -0.2989;
 	
 	public OptimalStrategy ( NetworkHandlerIF nh, String identifier ) {
+        this(nh,identifier,null);
+    }
+	
+	public OptimalStrategy ( NetworkHandlerIF nh, String identifier , ResourceBundle rb) {
         
         this.nh = nh;
         this.identifier = identifier;
@@ -185,6 +193,13 @@ public class OptimalStrategy {
 		gNodeX = nh.getNodeX();
 		gNodeY = nh.getNodeY();
 		gDist = nh.getDist();
+
+        if (rb != null) {
+            busFareAlpha = ResourceUtil.getDoubleProperty(rb,BUS_FARE_ALPHA_PROPRERTY,busFareAlpha);
+            busFareBeta = ResourceUtil.getDoubleProperty(rb,BUS_FARE_BETA_PROPRERTY,busFareBeta);
+            railFareAlpha = ResourceUtil.getDoubleProperty(rb,RAIL_FARE_ALPHA_PROPRERTY,railFareAlpha);
+            railFareBeta = ResourceUtil.getDoubleProperty(rb,RAIL_FARE_BETA_PROPRERTY,railFareBeta);
+        }
 		
 	}
 
@@ -1115,7 +1130,7 @@ public class OptimalStrategy {
         if ( busDist[i] > 0 ) {
             
             // the following rate function was estimated by ODOT and is in units of 1990 dollars per mile
-            fareRate = 1.4083*Math.pow(busDist[i], -0.4994);
+            fareRate = busFareAlpha*Math.pow(busDist[i],busFareBeta);
             fare = fareRate * busDist[i];
         }
         
@@ -1134,7 +1149,7 @@ public class OptimalStrategy {
         if ( railDist[i] > 0 ) {
 
             // the following rate function was estimated by ODOT and is in units of 1990 dollars per mile
-            fareRate = 0.4879*Math.pow(railDist[i], -0.2989);
+            fareRate = railFareAlpha*Math.pow(railDist[i],railFareBeta);
             fare = fareRate * railDist[i];
         }
         

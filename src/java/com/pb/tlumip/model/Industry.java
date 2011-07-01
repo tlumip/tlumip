@@ -31,6 +31,10 @@ public class Industry extends SwIndustry {
         super(corespondenceFile,year,ref,usingAcs);
     }
 
+    public Industry (String year, IndustryOccupationSplitIndustryReference ref, boolean usingAcs) {
+        super(year,ref,usingAcs);
+    }
+
 
     // the Oregon model uses an industry employment data file with one column of
     // employment dollars for an implied year.  There is a separate file for every

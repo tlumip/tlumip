@@ -195,7 +195,7 @@ public class LaborFlows {
         logger.info("Reading labor flow matrices.");
         for (String occupation : occupations) {
 
-            if (occupation.startsWith("No Occupation") || occupation.startsWith("0_NoOccupation")) {
+            if (occupation.startsWith("No Occupation") || occupation.startsWith("0_NoOccupation") || occupation.startsWith("No_Occupation")) {
                 continue;
             }
 

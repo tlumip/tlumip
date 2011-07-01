@@ -31,7 +31,15 @@ import static com.pb.models.pt.TourDestinationParameters.*;
  */
 public class TLUMIPTaz extends Taz {
 
+
     public void setTourSizeTerms(float[][] tdpd){
+        if (employment.containsKey("RETAIL TRADE-Retail"))
+            setTourSizeTermsPI(tdpd);
+        else
+            setTourSizeTermsAA(tdpd);
+    }
+
+    private void setTourSizeTermsPI(float[][] tdpd){
         float sizeTerm;
 
         ActivityPurpose[] purposes = ActivityPurpose.values();
@@ -132,7 +140,147 @@ public class TLUMIPTaz extends Taz {
         tourSizeTermsSet = true;
     }//end setTourDestinationSizeTerms
 
+    private void setTourSizeTermsAA(float[][] tdpd){
+        float sizeTerm;
+
+        ActivityPurpose[] purposes = ActivityPurpose.values();
+        for(int i=0;i<purposes.length;i++){
+            float destParams[] = tdpd[i];
+
+
+            sizeTerm = 0.0f;
+            sizeTerm += (destParams[HOUSEHOLDS] * households);
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("RES_agmin_ag"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("RES_forst_log"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("RES_offc_off"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ENGY_elec_hi"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ENGY_ngas_hi"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ENGY_ptrl_hi"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("ENGY_offc_off"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("CNST_main_xxx"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("CNST_nres_xxx"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("CNST_othr_xxx"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("CNST_res_xxx"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("CNST_offc_off"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_food_hi"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_food_li"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_htec_hi"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_htec_li"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_hvtw_hi"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_hvtw_li"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_lvtw_hi"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_wdppr_hi"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("MFG_offc_off"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("WHSL_whsl_ware"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("WHSL_offc_off"));
+            sizeTerm += (destParams[RETAIL] * employment.get("RET_auto_ret"));
+            sizeTerm += (destParams[RETAIL] * employment.get("RET_stor_ret"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("RET_stor_off"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("RET_nstor_off"));
+            sizeTerm += (destParams[TRANSPORTATION] * employment.get("TRNS_trns_ware"));
+            sizeTerm += (destParams[TRANSPORTATION] * employment.get("TRNS_trns_off"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("INFO_info_off_li"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("INFO_info_off"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("UTL_othr_off_li"));
+            sizeTerm += (destParams[OTHEREMPLOYMENT] * employment.get("UTL_othr_off"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("FIRE_fnin_off"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("FIRE_real_off"));
+            sizeTerm += (destParams[HEALTH] * employment.get("HLTH_hosp_hosp"));
+            sizeTerm += (destParams[HEALTH] * employment.get("HLTH_care_inst"));
+            sizeTerm += (destParams[HEALTH] * employment.get("HLTH_othr_off_li"));
+            sizeTerm += (destParams[K12EDUCATION] * employment.get("K12_k12_k12"));
+            sizeTerm += (destParams[K12EDUCATION] * employment.get("K12_k12_off"));
+            sizeTerm += (destParams[HIGHEREDUCATION] * employment.get("HIED_hied_off_inst"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("ENT_ent_ret"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("HOSP_acc_acc"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("HOSP_eat_ret_acc"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("SERV_tech_off"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("SERV_site_li"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("SERV_home_xxx"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("SERV_bus_off"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("SERV_nonp_off_inst"));
+            sizeTerm += (destParams[OTHERSERVICES] * employment.get("SERV_stor_ret"));
+            sizeTerm += (destParams[GOVERNMENT] * employment.get("GOV_admn_gov"));
+            sizeTerm += (destParams[GOVERNMENT] * employment.get("GOV_offc_off"));
+
+
+            if (trace) {      
+                    logger.info("tour size term for purpose " + i + " taz "+ zoneNumber + ": "
+                            + " + " + destParams[HOUSEHOLDS]    + " * " + (households)
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("RES_agmin_ag"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("RES_forst_log"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("RES_offc_off"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("ENGY_elec_hi"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("ENGY_ngas_hi"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("ENGY_ptrl_hi"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("ENGY_offc_off"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("CNST_main_xxx"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("CNST_nres_xxx"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("CNST_othr_xxx"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("CNST_res_xxx"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("CNST_offc_off"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_food_hi"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_food_li"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_htec_hi"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_htec_li"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_hvtw_hi"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_hvtw_li"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_lvtw_hi"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_wdppr_hi"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("MFG_offc_off"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("WHSL_whsl_ware"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("WHSL_offc_off"))
+                            + " + " + destParams[RETAIL]    + " * " + (employment.get("RET_auto_ret"))
+                            + " + " + destParams[RETAIL]    + " * " + (employment.get("RET_stor_ret"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("RET_stor_off"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("RET_nstor_off"))
+                            + " + " + destParams[TRANSPORTATION]    + " * " + (employment.get("TRNS_trns_ware"))
+                            + " + " + destParams[TRANSPORTATION]    + " * " + (employment.get("TRNS_trns_off"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("INFO_info_off_li"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("INFO_info_off"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("UTL_othr_off_li"))
+                            + " + " + destParams[OTHEREMPLOYMENT]    + " * " + (employment.get("UTL_othr_off"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("FIRE_fnin_off"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("FIRE_real_off"))
+                            + " + " + destParams[HEALTH]    + " * " + (employment.get("HLTH_hosp_hosp"))
+                            + " + " + destParams[HEALTH]    + " * " + (employment.get("HLTH_care_inst"))
+                            + " + " + destParams[HEALTH]    + " * " + (employment.get("HLTH_othr_off_li"))
+                            + " + " + destParams[K12EDUCATION]    + " * " + (employment.get("K12_k12_k12"))
+                            + " + " + destParams[K12EDUCATION]    + " * " + (employment.get("K12_k12_off"))
+                            + " + " + destParams[HIGHEREDUCATION]    + " * " + (employment.get("HIED_hied_off_inst"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("ENT_ent_ret"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("HOSP_acc_acc"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("HOSP_eat_ret_acc"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("SERV_tech_off"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("SERV_site_li"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("SERV_home_xxx"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("SERV_bus_off"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("SERV_nonp_off_inst"))
+                            + " + " + destParams[OTHERSERVICES]    + " * " + (employment.get("SERV_stor_ret"))
+                            + " + " + destParams[GOVERNMENT]    + " * " + (employment.get("GOV_admn_gov"))
+                            + " + " + destParams[GOVERNMENT]    + " * " + (employment.get("GOV_offc_off")));
+
+                      logger.info("Size term: " + sizeTerm);
+                }
+
+                tourSizeTerm[i] = sizeTerm;
+                if(sizeTerm>0)
+                    tourLnSizeTerm[i] = MathUtil.log(sizeTerm);
+
+                if(trace) logger.info("Log size term "+tourLnSizeTerm[i]);
+
+        }
+        tourSizeTermsSet = true;
+    }//end setTourDestinationSizeTerms
+
     public void setStopSizeTerms(float[][] params){
+        if (employment.containsKey("RETAIL TRADE-Retail"))
+            setStopSizeTermsPI(params);
+        else
+            setStopSizeTermsAA(params);
+    }
+
+    public void setStopSizeTermsPI(float[][] params){
         float sizeTerm;
         ActivityPurpose[] purposes = ActivityPurpose.values();
         for(int i=0;i<purposes.length;i++){
@@ -184,6 +332,90 @@ public class TLUMIPTaz extends Taz {
                         + (p[StopDestinationParameters.NON_RETAIL] * employment.get("WHOLESALE TRADE-Warehouse"))
                         + (p[StopDestinationParameters.GRADESCHOOL] * employment.get("LOWER EDUCATION-Grade School"))
                         + (p[StopDestinationParameters.HHS] * households);
+
+
+            stopSizeTerm[i] = sizeTerm;
+            if (sizeTerm > 0)
+                stopLnSizeTerm[i] = MathUtil.log(sizeTerm);
+        }
+        stopSizeTermsSet = true;
+    }
+
+    public void setStopSizeTermsAA(float[][] params){
+        float sizeTerm;
+        ActivityPurpose[] purposes = ActivityPurpose.values();
+        for(int i=0;i<purposes.length;i++){
+
+        	float[] p = params[i];
+
+            sizeTerm = (p[StopDestinationParameters.HHS] * households)
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("RES_agmin_ag"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("RES_forst_log"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("RES_offc_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("ENGY_elec_hi"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("ENGY_ngas_hi"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("ENGY_ptrl_hi"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("ENGY_offc_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("CNST_main_xxx"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("CNST_nres_xxx"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("CNST_othr_xxx"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("CNST_res_xxx"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("CNST_offc_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_food_hi"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_food_li"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_htec_hi"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_htec_li"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_hvtw_hi"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_hvtw_li"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_lvtw_hi"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_wdppr_hi"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("MFG_offc_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("WHSL_whsl_ware"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("WHSL_offc_off"))
+                    + (p[StopDestinationParameters.RETAIL_PROD] *     employment.get("RET_auto_ret"))
+                    + (p[StopDestinationParameters.RETAIL_PROD] *     employment.get("RET_stor_ret"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("RET_stor_off"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("RET_nstor_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("TRNS_trns_ware"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("TRNS_trns_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("INFO_info_off_li"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("INFO_info_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("UTL_othr_off_li"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("UTL_othr_off"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("FIRE_fnin_off"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("FIRE_real_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("HLTH_hosp_hosp"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("HLTH_care_inst"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("HLTH_othr_off_li"))
+                    + (p[StopDestinationParameters.GRADESCHOOL] *     employment.get("K12_k12_k12"))
+                    + (p[StopDestinationParameters.GRADESCHOOL] *     employment.get("K12_k12_off"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("HIED_hied_off_inst"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("ENT_ent_ret"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("HOSP_acc_acc"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("HOSP_eat_ret_acc"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("SERV_tech_off"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("SERV_site_li"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("SERV_home_xxx"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("SERV_bus_off"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("SERV_nonp_off_inst"))
+                    + (p[StopDestinationParameters.RETAIL_OTHSRVC] *     employment.get("SERV_stor_ret"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("GOV_admn_gov"))
+                    + (p[StopDestinationParameters.NON_RETAIL] *     employment.get("GOV_offc_off"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("RET_auto_ret"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("RET_stor_ret"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("RET_stor_off"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("RET_nstor_off"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("FIRE_fnin_off"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("FIRE_real_off"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("ENT_ent_ret"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("HOSP_acc_acc"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("HOSP_eat_ret_acc"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("SERV_tech_off"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("SERV_site_li"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("SERV_home_xxx"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("SERV_bus_off"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("SERV_nonp_off_inst"))
+                    + (p[StopDestinationParameters.TOTAL_RETAIL] *     employment.get("SERV_stor_ret"));
 
 
             stopSizeTerm[i] = sizeTerm;

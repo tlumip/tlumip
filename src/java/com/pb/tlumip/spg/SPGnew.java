@@ -24,6 +24,7 @@ import com.pb.models.censusdata.SwOccupation;
 import com.pb.models.reference.IndustryOccupationSplitIndustryReference;
 import com.pb.models.synpop.SPG;
 import com.pb.tlumip.model.IncomeSize;
+import com.pb.tlumip.model.IncomeSize2;
 import com.pb.tlumip.model.Industry;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 
@@ -76,16 +77,20 @@ public class SPGnew extends SPG {
 
 	
     public void spgNewInit( HashMap spgPropertyMap, HashMap globalPropertyMap, String baseYear, String currentYear ) {
-        IndustryOccupationSplitIndustryReference ref = new IndustryOccupationSplitIndustryReference((String) globalPropertyMap.get("industry.occupation.to.split.industry.correspondence"));
+        //IndustryOccupationSplitIndustryReference ref = new IndustryOccupationSplitIndustryReference((String) globalPropertyMap.get("industry.occupation.to.split.industry.correspondence"));
+        IndustryOccupationSplitIndustryReference ref = new IndustryOccupationSplitIndustryReference(IndustryOccupationSplitIndustryReference.getSplitCorrespondenceFilepath(globalPropertyMap));
+
         //IncomeSize incSize = new IncomeSize( Double.parseDouble( (String)spgPropertyMap.get("convertTo2000Dollars") ) );
         boolean usingAcs = useAcs(globalPropertyMap);
-        IncomeSize incSize = new IncomeSize(Double.parseDouble((String)spgPropertyMap.get(IncomeSize.INCOME_SIZE_CONVERSION_PROPERTY)));
+        //IncomeSize incSize = new IncomeSize(Double.parseDouble((String)spgPropertyMap.get(IncomeSize.INCOME_SIZE_CONVERSION_PROPERTY)));
+        IncomeSize2 incSize = new IncomeSize2(globalPropertyMap);
         String industryCorrespondenceFile = usingAcs ? (String) globalPropertyMap.get("acs.sw.industry.correspondence.file.name") :
                                                        (String) globalPropertyMap.get("sw_pums_industry.correspondence.fileName");
         String occupCorrespondenceFile = usingAcs ? (String) globalPropertyMap.get("acs.sw.occupation.correspondence.file.name") :
                                                     (String) globalPropertyMap.get("sw_pums_occupation.correspondence.fileName");
 
-        SwIndustry ind = new Industry(industryCorrespondenceFile,baseYear,ref,usingAcs);
+        //if correspondence file is null, then we are not using it and instead doing direct pums -> split industry thing
+        SwIndustry ind = industryCorrespondenceFile == null ?  new Industry(baseYear,ref,usingAcs) : new Industry(industryCorrespondenceFile,baseYear,ref,usingAcs);
         SwOccupation occ = new SwOccupation(occupCorrespondenceFile,baseYear,ref,usingAcs);
         
         spgInit ( spgPropertyMap, globalPropertyMap, incSize, ind, occ, currentYear );

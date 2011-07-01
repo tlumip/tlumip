@@ -165,9 +165,9 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
             if (!dataRead) {
                 wlLogger.info(getName() + ", Reading Labor Flow Data on Node");
 
-                String refFile = globalRb.getString("industry.occupation.to.split.industry.correspondence");
-                indOccSplitRef = new IndustryOccupationSplitIndustryReference(refFile);
-
+                //String refFile = globalRb.getString("industry.occupation.to.split.industry.correspondence");
+//                indOccSplitRef = new IndustryOccupationSplitIndustryReference(refFile);
+                indOccSplitRef = new IndustryOccupationSplitIndustryReference(IndustryOccupationSplitIndustryReference.getSplitCorrespondenceFilepath(globalRb));
                 wlLogger.info("Reading alpha to beta file.");
                 TableDataSet alphaToBetaTable = loadTableDataSet(globalRb,
                         "alpha2beta.file");

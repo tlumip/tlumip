@@ -54,7 +54,8 @@ public class OregonPIPProcessor extends PIPProcessor {
     public OregonPIPProcessor(int timePeriod, ResourceBundle piRb, ResourceBundle globalRb) {
 
         super(timePeriod, piRb, globalRb);
-        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "industry.occupation.to.split.industry.correspondence"));
+//        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "industry.occupation.to.split.industry.correspondence"));
+        indOccRef = new IndustryOccupationSplitIndustryReference(IndustryOccupationSplitIndustryReference.getSplitCorrespondenceFilepath(globalRb));
         this.year = timePeriod < 10 ? "1990" : "2000";
 
     }
@@ -68,7 +69,9 @@ public class OregonPIPProcessor extends PIPProcessor {
     }
 
     public void doProjectSpecificInputProcessing() {
-        indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "industry.occupation.to.split.industry.correspondence"));
+        //indOccRef = new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb, "industry.occupation.to.split.industry.correspondence"));
+        indOccRef = new IndustryOccupationSplitIndustryReference(IndustryOccupationSplitIndustryReference.getSplitCorrespondenceFilepath(globalRb));
+
 
 
         //create PECASZonesI and FloorspaceZonesI.csv file for PI to use

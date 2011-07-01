@@ -47,9 +47,11 @@ public class LaborFlowsTest {
         ResourceBundle rb = ResourceUtil.getResourceBundle("pt");
         ResourceBundle globalRb = ResourceUtil.getResourceBundle("global");
 
-        IndustryOccupationSplitIndustryReference indOccRef =
-                new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb,
-                "industry.occupation.to.split.industry.correspondence"));
+//        IndustryOccupationSplitIndustryReference indOccRef =
+//                new IndustryOccupationSplitIndustryReference( ResourceUtil.getProperty(globalRb,
+//                "industry.occupation.to.split.industry.correspondence"));
+        IndustryOccupationSplitIndustryReference indOccRef = new IndustryOccupationSplitIndustryReference(IndustryOccupationSplitIndustryReference.getSplitCorrespondenceFilepath(globalRb));
+
 
         String[] occupationLabels = indOccRef.getOccupationLabelsByIndex();
 
