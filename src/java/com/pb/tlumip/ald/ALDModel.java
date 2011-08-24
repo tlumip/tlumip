@@ -55,7 +55,6 @@ public class ALDModel extends ModelComponent {
 
 
         String pathToIOFiles = ResourceUtil.getProperty(appRb, "ald.filePath");
-       // String pathToIOFilesArg = "-" + pathToIOFiles;
 
         String yearArg = "-" + t;
 
@@ -64,15 +63,11 @@ public class ALDModel extends ModelComponent {
 
         String rOut = pathToIOFiles + "t" + t +"/zzAld.Rout";
 
-        //String execCommand = "R CMD BATCH "+ pathToRCodeArg + " "
-       //                         + pathToIOFilesArg + " " + yearArg + " " + rCode + " " + rOut;
         String execCommand = "R CMD BATCH " + pathToRCodeArg + " " + pathToPropertiesFileArg + " "
                 + yearArg + " " + rCode + " " + rOut;
         logger.info("Executing "+execCommand);
         Runtime rt = Runtime.getRuntime();
         try {
-//            process = rt.exec("cmd.exe /c " + execCommand);
-//          First delete the indicator file (if there is one) that signals the 
             //java program that the R script has completed.
             File doneFile = new File(pathToIOFiles + "t" + t + "/.RData");
             if(doneFile.exists()) doneFile.delete();
@@ -84,8 +79,12 @@ public class ALDModel extends ModelComponent {
                     Thread.sleep(2000);
                 //Will wait for the .RData file to appear before signaling 
                 //that ALD is done.
-                if(doneFile.exists()) logger.info("ALD is done");
-                else logger.info("The ALD run was NOT successful, check the zzAld.Rout file for details");
+                if(doneFile.exists()) {
+                    logger.info("ALD is done");
+                } else {
+                    logger.info("The ALD run was NOT successful, check the zzAld.Rout file for details");
+                    throw new RuntimeException("Errors occured running the ALD model. Check zzAld.Rout.");
+                }
             } catch (InterruptedException e) {
                 throw new RuntimeException("InterruptedException: ", e);
             }

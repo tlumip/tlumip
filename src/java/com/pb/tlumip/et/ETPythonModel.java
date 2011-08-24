@@ -96,6 +96,7 @@ public class ETPythonModel extends ModelComponent  {
 
     private void indicateEtErrors() {
         logger.error("Errors occurred running ET model.");
+        throw new RuntimeException("Errors occured running the ET model. Check log files.");
     }
 
     private void logInputStream(InputStream stream, boolean error) {

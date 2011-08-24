@@ -23,13 +23,15 @@ import com.pb.common.math.MathUtil;
 import com.pb.common.matrix.*;
 import com.pb.common.util.ResourceUtil;
 import com.pb.models.pt.PTOccupationReferencer;
+import com.pb.models.pt.PTResults;
 import com.pb.models.utils.Tracer;
 import com.pb.tlumip.model.WorldZoneExternalZoneUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class is used for ...
@@ -100,6 +102,9 @@ public class LaborFlows {
         }
 
         this.occRef = occRef;
+        if (occRef instanceof PTOccupation) //set aa mode
+            ((PTOccupation) occRef).setProjectState(rb);
+
         matrixFormat = globalRb.getString("matrix.extension");
 
         this.wzUtil = new WorldZoneExternalZoneUtil(globalRb);
@@ -328,6 +333,8 @@ public class LaborFlows {
         return me.getAlphaFlowProbabilityMatrix();
     }
 
+    private static final Set<Object> DEBUG_FLOW_MATRICES_WRITTEN = Collections.synchronizedSet(new HashSet<Object>());
+
     public Matrix calculateAlphaLaborFlowsMatrix(Matrix propensity, Matrix mcLogsum, Matrix distance, int segment,
             Enum occupation) {
         MatrixExpansion2 me = new MatrixExpansion2(alphaToBeta);
@@ -363,6 +370,28 @@ public class LaborFlows {
         Matrix alphaFlow = me.getAlphaFlowMatrix();
         String name = "TAZLaborFlow_" + occupation.name() + segment + matrixFormat;
         me.setProbabilityMatrix(alphaFlow, name);
+
+        String basePath = ResourceUtil.getProperty(rb,"pt.debug.labor.flow.matrix.path",null);
+        if (basePath != null && DEBUG_FLOW_MATRICES_WRITTEN.add(occupation)) { //only true for first to write to this
+            Map<String,Matrix> ftm = new HashMap<String, Matrix>();
+            ftm.put("LaborFlowPropensity",propensity);
+            ftm.put("LaborFlowBetaFlow",expandedLaborFlows);
+            ftm.put("LaborFlowAlphaConsumption",alphaConsumption[occupation.ordinal()]);
+            ftm.put("LaborFlowAlphaProduction",alphaProduction[occupation.ordinal()]);
+            ftm.put("LaborFlowAlphaFlow",me.getAlphaFlowMatrix());
+            ftm.put("LaborFlowAlphaFlowProbability",me.getAlphaFlowProbabilityMatrix());
+
+            for (String f : ftm.keySet()) {
+                if (new File(basePath,f + "_" + occupation.name()).exists())
+                    break; //somebody else wrote this or is writing it
+                MatrixWriter mWriter = PTResults.createMatrixWriter(f + "_" + occupation.name(),basePath);
+                try {
+                    mWriter.writeMatrix(ftm.get(f));
+                } catch (Exception e) {
+                    logger.error("Error writing out debug labor flow matrix " + f + ": ",e);
+                }
+            }
+        }
 
         return me.getAlphaFlowProbabilityMatrix();
     }

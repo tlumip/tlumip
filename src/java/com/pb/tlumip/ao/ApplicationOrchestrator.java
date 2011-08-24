@@ -21,6 +21,7 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.models.pecas.PIModel;
 import com.pb.models.reference.ModelComponent;
 import com.pb.models.utils.StatusLogger;
+import com.pb.tlumip.aa.AAModel;
 import com.pb.tlumip.ald.ALDModel;
 import com.pb.tlumip.ct.CTModel;
 import com.pb.tlumip.ed.EDControl;
@@ -34,6 +35,7 @@ import com.pb.tlumip.sl.SelectLink;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.util.*;
 
 
@@ -454,6 +456,48 @@ public class ApplicationOrchestrator {
         appRunner.run();
     }
 
+    public void runAAModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb) throws IOException {
+        AAModel aa = new AAModel(appRb,globalRb);
+        //need to make a copy of global.properties to aa.properties
+        String outputPath = rootDir + "/" + scenarioOutputs + "/t" + t + "/";
+        copyFile(new File(outputPath + "global.properties"),new File(outputPath + "aa.properties"));
+        aa.startModel(baseYear, timeInterval);
+    }
+
+    private void copyFile(File sourceFile, File destFile) throws IOException {
+        if (!destFile.exists())
+            destFile.createNewFile();
+        FileInputStream fIn = null;
+        FileOutputStream fOut = null;
+        FileChannel source = null;
+        FileChannel destination = null;
+        try {
+            fIn = new FileInputStream(sourceFile);
+            source = fIn.getChannel();
+            fOut = new FileOutputStream(destFile);
+            destination = fOut.getChannel();
+            long transfered = 0;
+            long bytes = source.size();
+            while (transfered < bytes)
+                destination.position(transfered += destination.transferFrom(source,0,source.size()));
+        } finally {
+            simpleClose(source);
+            simpleClose(fIn);
+            simpleClose(destination);
+            simpleClose(fOut);
+        }
+    }
+
+    private void simpleClose(Closeable c) {
+        if (c != null) {
+            try {
+                c.close();
+            } catch (IOException e) {
+                //swallow
+            }
+        }
+    }
+
     public void runSPG2Model(int baseYr, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
 
         String baseYear = Integer.toString(baseYr);
@@ -510,12 +554,13 @@ public class ApplicationOrchestrator {
         }
         try {
             logger.info("Writing the application name and the timeInterval for run into the run log");
-            if (appName.toUpperCase().equals("PI")) {
-                int piPriorRun = Integer.parseInt(runLogHashmap.get("PI.LAST.RUN"));
-                runLogWriter.write("PI.PRIOR.RUN=" + piPriorRun);
+            String upperAppName = appName.toUpperCase();
+            if (upperAppName.equals("PI") || upperAppName.equals("AA")) {
+                int piPriorRun = Integer.parseInt(runLogHashmap.get(upperAppName + ".LAST.RUN"));
+                runLogWriter.write(upperAppName + ".PRIOR.RUN=" + piPriorRun);
                 runLogWriter.newLine();
             }
-            runLogWriter.write(appName.toUpperCase() + ".LAST.RUN=" + t);
+            runLogWriter.write(upperAppName + ".LAST.RUN=" + t);
             runLogWriter.newLine();
             runLogWriter.close();
         } catch (IOException e) {
@@ -606,6 +651,9 @@ public class ApplicationOrchestrator {
             }else if (appName.equalsIgnoreCase("PI")){
                 logger.info("AO will now start PI for simulation year " + (baseYear+t));
                 ao.runPIModel(baseYear,t,appRb,appRb);
+            } else if (appName.equalsIgnoreCase("AA")) {
+                logger.info("AO will now start AA for simulation year " + (baseYear+t));
+                ao.runAAModel(baseYear, t, appRb, appRb);
             }else if(appName.equalsIgnoreCase("PIDAF")){
                 logger.info("AO will now start PIDAF for simulation year " + (baseYear+t));
                 ao.runPIDAFModel(t,pathToAppRb,pathToAppRb,configFileOrNodeName);

@@ -1,7 +1,10 @@
 package com.pb.tlumip.pt;
 
 import com.pb.common.model.ModelException;
+import com.pb.common.util.ResourceUtil;
 import com.pb.models.pt.PTOccupationReferencer;
+
+import java.util.ResourceBundle;
 
 /**
  * This class is used for ...
@@ -24,6 +27,10 @@ public enum PTOccupation implements PTOccupationReferencer {
      */
     public static void setUsingAA(boolean usingAA) {
         USING_AA = usingAA;
+    }
+
+    public static void setProjectState(ResourceBundle rb) {
+        setUsingAA(ResourceUtil.getBooleanProperty(rb,"using.aa",false));
     }
 
     /**
