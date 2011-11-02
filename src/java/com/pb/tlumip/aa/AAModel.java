@@ -69,7 +69,8 @@ public class AAModel extends ModelComponent {
                 }
             }).start();
             logInputStream(p.getInputStream(),false);
-            if (p.waitFor() != 0)
+            int returnCode = p.waitFor();
+            if (returnCode != 0 && returnCode != 2) //0 = normal, 2 = max iterations (blech)
                 indicateAAErrors();
         } catch (IOException e) {
             logger.error("An IO exception occurred while trying to run AA model",e);
