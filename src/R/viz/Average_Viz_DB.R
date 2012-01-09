@@ -21,6 +21,7 @@
 #   2. Output: SQLite database filename
 #   3. Option: Select option to wrtie-out VIZ DB contents
 #   4. Input : CSV file with a list of fields to query
+#   5. Option: Only compare common TSTEPs across DBs
 
 # Steps:
 #   1. Connects to databases (Inputs/Output)
@@ -37,24 +38,30 @@
 #   Ben Stabler, stabler@pbworld.com, 081810
 #   Amar Sarvepalli, sarvepalli@pbworld.com, 062411
 
+# Revisions
+#   10/6/11 to optionally allow comparisons for TSTEPs common to all databases
+
 #=========================================================================================================
 # INPUT AND OUTPUT FILES
 
   # Specify all input database file names as list 
-    dbFileNames = c("C:\\projects\\Tlumip\\SWIMVIZ_061611\\SCEN_ned_test\\SCEN_ned_test_t20.db",
-                    "C:\\projects\\Tlumip\\SWIMVIZ_061611\\SCEN_ned_test\\SCEN_ned_test_t20_Copy.db")
+    dbFileNames = c("C:\\projects\\swinvizAVG\\Copy_SCEN_2006to2040_Reference.db",
+                    "C:\\projects\\swinvizAVG\\SCEN_2006to2040_Reference.db")
   
   # Specify an output database file name
-    outputDbFileName = "C:\\projects\\Tlumip\\swimviz\\average_test0.db"
+    outputDbFileName = "C:\\projects\\swinvizAVG\\average_test0.db"
   
   # Option to write out contents of the database (list of tables and fields) 
-    masterTable = F  
+    masterTable = T 
+    
+  # Option to only compare common TSTEPs across years
+    onlyCommonTstep = T
   
   # Specify the master table (creates this file if the "masterTable = T" or else it's an input file)   
-    outMasterTable = ("C:\\projects\\Tlumip\\SWIMVIZ_061611\\SCEN_ned_test\\DataBaseDescription_0.csv")
+    outMasterTable = ("C:\\projects\\swinvizAVG\\DataBaseDescription_0.csv")
     
   # Specify output file for the database checker
-    outCheckFile = ("C:\\projects\\Tlumip\\SWIMVIZ_061611\\SCEN_ned_test\\CheckDatabaseFiles.csv")
+    outCheckFile = ("C:\\projects\\swinvizAVG\\CheckDatabaseFiles.csv")
 #=========================================================================================================
 # CREATE OUTPUT DATABASE
 
@@ -72,26 +79,40 @@
   
   
 # FUNCTIONS
-  buildQuery = function(averageFieldList) {
+  buildQuery = function(averageFieldList, tsteps=NA) {
   
     #Get info
     tableName = averageFieldList["tableName"]
     keys = averageFieldList["keys"]
     fields = averageFieldList["fields"]
     
-    query = paste("SELECT", keys, ",", fields, "FROM", tableName)
+    if(is.na(tsteps)) {
+    	query = paste("SELECT", keys, ",", fields, "FROM", tableName)
+    } else {
+      query = paste("SELECT", keys, ",", fields, "FROM", tableName, "WHERE TSTEP IN (", paste(tsteps, collapse=","), ")")
+    }
     return(query)
   } 
   
   
 #=========================================================================================================
-# Check if tables and length of tables in the input databases are of same length
+# Check if tables and length of tables in the input dabases are of same length
+# writes output file to the 
 #=========================================================================================================
 for (d in 1:length(dbFileNames)){
     # Establish connection to input database
       inDB = dbConnect(m, dbname = dbFileNames[d]) 
       fileName <- unlist(strsplit(dbFileNames[d],"\\\\"))
       n = length(unlist(strsplit(dbFileNames[d],"\\\\")))
+      
+        #get common years
+        if(onlyCommonTstep) {
+          if(d==1) {
+        		tsteps = dbGetQuery(inDB, "SELECT TSTEP FROM TSTEP")$TSTEP
+        	} else {
+        	  tsteps = dbGetQuery(inDB, paste("SELECT TSTEP FROM TSTEP WHERE TSTEP IN (", paste(tsteps, collapse=","), ")"))$TSTEP
+        	}
+        }
   
         # Get list of tables in the input database
            tablesDB = dbListTables(inDB,"SELECT ALL")
@@ -129,7 +150,7 @@ for (d in 1:length(dbFileNames)){
           checkTables <- cbind(checkTables,t) 
         } else {
           continueFurther = F  
-          print(paste("Database files 1", dbFileNames[d]," and", d, dbFileNames[d], "have different tables"))
+          print(paste("Database files 1", dbFileNames[d]," and", d, dbFileNames[d-1], "have different tables and/or fields"))
 
         }  
      }
@@ -269,7 +290,13 @@ write.csv(checkTables,outCheckFile,row.names=F)
         # Connect to input db and query
           cat(paste("Connect to", dbFileNames[j], "\n"))
           inDB = dbConnect(m, dbname = dbFileNames[j])
-          query = buildQuery(averageFields[[i]])
+          
+          # Build query with TSTEP filter if desired
+          if(onlyCommonTstep) {
+          	query = buildQuery(averageFields[[i]], tsteps)
+          } else {
+          	query = buildQuery(averageFields[[i]])
+          }
           cat(paste(query, "\n"))
           tableData = dbGetQuery(inDB, query)
           colnames(tableData) = toupper(colnames(tableData))
@@ -313,6 +340,6 @@ write.csv(checkTables,outCheckFile,row.names=F)
     
     cat(paste("SWIM Average VIZ DB Complete at", Sys.time(), "\n"))
 if (continueFurther == F) {
-   print(paste("Database files 1", dbFileNames[d]," and", d, dbFileNames[d], "have different tables"))
+   print(paste("Database files ", dbFileNames[d]," and", d, dbFileNames[d-1], "have different tables"))
    }
 #=========================================================================================================
