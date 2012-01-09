@@ -119,6 +119,7 @@ if(isMicro!="T") {
 indexes = list() #to keep track of created indexes
 
 for(i in 1:length(tsteps)) {
+    cat(paste("Working on file ",dbFileNames[i],"\n"))
   #get tstep database
   tdb = dbConnect(m, dbname = dbFileNames[i])
   dbSchema = dbGetQuery(tdb, "SELECT * FROM SQLITE_MASTER")
@@ -194,6 +195,7 @@ for(i in 1:length(tsteps)) {
   
   #close tstep database
   sqliteCloseConnection(tdb)
+    cat(paste("Done with file ",dbFileNames[i],"\n"))
 }
 
 #########################################################################

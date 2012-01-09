@@ -4,6 +4,12 @@
 #  D211FILE="z:/network.d211" EXATTFILE="z:/extraAttribs.csv" SPATIALONLY=F
 #Ben Stabler, stabler@pbworld.com, 070110
 
+# If this script is run manually the use the following parameters
+# allZonesFileName = "allzones.csv"
+# genSpatialOnly = F
+# extraAttribsFileName = "export_01_06.csv"
+# networkFileName ="network.d211" 
+
 #######################################################################
 
 library(RSQLite)
@@ -25,8 +31,8 @@ allZonesFileName = Sys.getenv("ALLZONESFILENAME") #"Z:/viz/allzones.csv"
 genSpatialOnly = Sys.getenv("SPATIALONLY") #F
 
 #network and extra attributes file
-extraAttribsFileName = Sys.getenv("EXATTFILE") #"z:/network.d211"
-networkFileName = Sys.getenv("D211FILE") #"z:/extraAttribs.csv"
+extraAttribsFileName = Sys.getenv("EXATTFILE") #"z:/extraAttribs.csv"
+networkFileName = Sys.getenv("D211FILE")#"z:/network.d211" 
 
 #########################################################################
 #calculated parameters
@@ -184,6 +190,11 @@ bzones = dbGetQuery(db,"SELECT BZONE FROM BZONE")[[1]]
 ActivityLocations = read.csv("ActivityLocations.csv")
 ActivityLocations$Activity = gsub(" |&","_",as.character(ActivityLocations$Activity)) #replace " " & "&"
 
+# Remove import (_impt), export (_expt) and govt (_acct_) activity ?? 
+# ActivityLocations <- ActivityLocations[grepl("_expt", as.character(ActivityLocations$Activity))== FALSE,]
+# ActivityLocations <- ActivityLocations[grepl("_impt", as.character(ActivityLocations$Activity))== FALSE,]
+# ActivityLocations <- ActivityLocations[grepl("_acct_",as.character(ActivityLocations$Activity))== FALSE,]
+
 key = paste(ActivityLocations$Activity, ActivityLocations$ZoneNumber)
 
 #Add ZoneMakeUse dat
@@ -192,7 +203,7 @@ zMakeUse$Activity = gsub(" |&","_",as.character(zMakeUse$Activity)) #replace " "
 zMakeUse$Commodity = gsub(" |&","_",as.character(zMakeUse$Commodity)) #replace " " & "&"
 
 zMakeUseLabor = zMakeUse[zMakeUse$MorU=="U",]
-zMakeUseLabor = zMakeUseLabor[grep("^[0-9]+",zMakeUse$Commodity),]
+zMakeUseLabor = zMakeUseLabor[grep("[A-Z][0-9]-",zMakeUse$Commodity),]
 zMakeUseLabor = tapply(zMakeUseLabor$Amount, list(zMakeUseLabor$ZoneNumber, zMakeUseLabor$Activity), sum)
 zMakeUseLaborTable = data.frame(Zone=rownames(zMakeUseLabor), Activity=rep(colnames(zMakeUseLabor), each=length(rownames(zMakeUseLabor))), Value=as.vector(zMakeUseLabor))
 
@@ -229,7 +240,7 @@ if(isTSYear) {
   ActivityLocations$Employment = empOut$EMP[match(key,keyEmp)]
 }
 
-#Activity quantities in 1990$ except HHs which are HHs
+#Activity quantities in 2009$ except HHs which are HHs
 dbGetQuery(db,"CREATE TABLE ActivityLocations (
   BZONE INT, 
   ACTIVITY TEXT, 
@@ -246,7 +257,8 @@ dbGetQuery(db, "CREATE INDEX ActivityLocationsIndex ON ActivityLocations (BZONE,
 
 #Read in ExchangeResults.csv
 ExchangeResults = read.csv("ExchangeResults.csv")
-ExchangeResults$Commodity = gsub(" |&","_",as.character(ExchangeResults$Commodity)) #replace " " & "&"
+ExchangeResults = ExchangeResults[grepl("Receipts",ExchangeResults$Commodity)==FALSE,] #Remove all "Receipts"
+ExchangeResults$Commodity = gsub(" |&","_",as.character(ExchangeResults$Commodity))    #replace " " & "&"
 
 key = paste(ExchangeResults$Commodity, ExchangeResults$ZoneNumber)
 ExchangeResults$TransportComponent1 = 0
@@ -275,7 +287,7 @@ if("TransportComponent1" %in% colnames(zUtil)) {
   #determine if B or S value should be used
   zUtil$BorS = "B"
   zUtil$BorS[grep("^FLR",zUtil$Commodity)] = "S"
-  zUtil$BorS[grep("^[0-9]+",zUtil$Commodity)] = "S"
+  zUtil$BorS[grep("[A-Z][0-9]-",zUtil$Commodity)] = "S"
   zUtil = zUtil[zUtil$BuyingOrSelling==zUtil$BorS,]
 
   #match up data
@@ -392,7 +404,8 @@ if(length(sellingMats > 0)) {
   
   commodityNames = gsub("selling_|[.]zmx","",basename(sellingMats))
   commodityNames = gsub(" |&","_",commodityNames) #replace " " & "&"
-  
+  commodityNames = gsub("-","_",commodityNames) #replace "-" 
+    
   dbGetQuery(db,"CREATE TABLE BuySellMatrix (
     FROMBZONE INTEGER,
     TOBZONE INTEGER,
@@ -1063,7 +1076,6 @@ if(nrow(read.csv("ampeakRouteBoardings.csv"))>0) {
       paste(ntBoardings$Route, ntBoardings$ACCESSMODE))]
     }
   }
-
   
   dbWriteTable(db, "BOARDINGS", amBoardings, row.names=F)
 }
@@ -1108,14 +1120,79 @@ modelwide = rbind(modelwide,
   data.frame(DATA=paste(actsum$Activity, "Size", sep="_"), VALUE=actsum$Size))
 
 #construction dollars
-constDollars = read.csv("ConstructionDollarDataforALD.csv")
-constDollars$ConstructionType = gsub(" |&","_",as.character(constDollars$ConstructionType)) #replace " " & "&"
+constDollars = read.csv("construction_forecast.csv")
+constDollars$activity = gsub(" |&","_",as.character(constDollars$activity)) #replace " " & "&"
 
 modelwide = rbind(modelwide, 
-  data.frame(DATA=paste(constDollars$ConstructionType, "TotalDollars", sep="_"), VALUE=constDollars$TotalDollars))
+  data.frame(DATA=paste(constDollars$activity, "TotalDollars", sep="_"), VALUE=constDollars$dollars))
 
 dbWriteTable(db, "MODELWIDE", modelwide, row.names=F)
 
+
+#########################################################################
+# Add Activity Constraints Index Table
+#########################################################################
+
+if(file.exists("ActivityConstraintsI.csv")) {
+    actCon = read.csv("ActivityConstraintsI.csv")
+    
+    # Add BZONE and create data frame by BZONE
+     actCon$BZONE = azone2bzone(actCon$taz,allZones$AZONE,allZones$BZONE)
+     actCon$BZACT = paste(actCon$BZONE,actCon$Activity,sep="-")
+     actConBzQnt  = tapply(actCon$Quantity, actCon$BZACT, sum) 
+     actConBzQnt = as.data.frame(actConBzQnt)
+     actConBzQnt$ACTIVITY = actCon$Activity[match(rownames(actConBzQnt),actCon$BZACT)]
+     colnames(actConBzQnt) <- c("QUANTITY_CON", "ACTIVITY_CON") 
+    
+     temp_act <- dbGetQuery(db, "select * from ActivityLocations") 
+     KEY       <- paste(temp_act$BZONE,temp_act$ACTIVITY,sep="-")
+     temp_act$QUANTITY_CON <-  actConBzQnt$QUANTITY_CON[match(KEY,rownames(actConBzQnt))] 
+     temp_act$QUANTITY_CON[is.na(temp_act$QUANTITY_CON)] <- 0
+    
+     dbGetQuery(db, "DROP TABLE ActivityLocations") 
+     dbWriteTable(db, "ActivityLocations", temp_act, append=T, row.names=F)  
+}
+ 
+#########################################################################
+# Add Floorspace Index Table
+#########################################################################
+flrSpace = read.csv("FloorspaceI.csv")
+flrSpace$commodity <- gsub(" |&","_",as.character(flrSpace$commodity))
+
+# Add BZONE and create data frame by BZONE
+ flrSpace$BZONE = azone2bzone(flrSpace$taz,allZones$AZONE,allZones$BZONE)
+ flrSpace$BZCOM = paste(flrSpace$BZONE,flrSpace$commodity,sep="-")
+ flrComBzQnt    = tapply(flrSpace$quantity, flrSpace$BZCOM, sum) 
+ flrComBzQnt    = as.data.frame(flrComBzQnt)
+ colnames(flrComBzQnt) <- c("QUANTITY_CON")
+  
+ flrTable <- dbGetQuery(db, "select * from FLR_INVENTORY")
+ key1 <- paste(flrTable$BZONE,flrTable$COMMODITY, sep="-")
+ flrTable$QUANTITY_CON <-  flrComBzQnt$QUANTITY_CON[match(key1,rownames(flrComBzQnt))]
+
+ dbGetQuery(db, "DROP TABLE FLR_INVENTORY") 
+ dbWriteTable(db, "FLR_INVENTORY", flrTable, append=T, row.names=F) 
+ 
+ 
+#########################################################################
+# Add Exchange Results Targets Index  Table
+#########################################################################
+
+if(file.exists("ExchangeResultsTargetsI.csv")) {
+     exRes = read.csv("ExchangeResultsTargetsI.csv")
+     exRes$Commodity <- gsub(" |&","_",as.character(exRes$Commodity))
+     key2 <- paste(exRes$ZoneNumber,exRes$Commodity , sep="-")
+     
+     exTable <- dbGetQuery(db, "select * from ExchangeResults") 
+     key1 <- paste(exTable$BZONE,exTable$Commodity , sep="-")
+     exTable$Price_I <- exRes$Price[match(key1,key2)]
+     exTable$Region <- exRes$region[match(key1,key2)]
+     exTable$Type <- exRes$type[match(key1,key2)]
+     
+     dbGetQuery(db, "DROP TABLE ExchangeResults") 
+     dbWriteTable(db, "ExchangeResults", exTable, append=T, row.names=F)  
+}
+  
 #########################################################################
 #Close and compact database
 #########################################################################
