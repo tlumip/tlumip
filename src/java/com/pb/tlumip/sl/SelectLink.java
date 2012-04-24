@@ -72,7 +72,22 @@ public class SelectLink {
                 TripClassifier.getClassifier(rb,"LDT"),
                 TripClassifier.getClassifier(rb,"CT"),
                 TripClassifier.getClassifier(rb,""));
-        ts.synthesizeTripsAndAppendToTripFile(new HashSet<Integer>());
+        String internalZoneFile = rb.getString("sl.internal.zone.file");
+        Set<Integer> internalZones = new HashSet<Integer>();
+        if (internalZoneFile != null) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(rb.getString("sl.current.directory") + internalZoneFile));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (line.length() > 0)
+                        internalZones.add(Integer.parseInt(line));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        ts.synthesizeTripsAndAppendToTripFile(internalZones);
     }
 
     void runRScript(String rScriptKey, String name, String ... additionalArgs) {
