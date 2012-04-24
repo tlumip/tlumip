@@ -5,10 +5,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.*;
 import com.pb.tlumip.ts.DemandHandler;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -55,6 +52,23 @@ public class TripSynthesizer {
 
     OdMatrixGroup.OdMatrixGroupCollection getSynthesizedMatrices(boolean auto) {
         return auto ? autoMatrices : truckMatrices;
+    }
+
+    private String buildSelectLinkTripFile(TripFile tf) {
+        int i = tf.path.lastIndexOf(".");
+        return tf.path.substring(0,i) + "_select_link" + tf.path.substring(i);
+    }
+
+    public void synthesizeTripsAndAppendToTripFile(Set<Integer> internalZones) {
+        logger.info("Synthesizing SDT");
+        synthesizeTripsAndAppendToTripFile(sdtTripFile,true,buildSelectLinkTripFile(sdtTripFile),internalZones);
+        logger.info("Synthesizing LDT");
+        synthesizeTripsAndAppendToTripFile(ldtTripFile,true,buildSelectLinkTripFile(ldtTripFile),internalZones);
+        logger.info("Synthesizing CT");
+        synthesizeTripsAndAppendToTripFile(ctTripFile,false,buildSelectLinkTripFile(ctTripFile),internalZones);
+        logger.info("Synthesizing ET");
+        synthesizeTripsAndAppendToTripFile(etTripFile,false,buildSelectLinkTripFile(etTripFile),internalZones);
+
     }
 
     void synthesizeTrips() {
@@ -827,5 +841,165 @@ public class TripSynthesizer {
 
     private enum PATripType {
         HBW,HBO,NHB
+    }
+
+    private void synthesizeTripsAndAppendToTripFile(TripFile tripFile, boolean autoClass, String newFile, Set<Integer> internalZones) {
+        SelectLinkData sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
+        //create external numbers and mapping to internal numbers
+        List<String> extNums = formBaseExternalNumbers();
+        for (String s : sld.getExternalStationList())
+            extNums.add(s);
+        Map<String,Integer> zoneMatrixMap = new HashMap<String, Integer>();
+        for (String zone : sld.getExteriorZones())
+            if (!extNums.remove(zone))
+                System.out.println("Couldn't remove: " + zone);
+        int counter = 1;
+        for (String s : extNums)
+            zoneMatrixMap.put(s,counter++);
+
+
+
+
+        double tripsLostToWeaving = 0.0; //trips that can't be used because od has a weaving path
+        Set<String> exteriorZones = sld.getExteriorZones();
+        int originId = -1;
+        int destId = -1;
+        double tripCounter = 0;
+        double eeTripCounter = 0;
+        double iiTripCounter = 0;
+        double eiTripCounter = 0;
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(tripFile.path));
+            String line = reader.readLine();
+            PrintWriter writer = new PrintWriter(newFile);
+
+            //read header
+            String[] header;
+            counter = 0;
+            header = line.trim().split(",");
+            for (String h : header) {
+                if (h.equals(tripFile.originField))
+                    originId = counter;
+                else if (h.equals(tripFile.destField))
+                    destId = counter;
+                counter++;
+            }
+            logger.info("origin dest fields " + originId + " " + destId);
+
+            String newHeader = line.trim() + "EXTERNAL_ZONE_ORIGIN,EXTERNAL_ZONE_DESTINATION,SELECT_LINK_PERCENT";
+            writer.println(newHeader);
+
+
+            //read trips
+            counter = 0;
+            while ((line = reader.readLine()) != null) {
+                if (++counter % 100000 == 0 && counter < 1000000)
+                    logger.info("\tProcessed " + counter + " Trips.");
+                if (counter % 1000000 == 0)
+                    logger.info("\tProcessed " + counter + " Trips.");
+
+                String[] tripFileLine = line.trim().split(",");
+                String origin = tripFileLine[originId];
+                String dest = tripFileLine[destId];
+                String od = SelectLinkData.formODLookup(origin,dest);
+                tripFile.classifier.setExtraData(sld,tripFileLine);
+                if (!sld.containsOd(od)) {
+                    continue;
+                }
+
+                double trips = tripFile.getTripFromRecord(tripFileLine);//*factors[tripFile.getModeIdFromRecord(tripFileLine)];
+                if (trips == 0.0) {
+                    try {
+                        if (internalZones.contains(Integer.parseInt(origin)) && internalZones.contains(Integer.parseInt(dest)))
+                            writer.println(line.trim() + origin + "," + dest + ",0");
+                    } catch (NumberFormatException e) {
+                        //ignore
+                    }
+                    continue;
+                }
+
+                tripCounter += trips;
+                int mo = zoneMatrixMap.containsKey(origin) ? zoneMatrixMap.get(origin) : -1;
+                int md = zoneMatrixMap.containsKey(dest) ? zoneMatrixMap.get(dest) : -1;
+
+                List<String> additionalEntries = new LinkedList<String>();
+                if (sld.getWeavingZones().contains(od)) {
+                    List<SelectLinkData.WeavingData> wds = sld.getWeavingData(od);
+                    if (wds == null) {
+                        logger.warn("Missing weaving data for " + od);
+                        continue;
+                    }
+                    for (SelectLinkData.WeavingData wd : wds) {
+                        List<String> links = wd.getFromNodeToNodes();
+                        if (wd.isInvalid()) {
+                            logger.warn("Skipping trips because of invalid path: " + line.trim());
+                            tripsLostToWeaving++;
+                            continue;
+                        }
+                        boolean skip = wd.isFirstLinkIn();  //skip trips that are outside the region
+                        int lcounter = 0;
+                        int lastId = mo;
+                        for (String link : links) {
+                            SelectLinkData.LinkData ld = wd.getRepresentativeLinkData(lcounter);
+                            int lid = zoneMatrixMap.get(ld.getMatrixEntryName());
+                            if (!skip)
+                                additionalEntries.add(lastId + "," + lid + "," + wd.getPercentage());
+                            skip ^= true; //skip every other link
+                            lastId = lid;
+                            lcounter++;
+                        }
+                        if (!skip)
+                            additionalEntries.add(lastId + "," + md + "," + wd.getPercentage());
+                    }
+                    for (String ae : additionalEntries)
+                        writer.println(line.trim() + ae);
+                    continue;
+                }
+
+                //set interior/exterior
+                boolean ee = exteriorZones.contains(origin) && exteriorZones.contains(dest);
+                boolean ii = !exteriorZones.contains(origin) && !exteriorZones.contains(dest);
+                if (ee)
+                    eeTripCounter += trips;
+                else if (ii)
+                    iiTripCounter += trips;
+                else
+                    eiTripCounter += trips;
+
+                //subtract from original od in matrix
+                List<SelectLinkData.LinkData> linkData = sld.getDataForOd(od);
+                for (SelectLinkData.LinkData ld : linkData) {
+                    int lid = zoneMatrixMap.get(ld.getMatrixEntryName());
+                    if (ii) {
+                        if (ld.getIn())
+                            additionalEntries.add(lid + "," + md + "," + ld.getOdPercentage(od));
+                        else
+                            additionalEntries.add(mo + "," + lid + "," + ld.getOdPercentage(od));
+                    } else {
+                        if (exteriorZones.contains(origin) && !exteriorZones.contains(dest))
+                            additionalEntries.add(lid + "," + md + "," + ld.getOdPercentage(od));
+                        else if (!exteriorZones.contains(origin) && exteriorZones.contains(dest))
+                            additionalEntries.add(mo + "," + lid + "," + ld.getOdPercentage(od));
+                    }
+                    if (ee) {
+                        if (ld.getIn())  //don't double count, but still need to split trip across "outs"
+                            for (SelectLinkData.LinkData ldo : linkData)
+                                if (!ldo.getIn())
+                                    additionalEntries.add(lid + "," + zoneMatrixMap.get(ldo.getMatrixEntryName()) + "," + ld.getOdPercentage(od)*ldo.getOdPercentage(od));
+                    }
+                }
+                for (String ae : additionalEntries)
+                    writer.println(line.trim() + ae);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        logger.info("Total ee trips tallied: " + Math.round(eeTripCounter));
+        logger.info("Total ei/ie trips tallied: " + Math.round(eiTripCounter));
+        logger.info("Total ii trips tallied: " + Math.round(iiTripCounter));
+        logger.info("Total trips tallied: " + Math.round(tripCounter));
+        logger.info(String.format("Trips lost to weaving: %.2f (%.2f%%)",tripsLostToWeaving,tripsLostToWeaving / tripCounter * 100));
     }
 }

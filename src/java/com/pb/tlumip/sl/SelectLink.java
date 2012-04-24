@@ -44,6 +44,7 @@ public class SelectLink {
             case GENERATE_PATHS : generatePaths(); break;
             case GENERATE_SELECT_LINK_DATA : generateSelectLinkData(); break;
             case CREATE_SUBAREA_MATRIX : createSubAreaMatrix(); break;
+            case APPEND_SELECT_LINK_TO_TRIPS : appendSelectLinkDataToTrips(); break;
         }
     }
 
@@ -58,6 +59,20 @@ public class SelectLink {
     private void createSubAreaMatrix() {
         SubAreaMatrixCreator samc = new SubAreaMatrixCreator(rb);
         samc.createSubAreaMatrices();
+    }
+
+    private void appendSelectLinkDataToTrips() {
+        String dataFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.results");
+        SelectLinkData autoSelectLinkData = new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS,rb);
+        SelectLinkData truckSelectLinkData = new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS,rb);
+        autoSelectLinkData.reconcileAgainstOtherSelectLinkData(truckSelectLinkData);
+
+        TripSynthesizer ts = new TripSynthesizer(rb,autoSelectLinkData,truckSelectLinkData,
+                TripClassifier.getClassifier(rb,"SDT"),
+                TripClassifier.getClassifier(rb,"LDT"),
+                TripClassifier.getClassifier(rb,"CT"),
+                TripClassifier.getClassifier(rb,""));
+        ts.synthesizeTripsAndAppendToTripFile(new HashSet<Integer>());
     }
 
     void runRScript(String rScriptKey, String name, String ... additionalArgs) {

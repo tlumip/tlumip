@@ -446,6 +446,10 @@ public class SelectLinkData {
             return odPercentages.get(od);
         }
 
+        public int getExternalStation() {
+            return externalStation;
+        }
+
 
         public boolean getIn() {
             return in;
