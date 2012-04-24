@@ -76,7 +76,7 @@ public class SelectLink {
         Set<Integer> internalZones = new HashSet<Integer>();
         if (internalZoneFile != null) {
             try {
-                BufferedReader reader = new BufferedReader(new FileReader(rb.getString("sl.current.directory") + internalZoneFile));
+                BufferedReader reader = new BufferedReader(new FileReader(internalZoneFile));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     line = line.trim();
