@@ -35,8 +35,10 @@ public abstract class TripClassifier {
         try {
             NEW_CSVFileReader reader = new NEW_CSVFileReader();
             logger.info("Reading swim scaling data.");
-            swimScaling = reader.readFile(new File(rb.getString("sl.swim.scaling.file")));
-            swimScaling.buildIndex(1);
+            if (new File(rb.getString("sl.swim.scaling.file")).exists()) {
+                swimScaling = reader.readFile(new File(rb.getString("sl.swim.scaling.file")));
+                swimScaling.buildIndex(1);
+            }
             logger.info("Reading sdt household data.");
             hhData = reader.readFile(new File(rb.getString("sdt.household.data")));
             hhData.buildIndex(1);

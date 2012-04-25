@@ -67,11 +67,11 @@ public class SelectLink {
         SelectLinkData truckSelectLinkData = new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS,rb);
         autoSelectLinkData.reconcileAgainstOtherSelectLinkData(truckSelectLinkData);
 
-        TripSynthesizer ts = new TripSynthesizer(rb,autoSelectLinkData,truckSelectLinkData,
-                TripClassifier.getClassifier(rb,"SDT"),
-                TripClassifier.getClassifier(rb,"LDT"),
-                TripClassifier.getClassifier(rb,"CT"),
-                TripClassifier.getClassifier(rb,""));
+        TripSynthesizer ts = new TripSynthesizer(rb,autoSelectLinkData,truckSelectLinkData,null,null,null,null);
+//                TripClassifier.getClassifier(rb,"SDT"),
+//                TripClassifier.getClassifier(rb,"LDT"),
+//                TripClassifier.getClassifier(rb,"CT"),
+//                TripClassifier.getClassifier(rb,""));
         String internalZoneFile = rb.getString("sl.internal.zone.file");
         Set<Integer> internalZones = new HashSet<Integer>();
         if (internalZoneFile != null) {
