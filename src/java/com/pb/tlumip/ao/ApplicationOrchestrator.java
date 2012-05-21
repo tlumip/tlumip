@@ -128,6 +128,11 @@ public class ApplicationOrchestrator {
         }// else return - base year prop file has already been created.
     }
 
+    private String getUserInputsDirectoryPart() {
+        //return "user_inputs/" + scenarioInputs;
+        return scenarioInputs + "/user_inputs";
+    }
+
     private void createRunLogPropFile(){
 
         if(baseScenarioName.equals(scenarioName)){
@@ -158,7 +163,7 @@ public class ApplicationOrchestrator {
                 runLogWriter.newLine();
                 runLogWriter.write("SCENARIO.OUTPUTS=" + scenarioOutputs);
                 runLogWriter.newLine();
-                runLogWriter.write("USER.INPUTS=" + "user_inputs/" + scenarioInputs);
+                runLogWriter.write("USER.INPUTS=" + getUserInputsDirectoryPart());
                 runLogWriter.newLine();
                 runLogWriter.flush();
             } catch (IOException e) {
@@ -218,7 +223,7 @@ public class ApplicationOrchestrator {
             }else {
                 if(t==1){
                     logger.info("No applications have been run yet so no run log exists");
-                }else logger.warn("NO RUN LOG EXISTS IN t" + i + " - PROPERTY FILES COULD BE AFFECTED" );
+                }else logger.debug("NO RUN LOG EXISTS IN t" + i + " - PROPERTY FILES COULD BE AFFECTED" );
                 i++;
             }
         }
@@ -291,7 +296,7 @@ public class ApplicationOrchestrator {
 
     private List<File> findTemplatUpdateFiles(String appName) {
         List<File> templateUpdateFiles = new LinkedList<File>();
-        String templateUpdatePathPrefix = rootDir + "/user_inputs/" + scenarioOutputs + "/t";
+        String templateUpdatePathPrefix = rootDir + "/" + getUserInputsDirectoryPart() + "/t";
         String templateUpdatePathSuffix = "/" + appName + "TemplateUpdate.properties";
         for (int i = 0; i <= t; i++) {
             File templateUpdateFile = new File(templateUpdatePathPrefix + i + templateUpdatePathSuffix);
@@ -310,7 +315,7 @@ public class ApplicationOrchestrator {
         int i = t;  // look thru all of the tn directories for a property template file
         // starting with the most recent t.
         while(i >= 0){
-            String templatePath = rootDir + "/user_inputs/" + scenarioOutputs + "/t" + i + "/";
+            String templatePath = rootDir + "/" + getUserInputsDirectoryPart() + "/t" + i + "/";
             templateFile = new File(templatePath + appName + templateSuffix);
             if(templateFile.exists()){
                 logger.info("Full Path to Template File: " + templateFile.getAbsolutePath());

@@ -50,6 +50,7 @@ public class FreightDemand3 {
     ModalDistributions md;
     ValueDensityFunction vdf;
     private final ValueDensityFunction_V2 vdf2;
+    private final boolean usingAA;
    // Random rn;
     String inputPath;
     String outputPath;
@@ -81,6 +82,7 @@ public class FreightDemand3 {
         this.md = new ModalDistributions(inputPath+"ModalDistributionParameters.txt");
         this.vdf = new ValueDensityFunction(new File(inputPath + "ValueDensityParameters.txt"));
         vdf2 = new ValueDensityFunction_V2(new File(inputPath + "ValueDensityParameters.csv")); //todo: get from property file
+        usingAA = ResourceUtil.getBooleanProperty(globalRb,"using.aa");
        
         wzUtil = new WorldZoneExternalZoneUtil(globalRb);
         int[] betaZones = a2b.getBetaExternals0Based();
@@ -214,7 +216,7 @@ public class FreightDemand3 {
                             pFlow = pFlowMatrix.getValueAt(origin, destination);
                             distance = distMatrix.getValueAt(origin, destination);
 
-                            modeOfTransport = md.selectMode(commodity, distance);
+                            modeOfTransport = md.selectMode(usingAA ? commodity.substring(0,6) : commodity, distance);
 
                             pw.println(origin+","+destination+","+cFlow+","+"C"+","+modeOfTransport);
                             pw.println(origin+","+destination+","+pFlow+","+"P"+","+modeOfTransport);
@@ -466,7 +468,7 @@ public class FreightDemand3 {
 
       totalFlows.put(commodity,new double[] {ieTotal,eiTotal,iiTotal});
 
-      String key = commodity+"STK";
+      String key = usingAA ? commodity.substring(0,6) + "STK" : commodity+"STK";
       if (vdf2.getVAF(key) == 0.0) {
           m.fill(0.0);
       } else {
@@ -542,7 +544,7 @@ public class FreightDemand3 {
       // And finally, let's write the data out to binary file that can be used later. We'll
       // store the demand matrices in semi-permanent file because we'll probably want to
       // create off-line queries and summaries later.
-      int commodityNumber = Integer.parseInt(commodity.substring(4));
+      int commodityNumber = Integer.parseInt(commodity.substring(4,6));
       System.out.println("Printing weekly tons for commodity: " + commodityNumber);
       writeWeeklyTons(commodityNumber, m);
       putIntoTableDataSet(commodity, m);

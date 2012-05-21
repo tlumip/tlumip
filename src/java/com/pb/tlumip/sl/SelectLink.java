@@ -3,6 +3,7 @@ package com.pb.tlumip.sl;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.util.Enumeration;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
@@ -72,7 +73,11 @@ public class SelectLink {
 //                TripClassifier.getClassifier(rb,"LDT"),
 //                TripClassifier.getClassifier(rb,"CT"),
 //                TripClassifier.getClassifier(rb,""));
-        String internalZoneFile = rb.getString("sl.internal.zone.file");
+
+        String internalZoneFile = null;
+        for (Enumeration<String> e = rb.getKeys(); e.hasMoreElements();)
+            if (e.nextElement().equals("sl.internal.zone.file"))
+                internalZoneFile = rb.getString("sl.internal.zone.file");
         Set<Integer> internalZones = new HashSet<Integer>();
         if (internalZoneFile != null) {
             try {
