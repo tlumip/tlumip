@@ -74,6 +74,16 @@ public class TripSynthesizer {
 
     }
 
+    protected List<File> getSelectLinkTripFiles() {
+        List<File> files = new LinkedList<File>();
+        files.add(new File(buildSelectLinkTripFile(sdtTripFile)));
+        files.add(new File(buildSelectLinkTripFile(ldtTripFile)));
+        files.add(new File(buildSelectLinkTripFile(new LDTPersonTripFileStub(rb,null))));
+        files.add(new File(buildSelectLinkTripFile(ctTripFile)));
+        files.add(new File(buildSelectLinkTripFile(etTripFile)));
+        return files;
+    }
+
     void synthesizeTrips() {
         test(true);
         test(false);

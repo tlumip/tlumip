@@ -3,10 +3,9 @@ package com.pb.tlumip.sl;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.Enumeration;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import com.pb.models.utils.StatusLogger;
 import com.pb.common.util.ResourceUtil;
@@ -93,6 +92,51 @@ public class SelectLink {
             }
         }
         ts.synthesizeTripsAndAppendToTripFile(internalZones);
+        bundleAndZipOutputs(ts);
+    }
+
+    private void bundleAndZipOutputs(TripSynthesizer ts) {
+        List<File> filesToZip = new LinkedList<File>(ts.getSelectLinkTripFiles());
+        filesToZip.add(new File(rb.getString("spg2.current.synpop.summary")));
+        filesToZip.add(new File(rb.getString("sdt.current.employment")));
+
+        ZipOutputStream zos = null;
+        try {
+            String outputFile = rb.getString("sl.output.bundle.file");
+            zos = new ZipOutputStream(new FileOutputStream(outputFile));
+            logger.info("Bundling select link files to: " + outputFile);
+            byte[] buffer = new byte[2048];
+            for (File f : filesToZip) {
+                logger.info("    " + f);
+                InputStream is = null;
+                try {
+                    zos.putNextEntry(new ZipEntry(f.getName()));
+                    is = new BufferedInputStream(new FileInputStream(""));
+                    int count;
+                    while ((count = is.read(buffer)) > -1)
+                        zos.write(buffer,0,count);
+                } finally {
+                    if (is != null)
+                        is.close();
+                    zos.flush();
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (zos != null) {
+                try {
+                    zos.flush();
+                } catch (IOException e) {
+                    //swallow
+                }
+                try {
+                    zos.close();
+                } catch (IOException e) {
+                    //swallow
+                }
+            }
+        }
     }
 
     void runRScript(String rScriptKey, String name, String ... additionalArgs) {
