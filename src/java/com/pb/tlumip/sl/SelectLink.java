@@ -111,7 +111,7 @@ public class SelectLink {
                 InputStream is = null;
                 try {
                     zos.putNextEntry(new ZipEntry(f.getName()));
-                    is = new BufferedInputStream(new FileInputStream(""));
+                    is = new BufferedInputStream(new FileInputStream(f));
                     int count;
                     while ((count = is.read(buffer)) > -1)
                         zos.write(buffer,0,count);
