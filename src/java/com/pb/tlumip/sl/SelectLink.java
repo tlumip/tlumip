@@ -93,6 +93,8 @@ public class SelectLink {
         }
         ts.synthesizeTripsAndAppendToTripFile(internalZones);
         bundleAndZipOutputs(ts);
+        for (File f : ts.getSelectLinkTripFiles())
+            f.delete();
     }
 
     private void bundleAndZipOutputs(TripSynthesizer ts) {
