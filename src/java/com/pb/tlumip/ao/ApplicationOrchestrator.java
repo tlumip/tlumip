@@ -129,8 +129,10 @@ public class ApplicationOrchestrator {
     }
 
     private String getUserInputsDirectoryPart() {
-        //return "user_inputs/" + scenarioInputs;
-        return scenarioInputs + "/user_inputs";
+        String inputsDir = scenarioInputs + "/user_inputs";
+        if (!new File(rootDir + "/" + inputsDir).exists())
+            inputsDir = scenarioInputs + "/user_inputs";
+        return inputsDir;
     }
 
     private void createRunLogPropFile(){
