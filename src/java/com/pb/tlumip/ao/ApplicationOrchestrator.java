@@ -131,7 +131,7 @@ public class ApplicationOrchestrator {
     private String getUserInputsDirectoryPart() {
         String inputsDir = scenarioInputs + "/user_inputs";
         if (!new File(rootDir + "/" + inputsDir).exists())
-            inputsDir = scenarioInputs + "/user_inputs";
+            inputsDir = "user_inputs/" + scenarioInputs;
         return inputsDir;
     }
 
