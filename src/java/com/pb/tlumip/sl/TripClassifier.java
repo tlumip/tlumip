@@ -34,15 +34,15 @@ public abstract class TripClassifier {
     private static void loadModelData(ResourceBundle rb) {
         try {
             NEW_CSVFileReader reader = new NEW_CSVFileReader();
-            logger.info("Reading swim scaling data.");
-            if (new File(rb.getString("sl.swim.scaling.file")).exists()) {
-                swimScaling = reader.readFile(new File(rb.getString("sl.swim.scaling.file")));
-                swimScaling.buildIndex(1);
-            }
+//            logger.info("Reading swim scaling data.");
+//            if (new File(rb.getString("sl.swim.scaling.file")).exists()) {
+//                swimScaling = reader.readFile(new File(rb.getString("sl.swim.scaling.file")));
+//                swimScaling.buildIndex(1);
+//            }
             logger.info("Reading sdt household data.");
             hhData = reader.readFile(new File(rb.getString("sdt.household.data")));
             hhData.buildIndex(1);
-            eeScalingFactor = ResourceUtil.getDoubleProperty(rb,"sl.ee.scaling.factor");
+            eeScalingFactor = 1.0; //ResourceUtil.getDoubleProperty(rb,"sl.ee.scaling.factor");
 //            logger.info("Reading current employment data.");
 //            empData = reader.readFile(new File(rb.getString("sdt.current.employment")));
 //            empData.buildIndex(1);
