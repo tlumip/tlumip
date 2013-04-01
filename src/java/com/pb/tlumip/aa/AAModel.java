@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
  * 
  * 1) Create a mock class (com.hbaspecto.oregon.pecas.aa.OregonAAControl) and call it directly from AO, making sure that
  *    all of the AA jars are listed before our normal classpath to get dependency resolution for AA correct.
- * 2) Have AO call the AA model as if it was from an external program (like the python AA module).
+ * 2) Have AO call the AA model as if it was from an external program (like the python ET module).
  * 
  * While (1) seems more elegant since it keeps all of the java stuff together, it is actually problematic because it is
  * unclear if/what code that AO needs will be superseded by the jars that are provided for AA. Since those AA jars are

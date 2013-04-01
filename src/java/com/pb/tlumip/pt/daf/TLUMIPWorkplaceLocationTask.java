@@ -80,7 +80,7 @@ public class TLUMIPWorkplaceLocationTask extends MessageProcessingTask {
         // and the work server.
         Message checkInMsg = mFactory.createMessage();
         checkInMsg.setId(MessageID.WORKER_CHECKING_IN);
-        checkInMsg.setValue("workQueueName", getName().trim().substring(0,2) + "_" + getName().trim().substring(12,14) + "WorkQueue");
+        checkInMsg.setValue("workQueueName", getName().trim().substring(0,2) + "_" + getName().trim().substring(12) + "WorkQueue");
         String queueName = "MS_node" + getName().trim().substring(12,13) + "WorkQueue";
         sendTo(queueName, checkInMsg);
 

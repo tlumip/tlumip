@@ -62,8 +62,9 @@ public class ALDModel extends ModelComponent {
         String rCode = pathToRCode + rFileName;
 
         String rOut = pathToIOFiles + "t" + t +"/zzAld.Rout";
+        String rExecutable = ResourceUtil.getProperty(appRb,"r.executable");
 
-        String execCommand = "R CMD BATCH " + pathToRCodeArg + " " + pathToPropertiesFileArg + " "
+        String execCommand = rExecutable + " CMD BATCH " + pathToRCodeArg + " " + pathToPropertiesFileArg + " "
                 + yearArg + " " + rCode + " " + rOut;
         logger.info("Executing "+execCommand);
         Runtime rt = Runtime.getRuntime();

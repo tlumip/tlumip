@@ -31,9 +31,10 @@ public class NEDModel extends ModelComponent {
 
         String nedPropertyFile = ResourceUtil.getProperty(appRb,"ned.property");
         String nedPythonCommand =  ResourceUtil.getProperty(appRb, "ned.python.command");
+        String pythonExecutable = ResourceUtil.getProperty(appRb, "python.executable");
 
         ProcessBuilder pb = new ProcessBuilder(
-                "python",
+                pythonExecutable,
                 nedPythonCommand,
                 nedPropertyFile);
 

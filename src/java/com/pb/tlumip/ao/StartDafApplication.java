@@ -41,7 +41,7 @@ import java.util.ResourceBundle;
  */
 public class StartDafApplication {
     private static Logger logger = Logger.getLogger(StartDafApplication.class);
-    //private ResourceBundle rb; //this is ao.properties
+    private volatile ResourceBundle rb = null;
     private long startNodeSleepTime = 15000;
     private long startClusterApplicationSleepTime = 15000;
     private long fileCheckSleepTime = 55;
@@ -59,6 +59,21 @@ public class StartDafApplication {
 
     public StartDafApplication(String appName, String rootDir, String scenarioOutputs, int timeInterval){
         this(appName, "node0", rootDir, scenarioOutputs, timeInterval);
+    }
+
+    public StartDafApplication(String appName, ResourceBundle rb, String nodeName, int timeInterval) {
+        this(appName,nodeName,ResourceUtil.getProperty(rb,"root.dir"),ResourceUtil.getProperty(rb,"scenario.outputs.relative"),timeInterval);
+        this.rb = rb;
+        if (rb.containsKey("daf.start.node.sleep.time"))
+            startNodeSleepTime = (long) ResourceUtil.getIntegerProperty(rb,"daf.start.node.sleep.time");
+        if (rb.containsKey("daf.start.cluster.sleep.time"))
+            startClusterApplicationSleepTime = (long) ResourceUtil.getIntegerProperty(rb,"daf.start.cluster.sleep.time");
+        if (rb.containsKey("daf.done.file.check.sleep.time"))
+            fileCheckSleepTime = (long) ResourceUtil.getIntegerProperty(rb,"daf.done.file.check.sleep.time");
+    }
+
+    public StartDafApplication(String appName,ResourceBundle rb, int timeInterval) {
+        this(appName,rb,"node0",timeInterval);
     }
 
     public StartDafApplication(String appName, String nodeName, String rootDir, String scenarioOutputs, int timeInterval){
@@ -182,8 +197,9 @@ public class StartDafApplication {
 
     public void run(){
         //get the path to the command file and make sure the file exists
-        //String cmdPath = pathPrefix  + ResourceUtil.getProperty(rb,"command.file.dir");
-        String cmdPath = rootDir + "/" + scenarioOutputs + "/ops";
+        String cmdPath = (rb == null || !rb.containsKey("daf.command.file.dir")) ?
+                                       (rootDir + "/" + scenarioOutputs + "/ops") :
+                                        ResourceUtil.getProperty(rb, "daf.command.file.dir");
         logger.info("CommandFile Path: "+ cmdPath);
         commandFile = getCommandFile(cmdPath);
 
@@ -191,7 +207,9 @@ public class StartDafApplication {
         //and delete the file if it already exists
        // int appIndex = appName.indexOf("daf");
         //String doneFile = pathPrefix + "t" + t + "/" + appName.substring(0,appIndex) + "/" + appName + "_done.txt";
-        String doneFile = rootDir + "/" + scenarioOutputs + "/ops/zz" +  appName + "_done.txt";
+        String doneFile = (rb == null || !rb.containsKey("sdt.done.file")) ?
+                                         (rootDir + "/" + scenarioOutputs + "/ops/zz" +  appName + "_done.txt") :
+                                         ResourceUtil.getProperty(rb, "sdt.done.file");
         //String doneFile = cmdPath + "/" + appName + "_done.txt";
         logger.info("DoneFile Path: " + doneFile);
         appDone = new File(doneFile);

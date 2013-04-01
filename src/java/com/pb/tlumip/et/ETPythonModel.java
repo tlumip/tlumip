@@ -53,7 +53,7 @@ public class ETPythonModel extends ModelComponent  {
 
     /* ***********start new python code******************* */
     /* This code implements EE Truck Trips.  It starts with a seed OD matrix of EE flows between External Stations
-       (developed from ….), which is IPFed to match marginals which are 2000 External Station counts with growth rates
+       (developed from Michalis.), which is IPFed to match marginals which are 2000 External Station counts with growth rates
        applied per properties files (rates vary for large and small roads). */
 
         String etProperties = ResourceUtil.getProperty(appRb,"et.property");
@@ -61,9 +61,10 @@ public class ETPythonModel extends ModelComponent  {
 //        String etOut = ResourceUtil.getProperty(appRb,"et.truck.trips");
 //        String etBasis = ResourceUtil.getProperty(appRb,"et.basis.matrix");
 //        String etBasisYear = ResourceUtil.getProperty(appRb,"et.basis.year");
+        String pythonExecutable = ResourceUtil.getProperty(appRb, "python.executable");
 
         ProcessBuilder pb = new ProcessBuilder(
-                "python",
+                pythonExecutable,
                 etPythonCommand,
                 etProperties,
                 "" + timeInterval);
