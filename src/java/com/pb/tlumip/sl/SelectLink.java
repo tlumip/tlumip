@@ -1,5 +1,6 @@
 package com.pb.tlumip.sl;
 
+import com.pb.tlumip.ao.ExternalProcess;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -23,6 +24,15 @@ public class SelectLink {
     public SelectLink(ResourceBundle rb, int year) {
         this.rb = rb;
         this.year = year;
+    }
+//    sl.select.link.data.python.file = build_select_link_matrices.py
+//    sl.select.link.node.sequence.python.file = get_link_sequence.py
+    protected static boolean visumMode(ResourceBundle rb) {
+        return rb.containsKey("sl.visum.mode") ? Boolean.parseBoolean(rb.getString("sl.visum.mode")) : false;
+    }
+
+    private boolean visumMode() {
+        return visumMode(rb);
     }
 
     public void runStages(String stagesToRun) {
@@ -49,11 +59,25 @@ public class SelectLink {
     }
 
     private void generatePaths() {
-        runRScript("sl.generate.paths.r.file","generate select link paths");
+        if (visumMode()) {
+            //do nothing, visum assignment already has paths embedded in it
+        } else {
+            runRScript("sl.generate.paths.r.file","generate select link paths");
+        }
     }
 
     private void generateSelectLinkData() {
-        runRScript("sl.select.link.data.r.file","generate select link data");
+        if (visumMode()) {
+            runPythonScript("sl.select.link.data.python.file","generate select link data",
+                    "ta.version.file",
+                    "ta.peak.paths.version.file",
+                    "ta.offpeak.paths.version.file",
+                    "sl.input.file.select.links",
+                    "sl.output.file.select.link.results",
+                    "sl.visum.demand.segment.mapping");
+        } else {
+            runRScript("sl.select.link.data.r.file","generate select link data");
+        }
     }
 
     private void createSubAreaMatrix() {
@@ -63,9 +87,38 @@ public class SelectLink {
 
     private void appendSelectLinkDataToTrips() {
         String dataFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.results");
-        SelectLinkData autoSelectLinkData = new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS,rb);
-        SelectLinkData truckSelectLinkData = new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS,rb);
-        autoSelectLinkData.reconcileAgainstOtherSelectLinkData(truckSelectLinkData);
+        Map<Integer,SelectLinkData> autoSelectLinkData = new HashMap<>();
+        Map<Integer,SelectLinkData> truckSelectLinkData = new HashMap<>();
+        Map<String,SelectLinkData> finishedSelectLinkData = new HashMap<String,SelectLinkData>();
+        if (rb.containsKey("sl.auto.classes")) {
+            String[] autoSelectLinkDataClasses = rb.getString("sl.auto.classes").split(",");
+            String[] truckSelectLinkDataClasses = rb.getString("sl.truck.classes").split(",");
+            int counter = 0;
+            for (String sldClass : autoSelectLinkDataClasses) {
+                sldClass = sldClass.trim();
+                if (!finishedSelectLinkData.containsKey(sldClass))
+                    finishedSelectLinkData.put(sldClass,new SelectLinkData(dataFile,sldClass,rb));
+                autoSelectLinkData.put(counter++,finishedSelectLinkData.get(sldClass));
+            }
+            counter = 0;
+            for (String sldClass : truckSelectLinkDataClasses) {
+                sldClass = sldClass.trim();
+                if (!finishedSelectLinkData.containsKey(sldClass))
+                    finishedSelectLinkData.put(sldClass,new SelectLinkData(dataFile,sldClass,rb));
+                truckSelectLinkData.put(counter++,finishedSelectLinkData.get(sldClass));
+            }
+        } else {
+            finishedSelectLinkData.put(SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS,new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS,rb));
+            finishedSelectLinkData.put(SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS,new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS,rb));
+            for (int i = 0; i < 4; i++) {
+                autoSelectLinkData.put(i,finishedSelectLinkData.get(SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS));
+                truckSelectLinkData.put(i,finishedSelectLinkData.get(SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS));
+            }
+        }
+
+        List<SelectLinkData> otherSlds = new LinkedList<SelectLinkData>(finishedSelectLinkData.values());
+        SelectLinkData reconcileBase = otherSlds.remove(0);
+        reconcileBase.reconcileAgainstOtherSelectLinkData(otherSlds.toArray(new SelectLinkData[otherSlds.size()]));
 
         TripSynthesizer ts = new TripSynthesizer(rb,autoSelectLinkData,truckSelectLinkData,null,null,null,null);
 //                TripClassifier.getClassifier(rb,"SDT"),
@@ -139,6 +192,23 @@ public class SelectLink {
                 }
             }
         }
+    }
+
+    void runPythonScript(String pythonScriptKey, String name, String ... additionalArgs) {
+        logger.info("Starting " + name);
+        StatusLogger.logText("sl",name + " started for " + year);
+        runPythonScript(pythonScriptKey,name,rb,additionalArgs);
+        StatusLogger.logText("sl",name + " finished.");
+    }
+
+    static void runPythonScript(String pythonScriptKey, String name, ResourceBundle rb, String ... additionalArgs) {
+        //match the signature of the R method...
+        String processProgram = rb.getString("python.visum.executable");
+        List<String> args = new LinkedList<String>();
+        args.add(rb.getString(pythonScriptKey));
+        for (String additionalArg : additionalArgs)
+            args.add(rb.containsKey(additionalArg) ? rb.getString(additionalArg) : additionalArg);
+        new ExternalProcess(name,processProgram,args).startProcess();
     }
 
     void runRScript(String rScriptKey, String name, String ... additionalArgs) {

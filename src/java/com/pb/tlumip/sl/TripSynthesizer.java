@@ -17,8 +17,8 @@ public class TripSynthesizer {
 
     private OdMatrixGroup.OdMatrixGroupCollection autoMatrices;
     private OdMatrixGroup.OdMatrixGroupCollection truckMatrices;
-    private final SelectLinkData autoSelectLinkData;
-    private final SelectLinkData truckSelectLinkData;
+    private final Map<Integer,SelectLinkData> autoSelectLinkData;
+    private final Map<Integer,SelectLinkData> truckSelectLinkData;
     private final ResourceBundle rb;
     private final boolean balanceOn;
 
@@ -34,7 +34,7 @@ public class TripSynthesizer {
     private String lastSdtTripPersonId;
     private String lastSdtTripType;
 
-    public TripSynthesizer(ResourceBundle rb, SelectLinkData autoSelectLinkData, SelectLinkData truckSelectLinkData, TripClassifier sdtClassifier, TripClassifier ldtClassifier, TripClassifier ctClassifier, TripClassifier etClassifier) {
+    public TripSynthesizer(ResourceBundle rb, Map<Integer,SelectLinkData> autoSelectLinkData, Map<Integer,SelectLinkData> truckSelectLinkData, TripClassifier sdtClassifier, TripClassifier ldtClassifier, TripClassifier ctClassifier, TripClassifier etClassifier) {
         logger.info("Initializing SL Synthesizer");
         this.rb = rb;
         this.autoSelectLinkData = autoSelectLinkData;
@@ -127,16 +127,23 @@ public class TripSynthesizer {
 
     //returns mapping from zone/link name to matrix index
     private void initializeMatrices(int period, boolean auto, OdMatrixGroup omg) {
-        SelectLinkData sld = auto ? autoSelectLinkData : truckSelectLinkData;
-
+        Map<Integer,SelectLinkData> sld = auto ? autoSelectLinkData : truckSelectLinkData;
+        Set<SelectLinkData> uniqueSld = new HashSet<>();
+        for (SelectLinkData slData : sld.values())
+            uniqueSld.add(slData);
         //create external numbers and mapping to internal numbers
-        List<String> extNums = formBaseExternalNumbers();
-        for (String s : sld.getExternalStationList())
-            extNums.add(s);
+        Set<String> extNums = new LinkedHashSet<String>(formBaseExternalNumbers());
+        for (SelectLinkData slData : uniqueSld)
+            for (String s : slData.getExternalStationList())
+                extNums.add(s);
         Map<String,Integer> zoneMatrixMap = new HashMap<String, Integer>();
-        for (String zone : sld.getExteriorZones())
+        Set<String> exteriorZones = new HashSet<>();
+        for (SelectLinkData slData : uniqueSld)
+            exteriorZones.addAll(slData.getExteriorZones());
+        for (String zone : exteriorZones)
             if (!extNums.remove(zone))
                 System.out.println("Couldn't remove: " + zone);
+
         int counter = 1;
         for (String s : extNums)
             zoneMatrixMap.put(s,counter++);
@@ -164,17 +171,17 @@ public class TripSynthesizer {
 
     Map<String,Double> f = new HashMap<String,Double>();
     private void test(boolean autoClass) {
-        SelectLinkData sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
+        Map<Integer,SelectLinkData> sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
         if (autoClass) {
-        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_ampeak.zmx"),""));
-        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_pmpeak.zmx"),""));
-        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_mdoffpeak.zmx"),""));
-        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_ntoffpeak.zmx"),""));
+        testm(sld.get(0),ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_ampeak.zmx"),""));
+        testm(sld.get(2),ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_pmpeak.zmx"),""));
+        testm(sld.get(1),ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_mdoffpeak.zmx"),""));
+        testm(sld.get(0),ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_a_ntoffpeak.zmx"),""));
         } else {
-        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_ampeak.zmx"),""));
-        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_pmpeak.zmx"),""));
-        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_mdoffpeak.zmx"),""));
-        testm(sld,ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_ntoffpeak.zmx"),""));
+        testm(sld.get(0),ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_ampeak.zmx"),""));
+        testm(sld.get(2),ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_pmpeak.zmx"),""));
+        testm(sld.get(1),ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_mdoffpeak.zmx"),""));
+        testm(sld.get(0),ZipMatrixReader.readMatrix(new File(rb.getString("sl.current.directory"),"demand_matrix_d_ntoffpeak.zmx"),""));
         }
     }
     private void testm(SelectLinkData sld,Matrix m) {
@@ -218,13 +225,19 @@ public class TripSynthesizer {
     }
 
     private void synthesizeTrips(TripFile tripFile, boolean autoClass) {
-        SelectLinkData sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
+        Map<Integer,SelectLinkData> sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
+        Set<SelectLinkData> uniqueSld = new HashSet<>();
+        for (SelectLinkData slData : sld.values())
+            uniqueSld.add(slData);
+
         OdMatrixGroup.OdMatrixGroupCollection omc = autoClass ? autoMatrices : truckMatrices;
         Map<String,Integer> zoneMatrixMap = omc.getTemplate().getZoneMatrixMap();
 
         double tripsLostToWeaving = 0.0; //trips that can't be used because od has a weaving path
 
-        Set<String> exteriorZones = sld.getExteriorZones();
+        Set<String> exteriorZones = new HashSet<>();
+        for (SelectLinkData slData : uniqueSld)
+            exteriorZones.addAll(slData.getExteriorZones());
         //crazy mapping: [Matrix : [od : [in/out/total : [link/(total in/out) : (link percentage)/(total trips)]]]]
         Map<Matrix,Map<String,Map<String,Map<String,Double>>>> eeTracker = new HashMap<Matrix,Map<String,Map<String,Map<String,Double>>>>();
         //matrix -> marginal mapping, needed for ee trips
@@ -283,7 +296,10 @@ public class TripSynthesizer {
                     tripsTrace[tripFile.getTimePeriodFromRecord(tripFileLine)] += tripFile.getTripFromRecord(tripFileLine);//*factors[tripFile.getModeIdFromRecord(tripFileLine)];
                 }
                 String od = SelectLinkData.formODLookup(origin,dest);
-                tripFile.classifier.setExtraData(sld,tripFileLine);
+                int period = tripFile.getTimePeriodFromRecord(tripFileLine);
+                SelectLinkData slData = sld.get(period);
+
+                tripFile.classifier.setExtraData(slData,tripFileLine);
 
                 if (getTotalDemand) {
                     totalDemand[tripFile.getTimePeriodFromRecord(tripFileLine)] += tripFile.getTripFromRecord(tripFileLine);//*factors[tripFile.getModeIdFromRecord(tripFileLine)];
@@ -295,7 +311,7 @@ public class TripSynthesizer {
                                   tripFile.getDestTripFromRecord(tripFileLine)).toLowerCase().replace(" ","_");
 //                if (tripFileLine[0].equals("2137")) System.out.println(Arrays.toString(tripFileLine));
                 lastSdtTripType = tripFile.getTripTypeFromRecord(tripFileLine); //for next trip
-                if (!sld.containsOd(od))
+                if (!slData.containsOd(od))
                     continue;
 
                 //trips = trips from record * scaling factor from model * exogenous scaling factor
@@ -310,8 +326,6 @@ public class TripSynthesizer {
 
                 OdMatrixGroup.OdMarginalMatrixGroup omg = (OdMatrixGroup.OdMarginalMatrixGroup) omc.get(omcType);
 
-                int period = tripFile.getTimePeriodFromRecord(tripFileLine);
-
                 if (origin.equals(traceZone1) && dest.equals(traceZone2)) tripsCountedTrace[period] += trips;
 
                 Matrix ofInterest = omg.getMatrix(period);
@@ -324,16 +338,16 @@ public class TripSynthesizer {
                 int md = zoneMatrixMap.containsKey(dest) ? zoneMatrixMap.get(dest) : -1;
 
                 // exogenous scaling factors for o/d marginals
-                double originFactor = tripFile.classifier.getOriginFactor(sld,tripFileLine);
+                double originFactor = tripFile.classifier.getOriginFactor(slData,tripFileLine);
                 //double destinationFactor = tripFile.classifier.getDestinationFactor(tripFileLine);
                 //if not balancing, dest factor becomes origin factor
-                double destinationFactor = balanceOn ? tripFile.classifier.getDestinationFactor(sld,tripFileLine) : originFactor;
+                double destinationFactor = balanceOn ? tripFile.classifier.getDestinationFactor(slData,tripFileLine) : originFactor;
                 //next two numbers say how to factor the "link zone" trips in the marginals
 //                double linkOriginFactor = 1.0;
 //                double linkDestinationFactor = 1.0;
 
-                if (sld.getWeavingZones().contains(od)) {
-                    List<SelectLinkData.WeavingData> wds = sld.getWeavingData(od);
+                if (slData.getWeavingZones().contains(od)) {
+                    List<SelectLinkData.WeavingData> wds = slData.getWeavingData(od);
                     if (wds == null) {
                         logger.warn("Missing weaving data for " + od);
                         continue;
@@ -391,7 +405,7 @@ public class TripSynthesizer {
                     eiTripCounter += trips;
 
                 //subtract from original od in matrix
-                List<SelectLinkData.LinkData> linkData = sld.getDataForOd(od);
+                List<SelectLinkData.LinkData> linkData = slData.getDataForOd(od);
                 for (SelectLinkData.LinkData ld : linkData) {
                     int lid = zoneMatrixMap.get(ld.getMatrixEntryName());
                     if (slOd.equals(ld.getMatrixEntryName())) {
@@ -488,7 +502,7 @@ public class TripSynthesizer {
                     double ip = eeSub.get(od).get("in").get(linkIn);
                     int origin = zoneMatrixMap.get(linkIn);
                     for (String linkOut : eeSub.get(od).get("out").keySet()) {
-                        double trips = eeSub.get(od).get("out").get(linkOut)*ip*totalTrips*tripFile.classifier.getExternalExternalFactor(sld,linkIn,linkOut);
+                        double trips = eeSub.get(od).get("out").get(linkOut)*ip*totalTrips*tripFile.classifier.getExternalExternalFactor(sld.get(0),linkIn,linkOut); //sld not used here for now, so just pick ampeak
                         int dest = zoneMatrixMap.get(linkOut);
                         ofInterest.setValueAt(origin,dest,(float) (ofInterest.getValueAt(origin,dest)+trips));
                         if (balanceOn) {
@@ -960,13 +974,20 @@ public class TripSynthesizer {
     }
 
     private void synthesizeTripsAndAppendToTripFile(TripFile tripFile, boolean autoClass, String newFile, Set<Integer> internalZones) {
-        SelectLinkData sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
+        Map<Integer,SelectLinkData> sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
+        Set<SelectLinkData> uniqueSld = new HashSet<>();
+        for (SelectLinkData slData : sld.values())
+            uniqueSld.add(slData);
         //create external numbers and mapping to internal numbers
-        List<String> extNums = formBaseExternalNumbers();
-        for (String s : sld.getExternalStationList())
-            extNums.add(s);
+        Set<String> extNums = new LinkedHashSet<String>(formBaseExternalNumbers());
+        for (SelectLinkData slData : uniqueSld)
+            for (String s : slData.getExternalStationList())
+                extNums.add(s);
         Map<String,Integer> zoneMatrixMap = new HashMap<String, Integer>();
-        for (String zone : sld.getExteriorZones())
+        Set<String> exteriorZones = new HashSet<>();
+        for (SelectLinkData slData : uniqueSld)
+            exteriorZones.addAll(slData.getExteriorZones());
+        for (String zone : exteriorZones)
             if (!extNums.remove(zone))
                 System.out.println("Couldn't remove: " + zone);
         int counter = 1;
@@ -980,7 +1001,6 @@ public class TripSynthesizer {
 
         boolean ctTrips = tripFile instanceof CTTripFile;
         double tripsLostToWeaving = 0.0; //trips that can't be used because od has a weaving path
-        Set<String> exteriorZones = sld.getExteriorZones();
         int originId = -1;
         int destId = -1;
         double tripCounter = 0;
@@ -1024,10 +1044,11 @@ public class TripSynthesizer {
                     ((CTTripFile) tripFile).updateCurrentTourOrigin(tripFileLine);
                 String origin = tripFileLine[originId];
                 String dest = tripFileLine[destId];
+                SelectLinkData slData = sld.get(tripFile.getTimePeriodFromRecord(tripFileLine));
                 String od = SelectLinkData.formODLookup(origin,dest);
                 String lastTripType = tripFile.getLastTripType();
                 tripFile.setLastTripType(tripFileLine);
-                if (!sld.containsOd(od)) {
+                if (!slData.containsOd(od)) {
                     try {
                         if (internalZones.contains(Integer.parseInt(origin)) && internalZones.contains(Integer.parseInt(dest)))
                             writer.println(line.trim() + "," + origin + "," + dest + ",1.0," + tripFile.getTourHome(tripFileLine) + "," + lastTripType);
@@ -1044,8 +1065,8 @@ public class TripSynthesizer {
                 int md = zoneMatrixMap.containsKey(dest) ? zoneMatrixMap.get(dest) : -1;
 
                 List<String> additionalEntries = new LinkedList<String>();
-                if (sld.getWeavingZones().contains(od)) {
-                    List<SelectLinkData.WeavingData> wds = sld.getWeavingData(od);
+                if (slData.getWeavingZones().contains(od)) {
+                    List<SelectLinkData.WeavingData> wds = slData.getWeavingData(od);
                     if (wds == null) {
                         logger.warn("Missing weaving data for " + od);
                         continue;
@@ -1088,7 +1109,7 @@ public class TripSynthesizer {
                     eiTripCounter += trips;
 
                 //subtract from original od in matrix
-                List<SelectLinkData.LinkData> linkData = sld.getDataForOd(od);
+                List<SelectLinkData.LinkData> linkData = slData.getDataForOd(od);
                 for (SelectLinkData.LinkData ld : linkData) {
                     if (!zoneMatrixMap.containsKey(ld.getMatrixEntryName()))
                         continue; //skip, because this class didn't use this external station

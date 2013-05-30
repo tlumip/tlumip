@@ -9,6 +9,7 @@ import com.pb.tlumip.ed.NEDModel;
 import com.pb.tlumip.et.ETPythonModel;
 import com.pb.tlumip.sl.SelectLink;
 import com.pb.tlumip.spg.SPGnew;
+import com.pb.tlumip.ta.TAModel;
 import com.pb.tlumip.ts.TSModelComponent;
 
 import java.io.*;
@@ -22,6 +23,7 @@ import java.util.*;
  *         Started 2/4/13 3:42 PM
  */
 public enum ModelEntry {
+    SI(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     NED(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     ALD(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     SPG1(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
@@ -30,7 +32,9 @@ public enum ModelEntry {
     PT(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     CT(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     ET(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
+    TA(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     TS(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
+    TR(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     SL(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     VIZ(Arrays.asList(ModelEntryParameterKeys.VIZ_YEARS),
         ModelEntryParameterKeys.PROPERTY_FILE_PATH),
@@ -95,6 +99,12 @@ public enum ModelEntry {
 
     private String getSlMode(Map<String,String> parameters) {
         return getResourceBundle(parameters).getString("sl.mode");
+    }
+
+    private void runSi(Map<String,String> parameters) {
+        SI.checkKeys(parameters);
+        ResourceBundle resourceBundle = getResourceBundle(parameters);
+        new TAModel(resourceBundle).runModel(TAModel.TAMode.SWIM_INPUTS,getTYear(parameters));
     }
 
     private void runNed(Map<String,String> parameters) {
@@ -235,11 +245,25 @@ public enum ModelEntry {
         new ETPythonModel(resourceBundle,resourceBundle).startModel(getBaseYear(parameters),getTYear(parameters));
     }
 
+    private void runTa(Map<String,String> parameters) {
+        TA.checkKeys(parameters);
+        ResourceBundle resourceBundle = getResourceBundle(parameters);
+        //new TAModel(resourceBundle).runAssignment(getTYear(parameters));
+        new TAModel(resourceBundle).runModel(TAModel.TAMode.HIGHWAY_ASSIGNMENT,getTYear(parameters));
+    }
+
     private void runTs(Map<String,String> parameters) {
         TS.checkKeys(parameters);
         ResourceBundle resourceBundle = getResourceBundle(parameters);
         new TSModelComponent(resourceBundle,resourceBundle,getTsDafConfigFile(parameters),getTsDaily(parameters))
                 .startModel(getBaseYear(parameters),getTYear(parameters));
+    }
+
+    private void runTr(Map<String,String> parameters) {
+        TR.checkKeys(parameters);
+        ResourceBundle resourceBundle = getResourceBundle(parameters);
+        new TAModel(resourceBundle).runModel(TAModel.TAMode.TRANSIT_ASSIGNMENT,getTYear(parameters));
+
     }
 
     private void runSl(Map<String,String> parameters) {
@@ -314,6 +338,7 @@ public enum ModelEntry {
         }
         Map<String,String> parameters = parseParameters(args);
         switch (model) {
+            case SI       :  SI.runSi(parameters); break;
             case NED      :  NED.runNed(parameters); break;
             case ALD      :  ALD.runAld(parameters); break;
             case SPG1     :  SPG1.runSpg1(parameters); break;
@@ -322,7 +347,9 @@ public enum ModelEntry {
             case PT       :  PT.runPt(parameters); break;
             case CT       :  CT.runCt(parameters); break;
             case ET       :  ET.runEt(parameters); break;
+            case TA       :  TA.runTa(parameters); break;
             case TS       :  TS.runTs(parameters); break;
+            case TR       :  TR.runTr(parameters); break;
             case SL       :  SL.runSl(parameters); break;
             case VIZ      :  VIZ.runViz(parameters); break;
             case MICROVIZ :  MICROVIZ.runMicroViz(parameters); break;

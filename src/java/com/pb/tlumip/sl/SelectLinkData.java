@@ -262,7 +262,14 @@ public class SelectLinkData {
         tf.writeTo(weavingFile);
 
         //generate weaving paths
-        SelectLink.runRScript("sl.select.link.node.sequence.r.file","generate select link weaving paths",rb,ResourceUtil.getProperty(rb,"sl.mode.key") + "=" + mode);
+        if (SelectLink.visumMode(rb)) {
+            SelectLink.runPythonScript("sl.select.link.node.sequence.python.file","generate select link weaving paths",rb,
+                    mode.contains("offpeak") ?  "ta.offpeak.paths.version.file" : "ta.peak.paths.version.file",
+                    "sl.output.file.select.link.weaving",
+                    mode);
+        } else {
+            SelectLink.runRScript("sl.select.link.node.sequence.r.file","generate select link weaving paths",rb,ResourceUtil.getProperty(rb,"sl.mode.key") + "=" + mode);
+        }
 
 
         CSVFileReader reader = new CSVFileReader();

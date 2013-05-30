@@ -26,15 +26,45 @@ public class SubAreaMatrixCreator {
     public static final String OUTPUT_MATRIX_TYPE_STRING = "{TYPE}";
 
     private final ResourceBundle rb;
-    private final SelectLinkData autoSelectLinkData;
-    private final SelectLinkData truckSelectLinkData;
+    private final Map<Integer,SelectLinkData> autoSelectLinkData;
+    private final Map<Integer,SelectLinkData> truckSelectLinkData;
 
     public SubAreaMatrixCreator(ResourceBundle rb) {
         this.rb = rb;
         String dataFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.results");
-        autoSelectLinkData = new SelectLinkData(dataFile,SL_AUTO_ASSIGN_CLASS,rb);
-        truckSelectLinkData = new SelectLinkData(dataFile,SL_TRUCK_ASSIGN_CLASS,rb);
-        autoSelectLinkData.reconcileAgainstOtherSelectLinkData(truckSelectLinkData);
+
+        autoSelectLinkData = new HashMap<>();
+        truckSelectLinkData = new HashMap<>();
+        Map<String,SelectLinkData> finishedSelectLinkData = new HashMap<String,SelectLinkData>();
+        if (rb.containsKey("sl.auto.classes")) {
+            String[] autoSelectLinkDataClasses = rb.getString("sl.auto.classes").split(",");
+            String[] truckSelectLinkDataClasses = rb.getString("sl.truck.classes").split(",");
+            int counter = 0;
+            for (String sldClass : autoSelectLinkDataClasses) {
+                sldClass = sldClass.trim();
+                if (!finishedSelectLinkData.containsKey(sldClass))
+                    finishedSelectLinkData.put(sldClass,new SelectLinkData(dataFile,sldClass,rb));
+                autoSelectLinkData.put(counter++,finishedSelectLinkData.get(sldClass));
+            }
+            counter = 0;
+            for (String sldClass : truckSelectLinkDataClasses) {
+                sldClass = sldClass.trim();
+                if (!finishedSelectLinkData.containsKey(sldClass))
+                    finishedSelectLinkData.put(sldClass,new SelectLinkData(dataFile,sldClass,rb));
+                truckSelectLinkData.put(counter++,finishedSelectLinkData.get(sldClass));
+            }
+        } else {
+            finishedSelectLinkData.put(SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS,new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS,rb));
+            finishedSelectLinkData.put(SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS,new SelectLinkData(dataFile,SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS,rb));
+            for (int i = 0; i < 4; i++) {
+                autoSelectLinkData.put(i,finishedSelectLinkData.get(SubAreaMatrixCreator.SL_AUTO_ASSIGN_CLASS));
+                truckSelectLinkData.put(i,finishedSelectLinkData.get(SubAreaMatrixCreator.SL_TRUCK_ASSIGN_CLASS));
+            }
+        }
+
+        List<SelectLinkData> otherSlds = new LinkedList<SelectLinkData>(finishedSelectLinkData.values());
+        SelectLinkData reconcileBase = otherSlds.remove(0);
+        reconcileBase.reconcileAgainstOtherSelectLinkData(otherSlds.toArray(new SelectLinkData[otherSlds.size()]));
     }
 
     public void createSubAreaMatrices() {
@@ -45,7 +75,7 @@ public class SubAreaMatrixCreator {
             OdMatrixGroup.OdMatrixGroupCollection omc = ts.getSynthesizedMatrices(auto);
             for (String type : omc.keySet()) {
                 logger.info("Forming subarea matrices for " + (auto ? "auto " : "truck ") + type);
-                OdMatrixGroup subAreaMatrices = formSubAreaMatrices(omc.get(type),auto ? autoSelectLinkData : truckSelectLinkData);
+                OdMatrixGroup subAreaMatrices = formSubAreaMatrices(omc.get(type),auto ? autoSelectLinkData.get(0) : truckSelectLinkData.get(0));
                 int[] externals = getExternalNumbers(subAreaMatrices.getZoneMatrixMap());
                 String baseOutFile = formOutputMatrixTemplateName(auto,type);
                 //baseOutFile = baseOutFile.substring(baseOutFile.lastIndexOf('/')+1,baseOutFile.lastIndexOf('.'));
