@@ -29,7 +29,7 @@
     <pathelement location="${reference.output.dir}"/>
     <pathelement location="${censusdata.output.dir}"/>
     <pathelement location="${synpop.output.dir}"/>
-    <pathelement location="${pasaat.output.dir}"/>
+    <pathelement location="${pasaat_swim.output.dir}"/>
   </path>
   
   

@@ -25,8 +25,8 @@
     <orderEntry type="module" module-name="censusdata" />
     <orderEntry type="module" module-name="synpop" />
     <orderEntry type="module" module-name="reference" />
-    <orderEntry type="module" module-name="pasaat" />
     <orderEntry type="module" module-name="utils" />
+    <orderEntry type="module" module-name="pasaat" />
   </component>
 </module>
 

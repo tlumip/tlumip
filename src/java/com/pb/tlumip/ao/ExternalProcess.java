@@ -2,10 +2,7 @@ package com.pb.tlumip.ao;
 
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,12 +18,22 @@ public class ExternalProcess {
 
     private final String processName;
     private final List<String> process;
+    private final File workingDirectory;
 
-    public ExternalProcess(String processName, String processProgram, List<String> processArguments) {
+    public ExternalProcess(String processName, String processProgram, File workingDirectory, List<String> processArguments) {
         this.processName = processName;
         process = new LinkedList<String>();
         process.add(processProgram);
         process.addAll(processArguments);
+        this.workingDirectory = workingDirectory;
+    }
+
+    public ExternalProcess(String processName, String processProgram, File workingDirectory, String ... processArguments) {
+        this(processName,processProgram,workingDirectory,Arrays.asList(processArguments));
+    }
+
+    public ExternalProcess(String processName, String processProgram, List<String> processArguments) {
+        this(processName,processProgram,new File(processProgram).getParentFile(),processArguments);
     }
 
     public ExternalProcess(String processName, String processProgram, String ... processArguments) {
@@ -39,6 +46,7 @@ public class ExternalProcess {
             sb.append(processPart).append(' ');
         logger.info("Executing (" + processName + "): " + sb);
         ProcessBuilder pb = new ProcessBuilder(process);
+        pb.directory(workingDirectory);
         pb.redirectErrorStream(true);
         final Process p;
         try {
