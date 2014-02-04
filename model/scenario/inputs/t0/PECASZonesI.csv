@@ -1,0 +1,525 @@
+ZoneNumber,ZoneName
+1,Portland
+17,Portland
+19,Portland
+31,Portland
+37,Portland
+79,Portland
+81,Portland
+89,Portland
+104,Portland
+114,Portland
+117,Portland
+150,Portland
+154,Portland
+161,Portland
+223,Portland
+229,Portland
+244,Portland
+267,Portland
+271,Portland
+273,Portland
+290,Portland
+294,Portland
+323,Portland
+355,Portland
+361,Portland
+385,Portland
+404,Portland
+405,Portland
+411,Portland
+418,Portland
+441,Portland
+444,Portland
+468,Portland
+481,Portland
+499,Portland
+504,Portland
+536,Portland
+542,Portland
+570,Portland
+575,Portland
+618,Portland
+623,Portland
+636,Portland
+714,Portland
+715,Portland
+721,Portland
+727,Portland
+733,Portland
+763,Portland
+776,Portland
+851,Portland
+852,Portland
+866,Portland
+869,Portland
+905,Portland
+970,Vancouver
+991,Vancouver
+1000,Vancouver
+1002,Vancouver
+1025,Vancouver
+1044,Vancouver
+1114,Vancouver
+1131,Vancouver
+1153,Vancouver
+1175,Vancouver
+1177,Vancouver
+1292,Portland
+1301,Salem
+1303,Salem
+1313,Salem
+1314,Salem
+1316,Salem
+1318,Salem
+1324,Salem
+1328,Salem
+1337,Salem
+1364,Salem
+1369,Salem
+1374,Salem
+1394,Salem
+1401,Salem
+1408,Salem
+1415,Salem
+1437,Salem
+1453,Salem
+1466,Salem
+1468,Salem
+1470,Salem
+1501,Eugene
+1502,Eugene
+1503,Eugene
+1505,Eugene
+1525,Eugene
+1553,Eugene
+1562,Eugene
+1588,Eugene
+1598,Eugene
+1617,Eugene
+1630,Eugene
+1639,Eugene
+1650,Eugene
+1658,Eugene
+1701,Medford
+1702,Medford
+1706,Medford
+1710,Medford
+1715,Medford
+1717,Medford
+1719,Medford
+1720,Medford
+1723,Medford
+1724,Medford
+1726,Medford
+1728,Medford
+1732,Medford
+1736,Other OR
+1752,Medford
+1774,Other OR
+1775,Other OR
+2009,Other OR
+2011,Other OR
+2018,Other OR
+2023,Other OR
+2025,Other OR
+2028,Other OR
+2031,Other OR
+2035,Other OR
+2042,Other OR
+2045,Other OR
+2046,Other OR
+2051,Other OR
+2056,Other OR
+2059,Other OR
+2063,Other OR
+2072,Other OR
+2073,Other OR
+2076,Other OR
+2092,Other OR
+2094,Other OR
+2098,Other OR
+2109,Other OR
+2111,Other OR
+2112,Other OR
+2119,Other OR
+2122,Other OR
+2123,Other OR
+2126,Other OR
+2134,Other OR
+2139,Other OR
+2148,Other OR
+2156,Other OR
+2162,Other OR
+2167,Other OR
+2169,Other OR
+2173,Other OR
+2180,Other OR
+2184,Other OR
+2185,Other OR
+2186,Other OR
+2190,Other OR
+2194,Other OR
+2195,Other OR
+2198,Other OR
+2204,Other OR
+2208,Other OR
+2209,Other OR
+2216,Other OR
+2218,Other OR
+2224,Other OR
+2225,Other OR
+2227,Other OR
+2229,Other OR
+2231,Other OR
+2235,Other OR
+2238,Other OR
+2242,Other OR
+2244,Other OR
+2245,Other OR
+2247,Other OR
+2248,Other OR
+2249,Other OR
+2254,Other OR
+2268,Other OR
+2271,Other OR
+2274,Other OR
+2278,Other OR
+2280,Other OR
+2283,Other OR
+2286,Other OR
+2287,Other OR
+2288,Other OR
+2300,Other OR
+2301,Other OR
+2304,Other OR
+2305,Other OR
+2311,Other OR
+2315,Other OR
+2317,Other OR
+2319,Other OR
+2324,Other OR
+2326,Other OR
+2330,Other OR
+2333,Other OR
+2334,Other OR
+2337,Other OR
+2342,Other OR
+2343,Other OR
+2344,Other OR
+2353,Other OR
+2355,Other OR
+2362,Other OR
+2366,Other OR
+2367,Other OR
+2370,Other OR
+2374,Other OR
+2376,Other OR
+2383,Other OR
+2412,Other OR
+2420,Other OR
+2426,Other OR
+2431,Other OR
+2455,Other OR
+2456,Other OR
+2461,Other OR
+2462,Other OR
+2465,Other OR
+2475,Other OR
+2487,Other OR
+2489,Other OR
+2497,Other OR
+2498,Other OR
+2502,Other OR
+2509,Other OR
+2512,Other OR
+2514,Other OR
+2524,Other OR
+2528,Other OR
+2531,Other OR
+2532,Other OR
+2533,Other OR
+2534,Other OR
+2537,Other OR
+2544,Other OR
+2548,Other OR
+2550,Other OR
+2556,Other OR
+2558,Other OR
+2565,Other OR
+2566,Other OR
+2568,Other OR
+2569,Other OR
+2573,Other OR
+2578,Other OR
+2579,Other OR
+2582,Other OR
+2584,Other OR
+2589,Other OR
+2598,Other OR
+2599,Other OR
+2601,Other OR
+2603,Other OR
+2605,Other OR
+2613,Other OR
+2616,Other OR
+2617,Other OR
+2618,Other OR
+2620,Other OR
+2623,Other OR
+2638,Other OR
+2654,Other OR
+2658,Other OR
+2662,Other OR
+2664,Other OR
+2666,Other OR
+2670,Other OR
+2671,Other OR
+2672,Other OR
+2678,Other OR
+2679,Other OR
+2683,Other OR
+2692,Other OR
+2696,Other OR
+2699,Other OR
+2711,Other OR
+2712,Other OR
+2721,Other OR
+2722,Other OR
+2724,Other OR
+2726,Other OR
+2727,Other OR
+2732,Other OR
+2733,Other OR
+2735,Other OR
+2740,Other OR
+2742,Other OR
+2756,Other OR
+2759,Other OR
+2767,Other OR
+2772,Other OR
+2779,Other OR
+2782,Other OR
+2783,Other OR
+2784,Other OR
+2787,Other OR
+2800,Other OR
+2807,Other OR
+2817,Other OR
+2821,Other OR
+2822,Other OR
+2823,Other OR
+2824,Other OR
+2825,Other OR
+2826,Other OR
+2827,Other OR
+2828,Other OR
+2829,Other OR
+2830,Other OR
+2831,Other OR
+2836,Other OR
+2837,Other OR
+2839,Other OR
+2841,Other OR
+2842,Other OR
+2843,Other OR
+2846,Other OR
+2847,Other OR
+2848,Other OR
+2857,Other OR
+2859,Other OR
+2860,Other OR
+2861,Other OR
+2863,Other OR
+2866,Other OR
+2872,Other OR
+2878,Other OR
+2879,Other OR
+2884,Other OR
+2889,Other OR
+2894,Other OR
+2895,Other OR
+2896,Other OR
+2897,Other OR
+2898,Other OR
+2899,Other OR
+2900,Other OR
+2901,Other OR
+2906,Other OR
+2908,Other OR
+2911,Other OR
+2955,Other OR
+2956,Other OR
+2957,Other OR
+2958,Other OR
+2959,Other OR
+2960,Other OR
+2964,Other OR
+2968,Other OR
+2970,Other OR
+2971,Other OR
+2972,Other OR
+2974,Other OR
+2981,Other OR
+2984,Other OR
+2987,Other OR
+2988,Other OR
+3012,Other OR
+3015,Other OR
+3017,Other OR
+3020,Other OR
+3022,Other OR
+3025,Other OR
+3027,Other OR
+3032,Other OR
+3040,Other OR
+3042,Other OR
+3043,Other OR
+3044,Other OR
+3054,Other OR
+3056,Other OR
+3062,Other OR
+3072,Other OR
+3073,Other OR
+3074,Other OR
+3077,Other OR
+3081,Other OR
+3082,Other OR
+3083,Other OR
+3087,Other OR
+3092,Other OR
+3106,Other OR
+3108,Other OR
+3111,Other OR
+3112,Other OR
+3117,Other OR
+3118,Other OR
+3119,Other OR
+3120,Other OR
+3121,Other OR
+3126,Other OR
+3128,Other OR
+3131,Other OR
+3133,Other OR
+3139,Other OR
+3140,Other OR
+3141,Other OR
+3147,Other OR
+3149,Other OR
+3150,Other OR
+3151,Other OR
+3153,Other OR
+3157,Other OR
+3171,Other OR
+3172,Other OR
+3177,Other OR
+3181,Other OR
+3183,Other OR
+3184,Other OR
+3185,Other OR
+4001,HaloNV
+4002,HaloWA
+4003,HaloWA
+4004,HaloNV
+4005,HaloCA
+4006,HaloCA
+4007,HaloCA
+4008,HaloCA
+4009,HaloCA
+4010,HaloNV
+4011,HaloNV
+4012,HaloCA
+4013,HaloCA
+4014,HaloCA
+4015,HaloCA
+4016,HaloCA
+4017,HaloCA
+4018,HaloCA
+4019,HaloCA
+4021,HaloCA
+4022,HaloCA
+4023,HaloCA
+4025,HaloCA
+4026,HaloNV
+4027,HaloWA
+4028,HaloWA
+4029,HaloWA
+4030,HaloWA
+4031,HaloWA
+4032,HaloWA
+4033,HaloWA
+4034,HaloWA
+4035,HaloWA
+4036,HaloWA
+4037,HaloWA
+4038,HaloWA
+4039,HaloWA
+4040,HaloWA
+4041,HaloWA
+4042,HaloWA
+4043,HaloWA
+4044,HaloWA
+4045,HaloWA
+4046,HaloWA
+4047,HaloID
+4048,HaloWA
+4049,HaloWA
+4050,HaloWA
+4051,HaloWA
+4052,HaloWA
+4053,HaloWA
+4054,HaloWA
+4055,HaloWA
+4056,HaloWA
+4057,HaloWA
+4058,HaloWA
+4059,HaloWA
+4060,HaloWA
+4061,HaloWA
+4062,HaloWA
+4063,HaloWA
+4064,HaloWA
+4065,HaloWA
+4066,HaloWA
+4067,HaloWA
+4068,HaloWA
+4069,HaloWA
+4070,HaloWA
+4071,HaloID
+4072,HaloID
+4073,HaloID
+4074,HaloID
+4075,HaloID
+4076,HaloID
+4077,HaloID
+4078,HaloID
+4079,HaloID
+4080,HaloID
+4081,HaloID
+4082,HaloID
+4083,HaloID
+4084,HaloID
+4085,HaloID
+4086,HaloID
+4087,HaloID
+4088,HaloID
+4089,HaloID
+4090,HaloID
+4091,HaloID
+4092,HaloID
+4093,HaloID
+4094,HaloID
+4095,HaloID
+4096,HaloID
+4105,HaloWA
+4136,HaloID
+4137,HaloID
+4138,HaloID
+4140,HaloID
+4141,HaloID
+6001,Z6001ImportExport
+6002,Z6002ImportExport
+6003,Z6003ImportExport
+6004,Z6004ImportExport
+6005,Z6005ImportExport
+6006,Z6006ImportExport

@@ -1,0 +1,9 @@
+skimFileNames,Description
+autofftime,Auto class alpha OD free flow travel time in minutes
+autotime,Auto class alpha OD equilibrium travel time in minutes
+autodist,Auto class alpha OD distance in miles
+autotoll,Auto class alpha OD toll related cost in dollars
+trk1fftime,Truck class 1 alpha OD free flow travel time in minutes
+trk1time,Truck class 1 alpha OD equilibrium travel time in minutes
+trk1dist,Truck class 1 alpha OD distance in miles
+trk1toll,Truck class 1 alpha OD toll related cost in dollars
