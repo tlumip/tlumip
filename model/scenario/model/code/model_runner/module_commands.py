@@ -166,64 +166,6 @@ class ModuleCommands(object):
                 self.runPause(10)[0],
                 'cmd /C "ECHO StopMonitor>' + quote(self.getDafCommandFile()) + '"']
 
-    def runBootstrapServer(self,properties):
-        """
-        Run the DAF bootstrap server.
-        """
-        admin_port = properties['daf.admin.server.port']
-        startnode_file = normalizeSlash(self.daf_file_map[build_daf_setup.TS_DAF_STARTNODE_0_FILE_KEY])
-        command = [quote(self.java_executable),
-                   '-cp',
-                   quote(self.classpath),
-                   quote('-Dlog4j.configuration=' + normalizeSlash(self.log4j_file_map[build_log4j_config.BOOTSTRAP_SERVER_FILE_KEY])),
-                   '-server',
-                   'com.pb.common.rpc.DafNode',
-                   '-bootstrap',
-                   '-port',
-                   admin_port,
-                   '-command',
-                   quote(startnode_file)]
-        return [' '.join(command)]
-
-    def runStartBootstrapClient(self,properties):
-        """
-        Run the DAF bootstrap client.
-        """
-        admin_port = properties['daf.admin.server.port']
-        tsdaf_file = normalizeSlash(self.daf_file_map[build_daf_setup.TS_DAF_FILE_KEY])
-        command = [quote(self.java_executable),
-                   '-cp',
-                   quote(self.classpath),
-                   quote('-Dlog4j.configuration=' + normalizeSlash(self.log4j_file_map[build_log4j_config.BOOTSTRAP_CLIENT_FILE_KEY])),
-                   '-server',
-                   'com.pb.common.rpc.BootstrapClient',
-                   '-startAll',
-                   '-port',
-                   admin_port,
-                   '-config',
-                   quote(tsdaf_file)]
-        return [' '.join(command)]
-
-    def runStopBootstrapClient(self,properties):
-        """
-        Stop the DAF bootstrap client.
-        """
-        admin_port = properties['daf.admin.server.port']
-        tsdaf_file = normalizeSlash(self.daf_file_map[build_daf_setup.TS_DAF_FILE_KEY])
-        command = [quote(self.java_executable),
-                   '-cp',
-                   quote(self.classpath),
-                   quote('-Dlog4j.configuration=' + normalizeSlash(self.log4j_file_map[build_log4j_config.BOOTSTRAP_CLIENT_FILE_KEY])),
-                   '-server',
-                   'com.pb.common.rpc.BootstrapClient',
-                   '-stopAll',
-                   '-port',
-                   admin_port,
-                   '-config',
-                   quote(tsdaf_file)]
-        return [' '.join(command)]
-                              
-
     def runModule(self,module_set,scenario_outputs,property_file,year,vm_size=None,extra_args={}):
         """
         Run a model module via the ModelEntry Java class. If vm_size is omitted, then 3 gigs will be 
@@ -314,15 +256,6 @@ class ModuleCommands(object):
         Run the TA module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
-    def runTS(self,module_set,scenario_outputs,property_file,year,properties):
-        """
-        Run the TS module.
-        """
-        return self.runStartBootstrapClient(properties) + \
-               self.runPause(30) + \
-               self.runModule(module_set,scenario_outputs,property_file,year,5000) + \
-               self.runStopBootstrapClient(properties)
                
     def runTR(self,module_set,scenario_outputs,property_file,year,properties):
         """

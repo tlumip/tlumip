@@ -14,8 +14,6 @@ List of logger keys used in configuration file map returned by buildAll function
 ROOT_LOGGER_NAME = 'root'
 MAIN_EVENT_FILE_KEY = 'main'
 AA_MAIN_EVENT_FILE_KEY = 'aa_main'
-BOOTSTRAP_SERVER_FILE_KEY = 'bootstrap_server'
-BOOTSTRAP_CLIENT_FILE_KEY = 'bootstrap_client'
 FILE_MONITORY_FILE_KEY = 'file_monitor'
 NODE_0_FILE_KEY = 'node0'
 
@@ -194,11 +192,9 @@ def buildAll(scenario_directory):
     """
     Build all of the required log4j configuration files. These are (informally):
         
-        main event - main logger
+        main event       - main logger
         main event_ aa   - logger used for AA run
-        bootstrap client \
-        bootstrap server +- DAF loggers
-        file monitor     /
+        file monitor     - DAF loggers
         node0            -  logger for DAF node 0 processes
     
     This method returns a map {logger_key:logger_configuration_file}, where logger_key
@@ -214,11 +210,6 @@ def buildAll(scenario_directory):
                                    file=os.path.join(scenario_directory,'status.log'),
                                    append=False,
                                    conversion_pattern='%m%n')
-    bootstrap_server_file_appender = AppenderSpec(AppenderType.FILE,
-                                                  file=os.path.join(scenario_directory,'bootstrap_server_node0.log'))
-    bootstrap_client_file_appender = AppenderSpec(AppenderType.FILE,
-                                                  file=os.path.join(scenario_directory,'bootstrap_client.log'),
-                                                  append=False)
     file_monitor_file_appender = AppenderSpec(AppenderType.FILE,
                                               file=os.path.join(scenario_directory,'fileMonitor_event.log'),
                                               append=False)
@@ -244,14 +235,6 @@ def buildAll(scenario_directory):
                           'CONSOLE'        : console_appender},
                          {'status'         : status_logger,
                           ROOT_LOGGER_NAME : console_only_logger})
-    file_map[BOOTSTRAP_CLIENT_FILE_KEY] = createLog4jConfig(scenario_directory,'info_log4j_bootstrap_client.xml',
-                         {'FILE'           : bootstrap_client_file_appender,
-                          'CONSOLE'        : console_appender},
-                         {ROOT_LOGGER_NAME : console_file_logger})
-    file_map[BOOTSTRAP_SERVER_FILE_KEY] = createLog4jConfig(scenario_directory,'info_log4j_bootstrap_server.xml',
-                         {'FILE'           : bootstrap_server_file_appender,
-                          'CONSOLE'        : console_appender},
-                         {ROOT_LOGGER_NAME : console_file_logger})
     file_map[FILE_MONITORY_FILE_KEY] = createLog4jConfig(scenario_directory,'info_log4j_fileMonitor.xml',
                          {'FILE'           : file_monitor_file_appender,
                           'CONSOLE'        : console_appender},

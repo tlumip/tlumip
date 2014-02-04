@@ -14,7 +14,6 @@ class PropertyTokens:
     SCENARIO_NAME                 = '@SCENARIO.NAME@'
                                   
     ROOT_DIR                      = '@ROOT.DIR@'
-    #USER_INPUTS_DIR              = '@USER.INPUTS@'
     SCENARIO_INPUTS_DIR           = '@SCENARIO.INPUTS@'
     SCENARIO_OUTPUTS_DIR          = '@SCENARIO.OUTPUTS@'
                                  
@@ -30,19 +29,13 @@ class PropertyTokens:
     SPG2_LAST_RUN_YEAR            = '@SPG2.LAST.RUN@'
     CT_LAST_RUN_YEAR              = '@CT.LAST.RUN@'
     ET_LAST_RUN_YEAR              = '@ET.LAST.RUN@'
-    TS_LAST_RUN_YEAR              = '@TS.LAST.RUN@'
     TA_LAST_RUN_YEAR              = '@TA.LAST.RUN@'
     TR_LAST_RUN_YEAR              = '@TR.LAST.RUN@'
                                  
-    TS_DAILY                      = '@TS.DAILY@'
     SL_MODE                       = '@SL.MODE@'
     PT_LOGSUMS                    = '@PT.LOGSUMS@'
     PT_LDT                        = '@PT.LDT@'
     PT_SDT                        = '@PT.SDT@'
-    TRANSIT_ON                    = '@TRANSIT.ON@'
-    TRANSIT_OFF                   = '@TRANSIT.OFF@'
-    TS_LAST_TRANSIT_RUN_YEAR      = '@TS.LAST.TRANSIT.RUN@'
-
 
 def detemplifyFile(input_file,output_file,detemplification_map,templified_property_update={}):
     """

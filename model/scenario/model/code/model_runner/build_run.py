@@ -58,7 +58,6 @@ for line in open(definition_file):
 #these are the available (base) modules
 modules = ['SI','NED','ALD','SPG1','AA','PT','SPG2','CT','ET','TA','TR','SL']
 daf_modules = ['PT']
-daf3_modules = ['TA']
 t_map = {}
 #figure out which modules have "_LAST_RUN_YEAR" tokens in the property file
 # that need to be maintained
@@ -69,16 +68,8 @@ for module in modules:
         pass #ignore, because no token for this module
 t_previous_map = {'AA' : PropertyTokens.AA_PRIOR_RUN_YEAR} #AA has special second-to-last-year parameter
 
-#build extra arguments needed for TS, PT, and SL
+#build extra arguments needed for PT and SL
 extra_args_map = {}
-ts_map = {}
-ts_map[EXTRA_ARG_LENGTH_KEY] = 2
-ts_map[1] = [PropertyTokens.TS_DAILY]
-ts_map[PropertyTokens.TS_DAILY] = {'DAILY':'true',DEFAULT_EXTRA_ARG_KEY:'false'}
-ts_map[2] = [PropertyTokens.TRANSIT_ON,PropertyTokens.TRANSIT_OFF]
-ts_map[PropertyTokens.TRANSIT_ON]  = {'TRANSIT': '#','NO_TRANSIT':'',DEFAULT_EXTRA_ARG_KEY: ''}
-ts_map[PropertyTokens.TRANSIT_OFF] = {'TRANSIT':'','NO_TRANSIT': '#',DEFAULT_EXTRA_ARG_KEY:'#'}
-extra_args_map['TS'] = ts_map
 
 pt_map = {}
 pt_map[EXTRA_ARG_LENGTH_KEY] = 1
@@ -110,9 +101,6 @@ def updateTokenMap(module_set,year,token_map):
             token_map[t_previous_map[module]] = token_map[t_map[module]]
     if module in t_map:
         token_map[t_map[module]] = year
-        if t_map[module] == PropertyTokens.TS_LAST_RUN_YEAR:
-            if (module_set[2].upper() == 'TRANSIT'):
-                token_map[PropertyTokens.TS_LAST_TRANSIT_RUN_YEAR] = token_map[PropertyTokens.TS_LAST_RUN_YEAR]
 
 def parseModuleName(module):
     """
@@ -140,7 +128,6 @@ for y in range(len(years)):
         updateTokenMap(parseModuleName(module_name),years[y],token_map)
         
 #add in fixed or initialized tokens
-token_map[PropertyTokens.TS_DAILY] = 'false'
 token_map[PropertyTokens.SL_MODE] = 'none'
 token_map[PropertyTokens.SCENARIO_NAME] = scenario_name
 token_map[PropertyTokens.ROOT_DIR] = root_dir
@@ -216,11 +203,9 @@ use_localhost = properties['use.localhost'].upper() == 'TRUE'
 classpath = properties['model.classpath']
 java_executable = properties['java.executable']
 daf_memory = properties['daf.memory']
-tsdaf_memory = properties['tsdaf.memory']
 daf_admin_port = properties['daf.admin.port']
 daf_admin_server_port = properties['daf.admin.server.port']
 daf_message_port = properties['daf.message.port']
-tsdaf_message_port = properties['tsdaf.message.port']
 
 runscript_file = properties['model.run.bat.file']
 command_list_file = properties['model.run.command.file']
@@ -234,20 +219,17 @@ run_history_file = properties['model.run.history.file']
 settings_base_folder = properties.formPath('scenario.root','_settings')
 
 #build daf and log4j configuration files
-daf_file_map = build_daf_setup.buildAll(config_path,cpu_factor,use_localhost,classpath,java_executable,daf_memory,tsdaf_memory,daf_admin_server_port,daf_message_port,daf_admin_port,tsdaf_message_port)
+daf_file_map = build_daf_setup.buildAll(config_path,cpu_factor,use_localhost,classpath,java_executable,daf_memory,daf_admin_server_port,daf_message_port,daf_admin_port)
 log4j_file_map = build_log4j_config.buildAll(scenario_dir)
 
 #build run script
 #first, check if daf is needed
 file_monitor = False
-bootstrap_daf = False
 for y in range(len(years)):
     for module_name in module_map[y]:
         module = parseModuleName(module_name)[0]
         if module in daf_modules:
             file_monitor = True
-        if module in daf3_modules:
-            bootstrap_daf = True
 
 #rsf is batch file to run model, clf is command file used to run model in Python mode
 rsf = open(runscript_file,'wb')
@@ -255,7 +237,6 @@ clf = open(command_list_file,'wb')
 
 build_daf_setup.DAF_FILE_KEY
 build_daf_setup.PT_DAF_FILE_KEY
-build_daf_setup.TS_DAF_FILE_KEY
 
 commands = module_commands.ModuleCommands(properties,java_executable,classpath,daf_file_map,log4j_file_map)
 
@@ -364,11 +345,7 @@ if file_monitor:
     log('Starting file monitor')
     for command in commands.runFileMonitor():
         write_command(command,True)
-if bootstrap_daf:
-    log('Starting bootstrap server')
-    for command in commands.runBootstrapServer(properties):
-        write_command(command,True)
-if file_monitor or bootstrap_daf:
+if file_monitor:
    for command in commands.runPause(30):
         write_command(command)
 

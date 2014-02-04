@@ -17,9 +17,7 @@ Keys used for file map returned by buildAll function.
 """
 DAF_FILE_KEY = 'daf'
 PT_DAF_FILE_KEY = 'pt_daf'
-#TS_DAF_FILE_KEY = 'ts_daf'
 DAF_STARTNODE_0_FILE_KEY = 'startnode_0'
-#TS_DAF_STARTNODE_0_FILE_KEY = 'ts_startnode_0'
 
 def getIpaddress():
     """
@@ -222,37 +220,6 @@ def generatePtDafProperties(directory,classpath,cpu_factor=1):
     f.close()
     return file
 
-def generateTsDafProperties(directory,tsdaf_message_port,use_localhost=True):
-    """
-    Create a main DAF (v3) property file for the TS module. Returns the final output filepath.
-    """
-    ipaddress = LOCALHOST_IPADDRESS
-    if not use_localhost:
-        ipaddress = getIpaddress()
-    file = os.path.join(directory,"tsdaf.groovy")
-    f = open(file,"wb")
-    writeLine(f,"// TS DAF Properties, auto generated on " + time.asctime())
-    writeLine(f,"")
-    writeLine(f,'//Define node URLs')
-    writeLine(f,'nodes[0].name = "node0"')
-    writeLine(f,'nodes[0].url = "tcp://' + ipaddress + ':' + tsdaf_message_port + '"')
-    writeLine(f,'')
-    writeLine(f,'//Define handler classes that are rpc-end points; These handlers will be started prior to running the application')
-    writeLine(f,'handlers[0].name = "networkHandler"')
-    writeLine(f,'handlers[0].className = "com.pb.tlumip.ts.NetworkHandler"')
-    writeLine(f,'handlers[0].node = "node0"')
-    writeLine(f,'')
-    writeLine(f,'handlers[1].name = "demandHandler"')
-    writeLine(f,'handlers[1].className = "com.pb.tlumip.ts.DemandHandler"')
-    writeLine(f,'handlers[1].node = "node0"')
-    writeLine(f,'')
-    writeLine(f,'handlers[2].name = "spBuildLoadHandler_node1"')
-    writeLine(f,'handlers[2].className = "com.pb.tlumip.ts.SpBuildLoadHandler"')
-    writeLine(f,'handlers[2].node = "node0"')
-    writeLine(f,"")
-    f.close()
-    return file
-
 def generateDafStartnodeProperties(directory,classpath,java_executable="java",process_memory="10000m"):
     """
     Create a DAF startnode file. Returns the final output filepath.
@@ -270,44 +237,18 @@ def generateDafStartnodeProperties(directory,classpath,java_executable="java",pr
     f.close()
     return file
 
-def generateTsDafStartnodeProperties(directory,classpath,java_executable="java",process_memory="18000m"):
-    """
-    Create a DAF (v3) startnode file for the TS module. Returns the final output filepath.
-    """
-    file = os.path.join(directory,"startnode0.daf3")
-    f = open(file,"wb")
-    writeLine(f,java_executable)
-    writeLine(f,"-classpath")
-    writeLine(f,classpath)
-    writeLine(f,"-Xms" + process_memory)
-    writeLine(f,"-Xmx" + process_memory)
-    writeLine(f,"-DnodeName=node0")
-    writeLine(f,"-Dlog4j.configuration=info_log4j_node0.xml")
-    writeLine(f,"com.pb.common.rpc.DafNode")
-    writeLine(f,"-node")
-    writeLine(f,"node0")
-    writeLine(f,"-config")
-    writeLine(f,os.path.join(directory,"tsdaf.groovy").replace("\\","/"))
-    writeLine(f,"")
-    f.close()
-    return file
-
-def buildAll(directory,cpu_factor,use_localhost,classpath,java_executable,daf_memory,tsdaf_memory,daf_admin_server_port,daf_message_port,daf_admin_port,tsdaf_message_port):
+def buildAll(directory,cpu_factor,use_localhost,classpath,java_executable,daf_memory,daf_admin_server_port,daf_message_port,daf_admin_port):
     """
     Build all of the required DAF configuration files. These are (informally):
         
         daf.properties
         ptdaf.properties
-        tsdaf.groovy
         startnode0.properties
-        startnode0.daf3
     
     This method returns a map {daf_file_key:file}, where daf_file_key values are defined at the top of this file.
     """
     file_map = {}
     file_map[DAF_FILE_KEY] = generateDafProperties(directory,daf_admin_server_port,daf_message_port,daf_admin_port,use_localhost)
     file_map[PT_DAF_FILE_KEY] = generatePtDafProperties(directory,classpath,cpu_factor)
-    #file_map[TS_DAF_FILE_KEY] = generateTsDafProperties(directory,tsdaf_message_port,use_localhost)
     file_map[DAF_STARTNODE_0_FILE_KEY] = generateDafStartnodeProperties(directory,classpath,java_executable,daf_memory)
-    #file_map[TS_DAF_STARTNODE_0_FILE_KEY] = generateTsDafStartnodeProperties(directory,classpath,java_executable,tsdaf_memory)
     return file_map
