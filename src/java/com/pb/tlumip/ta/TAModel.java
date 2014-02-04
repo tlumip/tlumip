@@ -43,6 +43,8 @@ public class TAModel {
         logger.info("Starting " + modeName + " Model.");
         StatusLogger.logText(modeName.toLowerCase(),modeName + " started for year t" + year);
 
+        if (mode == TAMode.HIGHWAY_ASSIGNMENT) //build demand matrices if running assignment
+            new DemandBuilder(properties).writeDemandMatrices();
         String processProgram = properties.getString("python.visum.executable");
         List<String> args = new LinkedList<String>();
         args.add(properties.getString("ta.python.file"));

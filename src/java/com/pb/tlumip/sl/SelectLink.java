@@ -51,9 +51,9 @@ public class SelectLink {
 
     private void runStage(SelectLinkStage stage) {
         switch (stage) {
-            case GENERATE_PATHS : generatePaths(); break;
+//            case GENERATE_PATHS : generatePaths(); break;
             case GENERATE_SELECT_LINK_DATA : generateSelectLinkData(); break;
-            case CREATE_SUBAREA_MATRIX : createSubAreaMatrix(); break;
+//            case CREATE_SUBAREA_MATRIX : createSubAreaMatrix(); break;
             case APPEND_SELECT_LINK_TO_TRIPS : appendSelectLinkDataToTrips(); break;
         }
     }

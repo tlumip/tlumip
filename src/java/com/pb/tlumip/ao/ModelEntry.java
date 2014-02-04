@@ -10,7 +10,6 @@ import com.pb.tlumip.et.ETPythonModel;
 import com.pb.tlumip.sl.SelectLink;
 import com.pb.tlumip.spg.SPGnew;
 import com.pb.tlumip.ta.TAModel;
-import com.pb.tlumip.ts.TSModelComponent;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -33,7 +32,6 @@ public enum ModelEntry {
     CT(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     ET(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     TA(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
-    TS(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     TR(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     SL(ModelEntryParameterKeys.PROPERTY_FILE_PATH),
     VIZ(Arrays.asList(ModelEntryParameterKeys.VIZ_YEARS),
@@ -87,14 +85,6 @@ public enum ModelEntry {
 
     private int getTYear(Map<String,String> parameters) {
         return ResourceUtil.getIntegerProperty(getResourceBundle(parameters),"t.year");
-    }
-
-    private boolean getTsDaily(Map<String,String> parameters) {
-        return ResourceUtil.getBooleanProperty(getResourceBundle(parameters),"ts.daily.assignment");
-    }
-
-    private String getTsDafConfigFile(Map<String,String> parameters) {
-        return getResourceBundle(parameters).getString("ts.daf.config.file");
     }
 
     private String getSlMode(Map<String,String> parameters) {
@@ -252,13 +242,6 @@ public enum ModelEntry {
         new TAModel(resourceBundle).runModel(TAModel.TAMode.HIGHWAY_ASSIGNMENT,getTYear(parameters));
     }
 
-    private void runTs(Map<String,String> parameters) {
-        TS.checkKeys(parameters);
-        ResourceBundle resourceBundle = getResourceBundle(parameters);
-        new TSModelComponent(resourceBundle,resourceBundle,getTsDafConfigFile(parameters),getTsDaily(parameters))
-                .startModel(getBaseYear(parameters),getTYear(parameters));
-    }
-
     private void runTr(Map<String,String> parameters) {
         TR.checkKeys(parameters);
         ResourceBundle resourceBundle = getResourceBundle(parameters);
@@ -348,7 +331,6 @@ public enum ModelEntry {
             case CT       :  CT.runCt(parameters); break;
             case ET       :  ET.runEt(parameters); break;
             case TA       :  TA.runTa(parameters); break;
-            case TS       :  TS.runTs(parameters); break;
             case TR       :  TR.runTr(parameters); break;
             case SL       :  SL.runSl(parameters); break;
             case VIZ      :  VIZ.runViz(parameters); break;

@@ -42,7 +42,7 @@ public abstract class TripClassifier {
             logger.info("Reading sdt household data.");
             hhData = reader.readFile(new File(rb.getString("sdt.household.data")));
             hhData.buildIndex(1);
-            eeScalingFactor = 1.0; //ResourceUtil.getDoubleProperty(rb,"sl.ee.scaling.factor");
+            eeScalingFactor = ResourceUtil.getDoubleProperty(rb,"sl.ee.scaling.factor");
 //            logger.info("Reading current employment data.");
 //            empData = reader.readFile(new File(rb.getString("sdt.current.employment")));
 //            empData.buildIndex(1);
