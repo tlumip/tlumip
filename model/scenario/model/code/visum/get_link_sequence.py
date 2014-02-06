@@ -61,44 +61,69 @@ with open(weaving_file,'rb') as f:
         for column in row:
             new_row[column] = row[column]
         od_pair = tuple(row['od'].strip().split())
-        (origin,destination) = od_pair
+        (origin,destination) = map(int,od_pair)
         #links = map(int,row['links'].strip().split(';'))
         links = [(int(x[0]),int(x[1])) for x in map(str.split,row['links'].strip().split(';'))]
         
         if not od_pair in paths:
             paths[od_pair] = {}
-            filter = Visum.Filters.ODPairFilter()
-            filter.Init()
-            filter.AddCondition("OP_NONE", False, "FROMZONENO", "ContainedIn", Visum.Filters.Range(origin,origin))
-            filter.AddCondition("OP_AND", False, "TOZONENO", "ContainedIn", Visum.Filters.Range(destination,destination))
+            # filter = Visum.Filters.ODPairFilter()
+            # filter.Init()
+            # #filter.AddCondition("OP_NONE", False, "FROMZONENO", "ContainedIn", Visum.Filters.Range(origin,origin))
+            # #filter.AddCondition("OP_AND", False, "TOZONENO", "ContainedIn", Visum.Filters.Range(destination,destination))
+            # filter.AddCondition("OP_NONE", False, "FROMZONENO", "EqualVal", origin)
+            # filter.AddCondition("OP_AND", False, "TOZONENO", "EqualVal", destination)
     
-            #Create path list by links using filter
-            prtPathLinkList = Visum.Lists.CreatePrTPathLinkList
+            # #Create path list by links using filter
+            # prtPathLinkList = Visum.Lists.CreatePrTPathLinkList
     
-            #orig zone, dseg only, use OD pair filter, only active filter records, DB format
-            prtPathLinkList.SetObjects(origin,dseg,2,True,2)
-            prtPathLinkList.AddKeyColumns()
-            prtPathLinkList.AddColumn("LINKNO")
-            prtPathLinkList.AddColumn("FROMNODENO")
-            prtPathLinkList.AddColumn("TONODENO")
-            
-            #Get a list of records with the following columns:
-            #FROMZONE,TOZONE,PATHINDEX,INDEX,LINKNO,FROMNODENO,TONODENO
-            path_links = prtPathLinkList.SaveToArray() 
-            for link_path in path_links:
-                if not ((origin == link_path[0]) and (destination == link_path[1]) and ((link_path[5],link_path[6]) in links)):
-                    continue
-                path_id = link_path[2]
-                if not path_id in paths[od_pair]:
-                    paths[od_pair][path_id] = []
-                paths[od_pair][path_id].append(link_path[4])
-        
-        for link_path in paths[od_pair]:
+            # #orig zone, dseg only, use OD pair filter, only active filter records, DB format
+            # prtPathLinkList.SetObjects(origin,dseg,2,True,2)
+            # prtPathLinkList.AddKeyColumns()
+            # prtPathLinkList.AddColumn("LINKNO")
+            # prtPathLinkList.AddColumn("FROMNODENO")
+            # prtPathLinkList.AddColumn("TONODENO")
+
+            # #Get a list of records with the following columns:
+            # #FROMZONE,TOZONE,PATHINDEX,INDEX,LINKNO,FROMNODENO,TONODENO
+            # path_links = prtPathLinkList.SaveToArray() 
+            # for link_path in path_links:
+            #     if not ((origin == link_path[0]) and (destination == link_path[1]) and ((link_path[5],link_path[6]) in links)):
+            #         continue
+            #     path_id = link_path[2]
+            #     if not path_id in paths[od_pair]:
+            #         paths[od_pair][path_id] = []
+            #     paths[od_pair][path_id].append(link_path[4])
+
+            #build equivalent path links in paths
+            segment = Visum.Net.DemandSegments.ItemByKey(dseg)
+            num_paths = segment.GetNumPaths(origin,destination)
+            for path_id in range(1,num_paths+1):
+                paths[od_pair][path_id] = []
+                path_nodes = segment.GetPathNodes(origin,destination,path_id).GetAll
+                bnode =  int(path_nodes[0].AttValue('No'))
+                for n in range(1,len(path_nodes)):
+                    anode = bnode
+                    bnode = int(path_nodes[n].AttValue('No'))
+                    if not (anode,bnode) in links:
+                        continue
+                    linkno = Visum.Net.Links.ItemByKey(anode,bnode).AttValue('No')
+                    paths[od_pair][path_id].append(linkno)
+                    anode = bnode
+
+        for path_id in paths[od_pair]:
+            link_path = paths[od_pair][path_id]
             if len(link_path) == len(links):
-                #found it
+                #found it, hopefully
                 order = []
+                success = True
                 for link in links:
+                    if not link in link_path:
+                        success = False
+                        break
                     order.append(str(link_path.index(link)+1))
+                if not success:
+                    continue
                 new_row['ordering'] = ";".join(order)
                 output_rows.append(new_row)
                 break

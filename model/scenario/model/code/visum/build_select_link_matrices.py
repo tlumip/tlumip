@@ -190,10 +190,12 @@ class FbThread(threading.Thread):
                             break
                         from_zone = int(data[0])
                         to_zone = int(data[1])
-                        row['FROMZONE'] = from_zone
-                        row['TOZONE'] = to_zone
-                        row['PERCENT'] = min(1.0,float(data[2]) / trips[zone_indices[from_zone]][zone_indices[to_zone]])
-                        self.writer.writerow(row)
+                        ttrips = trips[zone_indices[from_zone]][zone_indices[to_zone]]
+                        if ttrips > 0:
+                            row['FROMZONE'] = from_zone
+                            row['TOZONE'] = to_zone
+                            row['PERCENT'] = min(1.0,float(data[2]) / ttrips)
+                            self.writer.writerow(row)
                         line_count += 1
                         if line_count % 100 == 0:
                             print "  processed " + str(line_count) + " lines"
