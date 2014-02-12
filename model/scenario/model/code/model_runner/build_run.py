@@ -141,11 +141,16 @@ for year in years:
     if not os.path.exists(year_dir):
         os.mkdir(year_dir)
 
-
 #detemplify property file for each module
 #save the first one so we can get classpath for other setups
 prop_file = None
 template_properties = os.path.join(scenario_inputs,'globalTemplate.properties')
+
+#build a list of AA constrained years - kind of hacky to put it here, but we don't want to create a separate module
+temp_props = Properties()
+temp_props.loadPropertyFile(template_properties)
+aa_constrained_years = temp_props['constrained.years'].strip().split(',')
+
 prop_files = [] #we need to save these so that we can avoid naming conflicts
 used_prop_files = {}
 for y in range(len(years)): #for each year entry (in order) defined in tsteps file
@@ -165,6 +170,13 @@ for y in range(len(years)): #for each year entry (in order) defined in tsteps fi
             update_template_properties.loadPropertyFile(update_template_properties_file)
     
     token_map[PropertyTokens.CURRENT_T_YEAR] = year
+
+    #set constrained property
+    if year in aa_constrained_years:
+        token_map[PropertyTokens.AA_CONSTRAINED] = 'true'
+    else:
+        token_map[PropertyTokens.AA_CONSTRAINED] = 'false'
+
     for module_name in module_map[y]: #for each (ordered) module in a given year
         module_set = parseModuleName(module_name)
         module = module_set[0]

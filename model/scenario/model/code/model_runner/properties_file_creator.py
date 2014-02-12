@@ -37,6 +37,8 @@ class PropertyTokens:
     PT_LDT                        = '@PT.LDT@'
     PT_SDT                        = '@PT.SDT@'
 
+    AA_CONSTRAINED                = '@AA.CONSTRAINED@'
+
 def detemplifyFile(input_file,output_file,detemplification_map,templified_property_update={}):
     """
         Detemplify the text in input_file and write it to output_file. detemplification_map has
