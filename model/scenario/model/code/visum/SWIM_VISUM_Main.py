@@ -86,17 +86,7 @@ ovt_coeff = 2
 maxLOS = 300
 maxAutoTimeForLTF = 100
 NA = 999999
-
-#average household size for 1-2 and 3+ households
-numPersonsFact = [1.569, 3.982]
-
-#service headers
-serviceheaders = ['SERVICEAREA', 'los']
-
-#aggregate fields for P2E variable for OVT function
-# population1 - number of households of household size 1 to 2
-# population2 - number of households with household size 3+
-aggregateFields = ['area', 'population1', 'population2', 'employment']
+serviceheaders = ['SERVICEAREA','los','AREA','pop','emp','P2E']
 
 #intercity transit fare function
 intercityTransitFareFuncParams = [1.969,-0.4994]
@@ -115,7 +105,6 @@ class SwimModel(object):
         self.version = properties['ta.version.file']
         self.swimModelInputs = properties['ta.zone.field.names']
         self.zmxInputfileNames = properties['ta.zmx.input.files']
-        
         self.assigmentProcedureDirectory = properties['ta.assignment.parameters.directory']
         self.pathAssignmentProcedure = properties['ta.path.assignment.parameters']
         self.LUCEAssignmentProcedure = properties['ta.luce.assignment.parameters']
@@ -125,17 +114,17 @@ class SwimModel(object):
         self.intercityRailAssignmentProcedure = properties['tr.transit.assignment.intercity.rail.parameters']
         self.runFinalTransitAssignment = properties['tr.run.final.assignment.with.pt.demand.matrices'] == "true"
         
+        self.ACIWorldMarkets = properties['si.activityconstraintsi.worldmarkets']
         self.worldZoneDistances = properties['ta.world.zone.distances']
         self.hwySkimMatrixNames = properties['ta.skim.matrix.names']
         self.transitSkimMatrixNames = properties['tr.skim.matrix.names']
         self.impExpFields = properties['ta.imp.exp.fields']
         self.losInfo = properties['ta.los.info']
-        self.visumFieldsFile = properties['ta.visum.fields']
+        self.synpopFile = properties['spg2.current.synpop.summary']
         self.pythonDependencyDir = properties['ta.dependent.python.directory']
         self.pythonDependencies = eval(properties['ta.dependent.python.files'].strip())
         self.last_transit_path = properties['transit.assign.previous.skim.path']
         self.current_transit_path = properties['transitSkims.directory']
-        self.base_alpha2beta = properties['alpha2beta.file.base']
         self.fareZoneFares = properties['fareZoneFares.file']
         self.air_skims_directory = properties['transit.assign.previous.skim.path']
         self.air_skims = properties['pt.air.peak.skims'].strip().split(',') + properties['pt.air.offpeak.skims'].strip().split(',')
@@ -319,18 +308,18 @@ class SwimModel(object):
 
         headers, fieldDictionary = self.loadCSV(self.swimModelInputs)
         
-        #write SWIM files: alpha2beta.csv, Employment.csv, and
-        #ActivityConstraintsI.csv HH fields only
+        #write SWIM input files
         fileNames = list(set(fieldDictionary[headers[1]]))
 
         for fileIndex in range(0,len(fileNames)):
             fileName = fileNames[fileIndex]
             print("Write Swim input file:" + fileName)
+            
             #get fields for file
             listRecords = [item for item in range(0,len(fieldDictionary[headers[1]]))
                            if fieldDictionary[headers[1]][item] == fileName]
             self.fields = [fieldDictionary[headers[0]][i] for i in listRecords]
-            self.fields.insert(0,a_zone) #append azone no. to the field list
+            self.fields.insert(0,a_zone) #add azone no. to the field list
 
             #get required attributes table from Visum
             data = list()
@@ -338,10 +327,41 @@ class SwimModel(object):
                 self.field = self.fields[fieldCounter]
                 data.append(VisumHelpers.GetMulti(self.Visum.Net.Zones, self.field))
 
-            #Make list of lists (where columns means fields and rows means data)
+            #Make list of lists (rows)
             fileTable = self.cleanZonalDataOfWorldZones(self.stringConcatenate(data))
-            if fileName.lower().find('employment') > -1:
-                fileTable = self.fixEmployment(fileTable)
+            
+            #Correct FloorspaceInventory field names
+            if fileName.lower().find('floorspaceinventory') > -1:
+                fileTable[0] = [s.replace("_"," ") for s in fileTable[0]]
+            
+            #Reformat ActivityConstraintsI table
+            if fileName.lower().find('activityconstraintsi') > -1:
+                
+                #read world markets file
+                self.headers, self.columns = self.loadCSV(self.ACIWorldMarkets)
+                
+                #reformat table by looping across rows
+                outTable = []
+                for i in range(len(self.columns[self.headers[0]])):
+                  row = []
+                  for j in range(len(self.headers)):
+                    row.append(self.columns[self.headers[j]][i])
+                  outTable.append(row)
+                  
+                #merge regular zone data
+                for i in range(len(fileTable)):
+                  row = fileTable[i]
+                  for j in range(len(row)):
+                    azone = row[0]
+                    attr = self.fields[j]
+                    value = row[j]
+                    if j > 0:
+                      outTable.append([azone, attr, value])
+                  
+                #add column headers
+                fileTable = outTable
+                fileTable.insert(0, self.headers)
+        
             #write resulting file
             self.writeCSV(fileName, fileTable)
         
@@ -349,19 +369,6 @@ class SwimModel(object):
         print("Set truck PCU factor: " + str(truckPCU))
         self.Visum.Net.TSystems.ItemByKey("d").SetAttValue("PCU", truckPCU)
         
-    def fixEmployment(self,data):
-        first = True
-        for row in data:
-            if first:
-                first = False
-                row.append('Total')
-                continue
-            sum = 0.0
-            for d in range(1,len(row)):
-                sum += float(row[d])
-            row.append(str(sum))
-        return data
-
     #read matrices in Python and then insert into Visum
     def insertMatrixInVisum(self, ODmode, start, end, fixedDemand=0):
         
@@ -601,9 +608,9 @@ class SwimModel(object):
     #create a dictionary of service areas and los (in order of alpha zones in Visum)
     def zoneServiceLookup(self):
         
-        print('assign level of service to each alpha zone (or service area)')
+        print('assign transit level of service to each alpha zone based on service area')
 
-        #get station area frrom Visum
+        #get service area from Visum
         self.service_data = dict()
         self.service_data[serviceheaders[0]] = VisumHelpers.GetMulti(self.Visum.Net.Zones, serviceheaders[0])
         self.service_data[serviceheaders[0]] = map(int,self.service_data[serviceheaders[0]])
@@ -619,71 +626,46 @@ class SwimModel(object):
                     losList.append(los_data[losheaders[7]][lo])
 
         self.service_data[serviceheaders[1]] = losList
-        
 
-    #aggregate different employments types, household types and area into 'aggregateFields'
-    def aggregateFieldsMethod(self, Indexes, aggfield):
+    #calculate service area data for LTF
+    def calcServiceAreaData(self):
         
-        sum = [0]*len(self.service_data[serviceheaders[0]])
-
-        for ind in Indexes:
+        #get zone area
+        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, serviceheaders[2])
+        areas = [item/(5280**2) for item in areas] #from sq ft to miles
+        self.service_data[serviceheaders[2]] = areas
+        
+        #read synpop summary table
+        self.headers, self.fields = self.loadCSV(self.synpopFile)
+        self.service_data[serviceheaders[3]] = self.fields["TotalPersons"]
+        self.service_data[serviceheaders[4]] = self.fields["TotalWorkers"]
+        
+        #define dict of accumulated measures by service area
+        serviceAreaSums = dict()
+        for i in range(len(serviceareas)):
+          
+          if serviceareas[i] not in serviceAreaSums:
+            serviceAreaSums[serviceareas[i]] = [0,0,0,0] #area,pop,emp,p2eDen
             
-            fieldName = self.visumfields[self.visumheaders[0]][ind]
-            fieldData = VisumHelpers.GetMulti(self.Visum.Net.Zones, fieldName)
-                
-            if aggfield == aggregateFields[0]:
-                    
-                #convert area from sq feet to sq miles
-                fieldData = [item/(5280**2) for item in fieldData]
-
-            elif aggfield == aggregateFields[1]:
-
-                #convert households to persons using average household size
-                fieldData = [numPersonsFact[0]*item for item in fieldData]
-
-            elif aggfield == aggregateFields[2]:
-
-                #convert households to persons using average household size
-                fieldData = [numPersonsFact[1]*item for item in fieldData]
-
-            sum = [i+j for (i,j) in zip(sum, fieldData)]
-
-        #return aggregated field
-        return sum
-    
-
-    #run aggregateMethod method
-    def runaggregateFields(self):
+          sums = serviceAreaSums[serviceareas[i]]
+          sums[0] = sums[0] + self.service_data[serviceheaders[2]][i]
+          sums[1] = sums[1] + self.service_data[serviceheaders[3]][i]
+          sums[2] = sums[2] + self.service_data[serviceheaders[4]][i]
+          serviceAreaSums[serviceareas[i]] = sums
         
-        self.visumheaders, self.visumfields = self.loadCSV(self.visumFieldsFile)
+        #create P2E density field for service area
+        for sArea in serviceAreaSums:
+          sums = serviceAreaSums[sArea]
+          if sums[0] != 0:
+              sums[3] = (sums[1] + 2*sums[2])/sums[0]
+          else:
+              sums[3] = 0
+          serviceAreaSums[serviceareas[i]] = sums
         
-        for aggfield in aggregateFields:
-            
-            fieldIndexes = [item for item in range(len(self.visumfields[self.visumheaders[1]]))
-                               if self.visumfields[self.visumheaders[1]][item] == aggfield]
-
-            #get cumulative sum from aggregateFieldsMethod            
-            cumsum = self.aggregateFieldsMethod(fieldIndexes, aggfield)
-            
-            serviceheaders.append(aggfield)
-            self.service_data[aggfield] = cumsum
-
-        area = self.service_data[serviceheaders[2]]
-        pop1 = self.service_data[serviceheaders[3]]
-        pop2 = self.service_data[serviceheaders[4]]
-        emp = self.service_data[serviceheaders[5]]
-        
-        #create P2E field i.e. populationn + 2*employment
-        P2E = []
-        for cnt in range(len(area)):
-            if area[cnt] != 0:
-                p2eValue = (pop1[cnt] + pop2[cnt] + 2*emp[cnt])/area[cnt]
-                P2E.append(p2eValue)
-            else:
-                P2E.append(0)
-
-        serviceheaders.append('P2E')
-        self.service_data[serviceheaders[6]] = P2E
+        #code each zone with its P2E
+        for i in range(len(serviceareas)):
+          sums = serviceAreaSums[serviceareas[i]]
+          self.service_data[serviceheaders[5]][i] = sums[3]
 
     #inner production of two vectors
     def inner_prod(self, v1, v2):
@@ -697,12 +679,11 @@ class SwimModel(object):
         outList = [math.sqrt(i) for i in list]
         return outList  
 
-    
     #create local bus ivt and ovt functions
     def createLocalBusSkimMatrix(self, timemat, distmat, isPeak, NAMatrix):
                 
         losList = self.service_data[serviceheaders[1]]
-        P2EList = self.service_data[serviceheaders[6]]
+        P2EList = self.service_data[serviceheaders[5]]
         
         #initialize arrays
         ivtmat = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
@@ -1057,7 +1038,7 @@ if __name__== "__main__":
         s.startVisum()
         s.loadVersion()
         s.zoneServiceLookup()
-        s.runaggregateFields()
+        s.calcServiceAreaData()
         s.createLocalBusSkims()
         s.buildTransitConnectors(ivtMatNums[0], ovtMatNums[0], ivt_coeff, ovt_coeff)
         s.saveVersion()
@@ -1120,8 +1101,8 @@ if __name__== "__main__":
           s.writeTransitSkimZMX(start=transitSkimMatrices[0])
           s.saveVersion()
           s.closeVisum()
-#
-        #copy air skims, because it needss to look like they've been run
+        
+        #copy air skims, because it needs to look like they've been run
         s.copyAirSkims()
         
     print("end model run - " + time.ctime())
