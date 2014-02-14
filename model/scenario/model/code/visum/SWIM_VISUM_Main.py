@@ -86,7 +86,6 @@ ovt_coeff = 2
 maxLOS = 300
 maxAutoTimeForLTF = 100
 NA = 999999
-serviceheaders = ['SERVICEAREA','los','AREA','pop','emp','P2E']
 
 #intercity transit fare function
 intercityTransitFareFuncParams = [1.969,-0.4994]
@@ -612,45 +611,44 @@ class SwimModel(object):
 
         #get service area from Visum
         self.service_data = dict()
-        self.service_data[serviceheaders[0]] = VisumHelpers.GetMulti(self.Visum.Net.Zones, serviceheaders[0])
-        self.service_data[serviceheaders[0]] = map(int,self.service_data[serviceheaders[0]])
-        self.service_data[serviceheaders[0]] = map(str,self.service_data[serviceheaders[0]])
+        self.service_data["SERVICEAREA"] = VisumHelpers.GetMulti(self.Visum.Net.Zones, "SERVICEAREA")
 
         #get level of service data
         losheaders, los_data = self.losCompute()
 
         losList = []
-        for ser in range(len(self.service_data[serviceheaders[0]])):
+        for ser in range(len(self.service_data["SERVICEAREA"])):
             for lo in range(len(los_data[losheaders[0]])):
-                if self.service_data[serviceheaders[0]][ser] == los_data[losheaders[0]][lo]:
+                if int(self.service_data["SERVICEAREA"][ser]) == int(los_data[losheaders[0]][lo]):
                     losList.append(los_data[losheaders[7]][lo])
 
-        self.service_data[serviceheaders[1]] = losList
+        self.service_data["LOS"] = losList
 
     #calculate service area data for LTF
     def calcServiceAreaData(self):
         
         #get zone area
-        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, serviceheaders[2])
+        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREA")
         areas = [item/(5280**2) for item in areas] #from sq ft to miles
-        self.service_data[serviceheaders[2]] = areas
+        self.service_data["AREA"] = areas
         
         #read synpop summary table
         self.headers, self.fields = self.loadCSV(self.synpopFile)
-        self.service_data[serviceheaders[3]] = self.fields["TotalPersons"]
-        self.service_data[serviceheaders[4]] = self.fields["TotalWorkers"]
+        self.service_data["POP"] = self.fields["TotalPersons"]
+        self.service_data["EMP"] = self.fields["TotalWorkers"]
         
         #define dict of accumulated measures by service area
+        serviceareas = self.service_data["SERVICEAREA"]
         serviceAreaSums = dict()
-        for i in range(len(serviceareas)):
+        for i in range(len(self.service_data["POP"])): #only internal zones
           
           if serviceareas[i] not in serviceAreaSums:
             serviceAreaSums[serviceareas[i]] = [0,0,0,0] #area,pop,emp,p2eDen
             
           sums = serviceAreaSums[serviceareas[i]]
-          sums[0] = sums[0] + self.service_data[serviceheaders[2]][i]
-          sums[1] = sums[1] + self.service_data[serviceheaders[3]][i]
-          sums[2] = sums[2] + self.service_data[serviceheaders[4]][i]
+          sums[0] = sums[0] + self.service_data["AREA"][i]
+          sums[1] = sums[1] + int(self.service_data["POP"][i])
+          sums[2] = sums[2] + int(self.service_data["EMP"][i])
           serviceAreaSums[serviceareas[i]] = sums
         
         #create P2E density field for service area
@@ -663,9 +661,10 @@ class SwimModel(object):
           serviceAreaSums[serviceareas[i]] = sums
         
         #code each zone with its P2E
-        for i in range(len(serviceareas)):
+        self.service_data["P2EDEN"] = [0]*len(self.service_data["AREA"])
+        for i in range(len(self.service_data["POP"])):
           sums = serviceAreaSums[serviceareas[i]]
-          self.service_data[serviceheaders[5]][i] = sums[3]
+          self.service_data["P2EDEN"][i] = sums[3]
 
     #inner production of two vectors
     def inner_prod(self, v1, v2):
@@ -682,8 +681,8 @@ class SwimModel(object):
     #create local bus ivt and ovt functions
     def createLocalBusSkimMatrix(self, timemat, distmat, isPeak, NAMatrix):
                 
-        losList = self.service_data[serviceheaders[1]]
-        P2EList = self.service_data[serviceheaders[5]]
+        losList = self.service_data["LOS"]
+        P2EList = self.service_data["P2EDEN"]
         
         #initialize arrays
         ivtmat = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
