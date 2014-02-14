@@ -80,7 +80,6 @@ public class FreightDemand3 {
         this.inputPath = ctInputs;
         this.outputPath = ctOutputs;
         this.md = new ModalDistributions(inputPath+"ModalDistributionParameters.txt");
-        this.vdf = new ValueDensityFunction(new File(inputPath + "ValueDensityParameters.txt"));
         vdf2 = new ValueDensityFunction_V2(new File(inputPath + "ValueDensityParameters.csv")); //todo: get from property file
         usingAA = ResourceUtil.getBooleanProperty(globalRb,"using.aa");
        
