@@ -303,7 +303,7 @@ class SwimModel(object):
         return cleaned_table
 
     def createModelInput(self):
-        print('Create SWIM Model Input files')
+        print('Create SWIM Model Input files, Remove Non-Year Transit Lines')
 
         headers, fieldDictionary = self.loadCSV(self.swimModelInputs)
         
@@ -368,6 +368,14 @@ class SwimModel(object):
         print("Set truck PCU factor: " + str(truckPCU))
         self.Visum.Net.TSystems.ItemByKey("d").SetAttValue("PCU", truckPCU)
         
+        #remove transit lines not in year
+        print("Remove transit lines not in year: " + str(self.year))
+        lineID = VisumHelpers.GetMulti(self.Visum.Net.LineRoutes, "ID")
+        inYear = VisumHelpers.GetMulti(self.Visum.Net.LineRoutes, "NET" + self.year)
+        for i in range(len(inYear)):
+          if inYear[i] == 0:
+            self.Visum.Net.RemoveLineRoute(self.Visum.Net.LineRoutes.ItemByID(lineID[i]))
+        
     #read matrices in Python and then insert into Visum
     def insertMatrixInVisum(self, ODmode, start, end, fixedDemand=0):
         
@@ -399,7 +407,7 @@ class SwimModel(object):
             self.Visum.Net.RemoveMatrix(matRefObject)
 
     def importExportFields(self, impFieldName, expFieldName):
-        print("......copy data from " + impFieldName + self.year + " and paste it to " + expFieldName + " in VISUM")
+        print("......copy data from " + impFieldName + self.year + " to " + expFieldName)
 
         impField = VisumHelpers.GetMulti(self.Visum.Net.Links, impFieldName + self.year)
         expField = VisumHelpers.SetMulti(self.Visum.Net.Links, expFieldName, impField)
