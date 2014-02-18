@@ -38,6 +38,9 @@ from __future__ import with_statement
 # crf - 4/2013
 ##################################################
 
+#VISUM program version
+programVersion = '13'
+
 import os,csv,sys,gc,time,threading
 import pythoncom
 import win32com.client as com
@@ -64,7 +67,7 @@ with open(select_link_file,'rb') as f:
 
 def loadVersion(version_file):
     #Start Visum and load file
-    Visum = com.Dispatch('visum.visum.12')
+    Visum = com.Dispatch('visum.visum.'+programVersion)
     Visum.LoadVersion(version_file)
     return Visum
     
