@@ -9,6 +9,7 @@ import os, shutil, sys, csv, time, struct, zipfile, numpy as np, math
 import win32com.client as com, VisumPy.helpers as VisumHelpers
 import VisumPy.matrices as VisumMatrices, VisumPy.csvHelpers as VisumCSV
 from Properties import Properties
+import heapq
 
 #parameters
 ############################################################
@@ -86,6 +87,7 @@ ovt_coeff = 2
 maxLOS = 300
 maxAutoTimeForLTF = 100
 NA = 999999
+numTransitConnectors = 2
 
 #intercity transit fare function
 intercityTransitFareFuncParams = [1.969,-0.4994]
@@ -905,27 +907,21 @@ class SwimModel(object):
     #Build Transit Connectors
     def buildTransitConnectors(self, ivt_matrix_num, ovt_matrix_num, ivt_coeff, ovt_coeff):
   
+        print('build transit connectors using LTF skims')
+        
         #get stop attributes
         stopNo       =  VisumHelpers.GetMulti(self.Visum.Net.StopPoints, "No", False)
         stopX        =  VisumHelpers.GetMulti(self.Visum.Net.StopPoints, "XCoord", False)
         stopY        =  VisumHelpers.GetMulti(self.Visum.Net.StopPoints, "YCoord", False)
         stopNodeNo   =  VisumHelpers.GetMulti(self.Visum.Net.StopPoints, "NodeNo", False)
+        stopLineModes=  VisumHelpers.GetMulti(self.Visum.Net.StopPoints, "CONCATENATE:LINEROUTES\TSYSCODE", False)
         stopZone     =  [0] * len(stopNo) #will be calculated below
 
         #get zone attributes
         zoneNo       =  VisumHelpers.GetMulti(self.Visum.Net.Zones, "No", False)
         zoneX        =  VisumHelpers.GetMulti(self.Visum.Net.Zones, "XCoord", False)
         zoneY        =  VisumHelpers.GetMulti(self.Visum.Net.Zones, "YCoord", False)
-        zoneStop     =  [0] * len(zoneNo) #will be calculated below
-        
-        #determine nearest stop for each zone
-        for i in range(len(zoneNo)):
-            max_dist = 99999999
-            for j in range(len(stopNo)):
-                dist = self.calcDist(zoneX[i], stopX[j], zoneY[i], stopY[j])
-                if dist <= max_dist:
-                    zoneStop[i] = stopNo[j]
-                    max_dist = dist
+        zoneStops    =  [[]] * len(zoneNo) #will be calculated below
         
         #determine each stop's zone
         for i in range(len(stopNo)):
@@ -936,16 +932,42 @@ class SwimModel(object):
                     stopZone[i] = zoneNo[j]
                     max_dist = dist
         
+        #determine nearest stops for each zone
+        for i in range(len(zoneNo)):
+            
+            #store distances
+            dists = []
+            for k in range(numTransitConnectors):
+              heapq.heappush(dists, (-99999999, 0)) #negative distance, stopNo
+            
+            for j in range(len(stopNo)):
+                
+                #skip if air stop
+                if 'n' not in stopLineModes[j]:
+                  
+                  dist = self.calcDist(zoneX[i], stopX[j], zoneY[i], stopY[j])
+                  for entry in dists:
+                    if (-1 * dist) > entry[0]:
+                      heapq.heappushpop(dists, (-dist, stopNo[j]))
+                      break
+            
+            #store stopNos by zone
+            zoneStops[i] = []
+            for entry in dists:
+              zoneStops[i].append(entry[1])
+        
         #get local transit function skim matrices
         ivt = VisumHelpers.GetMatrix(self.Visum, ivt_matrix_num) #ltf ivt
         ovt = VisumHelpers.GetMatrix(self.Visum, ovt_matrix_num) #ltf ovt
         
         #create connectors
+        self.Visum.Graphic.ShowMinimized()
         for i in range(len(zoneNo)):
+          for j in range(len(zoneStops[0])):
             
             #create connector if needed
             zone = self.Visum.Net.Zones.ItemByKey(zoneNo[i])
-            node = self.Visum.Net.Nodes.ItemByKey(stopNodeNo[stopNo.index(zoneStop[i])])
+            node = self.Visum.Net.Nodes.ItemByKey(stopNodeNo[stopNo.index(zoneStops[i][j])])
             
             if self.Visum.Net.Connectors.ExistsByKey(node, zone):
                 sCon = self.Visum.Net.Connectors.SourceItemByKey(zone, node)
@@ -957,7 +979,7 @@ class SwimModel(object):
             
             #get IVT and OVT for OD pair
             fz_index = zoneNo.index(zoneNo[i])
-            tz_index = zoneNo.index(stopZone[stopNo.index(zoneStop[i])])
+            tz_index = zoneNo.index(stopZone[stopNo.index(zoneStops[i][j])])
             ivt_od = ivt[fz_index, tz_index]
             ovt_od = ovt[fz_index, tz_index]
             
