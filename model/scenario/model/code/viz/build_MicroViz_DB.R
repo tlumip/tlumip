@@ -22,16 +22,16 @@ wkrDir = getwd()
 sn = basename(dirname(dirname(wkrDir)))
 tstep = gsub("t","",basename(wkrDir))
 
-#is this a TS year
-isTSYear = file.exists("ampeakAssignmentResults.csv")
+#is this a transport year
+isTransportYear = file.exists("Trips_SDTPerson.csv")
 
 #########################################################################
-#Exit if NOT a TS Year
+#Exit if NOT a transport Year
 #########################################################################
   
-#exit if NOT TS year
-if(!isTSYear) {
-  cat(paste("No database created since not a TS year ", Sys.time(), "\n"))
+#exit if NOT transport year
+if(!isTransportYear) {
+  cat(paste("No database created since not a transport year ", Sys.time(), "\n"))
   quit("no")
 }
 

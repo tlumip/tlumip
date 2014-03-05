@@ -10,6 +10,8 @@
 # extraAttribsFileName = "export_01_06.csv"
 # networkFileName ="network.d211" 
 
+#updated 03/05/14 bts - allows for no ALD outputs and no longer reads TS outputs
+
 #######################################################################
 
 library(RSQLite)
@@ -46,8 +48,11 @@ tstep = gsub("t","",basename(wkrDir))
 #is this a PI year
 isPIYear = file.exists("CommodityZutilities.csv")
 
-#is this a TS year
-isTSYear = file.exists("ampeakAssignmentResults.csv")
+#is this a transport model year
+isTransportYear = file.exists("SWIM_PeakAssignmentPaths.ver")
+
+#is this a ALD year
+isALDYear = file.exists(".RData")
 
 #########################################################################
 #functions
@@ -213,8 +218,8 @@ ActivityLocations$LaborUseQty = zMakeUseLaborTable$Value[match(key,keyZ)]
 #add employment field 
 ActivityLocations$Employment = 0
 
-#Add employment data if a TS year
-if(isTSYear) {
+#Add employment data if transport year
+if(isTransportYear) {
 
   emp = read.csv("Employment.csv")
   emp = fixActivityNames(emp)
@@ -251,6 +256,30 @@ dbGetQuery(db,"CREATE TABLE ActivityLocations (
 dbWriteTable(db, "ActivityLocations", ActivityLocations[,c("ZoneNumber","Activity","Quantity","LaborUseQty","Employment")], append=T, row.names=F)
 dbGetQuery(db, "CREATE INDEX ActivityLocationsIndex ON ActivityLocations (BZONE,ACTIVITY)")
 
+#########################################################################
+# Add Activity Constraints Index Table
+#########################################################################
+
+if(file.exists("ActivityConstraintsI.csv")) {
+    actCon = read.csv("ActivityConstraintsI.csv")
+    
+    # Add BZONE and create data frame by BZONE
+     actCon$BZONE = azone2bzone(actCon$taz,allZones$AZONE,allZones$BZONE)
+     actCon$BZACT = paste(actCon$BZONE,actCon$Activity,sep="-")
+     actConBzQnt  = tapply(actCon$Quantity, actCon$BZACT, sum) 
+     actConBzQnt = as.data.frame(actConBzQnt)
+     actConBzQnt$ACTIVITY = actCon$Activity[match(rownames(actConBzQnt),actCon$BZACT)]
+     colnames(actConBzQnt) <- c("QUANTITY_CON", "ACTIVITY_CON") 
+    
+     temp_act <- dbGetQuery(db, "select * from ActivityLocations") 
+     KEY       <- paste(temp_act$BZONE,temp_act$ACTIVITY,sep="-")
+     temp_act$QUANTITY_CON <-  actConBzQnt$QUANTITY_CON[match(KEY,rownames(actConBzQnt))] 
+     temp_act$QUANTITY_CON[is.na(temp_act$QUANTITY_CON)] <- 0
+    
+     dbGetQuery(db, "DROP TABLE ActivityLocations") 
+     dbWriteTable(db, "ActivityLocations", temp_act, append=T, row.names=F)  
+}
+ 
 #########################################################################
 #Read ExchangeResults
 #########################################################################
@@ -342,56 +371,97 @@ dbWriteTable(db, "ExchangeResults", ExchangeResults[,colOrder], append=T, row.na
 dbGetQuery(db, "CREATE INDEX ExchangeResultsIndex ON ExchangeResults (BZONE,Commodity)")
 
 #########################################################################
+# Add Exchange Results Targets Index  Table
+#########################################################################
+
+if(file.exists("ExchangeResultsTargetsI.csv")) {
+     exRes = read.csv("ExchangeResultsTargetsI.csv")
+     exRes$Commodity <- gsub(" |&","_",as.character(exRes$Commodity))
+     key2 <- paste(exRes$ZoneNumber,exRes$Commodity , sep="-")
+     
+     exTable <- dbGetQuery(db, "select * from ExchangeResults") 
+     key1 <- paste(exTable$BZONE,exTable$Commodity , sep="-")
+     exTable$Price_I <- exRes$Price[match(key1,key2)]
+     exTable$Region <- exRes$region[match(key1,key2)]
+     exTable$Type <- exRes$type[match(key1,key2)]
+     
+     dbGetQuery(db, "DROP TABLE ExchangeResults") 
+     dbWriteTable(db, "ExchangeResults", exTable, append=T, row.names=F)  
+}
+
+#########################################################################
 #Read FloorspaceInventory + Floorspace Capacity
 #########################################################################
 
-#read FloorspaceInventory.csv
-FloorspaceInventory = read.csv("FloorspaceInventory.csv")
-commodityNames = gsub("[.]"," ",colnames(FloorspaceInventory)[2:ncol(FloorspaceInventory)])
-commodityNames = gsub(" |&","_",commodityNames) #replace " " & "&"
+if(isALDYear) {
 
-FSI = data.frame(FloorspaceInventory$AZone,unlist(FloorspaceInventory[2:ncol(FloorspaceInventory)]))
-FSI$COMMODITY = rep(commodityNames,each=nrow(FloorspaceInventory))
-colnames(FSI) =c("AZONE","FLR","COMMODITY")
-
-#add Floorspace Capacity as well
-load(".RData")
-FSC = data.frame()
-for(i in 1:ncol(FloorspaceCapacities_$ResCap.AzFr)) {
-  com = colnames(FloorspaceCapacities_$ResCap.AzFr)[i]
-  com = gsub(" |-","_", com)
+  #read FloorspaceInventory.csv
+  FloorspaceInventory = read.csv("FloorspaceInventory.csv")
+  commodityNames = gsub("[.]"," ",colnames(FloorspaceInventory)[2:ncol(FloorspaceInventory)])
+  commodityNames = gsub(" |&","_",commodityNames) #replace " " & "&"
   
-  x = data.frame(rownames(FloorspaceCapacities_$ResCap.AzFr), com, FloorspaceCapacities_$ResCap.AzFr[,i])
-  colnames(x) = c("AZONE","COMMODITY","CAP")
-  FSC = rbind(FSC,x)
-}
-for(i in 1:ncol(FloorspaceCapacities_$NresCap.AzFn)) {
-  com = colnames(FloorspaceCapacities_$NresCap.AzFn)[i]
-  com = gsub(" |-","_", com)
+  FSI = data.frame(FloorspaceInventory$AZone,unlist(FloorspaceInventory[2:ncol(FloorspaceInventory)]))
+  FSI$COMMODITY = rep(commodityNames,each=nrow(FloorspaceInventory))
+  colnames(FSI) =c("AZONE","FLR","COMMODITY")
   
-  x = data.frame(rownames(FloorspaceCapacities_$NresCap.AzFn), com, FloorspaceCapacities_$NresCap.AzFn[,i])
-  colnames(x) = c("AZONE","COMMODITY","CAP")
-  FSC = rbind(FSC,x)
+  #add Floorspace Capacity as well
+  load(".RData") #ALD output
+  FSC = data.frame()
+  for(i in 1:ncol(FloorspaceCapacities_$ResCap.AzFr)) {
+    com = colnames(FloorspaceCapacities_$ResCap.AzFr)[i]
+    com = gsub(" |-","_", com)
+    x = data.frame(rownames(FloorspaceCapacities_$ResCap.AzFr), com, FloorspaceCapacities_$ResCap.AzFr[,i])
+    colnames(x) = c("AZONE","COMMODITY","CAP")
+    FSC = rbind(FSC,x)
+  }
+  
+  for(i in 1:ncol(FloorspaceCapacities_$NresCap.AzFn)) {
+    com = colnames(FloorspaceCapacities_$NresCap.AzFn)[i]
+    com = gsub(" |-","_", com)
+    x = data.frame(rownames(FloorspaceCapacities_$NresCap.AzFn), com, FloorspaceCapacities_$NresCap.AzFn[,i])
+    colnames(x) = c("AZONE","COMMODITY","CAP")
+    FSC = rbind(FSC,x)
+  }
+  FSI = merge(FSI, FSC)
+
+  #increments matrix
+  increments = read.csv("Increments_Matrix.csv")
+  colnames(increments) = gsub("[.]","_",colnames(increments)) #replace "." with "_"
+  increments2 = data.frame(AZONE=increments$AZone, COMMODITY=rep(colnames(increments)[-1], each=nrow(increments)), 
+    INCREMENT=as.vector(as.matrix(increments[,2:ncol(increments)])))
+  increments2$COMMODITY = as.character(increments2$COMMODITY)
+  increments2 = increments2[!(increments2$COMMODITY %in% c("FLR_Agriculture", "FLR_Logging")),]
+  FSI$INCREMENT = 0
+  FSI$INCREMENT = increments2$INCREMENT[match(paste(FSI$AZONE, FSI$COMMODITY), paste(increments2$AZONE, increments2$COMMODITY))]
+  
+  FSI$BZONE = azone2bzone(FSI$AZONE,allZones$AZONE,allZones$BZONE)
+  dbWriteTable(db, "FloorspaceInventory", FSI, row.names=F)
+  
+  dbGetQuery(db,"CREATE TABLE FLR_INVENTORY AS SELECT BZONE, COMMODITY, SUM(FLR) AS FLR, 
+    SUM(Cap) AS CAP, SUM(INCREMENT) AS INCREMENT FROM FloorspaceInventory GROUP BY BZONE,COMMODITY")
+  dbGetQuery(db,"DROP TABLE FloorspaceInventory")
+  dbGetQuery(db, "CREATE INDEX FLR_INVENTORYIndex ON FLR_INVENTORY (BZONE,COMMODITY)")
+  
+  #########################################################################
+  # Add Floorspace Index Table
+  #########################################################################
+  flrSpace = read.csv("FloorspaceI.csv")
+  flrSpace$commodity <- gsub(" |&","_",as.character(flrSpace$commodity))
+  
+  # Add BZONE and create data frame by BZONE
+  flrSpace$BZONE = azone2bzone(flrSpace$taz,allZones$AZONE,allZones$BZONE)
+  flrSpace$BZCOM = paste(flrSpace$BZONE,flrSpace$commodity,sep="-")
+  flrComBzQnt    = tapply(flrSpace$quantity, flrSpace$BZCOM, sum) 
+  flrComBzQnt    = as.data.frame(flrComBzQnt)
+  colnames(flrComBzQnt) <- c("QUANTITY_CON")
+  
+  flrTable <- dbGetQuery(db, "select * from FLR_INVENTORY")
+  key1 <- paste(flrTable$BZONE,flrTable$COMMODITY, sep="-")
+  flrTable$QUANTITY_CON <-  flrComBzQnt$QUANTITY_CON[match(key1,rownames(flrComBzQnt))]
+  
+  dbGetQuery(db, "DROP TABLE FLR_INVENTORY") 
+  dbWriteTable(db, "FLR_INVENTORY", flrTable, append=T, row.names=F) 
 }
-FSI = merge(FSI, FSC)
-
-#increments matrix
-increments = read.csv("Increments_Matrix.csv")
-colnames(increments) = gsub("[.]","_",colnames(increments)) #replace "." with "_"
-increments2 = data.frame(AZONE=increments$AZone, COMMODITY=rep(colnames(increments)[-1], each=nrow(increments)), 
-  INCREMENT=as.vector(as.matrix(increments[,2:ncol(increments)])))
-increments2$COMMODITY = as.character(increments2$COMMODITY)
-increments2 = increments2[!(increments2$COMMODITY %in% c("FLR_Agriculture", "FLR_Logging")),]
-FSI$INCREMENT = 0
-FSI$INCREMENT = increments2$INCREMENT[match(paste(FSI$AZONE, FSI$COMMODITY), paste(increments2$AZONE, increments2$COMMODITY))]
-
-FSI$BZONE = azone2bzone(FSI$AZONE,allZones$AZONE,allZones$BZONE)
-dbWriteTable(db, "FloorspaceInventory", FSI, row.names=F)
-
-dbGetQuery(db,"CREATE TABLE FLR_INVENTORY AS SELECT BZONE, COMMODITY, SUM(FLR) AS FLR, 
-  SUM(Cap) AS CAP, SUM(INCREMENT) AS INCREMENT FROM FloorspaceInventory GROUP BY BZONE,COMMODITY")
-dbGetQuery(db,"DROP TABLE FloorspaceInventory")
-dbGetQuery(db, "CREATE INDEX FLR_INVENTORYIndex ON FLR_INVENTORY (BZONE,COMMODITY)")
 
 #########################################################################
 #create BuySell matrices (buying + selling matrices)
@@ -441,13 +511,12 @@ if(length(sellingMats > 0)) {
 }
 
 #########################################################################
-#Exit if NOT a TS Year
+#Exit if NOT a transport year
 #########################################################################
-  
-#exit if NOT TS year OR genSpatialOnly
-if((!isTSYear) | as.logical(genSpatialOnly)) {
+
+if((!isTransportYear) | as.logical(genSpatialOnly)) {
   #Close and compact database
-  #dbGetQuery(db, "VACUUM")
+  dbGetQuery(db, "VACUUM")
   sqliteCloseConnection(db)
   cat(paste("SWIM VIZ DB for", databaseFileName, "at", Sys.time(), "Created \n"))
   quit("no")
@@ -827,90 +896,6 @@ for(aMode in LDTModes) {
 }
 
 #########################################################################
-#TS highway assignment results + input network attributes
-#########################################################################
-#a=(DA_SR2_SR3P),d=(TRK1),e=(TRK2_TRK3),f=(TRK4_TRK5) OR d=(TRK1_TRK2_TRK3_TRK4_TRK5)
-
-#read AM and MD
-tods = c("am","md")
-amLinkVolumes = read.csv("ampeakAssignmentResults.csv")
-mdLinkVolumes = read.csv("mdoffpeakAssignmentResults.csv")
-assignClasses = gsub("assignmentFlow_","",colnames(amLinkVolumes)[(grep("assignmentFlow",colnames(amLinkVolumes)))])
-
-#read other periods
-if(file.exists("pmpeakAssignmentResults.csv")) {
-  pmLinkVolumes = read.csv("pmpeakAssignmentResults.csv")
-  tods = c(tods, "pm")
-}
-if(file.exists("ntoffpeakAssignmentResults.csv")) {
-  ntLinkVolumes = read.csv("ntoffpeakAssignmentResults.csv")
-  tods = c(tods, "nt")
-}
-
-#merge all tables with time of day and assignment class into one consistent table
-links = data.frame()
-for(i in 1:length(assignClasses)) {
-  for(tod in tods) {
-    fields = get(paste(tod, "LinkVolumes", sep=""))[,c("id","anode","bnode","capacity","assignmentTime",
-      paste("assignmentFlow_", assignClasses[i], sep=""),
-      paste("linkCost_", assignClasses[i], sep=""))]
-    colnames(fields) = c("ID","ANODE","BNODE","CAP","TIME","VOL","COST")
-    fields$ASSIGNCLASS = assignClasses[i]
-    fields$TOD = tod
-    links = rbind(links, fields)
-   }
-}
-
-#bind additional time period columns
-linksTable = links[links$TOD=="am",c("ID","ANODE","BNODE","CAP","TIME","VOL","COST","ASSIGNCLASS")]
-colnames(linksTable) = c("ID","ANODE","BNODE","CAP_AM","TIME_AM","VOL_AM","COST_AM","ASSIGNCLASS")
-linksTable = linksTable[,c(1,2,3,8,4,5,6,7)] #reorder columns
-
-mdLinks = links[links$TOD=="md",c("CAP","TIME","VOL","COST")]
-colnames(mdLinks) = paste(colnames(mdLinks), "_MD", sep="")
-linksTable = cbind(linksTable, mdLinks)
-
-if("pm" %in% tods) {
-  pmLinks = links[links$TOD=="pm",c("CAP","TIME","VOL","COST")]
-  colnames(pmLinks) = paste(colnames(pmLinks), "_PM", sep="")
-  linksTable = cbind(linksTable, pmLinks)
-}
-
-if("nt" %in% tods) {
-  ntLinks = links[links$TOD=="nt",c("CAP","TIME","VOL","COST")]
-  colnames(ntLinks) = paste(colnames(ntLinks), "_NT", sep="")
-  linksTable = cbind(linksTable, ntLinks)
-}
-
-#add in node x and y for mapping
-net = scan(networkFileName, what="", sep="\n")
-nodeTableStart = grep("^ *t nodes init",net)
-linkTableStart = grep("^ *t links init",net)
-nodeTable = read.delim(textConnection(net[(nodeTableStart+1):(linkTableStart-1)]),sep=" ", header=F)
-linkTable = read.delim(textConnection(net[(linkTableStart+1):length(net)]),sep=" ", header=F)
-linkTable$KEY = paste(linkTable$V2, linkTable$V3)
-
-linksTable$ANODEX = nodeTable$V3[match(linksTable$ANODE, nodeTable$V2)]
-linksTable$ANODEY = nodeTable$V4[match(linksTable$ANODE, nodeTable$V2)]
-linksTable$BNODEX = nodeTable$V3[match(linksTable$BNODE, nodeTable$V2)]
-linksTable$BNODEY = nodeTable$V4[match(linksTable$BNODE, nodeTable$V2)]
-
-#add link network attributes
-linksTable$KEY = paste(linksTable$ANODE, linksTable$BNODE)
-linksTable$LENGTH = linkTable$V4[match(linksTable$KEY, linkTable$KEY)]
-linksTable$TYPE = linkTable$V6[match(linksTable$KEY, linkTable$KEY)]
-linksTable$SPEED = linkTable$V9[match(linksTable$KEY, linkTable$KEY)]
-linksTable$NUMLANES = linkTable$V7[match(linksTable$KEY, linkTable$KEY)]
-
-extras = read.csv(extraAttribsFileName)
-extras$KEY = paste(extras$FNODE, extras$TNODE)
-linksTable$CAPACITY = extras$CAPACITY[match(linksTable$KEY, extras$KEY)]
-linksTable$AZONE = extras$NEWTAZ[match(linksTable$KEY, extras$KEY)]
-
-dbWriteTable(db, "LINK_DATA", linksTable[,!(colnames(linksTable) %in% "KEY")], row.names=F)
-dbGetQuery(db, "CREATE INDEX LinkDataIndex ON LINK_DATA (ANODE,BNODE,ASSIGNCLASS)")
-
-#########################################################################
 #Destination Choice logsums
 #########################################################################
 
@@ -1023,64 +1008,6 @@ for(i in 1:length(matsToProcess)) {
 }
 
 #########################################################################
-#Create ROUTE boardings table
-#########################################################################
-
-reformatBoardings = function(bTable) {
-
-  bTable$ACCESSMODE = ""
-  bTable$BOARDINGS = 0
-  
-  bTable_walk = bTable
-  bTable_walk$ACCESSMODE = "w"
-  bTable_walk$BOARDINGS = bTable_walk$wTot
-  
-  bTable_drive = bTable
-  bTable_drive$ACCESSMODE = "d"
-  bTable_drive$BOARDINGS = bTable_drive$dTot
-  
-  bTable = rbind(bTable_walk,bTable_drive)
-  bTable = bTable[,c("Route","Description","Mode","ACCESSMODE","BOARDINGS")]
-  return(bTable)
-}
-
-#check if transit assignment actually run
-if(nrow(read.csv("ampeakRouteBoardings.csv"))>0) {
-  
-  #read AM and MD
-  amBoardings = read.csv("ampeakRouteBoardings.csv")
-  amBoardings = reformatBoardings(amBoardings)
-  mdBoardings = read.csv("mdoffpeakRouteBoardings.csv")
-  mdBoardings = reformatBoardings(mdBoardings)
-  
-  #join MD to AM
-  amBoardings$BOARDINGS_AM = amBoardings$BOARDINGS
-  amBoardings = amBoardings[,colnames(amBoardings) != "BOARDINGS"]
-  amBoardings$BOARDINGS_MD = mdBoardings$BOARDINGS[match(paste(amBoardings$Route, amBoardings$ACCESSMODE), 
-    paste(mdBoardings$Route, mdBoardings$ACCESSMODE))]
-  
-  #read other periods
-  if(file.exists("pmpeakAssignmentResults.csv")) {
-    if(nrow(read.csv("pmpeakRouteBoardings.csv"))>0) {
-      pmBoardings = read.csv("pmpeakRouteBoardings.csv")
-      pmBoardings = reformatBoardings(pmBoardings)
-      amBoardings$BOARDINGS_PM = pmBoardings$BOARDINGS[match(paste(amBoardings$Route, amBoardings$ACCESSMODE), 
-      paste(pmBoardings$Route, pmBoardings$ACCESSMODE))]
-    }
-  }
-  if(file.exists("ntoffpeakAssignmentResults.csv")) {
-    if(nrow(read.csv("ntoffpeakRouteBoardings.csv"))>0) {
-      ntBoardings = read.csv("ntoffpeakRouteBoardings.csv")
-      ntBoardings = reformatBoardings(ntBoardings)
-      amBoardings$BOARDINGS_NT = ntBoardings$BOARDINGS[match(paste(amBoardings$Route, amBoardings$ACCESSMODE), 
-      paste(ntBoardings$Route, ntBoardings$ACCESSMODE))]
-    }
-  }
-  
-  dbWriteTable(db, "BOARDINGS", amBoardings, row.names=F)
-}
-
-#########################################################################
 #Create population and employment at the alpha zone level
 #########################################################################
 
@@ -1128,71 +1055,6 @@ modelwide = rbind(modelwide,
 
 dbWriteTable(db, "MODELWIDE", modelwide, row.names=F)
 
-
-#########################################################################
-# Add Activity Constraints Index Table
-#########################################################################
-
-if(file.exists("ActivityConstraintsI.csv")) {
-    actCon = read.csv("ActivityConstraintsI.csv")
-    
-    # Add BZONE and create data frame by BZONE
-     actCon$BZONE = azone2bzone(actCon$taz,allZones$AZONE,allZones$BZONE)
-     actCon$BZACT = paste(actCon$BZONE,actCon$Activity,sep="-")
-     actConBzQnt  = tapply(actCon$Quantity, actCon$BZACT, sum) 
-     actConBzQnt = as.data.frame(actConBzQnt)
-     actConBzQnt$ACTIVITY = actCon$Activity[match(rownames(actConBzQnt),actCon$BZACT)]
-     colnames(actConBzQnt) <- c("QUANTITY_CON", "ACTIVITY_CON") 
-    
-     temp_act <- dbGetQuery(db, "select * from ActivityLocations") 
-     KEY       <- paste(temp_act$BZONE,temp_act$ACTIVITY,sep="-")
-     temp_act$QUANTITY_CON <-  actConBzQnt$QUANTITY_CON[match(KEY,rownames(actConBzQnt))] 
-     temp_act$QUANTITY_CON[is.na(temp_act$QUANTITY_CON)] <- 0
-    
-     dbGetQuery(db, "DROP TABLE ActivityLocations") 
-     dbWriteTable(db, "ActivityLocations", temp_act, append=T, row.names=F)  
-}
- 
-#########################################################################
-# Add Floorspace Index Table
-#########################################################################
-flrSpace = read.csv("FloorspaceI.csv")
-flrSpace$commodity <- gsub(" |&","_",as.character(flrSpace$commodity))
-
-# Add BZONE and create data frame by BZONE
- flrSpace$BZONE = azone2bzone(flrSpace$taz,allZones$AZONE,allZones$BZONE)
- flrSpace$BZCOM = paste(flrSpace$BZONE,flrSpace$commodity,sep="-")
- flrComBzQnt    = tapply(flrSpace$quantity, flrSpace$BZCOM, sum) 
- flrComBzQnt    = as.data.frame(flrComBzQnt)
- colnames(flrComBzQnt) <- c("QUANTITY_CON")
-  
- flrTable <- dbGetQuery(db, "select * from FLR_INVENTORY")
- key1 <- paste(flrTable$BZONE,flrTable$COMMODITY, sep="-")
- flrTable$QUANTITY_CON <-  flrComBzQnt$QUANTITY_CON[match(key1,rownames(flrComBzQnt))]
-
- dbGetQuery(db, "DROP TABLE FLR_INVENTORY") 
- dbWriteTable(db, "FLR_INVENTORY", flrTable, append=T, row.names=F) 
- 
- 
-#########################################################################
-# Add Exchange Results Targets Index  Table
-#########################################################################
-
-if(file.exists("ExchangeResultsTargetsI.csv")) {
-     exRes = read.csv("ExchangeResultsTargetsI.csv")
-     exRes$Commodity <- gsub(" |&","_",as.character(exRes$Commodity))
-     key2 <- paste(exRes$ZoneNumber,exRes$Commodity , sep="-")
-     
-     exTable <- dbGetQuery(db, "select * from ExchangeResults") 
-     key1 <- paste(exTable$BZONE,exTable$Commodity , sep="-")
-     exTable$Price_I <- exRes$Price[match(key1,key2)]
-     exTable$Region <- exRes$region[match(key1,key2)]
-     exTable$Type <- exRes$type[match(key1,key2)]
-     
-     dbGetQuery(db, "DROP TABLE ExchangeResults") 
-     dbWriteTable(db, "ExchangeResults", exTable, append=T, row.names=F)  
-}
-  
 #########################################################################
 #Close and compact database
 #########################################################################
