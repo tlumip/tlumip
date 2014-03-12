@@ -2,7 +2,7 @@
 #script to create and merge all time step VIZ DBs for a scenario
 #requires R in the environment %PATH% variable to run buld_viz_db.R
 #R --no-save < z:/viz/all_viz_db.R > log.txt BUILDDBS=F BUILDSCRIPTFILENAME="Z:/viz/build_Viz_DB.R" 
-#  ALLZONESFILENAME="Z:/viz/allzones.csv" D211FILE="z:/network.d211" EXATTFILE="z:/extraAttribs.csv" SPATIALONLY=F
+#  ALLZONESFILENAME="Z:/viz/allzones.csv" SPATIALONLY=F
 #  INDCODEFILE="z:/models/oregon2tm/parameters/IndustryOccupationSplitIndustryCorrespondence.csv" MICRO=F
 #Ben Stabler, stabler@pbworld.com, 040509
 
@@ -18,8 +18,6 @@ buildScriptFileName = Sys.getenv("BUILDSCRIPTFILENAME") #"z:/viz/build_Viz_DB.R"
 #passed to build_Viz_DB.R if needed
 allZonesFileName = Sys.getenv("ALLZONESFILENAME") #"z:/viz/allzones.csv"
 genSpatialOnly = Sys.getenv("SPATIALONLY") #F
-extraAttribsFileName = Sys.getenv("EXATTFILE") #"z:/network.d211"
-networkFileName = Sys.getenv("D211FILE") #"z:/extraAttribs.csv"
 
 #passed to build_MicroViz_DB.R if needed
 INDCODEFILE = Sys.getenv("INDCODEFILE") #IndustryOccupationSplitIndustryCorrespondence.csv"
@@ -60,7 +58,6 @@ if(buildDBs=="T") {
     #requires R in the environment %PATH% variable
     system(paste('R --no-save --no-restore < "', buildScriptFileName, '" > log.txt', 
       ' ALLZONESFILENAME=', allZonesFileName, ' SPATIALONLY=', genSpatialOnly, 
-      ' D211FILE=', networkFileName, ' EXATTFILE=', extraAttribsFileName, 
       ' INDCODEFILE=', INDCODEFILE, sep=""), invisible=F)
     setwd("../")
   }

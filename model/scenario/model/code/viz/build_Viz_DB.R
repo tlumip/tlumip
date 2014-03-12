@@ -1,14 +1,11 @@
 
 #script to build the swim vizualization db
-#R --no-save < ../../build_viz_db.R > log.txt ALLZONESFILENAME="Z:/viz/allzones.csv" 
-#  D211FILE="z:/network.d211" EXATTFILE="z:/extraAttribs.csv" SPATIALONLY=F
+#R --no-save < ../../build_viz_db.R > log.txt ALLZONESFILENAME="Z:/viz/allzones.csv" SPATIALONLY=F
 #Ben Stabler, stabler@pbworld.com, 070110
 
 # If this script is run manually the use the following parameters
 # allZonesFileName = "allzones.csv"
 # genSpatialOnly = F
-# extraAttribsFileName = "export_01_06.csv"
-# networkFileName ="network.d211" 
 
 #updated 03/05/14 bts - allows for no ALD outputs and no longer reads TS outputs
 
@@ -31,10 +28,6 @@ allZonesFileName = Sys.getenv("ALLZONESFILENAME") #"Z:/viz/allzones.csv"
 
 #generate only spatial tables
 genSpatialOnly = Sys.getenv("SPATIALONLY") #F
-
-#network and extra attributes file
-extraAttribsFileName = Sys.getenv("EXATTFILE") #"z:/extraAttribs.csv"
-networkFileName = Sys.getenv("D211FILE")#"z:/network.d211" 
 
 #########################################################################
 #calculated parameters
@@ -262,13 +255,14 @@ dbGetQuery(db, "CREATE INDEX ActivityLocationsIndex ON ActivityLocations (BZONE,
 
 if(file.exists("ActivityConstraintsI.csv")) {
     actCon = read.csv("ActivityConstraintsI.csv")
-    
+    colnames(actCon) = toupper(colnames(actCon))
+
     # Add BZONE and create data frame by BZONE
-     actCon$BZONE = azone2bzone(actCon$taz,allZones$AZONE,allZones$BZONE)
-     actCon$BZACT = paste(actCon$BZONE,actCon$Activity,sep="-")
-     actConBzQnt  = tapply(actCon$Quantity, actCon$BZACT, sum) 
+     actCon$BZONE = azone2bzone(actCon$AZONE,allZones$AZONE,allZones$BZONE)
+     actCon$BZACT = paste(actCon$BZONE,actCon$ACTIVITY,sep="-")
+     actConBzQnt  = tapply(actCon$QUANTITY, actCon$BZACT, sum) 
      actConBzQnt = as.data.frame(actConBzQnt)
-     actConBzQnt$ACTIVITY = actCon$Activity[match(rownames(actConBzQnt),actCon$BZACT)]
+     actConBzQnt$ACTIVITY = actCon$ACTIVITY[match(rownames(actConBzQnt),actCon$BZACT)]
      colnames(actConBzQnt) <- c("QUANTITY_CON", "ACTIVITY_CON") 
     
      temp_act <- dbGetQuery(db, "select * from ActivityLocations") 
