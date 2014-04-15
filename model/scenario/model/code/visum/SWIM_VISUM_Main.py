@@ -350,7 +350,7 @@ class SwimModel(object):
                   outTable.append(row)
                   
                 #merge regular zone data
-                for i in range(len(fileTable)):
+                for i in range(1,len(fileTable)):
                   row = fileTable[i]
                   for j in range(len(row)):
                     azone = row[0]
