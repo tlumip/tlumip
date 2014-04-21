@@ -331,11 +331,29 @@ class SwimModel(object):
             #Make list of lists (rows)
             fileTable = self.cleanZonalDataOfWorldZones(self.stringConcatenate(data))
             
-            #Correct FloorspaceInventory field names
+            #Unique revisions to specific output files
+            ##########################################
+            
+            #FloorspaceI - correct field names and transpose table
+            if fileName.lower().find('floorspacei') > -1:
+                fileTable[0] = [s.replace("_"," ") for s in fileTable[0]]
+                
+                #reformat table by looping across rows
+                outTable = [["taz","commodity","quantity"]]
+                for i in range(1,len(fileTable)):
+                  row = fileTable[i]
+                  for j in range(len(row)):
+                    azone = row[0]
+                    attr = self.fields[j]
+                    value = row[j]
+                    if j > 0:
+                      outTable.append([azone, attr, value])
+                
+            #FloorspaceInventory - correct field names
             if fileName.lower().find('floorspaceinventory') > -1:
                 fileTable[0] = [s.replace("_"," ") for s in fileTable[0]]
-            
-            #Reformat ActivityConstraintsI table
+                
+            #ActivityConstraintsI - add world markets and transpose table
             if fileName.lower().find('activityconstraintsi') > -1:
                 
                 #read world markets file
@@ -365,6 +383,8 @@ class SwimModel(object):
         
             #write resulting file
             self.writeCSV(fileName, fileTable)
+        
+        #Revise version file saved to year specific folder
         
         #set truck PCU factor
         print("Set truck PCU factor: " + str(truckPCU))
