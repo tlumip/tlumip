@@ -70,6 +70,7 @@
 #10/12/10 AB - Added Price.AzFx from PI as an input to the allocateFloorProd function.  Changes were made under ALD_Function.R to use this input. 
 #9/02/11 CRF - Fixed properties file gsub regular expression to get literal "." (using [.]) instead of  catchall .
 #9/09/11 CRF - Added conditional expression for writing out floorspace data: different formats used for pi and aa
+#4/17/14 AB - Update for PECAS code, for PECAS version of SWIM, FloorspaceInventor and Increment inputs and outputs are in SQFT, not MSQFT
 
 #DEFINE POINTERS TO DIRECTORIES AND FILES TO LOAD
 #================================================
@@ -299,6 +300,12 @@
 #::
 
     # Combine the floor space totals
+    if (Input_$UsingAA == "true") {
+       CurrQ.AzFr <- CurrQ.AzFr * 1000000
+       CurrQ.AzFn <- CurrQ.AzFn * 1000000
+       IQ.AzFr <- IQ.AzFr * 1000000
+       IQ.AzFn <- IQ.AzFn * 1000000
+    }
     CurrQ.AzFt <- cbind(CurrQ.AzFr, CurrQ.AzFn, Quant.AzFa)
     CurrQ.AzFt <- CurrQ.AzFt[,Ft]
     
@@ -327,10 +334,10 @@
     if (Input_$UsingAA == "true") {
         TotQRes.. <- data.frame(list(taz=rep(Az, length(Fr)), 
                         commodity=rep(Fr, each=length(Az)),
-                        quantity=zapsmall(as.vector(CurrQ.AzFr*1000000),9)))
+                        quantity=zapsmall(as.vector(CurrQ.AzFr),9)))
         TotQNres.. <- data.frame(list(taz=rep(Az, length(Fn)), 
                         commodity= rep(Fn, each=length(Az)),
-                        quantity=zapsmall(as.vector(CurrQ.AzFn*1000000),9)))
+                        quantity=zapsmall(as.vector(CurrQ.AzFn),9)))
         TotQAgFor.. <- data.frame(list(taz=rep(Az, length(Fa)), 
                         commodity= rep(Fa, each=length(Az)),
                         quantity=zapsmall(as.vector(Quant.AzFa),9)))
@@ -369,6 +376,17 @@
 
 #::
 
+    if (Input_$UsingAA == "true") {
+    IQRes.. <- data.frame(list(AZone=rep(Az, length(Fr)), 
+                    FLRType=rep("Residential", length(Az) * length(Fr)),
+                    FLRName= rep(Fr, each=length(Az)),
+                    IncSQFT=zapsmall(as.vector(IQ.AzFr),9)))
+    IQNres.. <- data.frame(list(AZone=rep(Az, length(Fn)), 
+                    FLRType=rep("NonResidential", length(Az) * length(Fn)),
+                    FLRName= rep(Fn, each=length(Az)),
+                    IncSQFT=zapsmall(as.vector(IQ.AzFn),9)))
+    IQOut.. <- rbind(IQRes.., IQNres..)
+    } else { #PI ways
     IQRes.. <- data.frame(list(AZone=rep(Az, length(Fr)), 
                     FLRType=rep("Residential", length(Az) * length(Fr)),
                     FLRName= rep(Fr, each=length(Az)),
@@ -378,6 +396,8 @@
                     FLRName= rep(Fn, each=length(Az)),
                     IncMSQFT=zapsmall(as.vector(IQ.AzFn),9)))
     IQOut.. <- rbind(IQRes.., IQNres..)
+    }
+    
     write.table(IQOut.., paste(ALDCurrDirectory, "Increments.csv", sep="/"),
         row.names=FALSE, col.names=TRUE, sep=",", quote=FALSE)
     rm(IQRes.., IQNres.., IQOut..)
