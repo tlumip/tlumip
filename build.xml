@@ -60,7 +60,7 @@
     <!-- ********************************************************* -->
     <!-- Create a set of jar files for release -->
     <target name="release" depends="makejar">
-
+    	
         <!-- copy dependencies to release directory -->
         <copy file="${common-base.dir}/release/common-base.jar" todir="${release.dir}"/>
         <copy file="${reference.dir}/release/reference.jar" todir="${release.dir}"/>
@@ -73,6 +73,21 @@
         <copy file="${synpop.dir}/release/synpop.jar" todir="${release.dir}"/>
         <copy file="${thirdParty.dir}/logging-log4j-1.2.9/log4j-1.2.9.jar" todir="${release.dir}"/>
         <copy file="${thirdParty.dir}/mtj/mtj.jar" todir="${release.dir}"/>
+    	
+    	<zip destfile="${release.dir}/tlumip.jar">
+			<zipgroupfileset dir="${release.dir}" includes="common-base.jar"/>
+    		<zipgroupfileset dir="${release.dir}" includes="reference.jar"/>
+			<zipgroupfileset dir="${release.dir}" includes="common-daf-v2.jar"/>
+			<zipgroupfileset dir="${release.dir}" includes="common-daf-v3.jar"/>
+			<zipgroupfileset dir="${release.dir}" includes="pecas.jar"/>
+			<zipgroupfileset dir="${release.dir}" includes="censusdata.jar"/>
+			<zipgroupfileset dir="${release.dir}" includes="utils.jar"/>
+			<zipgroupfileset dir="${release.dir}" includes="pasaat.jar"/>
+			<zipgroupfileset dir="${release.dir}" includes="synpop.jar"/>
+    		<zipgroupfileset dir="${release.dir}" includes="log4j-1.2.9.jar"/>
+    	</zip>
+    	
     </target>
+
     
 </project>
