@@ -74,8 +74,9 @@
         <copy file="${thirdParty.dir}/logging-log4j-1.2.9/log4j-1.2.9.jar" todir="${release.dir}"/>
         <copy file="${thirdParty.dir}/mtj/mtj.jar" todir="${release.dir}"/>
     	
-    	<zip destfile="${release.dir}/tlumip.jar">
-			<zipgroupfileset dir="${release.dir}" includes="common-base.jar"/>
+    	<zip destfile="${release.dir}/tlumip2.jar">
+    		<zipgroupfileset dir="${release.dir}" includes="tlumip.jar"/>
+    		<zipgroupfileset dir="${release.dir}" includes="common-base.jar"/>
     		<zipgroupfileset dir="${release.dir}" includes="reference.jar"/>
 			<zipgroupfileset dir="${release.dir}" includes="common-daf-v2.jar"/>
 			<zipgroupfileset dir="${release.dir}" includes="common-daf-v3.jar"/>
@@ -85,8 +86,9 @@
 			<zipgroupfileset dir="${release.dir}" includes="pasaat.jar"/>
 			<zipgroupfileset dir="${release.dir}" includes="synpop.jar"/>
     		<zipgroupfileset dir="${release.dir}" includes="log4j-1.2.9.jar"/>
-    	</zip>
-    	
+    	</zip>  	
+    	<move file="${release.dir}/tlumip2.jar" tofile="${release.dir}/tlumip.jar"/>
+
     </target>
 
     
