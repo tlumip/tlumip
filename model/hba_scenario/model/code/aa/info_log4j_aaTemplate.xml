@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{dd-MMM-yy HH:mm}, %p, %m%n"/>
+        </layout>        
+    </appender>
+    
+    <appender name="STATUS" class="org.apache.log4j.FileAppender">
+        <param name="File" value="@ROOT.DIR@/@SCENARIO.PATH@/ops/status.log"/>
+        <param name="Append" value="false"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="status" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="STATUS"/>
+    </logger>
+    
+    <root>
+        <level value="info"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+        
+</log4j:configuration>

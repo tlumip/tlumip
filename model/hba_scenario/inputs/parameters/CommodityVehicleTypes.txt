@@ -1,0 +1,43 @@
+#sctg pPriv pTRK1 pTRK2 pTRK3 pTRK4 pTRK5
+    1  0.42     62    28    10     0     0   # Animals+fish
+    2  0.42     62    28    10     0     0   # Cereal grains
+    3  0.42     62    28    10     0     0   # Other ag prod
+    4  0.42     62    28    10     0     0   # Animal feed
+    5  0.42     62    28    10     0     0   # Meat+seafood
+    6  0.42     62    28    10     0     0   # Grain+bakery
+    7  0.42     62    28    10     0     0   # Other foods
+    8  0.42     62    28    10     0     0   # Alcoholic bev
+    9  0.42     62    28    10     0     0   # Tobacco prod
+   10  0.42     12    46    34     7     1   # Building stone
+   11  0.42     12    46    36     6     0   # Natural sands
+   12  0.42     12    46    36     6     0   # Gravel
+   13  0.42     12    46    36     6     0   # Nonmet minerals
+   14  0.42     12    46    36     6     0   # Metallic ores
+   15  0.42     12    50    38     0     0   # Coal
+   16  0.42     12    50    38     0     0   # Natural gas+crude
+   17  0.42     12    50    38     0     0   # Gas+Aviation fuel
+   18  0.42     12    50    38     0     0   # Fuel oils
+   19  0.42     49    32    19     0     0   # Coal+petr prod
+   20  0.42     49    32    19     0     0   # Basic chemicals
+   21  0.42     49    32    19     0     0   # Pharmaceuticals
+   22  0.42     49    32    19     0     0   # Fertilizers
+   23  0.42     49    32    19     0     0   # Chemical prod
+   24  0.42     49    32    19     0     0   # Plastics+rubber
+   25  0.42      9    43    45     3     0   # Raw wood
+   26  0.42     37    35    28     0     0   # Wood prod
+   27  0.42     49    32    19     0     0   # Pulp+paper
+   28  0.42     49    32    19     0     0   # Paper prod
+   29  0.42     49    32    19     0     0   # Printed prod
+   30  0.42     37    35    28     0     0   # Textile+leather
+   31  0.42     49    32    19     0     0   # Nonmet min prod
+   32  0.42     37    35    28     0     0   # Basic metals
+   33  0.42     37    35    28     0     0   # Metal articles
+   34  0.42     36    34    27     2     1   # Machinery
+   35  0.42     37    35    28     0     0   # Electronics
+   36  0.42     36    34    27     2     1   # Vehicles
+   37  0.42     36    34    27     2     1   # Transport equip
+   38  0.42     37    35    28     0     0   # Precision goods
+   39  0.42     37    35    28     0     0   # Furniture+lights
+   40  0.42     33    33    33     1     0   # Misc mfg prod
+   41  0.42     37    35    28     0     0   # Waste+scrap
+   43  0.42     33    33    33     1     0   # Mixed freight
