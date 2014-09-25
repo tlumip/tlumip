@@ -220,7 +220,9 @@ class ModuleCommands(object):
         """
         Run the AA module.
         """
-        return self.runModule(module_set,scenario_outputs,property_file,year,250)
+        command = self.runModule(module_set,scenario_outputs,property_file,year,250)
+        command = [normalizeSlash(os.path.join(os.path.dirname(scenario_outputs), "model", "code", "retexchange.py")) + " t" + year] + command
+        return command
         
     def runSPG2(self,module_set,scenario_outputs,property_file,year,properties):
         """

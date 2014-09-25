@@ -23,6 +23,7 @@
 #9/24/10 AB - Changed the capacity limitation to be based on Currently Quantity not Quant - Decrease.
 #10/12/10 AB - Updated the allocateFloorProd function to be based on the Value of a sqft from PI instead of assumed 1990 construction cost.  This allows the dollars given to each floorspace type to react to changing demand.  Previously the unreactive size term was dominating the utility
 #7/22/11 AB - Corrected the compatibility equations in the calcFloorCapacity function
+#4/22/14 AB - Allowed for ALD Regions to have zero floorspace for a given floor space type - in functions - allocateFloorProd & allocateFloorDecrease 
 
 #PURPOSE AND DESCRIPTION
 #=======================
@@ -344,6 +345,7 @@
         Tvq.Fx <- TotalSpace.Fx * Cost.Fx
         # Calculate the value of the total Floorspace based on PI's assessed Value, not the cost to construct (AB - 10-12-10)  
         Tvq.Fx <- TotalSpace.Fx * colSums(Prevq.AxFx*Price.AxFx)/colSums(Prevq.AxFx)/1000000
+        Tvq.Fx[is.nan(Tvq.Fx)] <- 0 # AB 4-22-2014 (adding ability for zero condition)
         # Calculate the utility functions for floorspace categories
         Util.Fx <- Bq1.Fx * Vacancy.Fx + Bq2.Fx * log(Tvq.Fx/sum(Tvq.Fx)) + Asc1.Fx
         # Create a list to hold the results
@@ -394,6 +396,7 @@
         Vacancy.Fx <- (TotalSpace.Fx - Occupied.Fx) / TotalSpace.Fx
         # Calculate the value of the total floorspace
         Tvq.Fx <- TotalSpace.Fx * Cost.Fx
+        Tvq.Fx[is.nan(Tvq.Fx)] <- 0 # AB 4-22-2014 (adding ability for zero condition)
         # Calculate the utility functions for floorspace categories
         Util.Fx <- Bq3.Fx * Vacancy.Fx + Bq4.Fx * log(Tvq.Fx/sum(Tvq.Fx)) + Asc2.Fx
         # Create a list to hold the results

@@ -85,21 +85,21 @@ D1-Production Specialists,410,41.10028743,41.10028743,1,-1,0,1,1,0.0064099,3.846
 D2-MaintConstRepair Specialists,411,49.79829962,49.79829962,1,-1,0,1,1,0.00566,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 D3-ProtectTrans Specialists,412,49.79829962,49.79829962,1,-1,0,1,1,0.0061657,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 D4-Blue Collar Unskilled,413,59.47306222,59.47306222,1,-1,0,1,1,0.0085101,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-FLR Agriculture,501,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,FALSE
-FLR Logging,502,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,FALSE
-FLR Hospital,503,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR Retail,504,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR Office,505,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR Heavy Industry,506,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR Light Industry,507,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR Warehouse,508,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR Institutional,509,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR Accommodation,510,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR Government Support,511,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR K12,512,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR SFD,513,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR AT,514,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR MH,515,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR RRMH,516,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR RRSFD,517,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
-FLR MF,518,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,FALSE
+FLR Agriculture,501,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE
+FLR Logging,502,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE
+FLR Hospital,503,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Retail,504,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Office,505,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Heavy Industry,506,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Light Industry,507,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Warehouse,508,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Institutional,509,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Accommodation,510,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Government Support,511,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR K12,512,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR SFD,513,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR AT,514,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR MH,515,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR RRMH,516,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR RRSFD,517,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR MF,518,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE

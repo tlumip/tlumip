@@ -1,0 +1,7 @@
+09/22/14 14.44.06.944 Open file
+                      Open "M:\swim2\base_scenario_nosvn_long\inputs\t0\Protocol.txt"
+09/22/14 14.44.06.944 Path of LOG files has been adjusted.
+                         Previous path: "C:\Users\tdb205\AppData\Roaming\PTV Vision\PTV Visum 14\Log\Protocol.txt"
+                         New path: "M:\swim2\base_scenario_nosvn_long\inputs\t0\Protocol.txt"
+                      Open "M:\swim2\base_scenario_nosvn_long\inputs\t0\Messages.txt"
+09/22/14 14.48.11.962 Close file
