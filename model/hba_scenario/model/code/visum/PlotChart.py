@@ -4,8 +4,8 @@
 ############################################################
         
 #import libraries
-import VisumPy.helpers as VisumHelpers, math
 import matplotlib.pyplot as plt, numpy as np
+import VisumPy.helpers as VisumHelpers, math
 from matplotlib.font_manager import FontProperties
 
 #parameters

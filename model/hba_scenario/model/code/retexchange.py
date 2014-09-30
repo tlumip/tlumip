@@ -7,14 +7,14 @@ from os.path import join
 import csv
 
 # File names.
-zone_fname = join("inputs", "parameters", "FloorspaceZonesI.csv") # Name of file with TAZ->LUZ correspondence.
+zone_fname = join("outputs", "%year%", "alpha2beta.csv") # Name of file with TAZ->LUZ correspondence.
 flspace_fname = join("outputs", "%year%", "FloorspaceI.csv")   # Name of floorspace file.
 retail_types_fname = join("inputs", "parameters", "ExchangeSizeTermTypes.csv")   # Name of file that gives retail floorspace types for each retail commodity.
 exchange_fname = join("inputs", "parameters", "ExchangeImportExportI.csv")  # Name of file where size terms should be stored.
 
 # Column name constants.
-zone_taz_col = "AlphaZone"
-zone_luz_col = "PecasZone"
+zone_taz_col = "Azone"
+zone_luz_col = "Bzone"
 flspace_taz_col = "taz"
 flspace_type_col = "commodity"
 flspace_amount_col = "quantity"
@@ -38,8 +38,8 @@ def read_zones(fname):
         reader = csv.reader(file)
         header = reader.next()
         for row in reader:
-            taz = int(row[header.index(zone_taz_col)])
-            luz = int(row[header.index(zone_luz_col)])
+            taz = int(float(row[header.index(zone_taz_col)]))
+            luz = int(float(row[header.index(zone_luz_col)]))
             zones[taz]=luz
     return zones
 
@@ -132,7 +132,7 @@ def write_exchange(fname, header, exchange):
 ###################################################################
 def main(year):
     # Read in TAZ->LUZ correspondences.
-    zones = read_zones(zone_fname)
+    zones = read_zones(zone_fname.replace("%year%",str(year)))
     
     # Read in retail commodities and floorspace types.
     retail_types = read_retail_types(retail_types_fname)
