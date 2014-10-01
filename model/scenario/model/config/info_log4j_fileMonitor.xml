@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="FILE" class="org.apache.log4j.FileAppender">
+        <param name="File" value="D:/swim2/base_scenario_nosvn_long/fileMonitor_event.log"/>
+        <param name="Append" value="false"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{dd-MMM-yyyy HH:mm}, %p, %m%n"/>
+        </layout>
+    </appender>
+    <root>
+        <level value="INFO"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</log4j:configuration>

@@ -16,12 +16,7 @@ import heapq
 
 #available visum years
 year_offset = 1990
-available_years = [('_98_00',range(1998,2001)),
-                   ('_01_06',range(2001,2007)),
-                   ('_07_12',range(2007,2013)),
-                   ('_13_18',range(2013,2019)),
-                   ('_19_24',range(2019,2025)),
-                   ('_25_30',range(2025,2100))]
+available_years = [('_01_06',range(1800,3001))]
 
 #change file paths in Visum
 pathNo = [15,5,8,57,69,1,7,12,62,41,52,25,11,2,37]

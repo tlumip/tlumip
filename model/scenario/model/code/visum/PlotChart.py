@@ -4,8 +4,8 @@
 ############################################################
         
 #import libraries
-import VisumPy.helpers as VisumHelpers, math
 import matplotlib.pyplot as plt, numpy as np
+import VisumPy.helpers as VisumHelpers, math
 from matplotlib.font_manager import FontProperties
 
 #parameters
@@ -179,7 +179,7 @@ class plotChart(object):
 
         for matList in range(len(self.distMatrixNo)):
             self.dist_mat = VisumHelpers.GetSkimMatrix(self.visum, self.distMatrixNo[matList])
-            self.dem_mat = VisumHelpers.GetODMatrix(self.visum, self.demMatrixNo[matList])
+            self.dem_mat = np.array(VisumHelpers.GetODMatrix(self.visum, self.demMatrixNo[matList]))
 
             #define lowerbound, upperbound and class intervals
             self.lowerBound = range(0, self.numIntervals*self.classLength[matList], self.classLength[matList])

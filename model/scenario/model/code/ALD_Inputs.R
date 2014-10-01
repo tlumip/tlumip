@@ -57,7 +57,7 @@
 
     # Read the data file
     ZoningDesc.. <- read.csv(Input_$ZoningDefinitions, as.is=TRUE)
-    ZoningDesc.. <- ZoningDesc..[,c("OR_CODE", "OR_NAME", "OR_DSC")]
+    ZoningDesc.. <- ZoningDesc..[,c("code", "name", "description")]
     names(ZoningDesc..) <- c("Code", "Abbr", "Description")
     ZoningDesc.. <- setDataframeClasses(ZoningDesc.., rep("character", ncol(ZoningDesc..)))
     # Define a zoning category naming vector for subsequent use for dimension naming
