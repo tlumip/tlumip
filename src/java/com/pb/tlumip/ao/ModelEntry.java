@@ -226,7 +226,9 @@ public enum ModelEntry {
     private void runCt(Map<String,String> parameters) {
         CT.checkKeys(parameters);
         ResourceBundle resourceBundle = getResourceBundle(parameters);
-        new CTModel(resourceBundle,resourceBundle).startModel(getBaseYear(parameters),getTYear(parameters));
+        ModelComponent comp = new CTModel();
+        comp.setApplicationResourceBundle(resourceBundle);
+        comp.startModel(getBaseYear(parameters),getTYear(parameters));
     }
 
     private void runEt(Map<String,String> parameters) {

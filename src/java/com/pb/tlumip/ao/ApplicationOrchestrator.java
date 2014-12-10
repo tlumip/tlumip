@@ -525,8 +525,9 @@ public class ApplicationOrchestrator {
         appRunner.run();
     }
 
-    public void runCTModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){
-        ModelComponent comp = new CTModel(appRb, globalRb);
+    public void runCTModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){        
+        ModelComponent comp = new CTModel();
+        comp.setApplicationResourceBundle(appRb);
         comp.startModel(baseYear, timeInterval);
 
     }

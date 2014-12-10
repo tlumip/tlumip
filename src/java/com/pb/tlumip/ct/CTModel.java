@@ -20,78 +20,90 @@ import com.pb.common.util.ResourceUtil;
 import com.pb.common.util.SeededRandom;
 import com.pb.models.reference.ModelComponent;
 import com.pb.models.utils.StatusLogger;
+
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
- * @author donnellyr
- *
- *
+ * The CT model component is actually a R program
+ * and will be run in R
+ * This class will use the Java Runtime class to
+ * call the R program.
+ * 
+ * @author Yegor Malinovskiy, based on ALDModel.java by Christi Willison
+ * @version Nov 11, 2014
  */
 public class CTModel extends ModelComponent {
-
-    Logger logger = Logger.getLogger(CTModel.class);
-   // long randomSeed;           //will be read from properties files and passed to
-    String inputPath;    //other methods that
-    String outputPath;   //run the CTModel.
-
-    public CTModel(ResourceBundle appRb, ResourceBundle globalRb){
-        setResourceBundles(appRb, globalRb);    //creates a resource bundle as a class attribute called appRb.
-        this.inputPath = ResourceUtil.getProperty(appRb, "ct.base.data");
-        logger.info("inputPath: " + inputPath);
-        this.outputPath = ResourceUtil.getProperty(appRb, "ct.current.data");
-        logger.info("outputPath: " + outputPath);
-
-        boolean sensitivityTestingMode;
-
-        sensitivityTestingMode = ResourceUtil.getBooleanProperty(appRb, "ct.sensitivity.testing", false);
-
-        if(sensitivityTestingMode)
-            SeededRandom.setSeed( (int) System.currentTimeMillis() );
-        else
-            SeededRandom.setSeed( ResourceUtil.getIntegerProperty(appRb, "randomSeed"));
-
-    }
+    Logger logger = Logger.getLogger("pb.com.tlumip.ct");
+    Process process;
 
     public void startModel(int baseYear, int t){
-        Date start = new Date();
-        StatusLogger.logText("ct","CT Status","CT started for year t" + t);
+        
+        
+        /*  first we need to create the Strings that CT uses as runtime arguments
+            R expects 3 arguments:
+                1. the path to the CTx3.R file 
+                2.  the path to the input files (up to the scenario_Name directory)
+                3.  the time interval (t) of the current simulation year
+            Then we need the full path to the R code itself
+        */
+        String pathToRCode = ResourceUtil.getProperty(appRb, "ct.codePath");
+        String pathToRCodeArg = "-" + pathToRCode;
 
-        // This translates PI output (annual dollar flows at beta zone level) to
-        // weekly tons by commodity class (SCTG01-SCTG43), and writes output in
-        // binary format.
-        StatusLogger.logText("ct","CT Status","Converting dollars to tons");
-        FreightDemand3 fd = new FreightDemand3(appRb,globalRb,inputPath,outputPath);
-        fd.run();  //writes WeeklyDemand.binary
+        String pathToPropertiesFile = ResourceUtil.getProperty(appRb, "ct.property");
+        String pathToPropertiesFileArg = "-" + pathToPropertiesFile;
 
-        // Translates weekly demand from beta zones into discrete daily shipments in
-        // alpha zone, and writes text file of shipments
-        StatusLogger.logText("ct","CT Status","Converting betazone demand into daily shipments by alphazone");
-        DiscreteShipments2 ds = new DiscreteShipments2(appRb,globalRb,inputPath);
-        ds.run(new File(outputPath + "WeeklyDemand.binary"));   // input from FreightDemand
-        ds.writeShipments(new File(outputPath + "DailyShipments.csv"));   // output file
 
-        // Loads discrete shipments at alpha zone level onto individual trucks, optimizes
-        // their itinerary, and writes to a CSV file in format required by TS
-        // Next line prevents writing intrazonal (at alpha level) trips
-        StatusLogger.logText("ct","CT Status","Placing shipments on trucks");
-        boolean collapseIntrazonalTrips = true;
-        TruckTours4 truckTours = new TruckTours4(appRb, globalRb, inputPath);
-        truckTours.run(new File(outputPath + "DailyShipments.csv"));   // input from DiscreteShipments
-        truckTours.writeTours(new File(globalRb.getString("ct.truck.trips")), collapseIntrazonalTrips);  //output
+        String pathToIOFiles = ResourceUtil.getProperty(appRb, "ct.filePath");
 
-        logger.info("total time of CT: "+CTHelper.elapsedTime(start, new Date()));
-        StatusLogger.logText("ct","CT Status","CT done");
+        String yearArg = "-" + t;
+
+        String rFileName = ResourceUtil.getProperty(appRb, "ct.rcode");
+        String rCode = pathToRCode + rFileName;
+
+        String rOut = pathToIOFiles + "t" + t +"/zzCT.Rout";
+        String rExecutable = ResourceUtil.getProperty(appRb,"r.executable");
+        
+        String resultFile = ResourceUtil.getProperty(appRb,  "ct.truck.trips");
+
+        String execCommand = rExecutable + " CMD BATCH " + pathToRCodeArg + " " + pathToPropertiesFileArg + " "
+                + yearArg + " " + rCode + " " + rOut;
+        logger.info("Executing "+execCommand);
+        Runtime rt = Runtime.getRuntime();
+        try {
+            //java program that the R script has completed.
+            File doneFile = new File(resultFile);
+            if(doneFile.exists()) doneFile.delete();
+            
+            process = rt.exec(execCommand);
+            try {
+                long startTime = System.currentTimeMillis();
+                while(!doneFile.exists() && System.currentTimeMillis()-startTime < 6000000)
+                    Thread.sleep(2000);
+                //Will wait for the .RData file to appear before signaling 
+                //that ALD is done.
+                if(doneFile.exists()) {
+                    logger.info("CT is done");
+                } else {
+                    logger.info("The CT run was NOT successful, check the zzCT.Rout file for details");
+                    throw new RuntimeException("Errors occured running the CT model. Check zzCT.Rout.");
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException("InterruptedException: ", e);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("IOException: ", e);
+        }
     }
 
-    public static void main (String args[]){
-        ResourceBundle rb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/ct/ct.properties"));
-        ResourceBundle globalRb = ResourceUtil.getPropertyBundle(new File("/models/tlumip/scenario_aaaCurrentData/t1/global.properties"));
-        CTModel ctModel = new CTModel(rb, globalRb);
-        ctModel.startModel(1990, 1);
-    }
+  public static void main (String args[]){
+  CTModel ctModel = new CTModel();
+  ctModel.startModel(1990, 1);
+}
 
 }
+
