@@ -95,10 +95,12 @@ class SwimModel(object):
         properties = Properties()
         properties.loadPropertyFile(property_file)
 
+        self.current_year = properties['t.year'] 
+        self.prefix = properties['t.year.prefix']
+
         self.visum_version = int(properties['visum.version'])        
         self.path = properties['ta.demand.output.path']
         self.base_version = properties['ta.base.version.file']
-        self.previous_base_version = properties['ta.previous.base.version.file']
         self.t0_base_version = properties['ta.t0.base.version.file']
         self.version = properties['ta.version.file']
         self.swimModelInputs = properties['ta.zone.field.names']
@@ -156,12 +158,17 @@ class SwimModel(object):
             shutil.copy(os.path.join(self.pythonDependencyDir,python_dependency),os.path.join(self.path,python_dependency))
         
     def copyVersion(self):
+
+        currentToken = str(self.prefix) + str(self.current_year)
+
         if os.path.isfile(self.base_version):
             shutil.copy(self.base_version,self.version)
-        elif os.path.isfile(self.previous_base_version):
-            shutil.copy(self.previous_base_version,self.version)
         else:
-            shutil.copy(self.t0_base_version,self.version)
+            for i in range(1, int(self.current_year)+1):
+                newToken = str(self.prefix) + str(int(self.current_year) - i)
+                newPath = str(self.base_version).replace(currentToken, newToken)
+                if os.path.isfile(newPath):
+                    shutil.copy(newPath,self.version)
              
         
     def startVisum(self):
