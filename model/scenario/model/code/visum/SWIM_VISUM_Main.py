@@ -101,7 +101,6 @@ class SwimModel(object):
         self.visum_version = int(properties['visum.version'])        
         self.path = properties['ta.demand.output.path']
         self.base_version = properties['ta.base.version.file']
-        self.t0_base_version = properties['ta.t0.base.version.file']
         self.version = properties['ta.version.file']
         self.swimModelInputs = properties['ta.zone.field.names']
         self.swimVizOutputs = properties['ta.link.field.names']
