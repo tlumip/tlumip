@@ -39,7 +39,7 @@ from __future__ import with_statement
 ##################################################
 
 #VISUM program version
-programVersion = '13'
+programVersion = '14'
 
 import os,csv,sys,gc,time,threading
 import pythoncom

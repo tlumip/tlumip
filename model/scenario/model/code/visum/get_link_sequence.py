@@ -37,7 +37,7 @@ from __future__ import with_statement
 ###################################################
 
 #VISUM program version
-programVersion = '13'
+programVersion = '14'
 
 import os,sys,csv
 import win32com.client as com

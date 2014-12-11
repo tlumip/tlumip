@@ -11,11 +11,11 @@ from matplotlib.font_manager import FontProperties
 #parameters
 numIntervals = 15
 dSeg = ['auto_peak', 'auto_offpeak', 'truck_peak', 'truck_offpeak']
-distMatrixNo= [19,27,23,31]          #27-a_peak, 35-a_offpeak, 31-tr_peak, 39-tr_offpeak
+distMatrixNo= [21,29,25,33]          #27-a_peak, 35-a_offpeak, 31-tr_peak, 39-tr_offpeak
 demMatrixNo = [1,2,5,6]              #1-a_peak, 2-a_offpeak, 5-tr_peak, 6-tr_offpeak
 Year_AADT   = '2006'                 #user specific - change to year for which AADT is required
 AADT_volume = 'AADT_' + Year_AADT    #change if prefix to year changes in the fieldname
-maxIterations = 50                   #needs to be changed if changed in procedure file
+maxIterations = 1                   #needs to be changed if changed in procedure file
 totalAssignedVol = 'TotalAssignmentVol'
 classLength = [5,5,25,25]
 

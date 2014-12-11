@@ -104,7 +104,7 @@ for(j in 1:nrow(dbSchema)) {
 }
 
 #close database
-sqliteCloseConnection(db)
+dbDisconnect(db)
 
 #########################################################################
 #write end of sql script

@@ -191,7 +191,7 @@ for(i in 1:length(tsteps)) {
   }
   
   #close tstep database
-  sqliteCloseConnection(tdb)
+  dbDisconnect(tdb)
     cat(paste("Done with file ",dbFileNames[i],"\n"))
 }
 
@@ -199,7 +199,7 @@ for(i in 1:length(tsteps)) {
 #Close
 #########################################################################
 
-sqliteCloseConnection(db)
+dbDisconnect(db)
 if(isMicro=="T") {
   cat(paste("SWIM MICRO VIZ DB for", databaseFileName, "at", Sys.time(), "Created \n"))
 } else {

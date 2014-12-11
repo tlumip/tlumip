@@ -166,6 +166,7 @@ dbWriteTable(db, "TRIP_SDT_MICRO", trips_sdt[,c(9:12,1:8)], row.names=F)
 
 #truck trips
 trips_ct = read.csv("Trips_CTTruck.csv")
+trips_ct$commodity = sprintf("SCTG%02i",trips_ct$commodity) 
 
 #add production alpha zone
 homeZone = tapply(trips_ct$origin,trips_ct$truckID,function(x)x[1]) #assumes trips written in order
@@ -176,19 +177,8 @@ trips_ct = trips_ct[,!(colnames(trips_ct) %in% c("tourMode","tripMode"))]
  
 #Write tables to DB
 colnames(trips_ct) = toupper(colnames(trips_ct))
-colOrder = c("TRUCKID","ORIGIN","TRIPSTARTTIME","DESTINATION","TRUCKTYPE","PRODZONE")
+colOrder = c("TRUCKID","ORIGIN","TRIPSTARTTIME","DESTINATION","TRUCKTYPE","CARRIERTYPE","COMMODITY","WEIGHT","DISTANCE","PRODZONE")
 dbWriteTable(db, "TRIP_CT_MICRO", trips_ct[,colOrder], row.names=F)
-
-#########################################################################
-#Read Link Attributes Table
-#########################################################################
-
-links = read.csv("AllLinks.csv")
-
- 
-#Write tables to DB
-colnames(links) = toupper(colnames(links))
-dbWriteTable(db, "LINK_DATA", links, row.names=F)
 
 #########################################################################
 #Close and compact database
@@ -196,7 +186,7 @@ dbWriteTable(db, "LINK_DATA", links, row.names=F)
 
 #Close and compact database
 dbGetQuery(db, "VACUUM")
-dbDisconnect(db)
+sqliteCloseConnection(db)
 cat(paste("SWIM MICRO VIZ DB for", databaseFileName, "at", Sys.time(), "Created \n"))
 quit("no")
 

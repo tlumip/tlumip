@@ -4,8 +4,8 @@
 #Ben Stabler, stabler@pbworld.com, 070110
 
 # If this script is run manually the use the following parameters
-# allZonesFileName = "allzones.csv"
-# genSpatialOnly = F
+#allZonesFileName = "allzones.csv"
+#genSpatialOnly = F
 
 #updated 03/05/14 bts - allows for no ALD outputs and no longer reads TS outputs
 
@@ -226,7 +226,7 @@ if(isTransportYear) {
     empOut = rbind(empOut,x) #transpose data
   }
   
-  empOut$BZONE = azone2bzone(empOut$AZONE,allZones$AZONE,allZones$BZONE)
+  empOut$BZONE = azone2bzone(empOut$AZONE,allZones$Azone,allZones$BZONE)
   keyEmp = paste(empOut$ACTIVITY, empOut$BZONE)
   
   #aggregate azone to bzone
@@ -258,7 +258,7 @@ if(file.exists("ActivityConstraintsI.csv")) {
     colnames(actCon) = toupper(colnames(actCon))
 
     # Add BZONE and create data frame by BZONE
-     actCon$BZONE = azone2bzone(actCon$AZONE,allZones$AZONE,allZones$BZONE)
+     actCon$BZONE = azone2bzone(actCon$AZONE,allZones$Azone,allZones$BZONE)
      actCon$BZACT = paste(actCon$BZONE,actCon$ACTIVITY,sep="-")
      actConBzQnt  = tapply(actCon$QUANTITY, actCon$BZACT, sum) 
      actConBzQnt = as.data.frame(actConBzQnt)
@@ -391,10 +391,18 @@ if(isALDYear) {
 
   #read FloorspaceInventory.csv
   FloorspaceInventory = read.csv("FloorspaceInventory.csv")
+  
+  #AZone is sometimes renamed into Azone, so keep both
+  if("AZone" %in% colnames(FloorspaceInventory)){
+	FloorspaceInventory$Azone <- FloorspaceInventory$AZone
+	} else if("Azone" %in% colnames(FloorspaceInventory)){
+	FloorspaceInventory$AZone <- FloorspaceInventory$Azone
+	}
+	
   commodityNames = gsub("[.]"," ",colnames(FloorspaceInventory)[2:ncol(FloorspaceInventory)])
   commodityNames = gsub(" |&","_",commodityNames) #replace " " & "&"
   
-  FSI = data.frame(FloorspaceInventory$AZone,unlist(FloorspaceInventory[2:ncol(FloorspaceInventory)]))
+  FSI = data.frame(FloorspaceInventory$Azone,unlist(FloorspaceInventory[2:ncol(FloorspaceInventory)]))
   FSI$COMMODITY = rep(commodityNames,each=nrow(FloorspaceInventory))
   colnames(FSI) =c("AZONE","FLR","COMMODITY")
   
@@ -428,7 +436,7 @@ if(isALDYear) {
   FSI$INCREMENT = 0
   FSI$INCREMENT = increments2$INCREMENT[match(paste(FSI$AZONE, FSI$COMMODITY), paste(increments2$AZONE, increments2$COMMODITY))]
   
-  FSI$BZONE = azone2bzone(FSI$AZONE,allZones$AZONE,allZones$BZONE)
+  FSI$BZONE = azone2bzone(FSI$AZONE,allZones$Azone,allZones$BZONE)
   dbWriteTable(db, "FloorspaceInventory", FSI, row.names=F)
   
   dbGetQuery(db,"CREATE TABLE FLR_INVENTORY AS SELECT BZONE, COMMODITY, SUM(FLR) AS FLR, 
@@ -443,7 +451,7 @@ if(isALDYear) {
   flrSpace$commodity <- gsub(" |&","_",as.character(flrSpace$commodity))
   
   # Add BZONE and create data frame by BZONE
-  flrSpace$BZONE = azone2bzone(flrSpace$taz,allZones$AZONE,allZones$BZONE)
+  flrSpace$BZONE = azone2bzone(flrSpace$taz,allZones$Azone,allZones$BZONE)
   flrSpace$BZCOM = paste(flrSpace$BZONE,flrSpace$commodity,sep="-")
   flrComBzQnt    = tapply(flrSpace$quantity, flrSpace$BZCOM, sum) 
   flrComBzQnt    = as.data.frame(flrComBzQnt)
@@ -511,7 +519,7 @@ if(length(sellingMats > 0)) {
 if((!isTransportYear) | as.logical(genSpatialOnly)) {
   #Close and compact database
   dbGetQuery(db, "VACUUM")
-  sqliteCloseConnection(db)
+  dbDisconnect(db)
   cat(paste("SWIM VIZ DB for", databaseFileName, "at", Sys.time(), "Created \n"))
   quit("no")
 } 
@@ -561,11 +569,11 @@ trips$pmDistance[trips$tod == "PM"] = trips$distance[trips$tod == "PM"]
 trips$ntDistance[trips$tod == "NT"] = trips$distance[trips$tod == "NT"]
 
 #add bzone
-trips$Bzone = azone2bzone(trips$origin,allZones$AZONE,allZones$BZONE)
+trips$Bzone = azone2bzone(trips$origin,allZones$Azone,allZones$BZONE)
 
 #add home zone
 trips$HomeZone = hhData$TAZ[match(trips$hhID, hhData$HH_ID)]
-trips$HomeBzone = azone2bzone(trips$HomeZone,allZones$AZONE,allZones$BZONE)
+trips$HomeBzone = azone2bzone(trips$HomeZone,allZones$Azone,allZones$BZONE)
         
 #write origin table to database
 dbWriteTable(db,"Trips_SDT_Temp",trips[,c("Bzone","hhInc","tripPurpose","tripMode",
@@ -668,7 +676,7 @@ TripsET$mdDistance[isMD(TripsET$tripStartTime)] = TripsET$distance[isMD(TripsET$
 TripsET$pmDistance[isPM(TripsET$tripStartTime)] = TripsET$distance[isPM(TripsET$tripStartTime)]
 TripsET$ntDistance[isNT(TripsET$tripStartTime)] = TripsET$distance[isNT(TripsET$tripStartTime)]
 
-TripsET$Bzone = azone2bzone(TripsET$origin,allZones$AZONE,allZones$BZONE)
+TripsET$Bzone = azone2bzone(TripsET$origin,allZones$Azone,allZones$BZONE)
 
 dbWriteTable(db,"TripsET",TripsET,row.names=F)
 dbGetQuery(db,"CREATE TABLE Trips_ET AS SELECT BZONE,truckClass,
@@ -683,12 +691,11 @@ dbGetQuery(db, "CREATE INDEX Trips_ETIndex ON Trips_ET (BZONE,TRUCKCLASS)")
 #########################################################################
 
 TripsCT = read.csv("Trips_CTTruck.csv")
-TripsCT$commodity = sprintf("SCTG%02i",TripsCT$commodity) 
 
 #add production zone
 homeZone = tapply(TripsCT$origin,TripsCT$truckID,function(x)x[1]) #assumes trips written in order
 TripsCT$HomeZone = homeZone[match(TripsCT$truckID,names(homeZone))]
-TripsCT$HomeBzone = azone2bzone(TripsCT$HomeZone,allZones$AZONE,allZones$BZONE)
+TripsCT$HomeBzone = azone2bzone(TripsCT$HomeZone,allZones$Azone,allZones$BZONE)
         
 TripsCT$amVol = 0
 TripsCT$mdVol = 0
@@ -700,53 +707,25 @@ TripsCT$mdVol[isMD(TripsCT$tripStartTime)] = 1
 TripsCT$pmVol[isPM(TripsCT$tripStartTime)] = 1
 TripsCT$ntVol[isNT(TripsCT$tripStartTime)] = 1
 
-TripsCT$amWeight = 0
-TripsCT$mdWeight = 0
-TripsCT$pmWeight = 0
-TripsCT$ntWeight = 0
-
-TripsCT$amWeight[isAM(TripsCT$tripStartTime)] = TripsCT$weight[isAM(TripsCT$tripStartTime)]
-TripsCT$mdWeight[isMD(TripsCT$tripStartTime)] = TripsCT$weight[isMD(TripsCT$tripStartTime)]
-TripsCT$pmWeight[isPM(TripsCT$tripStartTime)] = TripsCT$weight[isPM(TripsCT$tripStartTime)]
-TripsCT$ntWeight[isNT(TripsCT$tripStartTime)] = TripsCT$weight[isNT(TripsCT$tripStartTime)]
-
-TripsCT$amDistance = 0
-TripsCT$mdDistance = 0
-TripsCT$pmDistance = 0
-TripsCT$ntDistance = 0
-
-TripsCT$amDistance[isAM(TripsCT$tripStartTime)] = TripsCT$distance[isAM(TripsCT$tripStartTime)]
-TripsCT$mdDistance[isMD(TripsCT$tripStartTime)] = TripsCT$distance[isMD(TripsCT$tripStartTime)]
-TripsCT$pmDistance[isPM(TripsCT$tripStartTime)] = TripsCT$distance[isPM(TripsCT$tripStartTime)]
-TripsCT$ntDistance[isNT(TripsCT$tripStartTime)] = TripsCT$distance[isNT(TripsCT$tripStartTime)]
-
-TripsCT$Bzone = azone2bzone(TripsCT$origin,allZones$AZONE,allZones$BZONE)      
+TripsCT$Bzone = azone2bzone(TripsCT$origin,allZones$Azone,allZones$BZONE)      
 
 #trip origin
-dbWriteTable(db,"TripsCT",TripsCT[,c("Bzone","truckType","commodity","amVol","mdVol","pmVol","ntVol",
-  "amWeight","mdWeight","pmWeight","ntWeight",
-  "amDistance","mdDistance","pmDistance","ntDistance")],row.names=F)
+dbWriteTable(db,"TripsCT",TripsCT[,c("Bzone","truckType","amVol","mdVol","pmVol","ntVol")],row.names=F)
   
-dbGetQuery(db,"CREATE TABLE Trips_CT AS SELECT BZONE,truckType AS TruckClass,Commodity, 
-  SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips, 
-  SUM(amWeight) AS amWeight, SUM(mdWeight) AS mdWeight, SUM(pmWeight) AS pmWeight, SUM(ntWeight) AS ntWeight, 
-  SUM(amDistance) AS amDistance, SUM(mdDistance) AS mdDistance, SUM(pmDistance) AS pmDistance, SUM(ntDistance) AS ntDistance 
-  FROM TripsCT GROUP BY BZONE, TruckType, Commodity")
+dbGetQuery(db,"CREATE TABLE Trips_CT AS SELECT BZONE,truckType AS TruckClass, 
+  SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips
+  FROM TripsCT GROUP BY BZONE, TruckType")
 dbGetQuery(db,"DROP TABLE TripsCT")
-dbGetQuery(db, "CREATE INDEX Trips_CTIndex ON Trips_CT (BZONE,TRUCKCLASS,COMMODITY)")
+dbGetQuery(db, "CREATE INDEX Trips_CTIndex ON Trips_CT (BZONE,TRUCKCLASS)")
 
 #trip production (home zone)
-dbWriteTable(db,"TripsCT_Home",TripsCT[,c("HomeBzone","truckType","commodity","amVol","mdVol","pmVol","ntVol",
-  "amWeight","mdWeight","pmWeight","ntWeight",
-  "amDistance","mdDistance","pmDistance","ntDistance")],row.names=F)
+dbWriteTable(db,"TripsCT_Home",TripsCT[,c("HomeBzone","truckType","amVol","mdVol","pmVol","ntVol")],row.names=F)
   
-dbGetQuery(db,"CREATE TABLE Trips_CT_Home AS SELECT HomeBZONE AS BZONE,truckType AS TruckClass,Commodity, 
-  SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips, 
-  SUM(amWeight) AS amWeight, SUM(mdWeight) AS mdWeight, SUM(pmWeight) AS pmWeight, SUM(ntWeight) AS ntWeight, 
-  SUM(amDistance) AS amDistance, SUM(mdDistance) AS mdDistance, SUM(pmDistance) AS pmDistance, SUM(ntDistance) AS ntDistance 
-  FROM TripsCT_Home GROUP BY BZONE, TruckType, Commodity")
+dbGetQuery(db,"CREATE TABLE Trips_CT_Home AS SELECT HomeBZONE AS BZONE,truckType AS TruckClass, 
+  SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips
+  FROM TripsCT_Home GROUP BY BZONE, TruckType")
 dbGetQuery(db,"DROP TABLE TripsCT_Home")
-dbGetQuery(db, "CREATE INDEX Trips_CT_HomeIndex ON Trips_CT_Home (BZONE,TRUCKCLASS,COMMODITY)")
+dbGetQuery(db, "CREATE INDEX Trips_CT_HomeIndex ON Trips_CT_Home (BZONE,TRUCKCLASS)")
 
 #########################################################################
 #Process Trips_LDT
@@ -775,11 +754,11 @@ TripsLDT$mdDistance[isMD(TripsLDT$tripStartTime)] = TripsLDT$distance[isMD(Trips
 TripsLDT$pmDistance[isPM(TripsLDT$tripStartTime)] = TripsLDT$distance[isPM(TripsLDT$tripStartTime)]
 TripsLDT$ntDistance[isNT(TripsLDT$tripStartTime)] = TripsLDT$distance[isNT(TripsLDT$tripStartTime)]
 
-TripsLDT$Bzone = azone2bzone(TripsLDT$origin,allZones$AZONE,allZones$BZONE)
+TripsLDT$Bzone = azone2bzone(TripsLDT$origin,allZones$Azone,allZones$BZONE)
 TripsLDT$hhInc = as.integer(cut(TripsLDT$income, incomeBins))
 
 TripsLDT$HomeZone = hhData$TAZ[match(TripsLDT$hhID, hhData$HH_ID)]
-TripsLDT$HomeBzone = azone2bzone(TripsLDT$HomeZone,allZones$AZONE,allZones$BZONE)
+TripsLDT$HomeBzone = azone2bzone(TripsLDT$HomeZone,allZones$Azone,allZones$BZONE)
 
 #origin table
 dbWriteTable(db,"TripsLDT",TripsLDT[,c("Bzone","hhInc","tripPurpose","tripMode",
@@ -827,32 +806,28 @@ to_LDT_Index = match(TripsLDT$destination,azones)
 ldtIndex = vectorIndex(from_LDT_Index, to_LDT_Index, length(azones))
 
 #create ET and CT matrices
-for(truckClass in TruckClasses) {
-  
-  #create empty matrix
-  mat = matrix(0, length(azones), length(azones))
+mat = matrix(0, length(azones), length(azones))
 
-  for(tod in c("am","md","pm","nt")) {
-    #ET Volumes
-    etVolumes = TripsET[,paste(tod, "Vol", sep="")][TripsET$truckClass == truckClass]
-    etIndexTemp = etIndex[TripsET$truckClass == truckClass]
-    etVolumes = tapply(etVolumes, etIndexTemp, sum) #sum by duplicate index 
-    if(length(etVolumes) > 0) {
-      mat[as.integer(names(etVolumes))] = etVolumes
-    }
-    
-    #CT Volumes
-    ctVolumes = TripsCT[,paste(tod, "Vol", sep="")][TripsCT$truckType == truckClass]
-    ctIndexTemp = ctIndex[TripsCT$truckType == truckClass]
-    ctVolumes = tapply(ctVolumes, ctIndexTemp, sum) #sum by duplicate index 
-    if(length(ctVolumes) > 0) {
-      mat[as.integer(names(ctVolumes))] = mat[as.integer(names(ctVolumes))] + ctVolumes
-    }
-    
-    #save to RData file as object called "mat"
-    save(mat, file=paste(tod, "_", truckClass, "_MAT.RData", sep=""))
-    mat[] = 0 #reset matrix
-  }
+for(tod in c("am","md","pm","nt")) {
+#ET Volumes
+etVolumes = TripsET[,paste(tod, "Vol", sep="")]
+etIndexTemp = etIndex
+etVolumes = tapply(etVolumes, etIndexTemp, sum) #sum by duplicate index 
+if(length(etVolumes) > 0) {
+  mat[as.integer(names(etVolumes))] = etVolumes
+}
+
+#CT Volumes
+ctVolumes = TripsCT[,paste(tod, "Vol", sep="")]
+ctIndexTemp = ctIndex
+ctVolumes = tapply(ctVolumes, ctIndexTemp, sum) #sum by duplicate index 
+if(length(ctVolumes) > 0) {
+  mat[as.integer(names(ctVolumes))] = mat[as.integer(names(ctVolumes))] + ctVolumes
+}
+
+#save to RData file as object called "mat"
+save(mat, file=paste(tod, "_", "TRK_MAT.RData", sep=""))
+mat[] = 0 #reset matrix
 }
 
 #create LDT and add to SDT matrices
@@ -903,7 +878,7 @@ logsums$PURPOSESEGMENT = as.character(logsums$PURPOSESEGMENT)
 logsums$SEGMENT = substr(logsums$PURPOSESEGMENT,nchar(logsums$PURPOSESEGMENT),nchar(logsums$PURPOSESEGMENT))
 logsums$PURPOSE = substr(logsums$PURPOSESEGMENT,1,nchar(logsums$PURPOSESEGMENT)-1)
 
-logsums$BZONE = azone2bzone(logsums$AZONE,allZones$AZONE,allZones$BZONE)
+logsums$BZONE = azone2bzone(logsums$AZONE,allZones$Azone,allZones$BZONE)
 
 dbWriteTable(db, "DCLOGSUMS", logsums[,c("BZONE","PURPOSE","SEGMENT","LOGSUM")], row.names=F)
 
@@ -919,7 +894,7 @@ dbGetQuery(db, "DROP TABLE DCLOGSUMS")
 skimsToProcess = c("opautodist.zmx","opautotime.zmx","opautotoll.zmx","pkautodist.zmx","pkautotime.zmx","pkautotoll.zmx",
   "optrk1dist.zmx","optrk1time.zmx","optrk1toll.zmx","pktrk1dist.zmx","pktrk1time.zmx","pktrk1toll.zmx")
 tripWeightMatrix = c("md_DA_MAT.RData","md_DA_MAT.RData","md_DA_MAT.RData","am_DA_MAT.RData","am_DA_MAT.RData","am_DA_MAT.RData",
-  "md_TRK1_MAT.RData","md_TRK1_MAT.RData","md_TRK1_MAT.RData","am_TRK1_MAT.RData","am_TRK1_MAT.RData","am_TRK1_MAT.RData") #same order as skimsToProcess
+  "md_TRK_MAT.RData","md_TRK_MAT.RData","md_TRK_MAT.RData","am_TRK_MAT.RData","am_TRK_MAT.RData","am_TRK_MAT.RData") #same order as skimsToProcess
 
 for(i in 1:length(skimsToProcess)) {
 
@@ -930,8 +905,8 @@ for(i in 1:length(skimsToProcess)) {
   #read skim and add FROMBZONE and TOBZONE fields
   cat(paste("reading: ", skimsToProcess[i], "\n"))
   mat = matAsTable(readZipMat(skimsToProcess[i]))
-  mat$FROMBZONE = azone2bzone(mat$FROMZONE,allZones$AZONE,allZones$BZONE)
-  mat$TOBZONE = azone2bzone(mat$TOZONE,allZones$AZONE,allZones$BZONE)
+  mat$FROMBZONE = azone2bzone(mat$FROMZONE,allZones$Azone,allZones$BZONE)
+  mat$TOBZONE = azone2bzone(mat$TOZONE,allZones$Azone,allZones$BZONE)
   mat$weight = as.vector(t(weightMatrix)) #add weight
   
   #collapse by weighted mean
@@ -973,8 +948,8 @@ for(i in 1:length(matsToProcess)) {
   cat(paste("reading: ", matsToProcess[i], "\n"))
   load(matsToProcess[i])
   mat = data.frame(FROMZONE=rep(azones,each=length(azones)), TOZONE=rep(azones, length(azones)), as.vector(t(mat)))
-  mat$FROMBZONE = azone2bzone(mat$FROMZONE,allZones$AZONE,allZones$BZONE)
-  mat$TOBZONE = azone2bzone(mat$TOZONE,allZones$AZONE,allZones$BZONE)
+  mat$FROMBZONE = azone2bzone(mat$FROMZONE,allZones$Azone,allZones$BZONE)
+  mat$TOBZONE = azone2bzone(mat$TOZONE,allZones$Azone,allZones$BZONE)
 
   #collapse by sum
   mat = tapply(mat[,3], list(mat$FROMBZONE,mat$TOBZONE), sum)
@@ -1050,12 +1025,23 @@ modelwide = rbind(modelwide,
 dbWriteTable(db, "MODELWIDE", modelwide, row.names=F)
 
 #########################################################################
+#Read Link Attributes Table
+#########################################################################
+
+links = read.csv("AllLinks.csv")
+ 
+#Write tables to DB
+colnames(links) = toupper(colnames(links))
+colnames(links)[colnames(links)=="NO"] = "AZONE"
+dbWriteTable(db, "LINK_DATA", links, row.names=F)
+
+#########################################################################
 #Close and compact database
 #########################################################################
 
 #Close and compact database
 dbGetQuery(db, "VACUUM")
-sqliteCloseConnection(db)
+dbDisconnect(db)
 cat(paste("SWIM VIZ DB for", databaseFileName, "at", Sys.time(), "Created \n"))
 quit("no")
 
