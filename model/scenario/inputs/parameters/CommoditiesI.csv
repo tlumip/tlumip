@@ -64,6 +64,7 @@ Internal Services Information,164,128.6791322,128.6791322,1,-1,0,1,1,0.08,0.0641
 Internal Services Utilities,165,128.6791322,128.6791322,1,-1,0,1,1,0.08,0.0641026,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Education k12,166,128.6791322,128.6791322,1,-1,0,1,1,0.08,0.0641026,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Government Administration,167,128.6791322,128.6791322,1,-1,0,1,1,0.08,0.0641026,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+GHG Permits,169,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Government Support Receipts,301,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Tax Receipts,302,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Investing Receipts,303,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
