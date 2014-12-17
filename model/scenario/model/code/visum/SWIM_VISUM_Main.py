@@ -35,7 +35,7 @@ vdf4 = [104]                    #Link type = 4 for these vdf functions
 
 #Truck passenger car units ;1.7 is the default 
 #Was 0.1, changed after Rick's new CT (11/24/2014) YMM
-truckPCU = 1.0
+truckPCU = 1.7
 
 #zone no and main zone no in Visum
 a_zone = 'NO' #azone field in Visum
