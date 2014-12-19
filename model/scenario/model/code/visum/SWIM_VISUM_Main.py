@@ -373,7 +373,7 @@ class SwimModel(object):
                 data[4].extend(["WM","WM","WM","WM","WM","WM"])
                 data[5].extend([0,0,0,0,0,0])
                 data[6].extend(["WM","WM","WM","WM","WM","WM"])
-                data[7].extend(["WM","WM","WM","WM","WM","WM"])
+                data[7].extend([0,0,0,0,0,0])
                 data[8].extend(["North","Northeast","East","South","Ocean","Local"])
                 fileTable = self.stringConcatenate(data)
             
