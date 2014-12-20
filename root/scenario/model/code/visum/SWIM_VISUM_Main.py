@@ -495,7 +495,15 @@ class SwimModel(object):
             data = list()
             for fieldCounter in range(0, len(self.fields)):
                 self.field = self.fields[fieldCounter]
-                data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, self.field))
+
+                if self.field.lower().find('tsysset') > -1:
+                    newTsysset = []
+                    tsysset = VisumHelpers.GetMulti(self.Visum.Net.Links, self.field)
+                    for t in tsysset:
+                        newTsysset.append(str(t).replace(',',';'))
+                    data.append(newTsysset);
+                else:
+                    data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, self.field))
 
             self.writeCSV(fileName, self.stringConcatenate(data, False))
         
