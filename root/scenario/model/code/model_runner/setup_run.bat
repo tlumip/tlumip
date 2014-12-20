@@ -18,7 +18,7 @@ CALL SET scen_name=%%temp_dir:%root_dir%\=%%
 
 ::back to batch file directory and run program
 cd "%~dp0"
-%root_dir%\%scen_name%\model\lib\Python27\python.exe build_run.py %root_dir% %scen_name% "%root_dir%\%scen_name%\model\config\tsteps.csv"
+%root_dir%\model\lib\Python27\python.exe build_run.py %root_dir% %scen_name% "%root_dir%\%scen_name%\model\config\tsteps.csv"
 
 ::return to original directory
 popd
