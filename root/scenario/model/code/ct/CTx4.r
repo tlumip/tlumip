@@ -67,3 +67,10 @@ source(str_c(ct_code_folder, "Trip generation5.r"))
 source(str_c(ct_code_folder, "Sample local destinations8.r"))
 source(str_c(ct_code_folder, "Temporal allocation2.r"))
 source(str_c(ct_code_folder, "Combine truck tours.r"))
+
+#Run ET (or placeholder)
+source(str_c(ct_code_folder, "ET_placeholder.r"))
+
+#To save the .Rdata file to the directory for the simulation year
+#Comment this out if working in Rgui mode
+setwd(RTP[["Working_Folder"]]) 
