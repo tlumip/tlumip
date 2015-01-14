@@ -42,7 +42,7 @@ tstep = gsub("t","",basename(wkrDir))
 isPIYear = file.exists("CommodityZutilities.csv")
 
 #is this a transport model year
-isTransportYear = file.exists("SWIM_PeakAssignmentPaths.ver")
+isTransportYear = file.exists("swimNetworkAttributes_PK_PATHS.ver")
 
 #is this a ALD year
 isALDYear = file.exists(".RData")

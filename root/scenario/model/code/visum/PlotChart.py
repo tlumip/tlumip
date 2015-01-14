@@ -16,7 +16,7 @@ demMatrixNo = [1,2,5,6]              #1-a_peak, 2-a_offpeak, 5-tr_peak, 6-tr_off
 Year_AADT   = '2006'                 #user specific - change to year for which AADT is required
 AADT_volume = 'AADT_' + Year_AADT    #change if prefix to year changes in the fieldname
 maxIterations = 1                   #needs to be changed if changed in procedure file
-totalAssignedVol = 'TotalAssignmentVol'
+totalAssignedVol = 'DAILY_VOL_TOTAL'
 classLength = [5,5,25,25]
 
 class plotChart(object):

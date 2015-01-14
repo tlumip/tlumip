@@ -56,7 +56,7 @@ speed = 50.0/60.0    #Visum outputs skim in minutes and distance in miles
 #peak and offpeak time periods for which skim is saved
 timePeriods = ['pk','op','pm','nt']
 hwyDemandMatrices = [1,16] #start and end of matrices
-hwySkimMatrices = [21,52] #start and end of matrices
+hwySkimMatrices = [21,60] #start and end of matrices
 ldtDemandMatrices = [9,12] #start and end of matrices
 sdtDemandMatrices = [13,16] #start and end of matrices
 transitSkimMatrices = [21,50] #start and end of matrices
@@ -125,8 +125,8 @@ class SwimModel(object):
         self.synpopFile = properties['spg2.current.synpop.summary']
         self.pythonDependencyDir = properties['ta.dependent.python.directory']
         self.pythonDependencies = eval(properties['ta.dependent.python.files'].strip())
-        self.last_transit_path = properties['transit.assign.previous.skim.path']
-        self.current_transit_path = properties['transitSkims.directory']
+        self.lastTRansit_path = properties['transit.assign.previous.skim.path']
+        self.currentTRansit_path = properties['transitSkims.directory']
         self.fareZoneFares = properties['fareZoneFares.file']
         self.air_skims_directory = properties['transit.assign.previous.skim.path']
         self.air_skims = properties['pt.air.peak.skims'].strip().split(',') + properties['pt.air.offpeak.skims'].strip().split(',')
@@ -150,7 +150,7 @@ class SwimModel(object):
     def copyAirSkims(self):
         for air_skim in self.air_skims:
             air_skim += ".zmx"
-            shutil.copy(os.path.join(self.air_skims_directory,air_skim),os.path.join(self.current_transit_path,air_skim))
+            shutil.copy(os.path.join(self.air_skims_directory,air_skim),os.path.join(self.currentTRansit_path,air_skim))
         
     def copyDependencies(self):
         for python_dependency in self.pythonDependencies:
@@ -179,15 +179,19 @@ class SwimModel(object):
         for i in range(0,len(pathNo)): 
             self.Visum.SetPath(pathNo[i], self.path)
             
-    def loadVersion(self):
-        print("load version file: " + self.version)
-        
-        self.Visum.LoadVersion(self.version)
+    def loadVersion(self, suffix=""):
+        print("load version file: " + str(self.version)[:-4] + suffix + ".ver")
+        if suffix == "":
+            self.Visum.LoadVersion(self.version)
+        else:
+            self.Visum.LoadVersion(str(self.version)[:-4] + suffix + ".ver")
 
-    def saveVersion(self):
-        print("save version file: " + self.version)
-        
-        self.Visum.SaveVersion(self.version)
+    def saveVersion(self, suffix=""):
+        print("save version file: " + str(self.version)[:-4] + suffix + ".ver")
+        if suffix == "":
+            self.Visum.SaveVersion(self.version)
+        else:
+            self.Visum.SaveVersion(str(self.version)[:-4] + suffix + ".ver")
 
     def closeVisum(self):
         print("close visum window")
@@ -399,7 +403,7 @@ class SwimModel(object):
             if fileName.lower().find('activityconstraintsi') > -1:
                 
                 #read world markets file (fix)
-                #self.headers = ["sctg01_fkp_lvsk_expt","sctg01_fkp_lvsk_impt","sctg02_fkp_agri_cereal_expt","sctg02_fkp_agri_cereal_impt","sctg03_fkp_agri_other_expt","sctg03_fkp_agri_other_impt","sctg04_fkp_feed_expt","sctg04_fkp_feed_impt","sctg05_fkp_food_meat_expt","sctg05_fkp_food_meat_impt","sctg06_fkp_agri_grain_expt","sctg06_fkp_agri_grain_impt","sctg07_fkp_food_prep_expt", "sctg07_fkp_food_prep_impt","sctg08_fkp_food_alc_expt","sctg08_fkp_food_alc_impt","sctg10_cms_clay_expt","sctg10_cms_clay_impt","sctg11_cms_sand_expt","sctg11_cms_sand_impt", "sctg13_cms_mine_nonmet_expt","sctg13_cms_mine_nonmet_impt","sctg14_cms_mine_met_expt","sctg14_cms_mine_met_impt","sctg15_pcc_coal_expt","sctg15_pcc_coal_impt","sctg16_pcc_petr_crude_expt","sctg16_pcc_petr_crude_impt","sctg17_pcc_fuel_expt","sctg17_pcc_fuel_impt","sctg18_pcc_petr_oil_expt","sctg18_pcc_petr_oil_impt","sctg19_pcc_coal_prod_expt","sctg19_pcc_coal_prod_impt","sctg20_pcc_chem_basic_expt","sctg20_pcc_chem_basic_impt","sctg21_pcc_chem_pharma_expt","sctg21_pcc_chem_pharma_impt","sctg22_pcc_chem_fert_expt","sctg22_pcc_chem_fert_impt","sctg23_pcc_chem_prod_expt","sctg23_pcc_chem_prod_impt","sctg24_pcc_petr_plast_expt","sctg24_pcc_petr_plast_impt","sctg25_fwp_logs_expt","sctg25_fwp_logs_impt","sctg26_fwp_wood_expt","sctg26_fwp_wood_impt","sctg27_ppp_papr_puplp_expt","sctg27_ppp_papr_puplp_impt","sctg28_ppp_papr_paper_expt","sctg28_ppp_papr_paper_impt","sctg29_ppp_papr_print_expt","sctg29_ppp_papr_print_impt","sctg30_oth_clth_expt","sctg30_oth_clth_impt","sctg31_cms_min_expt","sctg31_cms_min_impt","sctg32_mit_metl_base_expt","sctg32_mit_metl_base_impt","sctg33_mit_metl_prod_expt","sctg33_mit_metl_prod_impt","sctg34_mit_mach_expt","sctg34_mit_mach_impt","sctg35_mit_elct_expt","sctg35_mit_elct_impt","sctg36_mit_tran_expt","sctg36_mit_tran_impt","sctg37_mit_inst_transp_expt","sctg37_mit_inst_transp_impt","sctg38_mit_inst_prec_expt","sctg38_mit_inst_prec_impt","sctg39_oth_furn_expt","sctg39_oth_furn_impt","sctg40_oth_misc_expt","sctg40_oth_misc_impt","sctg41_waste_scrap_expt","sctg41_waste_scrap_impt"]
+                #self.headers = ["sctg01_fkp_lvsk_expt","sctg01_fkp_lvsk_impt","sctg02_fkp_agri_cereal_expt","sctg02_fkp_agri_cereal_impt","sctg03_fkp_agri_other_expt","sctg03_fkp_agri_other_impt","sctg04_fkp_feed_expt","sctg04_fkp_feed_impt","sctg05_fkp_food_meat_expt","sctg05_fkp_food_meat_impt","sctg06_fkp_agri_grain_expt","sctg06_fkp_agri_grain_impt","sctg07_fkp_food_prep_expt", "sctg07_fkp_food_prep_impt","sctg08_fkp_food_alc_expt","sctg08_fkp_food_alc_impt","sctg10_cms_clay_expt","sctg10_cms_clay_impt","sctg11_cms_sand_expt","sctg11_cms_sand_impt", "sctg13_cms_mine_nonmet_expt","sctg13_cms_mine_nonmet_impt","sctg14_cms_mine_met_expt","sctg14_cms_mine_met_impt","sctg15_pcc_coal_expt","sctg15_pcc_coal_impt","sctg16_pcc_petr_crude_expt","sctg16_pcc_petr_crude_impt","sctg17_pcc_fuel_expt","sctg17_pcc_fuel_impt","sctg18_pcc_petr_oil_expt","sctg18_pcc_petr_oil_impt","sctg19_pcc_coal_prod_expt","sctg19_pcc_coal_prod_impt","sctg20_pcc_chem_basic_expt","sctg20_pcc_chem_basic_impt","sctg21_pcc_chem_pharma_expt","sctg21_pcc_chem_pharma_impt","sctg22_pcc_chem_fert_expt","sctg22_pcc_chem_fert_impt","sctg23_pcc_chem_prod_expt","sctg23_pcc_chem_prod_impt","sctg24_pcc_petr_plast_expt","sctg24_pcc_petr_plast_impt","sctg25_fwp_logs_expt","sctg25_fwp_logs_impt","sctg26_fwp_wood_expt","sctg26_fwp_wood_impt","sctg27_ppp_papr_puplp_expt","sctg27_ppp_papr_puplp_impt","sctg28_ppp_papr_paper_expt","sctg28_ppp_papr_paper_impt","sctg29_ppp_papr_print_expt","sctg29_ppp_papr_print_impt","sctg30_oth_clth_expt","sctg30_oth_clth_impt","sctg31_cms_min_expt","sctg31_cms_min_impt","sctg32_mit_metl_base_expt","sctg32_mit_metl_base_impt","sctg33_mit_metl_prod_expt","sctg33_mit_metl_prod_impt","sctg34_mit_mach_expt","sctg34_mit_mach_impt","sctg35_mit_elct_expt","sctg35_mit_elct_impt","sctg36_mitTRan_expt","sctg36_mitTRan_impt","sctg37_mit_instTRansp_expt","sctg37_mit_instTRansp_impt","sctg38_mit_inst_prec_expt","sctg38_mit_inst_prec_impt","sctg39_oth_furn_expt","sctg39_oth_furn_impt","sctg40_oth_misc_expt","sctg40_oth_misc_impt","sctg41_waste_scrap_expt","sctg41_waste_scrap_impt"]
                 self.headers = self.loadCSV(self.worldMarketFieldnames)[1]["FIELDNAME"]
                 self.poiColumns = []
 
@@ -444,13 +448,13 @@ class SwimModel(object):
                 newFileTable = []
                 counter = 0
                 for r in fileTable:
+                    if counter > 0 and float(r[1]) > 0.0:
+                        line = []
+                        line.extend([r[0], "AgForest", "FLR Logging", r[1]])
+                        newFileTable.append(line)
                     if counter > 0 and float(r[2]) > 0.0:
                         line = []
-                        line.extend([r[0], r[1], "FLR Logging", r[2]])
-                        newFileTable.append(line)
-                    if counter > 0 and float(r[3]) > 0.0:
-                        line = []
-                        line.extend([r[0], r[1], "FLR Agriculture", r[3]])
+                        line.extend([r[0], "AgForest", "FLR Agriculture", r[2]])
                         newFileTable.append(line)
                     counter +=1
                 newFileTable.insert(0, ["Azone","FLRType","FLRName","BldgMSQFT"])
@@ -1127,17 +1131,17 @@ class SwimModel(object):
 
     def createVolumeFactor(self):
         #get empty list
-        volumeFactors = VisumHelpers.GetMulti(self.Visum.Net.Links, "AM_VOL_FACTOR")
+        volumeFactors = VisumHelpers.GetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR")
 
         factor = self.calcVolumeFactor("ampeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor  
-        VisumHelpers.SetMulti(self.Visum.Net.Links, "AM_VOL_FACTOR", volumeFactors)
+        VisumHelpers.SetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR", volumeFactors)
 
         factor = self.calcVolumeFactor("mdoffpeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor
-        VisumHelpers.SetMulti(self.Visum.Net.Links, "MD_VOL_FACTOR", volumeFactors)
+        VisumHelpers.SetMulti(self.Visum.Net.Links, "OP_VOL_FACTOR", volumeFactors)
 
         if s.assignmentPeriods == "ALL":
             factor = self.calcVolumeFactor("pmpeak")
@@ -1148,7 +1152,7 @@ class SwimModel(object):
             factor = self.calcVolumeFactor("nioffpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
-            VisumHelpers.SetMulti(self.Visum.Net.Links, "NI_VOL_FACTOR", volumeFactors)
+            VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
 
 
 ############################################################
@@ -1319,6 +1323,39 @@ if __name__== "__main__":
         s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[1])
         s.saveVersion()
         s.closeVisum()
+
+
+        ####CLEAN UP PATHS#####
+        if s.assignmentPeriods == "ALL":
+            s.startVisum()
+            s.loadVersion("_OP_PATHS")
+            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+8)
+            s.saveVersion("_OP_PATHS")
+            s.closeVisum()
+
+            s.startVisum()
+            s.loadVersion("_PM_PATHS")
+            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+16)
+            s.saveVersion("_PM_PATHS")
+            s.closeVisum()
+
+            s.startVisum()
+            s.loadVersion("_NT_PATHS")
+            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+24)
+            s.saveVersion("_NT_PATHS")
+            s.closeVisum()
+
+            s.startVisum()
+            s.loadVersion("_DAILY_PATHS")
+            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+32)
+            s.saveVersion("_DAILY_PATHS")
+            s.closeVisum()
+        else:
+            s.startVisum()
+            s.loadVersion("_OP_PATHS")
+            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+8)
+            s.saveVersion("_OP_PATHS")
+            s.closeVisum()
         
     #transit assignment
     ######################################################
@@ -1330,66 +1367,66 @@ if __name__== "__main__":
         s.calcServiceAreaData()
         s.createLocalBusSkims()
         s.buildTransitConnectors(ivtMatNums[0], ovtMatNums[0], ivt_coeff, ovt_coeff)
-        s.saveVersion()
+        s.saveVersion("_TR")
         s.closeVisum()
         
         #intercity transit assignment
         s.startVisum()
-        s.loadVersion()
+        s.loadVersion("_TR")
         if s.runFinalTransitAssignment:
           s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
         else: 
           s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1], fixedDemand=1)
-        s.saveVersion()
+        s.saveVersion("_TR")
         s.closeVisum()
         
         #load and execute procedure file 
         pdir = s.assigmentProcedureDirectory
         procedure = s.intercityRailAssignmentProcedure
         s.startVisum()
-        s.loadVersion()
+        s.loadVersion("_TR")
         s.loadProcedure(os.path.join(pdir,procedure))
         s.executeProcedure(os.path.join(pdir,procedure))
-        s.saveVersion()
+        s.saveVersion("_TR")
         s.closeVisum()
         
         #intracity transit assignment
         s.startVisum()
-        s.loadVersion()
+        s.loadVersion("_TR")
         if s.runFinalTransitAssignment:
           s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
         else: 
           s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1], fixedDemand=1)
-        s.saveVersion()
+        s.saveVersion("_TR")
         s.closeVisum()
         
         #load and execute procedure file    
         pdir = s.assigmentProcedureDirectory
         procedure = s.intracityRailAssignmentProcedure
         s.startVisum()
-        s.loadVersion()
+        s.loadVersion("_TR")
         s.loadProcedure(os.path.join(pdir,procedure))
         s.executeProcedure(os.path.join(pdir,procedure))
-        s.saveVersion()
+        s.saveVersion("_TR")
         s.closeVisum()
        
         #Adjust skimmed SDT IVT and LTF IVT and OVT skims
         if not s.runFinalTransitAssignment:
           s.startVisum()        
-          s.loadVersion()
+          s.loadVersion("_TR")
           s.calcFareMatrices()
           s.adjustSkimsDueToLTF(isPeak=True)
           s.adjustSkimsDueToLTF(isPeak=False)
-          s.saveVersion()
+          s.saveVersion("_TR")
           s.closeVisum() 
         
           #write skim matrices in *.zmx files
           s.startVisum()
-          s.loadVersion()
+          s.loadVersion("_TR")
           s.zonefieldVariables()
           s.writeTransitSkimZMX(start=transitSkimMatrices[0])
           s.createVizOutput()
-          s.saveVersion()
+          s.saveVersion("_TR")
           s.closeVisum()
         
         #copy air skims, because it needs to look like they've been run

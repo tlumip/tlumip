@@ -25,9 +25,9 @@ if (length(args)==0) {
     # TO-DO: Add code that checks for existence of these files?
     if (length(args) < 7) stop(str_c("Error: SWIM properties filename and CT ",
         "folders must be specified when running CT"))
-    swim_properties_FN <- substr(args[7],2,nchar(args[7]))
+    swim_properties_FN <- substr(args[9],2,nchar(args[9]))
 	print(swim_properties_FN)
-    ct_code_folder <- substr(args[6],2,nchar(args[6]))
+    ct_code_folder <- substr(args[8],2,nchar(args[8]))
 	print(ct_code_folder)
 }
 
