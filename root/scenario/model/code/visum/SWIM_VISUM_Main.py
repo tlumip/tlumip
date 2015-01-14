@@ -144,6 +144,37 @@ class SwimModel(object):
         self.worldMarketFieldnames = properties['world.market.fieldnames.file']
         self.sdtTODTripsFile = properties['sdt.tod.trips.file'] 
 
+        self.ignoredAAZoneAttributes = ["ACCOMMODATIONS_EXPT",
+            "ACCOMMODATIONS_IMPT",
+            "COMMUNICATIONS_AND_UTILITIES_EXPT",
+            "COMMUNICATIONS_AND_UTILITIES_IMPT",
+            "CONSTRUCTION_EXPT",
+            "CONSTRUCTION_IMPT",
+            "EDUCATION_REPORTS_TO_SPONSORS_EXPT",
+            "EDUCATION_REPORTS_TO_SPONSORS_IMPT",
+            "ENERGY_EXPT",
+            "ENERGY_IMPT",
+            "ENTERTAINMENT_SERVICES_EXPT",
+            "ENTERTAINMENT_SERVICES_IMPT",
+            "FIRE_BUS_AND_PROF_SERVS_EXPT",
+            "FIRE_BUS_AND_PROF_SERVS_IMPT",
+            "FOOD_SERVICES_EXPT",
+            "FOOD_SERVICES_IMPT",
+            "GOVERNMENT_ADMINISTRATION_EXPT",
+            "GOVERNMENT_ADMINISTRATION_IMPT",
+            "HEALTH_SERVICES_EXPT",
+            "HEALTH_SERVICES_IMPT",
+            "HIGHER_EDUCATION_EXPT",
+            "HIGHER_EDUCATION_IMPT",
+            "PERS_AND_OTH_SERVS_AMUS_EXPT",
+            "PERS_AND_OTH_SERVS_AMUS_IMPT",
+            "RETAIL_TRADE_EXPT",
+            "RETAIL_TRADE_IMPT",
+            "TRANSPORT_EXPT",
+            "TRANSPORT_IMPT",
+            "WHOLESALE_TRADE_EXPT",
+            "WHOLESALE_TRADE_IMPT"]
+
         
         os.chdir(self.path)
 
@@ -419,25 +450,19 @@ class SwimModel(object):
                         outTable.append(row)
 
                 #merge regular zone data
+                self.fields.extend(self.ignoredAAZoneAttributes)
+
                 for i in range(1,len(fileTable)):
+                  fileTable[i].extend([0] * len(self.ignoredAAZoneAttributes))
                   row = fileTable[i]
                   for j in range(len(row)):
                     azone = row[0]
                     attr = self.fields[j]
 
-                    #AA has harcoded variable names that do not fit into Visum so convert them back
-                    if attr.lower().find('pers_and_oth_servs_amus_expt') > -1:
-                        attr = 'personal_and_other_services_and_amusements_expt'
-                    if attr.lower().find('pers_and_oth_servs_amus_impt') > -1:
-                        attr = 'personal_and_other_services_and_amusements_expt'
-                    if attr.lower().find('fire_bus_and_prof_servs_expt') > -1:
-                        attr = 'fire_business_and_professional_services_expt'
-                    if attr.lower().find('fire_bus_and_prof_servs_impt') > -1:
-                        attr = 'fire_business_and_professional_services_expt'
-
                     value = row[j]
                     if j > 0:
                       outTable.append([azone, attr, value])
+
                   
                 #add column headers
                 fileTable = outTable
@@ -499,8 +524,8 @@ class SwimModel(object):
             data = list()
             for fieldCounter in range(0, len(self.fields)):
                 self.field = self.fields[fieldCounter]
-
-                if self.field.lower().find('tsysset') > -1:
+                #some fields with commas need to be refactored
+                if self.field.lower().find('oldmodes') > -1 or self.field.lower().find('tsysset') > -1:
                     newTsysset = []
                     tsysset = VisumHelpers.GetMulti(self.Visum.Net.Links, self.field)
                     for t in tsysset:
@@ -1274,12 +1299,13 @@ if __name__== "__main__":
     #create SWIM model inputs
     ######################################################
     if mode == 'inputs':
-        s.copyVersion()
-        s.copyDependencies()
+        #s.copyVersion()
+        #s.copyDependencies()
         s.startVisum()
         s.loadVersion()
-        s.createModelInput()
-        s.saveVersion()
+        s.createVizOutput()
+        #s.createModelInput()
+        #s.saveVersion()
         s.closeVisum()
         
     #path based highway assignment
