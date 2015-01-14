@@ -194,6 +194,5 @@ ACRES,AllZones.csv
 MPO,AllZones.csv
 ACT,AllZones.csv
 DESCRIPTION,AllZones.csv
-FLRType,AgForestFloorspace.csv
 FLR_LOGGING,AgForestFloorspace.csv
 FLR_AGRICULTURE,AgForestFloorspace.csv
