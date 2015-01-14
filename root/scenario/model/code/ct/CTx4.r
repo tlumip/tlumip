@@ -25,9 +25,9 @@ if (length(args)==0) {
     # TO-DO: Add code that checks for existence of these files?
     if (length(args) < 7) stop(str_c("Error: SWIM properties filename and CT ",
         "folders must be specified when running CT"))
-    swim_properties_FN <- substr(args[9],2,nchar(args[9]))
+    swim_properties_FN <- substr(args[8],2,nchar(args[8]))
 	print(swim_properties_FN)
-    ct_code_folder <- substr(args[8],2,nchar(args[8]))
+    ct_code_folder <- substr(args[7],2,nchar(args[7]))
 	print(ct_code_folder)
 }
 
@@ -69,6 +69,7 @@ source(str_c(ct_code_folder, "Temporal allocation2.r"))
 source(str_c(ct_code_folder, "Combine truck tours.r"))
 
 #Run ET (or placeholder)
+#Warning - the Java application orchestrator code is expecting the ET file as an indicator of process completion
 source(str_c(ct_code_folder, "ET_placeholder.r"))
 
 #To save the .Rdata file to the directory for the simulation year
