@@ -167,7 +167,7 @@ class SwimModel(object):
             "higher_education_expt",
             "higher_education_impt",
             "personal_and_other_services_and_amusements_expt",
-            "personal_and_other_services_and_amusements_expt",
+            "personal_and_other_services_and_amusements_impt",
             "retail_trade_expt",
             "retail_trade_impt",
             "transport_expt",
