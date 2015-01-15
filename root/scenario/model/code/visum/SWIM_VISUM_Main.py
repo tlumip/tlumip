@@ -1299,13 +1299,12 @@ if __name__== "__main__":
     #create SWIM model inputs
     ######################################################
     if mode == 'inputs':
-        #s.copyVersion()
-        #s.copyDependencies()
+        s.copyVersion()
+        s.copyDependencies()
         s.startVisum()
         s.loadVersion()
-        s.createVizOutput()
-        #s.createModelInput()
-        #s.saveVersion()
+        s.createModelInput()
+        s.saveVersion()
         s.closeVisum()
         
     #path based highway assignment
