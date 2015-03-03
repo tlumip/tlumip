@@ -106,6 +106,8 @@ class SwimModel(object):
         self.swimVizOutputs = properties['ta.link.field.names']
         self.zmxInputfileNames = properties['ta.zmx.input.files']
         self.assigmentProcedureDirectory = properties['ta.assignment.parameters.directory']
+        self.initialAutoAssignmentProcedure = properties['ta.initial.auto.assignment.parameters']
+        self.initialTransitAssignmentProcedure = properties['ta.initial.transit.assignment.parameters']
         self.pathAssignmentProcedure = properties['ta.path.assignment.parameters']
         self.LUCEAssignmentProcedure = properties['ta.luce.assignment.parameters']
         self.pathAllPeriodAssignmentProcedure = properties['ta.path.allperiod.assignment.parameters']
@@ -143,6 +145,9 @@ class SwimModel(object):
         self.volumeFactorPercentile = float(properties['ta.volume.factor.percentile'])
         self.worldMarketFieldnames = properties['world.market.fieldnames.file']
         self.sdtTODTripsFile = properties['sdt.tod.trips.file'] 
+        self.airInputsFile = properties['air.inputs']
+
+        self.reSeedMatrices = properties['new.zone.system']
 
         self.ignoredAAZoneAttributes = ["accommodations_expt",
             "accommodations_impt",
@@ -182,7 +187,7 @@ class SwimModel(object):
         for air_skim in self.air_skims:
             air_skim += ".zmx"
             shutil.copy(os.path.join(self.air_skims_directory,air_skim),os.path.join(self.currentTRansit_path,air_skim))
-        
+
     def copyDependencies(self):
         for python_dependency in self.pythonDependencies:
             shutil.copy(os.path.join(self.pythonDependencyDir,python_dependency),os.path.join(self.path,python_dependency))
@@ -557,6 +562,15 @@ class SwimModel(object):
                 mat[j] = [fixedDemand] * len(mat)
             
             VisumHelpers.SetODMatrix(self.Visum, i+1, mat)
+
+    #create seed demand for seed skim creation
+    def insertSeedMatricesInVisum(self):
+        for i in range(hwyDemandMatrices[0], hwyDemandMatrices[1]):    
+            mat = np.zeros([len(self.zoneNames),len(self.zoneNames)], dtype=np.float64)
+            for j in range(len(mat)):
+                mat[j] = [1] * len(mat)
+            print("matrix %i sum %i" % (i, sum(map(sum, mat))))
+            VisumHelpers.SetODMatrix(self.Visum, i, mat)
             
     #delete skim matrices with indicated start and end no.s of matrices in Visum 
     def deleteSkimMatrices(self, start, end):
@@ -668,6 +682,7 @@ class SwimModel(object):
 
         self.uniqueMainZoneNo = self.uniqueMainZoneNo + list(set(worldMarketList))
         self.mainZoneNames = map(str, self.uniqueMainZoneNo)
+
 
     def matrixCorrection(self, matCount, mat, headers, fieldDictionary):
 
@@ -1179,6 +1194,84 @@ class SwimModel(object):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
 
+############################################################
+
+    def createAirSkims(self):
+        for timeperiod in timeMatNames:
+            headers, airInputs = self.loadCSV(self.airInputsFile)
+            timemat, timeNames, timematname = self.readZMX(timeperiod  + '.zmx')
+            timemat = np.array(timemat)
+
+
+            airdrv = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
+            airivt = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
+            airfar = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
+            airfwt = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
+
+            for i in range(len(timemat)): 
+
+                closestFromAirport = 0
+                accessTime = 0
+                minTime = 99999999.9
+                for k in range(len(airInputs["From"])):
+                    airportZoneFrom = airInputs["From"][k]
+                    if int(airportZoneFrom) < len(timemat):
+                        travelTime = float(timemat[i][int(airportZoneFrom)])
+                        if(minTime > travelTime):
+                            closestFromAirport = airportZoneFrom
+                            accessTime = travelTime
+                            minTime = travelTime
+
+                for j in range(len(timemat)):
+
+                    closestToAirport = 0
+                    egressTime = 0
+                    minTime = 99999999.9
+                    for k in range(len(airInputs["To"])):
+                        airportZoneTo = airInputs["To"][k]
+                        if int(airportZoneTo) < len(timemat):
+                            travelTime = float(timemat[j][int(airportZoneTo)])
+                            if(minTime > travelTime):
+                                closestToAirport = airportZoneTo
+                                egressTime = travelTime
+                                minTime = travelTime
+                
+                    index = 0
+
+                    for k in range(len(airInputs["To"])):
+                        if(airInputs["To"][k] == closestToAirport and airInputs["From"][k] == closestFromAirport):
+                            index = k
+
+                    #Index will be zero in cases where the closes 'from' and 'to' airpots are the same. In this case, air mode makes no sense and skims will be 999999
+                    if(index == 0):
+                        airdrv[i][j] = 99999999.9
+                        airfar[i][j] = 99999999.9
+                        airivt[i][j] = 99999999.9
+                        airfwt[i][j] = 99999999.9
+                    else:
+                        airdrv[i][j] = accessTime + egressTime
+                        airfar[i][j] = airInputs["FAR"][index]
+                        airivt[i][j] = airInputs["IVT"][index]
+                        airfwt[i][j] = airInputs["FWT"][index] + airInputs["AWT"][index]
+                    
+            for air_skim in self.air_skims:
+               air_skim += ".zmx"
+               period_token = air_skim[:2]
+               if air_skim.lower().find(period_token) > -1 and timeperiod.lower().find(period_token) > -1:
+                   if air_skim.lower().find('dairdrv') > -1:
+                       print 'writing airdrv skim matrix ' + air_skim
+                       self.writeZMX(air_skim, self.zoneNames, airdrv)
+                   elif air_skim.lower().find('dairfar') > -1:
+                       print 'writing airfar skim matrix ' + air_skim
+                       self.writeZMX(air_skim, self.zoneNames, airfar)
+                   elif air_skim.lower().find('dairivt') > -1:
+                       print 'writing airivt skim matrix ' + air_skim
+                       self.writeZMX(air_skim, self.zoneNames, airivt)
+                   elif air_skim.lower().find('dairfwt') > -1:
+                       print 'writing airfwt skim matrix ' + air_skim
+                       self.writeZMX(air_skim, self.zoneNames, airfwt)
+
+
 
 ############################################################
     def calcVolumeFactor(self, timePeriod):
@@ -1295,12 +1388,45 @@ if __name__== "__main__":
     property_file = sys.argv[1]
     mode = sys.argv[2].lower()
     s = SwimModel(property_file)
-    
+    pdir = s.assigmentProcedureDirectory
+
     #create SWIM model inputs
     ######################################################
     if mode == 'inputs':
-        s.copyVersion()
-        s.copyDependencies()
+#        s.copyVersion()
+#        s.copyDependencies()
+#        if s.reSeedMatrices == 'True':
+#            #Auto seed skims
+#            s.startVisum()
+#            s.loadVersion()
+#            s.zonefieldVariables()
+#            s.insertSeedMatricesInVisum()
+#            procedure = s.initialAutoAssignmentProcedure 
+#            s.loadProcedure(os.path.join(pdir,procedure))
+#            s.executeProcedure(os.path.join(pdir,procedure))
+#            s.writeHighwaySkimZMX(start=hwySkimMatrices[0], writeBetaMatrices=True)
+#            s.saveVersion("_INIT_AUTO")
+#
+#            s.closeVisum()
+#
+#            #Transit seed skims
+#            s.startVisum()
+#            s.loadVersion()
+#            s.zoneServiceLookup()
+#            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREA")
+#            areas = [item/(5280**2) for item in areas] #from sq ft to miles
+#            s.service_data["AREA"] = areas
+#            s.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
+#            s.createLocalBusSkims()            
+#            procedure = s.initialTransitAssignmentProcedure 
+#            s.loadProcedure(os.path.join(pdir,procedure))
+#            s.executeProcedure(os.path.join(pdir,procedure))
+#            s.writeTransitSkimZMX(start=transitSkimMatrices[0])
+#            s.saveVersion("_INIT_TRANSIT")
+#            s.closeVisum()
+#
+#            #Air skims
+#            s.createAirSkims()
         s.startVisum()
         s.loadVersion()
         s.createModelInput()
@@ -1321,7 +1447,6 @@ if __name__== "__main__":
         s.closeVisum()
         
         #execute procedure file
-        pdir = s.assigmentProcedureDirectory
         if s.assignmentType == "PATHBASED":
             if s.assignmentPeriods == "ALL":
                 procedure = s.pathAllPeriodAssignmentProcedure 
@@ -1401,12 +1526,11 @@ if __name__== "__main__":
         if s.runFinalTransitAssignment:
           s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
         else: 
-          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1], fixedDemand=1)
+          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1], fixedDemand=0.001)
         s.saveVersion("_TR")
         s.closeVisum()
         
         #load and execute procedure file 
-        pdir = s.assigmentProcedureDirectory
         procedure = s.intercityRailAssignmentProcedure
         s.startVisum()
         s.loadVersion("_TR")
@@ -1421,12 +1545,11 @@ if __name__== "__main__":
         if s.runFinalTransitAssignment:
           s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
         else: 
-          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1], fixedDemand=1)
+          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1], fixedDemand=0.001)
         s.saveVersion("_TR")
         s.closeVisum()
         
         #load and execute procedure file    
-        pdir = s.assigmentProcedureDirectory
         procedure = s.intracityRailAssignmentProcedure
         s.startVisum()
         s.loadVersion("_TR")
