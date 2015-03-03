@@ -525,7 +525,7 @@ public class ApplicationOrchestrator {
         appRunner.run();
     }
 
-    public void runCTModel(int baseYear, int timeInterval, ResourceBundle appRb, ResourceBundle globalRb){        
+    public void runCTModel(int baseYear, int timeInterval, ResourceBundle appRb){        
         ModelComponent comp = new CTModel();
         comp.setApplicationResourceBundle(appRb);
         comp.startModel(baseYear, timeInterval);
@@ -673,7 +673,7 @@ public class ApplicationOrchestrator {
                 ao.runPTDAFModel(t, pathToAppRb,pathToAppRb,configFileOrNodeName);
             }else if(appName.equalsIgnoreCase("CT")){
                 logger.info("AO will now start CT for simulation year " + (baseYear+t));
-                ao.runCTModel(baseYear, t, appRb, appRb);
+                ao.runCTModel(baseYear, t, appRb);
             }else if(appName.equalsIgnoreCase("ET")){
                 logger.info("AO will now start ET for simulation year " + (baseYear+t));
                 ao.runETModel(baseYear, t, appRb, appRb);

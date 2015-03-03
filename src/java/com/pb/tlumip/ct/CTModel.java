@@ -68,15 +68,15 @@ public class CTModel extends ModelComponent {
         String rOut = pathToIOFiles + "t" + t +"/zzCT.Rout";
         String rExecutable = ResourceUtil.getProperty(appRb,"r.executable");
         
-        String resultFile = ResourceUtil.getProperty(appRb,  "ct.truck.trips");
+        String resultFile = ResourceUtil.getProperty(appRb,  "et.truck.trips");
 
-        String execCommand = rExecutable + " CMD BATCH " + pathToRCodeArg + " " + pathToPropertiesFileArg + " "
+        String execCommand = rExecutable + " CMD BATCH --no-save " + pathToRCodeArg + " " + pathToPropertiesFileArg + " "
                 + yearArg + " " + rCode + " " + rOut;
         logger.info("Executing "+execCommand);
         Runtime rt = Runtime.getRuntime();
         try {
             //java program that the R script has completed.
-            File doneFile = new File(resultFile);
+        	File doneFile = new File(resultFile);
             if(doneFile.exists()) doneFile.delete();
             
             process = rt.exec(execCommand);
@@ -85,7 +85,7 @@ public class CTModel extends ModelComponent {
                 while(!doneFile.exists() && System.currentTimeMillis()-startTime < 6000000)
                     Thread.sleep(2000);
                 //Will wait for the .RData file to appear before signaling 
-                //that ALD is done.
+                //that CT is done.
                 if(doneFile.exists()) {
                     logger.info("CT is done");
                 } else {
