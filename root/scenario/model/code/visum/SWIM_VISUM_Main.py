@@ -1413,6 +1413,7 @@ if __name__== "__main__":
             s.startVisum()
             s.loadVersion()
             s.zoneServiceLookup()
+            s.insertSeedMatricesInVisum()
             areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREA")
             areas = [item/(5280**2) for item in areas] #from sq ft to miles
             s.service_data["AREA"] = areas
@@ -1526,7 +1527,7 @@ if __name__== "__main__":
         if s.runFinalTransitAssignment:
           s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
         else: 
-          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1], fixedDemand=0.001)
+          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1], fixedDemand=1)
         s.saveVersion("_TR")
         s.closeVisum()
         
@@ -1545,7 +1546,7 @@ if __name__== "__main__":
         if s.runFinalTransitAssignment:
           s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
         else: 
-          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1], fixedDemand=0.001)
+          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1], fixedDemand=1)
         s.saveVersion("_TR")
         s.closeVisum()
         
