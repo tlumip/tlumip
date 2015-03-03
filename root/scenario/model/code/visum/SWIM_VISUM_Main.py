@@ -1393,40 +1393,40 @@ if __name__== "__main__":
     #create SWIM model inputs
     ######################################################
     if mode == 'inputs':
-#        s.copyVersion()
-#        s.copyDependencies()
-#        if s.reSeedMatrices == 'True':
-#            #Auto seed skims
-#            s.startVisum()
-#            s.loadVersion()
-#            s.zonefieldVariables()
-#            s.insertSeedMatricesInVisum()
-#            procedure = s.initialAutoAssignmentProcedure 
-#            s.loadProcedure(os.path.join(pdir,procedure))
-#            s.executeProcedure(os.path.join(pdir,procedure))
-#            s.writeHighwaySkimZMX(start=hwySkimMatrices[0], writeBetaMatrices=True)
-#            s.saveVersion("_INIT_AUTO")
-#
-#            s.closeVisum()
-#
-#            #Transit seed skims
-#            s.startVisum()
-#            s.loadVersion()
-#            s.zoneServiceLookup()
-#            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREA")
-#            areas = [item/(5280**2) for item in areas] #from sq ft to miles
-#            s.service_data["AREA"] = areas
-#            s.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
-#            s.createLocalBusSkims()            
-#            procedure = s.initialTransitAssignmentProcedure 
-#            s.loadProcedure(os.path.join(pdir,procedure))
-#            s.executeProcedure(os.path.join(pdir,procedure))
-#            s.writeTransitSkimZMX(start=transitSkimMatrices[0])
-#            s.saveVersion("_INIT_TRANSIT")
-#            s.closeVisum()
-#
-#            #Air skims
-#            s.createAirSkims()
+        s.copyVersion()
+        s.copyDependencies()
+        if s.reSeedMatrices == 'True':
+            #Auto seed skims
+            s.startVisum()
+            s.loadVersion()
+            s.zonefieldVariables()
+            s.insertSeedMatricesInVisum()
+            procedure = s.initialAutoAssignmentProcedure 
+            s.loadProcedure(os.path.join(pdir,procedure))
+            s.executeProcedure(os.path.join(pdir,procedure))
+            s.writeHighwaySkimZMX(start=hwySkimMatrices[0], writeBetaMatrices=True)
+            s.saveVersion("_INIT_AUTO")
+
+            s.closeVisum()
+
+            #Transit seed skims
+            s.startVisum()
+            s.loadVersion()
+            s.zoneServiceLookup()
+            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREA")
+            areas = [item/(5280**2) for item in areas] #from sq ft to miles
+            s.service_data["AREA"] = areas
+            s.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
+            s.createLocalBusSkims()            
+            procedure = s.initialTransitAssignmentProcedure 
+            s.loadProcedure(os.path.join(pdir,procedure))
+            s.executeProcedure(os.path.join(pdir,procedure))
+            s.writeTransitSkimZMX(start=transitSkimMatrices[0])
+            s.saveVersion("_INIT_TRANSIT")
+            s.closeVisum()
+
+            #Air skims
+            s.createAirSkims()
         s.startVisum()
         s.loadVersion()
         s.createModelInput()
