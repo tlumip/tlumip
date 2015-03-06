@@ -568,7 +568,7 @@ class SwimModel(object):
         for i in range(hwyDemandMatrices[0], hwyDemandMatrices[1]):    
             mat = np.zeros([len(self.zoneNames),len(self.zoneNames)], dtype=np.float64)
             for j in range(len(mat)):
-                mat[j] = [1] * len(mat)
+                mat[j] = [0.0001] * len(mat)
             print("matrix %i sum %i" % (i, sum(map(sum, mat))))
             VisumHelpers.SetODMatrix(self.Visum, i, mat)
             
