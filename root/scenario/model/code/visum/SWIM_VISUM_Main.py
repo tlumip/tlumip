@@ -1405,8 +1405,7 @@ if __name__== "__main__":
             s.loadProcedure(os.path.join(pdir,procedure))
             s.executeProcedure(os.path.join(pdir,procedure))
             s.writeHighwaySkimZMX(start=hwySkimMatrices[0], writeBetaMatrices=True)
-            s.saveVersion("_INIT_AUTO")
-
+            #s.saveVersion("_INIT_AUTO")
             s.closeVisum()
 
             #Transit seed skims
@@ -1423,7 +1422,7 @@ if __name__== "__main__":
             s.loadProcedure(os.path.join(pdir,procedure))
             s.executeProcedure(os.path.join(pdir,procedure))
             s.writeTransitSkimZMX(start=transitSkimMatrices[0])
-            s.saveVersion("_INIT_TRANSIT")
+            #s.saveVersion("_INIT_TRANSIT")
             s.closeVisum()
 
             #Air skims
