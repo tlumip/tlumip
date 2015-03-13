@@ -1189,7 +1189,7 @@ class SwimModel(object):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "PM_VOL_FACTOR", volumeFactors)
 
-            factor = self.calcVolumeFactor("nioffpeak")
+            factor = self.calcVolumeFactor("ntoffpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
