@@ -120,6 +120,7 @@ class SwimModel(object):
         self.runFinalTransitAssignment = properties['tr.run.final.assignment.with.pt.demand.matrices'] == "true"
         
         self.agForestFloorspace = properties['agforest.floorspace.file']
+        self.activityTotals = properties['aa.activity.totals']
         self.worldZoneDistances = properties['ta.world.zone.distances']
         self.hwySkimMatrixNames = properties['ta.skim.matrix.names']
         self.transitSkimMatrixNames = properties['tr.skim.matrix.names']
@@ -472,9 +473,47 @@ class SwimModel(object):
                 #add column headers
                 fileTable = outTable
                 fileTable.insert(0, ["Azone", "activity", "quantity"])
-        
+
+
+
+            if fileName.lower().find('activitytotalsi') > -1:
+                outTable = []
+
+                self.actTotals = self.loadCSV(self.activityTotals)[1]
+                
+                #WORLD IMPORTS/EXPORTS TOTALS
+                self.headers = self.loadCSV(self.worldMarketFieldnames)[1]["FIELDNAME"]
+                self.poiColumns = []
+                for id in self.headers:
+                    self.poiColumns.append(VisumHelpers.GetMulti(self.Visum.Net.POICategories.ItemByKey(7).POIs, id))
+                wmrkts = VisumHelpers.GetMulti(self.Visum.Net.POICategories.ItemByKey(7).POIs, "Code");
+                for i in range(len(self.headers)):
+                     outTable.append([self.headers[i], sum(self.poiColumns[i])])
+
+                #LOCAL ACTIVITY TOTALS
+                #AA requires a very particular capitalization, so this is a hack for that :/
+                #This means that a seed ActivityTotalsI.csv file is required
+                self.AA_capitalized_fields = self.actTotals["Activity"]
+                for i in self.fields:
+                    if i.lower().find('zone') < 0:
+                      activity = VisumHelpers.GetMulti(self.Visum.Net.Zones, i)
+                      value = sum(activity)
+                      l = [item.lower() for item in self.AA_capitalized_fields]
+                      name = self.AA_capitalized_fields[l.index(i.lower())]
+                      outTable.append([name, value])
+
+                #IGNORED ACTIVITIES (JUST USE EXISTING DATA)
+                for i in self.ignoredAAZoneAttributes:
+                      totalsInd = self.AA_capitalized_fields.index(i)
+                      outTable.append([i, self.actTotals["TotalAmount"][totalsInd]])
+
+                #add column headers
+                fileTable = outTable
+                fileTable.insert(0, ["Activity", "TotalAmount"])
+                self.writeCSV(self.activityTotals, fileTable)
+
             #write resulting file
-            if fileName.lower().find('agforestfloorspace') > -1:
+            elif fileName.lower().find('agforestfloorspace') > -1:
                 newFileTable = []
                 counter = 0
                 for r in fileTable:
