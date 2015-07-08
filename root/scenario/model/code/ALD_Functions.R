@@ -24,6 +24,9 @@
 #10/12/10 AB - Updated the allocateFloorProd function to be based on the Value of a sqft from PI instead of assumed 1990 construction cost.  This allows the dollars given to each floorspace type to react to changing demand.  Previously the unreactive size term was dominating the utility
 #7/22/11 AB - Corrected the compatibility equations in the calcFloorCapacity function
 #4/22/14 AB - Allowed for ALD Regions to have zero floorspace for a given floor space type - in functions - allocateFloorProd & allocateFloorDecrease 
+#1/9/15 AB - In allocated Increase and Descrease to Regions the activity and change proption terms were limted to a max value of 1.
+#3/23/15 AB - updated calcFloorCapacity function to vary capacity based on first what is allowed to be built, but also to react to demand.
+#6/11/15 AB - updated calcFloorCapacity function again to adjust capacity based regional demand totals as well as zonal demand.
 
 #PURPOSE AND DESCRIPTION
 #=======================
@@ -249,16 +252,18 @@
     Funs_$allocateConstToRegions <- function(ConsVal, Activity.Rg, ActivityChange.Rg, 
         B1v, B2v, B3v, B4v, Asc3.Rg){
         # Compute the proportions of Activity in each region
-        ActProp.Rg <- proportion(Activity.Rg)
+        ActProp.Rg <- proportion(Activity.Rg) + B1v  #AB 1/9/2015 added the addition to this line as opposed to in the equation below
+        ActProp.Rg[ActProp.Rg>1] <- 1 #AB 1/9/2015 - limit the terms from going above 1 and changing the impact of the exponetial formula below
         # Transform ActivityChange.Rg so that the minimum value is zero
         ActivityChange.Rg <- ActivityChange.Rg - min(ActivityChange.Rg)
         # Before two model periods have occurred, there is no change in activity.
         # To avoid NaN error assign a value of one. Gives equal proportions with respect to this value
         if(all(ActivityChange.Rg == 0)) ActivityChange.Rg[] <- 1
         # Compute the proportions of the normalized activity change
-        ActChangeProp.Rg <- proportion(ActivityChange.Rg)
+        ActChangeProp.Rg <- proportion(ActivityChange.Rg) + B3v  #AB 1/9/2015 added the addition to this line as opposed to in the equation below
+        ActChangeProp.Rg[ActChangeProp.Rg>1] <- 1 #AB 1/9/2015 - limit the terms from going above 1 and changing the impact of the exponetial formula below
         # Compute a Cobb-Douglas function to use for proportioning the increase among regions
-        CobbDouglas.Rg <- (ActProp.Rg + B1v)^B2v * (ActChangeProp.Rg + B3v)^B4v * Asc3.Rg
+        CobbDouglas.Rg <- (ActProp.Rg)^B2v * (ActChangeProp.Rg)^B4v * Asc3.Rg
         NivqProp.Rg <- proportion(CobbDouglas.Rg)
         # Apportion production among regions
         Nivq.Rg <- ConsVal * NivqProp.Rg
@@ -290,16 +295,18 @@
         # Calculate the total decrease. It is a proportion of the construction increase.
         Ndvq <- ConsVal * Df
         # Compute the proportions of Activity in each region
-        ActProp.Rg <- proportion(Activity.Rg)
+        ActProp.Rg <- proportion(Activity.Rg) + B5v  #AB 1/9/2015 added the addition to this line as opposed to in the equation below
+        ActProp.Rg[ActProp.Rg>1] <- 1 #AB 1/9/2015 - limit the terms from going above 1 and changing the impact of the exponetial formula below
         # Transform ActivityChange.Rg so that the minimum value is zero
         ActivityChange.Rg <- ActivityChange.Rg - min(ActivityChange.Rg)
         # Before two model periods have occurred, there is no change in activity.
         # To avoid NaN error assign a value of one. Gives equal proportions with respect to this value
         if(all(ActivityChange.Rg == 0)) ActivityChange.Rg[] <- 1
         # Compute the proportions of the normalized activity change
-        ActChangeProp.Rg <- proportion(ActivityChange.Rg)
+        ActChangeProp.Rg <- proportion(ActivityChange.Rg)  + B7v  #AB 1/9/2015 added the addition to this line as opposed to in the equation below
+        ActChangeProp.Rg[ActChangeProp.Rg>1] <- 1 #AB 1/9/2015 - limit the terms from going above 1 and changing the impact of the exponetial formula below
         # Compute a utility function to use for proportioning the decrease among regions
-        CobbDouglas.Rg <- (ActProp.Rg + B5v)^B6v * (ActChangeProp.Rg + B7v)^B8v * Asc4.Rg
+        CobbDouglas.Rg <- (ActProp.Rg)^B6v * (ActChangeProp.Rg)^B8v * Asc4.Rg
         NdvqProp.Rg <- proportion(CobbDouglas.Rg)
         # Apportion decrease among regions
         Ndvq.Rg <- Ndvq * NdvqProp.Rg
@@ -348,6 +355,13 @@
         Tvq.Fx[is.nan(Tvq.Fx)] <- 0 # AB 4-22-2014 (adding ability for zero condition)
         # Calculate the utility functions for floorspace categories
         Util.Fx <- Bq1.Fx * Vacancy.Fx + Bq2.Fx * log(Tvq.Fx/sum(Tvq.Fx)) + Asc1.Fx
+           # 6-11-15 AB - Alex fix on hold
+           # The fix would force
+           # need to add DC.Fx to the function input (it would be the total Demand / Capacity ratio for the Region by Floorspace type
+           #utilAdj <- Util.Fx
+           #utilAdj[] <- 0
+           #utilAdj[DC.Fx > 0.9] <- -999 * (DC.Fx[DC.Fx > 0.9]-0.9)
+           #Util.Fx <- Util.Fx + utilAdj
         # Create a list to hold the results
         Nivq_ <- list()
         # Allocate floorspace $ quantities among floorspace types
@@ -457,6 +471,73 @@
             }
         # Apply the function to zoning.az
         Cap.AzFd <- t(apply(Zoning.AzZc, 1, allocateCapacity, LandProp.FdZc, Far.FdZc))
+        
+        # AB - 6-11-2015 - Approach meeting Capacity and Demand as an IPF
+        ################################################################
+        # LandCap.AzFdZc is the seed for the IPF
+        LandCap.AzFdZc <- t(apply(Zoning.AzZc, 1, function(x) LandProp.FdZc %row*% x))
+        dim(LandCap.AzFdZc) <- c(nrow(Zoning.AzZc),dim(LandProp.FdZc))
+        dimnames(LandCap.AzFdZc) <- list(rownames(Zoning.AzZc), rownames(LandProp.FdZc), colnames(LandProp.FdZc))
+        
+        # control rows on LandCap
+        rowcontrol.Az <- apply(LandCap.AzFdZc,1,sum)
+        
+        # AB - 6-11-2015
+        #Calculate Demand at a land use level by Fd and Zc
+        FloorCap.AzFdZc <- sweep(LandCap.AzFdZc,2:3,Far.FdZc, "*")
+        propFloor.AzFdZc <- sweep(FloorCap.AzFdZc,1:2,apply(FloorCap.AzFdZc,1:2,sum),"/")
+        propFloor.AzFdZc[is.nan(propFloor.AzFdZc)] <- 0
+        Demand.AzFd <- cbind(Quant.AzFr,Quant.AzFn)
+        Demand.AzFdZc <- sweep(propFloor.AzFdZc, 1:2, Demand.AzFd, "*")
+        
+        # fill zero demand rows
+        Demand.Az <- apply(Demand.AzFdZc,1,sum)
+        Demand.AzFdZc[Demand.Az == 0,,] <- FloorCap.AzFdZc[Demand.Az == 0,,] 
+                        
+        # control cols on Zone Demand by Rg
+        Demand.RgFd <- sapply(colnames(Demand.AzFd), function(x) tapply(Demand.AzFd[,x], AlphaBeta_$Region.Az,sum)) 
+        
+        # run a while IPF loop for each ALD region
+        for(rg in rownames(Demand.RgFd)){ 
+           
+           # the result (output), which starts as the seed
+           result <- Demand.AzFdZc[AlphaBeta_$Region.Az == rg,,]
+           # control cols on Zone Demand
+           colcontrol <- Demand.RgFd[rg,]
+           # row control for just the region
+           rowcontrol <- rowcontrol.Az[AlphaBeta_$Region.Az == rg]
+           #set iterator and Check for while loop
+           iter <- 1
+           Check=TRUE
+           
+           while(Check & iter < 11){
+              # cols check on Zone Demand
+              coltotal <- apply(result,2,sum)
+	            colfactor <- colcontrol / coltotal
+	            result <- sweep(result,2,colfactor,"*")
+	         
+	            # row check (total zone space) must be kept true
+	            land.AxFdZc <- sweep(result,2:3,Far.FdZc, "/")
+	            land.AxFdZc[is.nan(land.AxFdZc)] <- 0
+	            rowtotal <- apply(land.AxFdZc,1,sum)
+	            rowfactor <- rowcontrol / rowtotal
+	            rowfactor[rowcontrol==0] <- 0
+	            result <- sweep(sweep(land.AxFdZc,1,rowfactor,"*"),2:3,Far.FdZc, "*")
+	         
+	            # check for while loop, need to have enough capacity for each purpose.
+	            Check <- any(apply(result,2,sum) < colcontrol)
+	            iter <- iter + 1
+	         }
+	         
+	         FloorCap.AzFdZc[AlphaBeta_$Region.Az == rg,,] <- result   
+        } 
+        
+        # final step to collapse on Zoning Categories
+        Cap.AzFd <- apply(FloorCap.AzFdZc,1:2,sum)
+        
+        ################################################################
+        
+          
         FloorCap_ <- list()
         FloorCap_$ResCap.AzFr <- Cap.AzFd[,Fr]
         FloorCap_$NresCap.AzFn <- Cap.AzFd[,Fn]
