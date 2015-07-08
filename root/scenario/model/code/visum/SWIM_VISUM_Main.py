@@ -502,8 +502,18 @@ class SwimModel(object):
                       name = self.AA_capitalized_fields[l.index(i.lower())]
                       outTable.append([name, value])
 
+                tempAttr = []
+                tempAttr.extend(self.ignoredAAZoneAttributes)
+
+                for i in self.AA_capitalized_fields:
+                    if i.lower().find('zone') < 0:
+                      l = [item.lower() for item in self.fields]
+                      if i.lower() not in l:
+                          tempAttr.append(i);
+
+
                 #IGNORED ACTIVITIES (JUST USE EXISTING DATA)
-                for i in self.ignoredAAZoneAttributes:
+                for i in tempAttr:
                       totalsInd = self.AA_capitalized_fields.index(i)
                       outTable.append([i, self.actTotals["TotalAmount"][totalsInd]])
 
