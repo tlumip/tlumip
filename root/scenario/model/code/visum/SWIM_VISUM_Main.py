@@ -42,8 +42,8 @@ a_zone = 'NO' #azone field in Visum
 b_zone = 'MainZoneNo' #bzone field in Visum
 
 #range of beta zones and external stations in aggregated skim matrices
-bzoneRange = range(0,518)
-externalStation = range(518,530)
+bzoneRange = range(0,2)
+externalStation = range(2,14)
 
 #world market list corresponds to external stations 5001, 5002,....,5012
 worldMarketList = [6006,6001,6001,6002,6006,6006,6003,6006,6006,6004,6006,6005]
@@ -121,6 +121,9 @@ class SwimModel(object):
         
         self.agForestFloorspace = properties['agforest.floorspace.file']
         self.activityTotals = properties['aa.activity.totals']
+        self.copyToPreviousYear = properties['ald.copyToPreviousYear']
+        self.currentActivity = properties['ald.CurrentActivity']
+        self.previousActivity = properties['ald.PreviousActivity']
         self.worldZoneDistances = properties['ta.world.zone.distances']
         self.hwySkimMatrixNames = properties['ta.skim.matrix.names']
         self.transitSkimMatrixNames = properties['tr.skim.matrix.names']
@@ -378,6 +381,10 @@ class SwimModel(object):
           if inYear[i] == 0:
             self.Visum.Net.RemoveLineRoute(self.Visum.Net.LineRoutes.ItemByID(lineID[i]))
 
+    def copyActivityLocations(self):
+        if(self.copyToPreviousYear == "true"):
+            shutil.copy(self.currentActivity, self.previousActivity)
+
     def createModelInput(self):
         print('Create SWIM Model Input files, Remove Non-Year Transit Lines')
 
@@ -555,6 +562,7 @@ class SwimModel(object):
         for i in range(len(inYear)):
           if inYear[i] == 0:
             self.Visum.Net.RemoveLineRoute(self.Visum.Net.LineRoutes.ItemByID(lineID[i]))
+            
 
 
     def createVizOutput(self):
@@ -924,8 +932,8 @@ class SwimModel(object):
           ovtParams = ovtParameters[1]
         
         #trace calculations
-        o = 1380
-        d = 2327
+        o = 1
+        d = 17
         o_index = VisumHelpers.GetMulti(self.Visum.Net.Zones, "NO").index(o)
         d_index = VisumHelpers.GetMulti(self.Visum.Net.Zones, "NO").index(d)
         
@@ -1481,6 +1489,7 @@ if __name__== "__main__":
         s.createModelInput()
         s.saveVersion()
         s.closeVisum()
+        s.copyActivityLocations()
         
     #path based highway assignment
     ######################################################
@@ -1628,7 +1637,6 @@ if __name__== "__main__":
         
         #copy air skims, because it needs to look like they've been run
         s.copyAirSkims()
-                
-        
+
     print("end model run - " + time.ctime())
   
