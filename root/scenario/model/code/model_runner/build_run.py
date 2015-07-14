@@ -224,6 +224,7 @@ command_list_file = properties['model.run.command.file']
 logger_program = properties['report.log.program']
 report_log_file = properties['report.log.file']
 run_out_file = properties['model.run.out.file']
+setup_file = properties['model.build.program']
 stop_java_program = properties['stop.java.program']
 stop_run_program = properties['stop.run.program']
 save_history_program = properties['model.save.run.history.program']
@@ -411,7 +412,10 @@ shutil.rmtree(settings_base_folder)
 model_run_batch = []
 model_run_batch.append('@ECHO OFF')
 model_run_batch.append('pushd "%~dp0"')
+#ymm - add the build step to the run file, in case user forgets to run build after changes
+model_run_batch.append('cmd /c ""' + setup_file.replace('/','\\') + '" > "' + run_out_file.replace('/','\\') + '" 2>&1"')
 model_run_batch.append('cmd /c ""' + runscript_file.replace('/','\\') + '" > "' + run_out_file.replace('/','\\') + '" 2>&1"')
+
 model_run_batch.append('CALL ' + save_history_program)
 model_run_batch.append('popd')
 model_run_program = open(properties['model.run.program'],'wb')
