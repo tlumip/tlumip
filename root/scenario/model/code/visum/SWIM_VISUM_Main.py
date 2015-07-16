@@ -35,15 +35,15 @@ vdf4 = [104]                    #Link type = 4 for these vdf functions
 
 #Truck passenger car units ;1.7 is the default 
 #Was 0.1, changed after Rick's new CT (11/24/2014) YMM
-truckPCU = 1.7
+truckPCU = 1
 
 #zone no and main zone no in Visum
 a_zone = 'NO' #azone field in Visum
 b_zone = 'MainZoneNo' #bzone field in Visum
 
 #range of beta zones and external stations in aggregated skim matrices
-bzoneRange = range(0,2)
-externalStation = range(2,14)
+bzoneRange = range(0,518)
+externalStation = range(518,530)
 
 #world market list corresponds to external stations 5001, 5002,....,5012
 worldMarketList = [6006,6001,6001,6002,6006,6006,6003,6006,6006,6004,6006,6005]
