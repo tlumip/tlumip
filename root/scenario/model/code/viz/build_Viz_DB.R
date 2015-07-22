@@ -172,12 +172,11 @@ allZones = read.csv(allZonesFileName)
 
 #create allzones tables
 dbWriteTable(db,"ALLZONES",allZones, row.names=F)
-azones = dbGetQuery(db,"SELECT AZONE FROM ALLZONES WHERE TYPE != 'WM'")[[1]] #no world markets
+azones = dbGetQuery(db,"SELECT AZONE FROM ALLZONES WHERE STATE != 'WM'")[[1]] #no world markets
 
 #create BZONE table
-dbGetQuery(db,"CREATE TABLE BZONE AS SELECT DISTINCT BZONE, TYPE, STATE, COUNTY, SUM(ACRES) AS ACRES, 
-  MPO, ACT, DESCRIPTION FROM ALLZONES GROUP BY BZONE")
-dbGetQuery(db,"UPDATE BZONE SET DESCRIPTION = 'BZONE ' || BZONE WHERE DESCRIPTION LIKE '%AZONE%'")
+dbGetQuery(db,"CREATE TABLE BZONE AS SELECT DISTINCT BZONE, STATE, COUNTY, SUM(AREASQFT) AS AREASQFT, 
+  MPO, ACT FROM ALLZONES GROUP BY BZONE")
 bzones = dbGetQuery(db,"SELECT BZONE FROM BZONE")[[1]]
 
 #########################################################################

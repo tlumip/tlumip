@@ -47,7 +47,6 @@ externalStation = range(518,530)
 
 #world market list corresponds to external stations 5001, 5002,....,5012
 worldMarketList = [6006,6001,6001,6002,6006,6006,6003,6006,6006,6004,6006,6005]
-externalStationList = set(range(5001,5013))
 
 #speed in miles per minute to compute skims between world markets and external stations
 speed = 50.0/60.0    #Visum outputs skim in minutes and distance in miles
@@ -114,6 +113,8 @@ class SwimModel(object):
         self.LUCEAllPeriodAssignmentProcedure = properties['ta.luce.allperiod.assignment.parameters']
         self.assignmentType = properties['ta.assignment.type']
         self.assignmentPeriods = properties['ta.assignment.periods']
+
+        self.externalStationList = map(int, properties['external.stations'].strip().split(' '))
         
         self.intracityRailAssignmentProcedure = properties['tr.transit.assignment.intracity.rail.parameters']
         self.intercityRailAssignmentProcedure = properties['tr.transit.assignment.intercity.rail.parameters']
@@ -368,7 +369,7 @@ class SwimModel(object):
     def cleanZonalDataOfWorldZones(self,file_table):
         cleaned_table = []
         for row in file_table:
-            if (len(cleaned_table) == 0) or (not (int(float(row[0])) in externalStationList)):
+            if (len(cleaned_table) == 0) or (not (int(float(row[0])) in self.externalStationList)):
                 cleaned_table.append(row)
         return cleaned_table
 
@@ -418,11 +419,9 @@ class SwimModel(object):
                 data[1].extend(["6001.0","6002.0","6003.0","6004.0","6005.0","6006.0"])
                 data[2].extend(["WM","WM","WM","WM","WM","WM"])
                 data[3].extend(["WM","WM","WM","WM","WM","WM"])
-                data[4].extend(["WM","WM","WM","WM","WM","WM"])
-                data[5].extend([0,0,0,0,0,0])
-                data[6].extend(["WM","WM","WM","WM","WM","WM"])
-                data[7].extend([0,0,0,0,0,0])
-                data[8].extend(["North","Northeast","East","South","Ocean","Local"])
+                data[4].extend([0,0,0,0,0,0])
+                data[5].extend(["WM","WM","WM","WM","WM","WM"])
+                data[6].extend([0,0,0,0,0,0])
                 fileTable = self.stringConcatenate(data)
             
             #Correct FloorspaceInventory field names
@@ -495,7 +494,7 @@ class SwimModel(object):
                     self.poiColumns.append(VisumHelpers.GetMulti(self.Visum.Net.POICategories.ItemByKey(7).POIs, id))
                 wmrkts = VisumHelpers.GetMulti(self.Visum.Net.POICategories.ItemByKey(7).POIs, "Code");
                 for i in range(len(self.headers)):
-                     outTable.append([self.headers[i], sum(self.poiColumns[i])])
+                    outTable.append([self.headers[i], sum(self.poiColumns[i])])
 
                 #LOCAL ACTIVITY TOTALS
                 #AA requires a very particular capitalization, so this is a hack for that :/
@@ -507,7 +506,8 @@ class SwimModel(object):
                       value = sum(activity)
                       l = [item.lower() for item in self.AA_capitalized_fields]
                       name = self.AA_capitalized_fields[l.index(i.lower())]
-                      outTable.append([name, value])
+                      if not any(e[0] == name for e in outTable):
+                        outTable.append([name, value])
 
                 tempAttr = []
                 tempAttr.extend(self.ignoredAAZoneAttributes)
@@ -515,14 +515,15 @@ class SwimModel(object):
                 for i in self.AA_capitalized_fields:
                     if i.lower().find('zone') < 0:
                       l = [item.lower() for item in self.fields]
-                      if i.lower() not in l:
+                      if i.lower() not in l and not any(e[0] == i.lower() for e in outTable):
                           tempAttr.append(i);
 
 
-                #IGNORED ACTIVITIES (JUST USE EXISTING DATA)
+                #IGNORED ACTIVITIES (JUST USE EXISTING DATA) DONE LAST TO COMPLEMENT 
                 for i in tempAttr:
-                      totalsInd = self.AA_capitalized_fields.index(i)
-                      outTable.append([i, self.actTotals["TotalAmount"][totalsInd]])
+                    totalsInd = self.AA_capitalized_fields.index(i)
+                    if not any(e[0] == i for e in outTable):
+                        outTable.append([i, self.actTotals["TotalAmount"][totalsInd]])
 
                 #add column headers
                 fileTable = outTable
@@ -593,6 +594,21 @@ class SwimModel(object):
                     for t in tsysset:
                         newTsysset.append(str(t).replace(',',';'))
                     data.append(newTsysset);
+
+                if self.field.lower().find('ANODE') > -1 and self.field.lower().find('X') < 0 and self.field.lower().find('Y') < 0:
+                    data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'FromNodeNo'))
+                if self.field.lower().find('BNODE') > -1 and self.field.lower().find('X') < 0 and self.field.lower().find('Y') < 0:
+                    data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'ToNodeNo'))
+
+                if self.field.lower().find('ANODEX') > -1:
+                    data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'FromNode\XCoord'))
+                if self.field.lower().find('ANODEY') > -1:
+                    data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'FromNode\YCoord'))
+                if self.field.lower().find('BNODEX') > -1:
+                    data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'ToNode\XCoord'))
+                if self.field.lower().find('BNODEY') > -1:
+                    data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'ToNode\YCoord'))
+
                 else:
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, self.field))
 
