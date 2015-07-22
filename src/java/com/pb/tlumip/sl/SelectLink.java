@@ -154,6 +154,7 @@ public class SelectLink {
         List<File> filesToZip = new LinkedList<File>(ts.getSelectLinkTripFiles());
         filesToZip.add(new File(rb.getString("spg2.current.synpop.summary")));
         filesToZip.add(new File(rb.getString("sdt.current.employment")));
+        filesToZip.add(new File(rb.getString("alpha2beta.file")));
 
         ZipOutputStream zos = null;
         try {
