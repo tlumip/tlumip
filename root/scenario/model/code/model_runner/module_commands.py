@@ -279,7 +279,7 @@ class ModuleCommands(object):
         """
         commands = self.runModule(module_set,scenario_outputs,property_file,year,250)
         if properties['viz.delete.subyear.dbs'].lower().strip() == 'true':
-            commands += ['FOR /F "usebackq" %d IN (`dir "' + properties['viz.subyear.dbs.wildcard'].replace('/','\\') + '" /b /s`) DO IF EXIST "%d" (DEL /Q "%d")']
+            commands += ['FOR /F "usebackq" %%d IN (`dir "' + properties['viz.subyear.dbs.wildcard'].replace('/','\\') + '" /b /s`) DO IF EXIST %%d (DEL /Q %%d)']
         if properties['viz.zip.final.db'].lower().strip() == 'true':
             commands += self.zip(properties['viz.final.db'],properties['viz.zip.file'])
         return commands
@@ -290,7 +290,7 @@ class ModuleCommands(object):
         """
         commands = self.runModule(module_set,scenario_outputs,property_file,year,250)
         if properties['viz.micro.delete.subyear.dbs'].lower().strip() == 'true':
-            commands += ['FOR /F "usebackq" %d IN (`dir "' + properties['viz.micro.subyear.dbs.wildcard'].replace('/','\\') + '" /b /s`) DO IF EXIST "%d" (DEL /Q "%d")']
+            commands += ['FOR /F "usebackq" %%d IN (`dir "' + properties['viz.micro.subyear.dbs.wildcard'].replace('/','\\') + '" /b /s`) DO IF EXIST %%d (DEL /Q %%d)']
         if properties['viz.micro.zip.final.db'].lower().strip() == 'true':
             commands += self.zip(properties['viz.micro.final.db'],properties['viz.micro.zip.file'])
         return commands
