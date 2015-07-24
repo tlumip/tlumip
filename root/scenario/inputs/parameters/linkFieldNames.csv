@@ -37,3 +37,9 @@ PM_VOL_TRUCK,AllLinks.csv
 TRUCK_COST,AllLinks.csv
 TOLL_PRTSYS(A),AllLinks.csv
 TOLL_PRTSYS(D),AllLinks.csv
+ANODE,AllLinks.csv
+BNODE,AllLinks.csv
+ANODEY,AllLinks.csv
+BNODEY,AllLinks.csv
+ANODEX,AllLinks.csv
+BNODEX,AllLinks.csv
