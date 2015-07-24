@@ -164,7 +164,7 @@ public class TripSynthesizer {
 
         List<String> orderedTazs = new LinkedList<String>();
         for (int i = 1; i <= taz.getRowCount(); i++)
-            if (!taz.getStringValueAt(i,"TYPE").equals("WM")) //todo: don't hardcode these two fields
+            if (!taz.getStringValueAt(i,"MPO").equals("WM")) //todo: don't hardcode these two fields
                 orderedTazs.add("" + ((int) taz.getValueAt(i,"AZONE")));
         return orderedTazs;
     }
