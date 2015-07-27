@@ -27,6 +27,7 @@
 #1/9/15 AB - In allocated Increase and Descrease to Regions the activity and change proption terms were limted to a max value of 1.
 #3/23/15 AB - updated calcFloorCapacity function to vary capacity based on first what is allowed to be built, but also to react to demand.
 #6/11/15 AB - updated calcFloorCapacity function again to adjust capacity based regional demand totals as well as zonal demand.
+#7/10/15 AB - update calcFloorCapacity function again to ensure that if zoning allows for a floorspace type that it always has the abiltiy to grow.
 
 #PURPOSE AND DESCRIPTION
 #=======================
@@ -488,10 +489,13 @@
         propFloor.AzFdZc <- sweep(FloorCap.AzFdZc,1:2,apply(FloorCap.AzFdZc,1:2,sum),"/")
         propFloor.AzFdZc[is.nan(propFloor.AzFdZc)] <- 0
         Demand.AzFd <- cbind(Quant.AzFr,Quant.AzFn)
+        
+        # fill zero demand with some small amount to ensure that if zoning allows there is always a samll amount of available capacity
+        Demand.AzFd[Demand.AzFd==0] <- 100/1000000 # AB 7/10/15 - filling with a minmum 100 sqft to ensure that zoning that allows for a given flr isn't zeroed out  
         Demand.AzFdZc <- sweep(propFloor.AzFdZc, 1:2, Demand.AzFd, "*")
         
         # fill zero demand rows
-        Demand.Az <- apply(Demand.AzFdZc,1,sum)
+        Demand.Az <- apply(Demand.AzFdZc,1,sum) # 7/10/15 AB -  not sure if this is still needed, but it shouldn't hurt anything
         Demand.AzFdZc[Demand.Az == 0,,] <- FloorCap.AzFdZc[Demand.Az == 0,,] 
                         
         # control cols on Zone Demand by Rg
