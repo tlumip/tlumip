@@ -595,18 +595,18 @@ class SwimModel(object):
                         newTsysset.append(str(t).replace(',',';'))
                     data.append(newTsysset);
 
-                if self.field.lower().find('ANODE') > -1 and self.field.lower().find('X') < 0 and self.field.lower().find('Y') < 0:
+                elif self.field.lower().find('anode') > -1 and not (self.field.lower().find('x') > -1 or self.field.lower().find('y') > -1):
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'FromNodeNo'))
-                if self.field.lower().find('BNODE') > -1 and self.field.lower().find('X') < 0 and self.field.lower().find('Y') < 0:
+                elif self.field.lower().find('bnode') > -1 and not (self.field.lower().find('x') > -1 or self.field.lower().find('y') > -1):
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'ToNodeNo'))
 
-                if self.field.lower().find('ANODEX') > -1:
+                elif self.field.lower().find('anodex') > -1:
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'FromNode\XCoord'))
-                if self.field.lower().find('ANODEY') > -1:
+                elif self.field.lower().find('anodey') > -1:
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'FromNode\YCoord'))
-                if self.field.lower().find('BNODEX') > -1:
+                elif self.field.lower().find('bnodex') > -1:
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'ToNode\XCoord'))
-                if self.field.lower().find('BNODEY') > -1:
+                elif self.field.lower().find('bnodey') > -1:
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, 'ToNode\YCoord'))
 
                 else:
