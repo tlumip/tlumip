@@ -5,6 +5,7 @@ LENGTH,AllLinks.csv
 NUMLANES,AllLinks.csv
 TEMP_CAPACITY,AllLinks.csv
 V0PRT,AllLinks.csv
+PLANNO,AllLinks.csv
 AUTO_COST,AllLinks.csv
 DAILY_TIME_AUTO,AllLinks.csv
 DAILY_TIME_TRUCK,AllLinks.csv
