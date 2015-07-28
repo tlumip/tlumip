@@ -35,6 +35,7 @@
 #7/26/11 AB - Added a section to read in Avgerage Floorspace price from ExchangeResultsTotals.csv.  The change in average price is used to adjust the size term for the floor space capacity function.
 #9/15/11 CF - Divide ExchangeResults floorspace values by 1000000 when using AA
 #4/17/14 AB - Update for PECAS code, for PECAS version of SWIM, FloorspaceInventor and Increment inputs and outputs are in SQFT, not MSQFT
+#7/28/15 AB - Removed PI functionality
 
 #LOAD THE MODEL INPUT DATA
 #=========================
@@ -205,11 +206,12 @@
     for(ft in Ft){
     	 TypeInputs.. <- PiInputs..[PiInputs..$Commodity == ft,]
     	 Price.BzFt[TypeInputs..$ZoneNumber,ft] <- TypeInputs..$Price
-    	 if (Input_$UsingAA == "true") {
+    	 # Removed if statement for Using AA, now the following lines assumes AA - AB 7-28-15
+       #if (Input_$UsingAA == "true") {
             Occupied.BzFt[TypeInputs..$ZoneNumber,ft] <- TypeInputs..$Imports / 1000000
-         } else {
-            Occupied.BzFt[TypeInputs..$ZoneNumber,ft] <- TypeInputs..$Imports
-         }
+        # } else {
+        #    Occupied.BzFt[TypeInputs..$ZoneNumber,ft] <- TypeInputs..$Imports
+        # }
          rm(ft,TypeInputs..)
          }
     # Make a matrix of prices by alpha zone
@@ -291,7 +293,8 @@
     # Read in data
     Quant.AzFt <- as.matrix(read.table(Input_$FloorQuantities, header=TRUE, row.names=1, sep=","))
     dimnames(Quant.AzFt) <- list(Az, Ft)
-    if (Input_$UsingAA == "true") Quant.AzFt[,c(Fr,Fn)] <- Quant.AzFt[,c(Fr,Fn)] / 1000000
+    # Removed if statement for Using AA, now the following line assumes AA - AB 7-28-15
+    Quant.AzFt[,c(Fr,Fn)] <- Quant.AzFt[,c(Fr,Fn)] / 1000000
     # Split into residential, nonresidential and agricultural/forest and add to vars
     Vars_$Quant.AzFr <- Quant.AzFt[,Fr]
     Vars_$Quant.AzFn <- Quant.AzFt[,Fn]
