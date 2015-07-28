@@ -71,6 +71,7 @@
 #9/02/11 CRF - Fixed properties file gsub regular expression to get literal "." (using [.]) instead of  catchall .
 #9/09/11 CRF - Added conditional expression for writing out floorspace data: different formats used for pi and aa
 #4/17/14 AB - Update for PECAS code, for PECAS version of SWIM, FloorspaceInventor and Increment inputs and outputs are in SQFT, not MSQFT
+#7/28/15 AB - Removed PI functionality
 
 #DEFINE POINTERS TO DIRECTORIES AND FILES TO LOAD
 #================================================
@@ -300,12 +301,13 @@
 #::
 
     # Combine the floor space totals
-    if (Input_$UsingAA == "true") {
+    # Removed if statement for Using AA, now the following line assumes AA - AB 7-28-15
+    #if (Input_$UsingAA == "true") {
        CurrQ.AzFr <- CurrQ.AzFr * 1000000
        CurrQ.AzFn <- CurrQ.AzFn * 1000000
        IQ.AzFr <- IQ.AzFr * 1000000
        IQ.AzFn <- IQ.AzFn * 1000000
-    }
+    #}
     CurrQ.AzFt <- cbind(CurrQ.AzFr, CurrQ.AzFn, Quant.AzFa)
     CurrQ.AzFt <- CurrQ.AzFt[,Ft]
     
@@ -331,7 +333,8 @@
 #::
 
     options(scipen=7) # set this option high to avoid scientific notation in the output
-    if (Input_$UsingAA == "true") {
+    # Removed if statement for Using AA, now the following line assumes AA - AB 7-28-15
+    if (TRUE) {
         TotQRes.. <- data.frame(list(taz=rep(Az, length(Fr)), 
                         commodity=rep(Fr, each=length(Az)),
                         quantity=zapsmall(as.vector(CurrQ.AzFr),9)))
@@ -376,7 +379,8 @@
 
 #::
 
-    if (Input_$UsingAA == "true") {
+    # Removed if statement for Using AA, now the following line assumes AA - AB 7-28-15
+    if(TRUE) {
     IQRes.. <- data.frame(list(AZone=rep(Az, length(Fr)), 
                     FLRType=rep("Residential", length(Az) * length(Fr)),
                     FLRName= rep(Fr, each=length(Az)),
