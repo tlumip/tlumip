@@ -438,7 +438,7 @@ class SwimModel(object):
                     sptype = self.fields[j].replace("_"," ")
                     value = row[j]
                     if j > 0:
-                      outTable.append([azone, sptype, value])
+                      outTable.append([str(int(float(azone))), sptype, value])
                 fileTable = outTable
                 fileTable.insert(0, self.headers)
             
