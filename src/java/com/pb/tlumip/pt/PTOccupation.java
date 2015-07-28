@@ -29,8 +29,9 @@ public enum PTOccupation implements PTOccupationReferencer {
         USING_AA = usingAA;
     }
 
+    //ymm - true by default since always using AA (no property defined by default)
     public static void setProjectState(ResourceBundle rb) {
-        setUsingAA(ResourceUtil.getBooleanProperty(rb,"using.aa",false));
+        setUsingAA(ResourceUtil.getBooleanProperty(rb,"using.aa",true));
     }
 
     /**

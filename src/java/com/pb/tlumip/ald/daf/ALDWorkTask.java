@@ -74,7 +74,7 @@ public class ALDWorkTask extends MessageProcessingTask {
 
         String yearArg = "-" + timeInterval;
 
-        String rFileName = ResourceUtil.getProperty(rb, "nameOfRCode");
+        String rFileName = ResourceUtil.getProperty(rb, "ald.RCode");
         String rCode = pathToRCode + rFileName;
 
         String rOut = pathToIOFiles + "t" + timeInterval +"/ald/ald.Rout";

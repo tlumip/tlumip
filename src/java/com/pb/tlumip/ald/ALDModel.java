@@ -58,7 +58,7 @@ public class ALDModel extends ModelComponent {
 
         String yearArg = "-" + t;
 
-       String rFileName = ResourceUtil.getProperty(appRb, "nameOfRCode");
+       String rFileName = ResourceUtil.getProperty(appRb, "ald.RCode");
         String rCode = pathToRCode + rFileName;
 
         String rOut = pathToIOFiles + "t" + t +"/zzAld.Rout";
