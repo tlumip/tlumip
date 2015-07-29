@@ -879,7 +879,7 @@ class SwimModel(object):
     def calcServiceAreaData(self):
         
         #get zone area
-        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREA")
+        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREASQFT")
         areas = [item/(5280**2) for item in areas] #from sq ft to miles
         self.service_data["AREA"] = areas
         
@@ -1486,7 +1486,7 @@ if __name__== "__main__":
             s.loadVersion()
             s.zoneServiceLookup()
             s.insertSeedMatricesInVisum()
-            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREA")
+            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREASQFT")
             areas = [item/(5280**2) for item in areas] #from sq ft to miles
             s.service_data["AREA"] = areas
             s.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
