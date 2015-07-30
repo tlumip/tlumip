@@ -1,4 +1,0 @@
-Variable,mcLogsum,timeIfCompleteTour,sizeHouseholds,sizeTotEmp,sizeGovtEmp,sizeSameIndustryEmp,sizeHotelEmpIfOvernight,sizeHigherEdEmpIfCol,dist0to60,dist60to70,dist70to150
-HOUSEHOLD,0.936,-0.016,2.793,1,0,0,264.365,0,-0.167,0.738,0
-WORKRELATED,0.612,-0.012,0,1,7.057,3.671,228.321,0,0.286,1.026,0
-OTHER,1,-0.011,1.958,1,0,0,55.571,80.434,-1.514,-0.94,-0.349

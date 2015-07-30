@@ -1,4 +1,0 @@
-09/22/14 14.44.06.944 Path of LOG files has been adjusted.
-                         Previous path: "C:\Users\tdb205\AppData\Roaming\PTV Vision\PTV Visum 14\Log\Messages.txt"
-                         New path: "M:\swim2\base_scenario_nosvn_long\inputs\t0\Messages.txt"
-09/22/14 14.48.10.136            Note Save version? : &No
