@@ -1246,23 +1246,23 @@ class SwimModel(object):
         #get empty list
         volumeFactors = VisumHelpers.GetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR")
 
-        factor = self.calcVolumeFactor("ampeak")
+        factor = self.calcVolumeFactorDebug("ampeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor  
         VisumHelpers.SetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR", volumeFactors)
 
-        factor = self.calcVolumeFactor("mdoffpeak")
+        factor = self.calcVolumeFactorDebug("mdoffpeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor
         VisumHelpers.SetMulti(self.Visum.Net.Links, "OP_VOL_FACTOR", volumeFactors)
 
         if s.assignmentPeriods == "ALL":
-            factor = self.calcVolumeFactor("pmpeak")
+            factor = self.calcVolumeFactorDebug("pmpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "PM_VOL_FACTOR", volumeFactors)
 
-            factor = self.calcVolumeFactor("ntoffpeak")
+            factor = self.calcVolumeFactorDebug("ntoffpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
@@ -1345,6 +1345,52 @@ class SwimModel(object):
                        self.writeZMX(air_skim, self.zoneNames, airfwt)
 
 
+############################################################
+    def calcVolumeFactorDebug(self, timePeriod):
+        
+        print('calculate volume factor')
+        
+        volumeFactor = 0.0
+        startHour = 0
+        endHour = 0
+        hours = 0
+        
+        #get time period definitions from property files
+        if timePeriod.lower().find('ampeak') > -1:
+            startHour = self.ampeakstart
+            endHour = self.ampeakend
+            hours = (endHour + 41 - startHour) / 100.0 #convert 59th min to 100th min
+
+        elif timePeriod.lower().find('pmpeak') > -1:
+            startHour = self.pmpeakstart
+            endHour = self.pmpeakend
+            hours = (endHour + 41 - startHour) / 100.0; 
+
+        elif timePeriod.lower().find('mdoffpeak') > -1:
+            startHour = self.mdoffpeakstart
+            endHour = self.mdoffpeakend
+            hours = (endHour + 41 - startHour) / 100.0; 
+
+        elif timePeriod.lower().find('ntoffpeak') > -1:
+            startHour = self.ntoffpeakstart
+            endHour = self.ntoffpeakend
+            hours = (endHour + 41 + (2400 - startHour)) / 100.0; 
+
+        else:
+            print ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." )
+            return -1
+        
+        
+        volumeFactor = 0
+        if(hours > 0):
+            volumeFactor = 1 / hours
+            
+        
+        #log results
+        print( "calculated volume factor: " + str(volumeFactor))
+        print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        
+        return (volumeFactor)
 
 ############################################################
     def calcVolumeFactor(self, timePeriod):
