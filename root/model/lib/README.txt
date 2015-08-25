@@ -1,3 +1,0 @@
-Extract appropriate 32/64 dependencies zip file into this directory. 
-Start RGui in \model\lib\R-3.1.2\bin\x64\RGui.exe and choose "Packages -> Install package(s) from local zip files". 
-Choose the iterators, forEach, RSQLite and doParallel zipfiles in the folder and install. 
