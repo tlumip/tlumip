@@ -1,0 +1,6 @@
+# ignore all output files
+*
+
+#except t18, which contains first-year inputs to the model stream
+!t18/
+!.gitignore
