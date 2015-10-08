@@ -70,7 +70,7 @@ indCodes = read.csv(INDCODEFILE)
 LDT_Tour_Patterns = c("COMPLETE_TOUR","BEGIN_TOUR","END_TOUR","AWAY","NO_TOUR")
 
 hh = hh[,!(colnames(hh) %in% c("PERSONS"))]
-hh$LD_HOUSEHOLD_PATTERN = factor(hh$LD_HOUSEHOLD_PATTERN, labels=LDT_Tour_Patterns)
+hh$LD_HOUSEHOLD_PATTERN = LDT_Tour_Patterns[hh$LD_HOUSEHOLD_PATTERN]
 
 per$MEMBER_ID = per$memberID 
 per = per[,!(colnames(per) %in% c("memberID","home_taz","LD_INDICATOR_HOUSEHOLD","LD_TOUR_PATTERN_HOUSEHOLD"))]

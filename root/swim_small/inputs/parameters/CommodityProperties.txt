@@ -1,0 +1,44 @@
+#  avgShip- maxShip-  shipment   trans- privateCar- transShip
+#C mentSize mentSize Threshold ShipProb   riageProb proximity  Label
+01   20441  30662  0.167  0.398  0.406  5  Animals+fish
+02   20441  30662  0.167  0.434  0.338  5  Cereal grains
+03   20441  30662  0.167  0.398  0.313  5  Other ag prod
+04   20441  30662  0.167  0.398  0.87   5  Animal feed
+05   55888  83832  0.167  0.249  0.85   5  Meat+seafood
+06   55888  83832  0.167  0.249  0.881  5  Grain+bakery
+07   55888  83832  0.167  0.249  0.628  5  Other foods
+08   55888  83832  0.167  0.249  0.669  5  Alcoholic bev
+09    5333   8000  0.167  0.249  0.742  5  Tobacco prod
+10  47917  71876  0.167  0.137  0.483  5  Building stone
+11  51793  77690  0.167  0.137  0.93   5  Natural sands
+12  51793  77690  0.167  0.137  0.775  5  Gravel
+13  51793  77690  0.167  0.137  0.547  5  Nonmet minerals
+14  25968  38952  0.167  0.249  0.143  5  Metallic ores
+15  23433  35150  0.167  0.192  0.219  5  Coal
+16  45900  68850  0.167  0.192  0.903  5  Natural gas+crude
+17  45900  68850  0.167  0.192  0.903  5  Gas+Aviation fuel
+18  45900  68850  0.167  0.192  0.923  5  Fuel oils
+19  45900  68850  0.167  0.249  0.452  5  Coal+petr prod
+20  51155  76732  0.167  0.334  0.431  5  Basic chemicals
+21  51155  76732  0.167  0.334  0.771  5  Pharmaceuticals
+22  51155  76732  0.167  0.334  0.843  5  Fertilizers
+23  51155  76732  0.167  0.334  0.583  5  Chemical prod
+24  43751  65627  0.167  0.249  0.365  5  Plastics+rubber
+25  56063  84094  0.167  0.24   0.445  5  Raw wood
+26  56063  84094  0.167  0.24   0.196  5  Wood prod
+27  51960  77940  0.167  0.249  0.141  5  Pulp+paper
+28  51960  77940  0.167  0.249  0.313  5  Paper prod
+29  38388  57582  0.167  0.199  0.561  5  Printed prod
+30  19079  28618  0.167  0.24   0.439  5  Textile+leather
+31  51793  77690  0.167  0.249  0.867  5  Nonmet min prod
+32  43911  65867  0.167  0.212  0.392  5  Basic metals
+33  44565  66848  0.167  0.212  0.34   5  Metal articles
+34  57097  85646  0.167  0.199  0.436  5  Machinery
+35  45621  68432  0.167  0.199  0.487  5  Electronics
+36  46433  69650  0.167  0.199  0.39   5  Vehicles
+37  46433  69650  0.167  0.199  0.334  5  Transport equip
+38  46311  69467  0.167  0.199  0.05   5  Precision goods
+39  38967  58450  0.167  0.284  0.427  5  Furniture+lights
+40  52317  78476  0.167  0.249  0.562  5  Misc mfg prod
+41  44256  66384  0.167  0.249  0.454  5  Waste+scrap
+43  21757  32636  0.167  0.249  0.873  5  Mixed freight

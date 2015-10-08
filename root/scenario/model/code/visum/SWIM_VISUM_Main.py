@@ -36,14 +36,15 @@ vdf4 = [104]                    #Link type = 4 for these vdf functions
 #Truck passenger car units ;1.7 is the default 
 #Was 0.1, changed after Rick's new CT (11/24/2014) YMM
 truckPCU = 1
+truckDemandClass = "e"
 
 #zone no and main zone no in Visum
 a_zone = 'NO' #azone field in Visum
 b_zone = 'MainZoneNo' #bzone field in Visum
 
 #range of beta zones and external stations in aggregated skim matrices
-bzoneRange = range(0,518)
-externalStation = range(518,530)
+bzoneRange = range(0,2)
+externalStation = range(2,14)
 
 #world market list corresponds to external stations 5001, 5002,....,5012
 worldMarketList = [6006,6001,6001,6002,6006,6006,6003,6006,6006,6004,6006,6005]
@@ -118,7 +119,6 @@ class SwimModel(object):
         
         self.intracityRailAssignmentProcedure = properties['tr.transit.assignment.intracity.rail.parameters']
         self.intercityRailAssignmentProcedure = properties['tr.transit.assignment.intercity.rail.parameters']
-        self.runFinalTransitAssignment = properties['tr.run.final.assignment.with.pt.demand.matrices'] == "true"
         
         self.agForestFloorspace = properties['agforest.floorspace.file']
         self.activityTotals = properties['aa.activity.totals']
@@ -553,8 +553,8 @@ class SwimModel(object):
                 self.writeCSV(fileName, fileTable)
         
         #set truck PCU factor
-        print("Set truck PCU factor: " + str(truckPCU))
-        self.Visum.Net.TSystems.ItemByKey("d").SetAttValue("PCU", truckPCU)
+        print("Set truck PCU factor for class" + truckDemandClass + " : " + str(truckPCU))
+        self.Visum.Net.TSystems.ItemByKey(truckDemandClass).SetAttValue("PCU", truckPCU)
         
         #remove transit lines not in year
         print("Remove transit lines not in year")
@@ -616,7 +616,7 @@ class SwimModel(object):
         
         
     #read matrices in Python and then insert into Visum
-    def insertMatrixInVisum(self, ODmode, start, end, fixedDemand=0):
+    def insertMatrixInVisum(self, ODmode, start, end):
         
         print("insert demand matrices in Visum: " + ODmode)
         headers, fieldDictionary = self.loadCSV(self.zmxInputfileNames)
@@ -624,16 +624,16 @@ class SwimModel(object):
 
         for i in range(start-1,end):
             
-            #read zmx file from emx folder and post to bank
+            #read zmx file
             fileName = fileNames[i] + '.zmx'
             mat, zoneNames, name = self.readZMX(fileName)
             print("matrix %i sum %i" % (i+1, sum(map(sum, mat))))
             
-            #matrix set to fixed demand amount
-            if fixedDemand>0:
-              for j in range(len(mat)):
-                mat[j] = [fixedDemand] * len(mat)
+            #add a fraction of a trip to OD 2->3 to ensure skimming and assignment run
+            mat = np.array(mat)
+            mat[1,2] = mat[1,2] + 0.001
             
+            #post to bank
             VisumHelpers.SetODMatrix(self.Visum, i+1, mat)
 
     #create seed demand for seed skim creation
@@ -879,7 +879,7 @@ class SwimModel(object):
     def calcServiceAreaData(self):
         
         #get zone area
-        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREASQFT")
+        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREA")
         areas = [item/(5280**2) for item in areas] #from sq ft to miles
         self.service_data["AREA"] = areas
         
@@ -1246,23 +1246,23 @@ class SwimModel(object):
         #get empty list
         volumeFactors = VisumHelpers.GetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR")
 
-        factor = self.calcVolumeFactorDebug("ampeak")
+        factor = self.calcVolumeFactor("ampeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor  
         VisumHelpers.SetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR", volumeFactors)
 
-        factor = self.calcVolumeFactorDebug("mdoffpeak")
+        factor = self.calcVolumeFactor("mdoffpeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor
         VisumHelpers.SetMulti(self.Visum.Net.Links, "OP_VOL_FACTOR", volumeFactors)
 
         if s.assignmentPeriods == "ALL":
-            factor = self.calcVolumeFactorDebug("pmpeak")
+            factor = self.calcVolumeFactor("pmpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "PM_VOL_FACTOR", volumeFactors)
 
-            factor = self.calcVolumeFactorDebug("ntoffpeak")
+            factor = self.calcVolumeFactor("ntoffpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
@@ -1345,52 +1345,6 @@ class SwimModel(object):
                        self.writeZMX(air_skim, self.zoneNames, airfwt)
 
 
-############################################################
-    def calcVolumeFactorDebug(self, timePeriod):
-        
-        print('calculate volume factor')
-        
-        volumeFactor = 0.0
-        startHour = 0
-        endHour = 0
-        hours = 0
-        
-        #get time period definitions from property files
-        if timePeriod.lower().find('ampeak') > -1:
-            startHour = self.ampeakstart
-            endHour = self.ampeakend
-            hours = (endHour + 41 - startHour) / 100.0 #convert 59th min to 100th min
-
-        elif timePeriod.lower().find('pmpeak') > -1:
-            startHour = self.pmpeakstart
-            endHour = self.pmpeakend
-            hours = (endHour + 41 - startHour) / 100.0; 
-
-        elif timePeriod.lower().find('mdoffpeak') > -1:
-            startHour = self.mdoffpeakstart
-            endHour = self.mdoffpeakend
-            hours = (endHour + 41 - startHour) / 100.0; 
-
-        elif timePeriod.lower().find('ntoffpeak') > -1:
-            startHour = self.ntoffpeakstart
-            endHour = self.ntoffpeakend
-            hours = (endHour + 41 + (2400 - startHour)) / 100.0; 
-
-        else:
-            print ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." )
-            return -1
-        
-        
-        volumeFactor = 0
-        if(hours > 0):
-            volumeFactor = 1 / hours
-            
-        
-        #log results
-        print( "calculated volume factor: " + str(volumeFactor))
-        print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        
-        return (volumeFactor)
 
 ############################################################
     def calcVolumeFactor(self, timePeriod):
@@ -1532,7 +1486,7 @@ if __name__== "__main__":
             s.loadVersion()
             s.zoneServiceLookup()
             s.insertSeedMatricesInVisum()
-            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREASQFT")
+            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREA")
             areas = [item/(5280**2) for item in areas] #from sq ft to miles
             s.service_data["AREA"] = areas
             s.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
@@ -1643,10 +1597,7 @@ if __name__== "__main__":
         #intercity transit assignment
         s.startVisum()
         s.loadVersion("_TR")
-        if s.runFinalTransitAssignment:
-          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
-        else: 
-          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1], fixedDemand=1)
+        s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
         s.saveVersion("_TR")
         s.closeVisum()
         
@@ -1662,10 +1613,7 @@ if __name__== "__main__":
         #intracity transit assignment
         s.startVisum()
         s.loadVersion("_TR")
-        if s.runFinalTransitAssignment:
-          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
-        else: 
-          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1], fixedDemand=1)
+        s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
         s.saveVersion("_TR")
         s.closeVisum()
         
@@ -1679,23 +1627,22 @@ if __name__== "__main__":
         s.closeVisum()
        
         #Adjust skimmed SDT IVT and LTF IVT and OVT skims
-        if not s.runFinalTransitAssignment:
-          s.startVisum()        
-          s.loadVersion("_TR")
-          s.calcFareMatrices()
-          s.adjustSkimsDueToLTF(isPeak=True)
-          s.adjustSkimsDueToLTF(isPeak=False)
-          s.saveVersion("_TR")
-          s.closeVisum() 
-        
-          #write skim matrices in *.zmx files
-          s.startVisum()
-          s.loadVersion("_TR")
-          s.zonefieldVariables()
-          s.writeTransitSkimZMX(start=transitSkimMatrices[0])
-          s.createVizOutput()
-          s.saveVersion("_TR")
-          s.closeVisum()
+        s.startVisum()        
+        s.loadVersion("_TR")
+        s.calcFareMatrices()
+        s.adjustSkimsDueToLTF(isPeak=True)
+        s.adjustSkimsDueToLTF(isPeak=False)
+        s.saveVersion("_TR")
+        s.closeVisum() 
+      
+        #write skim matrices in *.zmx files
+        s.startVisum()
+        s.loadVersion("_TR")
+        s.zonefieldVariables()
+        s.writeTransitSkimZMX(start=transitSkimMatrices[0])
+        s.createVizOutput()
+        s.saveVersion("_TR")
+        s.closeVisum()
         
         #copy air skims, because it needs to look like they've been run
         s.copyAirSkims()

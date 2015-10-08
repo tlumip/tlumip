@@ -1,0 +1,4 @@
+Variable,inVehicleTime,walkTime,shortWaitTime,longWaitTime,dailyFrequency,costInc020,costInc2060,costInc60p,constAir,constTransitWalk,nestGround,nestTransit,freqCoeff,freqNumerator,freqPower
+HOUSEHOLD,-0.005,-0.01,-0.01,-0.0025,0,-0.08,-0.03,-0.012,-3.186977048,-2.792977048,0.65,0.5,-0.01,720,0.75
+WORKRELATED,-0.01,-0.02,-0.02,-0.005,0,-0.08,-0.03,-0.012,-1.037977048,-2.792977048,0.65,0.5,-0.02,720,0.75
+OTHER,-0.005,-0.01,-0.01,-0.0025,0,-0.08,-0.03,-0.012,-2.301977048,-2.792977048,0.65,0.5,-0.01,720,0.75

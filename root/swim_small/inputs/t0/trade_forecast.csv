@@ -1,0 +1,3565 @@
+"year","trade_activity","dollars"
+2009,"accommodations_expt",3270897
+2009,"accommodations_impt",2541893
+2009,"communications and utilities_expt",5678835
+2009,"communications and utilities_impt",7869735
+2009,"construction_expt",9180101
+2009,"construction_impt",12590736
+2009,"education reports to sponsors_expt",104925
+2009,"education reports to sponsors_impt",37468
+2009,"energy_expt",3123152
+2009,"energy_impt",1143833
+2009,"entertainment services_expt",407918
+2009,"entertainment services_impt",1089285
+2009,"fire business and professional services_expt",8268891
+2009,"fire business and professional services_impt",30845753
+2009,"food services_expt",720017
+2009,"food services_impt",333886
+2009,"government administration_expt",3594245
+2009,"government administration_impt",3567100
+2009,"health services_expt",6322316
+2009,"health services_impt",1230527
+2009,"higher education_expt",928962
+2009,"higher education_impt",832994
+2009,"personal and other services and amusements_expt",4882028
+2009,"personal and other services and amusements_impt",1871341
+2009,"retail trade_expt",3929056
+2009,"retail trade_impt",1961754
+2009,"sctg01_fkp_lvsk_expt",402771
+2009,"sctg01_fkp_lvsk_impt",260851
+2009,"sctg02_fkp_agri_cereal_expt",485385
+2009,"sctg02_fkp_agri_cereal_impt",591333
+2009,"sctg03_fkp_agri_other_expt",6652824
+2009,"sctg03_fkp_agri_other_impt",1099384
+2009,"sctg04_fkp_feed_expt",157695
+2009,"sctg04_fkp_feed_impt",763913
+2009,"sctg05_fkp_food_meat_expt",2043553
+2009,"sctg05_fkp_food_meat_impt",2921116
+2009,"sctg06_fkp_agri_grain_expt",761763
+2009,"sctg06_fkp_agri_grain_impt",855005
+2009,"sctg07_fkp_food_prep_expt",9382926
+2009,"sctg07_fkp_food_prep_impt",5311390
+2009,"sctg08_fkp_food_alc_expt",1156635
+2009,"sctg08_fkp_food_alc_impt",1431454
+2009,"sctg10_cms_clay_expt",95535
+2009,"sctg10_cms_clay_impt",73318
+2009,"sctg11_cms_sand_expt",163312
+2009,"sctg11_cms_sand_impt",17334
+2009,"sctg13_cms_mine_nonmet_expt",34035
+2009,"sctg13_cms_mine_nonmet_impt",144904
+2009,"sctg14_cms_mine_met_expt",1315595
+2009,"sctg14_cms_mine_met_impt",507173
+2009,"sctg15_pcc_coal_expt",34024
+2009,"sctg15_pcc_coal_impt",717887
+2009,"sctg16_pcc_petr_crude_expt",242078
+2009,"sctg16_pcc_petr_crude_impt",1590154
+2009,"sctg17_pcc_fuel_expt",21714
+2009,"sctg17_pcc_fuel_impt",5642668
+2009,"sctg18_pcc_petr_oil_expt",10857
+2009,"sctg18_pcc_petr_oil_impt",2821334
+2009,"sctg19_pcc_coal_prod_expt",200319
+2009,"sctg19_pcc_coal_prod_impt",4069051
+2009,"sctg20_pcc_chem_basic_expt",1126537
+2009,"sctg20_pcc_chem_basic_impt",1891511
+2009,"sctg21_pcc_chem_pharma_expt",764920
+2009,"sctg21_pcc_chem_pharma_impt",6235158
+2009,"sctg22_pcc_chem_fert_expt",179061
+2009,"sctg22_pcc_chem_fert_impt",404925
+2009,"sctg23_pcc_chem_prod_expt",994754
+2009,"sctg23_pcc_chem_prod_impt",3300069
+2009,"sctg24_pcc_petr_plast_expt",2051431
+2009,"sctg24_pcc_petr_plast_impt",4398888
+2009,"sctg25_fwp_logs_expt",1101015
+2009,"sctg25_fwp_logs_impt",340810
+2009,"sctg26_fwp_wood_expt",4716264
+2009,"sctg26_fwp_wood_impt",651284
+2009,"sctg27_ppp_papr_puplp_expt",4508322
+2009,"sctg27_ppp_papr_puplp_impt",840673
+2009,"sctg28_ppp_papr_paper_expt",757807
+2009,"sctg28_ppp_papr_paper_impt",1240238
+2009,"sctg29_ppp_papr_print_expt",913103
+2009,"sctg29_ppp_papr_print_impt",1703592
+2009,"sctg30_oth_clth_expt",517835
+2009,"sctg30_oth_clth_impt",3501243
+2009,"sctg31_cms_min_expt",877089
+2009,"sctg31_cms_min_impt",1356212
+2009,"sctg32_mit_metl_base_expt",3018300
+2009,"sctg32_mit_metl_base_impt",3520422
+2009,"sctg33_mit_metl_prod_expt",2533120
+2009,"sctg33_mit_metl_prod_impt",2704359
+2009,"sctg34_mit_mach_expt",4377044
+2009,"sctg34_mit_mach_impt",7315652
+2009,"sctg35_mit_elct_expt",21885692
+2009,"sctg35_mit_elct_impt",11314880
+2009,"sctg36_mit_tran_expt",3168380
+2009,"sctg36_mit_tran_impt",6976891
+2009,"sctg37_mit_inst_transp_expt",2603475
+2009,"sctg37_mit_inst_transp_impt",2147224
+2009,"sctg38_mit_inst_prec_expt",2301165
+2009,"sctg38_mit_inst_prec_impt",3143044
+2009,"sctg39_oth_furn_expt",1103630
+2009,"sctg39_oth_furn_impt",1872685
+2009,"sctg40_oth_misc_expt",1856533
+2009,"sctg40_oth_misc_impt",4774668
+2009,"sctg41_waste_scrap_expt",514257
+2009,"sctg41_waste_scrap_impt",470267
+2009,"transport_expt",3152134
+2009,"transport_impt",3101393
+2009,"wholesale trade_expt",3135669
+2009,"wholesale trade_impt",2033744
+2010,"accommodations_expt",3281897
+2010,"accommodations_impt",2566737
+2010,"communications and utilities_expt",5735042
+2010,"communications and utilities_impt",7952686
+2010,"construction_expt",8575753
+2010,"construction_impt",12757541
+2010,"education reports to sponsors_expt",106171
+2010,"education reports to sponsors_impt",37988
+2010,"energy_expt",3202418
+2010,"energy_impt",1158674
+2010,"entertainment services_expt",410202
+2010,"entertainment services_impt",1101589
+2010,"fire business and professional services_expt",8349774
+2010,"fire business and professional services_impt",29684482
+2010,"food services_expt",722396
+2010,"food services_impt",338137
+2010,"government administration_expt",3542856
+2010,"government administration_impt",3616204
+2010,"health services_expt",6413973
+2010,"health services_impt",1247617
+2010,"higher education_expt",940469
+2010,"higher education_impt",844830
+2010,"personal and other services and amusements_expt",4838980
+2010,"personal and other services and amusements_impt",1756296
+2010,"retail trade_expt",4054744
+2010,"retail trade_impt",1977388
+2010,"sctg01_fkp_lvsk_expt",414039
+2010,"sctg01_fkp_lvsk_impt",269324
+2010,"sctg02_fkp_agri_cereal_expt",500497
+2010,"sctg02_fkp_agri_cereal_impt",615570
+2010,"sctg03_fkp_agri_other_expt",6840443
+2010,"sctg03_fkp_agri_other_impt",1128489
+2010,"sctg04_fkp_feed_expt",163046
+2010,"sctg04_fkp_feed_impt",779105
+2010,"sctg05_fkp_food_meat_expt",2120851
+2010,"sctg05_fkp_food_meat_impt",2985095
+2010,"sctg06_fkp_agri_grain_expt",802159
+2010,"sctg06_fkp_agri_grain_impt",874329
+2010,"sctg07_fkp_food_prep_expt",9809610
+2010,"sctg07_fkp_food_prep_impt",5449113
+2010,"sctg08_fkp_food_alc_expt",1220530
+2010,"sctg08_fkp_food_alc_impt",1453242
+2010,"sctg10_cms_clay_expt",99585
+2010,"sctg10_cms_clay_impt",66361
+2010,"sctg11_cms_sand_expt",170094
+2010,"sctg11_cms_sand_impt",16691
+2010,"sctg13_cms_mine_nonmet_expt",35383
+2010,"sctg13_cms_mine_nonmet_impt",145357
+2010,"sctg14_cms_mine_met_expt",1406271
+2010,"sctg14_cms_mine_met_impt",526896
+2010,"sctg15_pcc_coal_expt",36379
+2010,"sctg15_pcc_coal_impt",737439
+2010,"sctg16_pcc_petr_crude_expt",250922
+2010,"sctg16_pcc_petr_crude_impt",1620653
+2010,"sctg17_pcc_fuel_expt",22312
+2010,"sctg17_pcc_fuel_impt",5686202
+2010,"sctg18_pcc_petr_oil_expt",11156
+2010,"sctg18_pcc_petr_oil_impt",2843101
+2010,"sctg19_pcc_coal_prod_expt",204333
+2010,"sctg19_pcc_coal_prod_impt",4093295
+2010,"sctg20_pcc_chem_basic_expt",1139704
+2010,"sctg20_pcc_chem_basic_impt",1916098
+2010,"sctg21_pcc_chem_pharma_expt",748617
+2010,"sctg21_pcc_chem_pharma_impt",6314013
+2010,"sctg22_pcc_chem_fert_expt",182295
+2010,"sctg22_pcc_chem_fert_impt",402521
+2010,"sctg23_pcc_chem_prod_expt",1003510
+2010,"sctg23_pcc_chem_prod_impt",3333291
+2010,"sctg24_pcc_petr_plast_expt",2068673
+2010,"sctg24_pcc_petr_plast_impt",4401570
+2010,"sctg25_fwp_logs_expt",1134937
+2010,"sctg25_fwp_logs_impt",331793
+2010,"sctg26_fwp_wood_expt",4368791
+2010,"sctg26_fwp_wood_impt",605595
+2010,"sctg27_ppp_papr_puplp_expt",4497104
+2010,"sctg27_ppp_papr_puplp_impt",848258
+2010,"sctg28_ppp_papr_paper_expt",769375
+2010,"sctg28_ppp_papr_paper_impt",1265032
+2010,"sctg29_ppp_papr_print_expt",919410
+2010,"sctg29_ppp_papr_print_impt",1724222
+2010,"sctg30_oth_clth_expt",522849
+2010,"sctg30_oth_clth_impt",3539160
+2010,"sctg31_cms_min_expt",855408
+2010,"sctg31_cms_min_impt",1291833
+2010,"sctg32_mit_metl_base_expt",3091289
+2010,"sctg32_mit_metl_base_impt",3573179
+2010,"sctg33_mit_metl_prod_expt",2453997
+2010,"sctg33_mit_metl_prod_impt",2622411
+2010,"sctg34_mit_mach_expt",4450446
+2010,"sctg34_mit_mach_impt",7279113
+2010,"sctg35_mit_elct_expt",22493024
+2010,"sctg35_mit_elct_impt",11428218
+2010,"sctg36_mit_tran_expt",3294214
+2010,"sctg36_mit_tran_impt",7086498
+2010,"sctg37_mit_inst_transp_expt",2673505
+2010,"sctg37_mit_inst_transp_impt",2179334
+2010,"sctg38_mit_inst_prec_expt",2240442
+2010,"sctg38_mit_inst_prec_impt",3185364
+2010,"sctg39_oth_furn_expt",1099863
+2010,"sctg39_oth_furn_impt",1791419
+2010,"sctg40_oth_misc_expt",1816680
+2010,"sctg40_oth_misc_impt",4823043
+2010,"sctg41_waste_scrap_expt",520414
+2010,"sctg41_waste_scrap_impt",476719
+2010,"transport_expt",3203752
+2010,"transport_impt",3135224
+2010,"wholesale trade_expt",3206498
+2010,"wholesale trade_impt",2054033
+2011,"accommodations_expt",3365523
+2011,"accommodations_impt",2604559
+2011,"communications and utilities_expt",5824043
+2011,"communications and utilities_impt",8098948
+2011,"construction_expt",8865926
+2011,"construction_impt",12913607
+2011,"education reports to sponsors_expt",108905
+2011,"education reports to sponsors_impt",38441
+2011,"energy_expt",3319134
+2011,"energy_impt",1185656
+2011,"entertainment services_expt",420219
+2011,"entertainment services_impt",1119542
+2011,"fire business and professional services_expt",8518509
+2011,"fire business and professional services_impt",30280076
+2011,"food services_expt",741890
+2011,"food services_impt",342827
+2011,"government administration_expt",3602562
+2011,"government administration_impt",3659194
+2011,"health services_expt",6576468
+2011,"health services_impt",1262564
+2011,"higher education_expt",956984
+2011,"higher education_impt",855783
+2011,"personal and other services and amusements_expt",4915004
+2011,"personal and other services and amusements_impt",1780935
+2011,"retail trade_expt",4235849
+2011,"retail trade_impt",2009974
+2011,"sctg01_fkp_lvsk_expt",430253
+2011,"sctg01_fkp_lvsk_impt",279165
+2011,"sctg02_fkp_agri_cereal_expt",519889
+2011,"sctg02_fkp_agri_cereal_impt",640949
+2011,"sctg03_fkp_agri_other_expt",7108398
+2011,"sctg03_fkp_agri_other_impt",1164835
+2011,"sctg04_fkp_feed_expt",169607
+2011,"sctg04_fkp_feed_impt",795564
+2011,"sctg05_fkp_food_meat_expt",2212694
+2011,"sctg05_fkp_food_meat_impt",3057054
+2011,"sctg06_fkp_agri_grain_expt",837913
+2011,"sctg06_fkp_agri_grain_impt",893513
+2011,"sctg07_fkp_food_prep_expt",10225531
+2011,"sctg07_fkp_food_prep_impt",5595606
+2011,"sctg08_fkp_food_alc_expt",1285203
+2011,"sctg08_fkp_food_alc_impt",1474824
+2011,"sctg10_cms_clay_expt",104233
+2011,"sctg10_cms_clay_impt",67612
+2011,"sctg11_cms_sand_expt",177968
+2011,"sctg11_cms_sand_impt",17110
+2011,"sctg13_cms_mine_nonmet_expt",37009
+2011,"sctg13_cms_mine_nonmet_impt",149586
+2011,"sctg14_cms_mine_met_expt",1477000
+2011,"sctg14_cms_mine_met_impt",556751
+2011,"sctg15_pcc_coal_expt",38210
+2011,"sctg15_pcc_coal_impt",763303
+2011,"sctg16_pcc_petr_crude_expt",260935
+2011,"sctg16_pcc_petr_crude_impt",1688570
+2011,"sctg17_pcc_fuel_expt",22983
+2011,"sctg17_pcc_fuel_impt",5798855
+2011,"sctg18_pcc_petr_oil_expt",11491
+2011,"sctg18_pcc_petr_oil_impt",2899427
+2011,"sctg19_pcc_coal_prod_expt",210607
+2011,"sctg19_pcc_coal_prod_impt",4184837
+2011,"sctg20_pcc_chem_basic_expt",1177412
+2011,"sctg20_pcc_chem_basic_impt",1961762
+2011,"sctg21_pcc_chem_pharma_expt",760065
+2011,"sctg21_pcc_chem_pharma_impt",6409049
+2011,"sctg22_pcc_chem_fert_expt",190852
+2011,"sctg22_pcc_chem_fert_impt",416357
+2011,"sctg23_pcc_chem_prod_expt",1050879
+2011,"sctg23_pcc_chem_prod_impt",3411918
+2011,"sctg24_pcc_petr_plast_expt",2141250
+2011,"sctg24_pcc_petr_plast_impt",4546706
+2011,"sctg25_fwp_logs_expt",1203560
+2011,"sctg25_fwp_logs_impt",336285
+2011,"sctg26_fwp_wood_expt",4192128
+2011,"sctg26_fwp_wood_impt",608897
+2011,"sctg27_ppp_papr_puplp_expt",4570589
+2011,"sctg27_ppp_papr_puplp_impt",870754
+2011,"sctg28_ppp_papr_paper_expt",793575
+2011,"sctg28_ppp_papr_paper_impt",1304527
+2011,"sctg29_ppp_papr_print_expt",957244
+2011,"sctg29_ppp_papr_print_impt",1754553
+2011,"sctg30_oth_clth_expt",544889
+2011,"sctg30_oth_clth_impt",3596767
+2011,"sctg31_cms_min_expt",882108
+2011,"sctg31_cms_min_impt",1321971
+2011,"sctg32_mit_metl_base_expt",3403288
+2011,"sctg32_mit_metl_base_impt",3754565
+2011,"sctg33_mit_metl_prod_expt",2600743
+2011,"sctg33_mit_metl_prod_impt",2708668
+2011,"sctg34_mit_mach_expt",4813453
+2011,"sctg34_mit_mach_impt",7511350
+2011,"sctg35_mit_elct_expt",23130295
+2011,"sctg35_mit_elct_impt",11719300
+2011,"sctg36_mit_tran_expt",3616058
+2011,"sctg36_mit_tran_impt",7278518
+2011,"sctg37_mit_inst_transp_expt",2809057
+2011,"sctg37_mit_inst_transp_impt",2217881
+2011,"sctg38_mit_inst_prec_expt",2247327
+2011,"sctg38_mit_inst_prec_impt",3240756
+2011,"sctg39_oth_furn_expt",1151714
+2011,"sctg39_oth_furn_impt",1817898
+2011,"sctg40_oth_misc_expt",1836818
+2011,"sctg40_oth_misc_impt",4897551
+2011,"sctg41_waste_scrap_expt",528689
+2011,"sctg41_waste_scrap_impt",510213
+2011,"transport_expt",3275216
+2011,"transport_impt",3202245
+2011,"wholesale trade_expt",3343520
+2011,"wholesale trade_impt",2106991
+2012,"accommodations_expt",3463202
+2012,"accommodations_impt",2647823
+2012,"communications and utilities_expt",5897805
+2012,"communications and utilities_impt",8250579
+2012,"construction_expt",9215405
+2012,"construction_impt",13076548
+2012,"education reports to sponsors_expt",110382
+2012,"education reports to sponsors_impt",38908
+2012,"energy_expt",3462084
+2012,"energy_impt",1213801
+2012,"entertainment services_expt",431499
+2012,"entertainment services_impt",1138722
+2012,"fire business and professional services_expt",8750760
+2012,"fire business and professional services_impt",30968160
+2012,"food services_expt",764514
+2012,"food services_impt",347873
+2012,"government administration_expt",3723416
+2012,"government administration_impt",3703643
+2012,"health services_expt",6728256
+2012,"health services_impt",1277972
+2012,"higher education_expt",969341
+2012,"higher education_impt",866966
+2012,"personal and other services and amusements_expt",5074215
+2012,"personal and other services and amusements_impt",1807495
+2012,"retail trade_expt",4383504
+2012,"retail trade_impt",2046728
+2012,"sctg01_fkp_lvsk_expt",458664
+2012,"sctg01_fkp_lvsk_impt",288138
+2012,"sctg02_fkp_agri_cereal_expt",548696
+2012,"sctg02_fkp_agri_cereal_impt",660376
+2012,"sctg03_fkp_agri_other_expt",7573353
+2012,"sctg03_fkp_agri_other_impt",1201221
+2012,"sctg04_fkp_feed_expt",177678
+2012,"sctg04_fkp_feed_impt",814476
+2012,"sctg05_fkp_food_meat_expt",2258189
+2012,"sctg05_fkp_food_meat_impt",3110467
+2012,"sctg06_fkp_agri_grain_expt",848656
+2012,"sctg06_fkp_agri_grain_impt",907492
+2012,"sctg07_fkp_food_prep_expt",10422347
+2012,"sctg07_fkp_food_prep_impt",5697526
+2012,"sctg08_fkp_food_alc_expt",1341012
+2012,"sctg08_fkp_food_alc_impt",1496682
+2012,"sctg10_cms_clay_expt",112271
+2012,"sctg10_cms_clay_impt",70070
+2012,"sctg11_cms_sand_expt",191356
+2012,"sctg11_cms_sand_impt",17910
+2012,"sctg13_cms_mine_nonmet_expt",39876
+2012,"sctg13_cms_mine_nonmet_impt",155252
+2012,"sctg14_cms_mine_met_expt",1488437
+2012,"sctg14_cms_mine_met_impt",572850
+2012,"sctg15_pcc_coal_expt",38475
+2012,"sctg15_pcc_coal_impt",792970
+2012,"sctg16_pcc_petr_crude_expt",272220
+2012,"sctg16_pcc_petr_crude_impt",1768006
+2012,"sctg17_pcc_fuel_expt",23965
+2012,"sctg17_pcc_fuel_impt",5923307
+2012,"sctg18_pcc_petr_oil_expt",11982
+2012,"sctg18_pcc_petr_oil_impt",2961653
+2012,"sctg19_pcc_coal_prod_expt",218202
+2012,"sctg19_pcc_coal_prod_impt",4294622
+2012,"sctg20_pcc_chem_basic_expt",1208081
+2012,"sctg20_pcc_chem_basic_impt",2055705
+2012,"sctg21_pcc_chem_pharma_expt",785625
+2012,"sctg21_pcc_chem_pharma_impt",6510019
+2012,"sctg22_pcc_chem_fert_expt",195826
+2012,"sctg22_pcc_chem_fert_impt",433030
+2012,"sctg23_pcc_chem_prod_expt",1087349
+2012,"sctg23_pcc_chem_prod_impt",3515411
+2012,"sctg24_pcc_petr_plast_expt",2219304
+2012,"sctg24_pcc_petr_plast_impt",4702669
+2012,"sctg25_fwp_logs_expt",1220798
+2012,"sctg25_fwp_logs_impt",336215
+2012,"sctg26_fwp_wood_expt",4104020
+2012,"sctg26_fwp_wood_impt",615508
+2012,"sctg27_ppp_papr_puplp_expt",4657816
+2012,"sctg27_ppp_papr_puplp_impt",892568
+2012,"sctg28_ppp_papr_paper_expt",814375
+2012,"sctg28_ppp_papr_paper_impt",1335228
+2012,"sctg29_ppp_papr_print_expt",993682
+2012,"sctg29_ppp_papr_print_impt",1786714
+2012,"sctg30_oth_clth_expt",560950
+2012,"sctg30_oth_clth_impt",3654676
+2012,"sctg31_cms_min_expt",919949
+2012,"sctg31_cms_min_impt",1362832
+2012,"sctg32_mit_metl_base_expt",3650729
+2012,"sctg32_mit_metl_base_impt",4026968
+2012,"sctg33_mit_metl_prod_expt",2823290
+2012,"sctg33_mit_metl_prod_impt",2820997
+2012,"sctg34_mit_mach_expt",5246230
+2012,"sctg34_mit_mach_impt",7742399
+2012,"sctg35_mit_elct_expt",25073457
+2012,"sctg35_mit_elct_impt",12160273
+2012,"sctg36_mit_tran_expt",3882245
+2012,"sctg36_mit_tran_impt",7461089
+2012,"sctg37_mit_inst_transp_expt",2821878
+2012,"sctg37_mit_inst_transp_impt",2240415
+2012,"sctg38_mit_inst_prec_expt",2360093
+2012,"sctg38_mit_inst_prec_impt",3297566
+2012,"sctg39_oth_furn_expt",1182167
+2012,"sctg39_oth_furn_impt",1847035
+2012,"sctg40_oth_misc_expt",1901755
+2012,"sctg40_oth_misc_impt",4977834
+2012,"sctg41_waste_scrap_expt",537101
+2012,"sctg41_waste_scrap_impt",535548
+2012,"transport_expt",3326417
+2012,"transport_impt",3272370
+2012,"wholesale trade_expt",3429618
+2012,"wholesale trade_impt",2166534
+2013,"accommodations_expt",3571290
+2013,"accommodations_impt",2701241
+2013,"communications and utilities_expt",6062982
+2013,"communications and utilities_impt",8457539
+2013,"construction_expt",10084639
+2013,"construction_impt",13245873
+2013,"education reports to sponsors_expt",113539
+2013,"education reports to sponsors_impt",39391
+2013,"energy_expt",3631087
+2013,"energy_impt",1241025
+2013,"entertainment services_expt",447682
+2013,"entertainment services_impt",1163301
+2013,"fire business and professional services_expt",9042087
+2013,"fire business and professional services_impt",31837726
+2013,"food services_expt",790856
+2013,"food services_impt",353525
+2013,"government administration_expt",3821896
+2013,"government administration_impt",3750260
+2013,"health services_expt",6918656
+2013,"health services_impt",1293900
+2013,"higher education_expt",987624
+2013,"higher education_impt",878240
+2013,"personal and other services and amusements_expt",5272956
+2013,"personal and other services and amusements_impt",1839213
+2013,"retail trade_expt",4513147
+2013,"retail trade_impt",2089558
+2013,"sctg01_fkp_lvsk_expt",475887
+2013,"sctg01_fkp_lvsk_impt",294871
+2013,"sctg02_fkp_agri_cereal_expt",567802
+2013,"sctg02_fkp_agri_cereal_impt",674517
+2013,"sctg03_fkp_agri_other_expt",7856650
+2013,"sctg03_fkp_agri_other_impt",1227985
+2013,"sctg04_fkp_feed_expt",182804
+2013,"sctg04_fkp_feed_impt",829653
+2013,"sctg05_fkp_food_meat_expt",2284983
+2013,"sctg05_fkp_food_meat_impt",3164403
+2013,"sctg06_fkp_agri_grain_expt",857481
+2013,"sctg06_fkp_agri_grain_impt",921204
+2013,"sctg07_fkp_food_prep_expt",10584474
+2013,"sctg07_fkp_food_prep_impt",5790803
+2013,"sctg08_fkp_food_alc_expt",1380461
+2013,"sctg08_fkp_food_alc_impt",1518578
+2013,"sctg10_cms_clay_expt",118674
+2013,"sctg10_cms_clay_impt",74376
+2013,"sctg11_cms_sand_expt",202212
+2013,"sctg11_cms_sand_impt",18890
+2013,"sctg13_cms_mine_nonmet_expt",42164
+2013,"sctg13_cms_mine_nonmet_impt",159838
+2013,"sctg14_cms_mine_met_expt",1538995
+2013,"sctg14_cms_mine_met_impt",590265
+2013,"sctg15_pcc_coal_expt",39770
+2013,"sctg15_pcc_coal_impt",822217
+2013,"sctg16_pcc_petr_crude_expt",282847
+2013,"sctg16_pcc_petr_crude_impt",1868853
+2013,"sctg17_pcc_fuel_expt",24945
+2013,"sctg17_pcc_fuel_impt",6065741
+2013,"sctg18_pcc_petr_oil_expt",12472
+2013,"sctg18_pcc_petr_oil_impt",3032871
+2013,"sctg19_pcc_coal_prod_expt",225635
+2013,"sctg19_pcc_coal_prod_impt",4417922
+2013,"sctg20_pcc_chem_basic_expt",1237100
+2013,"sctg20_pcc_chem_basic_impt",2141432
+2013,"sctg21_pcc_chem_pharma_expt",827109
+2013,"sctg21_pcc_chem_pharma_impt",6624563
+2013,"sctg22_pcc_chem_fert_expt",197415
+2013,"sctg22_pcc_chem_fert_impt",445131
+2013,"sctg23_pcc_chem_prod_expt",1114188
+2013,"sctg23_pcc_chem_prod_impt",3612659
+2013,"sctg24_pcc_petr_plast_expt",2285590
+2013,"sctg24_pcc_petr_plast_impt",4875699
+2013,"sctg25_fwp_logs_expt",1189344
+2013,"sctg25_fwp_logs_impt",341350
+2013,"sctg26_fwp_wood_expt",4377089
+2013,"sctg26_fwp_wood_impt",645461
+2013,"sctg27_ppp_papr_puplp_expt",4577689
+2013,"sctg27_ppp_papr_puplp_impt",908207
+2013,"sctg28_ppp_papr_paper_expt",826510
+2013,"sctg28_ppp_papr_paper_impt",1364562
+2013,"sctg29_ppp_papr_print_expt",1038588
+2013,"sctg29_ppp_papr_print_impt",1826120
+2013,"sctg30_oth_clth_expt",573263
+2013,"sctg30_oth_clth_impt",3717771
+2013,"sctg31_cms_min_expt",966294
+2013,"sctg31_cms_min_impt",1428597
+2013,"sctg32_mit_metl_base_expt",3746846
+2013,"sctg32_mit_metl_base_impt",4259036
+2013,"sctg33_mit_metl_prod_expt",2943524
+2013,"sctg33_mit_metl_prod_impt",2954017
+2013,"sctg34_mit_mach_expt",5609279
+2013,"sctg34_mit_mach_impt",8010057
+2013,"sctg35_mit_elct_expt",27097056
+2013,"sctg35_mit_elct_impt",12646389
+2013,"sctg36_mit_tran_expt",4162608
+2013,"sctg36_mit_tran_impt",7660734
+2013,"sctg37_mit_inst_transp_expt",2874152
+2013,"sctg37_mit_inst_transp_impt",2275220
+2013,"sctg38_mit_inst_prec_expt",2510247
+2013,"sctg38_mit_inst_prec_impt",3363361
+2013,"sctg39_oth_furn_expt",1243182
+2013,"sctg39_oth_furn_impt",1895048
+2013,"sctg40_oth_misc_expt",2007033
+2013,"sctg40_oth_misc_impt",5079293
+2013,"sctg41_waste_scrap_expt",544813
+2013,"sctg41_waste_scrap_impt",541686
+2013,"transport_expt",3433590
+2013,"transport_impt",3357292
+2013,"wholesale trade_expt",3548621
+2013,"wholesale trade_impt",2231686
+2014,"accommodations_expt",3700732
+2014,"accommodations_impt",2756336
+2014,"communications and utilities_expt",6218319
+2014,"communications and utilities_impt",8664939
+2014,"construction_expt",11041744
+2014,"construction_impt",13420373
+2014,"education reports to sponsors_expt",117340
+2014,"education reports to sponsors_impt",39888
+2014,"energy_expt",3798097
+2014,"energy_impt",1268079
+2014,"entertainment services_expt",468689
+2014,"entertainment services_impt",1190254
+2014,"fire business and professional services_expt",9367409
+2014,"fire business and professional services_impt",32766913
+2014,"food services_expt",822449
+2014,"food services_impt",359519
+2014,"government administration_expt",3943898
+2014,"government administration_impt",3798205
+2014,"health services_expt",7204599
+2014,"health services_impt",1310419
+2014,"higher education_expt",1008574
+2014,"higher education_impt",890077
+2014,"personal and other services and amusements_expt",5478722
+2014,"personal and other services and amusements_impt",1873526
+2014,"retail trade_expt",4633935
+2014,"retail trade_impt",2134280
+2014,"sctg01_fkp_lvsk_expt",492738
+2014,"sctg01_fkp_lvsk_impt",301947
+2014,"sctg02_fkp_agri_cereal_expt",585580
+2014,"sctg02_fkp_agri_cereal_impt",691541
+2014,"sctg03_fkp_agri_other_expt",8132990
+2014,"sctg03_fkp_agri_other_impt",1259207
+2014,"sctg04_fkp_feed_expt",188322
+2014,"sctg04_fkp_feed_impt",845180
+2014,"sctg05_fkp_food_meat_expt",2327773
+2014,"sctg05_fkp_food_meat_impt",3228579
+2014,"sctg06_fkp_agri_grain_expt",875066
+2014,"sctg06_fkp_agri_grain_impt",937730
+2014,"sctg07_fkp_food_prep_expt",10811478
+2014,"sctg07_fkp_food_prep_impt",5904356
+2014,"sctg08_fkp_food_alc_expt",1427275
+2014,"sctg08_fkp_food_alc_impt",1542063
+2014,"sctg10_cms_clay_expt",123313
+2014,"sctg10_cms_clay_impt",79529
+2014,"sctg11_cms_sand_expt",210025
+2014,"sctg11_cms_sand_impt",19827
+2014,"sctg13_cms_mine_nonmet_expt",43835
+2014,"sctg13_cms_mine_nonmet_impt",164333
+2014,"sctg14_cms_mine_met_expt",1552402
+2014,"sctg14_cms_mine_met_impt",598310
+2014,"sctg15_pcc_coal_expt",40101
+2014,"sctg15_pcc_coal_impt",849438
+2014,"sctg16_pcc_petr_crude_expt",289839
+2014,"sctg16_pcc_petr_crude_impt",1964530
+2014,"sctg17_pcc_fuel_expt",25809
+2014,"sctg17_pcc_fuel_impt",6229677
+2014,"sctg18_pcc_petr_oil_expt",12904
+2014,"sctg18_pcc_petr_oil_impt",3114838
+2014,"sctg19_pcc_coal_prod_expt",233028
+2014,"sctg19_pcc_coal_prod_impt",4548450
+2014,"sctg20_pcc_chem_basic_expt",1270277
+2014,"sctg20_pcc_chem_basic_impt",2202058
+2014,"sctg21_pcc_chem_pharma_expt",867652
+2014,"sctg21_pcc_chem_pharma_impt",6759905
+2014,"sctg22_pcc_chem_fert_expt",199305
+2014,"sctg22_pcc_chem_fert_impt",458019
+2014,"sctg23_pcc_chem_prod_expt",1140864
+2014,"sctg23_pcc_chem_prod_impt",3708283
+2014,"sctg24_pcc_petr_plast_expt",2354937
+2014,"sctg24_pcc_petr_plast_impt",5058170
+2014,"sctg25_fwp_logs_expt",1195179
+2014,"sctg25_fwp_logs_impt",358582
+2014,"sctg26_fwp_wood_expt",4826007
+2014,"sctg26_fwp_wood_impt",686495
+2014,"sctg27_ppp_papr_puplp_expt",4484463
+2014,"sctg27_ppp_papr_puplp_impt",924567
+2014,"sctg28_ppp_papr_paper_expt",840139
+2014,"sctg28_ppp_papr_paper_impt",1398336
+2014,"sctg29_ppp_papr_print_expt",1081791
+2014,"sctg29_ppp_papr_print_impt",1868469
+2014,"sctg30_oth_clth_expt",585003
+2014,"sctg30_oth_clth_impt",3785700
+2014,"sctg31_cms_min_expt",1014462
+2014,"sctg31_cms_min_impt",1507362
+2014,"sctg32_mit_metl_base_expt",3721272
+2014,"sctg32_mit_metl_base_impt",4406970
+2014,"sctg33_mit_metl_prod_expt",3004190
+2014,"sctg33_mit_metl_prod_impt",3095174
+2014,"sctg34_mit_mach_expt",5888824
+2014,"sctg34_mit_mach_impt",8303487
+2014,"sctg35_mit_elct_expt",28299779
+2014,"sctg35_mit_elct_impt",13036630
+2014,"sctg36_mit_tran_expt",4444762
+2014,"sctg36_mit_tran_impt",7864796
+2014,"sctg37_mit_inst_transp_expt",3009576
+2014,"sctg37_mit_inst_transp_impt",2323586
+2014,"sctg38_mit_inst_prec_expt",2669699
+2014,"sctg38_mit_inst_prec_impt",3443463
+2014,"sctg39_oth_furn_expt",1312576
+2014,"sctg39_oth_furn_impt",1951049
+2014,"sctg40_oth_misc_expt",2119015
+2014,"sctg40_oth_misc_impt",5181266
+2014,"sctg41_waste_scrap_expt",552352
+2014,"sctg41_waste_scrap_impt",535471
+2014,"transport_expt",3534981
+2014,"transport_impt",3444744
+2014,"wholesale trade_expt",3683988
+2014,"wholesale trade_impt",2295308
+2015,"accommodations_expt",3817452
+2015,"accommodations_impt",2814782
+2015,"communications and utilities_expt",6383809
+2015,"communications and utilities_impt",8884717
+2015,"construction_expt",11602171
+2015,"construction_impt",13601089
+2015,"education reports to sponsors_expt",121678
+2015,"education reports to sponsors_impt",40402
+2015,"energy_expt",3969602
+2015,"energy_impt",1298072
+2015,"entertainment services_expt",485169
+2015,"entertainment services_impt",1217050
+2015,"fire business and professional services_expt",9740620
+2015,"fire business and professional services_impt",33732588
+2015,"food services_expt",850138
+2015,"food services_impt",365767
+2015,"government administration_expt",4070507
+2015,"government administration_impt",3847741
+2015,"health services_expt",7477489
+2015,"health services_impt",1327460
+2015,"higher education_expt",1031789
+2015,"higher education_impt",902381
+2015,"personal and other services and amusements_expt",5697532
+2015,"personal and other services and amusements_impt",1908347
+2015,"retail trade_expt",4782364
+2015,"retail trade_impt",2179034
+2015,"sctg01_fkp_lvsk_expt",507790
+2015,"sctg01_fkp_lvsk_impt",309073
+2015,"sctg02_fkp_agri_cereal_expt",601423
+2015,"sctg02_fkp_agri_cereal_impt",709032
+2015,"sctg03_fkp_agri_other_expt",8379781
+2015,"sctg03_fkp_agri_other_impt",1290180
+2015,"sctg04_fkp_feed_expt",193615
+2015,"sctg04_fkp_feed_impt",860556
+2015,"sctg05_fkp_food_meat_expt",2381068
+2015,"sctg05_fkp_food_meat_impt",3294021
+2015,"sctg06_fkp_agri_grain_expt",895617
+2015,"sctg06_fkp_agri_grain_impt",954997
+2015,"sctg07_fkp_food_prep_expt",11063883
+2015,"sctg07_fkp_food_prep_impt",6024443
+2015,"sctg08_fkp_food_alc_expt",1478752
+2015,"sctg08_fkp_food_alc_impt",1565920
+2015,"sctg10_cms_clay_expt",127605
+2015,"sctg10_cms_clay_impt",83630
+2015,"sctg11_cms_sand_expt",217263
+2015,"sctg11_cms_sand_impt",20623
+2015,"sctg13_cms_mine_nonmet_expt",45385
+2015,"sctg13_cms_mine_nonmet_impt",168860
+2015,"sctg14_cms_mine_met_expt",1568847
+2015,"sctg14_cms_mine_met_impt",608064
+2015,"sctg15_pcc_coal_expt",40513
+2015,"sctg15_pcc_coal_impt",879488
+2015,"sctg16_pcc_petr_crude_expt",296655
+2015,"sctg16_pcc_petr_crude_impt",2059064
+2015,"sctg17_pcc_fuel_expt",26628
+2015,"sctg17_pcc_fuel_impt",6389937
+2015,"sctg18_pcc_petr_oil_expt",13314
+2015,"sctg18_pcc_petr_oil_impt",3194969
+2015,"sctg19_pcc_coal_prod_expt",240111
+2015,"sctg19_pcc_coal_prod_impt",4681621
+2015,"sctg20_pcc_chem_basic_expt",1298877
+2015,"sctg20_pcc_chem_basic_impt",2292575
+2015,"sctg21_pcc_chem_pharma_expt",913819
+2015,"sctg21_pcc_chem_pharma_impt",6897764
+2015,"sctg22_pcc_chem_fert_expt",202777
+2015,"sctg22_pcc_chem_fert_impt",470177
+2015,"sctg23_pcc_chem_prod_expt",1170146
+2015,"sctg23_pcc_chem_prod_impt",3806329
+2015,"sctg24_pcc_petr_plast_expt",2434701
+2015,"sctg24_pcc_petr_plast_impt",5242675
+2015,"sctg25_fwp_logs_expt",1225054
+2015,"sctg25_fwp_logs_impt",377817
+2015,"sctg26_fwp_wood_expt",5217723
+2015,"sctg26_fwp_wood_impt",721709
+2015,"sctg27_ppp_papr_puplp_expt",4507168
+2015,"sctg27_ppp_papr_puplp_impt",947429
+2015,"sctg28_ppp_papr_paper_expt",860986
+2015,"sctg28_ppp_papr_paper_impt",1434455
+2015,"sctg29_ppp_papr_print_expt",1127913
+2015,"sctg29_ppp_papr_print_impt",1913512
+2015,"sctg30_oth_clth_expt",604756
+2015,"sctg30_oth_clth_impt",3855069
+2015,"sctg31_cms_min_expt",1061661
+2015,"sctg31_cms_min_impt",1577953
+2015,"sctg32_mit_metl_base_expt",3719037
+2015,"sctg32_mit_metl_base_impt",4599185
+2015,"sctg33_mit_metl_prod_expt",3060288
+2015,"sctg33_mit_metl_prod_impt",3231661
+2015,"sctg34_mit_mach_expt",6161424
+2015,"sctg34_mit_mach_impt",8556810
+2015,"sctg35_mit_elct_expt",30200278
+2015,"sctg35_mit_elct_impt",13514993
+2015,"sctg36_mit_tran_expt",4545543
+2015,"sctg36_mit_tran_impt",8011444
+2015,"sctg37_mit_inst_transp_expt",3157604
+2015,"sctg37_mit_inst_transp_impt",2374290
+2015,"sctg38_mit_inst_prec_expt",2841320
+2015,"sctg38_mit_inst_prec_impt",3525761
+2015,"sctg39_oth_furn_expt",1384750
+2015,"sctg39_oth_furn_impt",2001172
+2015,"sctg40_oth_misc_expt",2234621
+2015,"sctg40_oth_misc_impt",5285635
+2015,"sctg41_waste_scrap_expt",560162
+2015,"sctg41_waste_scrap_impt",536553
+2015,"transport_expt",3621975
+2015,"transport_impt",3533395
+2015,"wholesale trade_expt",3803615
+2015,"wholesale trade_impt",2363244
+2016,"accommodations_expt",3919890
+2016,"accommodations_impt",2868259
+2016,"communications and utilities_expt",6523019
+2016,"communications and utilities_impt",9091842
+2016,"construction_expt",11774172
+2016,"construction_impt",13771569
+2016,"education reports to sponsors_expt",125644
+2016,"education reports to sponsors_impt",40889
+2016,"energy_expt",4121763
+2016,"energy_impt",1326565
+2016,"entertainment services_expt",498176
+2016,"entertainment services_impt",1241148
+2016,"fire business and professional services_expt",10080078
+2016,"fire business and professional services_impt",34613916
+2016,"food services_expt",874316
+2016,"food services_impt",371545
+2016,"government administration_expt",4172776
+2016,"government administration_impt",3894621
+2016,"health services_expt",7712331
+2016,"health services_impt",1343572
+2016,"higher education_expt",1053418
+2016,"higher education_impt",914079
+2016,"personal and other services and amusements_expt",5882551
+2016,"personal and other services and amusements_impt",1939499
+2016,"retail trade_expt",4957561
+2016,"retail trade_impt",2218599
+2016,"sctg01_fkp_lvsk_expt",522860
+2016,"sctg01_fkp_lvsk_impt",315968
+2016,"sctg02_fkp_agri_cereal_expt",618042
+2016,"sctg02_fkp_agri_cereal_impt",725110
+2016,"sctg03_fkp_agri_other_expt",8627546
+2016,"sctg03_fkp_agri_other_impt",1317682
+2016,"sctg04_fkp_feed_expt",198654
+2016,"sctg04_fkp_feed_impt",875551
+2016,"sctg05_fkp_food_meat_expt",2434202
+2016,"sctg05_fkp_food_meat_impt",3353362
+2016,"sctg06_fkp_agri_grain_expt",912082
+2016,"sctg06_fkp_agri_grain_impt",970420
+2016,"sctg07_fkp_food_prep_expt",11285123
+2016,"sctg07_fkp_food_prep_impt",6132267
+2016,"sctg08_fkp_food_alc_expt",1524138
+2016,"sctg08_fkp_food_alc_impt",1588062
+2016,"sctg10_cms_clay_expt",132571
+2016,"sctg10_cms_clay_impt",85859
+2016,"sctg11_cms_sand_expt",225618
+2016,"sctg11_cms_sand_impt",21054
+2016,"sctg13_cms_mine_nonmet_expt",47141
+2016,"sctg13_cms_mine_nonmet_impt",172690
+2016,"sctg14_cms_mine_met_expt",1611984
+2016,"sctg14_cms_mine_met_impt",623278
+2016,"sctg15_pcc_coal_expt",41620
+2016,"sctg15_pcc_coal_impt",906557
+2016,"sctg16_pcc_petr_crude_expt",304823
+2016,"sctg16_pcc_petr_crude_impt",2146822
+2016,"sctg17_pcc_fuel_expt",27497
+2016,"sctg17_pcc_fuel_impt",6523957
+2016,"sctg18_pcc_petr_oil_expt",13749
+2016,"sctg18_pcc_petr_oil_impt",3261979
+2016,"sctg19_pcc_coal_prod_expt",247323
+2016,"sctg19_pcc_coal_prod_impt",4797670
+2016,"sctg20_pcc_chem_basic_expt",1326256
+2016,"sctg20_pcc_chem_basic_impt",2387188
+2016,"sctg21_pcc_chem_pharma_expt",961621
+2016,"sctg21_pcc_chem_pharma_impt",7025429
+2016,"sctg22_pcc_chem_fert_expt",206902
+2016,"sctg22_pcc_chem_fert_impt",481417
+2016,"sctg23_pcc_chem_prod_expt",1196233
+2016,"sctg23_pcc_chem_prod_impt",3896629
+2016,"sctg24_pcc_petr_plast_expt",2499865
+2016,"sctg24_pcc_petr_plast_impt",5396770
+2016,"sctg25_fwp_logs_expt",1264720
+2016,"sctg25_fwp_logs_impt",391344
+2016,"sctg26_fwp_wood_expt",5421272
+2016,"sctg26_fwp_wood_impt",742064
+2016,"sctg27_ppp_papr_puplp_expt",4546188
+2016,"sctg27_ppp_papr_puplp_impt",969356
+2016,"sctg28_ppp_papr_paper_expt",880486
+2016,"sctg28_ppp_papr_paper_impt",1466622
+2016,"sctg29_ppp_papr_print_expt",1175681
+2016,"sctg29_ppp_papr_print_impt",1954956
+2016,"sctg30_oth_clth_expt",626596
+2016,"sctg30_oth_clth_impt",3917450
+2016,"sctg31_cms_min_expt",1097659
+2016,"sctg31_cms_min_impt",1625055
+2016,"sctg32_mit_metl_base_expt",3769052
+2016,"sctg32_mit_metl_base_impt",4806095
+2016,"sctg33_mit_metl_prod_expt",3105505
+2016,"sctg33_mit_metl_prod_impt",3338009
+2016,"sctg34_mit_mach_expt",6459533
+2016,"sctg34_mit_mach_impt",8763010
+2016,"sctg35_mit_elct_expt",32301130
+2016,"sctg35_mit_elct_impt",13990261
+2016,"sctg36_mit_tran_expt",4596231
+2016,"sctg36_mit_tran_impt",8131467
+2016,"sctg37_mit_inst_transp_expt",3246183
+2016,"sctg37_mit_inst_transp_impt",2414602
+2016,"sctg38_mit_inst_prec_expt",3008404
+2016,"sctg38_mit_inst_prec_impt",3598487
+2016,"sctg39_oth_furn_expt",1446216
+2016,"sctg39_oth_furn_impt",2037381
+2016,"sctg40_oth_misc_expt",2327672
+2016,"sctg40_oth_misc_impt",5382277
+2016,"sctg41_waste_scrap_expt",567406
+2016,"sctg41_waste_scrap_impt",544710
+2016,"transport_expt",3706276
+2016,"transport_impt",3613769
+2016,"wholesale trade_expt",3912385
+2016,"wholesale trade_impt",2426387
+2017,"accommodations_expt",4004632
+2017,"accommodations_impt",2921819
+2017,"communications and utilities_expt",6678201
+2017,"communications and utilities_impt",9306446
+2017,"construction_expt",11858981
+2017,"construction_impt",13947396
+2017,"education reports to sponsors_expt",129395
+2017,"education reports to sponsors_impt",41390
+2017,"energy_expt",4284472
+2017,"energy_impt",1355781
+2017,"entertainment services_expt",509722
+2017,"entertainment services_impt",1264881
+2017,"fire business and professional services_expt",10405797
+2017,"fire business and professional services_impt",35497196
+2017,"food services_expt",893636
+2017,"food services_impt",377399
+2017,"government administration_expt",4268823
+2017,"government administration_impt",3942883
+2017,"health services_expt",7954523
+2017,"health services_impt",1360173
+2017,"higher education_expt",1074515
+2017,"higher education_impt",926086
+2017,"personal and other services and amusements_expt",6067552
+2017,"personal and other services and amusements_impt",1970640
+2017,"retail trade_expt",5124307
+2017,"retail trade_impt",2258740
+2017,"sctg01_fkp_lvsk_expt",538072
+2017,"sctg01_fkp_lvsk_impt",322535
+2017,"sctg02_fkp_agri_cereal_expt",634377
+2017,"sctg02_fkp_agri_cereal_impt",740062
+2017,"sctg03_fkp_agri_other_expt",8877250
+2017,"sctg03_fkp_agri_other_impt",1344287
+2017,"sctg04_fkp_feed_expt",203595
+2017,"sctg04_fkp_feed_impt",890411
+2017,"sctg05_fkp_food_meat_expt",2482724
+2017,"sctg05_fkp_food_meat_impt",3409387
+2017,"sctg06_fkp_agri_grain_expt",926342
+2017,"sctg06_fkp_agri_grain_impt",985120
+2017,"sctg07_fkp_food_prep_expt",11483489
+2017,"sctg07_fkp_food_prep_impt",6233670
+2017,"sctg08_fkp_food_alc_expt",1566940
+2017,"sctg08_fkp_food_alc_impt",1610009
+2017,"sctg10_cms_clay_expt",136927
+2017,"sctg10_cms_clay_impt",87424
+2017,"sctg11_cms_sand_expt",232887
+2017,"sctg11_cms_sand_impt",21425
+2017,"sctg13_cms_mine_nonmet_expt",48675
+2017,"sctg13_cms_mine_nonmet_impt",176572
+2017,"sctg14_cms_mine_met_expt",1638372
+2017,"sctg14_cms_mine_met_impt",637001
+2017,"sctg15_pcc_coal_expt",42292
+2017,"sctg15_pcc_coal_impt",935213
+2017,"sctg16_pcc_petr_crude_expt",312552
+2017,"sctg16_pcc_petr_crude_impt",2240468
+2017,"sctg17_pcc_fuel_expt",28486
+2017,"sctg17_pcc_fuel_impt",6658491
+2017,"sctg18_pcc_petr_oil_expt",14243
+2017,"sctg18_pcc_petr_oil_impt",3329246
+2017,"sctg19_pcc_coal_prod_expt",255460
+2017,"sctg19_pcc_coal_prod_impt",4917361
+2017,"sctg20_pcc_chem_basic_expt",1357023
+2017,"sctg20_pcc_chem_basic_impt",2495497
+2017,"sctg21_pcc_chem_pharma_expt",1015411
+2017,"sctg21_pcc_chem_pharma_impt",7158005
+2017,"sctg22_pcc_chem_fert_expt",212177
+2017,"sctg22_pcc_chem_fert_impt",492827
+2017,"sctg23_pcc_chem_prod_expt",1226794
+2017,"sctg23_pcc_chem_prod_impt",3990355
+2017,"sctg24_pcc_petr_plast_expt",2567159
+2017,"sctg24_pcc_petr_plast_impt",5551281
+2017,"sctg25_fwp_logs_expt",1301259
+2017,"sctg25_fwp_logs_impt",398888
+2017,"sctg26_fwp_wood_expt",5473760
+2017,"sctg26_fwp_wood_impt",754125
+2017,"sctg27_ppp_papr_puplp_expt",4606354
+2017,"sctg27_ppp_papr_puplp_impt",992940
+2017,"sctg28_ppp_papr_paper_expt",900285
+2017,"sctg28_ppp_papr_paper_impt",1498444
+2017,"sctg29_ppp_papr_print_expt",1231625
+2017,"sctg29_ppp_papr_print_impt",1996485
+2017,"sctg30_oth_clth_expt",650333
+2017,"sctg30_oth_clth_impt",3980878
+2017,"sctg31_cms_min_expt",1131428
+2017,"sctg31_cms_min_impt",1665329
+2017,"sctg32_mit_metl_base_expt",3871347
+2017,"sctg32_mit_metl_base_impt",5053111
+2017,"sctg33_mit_metl_prod_expt",3194795
+2017,"sctg33_mit_metl_prod_impt",3445338
+2017,"sctg34_mit_mach_expt",6827155
+2017,"sctg34_mit_mach_impt",8979144
+2017,"sctg35_mit_elct_expt",34739739
+2017,"sctg35_mit_elct_impt",14514257
+2017,"sctg36_mit_tran_expt",4702254
+2017,"sctg36_mit_tran_impt",8270318
+2017,"sctg37_mit_inst_transp_expt",3302540
+2017,"sctg37_mit_inst_transp_impt",2451702
+2017,"sctg38_mit_inst_prec_expt",3176055
+2017,"sctg38_mit_inst_prec_impt",3672418
+2017,"sctg39_oth_furn_expt",1498199
+2017,"sctg39_oth_furn_impt",2069541
+2017,"sctg40_oth_misc_expt",2408762
+2017,"sctg40_oth_misc_impt",5480679
+2017,"sctg41_waste_scrap_expt",575194
+2017,"sctg41_waste_scrap_impt",557195
+2017,"transport_expt",3798538
+2017,"transport_impt",3695359
+2017,"wholesale trade_expt",4026548
+2017,"wholesale trade_impt",2492054
+2018,"accommodations_expt",4088042
+2018,"accommodations_impt",2976535
+2018,"communications and utilities_expt",6827410
+2018,"communications and utilities_impt",9526942
+2018,"construction_expt",11948005
+2018,"construction_impt",14128941
+2018,"education reports to sponsors_expt",133380
+2018,"education reports to sponsors_impt",41907
+2018,"energy_expt",4450740
+2018,"energy_impt",1385902
+2018,"entertainment services_expt",521734
+2018,"entertainment services_impt",1288859
+2018,"fire business and professional services_expt",10726347
+2018,"fire business and professional services_impt",36405584
+2018,"food services_expt",912897
+2018,"food services_impt",383376
+2018,"government administration_expt",4359054
+2018,"government administration_impt",3992760
+2018,"health services_expt",8193078
+2018,"health services_impt",1377276
+2018,"higher education_expt",1096558
+2018,"higher education_impt",938405
+2018,"personal and other services and amusements_expt",6260456
+2018,"personal and other services and amusements_impt",2002501
+2018,"retail trade_expt",5285087
+2018,"retail trade_impt",2300350
+2018,"sctg01_fkp_lvsk_expt",552877
+2018,"sctg01_fkp_lvsk_impt",328839
+2018,"sctg02_fkp_agri_cereal_expt",650587
+2018,"sctg02_fkp_agri_cereal_impt",754537
+2018,"sctg03_fkp_agri_other_expt",9120551
+2018,"sctg03_fkp_agri_other_impt",1370072
+2018,"sctg04_fkp_feed_expt",208346
+2018,"sctg04_fkp_feed_impt",905236
+2018,"sctg05_fkp_food_meat_expt",2527855
+2018,"sctg05_fkp_food_meat_impt",3464899
+2018,"sctg06_fkp_agri_grain_expt",940107
+2018,"sctg06_fkp_agri_grain_impt",999865
+2018,"sctg07_fkp_food_prep_expt",11673172
+2018,"sctg07_fkp_food_prep_impt",6333556
+2018,"sctg08_fkp_food_alc_expt",1606807
+2018,"sctg08_fkp_food_alc_impt",1632310
+2018,"sctg10_cms_clay_expt",141638
+2018,"sctg10_cms_clay_impt",88879
+2018,"sctg11_cms_sand_expt",240739
+2018,"sctg11_cms_sand_impt",21770
+2018,"sctg13_cms_mine_nonmet_expt",50321
+2018,"sctg13_cms_mine_nonmet_impt",180247
+2018,"sctg14_cms_mine_met_expt",1674194
+2018,"sctg14_cms_mine_met_impt",651218
+2018,"sctg15_pcc_coal_expt",43209
+2018,"sctg15_pcc_coal_impt",964410
+2018,"sctg16_pcc_petr_crude_expt",320518
+2018,"sctg16_pcc_petr_crude_impt",2333991
+2018,"sctg17_pcc_fuel_expt",29542
+2018,"sctg17_pcc_fuel_impt",6794818
+2018,"sctg18_pcc_petr_oil_expt",14771
+2018,"sctg18_pcc_petr_oil_impt",3397409
+2018,"sctg19_pcc_coal_prod_expt",264012
+2018,"sctg19_pcc_coal_prod_impt",5042055
+2018,"sctg20_pcc_chem_basic_expt",1388049
+2018,"sctg20_pcc_chem_basic_impt",2617603
+2018,"sctg21_pcc_chem_pharma_expt",1073487
+2018,"sctg21_pcc_chem_pharma_impt",7292651
+2018,"sctg22_pcc_chem_fert_expt",217384
+2018,"sctg22_pcc_chem_fert_impt",504075
+2018,"sctg23_pcc_chem_prod_expt",1257631
+2018,"sctg23_pcc_chem_prod_impt",4088065
+2018,"sctg24_pcc_petr_plast_expt",2635405
+2018,"sctg24_pcc_petr_plast_impt",5715408
+2018,"sctg25_fwp_logs_expt",1333829
+2018,"sctg25_fwp_logs_impt",405455
+2018,"sctg26_fwp_wood_expt",5521185
+2018,"sctg26_fwp_wood_impt",766256
+2018,"sctg27_ppp_papr_puplp_expt",4662553
+2018,"sctg27_ppp_papr_puplp_impt",1016230
+2018,"sctg28_ppp_papr_paper_expt",919597
+2018,"sctg28_ppp_papr_paper_impt",1530303
+2018,"sctg29_ppp_papr_print_expt",1285560
+2018,"sctg29_ppp_papr_print_impt",2037884
+2018,"sctg30_oth_clth_expt",674431
+2018,"sctg30_oth_clth_impt",4046831
+2018,"sctg31_cms_min_expt",1162095
+2018,"sctg31_cms_min_impt",1705722
+2018,"sctg32_mit_metl_base_expt",3967899
+2018,"sctg32_mit_metl_base_impt",5332986
+2018,"sctg33_mit_metl_prod_expt",3287633
+2018,"sctg33_mit_metl_prod_impt",3562688
+2018,"sctg34_mit_mach_expt",7221440
+2018,"sctg34_mit_mach_impt",9215419
+2018,"sctg35_mit_elct_expt",37608727
+2018,"sctg35_mit_elct_impt",15098791
+2018,"sctg36_mit_tran_expt",4877724
+2018,"sctg36_mit_tran_impt",8433104
+2018,"sctg37_mit_inst_transp_expt",3418863
+2018,"sctg37_mit_inst_transp_impt",2498279
+2018,"sctg38_mit_inst_prec_expt",3346896
+2018,"sctg38_mit_inst_prec_impt",3751056
+2018,"sctg39_oth_furn_expt",1547199
+2018,"sctg39_oth_furn_impt",2102748
+2018,"sctg40_oth_misc_expt",2491867
+2018,"sctg40_oth_misc_impt",5583471
+2018,"sctg41_waste_scrap_expt",583176
+2018,"sctg41_waste_scrap_impt",567526
+2018,"transport_expt",3890328
+2018,"transport_impt",3777567
+2018,"wholesale trade_expt",4138159
+2018,"wholesale trade_impt",2561796
+2019,"accommodations_expt",4173042
+2019,"accommodations_impt",3029599
+2019,"communications and utilities_expt",6978062
+2019,"communications and utilities_impt",9742747
+2019,"construction_expt",12072611
+2019,"construction_impt",14315466
+2019,"education reports to sponsors_expt",137819
+2019,"education reports to sponsors_impt",42440
+2019,"energy_expt",4604719
+2019,"energy_impt",1416376
+2019,"entertainment services_expt",533530
+2019,"entertainment services_impt",1312553
+2019,"fire business and professional services_expt",11016386
+2019,"fire business and professional services_impt",37293568
+2019,"food services_expt",932451
+2019,"food services_impt",389382
+2019,"government administration_expt",4452773
+2019,"government administration_impt",4043925
+2019,"health services_expt",8458709
+2019,"health services_impt",1394929
+2019,"higher education_expt",1120366
+2019,"higher education_impt",951018
+2019,"personal and other services and amusements_expt",6462961
+2019,"personal and other services and amusements_impt",2034667
+2019,"retail trade_expt",5437155
+2019,"retail trade_impt",2342502
+2019,"sctg01_fkp_lvsk_expt",566096
+2019,"sctg01_fkp_lvsk_impt",335552
+2019,"sctg02_fkp_agri_cereal_expt",665291
+2019,"sctg02_fkp_agri_cereal_impt",771388
+2019,"sctg03_fkp_agri_other_expt",9337963
+2019,"sctg03_fkp_agri_other_impt",1398289
+2019,"sctg04_fkp_feed_expt",213136
+2019,"sctg04_fkp_feed_impt",920040
+2019,"sctg05_fkp_food_meat_expt",2579059
+2019,"sctg05_fkp_food_meat_impt",3527248
+2019,"sctg06_fkp_agri_grain_expt",961148
+2019,"sctg06_fkp_agri_grain_impt",1016802
+2019,"sctg07_fkp_food_prep_expt",11924438
+2019,"sctg07_fkp_food_prep_impt",6450091
+2019,"sctg08_fkp_food_alc_expt",1658397
+2019,"sctg08_fkp_food_alc_impt",1655878
+2019,"sctg10_cms_clay_expt",146880
+2019,"sctg10_cms_clay_impt",90461
+2019,"sctg11_cms_sand_expt",249515
+2019,"sctg11_cms_sand_impt",22160
+2019,"sctg13_cms_mine_nonmet_expt",52157
+2019,"sctg13_cms_mine_nonmet_impt",184031
+2019,"sctg14_cms_mine_met_expt",1721815
+2019,"sctg14_cms_mine_met_impt",666205
+2019,"sctg15_pcc_coal_expt",44433
+2019,"sctg15_pcc_coal_impt",992309
+2019,"sctg16_pcc_petr_crude_expt",328230
+2019,"sctg16_pcc_petr_crude_impt",2417616
+2019,"sctg17_pcc_fuel_expt",30541
+2019,"sctg17_pcc_fuel_impt",6933447
+2019,"sctg18_pcc_petr_oil_expt",15270
+2019,"sctg18_pcc_petr_oil_impt",3466724
+2019,"sctg19_pcc_coal_prod_expt",272435
+2019,"sctg19_pcc_coal_prod_impt",5166927
+2019,"sctg20_pcc_chem_basic_expt",1421492
+2019,"sctg20_pcc_chem_basic_impt",2734357
+2019,"sctg21_pcc_chem_pharma_expt",1130292
+2019,"sctg21_pcc_chem_pharma_impt",7433563
+2019,"sctg22_pcc_chem_fert_expt",223184
+2019,"sctg22_pcc_chem_fert_impt",515088
+2019,"sctg23_pcc_chem_prod_expt",1291311
+2019,"sctg23_pcc_chem_prod_impt",4183901
+2019,"sctg24_pcc_petr_plast_expt",2713296
+2019,"sctg24_pcc_petr_plast_impt",5889338
+2019,"sctg25_fwp_logs_expt",1360292
+2019,"sctg25_fwp_logs_impt",412838
+2019,"sctg26_fwp_wood_expt",5615109
+2019,"sctg26_fwp_wood_impt",781039
+2019,"sctg27_ppp_papr_puplp_expt",4729905
+2019,"sctg27_ppp_papr_puplp_impt",1040558
+2019,"sctg28_ppp_papr_paper_expt",941438
+2019,"sctg28_ppp_papr_paper_impt",1565790
+2019,"sctg29_ppp_papr_print_expt",1335977
+2019,"sctg29_ppp_papr_print_impt",2078820
+2019,"sctg30_oth_clth_expt",699018
+2019,"sctg30_oth_clth_impt",4115359
+2019,"sctg31_cms_min_expt",1195807
+2019,"sctg31_cms_min_impt",1748307
+2019,"sctg32_mit_metl_base_expt",4021964
+2019,"sctg32_mit_metl_base_impt",5585258
+2019,"sctg33_mit_metl_prod_expt",3352429
+2019,"sctg33_mit_metl_prod_impt",3675831
+2019,"sctg34_mit_mach_expt",7587532
+2019,"sctg34_mit_mach_impt",9455653
+2019,"sctg35_mit_elct_expt",40230050
+2019,"sctg35_mit_elct_impt",15649168
+2019,"sctg36_mit_tran_expt",5080495
+2019,"sctg36_mit_tran_impt",8607914
+2019,"sctg37_mit_inst_transp_expt",3548833
+2019,"sctg37_mit_inst_transp_impt",2548222
+2019,"sctg38_mit_inst_prec_expt",3510345
+2019,"sctg38_mit_inst_prec_impt",3833617
+2019,"sctg39_oth_furn_expt",1602288
+2019,"sctg39_oth_furn_impt",2137194
+2019,"sctg40_oth_misc_expt",2580046
+2019,"sctg40_oth_misc_impt",5686428
+2019,"sctg41_waste_scrap_expt",591150
+2019,"sctg41_waste_scrap_impt",573891
+2019,"transport_expt",3989544
+2019,"transport_impt",3858471
+2019,"wholesale trade_expt",4256735
+2019,"wholesale trade_impt",2631417
+2020,"accommodations_expt",4263098
+2020,"accommodations_impt",3082692
+2020,"communications and utilities_expt",7155279
+2020,"communications and utilities_impt",9962827
+2020,"construction_expt",12208119
+2020,"construction_impt",14508951
+2020,"education reports to sponsors_expt",142080
+2020,"education reports to sponsors_impt",42990
+2020,"energy_expt",4786802
+2020,"energy_impt",1447809
+2020,"entertainment services_expt",545527
+2020,"entertainment services_impt",1337033
+2020,"fire business and professional services_expt",11303624
+2020,"fire business and professional services_impt",38191836
+2020,"food services_expt",952960
+2020,"food services_impt",395532
+2020,"government administration_expt",4454592
+2020,"government administration_impt",4096550
+2020,"health services_expt",8736217
+2020,"health services_impt",1413143
+2020,"higher education_expt",1143830
+2020,"higher education_impt",964054
+2020,"personal and other services and amusements_expt",6667735
+2020,"personal and other services and amusements_impt",2067661
+2020,"retail trade_expt",5581820
+2020,"retail trade_impt",2385753
+2020,"sctg01_fkp_lvsk_expt",578007
+2020,"sctg01_fkp_lvsk_impt",342634
+2020,"sctg02_fkp_agri_cereal_expt",678914
+2020,"sctg02_fkp_agri_cereal_impt",789575
+2020,"sctg03_fkp_agri_other_expt",9534192
+2020,"sctg03_fkp_agri_other_impt",1427748
+2020,"sctg04_fkp_feed_expt",217874
+2020,"sctg04_fkp_feed_impt",934884
+2020,"sctg05_fkp_food_meat_expt",2637052
+2020,"sctg05_fkp_food_meat_impt",3594564
+2020,"sctg06_fkp_agri_grain_expt",985938
+2020,"sctg06_fkp_agri_grain_impt",1035240
+2020,"sctg07_fkp_food_prep_expt",12212820
+2020,"sctg07_fkp_food_prep_impt",6578053
+2020,"sctg08_fkp_food_alc_expt",1719529
+2020,"sctg08_fkp_food_alc_impt",1680675
+2020,"sctg10_cms_clay_expt",151980
+2020,"sctg10_cms_clay_impt",92165
+2020,"sctg11_cms_sand_expt",258103
+2020,"sctg11_cms_sand_impt",22617
+2020,"sctg13_cms_mine_nonmet_expt",53954
+2020,"sctg13_cms_mine_nonmet_impt",188044
+2020,"sctg14_cms_mine_met_expt",1776412
+2020,"sctg14_cms_mine_met_impt",681533
+2020,"sctg15_pcc_coal_expt",45840
+2020,"sctg15_pcc_coal_impt",1025845
+2020,"sctg16_pcc_petr_crude_expt",335572
+2020,"sctg16_pcc_petr_crude_impt",2508323
+2020,"sctg17_pcc_fuel_expt",31471
+2020,"sctg17_pcc_fuel_impt",7080698
+2020,"sctg18_pcc_petr_oil_expt",15735
+2020,"sctg18_pcc_petr_oil_impt",3540349
+2020,"sctg19_pcc_coal_prod_expt",280764
+2020,"sctg19_pcc_coal_prod_impt",5297614
+2020,"sctg20_pcc_chem_basic_expt",1458277
+2020,"sctg20_pcc_chem_basic_impt",2853018
+2020,"sctg21_pcc_chem_pharma_expt",1187054
+2020,"sctg21_pcc_chem_pharma_impt",7578300
+2020,"sctg22_pcc_chem_fert_expt",229264
+2020,"sctg22_pcc_chem_fert_impt",525888
+2020,"sctg23_pcc_chem_prod_expt",1326892
+2020,"sctg23_pcc_chem_prod_impt",4279799
+2020,"sctg24_pcc_petr_plast_expt",2796018
+2020,"sctg24_pcc_petr_plast_impt",6066976
+2020,"sctg25_fwp_logs_expt",1388864
+2020,"sctg25_fwp_logs_impt",420946
+2020,"sctg26_fwp_wood_expt",5716282
+2020,"sctg26_fwp_wood_impt",796571
+2020,"sctg27_ppp_papr_puplp_expt",4797560
+2020,"sctg27_ppp_papr_puplp_impt",1065574
+2020,"sctg28_ppp_papr_paper_expt",964741
+2020,"sctg28_ppp_papr_paper_impt",1603597
+2020,"sctg29_ppp_papr_print_expt",1385811
+2020,"sctg29_ppp_papr_print_impt",2120222
+2020,"sctg30_oth_clth_expt",725113
+2020,"sctg30_oth_clth_impt",4185896
+2020,"sctg31_cms_min_expt",1235722
+2020,"sctg31_cms_min_impt",1793733
+2020,"sctg32_mit_metl_base_expt",4053339
+2020,"sctg32_mit_metl_base_impt",5826772
+2020,"sctg33_mit_metl_prod_expt",3407052
+2020,"sctg33_mit_metl_prod_impt",3785848
+2020,"sctg34_mit_mach_expt",7938409
+2020,"sctg34_mit_mach_impt",9693943
+2020,"sctg35_mit_elct_expt",42834497
+2020,"sctg35_mit_elct_impt",16192175
+2020,"sctg36_mit_tran_expt",5252996
+2020,"sctg36_mit_tran_impt",8775874
+2020,"sctg37_mit_inst_transp_expt",3654333
+2020,"sctg37_mit_inst_transp_impt",2594938
+2020,"sctg38_mit_inst_prec_expt",3639974
+2020,"sctg38_mit_inst_prec_impt",3916529
+2020,"sctg39_oth_furn_expt",1664212
+2020,"sctg39_oth_furn_impt",2172916
+2020,"sctg40_oth_misc_expt",2664657
+2020,"sctg40_oth_misc_impt",5790424
+2020,"sctg41_waste_scrap_expt",599268
+2020,"sctg41_waste_scrap_impt",577952
+2020,"transport_expt",4089937
+2020,"transport_impt",3942145
+2020,"wholesale trade_expt",4382387
+2020,"wholesale trade_impt",2702092
+2021,"accommodations_expt",4351892
+2021,"accommodations_impt",3133617
+2021,"communications and utilities_expt",7338058
+2021,"communications and utilities_impt",10173931
+2021,"construction_expt",12262173
+2021,"construction_impt",14688239
+2021,"education reports to sponsors_expt",145925
+2021,"education reports to sponsors_impt",43499
+2021,"energy_expt",4962806
+2021,"energy_impt",1478232
+2021,"entertainment services_expt",557158
+2021,"entertainment services_impt",1360677
+2021,"fire business and professional services_expt",11596296
+2021,"fire business and professional services_impt",39094890
+2021,"food services_expt",973107
+2021,"food services_impt",401392
+2021,"government administration_expt",4546006
+2021,"government administration_impt",4145459
+2021,"health services_expt",9056717
+2021,"health services_impt",1430081
+2021,"higher education_expt",1165260
+2021,"higher education_impt",976240
+2021,"personal and other services and amusements_expt",6858821
+2021,"personal and other services and amusements_impt",2099329
+2021,"retail trade_expt",5732897
+2021,"retail trade_impt",2426758
+2021,"sctg01_fkp_lvsk_expt",592038
+2021,"sctg01_fkp_lvsk_impt",349790
+2021,"sctg02_fkp_agri_cereal_expt",694623
+2021,"sctg02_fkp_agri_cereal_impt",807527
+2021,"sctg03_fkp_agri_other_expt",9765079
+2021,"sctg03_fkp_agri_other_impt",1457259
+2021,"sctg04_fkp_feed_expt",222956
+2021,"sctg04_fkp_feed_impt",949706
+2021,"sctg05_fkp_food_meat_expt",2693316
+2021,"sctg05_fkp_food_meat_impt",3659401
+2021,"sctg06_fkp_agri_grain_expt",1007880
+2021,"sctg06_fkp_agri_grain_impt",1052427
+2021,"sctg07_fkp_food_prep_expt",12479472
+2021,"sctg07_fkp_food_prep_impt",6699509
+2021,"sctg08_fkp_food_alc_expt",1782162
+2021,"sctg08_fkp_food_alc_impt",1704138
+2021,"sctg10_cms_clay_expt",157307
+2021,"sctg10_cms_clay_impt",93520
+2021,"sctg11_cms_sand_expt",267025
+2021,"sctg11_cms_sand_impt",22967
+2021,"sctg13_cms_mine_nonmet_expt",55823
+2021,"sctg13_cms_mine_nonmet_impt",192120
+2021,"sctg14_cms_mine_met_expt",1826714
+2021,"sctg14_cms_mine_met_impt",696826
+2021,"sctg15_pcc_coal_expt",47133
+2021,"sctg15_pcc_coal_impt",1056927
+2021,"sctg16_pcc_petr_crude_expt",343712
+2021,"sctg16_pcc_petr_crude_impt",2604004
+2021,"sctg17_pcc_fuel_expt",32484
+2021,"sctg17_pcc_fuel_impt",7221379
+2021,"sctg18_pcc_petr_oil_expt",16242
+2021,"sctg18_pcc_petr_oil_impt",3610689
+2021,"sctg19_pcc_coal_prod_expt",289698
+2021,"sctg19_pcc_coal_prod_impt",5423099
+2021,"sctg20_pcc_chem_basic_expt",1497976
+2021,"sctg20_pcc_chem_basic_impt",2965007
+2021,"sctg21_pcc_chem_pharma_expt",1247336
+2021,"sctg21_pcc_chem_pharma_impt",7727304
+2021,"sctg22_pcc_chem_fert_expt",236301
+2021,"sctg22_pcc_chem_fert_impt",537781
+2021,"sctg23_pcc_chem_prod_expt",1366300
+2021,"sctg23_pcc_chem_prod_impt",4373599
+2021,"sctg24_pcc_petr_plast_expt",2883109
+2021,"sctg24_pcc_petr_plast_impt",6240840
+2021,"sctg25_fwp_logs_expt",1421411
+2021,"sctg25_fwp_logs_impt",426985
+2021,"sctg26_fwp_wood_expt",5747889
+2021,"sctg26_fwp_wood_impt",808127
+2021,"sctg27_ppp_papr_puplp_expt",4871537
+2021,"sctg27_ppp_papr_puplp_impt",1090987
+2021,"sctg28_ppp_papr_paper_expt",989664
+2021,"sctg28_ppp_papr_paper_impt",1640251
+2021,"sctg29_ppp_papr_print_expt",1434764
+2021,"sctg29_ppp_papr_print_impt",2160707
+2021,"sctg30_oth_clth_expt",754121
+2021,"sctg30_oth_clth_impt",4253916
+2021,"sctg31_cms_min_expt",1273550
+2021,"sctg31_cms_min_impt",1833866
+2021,"sctg32_mit_metl_base_expt",4088000
+2021,"sctg32_mit_metl_base_impt",6051615
+2021,"sctg33_mit_metl_prod_expt",3448116
+2021,"sctg33_mit_metl_prod_impt",3887059
+2021,"sctg34_mit_mach_expt",8290455
+2021,"sctg34_mit_mach_impt",9919088
+2021,"sctg35_mit_elct_expt",45179336
+2021,"sctg35_mit_elct_impt",16690354
+2021,"sctg36_mit_tran_expt",5422194
+2021,"sctg36_mit_tran_impt",8935613
+2021,"sctg37_mit_inst_transp_expt",3754880
+2021,"sctg37_mit_inst_transp_impt",2638946
+2021,"sctg38_mit_inst_prec_expt",3762810
+2021,"sctg38_mit_inst_prec_impt",4000424
+2021,"sctg39_oth_furn_expt",1731945
+2021,"sctg39_oth_furn_impt",2204861
+2021,"sctg40_oth_misc_expt",2744028
+2021,"sctg40_oth_misc_impt",5888734
+2021,"sctg41_waste_scrap_expt",606877
+2021,"sctg41_waste_scrap_impt",583098
+2021,"transport_expt",4184766
+2021,"transport_impt",4023757
+2021,"wholesale trade_expt",4508361
+2021,"wholesale trade_impt",2769268
+2022,"accommodations_expt",4447407
+2022,"accommodations_impt",3182489
+2022,"communications and utilities_expt",7482157
+2022,"communications and utilities_impt",10334692
+2022,"construction_expt",12362770
+2022,"construction_impt",14869762
+2022,"education reports to sponsors_expt",148592
+2022,"education reports to sponsors_impt",44024
+2022,"energy_expt",5086449
+2022,"energy_impt",1503200
+2022,"entertainment services_expt",568976
+2022,"entertainment services_impt",1382565
+2022,"fire business and professional services_expt",11848856
+2022,"fire business and professional services_impt",39846238
+2022,"food services_expt",994569
+2022,"food services_impt",407128
+2022,"government administration_expt",4646266
+2022,"government administration_impt",4195761
+2022,"health services_expt",9299722
+2022,"health services_impt",1447456
+2022,"higher education_expt",1182893
+2022,"higher education_impt",988549
+2022,"personal and other services and amusements_expt",7008990
+2022,"personal and other services and amusements_impt",2129284
+2022,"retail trade_expt",5890930
+2022,"retail trade_impt",2462048
+2022,"sctg01_fkp_lvsk_expt",603824
+2022,"sctg01_fkp_lvsk_impt",356721
+2022,"sctg02_fkp_agri_cereal_expt",708358
+2022,"sctg02_fkp_agri_cereal_impt",824058
+2022,"sctg03_fkp_agri_other_expt",9959473
+2022,"sctg03_fkp_agri_other_impt",1483826
+2022,"sctg04_fkp_feed_expt",227482
+2022,"sctg04_fkp_feed_impt",964202
+2022,"sctg05_fkp_food_meat_expt",2746659
+2022,"sctg05_fkp_food_meat_impt",3722736
+2022,"sctg06_fkp_agri_grain_expt",1028765
+2022,"sctg06_fkp_agri_grain_impt",1068914
+2022,"sctg07_fkp_food_prep_expt",12738931
+2022,"sctg07_fkp_food_prep_impt",6815967
+2022,"sctg08_fkp_food_alc_expt",1821259
+2022,"sctg08_fkp_food_alc_impt",1726908
+2022,"sctg10_cms_clay_expt",162112
+2022,"sctg10_cms_clay_impt",94719
+2022,"sctg11_cms_sand_expt",275107
+2022,"sctg11_cms_sand_impt",23248
+2022,"sctg13_cms_mine_nonmet_expt",57500
+2022,"sctg13_cms_mine_nonmet_impt",195275
+2022,"sctg14_cms_mine_met_expt",1883001
+2022,"sctg14_cms_mine_met_impt",711851
+2022,"sctg15_pcc_coal_expt",48586
+2022,"sctg15_pcc_coal_impt",1081667
+2022,"sctg16_pcc_petr_crude_expt",351150
+2022,"sctg16_pcc_petr_crude_impt",2668030
+2022,"sctg17_pcc_fuel_expt",33212
+2022,"sctg17_pcc_fuel_impt",7350364
+2022,"sctg18_pcc_petr_oil_expt",16606
+2022,"sctg18_pcc_petr_oil_impt",3675182
+2022,"sctg19_pcc_coal_prod_expt",296406
+2022,"sctg19_pcc_coal_prod_impt",5518661
+2022,"sctg20_pcc_chem_basic_expt",1532113
+2022,"sctg20_pcc_chem_basic_impt",3010100
+2022,"sctg21_pcc_chem_pharma_expt",1295249
+2022,"sctg21_pcc_chem_pharma_impt",7859906
+2022,"sctg22_pcc_chem_fert_expt",240935
+2022,"sctg22_pcc_chem_fert_impt",547536
+2022,"sctg23_pcc_chem_prod_expt",1394922
+2022,"sctg23_pcc_chem_prod_impt",4446720
+2022,"sctg24_pcc_petr_plast_expt",2945120
+2022,"sctg24_pcc_petr_plast_impt",6369293
+2022,"sctg25_fwp_logs_expt",1439587
+2022,"sctg25_fwp_logs_impt",431576
+2022,"sctg26_fwp_wood_expt",5804752
+2022,"sctg26_fwp_wood_impt",819546
+2022,"sctg27_ppp_papr_puplp_expt",4950613
+2022,"sctg27_ppp_papr_puplp_impt",1115723
+2022,"sctg28_ppp_papr_paper_expt",1016960
+2022,"sctg28_ppp_papr_paper_impt",1672995
+2022,"sctg29_ppp_papr_print_expt",1482772
+2022,"sctg29_ppp_papr_print_impt",2199085
+2022,"sctg30_oth_clth_expt",752682
+2022,"sctg30_oth_clth_impt",4307997
+2022,"sctg31_cms_min_expt",1293556
+2022,"sctg31_cms_min_impt",1860389
+2022,"sctg32_mit_metl_base_expt",4122973
+2022,"sctg32_mit_metl_base_impt",6141903
+2022,"sctg33_mit_metl_prod_expt",3498341
+2022,"sctg33_mit_metl_prod_impt",3954762
+2022,"sctg34_mit_mach_expt",8571356
+2022,"sctg34_mit_mach_impt",10104380
+2022,"sctg35_mit_elct_expt",45632617
+2022,"sctg35_mit_elct_impt",16914236
+2022,"sctg36_mit_tran_expt",5544624
+2022,"sctg36_mit_tran_impt",9077413
+2022,"sctg37_mit_inst_transp_expt",3830218
+2022,"sctg37_mit_inst_transp_impt",2680731
+2022,"sctg38_mit_inst_prec_expt",3828431
+2022,"sctg38_mit_inst_prec_impt",4069751
+2022,"sctg39_oth_furn_expt",1783170
+2022,"sctg39_oth_furn_impt",2232940
+2022,"sctg40_oth_misc_expt",2814424
+2022,"sctg40_oth_misc_impt",5977930
+2022,"sctg41_waste_scrap_expt",614940
+2022,"sctg41_waste_scrap_impt",588047
+2022,"transport_expt",4289202
+2022,"transport_impt",4095722
+2022,"wholesale trade_expt",4648280
+2022,"wholesale trade_impt",2817300
+2023,"accommodations_expt",4555434
+2023,"accommodations_impt",3234587
+2023,"communications and utilities_expt",7642356
+2023,"communications and utilities_impt",10500536
+2023,"construction_expt",12713304
+2023,"construction_impt",15056520
+2023,"education reports to sponsors_expt",151653
+2023,"education reports to sponsors_impt",44565
+2023,"energy_expt",5203680
+2023,"energy_impt",1528572
+2023,"entertainment services_expt",582164
+2023,"entertainment services_impt",1406030
+2023,"fire business and professional services_expt",12132529
+2023,"fire business and professional services_impt",40635999
+2023,"food services_expt",1018854
+2023,"food services_impt",413116
+2023,"government administration_expt",4759719
+2023,"government administration_impt",4247655
+2023,"health services_expt",9532967
+2023,"health services_impt",1465346
+2023,"higher education_expt",1202297
+2023,"higher education_impt",1001228
+2023,"personal and other services and amusements_expt",7178702
+2023,"personal and other services and amusements_impt",2161223
+2023,"retail trade_expt",6054567
+2023,"retail trade_impt",2499029
+2023,"sctg01_fkp_lvsk_expt",616002
+2023,"sctg01_fkp_lvsk_impt",363864
+2023,"sctg02_fkp_agri_cereal_expt",722550
+2023,"sctg02_fkp_agri_cereal_impt",840964
+2023,"sctg03_fkp_agri_other_expt",10160347
+2023,"sctg03_fkp_agri_other_impt",1511120
+2023,"sctg04_fkp_feed_expt",232150
+2023,"sctg04_fkp_feed_impt",979215
+2023,"sctg05_fkp_food_meat_expt",2800496
+2023,"sctg05_fkp_food_meat_impt",3788483
+2023,"sctg06_fkp_agri_grain_expt",1050247
+2023,"sctg06_fkp_agri_grain_impt",1085852
+2023,"sctg07_fkp_food_prep_expt",13004894
+2023,"sctg07_fkp_food_prep_impt",6934279
+2023,"sctg08_fkp_food_alc_expt",1848906
+2023,"sctg08_fkp_food_alc_impt",1749891
+2023,"sctg10_cms_clay_expt",167735
+2023,"sctg10_cms_clay_impt",97026
+2023,"sctg11_cms_sand_expt",284628
+2023,"sctg11_cms_sand_impt",23761
+2023,"sctg13_cms_mine_nonmet_expt",59487
+2023,"sctg13_cms_mine_nonmet_impt",198972
+2023,"sctg14_cms_mine_met_expt",1948964
+2023,"sctg14_cms_mine_met_impt",728608
+2023,"sctg15_pcc_coal_expt",50288
+2023,"sctg15_pcc_coal_impt",1105214
+2023,"sctg16_pcc_petr_crude_expt",359070
+2023,"sctg16_pcc_petr_crude_impt",2727900
+2023,"sctg17_pcc_fuel_expt",33778
+2023,"sctg17_pcc_fuel_impt",7488319
+2023,"sctg18_pcc_petr_oil_expt",16889
+2023,"sctg18_pcc_petr_oil_impt",3744159
+2023,"sctg19_pcc_coal_prod_expt",302367
+2023,"sctg19_pcc_coal_prod_impt",5616773
+2023,"sctg20_pcc_chem_basic_expt",1570423
+2023,"sctg20_pcc_chem_basic_impt",3037705
+2023,"sctg21_pcc_chem_pharma_expt",1338477
+2023,"sctg21_pcc_chem_pharma_impt",7991241
+2023,"sctg22_pcc_chem_fert_expt",245155
+2023,"sctg22_pcc_chem_fert_impt",558026
+2023,"sctg23_pcc_chem_prod_expt",1426452
+2023,"sctg23_pcc_chem_prod_impt",4520766
+2023,"sctg24_pcc_petr_plast_expt",3011128
+2023,"sctg24_pcc_petr_plast_impt",6500865
+2023,"sctg25_fwp_logs_expt",1454432
+2023,"sctg25_fwp_logs_impt",438292
+2023,"sctg26_fwp_wood_expt",5929925
+2023,"sctg26_fwp_wood_impt",837891
+2023,"sctg27_ppp_papr_puplp_expt",5018139
+2023,"sctg27_ppp_papr_puplp_impt",1138670
+2023,"sctg28_ppp_papr_paper_expt",1038981
+2023,"sctg28_ppp_papr_paper_impt",1706091
+2023,"sctg29_ppp_papr_print_expt",1528574
+2023,"sctg29_ppp_papr_print_impt",2239996
+2023,"sctg30_oth_clth_expt",745378
+2023,"sctg30_oth_clth_impt",4362276
+2023,"sctg31_cms_min_expt",1319477
+2023,"sctg31_cms_min_impt",1895557
+2023,"sctg32_mit_metl_base_expt",4155662
+2023,"sctg32_mit_metl_base_impt",6194256
+2023,"sctg33_mit_metl_prod_expt",3570327
+2023,"sctg33_mit_metl_prod_impt",4026884
+2023,"sctg34_mit_mach_expt",8784090
+2023,"sctg34_mit_mach_impt",10289357
+2023,"sctg35_mit_elct_expt",45520824
+2023,"sctg35_mit_elct_impt",17078330
+2023,"sctg36_mit_tran_expt",5641186
+2023,"sctg36_mit_tran_impt",9216311
+2023,"sctg37_mit_inst_transp_expt",3888888
+2023,"sctg37_mit_inst_transp_impt",2721292
+2023,"sctg38_mit_inst_prec_expt",3924907
+2023,"sctg38_mit_inst_prec_impt",4138287
+2023,"sctg39_oth_furn_expt",1849529
+2023,"sctg39_oth_furn_impt",2268039
+2023,"sctg40_oth_misc_expt",2904864
+2023,"sctg40_oth_misc_impt",6070680
+2023,"sctg41_waste_scrap_expt",623320
+2023,"sctg41_waste_scrap_impt",592355
+2023,"transport_expt",4400433
+2023,"transport_impt",4170678
+2023,"wholesale trade_expt",4796867
+2023,"wholesale trade_impt",2863185
+2024,"accommodations_expt",4658481
+2024,"accommodations_impt",3287582
+2024,"communications and utilities_expt",7800168
+2024,"communications and utilities_impt",10679205
+2024,"construction_expt",12853266
+2024,"construction_impt",15249258
+2024,"education reports to sponsors_expt",154347
+2024,"education reports to sponsors_impt",45123
+2024,"energy_expt",5329996
+2024,"energy_impt",1554653
+2024,"entertainment services_expt",594858
+2024,"entertainment services_impt",1429596
+2024,"fire business and professional services_expt",12409504
+2024,"fire business and professional services_impt",41445228
+2024,"food services_expt",1042010
+2024,"food services_impt",419236
+2024,"government administration_expt",4867894
+2024,"government administration_impt",4301149
+2024,"health services_expt",9780598
+2024,"health services_impt",1483795
+2024,"higher education_expt",1220486
+2024,"higher education_impt",1014300
+2024,"personal and other services and amusements_expt",7341178
+2024,"personal and other services and amusements_impt",2193362
+2024,"retail trade_expt",6218175
+2024,"retail trade_impt",2536854
+2024,"sctg01_fkp_lvsk_expt",627395
+2024,"sctg01_fkp_lvsk_impt",370897
+2024,"sctg02_fkp_agri_cereal_expt",735841
+2024,"sctg02_fkp_agri_cereal_impt",857670
+2024,"sctg03_fkp_agri_other_expt",10348261
+2024,"sctg03_fkp_agri_other_impt",1538292
+2024,"sctg04_fkp_feed_expt",236645
+2024,"sctg04_fkp_feed_impt",994129
+2024,"sctg05_fkp_food_meat_expt",2857507
+2024,"sctg05_fkp_food_meat_impt",3854699
+2024,"sctg06_fkp_agri_grain_expt",1071735
+2024,"sctg06_fkp_agri_grain_impt",1103127
+2024,"sctg07_fkp_food_prep_expt",13271056
+2024,"sctg07_fkp_food_prep_impt",7055267
+2024,"sctg08_fkp_food_alc_expt",1887787
+2024,"sctg08_fkp_food_alc_impt",1773961
+2024,"sctg10_cms_clay_expt",172682
+2024,"sctg10_cms_clay_impt",98696
+2024,"sctg11_cms_sand_expt",292985
+2024,"sctg11_cms_sand_impt",24105
+2024,"sctg13_cms_mine_nonmet_expt",61227
+2024,"sctg13_cms_mine_nonmet_impt",202313
+2024,"sctg14_cms_mine_met_expt",2007010
+2024,"sctg14_cms_mine_met_impt",743948
+2024,"sctg15_pcc_coal_expt",51785
+2024,"sctg15_pcc_coal_impt",1130372
+2024,"sctg16_pcc_petr_crude_expt",366369
+2024,"sctg16_pcc_petr_crude_impt",2792241
+2024,"sctg17_pcc_fuel_expt",34357
+2024,"sctg17_pcc_fuel_impt",7625938
+2024,"sctg18_pcc_petr_oil_expt",17178
+2024,"sctg18_pcc_petr_oil_impt",3812969
+2024,"sctg19_pcc_coal_prod_expt",308391
+2024,"sctg19_pcc_coal_prod_impt",5719241
+2024,"sctg20_pcc_chem_basic_expt",1607950
+2024,"sctg20_pcc_chem_basic_impt",3084848
+2024,"sctg21_pcc_chem_pharma_expt",1388919
+2024,"sctg21_pcc_chem_pharma_impt",8129795
+2024,"sctg22_pcc_chem_fert_expt",249228
+2024,"sctg22_pcc_chem_fert_impt",567727
+2024,"sctg23_pcc_chem_prod_expt",1458014
+2024,"sctg23_pcc_chem_prod_impt",4597776
+2024,"sctg24_pcc_petr_plast_expt",3076152
+2024,"sctg24_pcc_petr_plast_impt",6637394
+2024,"sctg25_fwp_logs_expt",1480935
+2024,"sctg25_fwp_logs_impt",445273
+2024,"sctg26_fwp_wood_expt",6011224
+2024,"sctg26_fwp_wood_impt",852218
+2024,"sctg27_ppp_papr_puplp_expt",5075855
+2024,"sctg27_ppp_papr_puplp_impt",1161016
+2024,"sctg28_ppp_papr_paper_expt",1058881
+2024,"sctg28_ppp_papr_paper_impt",1739965
+2024,"sctg29_ppp_papr_print_expt",1576502
+2024,"sctg29_ppp_papr_print_impt",2281077
+2024,"sctg30_oth_clth_expt",753145
+2024,"sctg30_oth_clth_impt",4425308
+2024,"sctg31_cms_min_expt",1344181
+2024,"sctg31_cms_min_impt",1928878
+2024,"sctg32_mit_metl_base_expt",4183015
+2024,"sctg32_mit_metl_base_impt",6287785
+2024,"sctg33_mit_metl_prod_expt",3634242
+2024,"sctg33_mit_metl_prod_impt",4104485
+2024,"sctg34_mit_mach_expt",9004567
+2024,"sctg34_mit_mach_impt",10479652
+2024,"sctg35_mit_elct_expt",46035171
+2024,"sctg35_mit_elct_impt",17329218
+2024,"sctg36_mit_tran_expt",5763903
+2024,"sctg36_mit_tran_impt",9364874
+2024,"sctg37_mit_inst_transp_expt",3967751
+2024,"sctg37_mit_inst_transp_impt",2765359
+2024,"sctg38_mit_inst_prec_expt",4043739
+2024,"sctg38_mit_inst_prec_impt",4212325
+2024,"sctg39_oth_furn_expt",1916256
+2024,"sctg39_oth_furn_impt",2301212
+2024,"sctg40_oth_misc_expt",3001564
+2024,"sctg40_oth_misc_impt",6167478
+2024,"sctg41_waste_scrap_expt",631796
+2024,"sctg41_waste_scrap_impt",595838
+2024,"transport_expt",4509552
+2024,"transport_impt",4247045
+2024,"wholesale trade_expt",4943239
+2024,"wholesale trade_impt",2914386
+2025,"accommodations_expt",4769043
+2025,"accommodations_impt",3343360
+2025,"communications and utilities_expt",7969226
+2025,"communications and utilities_impt",10876869
+2025,"construction_expt",13046602
+2025,"construction_impt",15448363
+2025,"education reports to sponsors_expt",157183
+2025,"education reports to sponsors_impt",45698
+2025,"energy_expt",5457292
+2025,"energy_impt",1582373
+2025,"entertainment services_expt",608416
+2025,"entertainment services_impt",1454374
+2025,"fire business and professional services_expt",12703749
+2025,"fire business and professional services_impt",42309717
+2025,"food services_expt",1066860
+2025,"food services_impt",425599
+2025,"government administration_expt",4983985
+2025,"government administration_impt",4356341
+2025,"health services_expt",10032313
+2025,"health services_impt",1502821
+2025,"higher education_expt",1239472
+2025,"higher education_impt",1027813
+2025,"personal and other services and amusements_expt",7515310
+2025,"personal and other services and amusements_impt",2226881
+2025,"retail trade_expt",6388431
+2025,"retail trade_impt",2577930
+2025,"sctg01_fkp_lvsk_expt",639966
+2025,"sctg01_fkp_lvsk_impt",378394
+2025,"sctg02_fkp_agri_cereal_expt",750495
+2025,"sctg02_fkp_agri_cereal_impt",875509
+2025,"sctg03_fkp_agri_other_expt",10555615
+2025,"sctg03_fkp_agri_other_impt",1567117
+2025,"sctg04_fkp_feed_expt",241509
+2025,"sctg04_fkp_feed_impt",1009914
+2025,"sctg05_fkp_food_meat_expt",2917953
+2025,"sctg05_fkp_food_meat_impt",3923967
+2025,"sctg06_fkp_agri_grain_expt",1094412
+2025,"sctg06_fkp_agri_grain_impt",1121150
+2025,"sctg07_fkp_food_prep_expt",13552284
+2025,"sctg07_fkp_food_prep_impt",7181437
+2025,"sctg08_fkp_food_alc_expt",1926669
+2025,"sctg08_fkp_food_alc_impt",1798831
+2025,"sctg10_cms_clay_expt",177487
+2025,"sctg10_cms_clay_impt",100498
+2025,"sctg11_cms_sand_expt",301102
+2025,"sctg11_cms_sand_impt",24483
+2025,"sctg13_cms_mine_nonmet_expt",62917
+2025,"sctg13_cms_mine_nonmet_impt",205742
+2025,"sctg14_cms_mine_met_expt",2063298
+2025,"sctg14_cms_mine_met_impt",758799
+2025,"sctg15_pcc_coal_expt",53238
+2025,"sctg15_pcc_coal_impt",1155541
+2025,"sctg16_pcc_petr_crude_expt",374191
+2025,"sctg16_pcc_petr_crude_impt",2857403
+2025,"sctg17_pcc_fuel_expt",34992
+2025,"sctg17_pcc_fuel_impt",7770074
+2025,"sctg18_pcc_petr_oil_expt",17496
+2025,"sctg18_pcc_petr_oil_impt",3885037
+2025,"sctg19_pcc_coal_prod_expt",314857
+2025,"sctg19_pcc_coal_prod_impt",5832862
+2025,"sctg20_pcc_chem_basic_expt",1647393
+2025,"sctg20_pcc_chem_basic_impt",3152570
+2025,"sctg21_pcc_chem_pharma_expt",1442262
+2025,"sctg21_pcc_chem_pharma_impt",8272560
+2025,"sctg22_pcc_chem_fert_expt",252879
+2025,"sctg22_pcc_chem_fert_impt",577896
+2025,"sctg23_pcc_chem_prod_expt",1490036
+2025,"sctg23_pcc_chem_prod_impt",4683691
+2025,"sctg24_pcc_petr_plast_expt",3142257
+2025,"sctg24_pcc_petr_plast_impt",6787418
+2025,"sctg25_fwp_logs_expt",1510120
+2025,"sctg25_fwp_logs_impt",452742
+2025,"sctg26_fwp_wood_expt",6096722
+2025,"sctg26_fwp_wood_impt",867851
+2025,"sctg27_ppp_papr_puplp_expt",5115460
+2025,"sctg27_ppp_papr_puplp_impt",1186112
+2025,"sctg28_ppp_papr_paper_expt",1086980
+2025,"sctg28_ppp_papr_paper_impt",1775860
+2025,"sctg29_ppp_papr_print_expt",1626595
+2025,"sctg29_ppp_papr_print_impt",2324243
+2025,"sctg30_oth_clth_expt",762210
+2025,"sctg30_oth_clth_impt",4491996
+2025,"sctg31_cms_min_expt",1370332
+2025,"sctg31_cms_min_impt",1966310
+2025,"sctg32_mit_metl_base_expt",4203772
+2025,"sctg32_mit_metl_base_impt",6422267
+2025,"sctg33_mit_metl_prod_expt",3695831
+2025,"sctg33_mit_metl_prod_impt",4192910
+2025,"sctg34_mit_mach_expt",9227692
+2025,"sctg34_mit_mach_impt",10682377
+2025,"sctg35_mit_elct_expt",47195110
+2025,"sctg35_mit_elct_impt",17673884
+2025,"sctg36_mit_tran_expt",5910068
+2025,"sctg36_mit_tran_impt",9526399
+2025,"sctg37_mit_inst_transp_expt",4066261
+2025,"sctg37_mit_inst_transp_impt",2813541
+2025,"sctg38_mit_inst_prec_expt",4163670
+2025,"sctg38_mit_inst_prec_impt",4290540
+2025,"sctg39_oth_furn_expt",1987524
+2025,"sctg39_oth_furn_impt",2337567
+2025,"sctg40_oth_misc_expt",3101306
+2025,"sctg40_oth_misc_impt",6270949
+2025,"sctg41_waste_scrap_expt",640559
+2025,"sctg41_waste_scrap_impt",597724
+2025,"transport_expt",4623316
+2025,"transport_impt",4327154
+2025,"wholesale trade_expt",5098082
+2025,"wholesale trade_impt",2973052
+2026,"accommodations_expt",4874542
+2026,"accommodations_impt",3395840
+2026,"communications and utilities_expt",8132843
+2026,"communications and utilities_impt",11068105
+2026,"construction_expt",13210935
+2026,"construction_impt",15627347
+2026,"education reports to sponsors_expt",159776
+2026,"education reports to sponsors_impt",46212
+2026,"energy_expt",5591763
+2026,"energy_impt",1609004
+2026,"entertainment services_expt",621382
+2026,"entertainment services_impt",1477647
+2026,"fire business and professional services_expt",12987498
+2026,"fire business and professional services_impt",43151202
+2026,"food services_expt",1090580
+2026,"food services_impt",431478
+2026,"government administration_expt",5094799
+2026,"government administration_impt",4405667
+2026,"health services_expt",10285258
+2026,"health services_impt",1519827
+2026,"higher education_expt",1256663
+2026,"higher education_impt",1040009
+2026,"personal and other services and amusements_expt",7681704
+2026,"personal and other services and amusements_impt",2257806
+2026,"retail trade_expt",6560334
+2026,"retail trade_impt",2616627
+2026,"sctg01_fkp_lvsk_expt",652538
+2026,"sctg01_fkp_lvsk_impt",385573
+2026,"sctg02_fkp_agri_cereal_expt",765133
+2026,"sctg02_fkp_agri_cereal_impt",892701
+2026,"sctg03_fkp_agri_other_expt",10762969
+2026,"sctg03_fkp_agri_other_impt",1594630
+2026,"sctg04_fkp_feed_expt",246264
+2026,"sctg04_fkp_feed_impt",1024710
+2026,"sctg05_fkp_food_meat_expt",2975543
+2026,"sctg05_fkp_food_meat_impt",3988854
+2026,"sctg06_fkp_agri_grain_expt",1115885
+2026,"sctg06_fkp_agri_grain_impt",1137828
+2026,"sctg07_fkp_food_prep_expt",13819314
+2026,"sctg07_fkp_food_prep_impt",7299589
+2026,"sctg08_fkp_food_alc_expt",1964471
+2026,"sctg08_fkp_food_alc_impt",1821395
+2026,"sctg10_cms_clay_expt",182072
+2026,"sctg10_cms_clay_impt",102199
+2026,"sctg11_cms_sand_expt",308838
+2026,"sctg11_cms_sand_impt",24836
+2026,"sctg13_cms_mine_nonmet_expt",64526
+2026,"sctg13_cms_mine_nonmet_impt",209041
+2026,"sctg14_cms_mine_met_expt",2116947
+2026,"sctg14_cms_mine_met_impt",772674
+2026,"sctg15_pcc_coal_expt",54622
+2026,"sctg15_pcc_coal_impt",1181842
+2026,"sctg16_pcc_petr_crude_expt",381934
+2026,"sctg16_pcc_petr_crude_impt",2926311
+2026,"sctg17_pcc_fuel_expt",35683
+2026,"sctg17_pcc_fuel_impt",7911032
+2026,"sctg18_pcc_petr_oil_expt",17841
+2026,"sctg18_pcc_petr_oil_impt",3955516
+2026,"sctg19_pcc_coal_prod_expt",321676
+2026,"sctg19_pcc_coal_prod_impt",5945824
+2026,"sctg20_pcc_chem_basic_expt",1686642
+2026,"sctg20_pcc_chem_basic_impt",3224969
+2026,"sctg21_pcc_chem_pharma_expt",1501942
+2026,"sctg21_pcc_chem_pharma_impt",8409988
+2026,"sctg22_pcc_chem_fert_expt",256387
+2026,"sctg22_pcc_chem_fert_impt",587840
+2026,"sctg23_pcc_chem_prod_expt",1522995
+2026,"sctg23_pcc_chem_prod_impt",4768072
+2026,"sctg24_pcc_petr_plast_expt",3207646
+2026,"sctg24_pcc_petr_plast_impt",6937466
+2026,"sctg25_fwp_logs_expt",1539213
+2026,"sctg25_fwp_logs_impt",459857
+2026,"sctg26_fwp_wood_expt",6173689
+2026,"sctg26_fwp_wood_impt",882696
+2026,"sctg27_ppp_papr_puplp_expt",5146250
+2026,"sctg27_ppp_papr_puplp_impt",1210841
+2026,"sctg28_ppp_papr_paper_expt",1115296
+2026,"sctg28_ppp_papr_paper_impt",1810513
+2026,"sctg29_ppp_papr_print_expt",1677606
+2026,"sctg29_ppp_papr_print_impt",2365226
+2026,"sctg30_oth_clth_expt",770854
+2026,"sctg30_oth_clth_impt",4554208
+2026,"sctg31_cms_min_expt",1395629
+2026,"sctg31_cms_min_impt",2002942
+2026,"sctg32_mit_metl_base_expt",4217217
+2026,"sctg32_mit_metl_base_impt",6566034
+2026,"sctg33_mit_metl_prod_expt",3753248
+2026,"sctg33_mit_metl_prod_impt",4283362
+2026,"sctg34_mit_mach_expt",9463362
+2026,"sctg34_mit_mach_impt",10886296
+2026,"sctg35_mit_elct_expt",48515961
+2026,"sctg35_mit_elct_impt",18030051
+2026,"sctg36_mit_tran_expt",6078826
+2026,"sctg36_mit_tran_impt",9686945
+2026,"sctg37_mit_inst_transp_expt",4182976
+2026,"sctg37_mit_inst_transp_impt",2862136
+2026,"sctg38_mit_inst_prec_expt",4282246
+2026,"sctg38_mit_inst_prec_impt",4366895
+2026,"sctg39_oth_furn_expt",2057894
+2026,"sctg39_oth_furn_impt",2371600
+2026,"sctg40_oth_misc_expt",3199865
+2026,"sctg40_oth_misc_impt",6368959
+2026,"sctg41_waste_scrap_expt",648528
+2026,"sctg41_waste_scrap_impt",598320
+2026,"transport_expt",4737237
+2026,"transport_impt",4404885
+2026,"wholesale trade_expt",5252926
+2026,"wholesale trade_impt",3031424
+2027,"accommodations_expt",4982554
+2027,"accommodations_impt",3449198
+2027,"communications and utilities_expt",8302636
+2027,"communications and utilities_impt",11263382
+2027,"construction_expt",13249693
+2027,"construction_impt",15811064
+2027,"education reports to sponsors_expt",162318
+2027,"education reports to sponsors_impt",46740
+2027,"energy_expt",5729036
+2027,"energy_impt",1635646
+2027,"entertainment services_expt",634655
+2027,"entertainment services_impt",1501487
+2027,"fire business and professional services_expt",13277458
+2027,"fire business and professional services_impt",43998394
+2027,"food services_expt",1114866
+2027,"food services_impt",437483
+2027,"government administration_expt",5208251
+2027,"government administration_impt",4456354
+2027,"health services_expt",10535266
+2027,"health services_impt",1537294
+2027,"higher education_expt",1273845
+2027,"higher education_impt",1052520
+2027,"personal and other services and amusements_expt",7852065
+2027,"personal and other services and amusements_impt",2289158
+2027,"retail trade_expt",6734470
+2027,"retail trade_impt",2654780
+2027,"sctg01_fkp_lvsk_expt",665109
+2027,"sctg01_fkp_lvsk_impt",392899
+2027,"sctg02_fkp_agri_cereal_expt",779775
+2027,"sctg02_fkp_agri_cereal_impt",910221
+2027,"sctg03_fkp_agri_other_expt",10970323
+2027,"sctg03_fkp_agri_other_impt",1622426
+2027,"sctg04_fkp_feed_expt",251073
+2027,"sctg04_fkp_feed_impt",1039775
+2027,"sctg05_fkp_food_meat_expt",3034561
+2027,"sctg05_fkp_food_meat_impt",4055211
+2027,"sctg06_fkp_agri_grain_expt",1137953
+2027,"sctg06_fkp_agri_grain_impt",1154935
+2027,"sctg07_fkp_food_prep_expt",14093463
+2027,"sctg07_fkp_food_prep_impt",7420747
+2027,"sctg08_fkp_food_alc_expt",2003353
+2027,"sctg08_fkp_food_alc_impt",1844570
+2027,"sctg10_cms_clay_expt",186445
+2027,"sctg10_cms_clay_impt",103484
+2027,"sctg11_cms_sand_expt",316181
+2027,"sctg11_cms_sand_impt",25090
+2027,"sctg13_cms_mine_nonmet_expt",66048
+2027,"sctg13_cms_mine_nonmet_impt",212216
+2027,"sctg14_cms_mine_met_expt",2167958
+2027,"sctg14_cms_mine_met_impt",786341
+2027,"sctg15_pcc_coal_expt",55938
+2027,"sctg15_pcc_coal_impt",1208719
+2027,"sctg16_pcc_petr_crude_expt",389598
+2027,"sctg16_pcc_petr_crude_impt",2997826
+2027,"sctg17_pcc_fuel_expt",36555
+2027,"sctg17_pcc_fuel_impt",8053586
+2027,"sctg18_pcc_petr_oil_expt",18278
+2027,"sctg18_pcc_petr_oil_impt",4026793
+2027,"sctg19_pcc_coal_prod_expt",329686
+2027,"sctg19_pcc_coal_prod_impt",6056100
+2027,"sctg20_pcc_chem_basic_expt",1726097
+2027,"sctg20_pcc_chem_basic_impt",3290487
+2027,"sctg21_pcc_chem_pharma_expt",1567950
+2027,"sctg21_pcc_chem_pharma_impt",8550796
+2027,"sctg22_pcc_chem_fert_expt",260179
+2027,"sctg22_pcc_chem_fert_impt",597699
+2027,"sctg23_pcc_chem_prod_expt",1556700
+2027,"sctg23_pcc_chem_prod_impt",4851221
+2027,"sctg24_pcc_petr_plast_expt",3274112
+2027,"sctg24_pcc_petr_plast_impt",7086840
+2027,"sctg25_fwp_logs_expt",1568327
+2027,"sctg25_fwp_logs_impt",465865
+2027,"sctg26_fwp_wood_expt",6222772
+2027,"sctg26_fwp_wood_impt",895042
+2027,"sctg27_ppp_papr_puplp_expt",5181552
+2027,"sctg27_ppp_papr_puplp_impt",1235925
+2027,"sctg28_ppp_papr_paper_expt",1143866
+2027,"sctg28_ppp_papr_paper_impt",1845632
+2027,"sctg29_ppp_papr_print_expt",1728944
+2027,"sctg29_ppp_papr_print_impt",2407125
+2027,"sctg30_oth_clth_expt",780898
+2027,"sctg30_oth_clth_impt",4618155
+2027,"sctg31_cms_min_expt",1419828
+2027,"sctg31_cms_min_impt",2035038
+2027,"sctg32_mit_metl_base_expt",4233550
+2027,"sctg32_mit_metl_base_impt",6698053
+2027,"sctg33_mit_metl_prod_expt",3807781
+2027,"sctg33_mit_metl_prod_impt",4370507
+2027,"sctg34_mit_mach_expt",9697910
+2027,"sctg34_mit_mach_impt",11091976
+2027,"sctg35_mit_elct_expt",49641080
+2027,"sctg35_mit_elct_impt",18370327
+2027,"sctg36_mit_tran_expt",6275000
+2027,"sctg36_mit_tran_impt",9857517
+2027,"sctg37_mit_inst_transp_expt",4320361
+2027,"sctg37_mit_inst_transp_impt",2914623
+2027,"sctg38_mit_inst_prec_expt",4417852
+2027,"sctg38_mit_inst_prec_impt",4444941
+2027,"sctg39_oth_furn_expt",2130073
+2027,"sctg39_oth_furn_impt",2403488
+2027,"sctg40_oth_misc_expt",3302821
+2027,"sctg40_oth_misc_impt",6468519
+2027,"sctg41_waste_scrap_expt",656698
+2027,"sctg41_waste_scrap_impt",599408
+2027,"transport_expt",4853532
+2027,"transport_impt",4483457
+2027,"wholesale trade_expt",5409985
+2027,"wholesale trade_impt",3088727
+2028,"accommodations_expt",5088084
+2028,"accommodations_impt",3503029
+2028,"communications and utilities_expt",8471156
+2028,"communications and utilities_impt",11466398
+2028,"construction_expt",13215944
+2028,"construction_impt",15999638
+2028,"education reports to sponsors_expt",164745
+2028,"education reports to sponsors_impt",47282
+2028,"energy_expt",5866308
+2028,"energy_impt",1662285
+2028,"entertainment services_expt",647667
+2028,"entertainment services_impt",1525456
+2028,"fire business and professional services_expt",13562644
+2028,"fire business and professional services_impt",44851599
+2028,"food services_expt",1138586
+2028,"food services_impt",443594
+2028,"government administration_expt",5319065
+2028,"government administration_impt",4508443
+2028,"health services_expt",10796146
+2028,"health services_impt",1555255
+2028,"higher education_expt",1290778
+2028,"higher education_impt",1065325
+2028,"personal and other services and amusements_expt",8018703
+2028,"personal and other services and amusements_impt",2320887
+2028,"retail trade_expt",6910655
+2028,"retail trade_impt",2693350
+2028,"sctg01_fkp_lvsk_expt",677287
+2028,"sctg01_fkp_lvsk_impt",400173
+2028,"sctg02_fkp_agri_cereal_expt",793967
+2028,"sctg02_fkp_agri_cereal_impt",927556
+2028,"sctg03_fkp_agri_other_expt",11171197
+2028,"sctg03_fkp_agri_other_impt",1649902
+2028,"sctg04_fkp_feed_expt",255796
+2028,"sctg04_fkp_feed_impt",1054871
+2028,"sctg05_fkp_food_meat_expt",3092564
+2028,"sctg05_fkp_food_meat_impt",4122292
+2028,"sctg06_fkp_agri_grain_expt",1160027
+2028,"sctg06_fkp_agri_grain_impt",1172178
+2028,"sctg07_fkp_food_prep_expt",14367216
+2028,"sctg07_fkp_food_prep_impt",7542327
+2028,"sctg08_fkp_food_alc_expt",2041155
+2028,"sctg08_fkp_food_alc_impt",1868120
+2028,"sctg10_cms_clay_expt",190381
+2028,"sctg10_cms_clay_impt",104506
+2028,"sctg11_cms_sand_expt",322766
+2028,"sctg11_cms_sand_impt",25278
+2028,"sctg13_cms_mine_nonmet_expt",67408
+2028,"sctg13_cms_mine_nonmet_impt",215196
+2028,"sctg14_cms_mine_met_expt",2213692
+2028,"sctg14_cms_mine_met_impt",798862
+2028,"sctg15_pcc_coal_expt",57118
+2028,"sctg15_pcc_coal_impt",1235455
+2028,"sctg16_pcc_petr_crude_expt",396912
+2028,"sctg16_pcc_petr_crude_impt",3070283
+2028,"sctg17_pcc_fuel_expt",37560
+2028,"sctg17_pcc_fuel_impt",8196504
+2028,"sctg18_pcc_petr_oil_expt",18780
+2028,"sctg18_pcc_petr_oil_impt",4098252
+2028,"sctg19_pcc_coal_prod_expt",338562
+2028,"sctg19_pcc_coal_prod_impt",6166658
+2028,"sctg20_pcc_chem_basic_expt",1765383
+2028,"sctg20_pcc_chem_basic_impt",3358268
+2028,"sctg21_pcc_chem_pharma_expt",1638039
+2028,"sctg21_pcc_chem_pharma_impt",8696909
+2028,"sctg22_pcc_chem_fert_expt",263685
+2028,"sctg22_pcc_chem_fert_impt",607109
+2028,"sctg23_pcc_chem_prod_expt",1590027
+2028,"sctg23_pcc_chem_prod_impt",4934496
+2028,"sctg24_pcc_petr_plast_expt",3337765
+2028,"sctg24_pcc_petr_plast_impt",7235985
+2028,"sctg25_fwp_logs_expt",1593481
+2028,"sctg25_fwp_logs_impt",470240
+2028,"sctg26_fwp_wood_expt",6247943
+2028,"sctg26_fwp_wood_impt",905448
+2028,"sctg27_ppp_papr_puplp_expt",5212341
+2028,"sctg27_ppp_papr_puplp_impt",1261082
+2028,"sctg28_ppp_papr_paper_expt",1172351
+2028,"sctg28_ppp_papr_paper_impt",1880914
+2028,"sctg29_ppp_papr_print_expt",1780785
+2028,"sctg29_ppp_papr_print_impt",2449368
+2028,"sctg30_oth_clth_expt",795305
+2028,"sctg30_oth_clth_impt",4684315
+2028,"sctg31_cms_min_expt",1443761
+2028,"sctg31_cms_min_impt",2065348
+2028,"sctg32_mit_metl_base_expt",4244767
+2028,"sctg32_mit_metl_base_impt",6835856
+2028,"sctg33_mit_metl_prod_expt",3856958
+2028,"sctg33_mit_metl_prod_impt",4458086
+2028,"sctg34_mit_mach_expt",9949463
+2028,"sctg34_mit_mach_impt",11299551
+2028,"sctg35_mit_elct_expt",50918215
+2028,"sctg35_mit_elct_impt",18745015
+2028,"sctg36_mit_tran_expt",6477802
+2028,"sctg36_mit_tran_impt",10031608
+2028,"sctg37_mit_inst_transp_expt",4462287
+2028,"sctg37_mit_inst_transp_impt",2968318
+2028,"sctg38_mit_inst_prec_expt",4557341
+2028,"sctg38_mit_inst_prec_impt",4525506
+2028,"sctg39_oth_furn_expt",2200378
+2028,"sctg39_oth_furn_impt",2434912
+2028,"sctg40_oth_misc_expt",3406218
+2028,"sctg40_oth_misc_impt",6570170
+2028,"sctg41_waste_scrap_expt",664974
+2028,"sctg41_waste_scrap_impt",599740
+2028,"transport_expt",4969827
+2028,"transport_impt",4562423
+2028,"wholesale trade_expt",5571085
+2028,"wholesale trade_impt",3147520
+2029,"accommodations_expt",5193630
+2029,"accommodations_impt",3558345
+2029,"communications and utilities_expt",8639904
+2029,"communications and utilities_impt",11677262
+2029,"construction_expt",13218448
+2029,"construction_impt",16193588
+2029,"education reports to sponsors_expt",167185
+2029,"education reports to sponsors_impt",47840
+2029,"energy_expt",6006383
+2029,"energy_impt",1690066
+2029,"entertainment services_expt",660711
+2029,"entertainment services_impt",1549826
+2029,"fire business and professional services_expt",13851085
+2029,"fire business and professional services_impt",45725345
+2029,"food services_expt",1162307
+2029,"food services_impt",449857
+2029,"government administration_expt",5429879
+2029,"government administration_impt",4562014
+2029,"health services_expt",11061028
+2029,"health services_impt",1573725
+2029,"higher education_expt",1307973
+2029,"higher education_impt",1078457
+2029,"personal and other services and amusements_expt",8185571
+2029,"personal and other services and amusements_impt",2353428
+2029,"retail trade_expt",7082251
+2029,"retail trade_impt",2733499
+2029,"sctg01_fkp_lvsk_expt",689466
+2029,"sctg01_fkp_lvsk_impt",407191
+2029,"sctg02_fkp_agri_cereal_expt",808164
+2029,"sctg02_fkp_agri_cereal_impt",944301
+2029,"sctg03_fkp_agri_other_expt",11372071
+2029,"sctg03_fkp_agri_other_impt",1676984
+2029,"sctg04_fkp_feed_expt",260409
+2029,"sctg04_fkp_feed_impt",1070055
+2029,"sctg05_fkp_food_meat_expt",3147312
+2029,"sctg05_fkp_food_meat_impt",4188680
+2029,"sctg06_fkp_agri_grain_expt",1180924
+2029,"sctg06_fkp_agri_grain_impt",1189358
+2029,"sctg07_fkp_food_prep_expt",14626966
+2029,"sctg07_fkp_food_prep_impt",7662313
+2029,"sctg08_fkp_food_alc_expt",2078957
+2029,"sctg08_fkp_food_alc_impt",1892195
+2029,"sctg10_cms_clay_expt",194614
+2029,"sctg10_cms_clay_impt",105657
+2029,"sctg11_cms_sand_expt",329856
+2029,"sctg11_cms_sand_impt",25506
+2029,"sctg13_cms_mine_nonmet_expt",68873
+2029,"sctg13_cms_mine_nonmet_impt",218271
+2029,"sctg14_cms_mine_met_expt",2262944
+2029,"sctg14_cms_mine_met_impt",812348
+2029,"sctg15_pcc_coal_expt",58389
+2029,"sctg15_pcc_coal_impt",1262889
+2029,"sctg16_pcc_petr_crude_expt",404332
+2029,"sctg16_pcc_petr_crude_impt",3144045
+2029,"sctg17_pcc_fuel_expt",38557
+2029,"sctg17_pcc_fuel_impt",8342817
+2029,"sctg18_pcc_petr_oil_expt",19279
+2029,"sctg18_pcc_petr_oil_impt",4171409
+2029,"sctg19_pcc_coal_prod_expt",347409
+2029,"sctg19_pcc_coal_prod_impt",6282165
+2029,"sctg20_pcc_chem_basic_expt",1804856
+2029,"sctg20_pcc_chem_basic_impt",3434845
+2029,"sctg21_pcc_chem_pharma_expt",1708538
+2029,"sctg21_pcc_chem_pharma_impt",8845825
+2029,"sctg22_pcc_chem_fert_expt",267333
+2029,"sctg22_pcc_chem_fert_impt",616698
+2029,"sctg23_pcc_chem_prod_expt",1624492
+2029,"sctg23_pcc_chem_prod_impt",5021689
+2029,"sctg24_pcc_petr_plast_expt",3403373
+2029,"sctg24_pcc_petr_plast_impt",7392587
+2029,"sctg25_fwp_logs_expt",1617159
+2029,"sctg25_fwp_logs_impt",474724
+2029,"sctg26_fwp_wood_expt",6281274
+2029,"sctg26_fwp_wood_impt",917148
+2029,"sctg27_ppp_papr_puplp_expt",5261019
+2029,"sctg27_ppp_papr_puplp_impt",1287469
+2029,"sctg28_ppp_papr_paper_expt",1201168
+2029,"sctg28_ppp_papr_paper_impt",1916657
+2029,"sctg29_ppp_papr_print_expt",1835627
+2029,"sctg29_ppp_papr_print_impt",2492165
+2029,"sctg30_oth_clth_expt",813371
+2029,"sctg30_oth_clth_impt",4753497
+2029,"sctg31_cms_min_expt",1468805
+2029,"sctg31_cms_min_impt",2098090
+2029,"sctg32_mit_metl_base_expt",4262021
+2029,"sctg32_mit_metl_base_impt",6993683
+2029,"sctg33_mit_metl_prod_expt",3910181
+2029,"sctg33_mit_metl_prod_impt",4553184
+2029,"sctg34_mit_mach_expt",10233030
+2029,"sctg34_mit_mach_impt",11519024
+2029,"sctg35_mit_elct_expt",52414631
+2029,"sctg35_mit_elct_impt",19158105
+2029,"sctg36_mit_tran_expt",6686312
+2029,"sctg36_mit_tran_impt",10210907
+2029,"sctg37_mit_inst_transp_expt",4606587
+2029,"sctg37_mit_inst_transp_impt",3023186
+2029,"sctg38_mit_inst_prec_expt",4724890
+2029,"sctg38_mit_inst_prec_impt",4608967
+2029,"sctg39_oth_furn_expt",2274825
+2029,"sctg39_oth_furn_impt",2468181
+2029,"sctg40_oth_misc_expt",3517580
+2029,"sctg40_oth_misc_impt",6675340
+2029,"sctg41_waste_scrap_expt",673506
+2029,"sctg41_waste_scrap_impt",601423
+2029,"transport_expt",5088495
+2029,"transport_impt",4643417
+2029,"wholesale trade_expt",5734401
+2029,"wholesale trade_impt",3209420
+2030,"accommodations_expt",5311687
+2030,"accommodations_impt",3617090
+2030,"communications and utilities_expt",8827656
+2030,"communications and utilities_impt",11904159
+2030,"construction_expt",13346528
+2030,"construction_impt",16393837
+2030,"education reports to sponsors_expt",169957
+2030,"education reports to sponsors_impt",48414
+2030,"energy_expt",6160464
+2030,"energy_impt",1720296
+2030,"entertainment services_expt",675229
+2030,"entertainment services_impt",1575941
+2030,"fire business and professional services_expt",14164403
+2030,"fire business and professional services_impt",46657976
+2030,"food services_expt",1188851
+2030,"food services_impt",456423
+2030,"government administration_expt",5553885
+2030,"government administration_impt",4617132
+2030,"health services_expt",11336845
+2030,"health services_impt",1592734
+2030,"higher education_expt",1326692
+2030,"higher education_impt",1092058
+2030,"personal and other services and amusements_expt",8371383
+2030,"personal and other services and amusements_impt",2387790
+2030,"retail trade_expt",7265215
+2030,"retail trade_impt",2776383
+2030,"sctg01_fkp_lvsk_expt",702430
+2030,"sctg01_fkp_lvsk_impt",414750
+2030,"sctg02_fkp_agri_cereal_expt",823271
+2030,"sctg02_fkp_agri_cereal_impt",962332
+2030,"sctg03_fkp_agri_other_expt",11585905
+2030,"sctg03_fkp_agri_other_impt",1705993
+2030,"sctg04_fkp_feed_expt",265360
+2030,"sctg04_fkp_feed_impt",1086039
+2030,"sctg05_fkp_food_meat_expt",3207913
+2030,"sctg05_fkp_food_meat_impt",4259557
+2030,"sctg06_fkp_agri_grain_expt",1203601
+2030,"sctg06_fkp_agri_grain_impt",1207558
+2030,"sctg07_fkp_food_prep_expt",14908473
+2030,"sctg07_fkp_food_prep_impt",7790380
+2030,"sctg08_fkp_food_alc_expt",2116762
+2030,"sctg08_fkp_food_alc_impt",1917160
+2030,"sctg10_cms_clay_expt",199522
+2030,"sctg10_cms_clay_impt",107341
+2030,"sctg11_cms_sand_expt",338115
+2030,"sctg11_cms_sand_impt",25898
+2030,"sctg13_cms_mine_nonmet_expt",70588
+2030,"sctg13_cms_mine_nonmet_impt",221910
+2030,"sctg14_cms_mine_met_expt",2320111
+2030,"sctg14_cms_mine_met_impt",828335
+2030,"sctg15_pcc_coal_expt",59864
+2030,"sctg15_pcc_coal_impt",1293361
+2030,"sctg16_pcc_petr_crude_expt",412372
+2030,"sctg16_pcc_petr_crude_impt",3224393
+2030,"sctg17_pcc_fuel_expt",39542
+2030,"sctg17_pcc_fuel_impt",8501468
+2030,"sctg18_pcc_petr_oil_expt",19771
+2030,"sctg18_pcc_petr_oil_impt",4250734
+2030,"sctg19_pcc_coal_prod_expt",356436
+2030,"sctg19_pcc_coal_prod_impt",6407687
+2030,"sctg20_pcc_chem_basic_expt",1848303
+2030,"sctg20_pcc_chem_basic_impt",3515177
+2030,"sctg21_pcc_chem_pharma_expt",1778346
+2030,"sctg21_pcc_chem_pharma_impt",8999041
+2030,"sctg22_pcc_chem_fert_expt",271562
+2030,"sctg22_pcc_chem_fert_impt",627323
+2030,"sctg23_pcc_chem_prod_expt",1662290
+2030,"sctg23_pcc_chem_prod_impt",5115482
+2030,"sctg24_pcc_petr_plast_expt",3477958
+2030,"sctg24_pcc_petr_plast_impt",7565622
+2030,"sctg25_fwp_logs_expt",1647083
+2030,"sctg25_fwp_logs_impt",481892
+2030,"sctg26_fwp_wood_expt",6354846
+2030,"sctg26_fwp_wood_impt",933050
+2030,"sctg27_ppp_papr_puplp_expt",5328481
+2030,"sctg27_ppp_papr_puplp_impt",1316503
+2030,"sctg28_ppp_papr_paper_expt",1232267
+2030,"sctg28_ppp_papr_paper_impt",1955449
+2030,"sctg29_ppp_papr_print_expt",1896276
+2030,"sctg29_ppp_papr_print_impt",2537872
+2030,"sctg30_oth_clth_expt",833089
+2030,"sctg30_oth_clth_impt",4826492
+2030,"sctg31_cms_min_expt",1499857
+2030,"sctg31_cms_min_impt",2137348
+2030,"sctg32_mit_metl_base_expt",4292323
+2030,"sctg32_mit_metl_base_impt",7161504
+2030,"sctg33_mit_metl_prod_expt",3975720
+2030,"sctg33_mit_metl_prod_impt",4658608
+2030,"sctg34_mit_mach_expt",10531031
+2030,"sctg34_mit_mach_impt",11758711
+2030,"sctg35_mit_elct_expt",53939458
+2030,"sctg35_mit_elct_impt",19596553
+2030,"sctg36_mit_tran_expt",6915198
+2030,"sctg36_mit_tran_impt",10403504
+2030,"sctg37_mit_inst_transp_expt",4765495
+2030,"sctg37_mit_inst_transp_impt",3082107
+2030,"sctg38_mit_inst_prec_expt",4904180
+2030,"sctg38_mit_inst_prec_impt",4696441
+2030,"sctg39_oth_furn_expt",2357465
+2030,"sctg39_oth_furn_impt",2505585
+2030,"sctg40_oth_misc_expt",3636955
+2030,"sctg40_oth_misc_impt",6786338
+2030,"sctg41_waste_scrap_expt",682539
+2030,"sctg41_waste_scrap_impt",605167
+2030,"transport_expt",5219030
+2030,"transport_impt",4730905
+2030,"wholesale trade_expt",5906774
+2030,"wholesale trade_impt",3275678
+2031,"accommodations_expt",5432167
+2031,"accommodations_impt",3673644
+2031,"communications and utilities_expt",9018606
+2031,"communications and utilities_impt",12126855
+2031,"construction_expt",13479240
+2031,"construction_impt",16571028
+2031,"education reports to sponsors_expt",172859
+2031,"education reports to sponsors_impt",48917
+2031,"energy_expt",6320149
+2031,"energy_impt",1749895
+2031,"entertainment services_expt",689966
+2031,"entertainment services_impt",1601205
+2031,"fire business and professional services_expt",14488606
+2031,"fire business and professional services_impt",47594412
+2031,"food services_expt",1215908
+2031,"food services_impt",462539
+2031,"government administration_expt",5542760
+2031,"government administration_impt",4665573
+2031,"health services_expt",11617011
+2031,"health services_impt",1609416
+2031,"higher education_expt",1344959
+2031,"higher education_impt",1104185
+2031,"personal and other services and amusements_expt",8561503
+2031,"personal and other services and amusements_impt",2419932
+2031,"retail trade_expt",7453700
+2031,"retail trade_impt",2816752
+2031,"sctg01_fkp_lvsk_expt",715787
+2031,"sctg01_fkp_lvsk_impt",422318
+2031,"sctg02_fkp_agri_cereal_expt",838812
+2031,"sctg02_fkp_agri_cereal_impt",980530
+2031,"sctg03_fkp_agri_other_expt",11806218
+2031,"sctg03_fkp_agri_other_impt",1734731
+2031,"sctg04_fkp_feed_expt",270398
+2031,"sctg04_fkp_feed_impt",1101240
+2031,"sctg05_fkp_food_meat_expt",3268706
+2031,"sctg05_fkp_food_meat_impt",4328018
+2031,"sctg06_fkp_agri_grain_expt",1226252
+2031,"sctg06_fkp_agri_grain_impt",1224778
+2031,"sctg07_fkp_food_prep_expt",15190298
+2031,"sctg07_fkp_food_prep_impt",7914449
+2031,"sctg08_fkp_food_alc_expt",2155646
+2031,"sctg08_fkp_food_alc_impt",1939826
+2031,"sctg10_cms_clay_expt",204511
+2031,"sctg10_cms_clay_impt",109079
+2031,"sctg11_cms_sand_expt",346501
+2031,"sctg11_cms_sand_impt",26296
+2031,"sctg13_cms_mine_nonmet_expt",72328
+2031,"sctg13_cms_mine_nonmet_impt",225552
+2031,"sctg14_cms_mine_met_expt",2378158
+2031,"sctg14_cms_mine_met_impt",844665
+2031,"sctg15_pcc_coal_expt",61361
+2031,"sctg15_pcc_coal_impt",1324870
+2031,"sctg16_pcc_petr_crude_expt",420630
+2031,"sctg16_pcc_petr_crude_impt",3307959
+2031,"sctg17_pcc_fuel_expt",40619
+2031,"sctg17_pcc_fuel_impt",8660149
+2031,"sctg18_pcc_petr_oil_expt",20309
+2031,"sctg18_pcc_petr_oil_impt",4330075
+2031,"sctg19_pcc_coal_prod_expt",366104
+2031,"sctg19_pcc_coal_prod_impt",6532050
+2031,"sctg20_pcc_chem_basic_expt",1892439
+2031,"sctg20_pcc_chem_basic_impt",3590745
+2031,"sctg21_pcc_chem_pharma_expt",1850666
+2031,"sctg21_pcc_chem_pharma_impt",9145319
+2031,"sctg22_pcc_chem_fert_expt",275935
+2031,"sctg22_pcc_chem_fert_impt",638150
+2031,"sctg23_pcc_chem_prod_expt",1700558
+2031,"sctg23_pcc_chem_prod_impt",5206923
+2031,"sctg24_pcc_petr_plast_expt",3553165
+2031,"sctg24_pcc_petr_plast_impt",7741262
+2031,"sctg25_fwp_logs_expt",1677782
+2031,"sctg25_fwp_logs_impt",489188
+2031,"sctg26_fwp_wood_expt",6427871
+2031,"sctg26_fwp_wood_impt",949500
+2031,"sctg27_ppp_papr_puplp_expt",5396085
+2031,"sctg27_ppp_papr_puplp_impt",1345332
+2031,"sctg28_ppp_papr_paper_expt",1263699
+2031,"sctg28_ppp_papr_paper_impt",1994138
+2031,"sctg29_ppp_papr_print_expt",1956088
+2031,"sctg29_ppp_papr_print_impt",2582201
+2031,"sctg30_oth_clth_expt",855218
+2031,"sctg30_oth_clth_impt",4896301
+2031,"sctg31_cms_min_expt",1531427
+2031,"sctg31_cms_min_impt",2176918
+2031,"sctg32_mit_metl_base_expt",4322130
+2031,"sctg32_mit_metl_base_impt",7323901
+2031,"sctg33_mit_metl_prod_expt",4043867
+2031,"sctg33_mit_metl_prod_impt",4766306
+2031,"sctg34_mit_mach_expt",10836350
+2031,"sctg34_mit_mach_impt",12004021
+2031,"sctg35_mit_elct_expt",55348446
+2031,"sctg35_mit_elct_impt",20020518
+2031,"sctg36_mit_tran_expt",7175834
+2031,"sctg36_mit_tran_impt",10598217
+2031,"sctg37_mit_inst_transp_expt",4947676
+2031,"sctg37_mit_inst_transp_impt",3142380
+2031,"sctg38_mit_inst_prec_expt",5079910
+2031,"sctg38_mit_inst_prec_impt",4781833
+2031,"sctg39_oth_furn_expt",2447834
+2031,"sctg39_oth_furn_impt",2541382
+2031,"sctg40_oth_misc_expt",3759066
+2031,"sctg40_oth_misc_impt",6891958
+2031,"sctg41_waste_scrap_expt",690792
+2031,"sctg41_waste_scrap_impt",608763
+2031,"transport_expt",5354312
+2031,"transport_impt",4817312
+2031,"wholesale trade_expt",6087620
+2031,"wholesale trade_impt",3340855
+2032,"accommodations_expt",5550161
+2032,"accommodations_impt",3729742
+2032,"communications and utilities_expt",9205981
+2032,"communications and utilities_impt",12350153
+2032,"construction_expt",13488691
+2032,"construction_impt",16751792
+2032,"education reports to sponsors_expt",175580
+2032,"education reports to sponsors_impt",49431
+2032,"energy_expt",6479833
+2032,"energy_impt",1778340
+2032,"entertainment services_expt",704438
+2032,"entertainment services_impt",1626341
+2032,"fire business and professional services_expt",14804195
+2032,"fire business and professional services_impt",48518240
+2032,"food services_expt",1242452
+2032,"food services_impt",468693
+2032,"government administration_expt",5663759
+2032,"government administration_impt",4715079
+2032,"health services_expt",11897586
+2032,"health services_impt",1626474
+2032,"higher education_expt",1362669
+2032,"higher education_impt",1116541
+2032,"personal and other services and amusements_expt",8747685
+2032,"personal and other services and amusements_impt",2452006
+2032,"retail trade_expt",7644160
+2032,"retail trade_impt",2856487
+2032,"sctg01_fkp_lvsk_expt",728751
+2032,"sctg01_fkp_lvsk_impt",429698
+2032,"sctg02_fkp_agri_cereal_expt",853903
+2032,"sctg02_fkp_agri_cereal_impt",998259
+2032,"sctg03_fkp_agri_other_expt",12020052
+2032,"sctg03_fkp_agri_other_impt",1762736
+2032,"sctg04_fkp_feed_expt",275295
+2032,"sctg04_fkp_feed_impt",1116366
+2032,"sctg05_fkp_food_meat_expt",3327879
+2032,"sctg05_fkp_food_meat_impt",4395948
+2032,"sctg06_fkp_agri_grain_expt",1248315
+2032,"sctg06_fkp_agri_grain_impt",1241977
+2032,"sctg07_fkp_food_prep_expt",15464785
+2032,"sctg07_fkp_food_prep_impt",8037028
+2032,"sctg08_fkp_food_alc_expt",2194530
+2032,"sctg08_fkp_food_alc_impt",1962817
+2032,"sctg10_cms_clay_expt",208609
+2032,"sctg10_cms_clay_impt",110349
+2032,"sctg11_cms_sand_expt",353357
+2032,"sctg11_cms_sand_impt",26562
+2032,"sctg13_cms_mine_nonmet_expt",73744
+2032,"sctg13_cms_mine_nonmet_impt",228773
+2032,"sctg14_cms_mine_met_expt",2425650
+2032,"sctg14_cms_mine_met_impt",858088
+2032,"sctg15_pcc_coal_expt",62587
+2032,"sctg15_pcc_coal_impt",1355934
+2032,"sctg16_pcc_petr_crude_expt",428380
+2032,"sctg16_pcc_petr_crude_impt",3392020
+2032,"sctg17_pcc_fuel_expt",41761
+2032,"sctg17_pcc_fuel_impt",8816744
+2032,"sctg18_pcc_petr_oil_expt",20880
+2032,"sctg18_pcc_petr_oil_impt",4408372
+2032,"sctg19_pcc_coal_prod_expt",376177
+2032,"sctg19_pcc_coal_prod_impt",6653190
+2032,"sctg20_pcc_chem_basic_expt",1935981
+2032,"sctg20_pcc_chem_basic_impt",3663520
+2032,"sctg21_pcc_chem_pharma_expt",1922924
+2032,"sctg21_pcc_chem_pharma_impt",9292995
+2032,"sctg22_pcc_chem_fert_expt",279594
+2032,"sctg22_pcc_chem_fert_impt",648189
+2032,"sctg23_pcc_chem_prod_expt",1735915
+2032,"sctg23_pcc_chem_prod_impt",5295574
+2032,"sctg24_pcc_petr_plast_expt",3622125
+2032,"sctg24_pcc_petr_plast_impt",7908356
+2032,"sctg25_fwp_logs_expt",1707617
+2032,"sctg25_fwp_logs_impt",494982
+2032,"sctg26_fwp_wood_expt",6468956
+2032,"sctg26_fwp_wood_impt",962734
+2032,"sctg27_ppp_papr_puplp_expt",5436601
+2032,"sctg27_ppp_papr_puplp_impt",1372767
+2032,"sctg28_ppp_papr_paper_expt",1294121
+2032,"sctg28_ppp_papr_paper_impt",2031627
+2032,"sctg29_ppp_papr_print_expt",2014229
+2032,"sctg29_ppp_papr_print_impt",2626981
+2032,"sctg30_oth_clth_expt",873586
+2032,"sctg30_oth_clth_impt",4964871
+2032,"sctg31_cms_min_expt",1559590
+2032,"sctg31_cms_min_impt",2212063
+2032,"sctg32_mit_metl_base_expt",4333633
+2032,"sctg32_mit_metl_base_impt",7479768
+2032,"sctg33_mit_metl_prod_expt",4100895
+2032,"sctg33_mit_metl_prod_impt",4868840
+2032,"sctg34_mit_mach_expt",11142054
+2032,"sctg34_mit_mach_impt",12243486
+2032,"sctg35_mit_elct_expt",56817093
+2032,"sctg35_mit_elct_impt",20454011
+2032,"sctg36_mit_tran_expt",7443909
+2032,"sctg36_mit_tran_impt",10795745
+2032,"sctg37_mit_inst_transp_expt",5143046
+2032,"sctg37_mit_inst_transp_impt",3205348
+2032,"sctg38_mit_inst_prec_expt",5223744
+2032,"sctg38_mit_inst_prec_impt",4867558
+2032,"sctg39_oth_furn_expt",2536266
+2032,"sctg39_oth_furn_impt",2575407
+2032,"sctg40_oth_misc_expt",3867861
+2032,"sctg40_oth_misc_impt",6997863
+2032,"sctg41_waste_scrap_expt",699016
+2032,"sctg41_waste_scrap_impt",609398
+2032,"transport_expt",5489593
+2032,"transport_impt",4902734
+2032,"wholesale trade_expt",6270487
+2032,"wholesale trade_impt",3405166
+2033,"accommodations_expt",5670666
+2033,"accommodations_impt",3787784
+2033,"communications and utilities_expt",9401786
+2033,"communications and utilities_impt",12587343
+2033,"construction_expt",13543961
+2033,"construction_impt",16936809
+2033,"education reports to sponsors_expt",178311
+2033,"education reports to sponsors_impt",49957
+2033,"energy_expt",6642320
+2033,"energy_impt",1808325
+2033,"entertainment services_expt",719215
+2033,"entertainment services_impt",1652247
+2033,"fire business and professional services_expt",15130523
+2033,"fire business and professional services_impt",49473311
+2033,"food services_expt",1269560
+2033,"food services_impt",475017
+2033,"government administration_expt",5787332
+2033,"government administration_impt",4765747
+2033,"health services_expt",12188933
+2033,"health services_impt",1643930
+2033,"higher education_expt",1380582
+2033,"higher education_impt",1129170
+2033,"personal and other services and amusements_expt",8938043
+2033,"personal and other services and amusements_impt",2485032
+2033,"retail trade_expt",7835302
+2033,"retail trade_impt",2897684
+2033,"sctg01_fkp_lvsk_expt",741715
+2033,"sctg01_fkp_lvsk_impt",437222
+2033,"sctg02_fkp_agri_cereal_expt",868998
+2033,"sctg02_fkp_agri_cereal_impt",1016301
+2033,"sctg03_fkp_agri_other_expt",12233885
+2033,"sctg03_fkp_agri_other_impt",1791312
+2033,"sctg04_fkp_feed_expt",280246
+2033,"sctg04_fkp_feed_impt",1131734
+2033,"sctg05_fkp_food_meat_expt",3388480
+2033,"sctg05_fkp_food_meat_impt",4465651
+2033,"sctg06_fkp_agri_grain_expt",1270975
+2033,"sctg06_fkp_agri_grain_impt",1259564
+2033,"sctg07_fkp_food_prep_expt",15746308
+2033,"sctg07_fkp_food_prep_impt",8162862
+2033,"sctg08_fkp_food_alc_expt",2233415
+2033,"sctg08_fkp_food_alc_impt",1986281
+2033,"sctg10_cms_clay_expt",213373
+2033,"sctg10_cms_clay_impt",111837
+2033,"sctg11_cms_sand_expt",361350
+2033,"sctg11_cms_sand_impt",26893
+2033,"sctg13_cms_mine_nonmet_expt",75398
+2033,"sctg13_cms_mine_nonmet_impt",232249
+2033,"sctg14_cms_mine_met_expt",2481059
+2033,"sctg14_cms_mine_met_impt",873816
+2033,"sctg15_pcc_coal_expt",64016
+2033,"sctg15_pcc_coal_impt",1387871
+2033,"sctg16_pcc_petr_crude_expt",436368
+2033,"sctg16_pcc_petr_crude_impt",3477124
+2033,"sctg17_pcc_fuel_expt",42857
+2033,"sctg17_pcc_fuel_impt",8977400
+2033,"sctg18_pcc_petr_oil_expt",21429
+2033,"sctg18_pcc_petr_oil_impt",4488700
+2033,"sctg19_pcc_coal_prod_expt",386044
+2033,"sctg19_pcc_coal_prod_impt",6778406
+2033,"sctg20_pcc_chem_basic_expt",1980745
+2033,"sctg20_pcc_chem_basic_impt",3740006
+2033,"sctg21_pcc_chem_pharma_expt",1997251
+2033,"sctg21_pcc_chem_pharma_impt",9445039
+2033,"sctg22_pcc_chem_fert_expt",283825
+2033,"sctg22_pcc_chem_fert_impt",658674
+2033,"sctg23_pcc_chem_prod_expt",1774048
+2033,"sctg23_pcc_chem_prod_impt",5387753
+2033,"sctg24_pcc_petr_plast_expt",3697013
+2033,"sctg24_pcc_petr_plast_impt",8085800
+2033,"sctg25_fwp_logs_expt",1737469
+2033,"sctg25_fwp_logs_impt",501343
+2033,"sctg26_fwp_wood_expt",6522107
+2033,"sctg26_fwp_wood_impt",977383
+2033,"sctg27_ppp_papr_puplp_expt",5504560
+2033,"sctg27_ppp_papr_puplp_impt",1402406
+2033,"sctg28_ppp_papr_paper_expt",1326303
+2033,"sctg28_ppp_papr_paper_impt",2070911
+2033,"sctg29_ppp_papr_print_expt",2076864
+2033,"sctg29_ppp_papr_print_impt",2673060
+2033,"sctg30_oth_clth_expt",895119
+2033,"sctg30_oth_clth_impt",5036466
+2033,"sctg31_cms_min_expt",1589899
+2033,"sctg31_cms_min_impt",2250010
+2033,"sctg32_mit_metl_base_expt",4357595
+2033,"sctg32_mit_metl_base_impt",7645927
+2033,"sctg33_mit_metl_prod_expt",4165431
+2033,"sctg33_mit_metl_prod_impt",4977849
+2033,"sctg34_mit_mach_expt",11455308
+2033,"sctg34_mit_mach_impt",12492892
+2033,"sctg35_mit_elct_expt",58364667
+2033,"sctg35_mit_elct_impt",20921983
+2033,"sctg36_mit_tran_expt",7721066
+2033,"sctg36_mit_tran_impt",10999071
+2033,"sctg37_mit_inst_transp_expt",5340700
+2033,"sctg37_mit_inst_transp_impt",3269155
+2033,"sctg38_mit_inst_prec_expt",5404738
+2033,"sctg38_mit_inst_prec_impt",4956579
+2033,"sctg39_oth_furn_expt",2620167
+2033,"sctg39_oth_furn_impt",2611121
+2033,"sctg40_oth_misc_expt",3990896
+2033,"sctg40_oth_misc_impt",7107658
+2033,"sctg41_waste_scrap_expt",707529
+2033,"sctg41_waste_scrap_impt",612385
+2033,"transport_expt",5627248
+2033,"transport_impt",4990857
+2033,"wholesale trade_expt",6457589
+2033,"wholesale trade_impt",3472317
+2034,"accommodations_expt",5798681
+2034,"accommodations_impt",3847808
+2034,"communications and utilities_expt",9606830
+2034,"communications and utilities_impt",12832744
+2034,"construction_expt",13693490
+2034,"construction_impt",17126558
+2034,"education reports to sponsors_expt",181179
+2034,"education reports to sponsors_impt",50496
+2034,"energy_expt",6816012
+2034,"energy_impt",1839961
+2034,"entertainment services_expt",734898
+2034,"entertainment services_impt",1679236
+2034,"fire business and professional services_expt",15472920
+2034,"fire business and professional services_impt",50467306
+2034,"food services_expt",1298362
+2034,"food services_impt",481552
+2034,"government administration_expt",5918628
+2034,"government administration_impt",4817606
+2034,"health services_expt",12491074
+2034,"health services_impt",1661800
+2034,"higher education_expt",1399204
+2034,"higher education_impt",1142163
+2034,"personal and other services and amusements_expt",9139859
+2034,"personal and other services and amusements_impt",2519354
+2034,"retail trade_expt",8039529
+2034,"retail trade_impt",2940527
+2034,"sctg01_fkp_lvsk_expt",755858
+2034,"sctg01_fkp_lvsk_impt",445208
+2034,"sctg02_fkp_agri_cereal_expt",885455
+2034,"sctg02_fkp_agri_cereal_impt",1035502
+2034,"sctg03_fkp_agri_other_expt",12467158
+2034,"sctg03_fkp_agri_other_impt",1821748
+2034,"sctg04_fkp_feed_expt",285567
+2034,"sctg04_fkp_feed_impt",1147907
+2034,"sctg05_fkp_food_meat_expt",3452513
+2034,"sctg05_fkp_food_meat_impt",4538409
+2034,"sctg06_fkp_agri_grain_expt",1294821
+2034,"sctg06_fkp_agri_grain_impt",1277887
+2034,"sctg07_fkp_food_prep_expt",16043060
+2034,"sctg07_fkp_food_prep_impt",8294730
+2034,"sctg08_fkp_food_alc_expt",2274459
+2034,"sctg08_fkp_food_alc_impt",2010496
+2034,"sctg10_cms_clay_expt",218743
+2034,"sctg10_cms_clay_impt",113716
+2034,"sctg11_cms_sand_expt",370376
+2034,"sctg11_cms_sand_impt",27343
+2034,"sctg13_cms_mine_nonmet_expt",77271
+2034,"sctg13_cms_mine_nonmet_impt",236214
+2034,"sctg14_cms_mine_met_expt",2543503
+2034,"sctg14_cms_mine_met_impt",891691
+2034,"sctg15_pcc_coal_expt",65627
+2034,"sctg15_pcc_coal_impt",1422268
+2034,"sctg16_pcc_petr_crude_expt",445141
+2034,"sctg16_pcc_petr_crude_impt",3568084
+2034,"sctg17_pcc_fuel_expt",44034
+2034,"sctg17_pcc_fuel_impt",9148472
+2034,"sctg18_pcc_petr_oil_expt",22017
+2034,"sctg18_pcc_petr_oil_impt",4574236
+2034,"sctg19_pcc_coal_prod_expt",396563
+2034,"sctg19_pcc_coal_prod_impt",6909940
+2034,"sctg20_pcc_chem_basic_expt",2028026
+2034,"sctg20_pcc_chem_basic_impt",3813759
+2034,"sctg21_pcc_chem_pharma_expt",2070553
+2034,"sctg21_pcc_chem_pharma_impt",9600682
+2034,"sctg22_pcc_chem_fert_expt",288775
+2034,"sctg22_pcc_chem_fert_impt",670345
+2034,"sctg23_pcc_chem_prod_expt",1815563
+2034,"sctg23_pcc_chem_prod_impt",5483818
+2034,"sctg24_pcc_petr_plast_expt",3779020
+2034,"sctg24_pcc_petr_plast_impt",8272591
+2034,"sctg25_fwp_logs_expt",1769983
+2034,"sctg25_fwp_logs_impt",509406
+2034,"sctg26_fwp_wood_expt",6607352
+2034,"sctg26_fwp_wood_impt",994819
+2034,"sctg27_ppp_papr_puplp_expt",5586605
+2034,"sctg27_ppp_papr_puplp_impt",1433903
+2034,"sctg28_ppp_papr_paper_expt",1360259
+2034,"sctg28_ppp_papr_paper_impt",2112302
+2034,"sctg29_ppp_papr_print_expt",2142819
+2034,"sctg29_ppp_papr_print_impt",2721180
+2034,"sctg30_oth_clth_expt",918624
+2034,"sctg30_oth_clth_impt",5111156
+2034,"sctg31_cms_min_expt",1624924
+2034,"sctg31_cms_min_impt",2292166
+2034,"sctg32_mit_metl_base_expt",4394603
+2034,"sctg32_mit_metl_base_impt",7808336
+2034,"sctg33_mit_metl_prod_expt",4241414
+2034,"sctg33_mit_metl_prod_impt",5090644
+2034,"sctg34_mit_mach_expt",11766475
+2034,"sctg34_mit_mach_impt",12755667
+2034,"sctg35_mit_elct_expt",59803481
+2034,"sctg35_mit_elct_impt",21393832
+2034,"sctg36_mit_tran_expt",8019031
+2034,"sctg36_mit_tran_impt",11213475
+2034,"sctg37_mit_inst_transp_expt",5550905
+2034,"sctg37_mit_inst_transp_impt",3336441
+2034,"sctg38_mit_inst_prec_expt",5554728
+2034,"sctg38_mit_inst_prec_impt",5047467
+2034,"sctg39_oth_furn_expt",2700064
+2034,"sctg39_oth_furn_impt",2649334
+2034,"sctg40_oth_misc_expt",4111210
+2034,"sctg40_oth_misc_impt",7221045
+2034,"sctg41_waste_scrap_expt",716422
+2034,"sctg41_waste_scrap_impt",617242
+2034,"transport_expt",5774397
+2034,"transport_impt",5083703
+2034,"wholesale trade_expt",6657596
+2034,"wholesale trade_impt",3541700
+2035,"accommodations_expt",5929208
+2035,"accommodations_impt",3909542
+2035,"communications and utilities_expt",9820399
+2035,"communications and utilities_impt",13089669
+2035,"construction_expt",13874336
+2035,"construction_impt",17320850
+2035,"education reports to sponsors_expt",184122
+2035,"education reports to sponsors_impt",51048
+2035,"energy_expt",6995307
+2035,"energy_impt",1872271
+2035,"entertainment services_expt",750903
+2035,"entertainment services_impt",1707013
+2035,"fire business and professional services_expt",15824776
+2035,"fire business and professional services_impt",51486839
+2035,"food services_expt",1327729
+2035,"food services_impt",488255
+2035,"government administration_expt",6052499
+2035,"government administration_impt",4870717
+2035,"health services_expt",12797125
+2035,"health services_impt",1680094
+2035,"higher education_expt",1418296
+2035,"higher education_impt",1155477
+2035,"personal and other services and amusements_expt",9345856
+2035,"personal and other services and amusements_impt",2554603
+2035,"retail trade_expt",8251587
+2035,"retail trade_impt",2984305
+2035,"sctg01_fkp_lvsk_expt",770394
+2035,"sctg01_fkp_lvsk_impt",453532
+2035,"sctg02_fkp_agri_cereal_expt",902368
+2035,"sctg02_fkp_agri_cereal_impt",1055494
+2035,"sctg03_fkp_agri_other_expt",12706911
+2035,"sctg03_fkp_agri_other_impt",1853341
+2035,"sctg04_fkp_feed_expt",291085
+2035,"sctg04_fkp_feed_impt",1164549
+2035,"sctg05_fkp_food_meat_expt",3519594
+2035,"sctg05_fkp_food_meat_impt",4613546
+2035,"sctg06_fkp_agri_grain_expt",1319855
+2035,"sctg06_fkp_agri_grain_impt",1296796
+2035,"sctg07_fkp_food_prep_expt",16354285
+2035,"sctg07_fkp_food_prep_impt",8431215
+2035,"sctg08_fkp_food_alc_expt",2316584
+2035,"sctg08_fkp_food_alc_impt",2035282
+2035,"sctg10_cms_clay_expt",224200
+2035,"sctg10_cms_clay_impt",115733
+2035,"sctg11_cms_sand_expt",379544
+2035,"sctg11_cms_sand_impt",27828
+2035,"sctg13_cms_mine_nonmet_expt",79172
+2035,"sctg13_cms_mine_nonmet_impt",240308
+2035,"sctg14_cms_mine_met_expt",2606827
+2035,"sctg14_cms_mine_met_impt",910095
+2035,"sctg15_pcc_coal_expt",67261
+2035,"sctg15_pcc_coal_impt",1457819
+2035,"sctg16_pcc_petr_crude_expt",454132
+2035,"sctg16_pcc_petr_crude_impt",3662653
+2035,"sctg17_pcc_fuel_expt",45346
+2035,"sctg17_pcc_fuel_impt",9325384
+2035,"sctg18_pcc_petr_oil_expt",22673
+2035,"sctg18_pcc_petr_oil_impt",4662692
+2035,"sctg19_pcc_coal_prod_expt",408064
+2035,"sctg19_pcc_coal_prod_impt",7043807
+2035,"sctg20_pcc_chem_basic_expt",2076843
+2035,"sctg20_pcc_chem_basic_impt",3882873
+2035,"sctg21_pcc_chem_pharma_expt",2140292
+2035,"sctg21_pcc_chem_pharma_impt",9757541
+2035,"sctg22_pcc_chem_fert_expt",293729
+2035,"sctg22_pcc_chem_fert_impt",682331
+2035,"sctg23_pcc_chem_prod_expt",1858648
+2035,"sctg23_pcc_chem_prod_impt",5581652
+2035,"sctg24_pcc_petr_plast_expt",3862975
+2035,"sctg24_pcc_petr_plast_impt",8464589
+2035,"sctg25_fwp_logs_expt",1803397
+2035,"sctg25_fwp_logs_impt",517929
+2035,"sctg26_fwp_wood_expt",6700748
+2035,"sctg26_fwp_wood_impt",1013372
+2035,"sctg27_ppp_papr_puplp_expt",5669011
+2035,"sctg27_ppp_papr_puplp_impt",1466063
+2035,"sctg28_ppp_papr_paper_expt",1394884
+2035,"sctg28_ppp_papr_paper_impt",2155144
+2035,"sctg29_ppp_papr_print_expt",2210767
+2035,"sctg29_ppp_papr_print_impt",2770695
+2035,"sctg30_oth_clth_expt",942531
+2035,"sctg30_oth_clth_impt",5188065
+2035,"sctg31_cms_min_expt",1662893
+2035,"sctg31_cms_min_impt",2336015
+2035,"sctg32_mit_metl_base_expt",4434701
+2035,"sctg32_mit_metl_base_impt",7965188
+2035,"sctg33_mit_metl_prod_expt",4320832
+2035,"sctg33_mit_metl_prod_impt",5206437
+2035,"sctg34_mit_mach_expt",12079386
+2035,"sctg34_mit_mach_impt",13026477
+2035,"sctg35_mit_elct_expt",61155046
+2035,"sctg35_mit_elct_impt",21878703
+2035,"sctg36_mit_tran_expt",8326818
+2035,"sctg36_mit_tran_impt",11434451
+2035,"sctg37_mit_inst_transp_expt",5769262
+2035,"sctg37_mit_inst_transp_impt",3405813
+2035,"sctg38_mit_inst_prec_expt",5730808
+2035,"sctg38_mit_inst_prec_impt",5140565
+2035,"sctg39_oth_furn_expt",2784124
+2035,"sctg39_oth_furn_impt",2689271
+2035,"sctg40_oth_misc_expt",4240440
+2035,"sctg40_oth_misc_impt",7337675
+2035,"sctg41_waste_scrap_expt",725539
+2035,"sctg41_waste_scrap_impt",622420
+2035,"transport_expt",5926292
+2035,"transport_impt",5179367
+2035,"wholesale trade_expt",6866074
+2035,"wholesale trade_impt",3612357
+2036,"accommodations_expt",6067183
+2036,"accommodations_impt",3970760
+2036,"communications and utilities_expt",10042590
+2036,"communications and utilities_impt",13352715
+2036,"construction_expt",14035746
+2036,"construction_impt",17500665
+2036,"education reports to sponsors_expt",187281
+2036,"education reports to sponsors_impt",51554
+2036,"energy_expt",7183006
+2036,"energy_impt",1903561
+2036,"entertainment services_expt",767724
+2036,"entertainment services_impt",1734753
+2036,"fire business and professional services_expt",16193663
+2036,"fire business and professional services_impt",52524217
+2036,"food services_expt",1358790
+2036,"food services_impt",494734
+2036,"government administration_expt",6194093
+2036,"government administration_impt",4919577
+2036,"health services_expt",13111905
+2036,"health services_impt",1696911
+2036,"higher education_expt",1437621
+2036,"higher education_impt",1167880
+2036,"personal and other services and amusements_expt",9563459
+2036,"personal and other services and amusements_impt",2588701
+2036,"retail trade_expt",8467375
+2036,"retail trade_impt",3026543
+2036,"sctg01_fkp_lvsk_expt",785322
+2036,"sctg01_fkp_lvsk_impt",461887
+2036,"sctg02_fkp_agri_cereal_expt",919722
+2036,"sctg02_fkp_agri_cereal_impt",1075684
+2036,"sctg03_fkp_agri_other_expt",12953144
+2036,"sctg03_fkp_agri_other_impt",1884847
+2036,"sctg04_fkp_feed_expt",296690
+2036,"sctg04_fkp_feed_impt",1180786
+2036,"sctg05_fkp_food_meat_expt",3586867
+2036,"sctg05_fkp_food_meat_impt",4687961
+2036,"sctg06_fkp_agri_grain_expt",1344872
+2036,"sctg06_fkp_agri_grain_impt",1315260
+2036,"sctg07_fkp_food_prep_expt",16665866
+2036,"sctg07_fkp_food_prep_impt",8565861
+2036,"sctg08_fkp_food_alc_expt",2359789
+2036,"sctg08_fkp_food_alc_impt",2058788
+2036,"sctg10_cms_clay_expt",229288
+2036,"sctg10_cms_clay_impt",117698
+2036,"sctg11_cms_sand_expt",388084
+2036,"sctg11_cms_sand_impt",28283
+2036,"sctg13_cms_mine_nonmet_expt",80942
+2036,"sctg13_cms_mine_nonmet_impt",244248
+2036,"sctg14_cms_mine_met_expt",2665753
+2036,"sctg14_cms_mine_met_impt",926748
+2036,"sctg15_pcc_coal_expt",68782
+2036,"sctg15_pcc_coal_impt",1494503
+2036,"sctg16_pcc_petr_crude_expt",463184
+2036,"sctg16_pcc_petr_crude_impt",3761511
+2036,"sctg17_pcc_fuel_expt",46706
+2036,"sctg17_pcc_fuel_impt",9503556
+2036,"sctg18_pcc_petr_oil_expt",23353
+2036,"sctg18_pcc_petr_oil_impt",4751778
+2036,"sctg19_pcc_coal_prod_expt",419985
+2036,"sctg19_pcc_coal_prod_impt",7176508
+2036,"sctg20_pcc_chem_basic_expt",2127340
+2036,"sctg20_pcc_chem_basic_impt",3945064
+2036,"sctg21_pcc_chem_pharma_expt",2211132
+2036,"sctg21_pcc_chem_pharma_impt",9911113
+2036,"sctg22_pcc_chem_fert_expt",297974
+2036,"sctg22_pcc_chem_fert_impt",694070
+2036,"sctg23_pcc_chem_prod_expt",1901074
+2036,"sctg23_pcc_chem_prod_impt",5678057
+2036,"sctg24_pcc_petr_plast_expt",3944273
+2036,"sctg24_pcc_petr_plast_impt",8657650
+2036,"sctg25_fwp_logs_expt",1837624
+2036,"sctg25_fwp_logs_impt",526020
+2036,"sctg26_fwp_wood_expt",6781795
+2036,"sctg26_fwp_wood_impt",1031174
+2036,"sctg27_ppp_papr_puplp_expt",5719975
+2036,"sctg27_ppp_papr_puplp_impt",1497457
+2036,"sctg28_ppp_papr_paper_expt",1428855
+2036,"sctg28_ppp_papr_paper_impt",2197896
+2036,"sctg29_ppp_papr_print_expt",2281049
+2036,"sctg29_ppp_papr_print_impt",2820635
+2036,"sctg30_oth_clth_expt",966629
+2036,"sctg30_oth_clth_impt",5262499
+2036,"sctg31_cms_min_expt",1700984
+2036,"sctg31_cms_min_impt",2379403
+2036,"sctg32_mit_metl_base_expt",4454494
+2036,"sctg32_mit_metl_base_impt",8110260
+2036,"sctg33_mit_metl_prod_expt",4393695
+2036,"sctg33_mit_metl_prod_impt",5323242
+2036,"sctg34_mit_mach_expt",12396575
+2036,"sctg34_mit_mach_impt",13298072
+2036,"sctg35_mit_elct_expt",62418587
+2036,"sctg35_mit_elct_impt",22365592
+2036,"sctg36_mit_tran_expt",8643404
+2036,"sctg36_mit_tran_impt",11654222
+2036,"sctg37_mit_inst_transp_expt",5993938
+2036,"sctg37_mit_inst_transp_impt",3475010
+2036,"sctg38_mit_inst_prec_expt",5954518
+2036,"sctg38_mit_inst_prec_impt",5234127
+2036,"sctg39_oth_furn_expt",2874363
+2036,"sctg39_oth_furn_impt",2727965
+2036,"sctg40_oth_misc_expt",4385386
+2036,"sctg40_oth_misc_impt",7452420
+2036,"sctg41_waste_scrap_expt",734086
+2036,"sctg41_waste_scrap_impt",624118
+2036,"transport_expt",6085307
+2036,"transport_impt",5275309
+2036,"wholesale trade_expt",7079179
+2036,"wholesale trade_impt",3682080
+2037,"accommodations_expt",6210167
+2037,"accommodations_impt",4033271
+2037,"communications and utilities_expt",10272500
+2037,"communications and utilities_impt",13625008
+2037,"construction_expt",14158284
+2037,"construction_impt",17684152
+2037,"education reports to sponsors_expt",190765
+2037,"education reports to sponsors_impt",52070
+2037,"energy_expt",7379110
+2037,"energy_impt",1935841
+2037,"entertainment services_expt",785149
+2037,"entertainment services_impt",1763239
+2037,"fire business and professional services_expt",16571155
+2037,"fire business and professional services_impt",53581197
+2037,"food services_expt",1390981
+2037,"food services_impt",501354
+2037,"government administration_expt",6340835
+2037,"government administration_impt",4969372
+2037,"health services_expt",13430491
+2037,"health services_impt",1714056
+2037,"higher education_expt",1458365
+2037,"higher education_impt",1180537
+2037,"personal and other services and amusements_expt",9788563
+2037,"personal and other services and amusements_impt",2623479
+2037,"retail trade_expt",8686210
+2037,"retail trade_impt",3069183
+2037,"sctg01_fkp_lvsk_expt",800251
+2037,"sctg01_fkp_lvsk_impt",470253
+2037,"sctg02_fkp_agri_cereal_expt",937079
+2037,"sctg02_fkp_agri_cereal_impt",1095886
+2037,"sctg03_fkp_agri_other_expt",13199376
+2037,"sctg03_fkp_agri_other_impt",1916370
+2037,"sctg04_fkp_feed_expt",302295
+2037,"sctg04_fkp_feed_impt",1197197
+2037,"sctg05_fkp_food_meat_expt",3654140
+2037,"sctg05_fkp_food_meat_impt",4763443
+2037,"sctg06_fkp_agri_grain_expt",1369893
+2037,"sctg06_fkp_agri_grain_impt",1334001
+2037,"sctg07_fkp_food_prep_expt",16977383
+2037,"sctg07_fkp_food_prep_impt",8702082
+2037,"sctg08_fkp_food_alc_expt",2401916
+2037,"sctg08_fkp_food_alc_impt",2082706
+2037,"sctg10_cms_clay_expt",234602
+2037,"sctg10_cms_clay_impt",119628
+2037,"sctg11_cms_sand_expt",397004
+2037,"sctg11_cms_sand_impt",28738
+2037,"sctg13_cms_mine_nonmet_expt",82789
+2037,"sctg13_cms_mine_nonmet_impt",248347
+2037,"sctg14_cms_mine_met_expt",2727318
+2037,"sctg14_cms_mine_met_impt",944702
+2037,"sctg15_pcc_coal_expt",70370
+2037,"sctg15_pcc_coal_impt",1533060
+2037,"sctg16_pcc_petr_crude_expt",472315
+2037,"sctg16_pcc_petr_crude_impt",3864607
+2037,"sctg17_pcc_fuel_expt",48096
+2037,"sctg17_pcc_fuel_impt",9687288
+2037,"sctg18_pcc_petr_oil_expt",24048
+2037,"sctg18_pcc_petr_oil_impt",4843644
+2037,"sctg19_pcc_coal_prod_expt",432241
+2037,"sctg19_pcc_coal_prod_impt",7311505
+2037,"sctg20_pcc_chem_basic_expt",2179614
+2037,"sctg20_pcc_chem_basic_impt",4005033
+2037,"sctg21_pcc_chem_pharma_expt",2283637
+2037,"sctg21_pcc_chem_pharma_impt",10067359
+2037,"sctg22_pcc_chem_fert_expt",302793
+2037,"sctg22_pcc_chem_fert_impt",706112
+2037,"sctg23_pcc_chem_prod_expt",1944939
+2037,"sctg23_pcc_chem_prod_impt",5775450
+2037,"sctg24_pcc_petr_plast_expt",4030342
+2037,"sctg24_pcc_petr_plast_impt",8854987
+2037,"sctg25_fwp_logs_expt",1871866
+2037,"sctg25_fwp_logs_impt",533996
+2037,"sctg26_fwp_wood_expt",6858951
+2037,"sctg26_fwp_wood_impt",1048906
+2037,"sctg27_ppp_papr_puplp_expt",5789352
+2037,"sctg27_ppp_papr_puplp_impt",1530195
+2037,"sctg28_ppp_papr_paper_expt",1464159
+2037,"sctg28_ppp_papr_paper_impt",2241495
+2037,"sctg29_ppp_papr_print_expt",2353151
+2037,"sctg29_ppp_papr_print_impt",2871899
+2037,"sctg30_oth_clth_expt",990121
+2037,"sctg30_oth_clth_impt",5338268
+2037,"sctg31_cms_min_expt",1740180
+2037,"sctg31_cms_min_impt",2422504
+2037,"sctg32_mit_metl_base_expt",4485640
+2037,"sctg32_mit_metl_base_impt",8253632
+2037,"sctg33_mit_metl_prod_expt",4473417
+2037,"sctg33_mit_metl_prod_impt",5442389
+2037,"sctg34_mit_mach_expt",12721454
+2037,"sctg34_mit_mach_impt",13577027
+2037,"sctg35_mit_elct_expt",63616371
+2037,"sctg35_mit_elct_impt",22863074
+2037,"sctg36_mit_tran_expt",8975181
+2037,"sctg36_mit_tran_impt",11881643
+2037,"sctg37_mit_inst_transp_expt",6229543
+2037,"sctg37_mit_inst_transp_impt",3546959
+2037,"sctg38_mit_inst_prec_expt",6183488
+2037,"sctg38_mit_inst_prec_impt",5329342
+2037,"sctg39_oth_furn_expt",2966856
+2037,"sctg39_oth_furn_impt",2766941
+2037,"sctg40_oth_misc_expt",4530999
+2037,"sctg40_oth_misc_impt",7569495
+2037,"sctg41_waste_scrap_expt",742905
+2037,"sctg41_waste_scrap_impt",627744
+2037,"transport_expt",6251443
+2037,"transport_impt",5373996
+2037,"wholesale trade_expt",7298931
+2037,"wholesale trade_impt",3752776
+2038,"accommodations_expt",6353161
+2038,"accommodations_impt",4096456
+2038,"communications and utilities_expt",10502503
+2038,"communications and utilities_impt",13901698
+2038,"construction_expt",14254135
+2038,"construction_impt",17870994
+2038,"education reports to sponsors_expt",193941
+2038,"education reports to sponsors_impt",52596
+2038,"energy_expt",7575214
+2038,"energy_impt",1967955
+2038,"entertainment services_expt",802588
+2038,"entertainment services_impt",1791989
+2038,"fire business and professional services_expt",16952797
+2038,"fire business and professional services_impt",54646633
+2038,"food services_expt",1423172
+2038,"food services_impt",508066
+2038,"government administration_expt",6487578
+2038,"government administration_impt",5020171
+2038,"health services_expt",13749443
+2038,"health services_impt",1731534
+2038,"higher education_expt",1478031
+2038,"higher education_impt",1193417
+2038,"personal and other services and amusements_expt",10014099
+2038,"personal and other services and amusements_impt",2658694
+2038,"retail trade_expt",8910161
+2038,"retail trade_impt",3111976
+2038,"sctg01_fkp_lvsk_expt",815179
+2038,"sctg01_fkp_lvsk_impt",478759
+2038,"sctg02_fkp_agri_cereal_expt",954438
+2038,"sctg02_fkp_agri_cereal_impt",1116405
+2038,"sctg03_fkp_agri_other_expt",13445609
+2038,"sctg03_fkp_agri_other_impt",1948321
+2038,"sctg04_fkp_feed_expt",307955
+2038,"sctg04_fkp_feed_impt",1213810
+2038,"sctg05_fkp_food_meat_expt",3722841
+2038,"sctg05_fkp_food_meat_impt",4840017
+2038,"sctg06_fkp_agri_grain_expt",1395509
+2038,"sctg06_fkp_agri_grain_impt",1353034
+2038,"sctg07_fkp_food_prep_expt",17296014
+2038,"sctg07_fkp_food_prep_impt",8840591
+2038,"sctg08_fkp_food_alc_expt",2445123
+2038,"sctg08_fkp_food_alc_impt",2107030
+2038,"sctg10_cms_clay_expt",239693
+2038,"sctg10_cms_clay_impt",121459
+2038,"sctg11_cms_sand_expt",405536
+2038,"sctg11_cms_sand_impt",29161
+2038,"sctg13_cms_mine_nonmet_expt",84555
+2038,"sctg13_cms_mine_nonmet_impt",252290
+2038,"sctg14_cms_mine_met_expt",2786244
+2038,"sctg14_cms_mine_met_impt",961992
+2038,"sctg15_pcc_coal_expt",71890
+2038,"sctg15_pcc_coal_impt",1571504
+2038,"sctg16_pcc_petr_crude_expt",481366
+2038,"sctg16_pcc_petr_crude_impt",3967848
+2038,"sctg17_pcc_fuel_expt",49506
+2038,"sctg17_pcc_fuel_impt",9871731
+2038,"sctg18_pcc_petr_oil_expt",24753
+2038,"sctg18_pcc_petr_oil_impt",4935866
+2038,"sctg19_pcc_coal_prod_expt",444659
+2038,"sctg19_pcc_coal_prod_impt",7445178
+2038,"sctg20_pcc_chem_basic_expt",2232343
+2038,"sctg20_pcc_chem_basic_impt",4060439
+2038,"sctg21_pcc_chem_pharma_expt",2358140
+2038,"sctg21_pcc_chem_pharma_impt",10225621
+2038,"sctg22_pcc_chem_fert_expt",307186
+2038,"sctg22_pcc_chem_fert_impt",717921
+2038,"sctg23_pcc_chem_prod_expt",1988915
+2038,"sctg23_pcc_chem_prod_impt",5872480
+2038,"sctg24_pcc_petr_plast_expt",4115455
+2038,"sctg24_pcc_petr_plast_impt",9052601
+2038,"sctg25_fwp_logs_expt",1906123
+2038,"sctg25_fwp_logs_impt",541636
+2038,"sctg26_fwp_wood_expt",6928202
+2038,"sctg26_fwp_wood_impt",1066169
+2038,"sctg27_ppp_papr_puplp_expt",5854392
+2038,"sctg27_ppp_papr_puplp_impt",1563188
+2038,"sctg28_ppp_papr_paper_expt",1499805
+2038,"sctg28_ppp_papr_paper_impt",2285634
+2038,"sctg29_ppp_papr_print_expt",2426259
+2038,"sctg29_ppp_papr_print_impt",2923697
+2038,"sctg30_oth_clth_expt",1013060
+2038,"sctg30_oth_clth_impt",5415012
+2038,"sctg31_cms_min_expt",1778393
+2038,"sctg31_cms_min_impt",2464751
+2038,"sctg32_mit_metl_base_expt",4512340
+2038,"sctg32_mit_metl_base_impt",8389490
+2038,"sctg33_mit_metl_prod_expt",4550336
+2038,"sctg33_mit_metl_prod_impt",5560952
+2038,"sctg34_mit_mach_expt",13045450
+2038,"sctg34_mit_mach_impt",13858686
+2038,"sctg35_mit_elct_expt",64758498
+2038,"sctg35_mit_elct_impt",23367429
+2038,"sctg36_mit_tran_expt",9320479
+2038,"sctg36_mit_tran_impt",12114881
+2038,"sctg37_mit_inst_transp_expt",6477877
+2038,"sctg37_mit_inst_transp_impt",3621283
+2038,"sctg38_mit_inst_prec_expt",6405561
+2038,"sctg38_mit_inst_prec_impt",5425506
+2038,"sctg39_oth_furn_expt",3061120
+2038,"sctg39_oth_furn_impt",2806235
+2038,"sctg40_oth_misc_expt",4677058
+2038,"sctg40_oth_misc_impt",7688251
+2038,"sctg41_waste_scrap_expt",751827
+2038,"sctg41_waste_scrap_impt",630678
+2038,"transport_expt",6417578
+2038,"transport_impt",5473290
+2038,"wholesale trade_expt",7524745
+2038,"wholesale trade_impt",3823663
+2039,"accommodations_expt",6501165
+2039,"accommodations_impt",4160680
+2039,"communications and utilities_expt",10744696
+2039,"communications and utilities_impt",14185950
+2039,"construction_expt",14369118
+2039,"construction_impt",18061455
+2039,"education reports to sponsors_expt",197379
+2039,"education reports to sponsors_impt",53132
+2039,"energy_expt",7776921
+2039,"energy_impt",2000015
+2039,"entertainment services_expt",820621
+2039,"entertainment services_impt",1821571
+2039,"fire business and professional services_expt",17343261
+2039,"fire business and professional services_impt",55724562
+2039,"food services_expt",1456492
+2039,"food services_impt",514909
+2039,"government administration_expt",6639470
+2039,"government administration_impt",5071967
+2039,"health services_expt",14072224
+2039,"health services_impt",1749361
+2039,"higher education_expt",1498878
+2039,"higher education_impt",1206569
+2039,"personal and other services and amusements_expt",10247132
+2039,"personal and other services and amusements_impt",2694661
+2039,"retail trade_expt",9137159
+2039,"retail trade_impt",3154827
+2039,"sctg01_fkp_lvsk_expt",830500
+2039,"sctg01_fkp_lvsk_impt",487201
+2039,"sctg02_fkp_agri_cereal_expt",972254
+2039,"sctg02_fkp_agri_cereal_impt",1136818
+2039,"sctg03_fkp_agri_other_expt",13698321
+2039,"sctg03_fkp_agri_other_impt",1980391
+2039,"sctg04_fkp_feed_expt",313646
+2039,"sctg04_fkp_feed_impt",1230696
+2039,"sctg05_fkp_food_meat_expt",3790306
+2039,"sctg05_fkp_food_meat_impt",4916924
+2039,"sctg06_fkp_agri_grain_expt",1420538
+2039,"sctg06_fkp_agri_grain_impt",1372219
+2039,"sctg07_fkp_food_prep_expt",17607978
+2039,"sctg07_fkp_food_prep_impt",8979189
+2039,"sctg08_fkp_food_alc_expt",2488330
+2039,"sctg08_fkp_food_alc_impt",2131850
+2039,"sctg10_cms_clay_expt",244860
+2039,"sctg10_cms_clay_impt",123400
+2039,"sctg11_cms_sand_expt",414200
+2039,"sctg11_cms_sand_impt",29605
+2039,"sctg13_cms_mine_nonmet_expt",86348
+2039,"sctg13_cms_mine_nonmet_impt",256356
+2039,"sctg14_cms_mine_met_expt",2846050
+2039,"sctg14_cms_mine_met_impt",979600
+2039,"sctg15_pcc_coal_expt",73433
+2039,"sctg15_pcc_coal_impt",1610978
+2039,"sctg16_pcc_petr_crude_expt",490636
+2039,"sctg16_pcc_petr_crude_impt",4073931
+2039,"sctg17_pcc_fuel_expt",50940
+2039,"sctg17_pcc_fuel_impt",10060823
+2039,"sctg18_pcc_petr_oil_expt",25470
+2039,"sctg18_pcc_petr_oil_impt",5030411
+2039,"sctg19_pcc_coal_prod_expt",457332
+2039,"sctg19_pcc_coal_prod_impt",7577819
+2039,"sctg20_pcc_chem_basic_expt",2286534
+2039,"sctg20_pcc_chem_basic_impt",4103203
+2039,"sctg21_pcc_chem_pharma_expt",2434608
+2039,"sctg21_pcc_chem_pharma_impt",10386762
+2039,"sctg22_pcc_chem_fert_expt",311724
+2039,"sctg22_pcc_chem_fert_impt",730103
+2039,"sctg23_pcc_chem_prod_expt",2034007
+2039,"sctg23_pcc_chem_prod_impt",5968584
+2039,"sctg24_pcc_petr_plast_expt",4202962
+2039,"sctg24_pcc_petr_plast_impt",9250278
+2039,"sctg25_fwp_logs_expt",1941277
+2039,"sctg25_fwp_logs_impt",549707
+2039,"sctg26_fwp_wood_expt",7005585
+2039,"sctg26_fwp_wood_impt",1084281
+2039,"sctg27_ppp_papr_puplp_expt",5915451
+2039,"sctg27_ppp_papr_puplp_impt",1596731
+2039,"sctg28_ppp_papr_paper_expt",1536464
+2039,"sctg28_ppp_papr_paper_impt",2329896
+2039,"sctg29_ppp_papr_print_expt",2501012
+2039,"sctg29_ppp_papr_print_impt",2976958
+2039,"sctg30_oth_clth_expt",1036027
+2039,"sctg30_oth_clth_impt",5493298
+2039,"sctg31_cms_min_expt",1817687
+2039,"sctg31_cms_min_impt",2507162
+2039,"sctg32_mit_metl_base_expt",4539554
+2039,"sctg32_mit_metl_base_impt",8501512
+2039,"sctg33_mit_metl_prod_expt",4630506
+2039,"sctg33_mit_metl_prod_impt",5677073
+2039,"sctg34_mit_mach_expt",13346851
+2039,"sctg34_mit_mach_impt",14141708
+2039,"sctg35_mit_elct_expt",65603571
+2039,"sctg35_mit_elct_impt",23854652
+2039,"sctg36_mit_tran_expt",9678316
+2039,"sctg36_mit_tran_impt",12354097
+2039,"sctg37_mit_inst_transp_expt",6733930
+2039,"sctg37_mit_inst_transp_impt",3697763
+2039,"sctg38_mit_inst_prec_expt",6610556
+2039,"sctg38_mit_inst_prec_impt",5522021
+2039,"sctg39_oth_furn_expt",3158517
+2039,"sctg39_oth_furn_impt",2846544
+2039,"sctg40_oth_misc_expt",4821465
+2039,"sctg40_oth_misc_impt",7808640
+2039,"sctg41_waste_scrap_expt",760950
+2039,"sctg41_waste_scrap_impt",633347
+2039,"transport_expt",6588460
+2039,"transport_impt",5574427
+2039,"wholesale trade_expt",7757010
+2039,"wholesale trade_impt",3893130
+2040,"accommodations_expt",6649180
+2040,"accommodations_impt",4225580
+2040,"communications and utilities_expt",10989437
+2040,"communications and utilities_impt",14471745
+2040,"construction_expt",14513103
+2040,"construction_impt",18255669
+2040,"education reports to sponsors_expt",200637
+2040,"education reports to sponsors_impt",53680
+2040,"energy_expt",7984231
+2040,"energy_impt",2032620
+2040,"entertainment services_expt",838701
+2040,"entertainment services_impt",1851557
+2040,"fire business and professional services_expt",17739395
+2040,"fire business and professional services_impt",56811796
+2040,"food services_expt",1489812
+2040,"food services_impt",521865
+2040,"government administration_expt",6791362
+2040,"government administration_impt",5124832
+2040,"health services_expt",14398844
+2040,"health services_impt",1767547
+2040,"higher education_expt",1519159
+2040,"higher education_impt",1220002
+2040,"personal and other services and amusements_expt",10480605
+2040,"personal and other services and amusements_impt",2731292
+2040,"retail trade_expt",9374038
+2040,"retail trade_impt",3197695
+2040,"sctg01_fkp_lvsk_expt",846607
+2040,"sctg01_fkp_lvsk_impt",496174
+2040,"sctg02_fkp_agri_cereal_expt",990978
+2040,"sctg02_fkp_agri_cereal_impt",1158476
+2040,"sctg03_fkp_agri_other_expt",13963993
+2040,"sctg03_fkp_agri_other_impt",2014140
+2040,"sctg04_fkp_feed_expt",319676
+2040,"sctg04_fkp_feed_impt",1248220
+2040,"sctg05_fkp_food_meat_expt",3862439
+2040,"sctg05_fkp_food_meat_impt",4996566
+2040,"sctg06_fkp_agri_grain_expt",1447344
+2040,"sctg06_fkp_agri_grain_impt",1392041
+2040,"sctg07_fkp_food_prep_expt",17941760
+2040,"sctg07_fkp_food_prep_impt",9123686
+2040,"sctg08_fkp_food_alc_expt",2532617
+2040,"sctg08_fkp_food_alc_impt",2157105
+2040,"sctg10_cms_clay_expt",250477
+2040,"sctg10_cms_clay_impt",125490
+2040,"sctg11_cms_sand_expt",423625
+2040,"sctg11_cms_sand_impt",30098
+2040,"sctg13_cms_mine_nonmet_expt",88300
+2040,"sctg13_cms_mine_nonmet_impt",260689
+2040,"sctg14_cms_mine_met_expt",2911132
+2040,"sctg14_cms_mine_met_impt",998721
+2040,"sctg15_pcc_coal_expt",75113
+2040,"sctg15_pcc_coal_impt",1651824
+2040,"sctg16_pcc_petr_crude_expt",500447
+2040,"sctg16_pcc_petr_crude_impt",4182919
+2040,"sctg17_pcc_fuel_expt",52413
+2040,"sctg17_pcc_fuel_impt",10254844
+2040,"sctg18_pcc_petr_oil_expt",26207
+2040,"sctg18_pcc_petr_oil_impt",5127422
+2040,"sctg19_pcc_coal_prod_expt",470290
+2040,"sctg19_pcc_coal_prod_impt",7709471
+2040,"sctg20_pcc_chem_basic_expt",2341699
+2040,"sctg20_pcc_chem_basic_impt",4133350
+2040,"sctg21_pcc_chem_pharma_expt",2512010
+2040,"sctg21_pcc_chem_pharma_impt",10550416
+2040,"sctg22_pcc_chem_fert_expt",316835
+2040,"sctg22_pcc_chem_fert_impt",743046
+2040,"sctg23_pcc_chem_prod_expt",2081254
+2040,"sctg23_pcc_chem_prod_impt",6064218
+2040,"sctg24_pcc_petr_plast_expt",4294553
+2040,"sctg24_pcc_petr_plast_impt",9449299
+2040,"sctg25_fwp_logs_expt",1978209
+2040,"sctg25_fwp_logs_impt",558555
+2040,"sctg26_fwp_wood_expt",7095100
+2040,"sctg26_fwp_wood_impt",1103721
+2040,"sctg27_ppp_papr_puplp_expt",5995100
+2040,"sctg27_ppp_papr_puplp_impt",1631699
+2040,"sctg28_ppp_papr_paper_expt",1574967
+2040,"sctg28_ppp_papr_paper_impt",2375741
+2040,"sctg29_ppp_papr_print_expt",2577430
+2040,"sctg29_ppp_papr_print_impt",3031068
+2040,"sctg30_oth_clth_expt",1058765
+2040,"sctg30_oth_clth_impt",5573296
+2040,"sctg31_cms_min_expt",1858843
+2040,"sctg31_cms_min_impt",2549871
+2040,"sctg32_mit_metl_base_expt",4576171
+2040,"sctg32_mit_metl_base_impt",8588492
+2040,"sctg33_mit_metl_prod_expt",4716527
+2040,"sctg33_mit_metl_prod_impt",5789387
+2040,"sctg34_mit_mach_expt",13625272
+2040,"sctg34_mit_mach_impt",14427271
+2040,"sctg35_mit_elct_expt",66103995
+2040,"sctg35_mit_elct_impt",24314854
+2040,"sctg36_mit_tran_expt",10053714
+2040,"sctg36_mit_tran_impt",12600618
+2040,"sctg37_mit_inst_transp_expt",7000693
+2040,"sctg37_mit_inst_transp_impt",3777397
+2040,"sctg38_mit_inst_prec_expt",6770715
+2040,"sctg38_mit_inst_prec_impt",5618239
+2040,"sctg39_oth_furn_expt",3258411
+2040,"sctg39_oth_furn_impt",2887623
+2040,"sctg40_oth_misc_expt",4961313
+2040,"sctg40_oth_misc_impt",7930303
+2040,"sctg41_waste_scrap_expt",770304
+2040,"sctg41_waste_scrap_impt",637847
+2040,"transport_expt",6764089
+2040,"transport_impt",5677639
+2040,"wholesale trade_expt",7997747
+2040,"wholesale trade_impt",3961524
+2041,"accommodations_expt",6799609
+2041,"accommodations_impt",4287674
+2041,"communications and utilities_expt",11237216
+2041,"communications and utilities_impt",14752564
+2041,"construction_expt",14707843
+2041,"construction_impt",18424040
+2041,"education reports to sponsors_expt",203636
+2041,"education reports to sponsors_impt",54148
+2041,"energy_expt",8194342
+2041,"energy_impt",2064585
+2041,"entertainment services_expt",856977
+2041,"entertainment services_impt",1880488
+2041,"fire business and professional services_expt",18143309
+2041,"fire business and professional services_impt",57894933
+2041,"food services_expt",1523634
+2041,"food services_impt",528296
+2041,"government administration_expt",6778380
+2041,"government administration_impt",5170219
+2041,"health services_expt",14729526
+2041,"health services_impt",1783144
+2041,"higher education_expt",1537352
+2041,"higher education_impt",1231789
+2041,"personal and other services and amusements_expt",10717954
+2041,"personal and other services and amusements_impt",2765379
+2041,"retail trade_expt",9625596
+2041,"retail trade_impt",3237914
+2041,"sctg01_fkp_lvsk_expt",863107
+2041,"sctg01_fkp_lvsk_impt",505282
+2041,"sctg02_fkp_agri_cereal_expt",1010134
+2041,"sctg02_fkp_agri_cereal_impt",1180627
+2041,"sctg03_fkp_agri_other_expt",14236145
+2041,"sctg03_fkp_agri_other_impt",2048095
+2041,"sctg04_fkp_feed_expt",325848
+2041,"sctg04_fkp_feed_impt",1264909
+2041,"sctg05_fkp_food_meat_expt",3936192
+2041,"sctg05_fkp_food_meat_impt",5074154
+2041,"sctg06_fkp_agri_grain_expt",1474713
+2041,"sctg06_fkp_agri_grain_impt",1410905
+2041,"sctg07_fkp_food_prep_expt",18283030
+2041,"sctg07_fkp_food_prep_impt",9265620
+2041,"sctg08_fkp_food_alc_expt",2580144
+2041,"sctg08_fkp_food_alc_impt",2179905
+2041,"sctg10_cms_clay_expt",256467
+2041,"sctg10_cms_clay_impt",127778
+2041,"sctg11_cms_sand_expt",433688
+2041,"sctg11_cms_sand_impt",30650
+2041,"sctg13_cms_mine_nonmet_expt",90386
+2041,"sctg13_cms_mine_nonmet_impt",265162
+2041,"sctg14_cms_mine_met_expt",2980613
+2041,"sctg14_cms_mine_met_impt",1019070
+2041,"sctg15_pcc_coal_expt",76905
+2041,"sctg15_pcc_coal_impt",1693313
+2041,"sctg16_pcc_petr_crude_expt",510582
+2041,"sctg16_pcc_petr_crude_impt",4293176
+2041,"sctg17_pcc_fuel_expt",53890
+2041,"sctg17_pcc_fuel_impt",10447035
+2041,"sctg18_pcc_petr_oil_expt",26945
+2041,"sctg18_pcc_petr_oil_impt",5223518
+2041,"sctg19_pcc_coal_prod_expt",483382
+2041,"sctg19_pcc_coal_prod_impt",7839053
+2041,"sctg20_pcc_chem_basic_expt",2398450
+2041,"sctg20_pcc_chem_basic_impt",4157408
+2041,"sctg21_pcc_chem_pharma_expt",2592462
+2041,"sctg21_pcc_chem_pharma_impt",10706245
+2041,"sctg22_pcc_chem_fert_expt",322235
+2041,"sctg22_pcc_chem_fert_impt",756327
+2041,"sctg23_pcc_chem_prod_expt",2131431
+2041,"sctg23_pcc_chem_prod_impt",6157835
+2041,"sctg24_pcc_petr_plast_expt",4390068
+2041,"sctg24_pcc_petr_plast_impt",9655098
+2041,"sctg25_fwp_logs_expt",2015904
+2041,"sctg25_fwp_logs_impt",568041
+2041,"sctg26_fwp_wood_expt",7195987
+2041,"sctg26_fwp_wood_impt",1124500
+2041,"sctg27_ppp_papr_puplp_expt",6079934
+2041,"sctg27_ppp_papr_puplp_impt",1667552
+2041,"sctg28_ppp_papr_paper_expt",1615249
+2041,"sctg28_ppp_papr_paper_impt",2422227
+2041,"sctg29_ppp_papr_print_expt",2656518
+2041,"sctg29_ppp_papr_print_impt",3083334
+2041,"sctg30_oth_clth_expt",1089946
+2041,"sctg30_oth_clth_impt",5651411
+2041,"sctg31_cms_min_expt",1902048
+2041,"sctg31_cms_min_impt",2594094
+2041,"sctg32_mit_metl_base_expt",4618275
+2041,"sctg32_mit_metl_base_impt",8666358
+2041,"sctg33_mit_metl_prod_expt",4805901
+2041,"sctg33_mit_metl_prod_impt",5903138
+2041,"sctg34_mit_mach_expt",13895375
+2041,"sctg34_mit_mach_impt",14713845
+2041,"sctg35_mit_elct_expt",66417827
+2041,"sctg35_mit_elct_impt",24754586
+2041,"sctg36_mit_tran_expt",10447196
+2041,"sctg36_mit_tran_impt",12844223
+2041,"sctg37_mit_inst_transp_expt",7281985
+2041,"sctg37_mit_inst_transp_impt",3856399
+2041,"sctg38_mit_inst_prec_expt",6952504
+2041,"sctg38_mit_inst_prec_impt",5711948
+2041,"sctg39_oth_furn_expt",3362847
+2041,"sctg39_oth_furn_impt",2927563
+2041,"sctg40_oth_misc_expt",5111738
+2041,"sctg40_oth_misc_impt",8045597
+2041,"sctg41_waste_scrap_expt",778832
+2041,"sctg41_waste_scrap_impt",643027
+2041,"transport_expt",6942091
+2041,"transport_impt",5779239
+2041,"wholesale trade_expt",8246762
+2041,"wholesale trade_impt",4028597
