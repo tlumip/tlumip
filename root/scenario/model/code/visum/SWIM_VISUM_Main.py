@@ -43,8 +43,11 @@ a_zone = 'NO' #azone field in Visum
 b_zone = 'MainZoneNo' #bzone field in Visum
 
 #range of beta zones and external stations in aggregated skim matrices
-bzoneRange = range(0,2)
-externalStation = range(2,14)
+bzoneRange = range(0,518)
+externalStation = range(518,530)
+bzoneRangeMiniModel = range(0,2)
+externalStationMiniModel = range(2,14)
+maxMiniModelZones = 100 #mini model can have up to this number of zones
 
 #world market list corresponds to external stations 5001, 5002,....,5012
 worldMarketList = [6006,6001,6001,6002,6006,6006,6003,6006,6006,6004,6006,6005]
@@ -748,6 +751,11 @@ class SwimModel(object):
         self.uniqueMainZoneNo.sort()
         self.uniqueMainZoneNo = list(self.uniqueMainZoneNo)
 
+        #mini model run if less than max mini size
+        if len(self.zoneNo) < maxMiniModelZones:
+          bzoneRange = bzoneRangeMiniModel
+          externalStation = externalStationMiniModel
+
         #delete external station no.s from uniqueMainZoneNo
         self.uniqueMainZoneNo = [i for j, i in enumerate(self.uniqueMainZoneNo) if j not in externalStation]
         
@@ -758,6 +766,11 @@ class SwimModel(object):
 
 
     def matrixCorrection(self, matCount, mat, headers, fieldDictionary):
+
+        #mini model run if less than max mini size
+        if len(self.zoneNo) < maxMiniModelZones:
+          bzoneRange = bzoneRangeMiniModel
+          externalStation = externalStationMiniModel
 
         for bz in bzoneRange:
             k = 0
