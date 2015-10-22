@@ -122,6 +122,7 @@ class SwimModel(object):
         
         self.intracityRailAssignmentProcedure = properties['tr.transit.assignment.intracity.rail.parameters']
         self.intercityRailAssignmentProcedure = properties['tr.transit.assignment.intercity.rail.parameters']
+        self.runFinalTransitAssignment = properties['tr.run.final.assignment.with.pt.demand.matrices'] == "true"
         
         self.agForestFloorspace = properties['agforest.floorspace.file']
         self.activityTotals = properties['aa.activity.totals']
@@ -892,7 +893,7 @@ class SwimModel(object):
     def calcServiceAreaData(self):
         
         #get zone area
-        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREA")
+        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREASQFT")
         areas = [item/(5280**2) for item in areas] #from sq ft to miles
         self.service_data["AREA"] = areas
         
@@ -1259,23 +1260,23 @@ class SwimModel(object):
         #get empty list
         volumeFactors = VisumHelpers.GetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR")
 
-        factor = self.calcVolumeFactor("ampeak")
+        factor = self.calcVolumeFactorDebug("ampeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor  
         VisumHelpers.SetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR", volumeFactors)
 
-        factor = self.calcVolumeFactor("mdoffpeak")
+        factor = self.calcVolumeFactorDebug("mdoffpeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor
         VisumHelpers.SetMulti(self.Visum.Net.Links, "OP_VOL_FACTOR", volumeFactors)
 
         if s.assignmentPeriods == "ALL":
-            factor = self.calcVolumeFactor("pmpeak")
+            factor = self.calcVolumeFactorDebug("pmpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "PM_VOL_FACTOR", volumeFactors)
 
-            factor = self.calcVolumeFactor("ntoffpeak")
+            factor = self.calcVolumeFactorDebug("ntoffpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
@@ -1499,7 +1500,7 @@ if __name__== "__main__":
             s.loadVersion()
             s.zoneServiceLookup()
             s.insertSeedMatricesInVisum()
-            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREA")
+            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREASQFT")
             areas = [item/(5280**2) for item in areas] #from sq ft to miles
             s.service_data["AREA"] = areas
             s.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
@@ -1610,7 +1611,10 @@ if __name__== "__main__":
         #intercity transit assignment
         s.startVisum()
         s.loadVersion("_TR")
-        s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
+        if s.runFinalTransitAssignment:
+          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
+        else: 
+          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
         s.saveVersion("_TR")
         s.closeVisum()
         
@@ -1626,7 +1630,10 @@ if __name__== "__main__":
         #intracity transit assignment
         s.startVisum()
         s.loadVersion("_TR")
-        s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
+        if s.runFinalTransitAssignment:
+          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
+        else: 
+          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
         s.saveVersion("_TR")
         s.closeVisum()
         
@@ -1640,22 +1647,23 @@ if __name__== "__main__":
         s.closeVisum()
        
         #Adjust skimmed SDT IVT and LTF IVT and OVT skims
-        s.startVisum()        
-        s.loadVersion("_TR")
-        s.calcFareMatrices()
-        s.adjustSkimsDueToLTF(isPeak=True)
-        s.adjustSkimsDueToLTF(isPeak=False)
-        s.saveVersion("_TR")
-        s.closeVisum() 
-      
-        #write skim matrices in *.zmx files
-        s.startVisum()
-        s.loadVersion("_TR")
-        s.zonefieldVariables()
-        s.writeTransitSkimZMX(start=transitSkimMatrices[0])
-        s.createVizOutput()
-        s.saveVersion("_TR")
-        s.closeVisum()
+        if not s.runFinalTransitAssignment:
+          s.startVisum()        
+          s.loadVersion("_TR")
+          s.calcFareMatrices()
+          s.adjustSkimsDueToLTF(isPeak=True)
+          s.adjustSkimsDueToLTF(isPeak=False)
+          s.saveVersion("_TR")
+          s.closeVisum() 
+        
+          #write skim matrices in *.zmx files
+          s.startVisum()
+          s.loadVersion("_TR")
+          s.zonefieldVariables()
+          s.writeTransitSkimZMX(start=transitSkimMatrices[0])
+          s.createVizOutput()
+          s.saveVersion("_TR")
+          s.closeVisum()
         
         #copy air skims, because it needs to look like they've been run
         s.copyAirSkims()
