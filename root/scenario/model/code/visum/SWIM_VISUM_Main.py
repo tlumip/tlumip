@@ -122,7 +122,6 @@ class SwimModel(object):
         
         self.intracityRailAssignmentProcedure = properties['tr.transit.assignment.intracity.rail.parameters']
         self.intercityRailAssignmentProcedure = properties['tr.transit.assignment.intercity.rail.parameters']
-        self.runFinalTransitAssignment = properties['tr.run.final.assignment.with.pt.demand.matrices'] == "true"
         
         self.agForestFloorspace = properties['agforest.floorspace.file']
         self.activityTotals = properties['aa.activity.totals']
@@ -1611,10 +1610,7 @@ if __name__== "__main__":
         #intercity transit assignment
         s.startVisum()
         s.loadVersion("_TR")
-        if s.runFinalTransitAssignment:
-          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
-        else: 
-          s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
+        s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
         s.saveVersion("_TR")
         s.closeVisum()
         
@@ -1630,10 +1626,7 @@ if __name__== "__main__":
         #intracity transit assignment
         s.startVisum()
         s.loadVersion("_TR")
-        if s.runFinalTransitAssignment:
-          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
-        else: 
-          s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
+        s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
         s.saveVersion("_TR")
         s.closeVisum()
         
@@ -1647,23 +1640,22 @@ if __name__== "__main__":
         s.closeVisum()
        
         #Adjust skimmed SDT IVT and LTF IVT and OVT skims
-        if not s.runFinalTransitAssignment:
-          s.startVisum()        
-          s.loadVersion("_TR")
-          s.calcFareMatrices()
-          s.adjustSkimsDueToLTF(isPeak=True)
-          s.adjustSkimsDueToLTF(isPeak=False)
-          s.saveVersion("_TR")
-          s.closeVisum() 
-        
-          #write skim matrices in *.zmx files
-          s.startVisum()
-          s.loadVersion("_TR")
-          s.zonefieldVariables()
-          s.writeTransitSkimZMX(start=transitSkimMatrices[0])
-          s.createVizOutput()
-          s.saveVersion("_TR")
-          s.closeVisum()
+        s.startVisum()        
+        s.loadVersion("_TR")
+        s.calcFareMatrices()
+        s.adjustSkimsDueToLTF(isPeak=True)
+        s.adjustSkimsDueToLTF(isPeak=False)
+        s.saveVersion("_TR")
+        s.closeVisum() 
+      
+        #write skim matrices in *.zmx files
+        s.startVisum()
+        s.loadVersion("_TR")
+        s.zonefieldVariables()
+        s.writeTransitSkimZMX(start=transitSkimMatrices[0])
+        s.createVizOutput()
+        s.saveVersion("_TR")
+        s.closeVisum()
         
         #copy air skims, because it needs to look like they've been run
         s.copyAirSkims()
