@@ -1,0 +1,35 @@
+skimFileNames,Description
+pkwltfivt,LTF in-vehicle time in minutes
+opwltfivt,LTF in-vehicle time in minutes
+pkwltfovt,LTF out-of-vehicle time in minutes
+opwltfovt,LTF out-of-vehicle time in minutes
+pkwicrivt, intercity rail in-vehicle time in minutes
+pkwicrfwt, intercity rail first wait time in minutes
+pkwicrtwt, intercity rail transfer wait time in minutes
+pkwicrxwk, intercity rail transfer walk time in minutes
+pkwicrawk, intercity rail access walk time in minutes
+pkwicrewk, intercity rail egress walk time in minutes
+pkwicrfar, intercity rail fare in dollars
+opwicrivt, intercity rail in-vehicle time in minutes
+opwicrfwt, intercity rail first wait time in minutes
+opwicrtwt, intercity rail transfer wait time in minutes
+opwicrxwk, intercity rail transfer walk time in minutes
+opwicrawk, intercity rail access walk time in minutes
+opwicrewk, intercity rail egress walk time in minutes
+opwicrfar, intercity rail fare in dollars
+pkwtivt, Intra-city transit in-vehicle time in minutes
+pkwtfwt, Intra-city transit first wait time in minutes
+pkwttwt, Intra-city transit transfer wait time in minutes
+pkwtxwk, Intra-city transit transfer walk time in minutes
+pkwtawk, Intra-city transit access walk time in minutes
+pkwtewk, Intra-city transit egress walk time in minutes
+pkwtbrd, Intra-city transit rte. boardings
+pkwtfar, Intra-city transit fare in dollars
+opwtivt, Intra-city transit in-vehicle time in minutes
+opwtfwt, Intra-city transit first wait time in minutes
+opwttwt, Intra-city transit transfer wait time in minutes
+opwtxwk, Intra-city transit transfer walk time in minutes
+opwtawk, Intra-city transit access walk time in minutes
+opwtewk, Intra-city transit egress walk time in minutes
+opwtbrd, Intra-city transit rte. boardings
+opwtfar, Intra-city transit fare in dollars

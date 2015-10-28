@@ -1,0 +1,19 @@
+ZoneNumber,Commodity,SupplyFunctionMidpointFactor,SupplyFunctionMidpointPrice,SupplyFunctionEta,SupplyFunctionDeltaFactor,SupplyFunctionSlopeFactor,NoQuantityPrice,NoQuantitySlope,MonitorExchange
+-1,FLR Accommodation,0.28,5,0.44,0.67,0.0008,5,-13.3,FALSE
+-1,FLR Agriculture,0.28,0.03,60,0.67,0.533,0.023,-22200,FALSE
+-1,FLR Government Support,0.28,5,0.55,0.67,0.00123,6.5,-13.3,FALSE
+-1,FLR K12,0.28,5,0.55,0.67,0.0008,7,-13.3,FALSE
+-1,FLR Heavy Industry,0.28,3.5,0.629,0.67,0.00114,7,-13.3,FALSE
+-1,FLR Hospital,0.28,5,0.55,0.67,0.0008,10,-13.3,FALSE
+-1,FLR Institutional,0.28,5,0.55,0.67,0.0008,10,-13.3,FALSE
+-1,FLR Light Industry,0.28,3.5,0.629,0.67,0.00114,7,-13.3,FALSE
+-1,FLR Logging,0.28,0.03,60,0.67,0.533,0.025,-88900,FALSE
+-1,FLR Office,0.28,5,0.55,0.67,0.00123,7,-13.3,FALSE
+-1,FLR Retail,0.28,5,0.44,0.67,0.000667,10,-13.3,FALSE
+-1,FLR Warehouse,0.28,3.5,0.629,0.67,0.00178,4.5,-13.3,FALSE
+-1,FLR MH,0.056,0.15,1.1,0.804,0.01,6,-33.3,FALSE
+-1,FLR MF,0.056,0.15,1.1,0.804,0.01,6,-33.3,FALSE
+-1,FLR AT,0.056,0.15,1.1,0.804,0.01,6,-33.3,FALSE
+-1,FLR SFD,0.056,0.15,1.1,0.804,0.01,6,-33.3,FALSE
+-1,FLR RRMH,0.056,0.15,1.1,0.804,0.01,6,-33.3,FALSE
+-1,FLR RRSFD,0.056,0.15,1.1,0.804,0.01,6,-33.3,FALSE

@@ -1,0 +1,56 @@
+code,name,description
+1,VLDR,Very Low-density Res.
+2,LDR,Low-density Res.
+3,MLDR,Medium Low-density Res.
+4,MDR,Medium-density Res.
+5,MHDR,Medium High-density Res.
+6,HDR,High-density Res.
+7,VHDR,Very High-density Res.
+8,MURL,Mixed-Use Com. & Res. Low
+9,MURM,Mixed-Use Com. & Res. Medium
+10,MURMH,Mixed-Use Com. & Res. Med-high
+11,MURH,Mixed-Use Com. & Res. High
+12,MURVH,Mixed-Use Com. & Res. V.High
+13,MUREH,Mixed-Use Com. & Res. Extremely High
+14,CC,Commercial - Central
+15,CG,Commercial - General
+16,CN,Commercial - Neighborhood
+17,CO,Commercial - Office
+18,PF,Public & semi-public Uses
+19,POS,Parks & Open Space
+20,IC,Industrial Campus
+21,IO,Industrial Office
+22,IL,Industral - Light
+23,IH,Industral - Heavy
+24,FUD,Future Urban Development
+25,MFL10,Marginal Farm Land 10+
+26,EFU20,Exclusive Farm Use 20+
+27,EFU40,Exclusive Farm Use 40+
+28,EFU80,Exclusive Farm Use 80
+29,EFU160,Exclusive Farm Use 160+
+30,FF20,Mixed Farm-Forest 20
+31,FF40,Mixed Farm-Forest 40
+32,FF80,Mixed Farm-Forest 80
+33,FF160,Mixed Farm-Forest 160+
+34,SF80,Secondary Forest 80
+35,PF80,Prime Forest 80
+36,RR10,Rural Residential 10 acres
+37,RR5,Rural Residential 5 acres
+38,RR2,Rural Residential 2-4 acres
+39,RR1,Rural Residential 1 acre
+40,RC,Rural Commercial
+41,UCRC,UC Rural Commercial
+42,RI,Rural Industrial
+43,UCRI,UC Rural Industrial
+44,OSC,Open Space/Conservation
+45,MA,Mineral and Aggregate
+46,CE,Coastal Estuarine
+47,CS,Coastal Shorelands
+48,BD,Beaches and Dunes
+49,RNG,Federal Range
+50,FOR,Federal Forest
+51,IRM,Indian reservation/tribal trust
+52,CEE,Combo equal emphasis
+53,CPE,Combo with priority emphasis
+54,O,Other
+55,WATER,Water

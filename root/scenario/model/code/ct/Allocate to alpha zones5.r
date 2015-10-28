@@ -50,7 +50,7 @@ allocate_daily_FAF_to_firms <- function() {
         truck_trips <- mutate(truck_trips, origin = NA, destination = NA)
         
         # Sample Oregon origins and destinations based upon total employment
-        for (r in oregonRegions) {
+        for (r in unique(ZE$faf_region)) {
             # Start by pulling only those alpha zones within this region (r)
             thisZE <- filter(ZE, faf_region==r)
             

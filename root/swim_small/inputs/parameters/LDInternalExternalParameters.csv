@@ -1,0 +1,4 @@
+Variable,Constant,completeTour,income60p,worker,ageLt25,age5564,age65p,occConstruction,occFinInsReal,occPubAdmin,occEducation,OccMedical,timeToExtSta
+HOUSEHOLD,1.646,-2.084,0.441,0,0,0,0,0,0,0,0,0,-0.0084
+WORKRELATED,2.006,-2.707,0,0,0,0,-1.155,-2.892,-0.566,-1.683,-1.426,-1.383,0
+OTHER,0.837,-1.458,0.462,-0.189,-0.319,0.436,0.436,0,0,0,0,0,-0.0125
