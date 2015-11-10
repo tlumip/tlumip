@@ -1,0 +1,6 @@
+*
+
+!model/*
+!scenario/*
+!swim_small/*
+!.gitignore
