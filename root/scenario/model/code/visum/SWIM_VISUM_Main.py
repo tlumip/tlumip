@@ -86,6 +86,7 @@ maxLOS = 300
 maxAutoTimeForLTF = 100
 NA = 999999
 numTransitConnectors = 2
+walkSpeed = 3
 
 #intercity transit fare function
 intercityTransitFareFuncParams = [1.969,-0.4994]
@@ -1241,11 +1242,22 @@ class SwimModel(object):
             ivt_od = ivt[fz_index][tz_index]
             ovt_od = ovt[fz_index][tz_index]
             
-            #set connector cost
+            #set connector cost - take min of walk time or LTF time
+            
+            #walk time
+            nodeX = stopX[stopNo.index(zoneStops[i][j])]
+            nodeY = stopY[stopNo.index(zoneStops[i][j])]  
+            dist = self.calcDist(zoneX[i], nodeX, zoneY[i], nodeY)
+            walk_cost = (dist / 5280) * (60 / walkSpeed) * 60 #from min to sec
+            
+            #LTF time
             if ivt_od != NA:
-              cost = (ivt_coeff * ivt_od + ovt_coeff * ovt_od) * 60 #from min to sec
+              ltf_cost = (ivt_coeff * ivt_od + ovt_coeff * ovt_od) * 60 #from min to sec
             else: 
-              cost = NA
+              ltf_cost = NA
+            
+            cost = min(walk_cost, ltf_cost)
+            
             sCon.SetAttValue("T0_TSYS(w)", max(cost,0))
             tsys = sCon.AttValue("TSYSSET")
             if 'w' not in tsys:
