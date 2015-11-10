@@ -752,6 +752,8 @@ class SwimModel(object):
         self.uniqueMainZoneNo = list(self.uniqueMainZoneNo)
 
         #mini model run if less than max mini size
+        global externalStation  
+        global bzoneRange
         if len(self.zoneNo) < maxMiniModelZones:
           bzoneRange = bzoneRangeMiniModel
           externalStation = externalStationMiniModel
@@ -768,6 +770,8 @@ class SwimModel(object):
     def matrixCorrection(self, matCount, mat, headers, fieldDictionary):
 
         #mini model run if less than max mini size
+        global externalStation
+        global bzoneRange
         if len(self.zoneNo) < maxMiniModelZones:
           bzoneRange = bzoneRangeMiniModel
           externalStation = externalStationMiniModel
