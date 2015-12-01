@@ -64,10 +64,10 @@ ldtDemandMatrices = [9,12] #start and end of matrices
 sdtDemandMatrices = [13,16] #start and end of matrices
 transitSkimMatrices = [21,50] #start and end of matrices
 transferEqMin = 10
-ivtPeakIntraSkimNum = 35
-ivtOffpeakIntraSkimNum = 43
-ivtPeakInterSkimNum = 21
-ivtOffpeakInterSkimNum = 28
+ivtPeakIntraSkimNum = 39
+ivtOffpeakIntraSkimNum = 47
+ivtPeakInterSkimNum = 25
+ivtOffpeakInterSkimNum = 32
 
 #highway skim matrix names
 timeMatNames = ['pkautotime', 'opautotime']#'pmautotime','ntautotime']
