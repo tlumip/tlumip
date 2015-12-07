@@ -1,4 +1,5 @@
 *
+# Need this sort of pattern to unignore subdirectories see http://stackoverflow.com/questions/1248570/git-ignore-everything-except-subdirectory
 !/model/
 !model/*
 !/scenario/

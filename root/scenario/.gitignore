@@ -1,1 +1,7 @@
+!*
 event.log
+event-performance.log
+*.pyc
+*.py~
+OptionSizeLog.csv
+.DS_Store
