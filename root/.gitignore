@@ -4,6 +4,6 @@
 !model/*
 !/scenario/
 !scenario/*
-!/swim_small
+!/swim_small/
 !swim_small/*
 !.gitignore
