@@ -54,24 +54,24 @@ GOV_offc_off,3.94,1,3.94,0,1,Neither,Dollars of activity production/consumption
 FGOV_acct_gov,3.94,1,3.94,0,1,Neither,Dollars of activity production/consumption
 SLGOV_acct_gov,3.94,1,3.94,0,1,Neither,Dollars of activity production/consumption
 CAP_acct_gov,3.94,1,3.94,0,1,Neither,Dollars of activity production/consumption
-HH0to8k1to2,9.74E-05,1,9.74E-05,0,1,Neither,Households
-HH0to8k3plus,8.20E-05,1,8.20E-05,0,1,Neither,Households
-HH8to15k1to2,6.30E-05,1,6.30E-05,0,1,Neither,Households
-HH8to15k3plus,5.25E-05,1,5.25E-05,0,1,Neither,Households
-HH15to23k1to2,4.31E-05,1,4.31E-05,0,1,Neither,Households
-HH15to23k3plus,4.05E-05,1,4.05E-05,0,1,Neither,Households
-HH23to32k1to2,3.80E-05,1,3.80E-05,0,1,Neither,Households
-HH23to32k3plus,3.35E-05,1,3.35E-05,0,1,Neither,Households
-HH32to46k1to2,3.10E-05,1,3.10E-05,0,1,Neither,Households
-HH32to46k3plus,3.00E-05,1,3.00E-05,0,1,Neither,Households
-HH46to61k1to2,2.80E-05,1,2.80E-05,0,1,Neither,Households
-HH46to61k3plus,2.65E-05,1,2.65E-05,0,1,Neither,Households
-HH61to76k1to2,2.50E-05,1,2.50E-05,0,1,Neither,Households
-HH61to76k3plus,2.40E-05,1,2.40E-05,0,1,Neither,Households
-HH76to106k1to2,2.35E-05,1,2.35E-05,0,1,Neither,Households
-HH76to106k3plus,2.25E-05,1,2.25E-05,0,1,Neither,Households
-HH106kUp1to2,2.20E-05,1,2.20E-05,0,1,Neither,Households
-HH106kUp3plus,2.05E-05,1,2.05E-05,0,1,Neither,Households
+HH0to8k1to2,9.74E-04,1,9.74E-04,0,1,Neither,Households
+HH0to8k3plus,8.20E-04,1,8.20E-04,0,1,Neither,Households
+HH8to15k1to2,6.30E-04,1,6.30E-04,0,1,Neither,Households
+HH8to15k3plus,5.25E-04,1,5.25E-04,0,1,Neither,Households
+HH15to23k1to2,4.31E-04,1,4.31E-04,0,1,Neither,Households
+HH15to23k3plus,4.05E-04,1,4.05E-04,0,1,Neither,Households
+HH23to32k1to2,3.80E-04,1,3.80E-04,0,1,Neither,Households
+HH23to32k3plus,3.35E-04,1,3.35E-04,0,1,Neither,Households
+HH32to46k1to2,3.10E-04,1,3.10E-04,0,1,Neither,Households
+HH32to46k3plus,3.00E-04,1,3.00E-04,0,1,Neither,Households
+HH46to61k1to2,2.80E-04,1,2.80E-04,0,1,Neither,Households
+HH46to61k3plus,2.65E-04,1,2.65E-04,0,1,Neither,Households
+HH61to76k1to2,2.50E-04,1,2.50E-04,0,1,Neither,Households
+HH61to76k3plus,2.40E-04,1,2.40E-04,0,1,Neither,Households
+HH76to106k1to2,2.35E-04,1,2.35E-04,0,1,Neither,Households
+HH76to106k3plus,2.25E-04,1,2.25E-04,0,1,Neither,Households
+HH106kUp1to2,2.20E-04,1,2.20E-04,0,1,Neither,Households
+HH106kUp3plus,2.05E-04,1,2.05E-04,0,1,Neither,Households
 sctg01_fkp_lvsk_impt,1,1,1,0,1,Importer,Dollars of activity production/consumption
 sctg02_fkp_agri_cereal_impt,1,1,1,0,1,Importer,Dollars of activity production/consumption
 sctg03_fkp_agri_other_impt,1,1,1,0,1,Importer,Dollars of activity production/consumption
