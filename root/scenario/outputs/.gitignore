@@ -3,4 +3,5 @@
 
 #except t18, which contains first-year inputs to the model stream
 !t18/
+!t19/*
 !.gitignore
