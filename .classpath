@@ -3,16 +3,14 @@
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry exported="true" kind="src" path="/common-base"/>
 	<classpathentry kind="src" path="/common-daf-v2"/>
-	<classpathentry kind="src" path="/logging-log4j-1.2.9"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/common-daf-v3"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/censusdata"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/synpop"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/reference"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pasaat"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/seam"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pecas"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/utils"/>
 	<classpathentry kind="lib" path="/common-base/release/common-base.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pasaat_swim"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/common-daf-v3"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
