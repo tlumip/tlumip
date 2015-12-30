@@ -51,6 +51,7 @@ maxMiniModelZones = 100 #mini model can have up to this number of zones
 
 #world market list corresponds to external stations 5001, 5002,....,5012
 worldMarketList = [6006,6001,6001,6002,6006,6006,6003,6006,6006,6004,6006,6005]
+worldMarketZones = ['6001', '6002', '6003', '6004', '6005', '6006']
 
 #speed in miles per minute to compute skims between world markets and external stations
 speed = 50.0/60.0    #Visum outputs skim in minutes and distance in miles
@@ -306,8 +307,45 @@ class SwimModel(object):
 
         #return matrix data, zone names, matrix name
         return(mat, zoneNames, name)
+        
+    def readZMX2array(zmxfileName):
+        """
+        Read a ZMX file to a mutable numpy array.
+        
+        The readZMX function reads to immutable tuple, which obviously doesn't
+        work if future transformations are needed.
+        :param zmxfileName: The path to the zmx file
+        :return: A list containing [0] a np.array, [1] a list of zone names, and
+        [2] the name of the matrix.
+        """
 
+        print('......read zmx file: ' + zmxfileName)
 
+        #read header files
+        z = zipfile.ZipFile(zmxfileName, "r")
+        version = z.read("_version")
+        description = z.read("_description")
+        name = z.read("_name")
+        zoneNames = z.read("_external column numbers")
+        rowZoneNames = z.read("_external row numbers")
+        columns = z.read("_columns")
+        rows = int(z.read("_rows"))
+
+        #read rows, big-endian floats
+        for i in range(1, rows+1):
+            fileNameRow = "row_" + str(i)
+            data = z.read(fileNameRow)
+            if i == 1:  # create the array
+                mat = np.array([struct.unpack(">" + "f" * rows, data)])
+            else:  # add a row to the array
+                mat = np.vstack([mat, struct.unpack(">" + "f" * rows, data)])
+
+        #close connections
+        z.close()
+
+        #return matrix data, zone names, matrix name
+        return(mat, zoneNames, name)
+        
     #write zmx file
     def writeZMX(self, fileName, Names, mat):
         
@@ -1296,6 +1334,83 @@ class SwimModel(object):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
 
+    def recomputeWMLS(self, mcls, tt, di, purpose, income):
+        """
+        Recompute World Market Log Sums
+        
+        The function calculates logsums for beta zone-world market
+        pairs based on highway travel time and distance, in addition to
+        tour mode choice parameters based on an income level and
+        trip purpose. The function overwrites the input logsum matrix, adjusting
+        only the values to world market zones.
+        
+        :param mcls: mode choice logsum matrix to be modified
+        :param tt: auto travel time skim used for external market
+        :param di: auto distance skim used for external market
+        :param purpose: purpose from the mode choice model, 0:7 (w = 1, etc)
+        :param income: one of 'high', 'med', 'low'
+        :return: NULL, writes a modified version of `mcls`
+        """
+
+        # read utility coefficients
+        tourmodechoiceparams = pd.read_csv(properties['sdt.tour.mode.parameters'])
+        if income == "high":
+        bauto_cost = tourmodechoiceparams['costHi'][purpose]
+        elif income == "med":
+        bauto_cost = tourmodechoiceparams["costMed"][purpose]
+        else:
+        bauto_cost = tourmodechoiceparams["costLow"][purpose]
+
+        btime = tourmodechoiceparams["ivt"][purpose]
+        
+        # load mcls matrix that needs to be recalculated
+        mcls_zmx = readZMX2array(mcls)
+        mcls_mat = mcls_zmx[0]
+        mcls_zones = mcls_zmx[1].split(",")
+
+        # load time and distance matrices to external zones
+        tt_zmx = readZMX(tt)
+        tt_mat = tt_zmx[0]
+        tt_zones = tt_zmx[1].split(",")
+        di_zmx = readZMX(di)
+        di_mat = di_zmx[0]
+        di_zones = di_zmx[1].split(",")
+        
+        auto_op_cost = properties['auto.operating.cost']
+
+        for zi in mcls_zones:
+            for zj in mcls_zones:
+                # if neither i nor j is world market, just keep it as it is.
+                if zi in worldMarketZones or zj in worldMarketZones:
+                    time = tt_mat[tt_zones.index(zi)][tt_zones.index(zj)]
+                    dist = di_mat[di_zones.index(zi)][di_zones.index(zj)]
+                    new = 2 * (time * btime + auto_op_cost * dist * bauto_cost)
+                    mcls_mat[mcls_zones.index(zi)][mcls_zones.index(zj)] = new
+
+        # write modified matrix in the place of the original
+        writeZMX(mcls, mcls_zones, mcls_mat)
+        
+    def editskims(self):
+        """
+        Edit the moodechoice logsum skims
+        """
+        
+        skim_dir = properties['skim.data']
+        tt = skim_dir + "betapkautofftime.zmx"
+        di = skim_dir + "betapkautodist.zmx"
+        
+        recomputeWMLS(self, skim_dir + 'b4mcls_beta', tt, di, 1, "low")
+        recomputeWMLS(self, skim_dir + 'b5mcls_beta', tt, di, 1, "med")
+        recomputeWMLS(self, skim_dir + 'b8mcls_beta', tt, di, 1, "high")
+        recomputeWMLS(self, skim_dir + 'c4mcls_beta', tt, di, 2, "med")
+        recomputeWMLS(self, skim_dir + 'o4mcls_beta', tt, di, 5, "med")
+        recomputeWMLS(self, skim_dir + 's4mcls_beta', tt, di, 3, "med")
+        recomputeWMLS(self, skim_dir + 'w1mcls_beta', tt, di, 1, "low")
+        recomputeWMLS(self, skim_dir + 'w4mcls_beta', tt, di, 1, "med")
+        recomputeWMLS(self, skim_dir + 'w7mcls_beta', tt, di, 1, "high")
+         
+         
+        
 ############################################################
 
     def createAirSkims(self):
@@ -1575,6 +1690,9 @@ if __name__== "__main__":
 
             #Air skims
             s.createAirSkims()
+            
+        # recompute mode choice logsums to external zones
+        s.editskims()
         s.startVisum()
         s.loadVersion()
         s.createModelInput()
