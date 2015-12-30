@@ -1355,11 +1355,11 @@ class SwimModel(object):
         # read utility coefficients
         tourmodechoiceparams = pd.read_csv(properties['sdt.tour.mode.parameters'])
         if income == "high":
-        bauto_cost = tourmodechoiceparams['costHi'][purpose]
+            bauto_cost = tourmodechoiceparams['costHi'][purpose]
         elif income == "med":
-        bauto_cost = tourmodechoiceparams["costMed"][purpose]
+            bauto_cost = tourmodechoiceparams["costMed"][purpose]
         else:
-        bauto_cost = tourmodechoiceparams["costLow"][purpose]
+            bauto_cost = tourmodechoiceparams["costLow"][purpose]
 
         btime = tourmodechoiceparams["ivt"][purpose]
         
