@@ -28,12 +28,12 @@ linkTypeField = "TypeNo"
 vdf0 = [0,1,2,14,22,23,101]        #Link type = 0 for these vdf functions
 vdf1 = [3,4,5,6,7,8,9,10,11,12,15,16,17,18,19,20,30,31,32,33,34,35,36,37,
         38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,102]
-                                #Link type = 1 for these vdf functions        
+                                #Link type = 1 for these vdf functions
 vdf2 = [13,21,90,105]           #Link type = 2 for these vdf functions
 vdf3 = [103]                    #Link type = 3 for these vdf functions
 vdf4 = [104]                    #Link type = 4 for these vdf functions
 
-#Truck passenger car units ;1.7 is the default 
+#Truck passenger car units ;1.7 is the default
 #Was 0.1, changed after Rick's new CT (11/24/2014) YMM
 truckPCU = 1
 truckDemandClass = "e"
@@ -96,14 +96,14 @@ class SwimModel(object):
 
     def __init__(self,property_file):
         print("start model run - " + time.ctime())
-        
+
         properties = Properties()
         properties.loadPropertyFile(property_file)
 
-        self.current_year = properties['t.year'] 
+        self.current_year = properties['t.year']
         self.prefix = properties['t.year.prefix']
 
-        self.visum_version = int(properties['visum.version'])        
+        self.visum_version = int(properties['visum.version'])
         self.path = properties['ta.demand.output.path']
         self.base_version = properties['ta.base.version.file']
         self.version = properties['ta.version.file']
@@ -145,7 +145,7 @@ class SwimModel(object):
         self.fareZoneFares = properties['fareZoneFares.file']
         self.air_skims_directory = properties['transit.assign.previous.skim.path']
         self.air_skims = properties['pt.air.peak.skims'].strip().split(',') + properties['pt.air.offpeak.skims'].strip().split(',')
-        
+
         self.ampeakstart = int(properties['am.peak.start'])
         self.ampeakend = int(properties['am.peak.end'])
         self.pmpeakstart = int(properties['pm.peak.start'])
@@ -157,7 +157,7 @@ class SwimModel(object):
 
         self.volumeFactorPercentile = float(properties['ta.volume.factor.percentile'])
         self.worldMarketFieldnames = properties['world.market.fieldnames.file']
-        self.sdtTODTripsFile = properties['sdt.tod.trips.file'] 
+        self.sdtTODTripsFile = properties['sdt.tod.trips.file']
         self.airInputsFile = properties['air.inputs']
 
         self.reSeedMatrices = properties['new.zone.system']
@@ -193,7 +193,7 @@ class SwimModel(object):
             "wholesale_trade_expt",
             "wholesale_trade_impt"]
 
-        
+
         os.chdir(self.path)
 
     def copyAirSkims(self):
@@ -204,7 +204,7 @@ class SwimModel(object):
     def copyDependencies(self):
         for python_dependency in self.pythonDependencies:
             shutil.copy(os.path.join(self.pythonDependencyDir,python_dependency),os.path.join(self.path,python_dependency))
-        
+
     def copyVersion(self):
 
         currentToken = str(self.prefix) + str(self.current_year)
@@ -217,17 +217,17 @@ class SwimModel(object):
                 newPath = str(self.base_version).replace(currentToken, newToken)
                 if os.path.isfile(newPath):
                     shutil.copy(newPath,self.version)
-             
-        
+
+
     def startVisum(self):
         print("start VISUM")
-        
+
         self.Visum = VisumHelpers.CreateVisum(self.visum_version)
-        
+
         #sets working directories in VISUM to use relative file names
-        for i in range(0,len(pathNo)): 
+        for i in range(0,len(pathNo)):
             self.Visum.SetPath(pathNo[i], self.path)
-            
+
     def loadVersion(self, suffix=""):
         print("load version file: " + str(self.version)[:-4] + suffix + ".ver")
         if suffix == "":
@@ -267,13 +267,13 @@ class SwimModel(object):
 
         for h in headers:
             fieldDictionary[h] = []
-            
+
         for row in reader:
             for h, v in zip(headers, row):
                 fieldDictionary[h].append(v)
 
         return (headers, fieldDictionary)
-    
+
     def writeCSV(self, csvFileName, data):
         print("save csv file: " + csvFileName)
 
@@ -281,11 +281,11 @@ class SwimModel(object):
         wr = csv.writer(csvOut)
         wr.writerows(data)
         csvOut.close()
-    
-    
+
+
     #read zmx file
     def readZMX(self,zmxfileName):
-        
+
         print('......read zmx file: ' + zmxfileName)
 
         #read header files
@@ -348,10 +348,10 @@ class SwimModel(object):
 
         #return matrix data, zone names, matrix name
         return(mat, zoneNames, name)
-        
+
     #write zmx file
     def writeZMX(self, fileName, Names, mat):
-        
+
         print("......write zmx file: " + fileName)
 
         #calculate numZones to remove trailing zeros
@@ -436,14 +436,14 @@ class SwimModel(object):
 
         headers, fieldDictionary = self.loadCSV(self.swimModelInputs)
 
-        
+
         #write SWIM input files
         fileNames = list(set(fieldDictionary[headers[1]]))
 
         for fileIndex in range(0,len(fileNames)):
             fileName = fileNames[fileIndex]
             print("Write Swim input file:" + fileName)
-            
+
             #get fields for file
             listRecords = [item for item in range(0,len(fieldDictionary[headers[1]]))
                            if fieldDictionary[headers[1]][item] == fileName]
@@ -468,7 +468,7 @@ class SwimModel(object):
                 data[5].extend(["WM","WM","WM","WM","WM","WM"])
                 data[6].extend([0,0,0,0,0,0])
                 fileTable = self.stringConcatenate(data)
-            
+
             #Correct FloorspaceInventory field names
             if fileName.lower().find('floorspaceinventory') > -1:
                 fileTable[0] = [s.replace("_"," ") for s in fileTable[0]]
@@ -486,10 +486,10 @@ class SwimModel(object):
                       outTable.append([str(int(float(azone))), sptype, value])
                 fileTable = outTable
                 fileTable.insert(0, self.headers)
-            
+
 
             if fileName.lower().find('activityconstraintsi') > -1:
-                
+
                 #read world markets file (fix)
                 #self.headers = ["sctg01_fkp_lvsk_expt","sctg01_fkp_lvsk_impt","sctg02_fkp_agri_cereal_expt","sctg02_fkp_agri_cereal_impt","sctg03_fkp_agri_other_expt","sctg03_fkp_agri_other_impt","sctg04_fkp_feed_expt","sctg04_fkp_feed_impt","sctg05_fkp_food_meat_expt","sctg05_fkp_food_meat_impt","sctg06_fkp_agri_grain_expt","sctg06_fkp_agri_grain_impt","sctg07_fkp_food_prep_expt", "sctg07_fkp_food_prep_impt","sctg08_fkp_food_alc_expt","sctg08_fkp_food_alc_impt","sctg10_cms_clay_expt","sctg10_cms_clay_impt","sctg11_cms_sand_expt","sctg11_cms_sand_impt", "sctg13_cms_mine_nonmet_expt","sctg13_cms_mine_nonmet_impt","sctg14_cms_mine_met_expt","sctg14_cms_mine_met_impt","sctg15_pcc_coal_expt","sctg15_pcc_coal_impt","sctg16_pcc_petr_crude_expt","sctg16_pcc_petr_crude_impt","sctg17_pcc_fuel_expt","sctg17_pcc_fuel_impt","sctg18_pcc_petr_oil_expt","sctg18_pcc_petr_oil_impt","sctg19_pcc_coal_prod_expt","sctg19_pcc_coal_prod_impt","sctg20_pcc_chem_basic_expt","sctg20_pcc_chem_basic_impt","sctg21_pcc_chem_pharma_expt","sctg21_pcc_chem_pharma_impt","sctg22_pcc_chem_fert_expt","sctg22_pcc_chem_fert_impt","sctg23_pcc_chem_prod_expt","sctg23_pcc_chem_prod_impt","sctg24_pcc_petr_plast_expt","sctg24_pcc_petr_plast_impt","sctg25_fwp_logs_expt","sctg25_fwp_logs_impt","sctg26_fwp_wood_expt","sctg26_fwp_wood_impt","sctg27_ppp_papr_puplp_expt","sctg27_ppp_papr_puplp_impt","sctg28_ppp_papr_paper_expt","sctg28_ppp_papr_paper_impt","sctg29_ppp_papr_print_expt","sctg29_ppp_papr_print_impt","sctg30_oth_clth_expt","sctg30_oth_clth_impt","sctg31_cms_min_expt","sctg31_cms_min_impt","sctg32_mit_metl_base_expt","sctg32_mit_metl_base_impt","sctg33_mit_metl_prod_expt","sctg33_mit_metl_prod_impt","sctg34_mit_mach_expt","sctg34_mit_mach_impt","sctg35_mit_elct_expt","sctg35_mit_elct_impt","sctg36_mitTRan_expt","sctg36_mitTRan_impt","sctg37_mit_instTRansp_expt","sctg37_mit_instTRansp_impt","sctg38_mit_inst_prec_expt","sctg38_mit_inst_prec_impt","sctg39_oth_furn_expt","sctg39_oth_furn_impt","sctg40_oth_misc_expt","sctg40_oth_misc_impt","sctg41_waste_scrap_expt","sctg41_waste_scrap_impt"]
                 self.headers = self.loadCSV(self.worldMarketFieldnames)[1]["FIELDNAME"]
@@ -520,7 +520,7 @@ class SwimModel(object):
                     if j > 0:
                       outTable.append([azone, attr, value])
 
-                  
+
                 #add column headers
                 fileTable = outTable
                 fileTable.insert(0, ["Azone", "activity", "quantity"])
@@ -531,7 +531,7 @@ class SwimModel(object):
                 outTable = []
 
                 self.actTotals = self.loadCSV(self.activityTotals)[1]
-                
+
                 #WORLD IMPORTS/EXPORTS TOTALS
                 self.headers = self.loadCSV(self.worldMarketFieldnames)[1]["FIELDNAME"]
                 self.poiColumns = []
@@ -564,7 +564,7 @@ class SwimModel(object):
                           tempAttr.append(i);
 
 
-                #IGNORED ACTIVITIES (JUST USE EXISTING DATA) DONE LAST TO COMPLEMENT 
+                #IGNORED ACTIVITIES (JUST USE EXISTING DATA) DONE LAST TO COMPLEMENT
                 for i in tempAttr:
                     totalsInd = self.AA_capitalized_fields.index(i)
                     if not any(e[0] == i for e in outTable):
@@ -596,11 +596,11 @@ class SwimModel(object):
                 self.writeCSV(self.agForestFloorspace, newFileTable)
             else:
                 self.writeCSV(fileName, fileTable)
-        
+
         #set truck PCU factor
         print("Set truck PCU factor for class" + truckDemandClass + " : " + str(truckPCU))
         self.Visum.Net.TSystems.ItemByKey(truckDemandClass).SetAttValue("PCU", truckPCU)
-        
+
         #remove transit lines not in year
         print("Remove transit lines not in year")
         lineID = VisumHelpers.GetMulti(self.Visum.Net.LineRoutes, "ID")
@@ -608,7 +608,7 @@ class SwimModel(object):
         for i in range(len(inYear)):
           if inYear[i] == 0:
             self.Visum.Net.RemoveLineRoute(self.Visum.Net.LineRoutes.ItemByID(lineID[i]))
-            
+
 
 
     def createVizOutput(self):
@@ -622,7 +622,7 @@ class SwimModel(object):
         for fileIndex in range(0,len(fileNames)):
             fileName = fileNames[fileIndex]
             print("Create Viz output file:" + fileName)
-            
+
             #get fields for file
             listRecords = [item for item in range(0,len(fieldDictionary[headers[1]]))
                            if fieldDictionary[headers[1]][item] == fileName]
@@ -658,41 +658,41 @@ class SwimModel(object):
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, self.field))
 
             self.writeCSV(fileName, self.stringConcatenate(data, False))
-        
-        
+
+
     #read matrices in Python and then insert into Visum
     def insertMatrixInVisum(self, ODmode, start, end):
-        
+
         print("insert demand matrices in Visum: " + ODmode)
         headers, fieldDictionary = self.loadCSV(self.zmxInputfileNames)
         fileNames = list(fieldDictionary[headers[0]])
 
         for i in range(start-1,end):
-            
+
             #read zmx file
             fileName = fileNames[i] + '.zmx'
             mat, zoneNames, name = self.readZMX(fileName)
             print("matrix %i sum %i" % (i+1, sum(map(sum, mat))))
-            
+
             #add a fraction of a trip to OD 2->3 to ensure skimming and assignment run
             mat = np.array(mat)
             mat[1,2] = mat[1,2] + 0.001
-            
+
             #post to bank
             VisumHelpers.SetODMatrix(self.Visum, i+1, mat)
 
     #create seed demand for seed skim creation
     def insertSeedMatricesInVisum(self):
-        for i in range(hwyDemandMatrices[0], hwyDemandMatrices[1]):    
+        for i in range(hwyDemandMatrices[0], hwyDemandMatrices[1]):
             mat = np.zeros([len(self.zoneNames),len(self.zoneNames)], dtype=np.float64)
             for j in range(len(mat)):
                 mat[j] = [0.0001] * len(mat)
             print("matrix %i sum %i" % (i, sum(map(sum, mat))))
             VisumHelpers.SetODMatrix(self.Visum, i, mat)
-            
-    #delete skim matrices with indicated start and end no.s of matrices in Visum 
+
+    #delete skim matrices with indicated start and end no.s of matrices in Visum
     def deleteSkimMatrices(self, start, end):
-           
+
         print("delete skim matrices in Visum")
         for matInd in range(start,end+1):
             #remove skim matrix
@@ -720,7 +720,7 @@ class SwimModel(object):
             elif vdfLookup[i] in vdf3:
                 typeNo.append(3)
             elif vdfLookup[i] in vdf4:
-                typeNo.append(4)        
+                typeNo.append(4)
         VisumHelpers.SetMulti(self.Visum.Net.Links, linkTypeField, typeNo)
 
     def aggregateMatSortAverage(self, mat, mainZones):
@@ -794,7 +794,7 @@ class SwimModel(object):
         self.uniqueMainZoneNo = list(self.uniqueMainZoneNo)
 
         #mini model run if less than max mini size
-        global externalStation  
+        global externalStation
         global bzoneRange
         if len(self.zoneNo) < maxMiniModelZones:
           bzoneRange = bzoneRangeMiniModel
@@ -802,7 +802,7 @@ class SwimModel(object):
 
         #delete external station no.s from uniqueMainZoneNo
         self.uniqueMainZoneNo = [i for j, i in enumerate(self.uniqueMainZoneNo) if j not in externalStation]
-        
+
         self.worldMainZoneNo = self.uniqueMainZoneNo + worldMarketList
 
         self.uniqueMainZoneNo = self.uniqueMainZoneNo + list(set(worldMarketList))
@@ -835,15 +835,15 @@ class SwimModel(object):
                     mat[externalStation[ro_est]][externalStation[col_est]] += int(fieldDictionary[headers[2]][ro_est])/speed + int(fieldDictionary[headers[3]][col_est])/speed
                 elif matCount % 4 == 2:
                     mat[externalStation[ro_est]][externalStation[col_est]] += int(fieldDictionary[headers[2]][ro_est]) + int(fieldDictionary[headers[3]][col_est])
-                    
+
         return mat
-    
-    
-    #write highway skim matrices 
+
+
+    #write highway skim matrices
     def writeHighwaySkimZMX(self, start, writeBetaMatrices=True):
-         
+
         print("saving highway skim matrices into zmx files")
-        
+
         #load worldZoneDistances.csv for distance between external stations and world markets
         worldheaders, worldfieldDictionary = self.loadCSV(self.worldZoneDistances)
 
@@ -851,10 +851,10 @@ class SwimModel(object):
 
         for timeIndex in range(0,len(timePeriods)):
             for matCount in range(0,len(matName[matheaders[0]])):
-                
-                #get matrix indices of Visum              
+
+                #get matrix indices of Visum
                 matIndex = matCount + (timeIndex * len(matName[matheaders[0]]))
-                VisumMatIndex = start + matIndex              
+                VisumMatIndex = start + matIndex
 
                 azonemat = VisumHelpers.GetSkimMatrix(self.Visum, VisumMatIndex)
                 fileName = timePeriods[timeIndex] + matName[matheaders[0]][matCount] + '.zmx'
@@ -872,11 +872,11 @@ class SwimModel(object):
                     self.writeZMX(fileName,self.mainZoneNames,aggregateMat)
                     del(betaaggregateMat,aggregateMat)
 
-    #write transit skim matrices    
+    #write transit skim matrices
     def writeTransitSkimZMX(self, start):
-        
+
         print("saving transit skim matrices into zmx files")
-        
+
         matheaders, matName = self.loadCSV(self.transitSkimMatrixNames)
 
         for matCount in range(len(matName[matheaders[0]])):
@@ -884,39 +884,39 @@ class SwimModel(object):
             VisumMatIndex = start + matCount
             azonemat = VisumHelpers.GetSkimMatrix(self.Visum, VisumMatIndex)
             fileName = matName[matheaders[0]][matCount] + '.zmx'
-  
+
             #number of boardings = number of transfers + 1
             if matName[matheaders[0]][matCount]== 'pkwtbrd' or matName[matheaders[0]][matCount]== 'opwtbrd':
               azonemat[azonemat != NA] = azonemat[azonemat != NA] + 1
-            
+
             #set NA to 0 for reading into SWIM
             azonemat[azonemat == NA] = 0
-  
+
             #write azone skim matrices to zmx format
             print 'writing skim matrix ' + fileName + ': ' + str(VisumMatIndex)
             self.writeZMX(fileName, self.zoneNames, azonemat)
 
     #compute level of service for all the service areas
     def losCompute(self):
-        
+
         print('calculate level of service for station areas')
-        
+
         #input level of service for different stations
         headers, data = self.loadCSV(self.losInfo)
-        
+
         population = map(int, data[headers[5]])
         serviceMiles = map(int, data[headers[6]])
 
         headers.append('los')
         data[headers[7]] = [min(maxLOS, pop/serv) for pop,serv in zip(population, serviceMiles)]
 
-        #return a lookup of service areas and los        
+        #return a lookup of service areas and los
         return (headers, data)
-    
+
 
     #create a dictionary of service areas and los (in order of alpha zones in Visum)
     def zoneServiceLookup(self):
-        
+
         print('assign transit level of service to each alpha zone based on service area')
 
         #get service area from Visum
@@ -936,31 +936,31 @@ class SwimModel(object):
 
     #calculate service area data for LTF
     def calcServiceAreaData(self):
-        
+
         #get zone area
         areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREASQFT")
         areas = [item/(5280**2) for item in areas] #from sq ft to miles
         self.service_data["AREA"] = areas
-        
+
         #read synpop summary table
         self.headers, self.fields = self.loadCSV(self.synpopFile)
         self.service_data["POP"] = self.fields["TotalPersons"]
         self.service_data["EMP"] = self.fields["TotalWorkers"]
-        
+
         #define dict of accumulated measures by service area
         serviceareas = self.service_data["SERVICEAREA"]
         serviceAreaSums = dict()
         for i in range(len(self.service_data["POP"])): #only internal zones
-          
+
           if serviceareas[i] not in serviceAreaSums:
             serviceAreaSums[serviceareas[i]] = [0,0,0,0] #area,pop,emp,p2eDen
-            
+
           sums = serviceAreaSums[serviceareas[i]]
           sums[0] = sums[0] + self.service_data["AREA"][i]
           sums[1] = sums[1] + int(self.service_data["POP"][i])
           sums[2] = sums[2] + int(self.service_data["EMP"][i])
           serviceAreaSums[serviceareas[i]] = sums
-        
+
         #create P2E density field for service area
         for sArea in serviceAreaSums:
           sums = serviceAreaSums[sArea]
@@ -969,7 +969,7 @@ class SwimModel(object):
           else:
               sums[3] = 0
           serviceAreaSums[serviceareas[i]] = sums
-        
+
         #code each zone with its P2E
         self.service_data["P2EDEN"] = [0]*len(self.service_data["AREA"])
         for i in range(len(self.service_data["POP"])):
@@ -986,18 +986,18 @@ class SwimModel(object):
     #find square root of items of list
     def squareRoot(self, list):
         outList = [math.sqrt(i) for i in list]
-        return outList  
+        return outList
 
     #create local bus ivt and ovt functions
     def createLocalBusSkimMatrix(self, timemat, distmat, isPeak, NAMatrix):
-                
+
         losList = self.service_data["LOS"]
         P2EList = self.service_data["P2EDEN"]
-        
+
         #initialize arrays
         ivtmat = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
         ovtmat = np.zeros([len(distmat),len(distmat)], dtype=np.float64)
-        
+
         #parameters
         if isPeak:
           ivtParams = ivtParameters[0]
@@ -1005,24 +1005,24 @@ class SwimModel(object):
         else:
           ivtParams = ivtParameters[1]
           ovtParams = ovtParameters[1]
-        
+
         #trace calculations
         o = 1
         d = 17
         o_index = VisumHelpers.GetMulti(self.Visum.Net.Zones, "NO").index(o)
         d_index = VisumHelpers.GetMulti(self.Visum.Net.Zones, "NO").index(d)
-        
+
         #calculate matrices
         for ro in range(len(timemat)):
             P2EOrigDest = [(P2EList[ro]**0.5) + item for item in self.squareRoot(P2EList)]
             losListOrigDest = [(losList[ro]*0.5) + item*0.5 for item in losList]
             ivtmat[ro] = ivtParams[0] * timemat[ro] + ivtParams[1] * timemat[ro]**2 + ivtParams[2] * self.inner_prod(losListOrigDest, timemat[ro])
             ovtmat[ro] = [ovtParams[0] * i for i in self.squareRoot(losListOrigDest)] + ovtParams[1] * self.inner_prod(losListOrigDest, distmat[ro]) + [ovtParams[2] * i for i in P2EOrigDest]
-            
+
             #set ivt and ovt to NA if needed
             ivtmat[ro][NAMatrix[ro]] = NA
             ovtmat[ro][NAMatrix[ro]] = NA
-            
+
             #trace calculations
             if ro == o_index:
               print('LTF Trace Zones')
@@ -1037,22 +1037,22 @@ class SwimModel(object):
               print('  distmat[o][d]: ' + str(distmat[ro][d_index]))
               print('  P2EOrigDest[d]: ' + str(P2EList[d_index]))
               print('  ovtmat[o][d]: ' + str(ovtmat[ro][d_index]))
-        
+
         #return ivt and ovt matrices
         return (ivtmat, ovtmat)
 
     #calculate intracity and intercity transit fare matrices
     def calcFareMatrices(self):
-      
+
       print("calculate transit fare matrices")
-      
+
       #intracity based on district to district lookup table
-      
+
       #get zone fare district, intracity district to district fare file
       zoneFare = VisumHelpers.GetMulti(self.Visum.Net.Zones, "FARE", False)
       colNames, fieldDict = self.loadCSV(self.fareZoneFares)
       odKey = map(" ".join, zip(fieldDict['OFareDistrict'], fieldDict['DFareDistrict']))
-      
+
       #set fare by zone pair
       peak_far = np.array(VisumHelpers.GetMatrix(self.Visum, ivtPeakIntraSkimNum + 7))
       offpeak_far = np.array(VisumHelpers.GetMatrix(self.Visum, ivtOffpeakIntraSkimNum + 7))
@@ -1063,24 +1063,24 @@ class SwimModel(object):
             if key in odKey:
               peak_far[i][j] = fieldDict['Fare_2007$'][odKey.index(key)]
               offpeak_far[i][j] = fieldDict['Fare_2007$'][odKey.index(key)]
-          
+
           if offpeak_far[i][j]==0: #0=avail;999999=NA
             if key in odKey:
               peak_far[i][j] = fieldDict['Fare_2007$'][odKey.index(key)]
               offpeak_far[i][j] = fieldDict['Fare_2007$'][odKey.index(key)]
-      
+
       #put matrices back in
       VisumHelpers.SetSkimMatrix(self.Visum, ivtPeakIntraSkimNum + 7, peak_far)
       VisumHelpers.SetSkimMatrix(self.Visum, ivtOffpeakIntraSkimNum + 7, offpeak_far)
-      
+
       #intercity based on trip distance function
-      
+
       #get auto distance matrix and distance function parameters
       distmat, distNames, distmatname = self.readZMX(distMatNames[1]  + '.zmx') #offpeak distance
       distmat = np.array(distmat)
       alpha = intercityTransitFareFuncParams[0]
       beta = intercityTransitFareFuncParams[1]
-      
+
       #set fare by zone pair
       peak_far = np.array(VisumHelpers.GetMatrix(self.Visum, ivtPeakInterSkimNum + 6))
       offpeak_far = np.array(VisumHelpers.GetMatrix(self.Visum, ivtOffpeakInterSkimNum + 6))
@@ -1095,18 +1095,18 @@ class SwimModel(object):
       #put matrices back in
       VisumHelpers.SetSkimMatrix(self.Visum, ivtPeakInterSkimNum + 6, peak_far)
       VisumHelpers.SetSkimMatrix(self.Visum, ivtOffpeakInterSkimNum + 6, offpeak_far)
-      
+
     #read highway skims from *.zmx files and create local bus ivt and ovt skims
     def createLocalBusSkims(self):
-        
+
         print('write ivt and ovt LTF matrices in zmx files')
-        
+
         #create valid OD pairs to calculate LTF values based on offpeak auto time max
         timemat, timeNames, timematname = self.readZMX(timeMatNames[1]  + '.zmx')
         timemat = np.array(timemat)
         NAMatrix = timemat > maxAutoTimeForLTF
         NAMatrix = NAMatrix + NAMatrix.T #make symmetrical
-        
+
         for index in range(len(timeMatNames)):
             timematname = timeMatNames[index]  + '.zmx'
             distmatname = distMatNames[index]  + '.zmx'
@@ -1140,7 +1140,7 @@ class SwimModel(object):
     #adjust skimmed IVT and LTF IVT and OVT skims
     def adjustSkimsDueToLTF(self, isPeak):
         print("adjust skimmed IVT and LTF IVT and OVT skims so only best is available")
-        
+
         if(isPeak):
             skimMatrixStartNum = ivtPeakIntraSkimNum
             ltfIvtMatNum = ivtMatNums[0]
@@ -1149,7 +1149,7 @@ class SwimModel(object):
             skimMatrixStartNum = ivtOffpeakIntraSkimNum
             ltfIvtMatNum = ivtMatNums[1]
             ltfOvtMatNum = ovtMatNums[1]
-          
+
         #get intracity skimmed transit skims
         ivt = np.array(VisumHelpers.GetMatrix(self.Visum, skimMatrixStartNum))
         owt = np.array(VisumHelpers.GetMatrix(self.Visum, skimMatrixStartNum + 1))
@@ -1161,20 +1161,20 @@ class SwimModel(object):
         skm_util = (ivt_coeff * ivt + ovt_coeff * (owt + twt + wkt + act + egt + (ntr * transferEqMin)))
         skm_util[ivt==NA] = NA
         del(ivt, owt, twt, wkt, act, egt, ntr)
-        
+
         #get local transit function skim matrices
         ltf_ivt = np.array(VisumHelpers.GetMatrix(self.Visum, ltfIvtMatNum))
         ltf_ovt = np.array(VisumHelpers.GetMatrix(self.Visum, ltfOvtMatNum))
         ltf_util = (ivt_coeff * ltf_ivt + ovt_coeff * ltf_ovt)
         ltf_util[ltf_ivt==NA] = NA
         del(ltf_ivt, ltf_ovt)
-        
+
         #Determine best option
         ltfBetter = ltf_util < skm_util
-        
+
         #get intracity skimmed transit skims
         ivt = np.array(VisumHelpers.GetMatrix(self.Visum, skimMatrixStartNum))
-        
+
         #Turn off the worst option by OD pair
         ivt[np.logical_and(ltf_util != NA, ltfBetter)] = NA
         skimOffsets = [1,2,3,4,5,6,7] #other skims
@@ -1183,15 +1183,15 @@ class SwimModel(object):
           mat[np.logical_and(ltf_util != NA, ltfBetter)] = NA
           VisumHelpers.SetSkimMatrix(self.Visum, skimMatrixStartNum + i, mat)
           del(mat)
-        
+
         #get local transit function skim matrices
         ltf_ivt = np.array(VisumHelpers.GetMatrix(self.Visum, ltfIvtMatNum))
         ltf_ovt = np.array(VisumHelpers.GetMatrix(self.Visum, ltfOvtMatNum))
-        
+
         #Turn off the worst option by OD pair
         ltf_ivt[np.logical_and(skm_util != NA, ltfBetter==False)] = NA
         ltf_ovt[np.logical_and(skm_util != NA, ltfBetter==False)] = NA
-  
+
         #copy over IVT from LTF IVT to skimmed IVT
         ivt[np.logical_and(ltf_util != NA, ltfBetter)] = ltf_ivt[np.logical_and(ltf_util != NA, ltfBetter)]
 
@@ -1199,16 +1199,16 @@ class SwimModel(object):
         VisumHelpers.SetSkimMatrix(self.Visum, skimMatrixStartNum, ivt)
         VisumHelpers.SetSkimMatrix(self.Visum, ltfIvtMatNum, ltf_ivt)
         VisumHelpers.SetSkimMatrix(self.Visum, ltfOvtMatNum, ltf_ovt)
-        
+
     #distance function
-    def calcDist(self, x1,x2,y1,y2):  
+    def calcDist(self, x1,x2,y1,y2):
         return(((x1-x2)**2 + (y1-y2)**2)**0.5)
 
     #Build Transit Connectors
     def buildTransitConnectors(self, ivt_matrix_num, ovt_matrix_num, ivt_coeff, ovt_coeff):
-  
+
         print('build transit connectors using LTF skims')
-        
+
         #get stop attributes
         stopNo       =  VisumHelpers.GetMulti(self.Visum.Net.StopPoints, "No", False)
         stopX        =  VisumHelpers.GetMulti(self.Visum.Net.StopPoints, "XCoord", False)
@@ -1222,7 +1222,7 @@ class SwimModel(object):
         zoneX        =  VisumHelpers.GetMulti(self.Visum.Net.Zones, "XCoord", False)
         zoneY        =  VisumHelpers.GetMulti(self.Visum.Net.Zones, "YCoord", False)
         zoneStops    =  [[]] * len(zoneNo) #will be calculated below
-        
+
         #determine each stop's zone
         for i in range(len(stopNo)):
             max_dist = 99999999
@@ -1231,44 +1231,44 @@ class SwimModel(object):
                 if dist <= max_dist:
                     stopZone[i] = zoneNo[j]
                     max_dist = dist
-        
+
         #determine nearest stops for each zone
         for i in range(len(zoneNo)):
-            
+
             #store distances
             dists = []
             for k in range(numTransitConnectors):
               heapq.heappush(dists, (-99999999, 0)) #negative distance, stopNo
-            
+
             for j in range(len(stopNo)):
-                
+
                 #skip if air stop
                 if 'n' not in stopLineModes[j]:
-                  
+
                   dist = self.calcDist(zoneX[i], stopX[j], zoneY[i], stopY[j])
                   for entry in dists:
                     if (-1 * dist) > entry[0]:
                       heapq.heappushpop(dists, (-dist, stopNo[j]))
                       break
-            
+
             #store stopNos by zone
             zoneStops[i] = []
             for entry in dists:
               zoneStops[i].append(entry[1])
-        
+
         #get local transit function skim matrices
         ivt = VisumHelpers.GetMatrix(self.Visum, ivt_matrix_num) #ltf ivt
         ovt = VisumHelpers.GetMatrix(self.Visum, ovt_matrix_num) #ltf ovt
-        
+
         #create connectors
         self.Visum.Graphic.ShowMinimized()
         for i in range(len(zoneNo)):
           for j in range(len(zoneStops[0])):
-            
+
             #create connector if needed
             zone = self.Visum.Net.Zones.ItemByKey(zoneNo[i])
             node = self.Visum.Net.Nodes.ItemByKey(stopNodeNo[stopNo.index(zoneStops[i][j])])
-            
+
             if self.Visum.Net.Connectors.ExistsByKey(node, zone):
                 sCon = self.Visum.Net.Connectors.SourceItemByKey(zone, node)
                 dCon = self.Visum.Net.Connectors.DestItemByKey(node, zone)
@@ -1276,35 +1276,35 @@ class SwimModel(object):
                 self.Visum.Net.AddConnector(zone, node)
                 sCon = self.Visum.Net.Connectors.SourceItemByKey(zone, node)
                 dCon = self.Visum.Net.Connectors.DestItemByKey(node, zone)
-            
+
             #get IVT and OVT for OD pair
             fz_index = zoneNo.index(zoneNo[i])
             tz_index = zoneNo.index(stopZone[stopNo.index(zoneStops[i][j])])
             ivt_od = ivt[fz_index][tz_index]
             ovt_od = ovt[fz_index][tz_index]
-            
+
             #set connector cost - take min of walk time or LTF time
-            
+
             #walk time
             nodeX = stopX[stopNo.index(zoneStops[i][j])]
-            nodeY = stopY[stopNo.index(zoneStops[i][j])]  
+            nodeY = stopY[stopNo.index(zoneStops[i][j])]
             dist = self.calcDist(zoneX[i], nodeX, zoneY[i], nodeY)
             walk_cost = (dist / 5280) * (60 / walkSpeed) * 60 #from min to sec
-            
+
             #LTF time
             if ivt_od != NA:
               ltf_cost = (ivt_coeff * ivt_od + ovt_coeff * ovt_od) * 60 #from min to sec
-            else: 
+            else:
               ltf_cost = NA
-            
+
             cost = min(walk_cost, ltf_cost)
-            
+
             sCon.SetAttValue("T0_TSYS(w)", max(cost,0))
             tsys = sCon.AttValue("TSYSSET")
             if 'w' not in tsys:
               tsys = tsys + ",w"
               sCon.SetAttValue("TSYSSET", tsys)
-            
+
             dCon.SetAttValue("T0_TSYS(w)", max(cost,0))
             tsys = dCon.AttValue("TSYSSET")
             if 'w' not in tsys:
@@ -1318,7 +1318,7 @@ class SwimModel(object):
 
         factor = self.calcVolumeFactorDebug("ampeak")
         for i in range(len(volumeFactors)):
-            volumeFactors[i] = factor  
+            volumeFactors[i] = factor
         VisumHelpers.SetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR", volumeFactors)
 
         factor = self.calcVolumeFactorDebug("mdoffpeak")
@@ -1340,13 +1340,13 @@ class SwimModel(object):
     def recomputeWMLS(self, mcls, tt, di, purpose, income):
         """
         Recompute World Market Log Sums
-        
+
         The function calculates logsums for beta zone-world market
         pairs based on highway travel time and distance, in addition to
         tour mode choice parameters based on an income level and
         trip purpose. The function overwrites the input logsum matrix, adjusting
         only the values to world market zones.
-        
+
         :param mcls: mode choice logsum matrix to be modified
         :param tt: auto travel time skim used for external market
         :param di: auto distance skim used for external market
@@ -1427,7 +1427,7 @@ class SwimModel(object):
             airfar = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
             airfwt = np.zeros([len(timemat),len(timemat)], dtype=np.float64)
 
-            for i in range(len(timemat)): 
+            for i in range(len(timemat)):
 
                 closestFromAirport = 0
                 accessTime = 0
@@ -1454,7 +1454,7 @@ class SwimModel(object):
                                 closestToAirport = airportZoneTo
                                 egressTime = travelTime
                                 minTime = travelTime
-                
+
                     index = 0
 
                     for k in range(len(airInputs["To"])):
@@ -1472,7 +1472,7 @@ class SwimModel(object):
                         airfar[i][j] = airInputs["FAR"][index]
                         airivt[i][j] = airInputs["IVT"][index]
                         airfwt[i][j] = airInputs["FWT"][index] + airInputs["AWT"][index]
-                    
+
             for air_skim in self.air_skims:
                air_skim += ".zmx"
                period_token = air_skim[:2]
@@ -1493,14 +1493,14 @@ class SwimModel(object):
 
 ############################################################
     def calcVolumeFactorDebug(self, timePeriod):
-        
+
         print('calculate volume factor')
-        
+
         volumeFactor = 0.0
         startHour = 0
         endHour = 0
         hours = 0
-        
+
         #get time period definitions from property files
         if timePeriod.lower().find('ampeak') > -1:
             startHour = self.ampeakstart
@@ -1510,44 +1510,44 @@ class SwimModel(object):
         elif timePeriod.lower().find('pmpeak') > -1:
             startHour = self.pmpeakstart
             endHour = self.pmpeakend
-            hours = (endHour + 41 - startHour) / 100.0; 
+            hours = (endHour + 41 - startHour) / 100.0;
 
         elif timePeriod.lower().find('mdoffpeak') > -1:
             startHour = self.mdoffpeakstart
             endHour = self.mdoffpeakend
-            hours = (endHour + 41 - startHour) / 100.0; 
+            hours = (endHour + 41 - startHour) / 100.0;
 
         elif timePeriod.lower().find('ntoffpeak') > -1:
             startHour = self.ntoffpeakstart
             endHour = self.ntoffpeakend
-            hours = (endHour + 41 + (2400 - startHour)) / 100.0; 
+            hours = (endHour + 41 + (2400 - startHour)) / 100.0;
 
         else:
             print ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." )
             return -1
-        
-        
+
+
         volumeFactor = 0
         if(hours > 0):
             volumeFactor = 1 / hours
-            
-        
+
+
         #log results
         print( "calculated volume factor: " + str(volumeFactor))
         print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        
+
         return (volumeFactor)
 
 ############################################################
     def calcVolumeFactor(self, timePeriod):
-        
+
         print('calculate volume factor')
-        
+
         volumeFactor = 0.0
         startHour = 0
         endHour = 0
         hours = 0
-        
+
         #get time period definitions from property files
         if timePeriod.lower().find('ampeak') > -1:
             startHour = self.ampeakstart
@@ -1557,35 +1557,35 @@ class SwimModel(object):
         elif timePeriod.lower().find('pmpeak') > -1:
             startHour = self.pmpeakstart
             endHour = self.pmpeakend
-            hours = (endHour + 41 - startHour) / 100.0; 
+            hours = (endHour + 41 - startHour) / 100.0;
 
         elif timePeriod.lower().find('mdoffpeak') > -1:
             startHour = self.mdoffpeakstart
             endHour = self.mdoffpeakend
-            hours = (endHour + 41 - startHour) / 100.0; 
+            hours = (endHour + 41 - startHour) / 100.0;
 
         elif timePeriod.lower().find('ntoffpeak') > -1:
             startHour = self.ntoffpeakstart
             endHour = self.ntoffpeakend
-            hours = (endHour + 41 + (2400 - startHour)) / 100.0; 
+            hours = (endHour + 41 + (2400 - startHour)) / 100.0;
 
         else:
             print ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." )
             return -1
-        
+
         #read PT time-of-day vmt file
         headers, timePeriodPercents = self.loadCSV(self.sdtTODTripsFile)
-     
+
         #calculate volume factor based on PT time period
         times = timePeriodPercents["TIME"]
         tripstarts = timePeriodPercents["VMT"]
-        
+
         #log results
         print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print( "volume factor calculation based on sdt trip times")
         print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print( "time period: " + timePeriod + " (" + str(startHour) + "-" + str(endHour) + ", " + str(hours) + " hours )")
-        
+
         #demand by hour and demand in time period
         hourTrips = []
         hourTripsInTimePeriod = []
@@ -1594,7 +1594,7 @@ class SwimModel(object):
             print( "hour: " + str(times[i]) + ", " + str(tripstarts[i]) + " trips")
             #demand in each hour
             hourTrips.append(int(tripstarts[i]))
-            
+
             #demand in time period
             if timePeriod.lower().find('ntoffpeak') > -1:
 
@@ -1607,11 +1607,11 @@ class SwimModel(object):
             	if(int(times[i]) >= startHour and int(times[i]) <= endHour):
             		hourTripsInTimePeriod.append(int(tripstarts[i]))
 
-        
+
         #get max demand hour of the day
         maxTrips = max(hourTrips)
         maxHour = hourTrips.index(maxTrips) + 1
-        
+
         #sort demand in time period and calculate demand based on percentile
         demandInTimePeriod = 0
         if(hours > 1):
@@ -1623,20 +1623,20 @@ class SwimModel(object):
             demandInTimePeriod = (lower + (upper - lower) * remainder) * hours
         else:
             demandInTimePeriod = hourTripsInTimePeriod.pop()
-        
-        #calculate volume factor  
+
+        #calculate volume factor
         volumeFactor = 0
         if(demandInTimePeriod > 0):
             volumeFactor = maxTrips / demandInTimePeriod
-            
-        
+
+
         #log results
         print( "max demand hour of the day: " + str(maxHour) + " hr (" + str(maxTrips) + " trips )")
         print( "volume factor percentile: " + str(self.volumeFactorPercentile))
         print( "demand in time period: " + str(demandInTimePeriod))
         print( "calculated volume factor: " + str(volumeFactor))
         print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        
+
         return (volumeFactor)
 
 
@@ -1644,7 +1644,7 @@ class SwimModel(object):
 #Main entry point
 
 if __name__== "__main__":
-    
+
     #run modes can be:
     # inputs - create swim inputs
     # highway - run highway assignment
@@ -1701,12 +1701,12 @@ if __name__== "__main__":
         s.saveVersion()
         s.closeVisum()
         s.copyActivityLocations()
-        
+
     #path based highway assignment
     ######################################################
     if mode == 'highway':
-        
-        #multiclass private transport assignment    
+
+        #multiclass private transport assignment
         s.startVisum()
         s.loadVersion()
         s.insertMatrixInVisum('auto and truck', start=hwyDemandMatrices[0], end=hwyDemandMatrices[1])
@@ -1714,11 +1714,11 @@ if __name__== "__main__":
         s.createVolumeFactor()
         s.saveVersion()
         s.closeVisum()
-        
+
         #execute procedure file
         if s.assignmentType == "PATHBASED":
             if s.assignmentPeriods == "ALL":
-                procedure = s.pathAllPeriodAssignmentProcedure 
+                procedure = s.pathAllPeriodAssignmentProcedure
             else:
                 procedure = s.pathAssignmentProcedure
         elif s.assignmentType == "LUCE":
@@ -1733,7 +1733,7 @@ if __name__== "__main__":
         s.executeProcedure(os.path.join(pdir,procedure))
         s.saveVersion()
         s.closeVisum()
-        
+
         #write skim matrices in *.zmx files
         s.startVisum()
         s.loadVersion()
@@ -1775,7 +1775,7 @@ if __name__== "__main__":
             s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+8)
             s.saveVersion("_OP_PATHS")
             s.closeVisum()
-        
+
     #transit assignment
     ######################################################
     if mode == 'transit':
@@ -1788,15 +1788,15 @@ if __name__== "__main__":
         s.buildTransitConnectors(ivtMatNums[0], ovtMatNums[0], ivt_coeff, ovt_coeff)
         s.saveVersion("_TR")
         s.closeVisum()
-        
+
         #intercity transit assignment
         s.startVisum()
         s.loadVersion("_TR")
         s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
         s.saveVersion("_TR")
         s.closeVisum()
-        
-        #load and execute procedure file 
+
+        #load and execute procedure file
         procedure = s.intercityRailAssignmentProcedure
         s.startVisum()
         s.loadVersion("_TR")
@@ -1804,15 +1804,15 @@ if __name__== "__main__":
         s.executeProcedure(os.path.join(pdir,procedure))
         s.saveVersion("_TR")
         s.closeVisum()
-        
+
         #intracity transit assignment
         s.startVisum()
         s.loadVersion("_TR")
         s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
         s.saveVersion("_TR")
         s.closeVisum()
-        
-        #load and execute procedure file    
+
+        #load and execute procedure file
         procedure = s.intracityRailAssignmentProcedure
         s.startVisum()
         s.loadVersion("_TR")
@@ -1820,16 +1820,16 @@ if __name__== "__main__":
         s.executeProcedure(os.path.join(pdir,procedure))
         s.saveVersion("_TR")
         s.closeVisum()
-       
+
         #Adjust skimmed SDT IVT and LTF IVT and OVT skims
-        s.startVisum()        
+        s.startVisum()
         s.loadVersion("_TR")
         s.calcFareMatrices()
         s.adjustSkimsDueToLTF(isPeak=True)
         s.adjustSkimsDueToLTF(isPeak=False)
         s.saveVersion("_TR")
-        s.closeVisum() 
-      
+        s.closeVisum()
+
         #write skim matrices in *.zmx files
         s.startVisum()
         s.loadVersion("_TR")
@@ -1838,9 +1838,8 @@ if __name__== "__main__":
         s.createVizOutput()
         s.saveVersion("_TR")
         s.closeVisum()
-        
+
         #copy air skims, because it needs to look like they've been run
         s.copyAirSkims()
 
     print("end model run - " + time.ctime())
-  
