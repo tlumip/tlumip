@@ -121,16 +121,19 @@ class SwimModel(object):
         self.assignmentPeriods = properties['ta.assignment.periods']
 
         self.externalStationList = map(int, properties['external.stations'].strip().split(' '))
-        
+
         self.intracityRailAssignmentProcedure = properties['tr.transit.assignment.intracity.rail.parameters']
         self.intercityRailAssignmentProcedure = properties['tr.transit.assignment.intercity.rail.parameters']
-        
+
+        self.auto_op_cost = properties['auto.operating.cost']
         self.agForestFloorspace = properties['agforest.floorspace.file']
         self.activityTotals = properties['aa.activity.totals']
         self.copyToPreviousYear = properties['ald.copyToPreviousYear']
         self.currentActivity = properties['ald.CurrentActivity']
         self.previousActivity = properties['ald.PreviousActivity']
         self.worldZoneDistances = properties['ta.world.zone.distances']
+        self.mclsmatrixdir = properties['skim.data']
+        self.tourmodechoiceparams = properties['sdt.tour.mode.parameters']
         self.hwySkimMatrixNames = properties['ta.skim.matrix.names']
         self.transitSkimMatrixNames = properties['tr.skim.matrix.names']
         self.losInfo = properties['ta.los.info']
@@ -307,11 +310,11 @@ class SwimModel(object):
 
         #return matrix data, zone names, matrix name
         return(mat, zoneNames, name)
-        
-    def readZMX2array(zmxfileName):
+
+    def readZMX2array(self, zmxfileName):
         """
         Read a ZMX file to a mutable numpy array.
-        
+
         The readZMX function reads to immutable tuple, which obviously doesn't
         work if future transformations are needed.
         :param zmxfileName: The path to the zmx file
@@ -1353,30 +1356,29 @@ class SwimModel(object):
         """
 
         # read utility coefficients
-        tourmodechoiceparams = pd.read_csv(properties['sdt.tour.mode.parameters'])
+        tourmodechoiceparams = self.loadCSV(self.tourmodechoiceparams)
         if income == "high":
-            bauto_cost = tourmodechoiceparams['costHi'][purpose]
+            bauto_cost = float(tourmodechoiceparams[1]['costHi'][purpose])
         elif income == "med":
-            bauto_cost = tourmodechoiceparams["costMed"][purpose]
+            bauto_cost = float(tourmodechoiceparams[1]["costMed"][purpose])
         else:
-            bauto_cost = tourmodechoiceparams["costLow"][purpose]
+            bauto_cost = float(tourmodechoiceparams[1]["costLow"][purpose])
 
-        btime = tourmodechoiceparams["ivt"][purpose]
-        
+        btime = float(tourmodechoiceparams[1]["ivt"][purpose])
+
         # load mcls matrix that needs to be recalculated
-        mcls_zmx = readZMX2array(mcls)
+        mcls_zmx = self.readZMX2array(mcls)
         mcls_mat = mcls_zmx[0]
         mcls_zones = mcls_zmx[1].split(",")
 
         # load time and distance matrices to external zones
-        tt_zmx = readZMX(tt)
+        tt_zmx = self.readZMX(tt)
         tt_mat = tt_zmx[0]
         tt_zones = tt_zmx[1].split(",")
-        di_zmx = readZMX(di)
+        di_zmx = self.readZMX(di)
         di_mat = di_zmx[0]
         di_zones = di_zmx[1].split(",")
-        
-        auto_op_cost = properties['auto.operating.cost']
+
 
         for zi in mcls_zones:
             for zj in mcls_zones:
@@ -1384,33 +1386,33 @@ class SwimModel(object):
                 if zi in worldMarketZones or zj in worldMarketZones:
                     time = tt_mat[tt_zones.index(zi)][tt_zones.index(zj)]
                     dist = di_mat[di_zones.index(zi)][di_zones.index(zj)]
-                    new = 2 * (time * btime + auto_op_cost * dist * bauto_cost)
+                    new = 2 * (time * btime + float(self.auto_op_cost) * dist * bauto_cost)
                     mcls_mat[mcls_zones.index(zi)][mcls_zones.index(zj)] = new
 
         # write modified matrix in the place of the original
-        writeZMX(mcls, mcls_zones, mcls_mat)
-        
+        self.writeZMX(mcls, mcls_zones, mcls_mat)
+
     def editskims(self):
         """
         Edit the moodechoice logsum skims
         """
-        
-        skim_dir = properties['skim.data']
+
+        skim_dir = self.mclsmatrixdir
         tt = skim_dir + "betapkautofftime.zmx"
         di = skim_dir + "betapkautodist.zmx"
-        
-        recomputeWMLS(self, skim_dir + 'b4mcls_beta', tt, di, 1, "low")
-        recomputeWMLS(self, skim_dir + 'b5mcls_beta', tt, di, 1, "med")
-        recomputeWMLS(self, skim_dir + 'b8mcls_beta', tt, di, 1, "high")
-        recomputeWMLS(self, skim_dir + 'c4mcls_beta', tt, di, 2, "med")
-        recomputeWMLS(self, skim_dir + 'o4mcls_beta', tt, di, 5, "med")
-        recomputeWMLS(self, skim_dir + 's4mcls_beta', tt, di, 3, "med")
-        recomputeWMLS(self, skim_dir + 'w1mcls_beta', tt, di, 1, "low")
-        recomputeWMLS(self, skim_dir + 'w4mcls_beta', tt, di, 1, "med")
-        recomputeWMLS(self, skim_dir + 'w7mcls_beta', tt, di, 1, "high")
-         
-         
-        
+
+        self.recomputeWMLS(skim_dir + 'b4mcls_beta.zmx', tt, di, 1, "low")
+        self.recomputeWMLS(skim_dir + 'b5mcls_beta.zmx', tt, di, 1, "med")
+        self.recomputeWMLS(skim_dir + 'b8mcls_beta.zmx', tt, di, 1, "high")
+        self.recomputeWMLS(skim_dir + 'c4mcls_beta.zmx', tt, di, 2, "med")
+        self.recomputeWMLS(skim_dir + 'o4mcls_beta.zmx', tt, di, 5, "med")
+        self.recomputeWMLS(skim_dir + 's4mcls_beta.zmx', tt, di, 3, "med")
+        self.recomputeWMLS(skim_dir + 'w1mcls_beta.zmx', tt, di, 1, "low")
+        self.recomputeWMLS(skim_dir + 'w4mcls_beta.zmx', tt, di, 1, "med")
+        self.recomputeWMLS(skim_dir + 'w7mcls_beta.zmx', tt, di, 1, "high")
+
+
+
 ############################################################
 
     def createAirSkims(self):
