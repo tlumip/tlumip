@@ -1337,7 +1337,7 @@ class SwimModel(object):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
 
-    def recomputeWMLS(self, mcls, tt, di, purpose, income):
+    def recomputeWMLS(self, mcls, tt, di, purpose, auto_suff, income):
         """
         Recompute World Market Log Sums
 
@@ -1351,34 +1351,31 @@ class SwimModel(object):
         :param tt: auto travel time skim used for external market
         :param di: auto distance skim used for external market
         :param purpose: purpose from the mode choice model, 0:7 (w = 1, etc)
-        :param income: one of 'high', 'med', 'low'
+        :param auto_suff: one of '0', 'I', 'S'
+        :param income: one of 'Hi', 'Med', 'Low'
         :return: NULL, writes a modified version of `mcls`
         """
-
+        
         # read utility coefficients
         tourmodechoiceparams = self.loadCSV(self.tourmodechoiceparams)
-        if income == "high":
-            bauto_cost = float(tourmodechoiceparams[1]['costHi'][purpose])
-        elif income == "med":
-            bauto_cost = float(tourmodechoiceparams[1]["costMed"][purpose])
-        else:
-            bauto_cost = float(tourmodechoiceparams[1]["costLow"][purpose])
-
+        bcost = float(tourmodechoiceparams[1]["cost" + income][purpose])
+        apass = float(tourmodechoiceparams[1]["passAuto" + auto_suff][purpose])
         btime = float(tourmodechoiceparams[1]["ivt"][purpose])
+        mnest = float(tourmodechoiceparams[1]["nest"][purpose])
 
         # load mcls matrix that needs to be recalculated
-        mcls_zmx = self.readZMX2array(mcls)
+        mcls_zmx = readZMX2array(mcls)
         mcls_mat = mcls_zmx[0]
         mcls_zones = mcls_zmx[1].split(",")
 
         # load time and distance matrices to external zones
-        tt_zmx = self.readZMX(tt)
+        tt_zmx = readZMX(tt)
         tt_mat = tt_zmx[0]
         tt_zones = tt_zmx[1].split(",")
-        di_zmx = self.readZMX(di)
+
+        di_zmx = readZMX(di)
         di_mat = di_zmx[0]
         di_zones = di_zmx[1].split(",")
-
 
         for zi in mcls_zones:
             for zj in mcls_zones:
@@ -1386,11 +1383,16 @@ class SwimModel(object):
                 if zi in worldMarketZones or zj in worldMarketZones:
                     time = tt_mat[tt_zones.index(zi)][tt_zones.index(zj)]
                     dist = di_mat[di_zones.index(zi)][di_zones.index(zj)]
-                    new = 2 * (time * btime + float(self.auto_op_cost) * dist * bauto_cost)
+                    #simplified utility equations
+                    udrive = 2 * (time * btime + auto_op_cost * dist * bcost)
+                    upass  = 2 * (time * btime + auto_op_cost * dist * bcost + apass)
+                    new = mnest * math.log(
+                        math.exp(udrive / mnest) + math.exp(upass / mnest)
+                    )
                     mcls_mat[mcls_zones.index(zi)][mcls_zones.index(zj)] = new
 
-        # write modified matrix in the place of the original
-        self.writeZMX(mcls, mcls_zones, mcls_mat)
+        # write modified matrix in the place
+        writeZMX(mcls, mcls_zones, mcls_mat)
 
     def editskims(self):
         """
@@ -1401,15 +1403,15 @@ class SwimModel(object):
         tt = skim_dir + "betapkautofftime.zmx"
         di = skim_dir + "betapkautodist.zmx"
 
-        self.recomputeWMLS(skim_dir + 'b4mcls_beta.zmx', tt, di, 1, "low")
-        self.recomputeWMLS(skim_dir + 'b5mcls_beta.zmx', tt, di, 1, "med")
-        self.recomputeWMLS(skim_dir + 'b8mcls_beta.zmx', tt, di, 1, "high")
-        self.recomputeWMLS(skim_dir + 'c4mcls_beta.zmx', tt, di, 2, "med")
-        self.recomputeWMLS(skim_dir + 'o4mcls_beta.zmx', tt, di, 5, "med")
-        self.recomputeWMLS(skim_dir + 's4mcls_beta.zmx', tt, di, 3, "med")
-        self.recomputeWMLS(skim_dir + 'w1mcls_beta.zmx', tt, di, 1, "low")
-        self.recomputeWMLS(skim_dir + 'w4mcls_beta.zmx', tt, di, 1, "med")
-        self.recomputeWMLS(skim_dir + 'w7mcls_beta.zmx', tt, di, 1, "high")
+        self.recomputeWMLS(skim_dir + 'b4mcls_beta.zmx', tt, di, 1, "I", "Med")
+        self.recomputeWMLS(skim_dir + 'b5mcls_beta.zmx', tt, di, 1, "S", "Med")
+        self.recomputeWMLS(skim_dir + 'b8mcls_beta.zmx', tt, di, 1, "S", "Hi")
+        self.recomputeWMLS(skim_dir + 'c4mcls_beta.zmx', tt, di, 2, "I", "Med")
+        self.recomputeWMLS(skim_dir + 'o4mcls_beta.zmx', tt, di, 5, "I", "Med")
+        self.recomputeWMLS(skim_dir + 's4mcls_beta.zmx', tt, di, 3, "I", "Med")
+        self.recomputeWMLS(skim_dir + 'w1mcls_beta.zmx', tt, di, 1, "0", "Low")
+        self.recomputeWMLS(skim_dir + 'w4mcls_beta.zmx', tt, di, 1, "I", "Med")
+        self.recomputeWMLS(skim_dir + 'w7mcls_beta.zmx', tt, di, 1, "S", "Hi")
 
 
 
