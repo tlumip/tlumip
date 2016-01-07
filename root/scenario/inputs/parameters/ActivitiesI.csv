@@ -37,10 +37,10 @@ FIRE_real_off,28.3,1,28.3,0,1,Neither,Dollars of activity production/consumption
 HLTH_hosp_hosp,5.19,1,5.19,0,1,Neither,Dollars of activity production/consumption
 HLTH_care_inst,5.19,1,5.19,0,1,Neither,Dollars of activity production/consumption
 HLTH_othr_off_li,9.68,1,9.68,0,1,Neither,Dollars of activity production/consumption
-K12_k12_k12,40.2,1,40.2,0,1,Neither,Dollars of activity production/consumption
+K12_k12_k12,14,1,14,0,1,Neither,Dollars of activity production/consumption
 K12_k12_off,40.2,1,40.2,0,1,Neither,Dollars of activity production/consumption
 HIED_hied_off_inst,5.88,1,5.88,0,1,Neither,Dollars of activity production/consumption
-ENT_ent_ret,14.9,1,14.9,0,1,Neither,Dollars of activity production/consumption
+ENT_ent_ret,1.5,1,1.5,0,1,Neither,Dollars of activity production/consumption
 HOSP_acc_acc,24.4,1,24.4,0,1,Neither,Dollars of activity production/consumption
 HOSP_eat_ret_acc,24.4,1,24.4,0,1,Neither,Dollars of activity production/consumption
 SERV_tech_off,12.3,1,12.3,0,1,Neither,Dollars of activity production/consumption
@@ -70,8 +70,8 @@ HH61to76k1to2,2.50E-04,1,2.50E-04,0,1,Neither,Households
 HH61to76k3plus,2.40E-04,1,2.40E-04,0,1,Neither,Households
 HH76to106k1to2,2.35E-04,1,2.35E-04,0,1,Neither,Households
 HH76to106k3plus,2.25E-04,1,2.25E-04,0,1,Neither,Households
-HH106kUp1to2,2.20E-04,1,2.20E-04,0,1,Neither,Households
-HH106kUp3plus,2.05E-04,1,2.05E-04,0,1,Neither,Households
+HH106kUp1to2,1E-04,1,1E-04,0,1,Neither,Households
+HH106kUp3plus,1E-04,1,1E-04,0,1,Neither,Households
 sctg01_fkp_lvsk_impt,1,1,1,0,1,Importer,Dollars of activity production/consumption
 sctg02_fkp_agri_cereal_impt,1,1,1,0,1,Importer,Dollars of activity production/consumption
 sctg03_fkp_agri_other_impt,1,1,1,0,1,Importer,Dollars of activity production/consumption
