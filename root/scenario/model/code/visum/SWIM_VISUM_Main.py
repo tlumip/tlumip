@@ -1364,16 +1364,16 @@ class SwimModel(object):
         mnest = float(tourmodechoiceparams[1]["nest"][purpose])
 
         # load mcls matrix that needs to be recalculated
-        mcls_zmx = readZMX2array(mcls)
+        mcls_zmx = self.readZMX2array(mcls)
         mcls_mat = mcls_zmx[0]
         mcls_zones = mcls_zmx[1].split(",")
 
         # load time and distance matrices to external zones
-        tt_zmx = readZMX(tt)
+        tt_zmx = self.readZMX(tt)
         tt_mat = tt_zmx[0]
         tt_zones = tt_zmx[1].split(",")
 
-        di_zmx = readZMX(di)
+        di_zmx = self.readZMX(di)
         di_mat = di_zmx[0]
         di_zones = di_zmx[1].split(",")
 
@@ -1392,7 +1392,7 @@ class SwimModel(object):
                     mcls_mat[mcls_zones.index(zi)][mcls_zones.index(zj)] = new
 
         # write modified matrix in the place
-        writeZMX(mcls, mcls_zones, mcls_mat)
+        self.writeZMX(mcls, mcls_zones, mcls_mat)
 
     def editskims(self):
         """
@@ -1668,7 +1668,7 @@ if __name__== "__main__":
             s.loadVersion()
             s.zonefieldVariables()
             s.insertSeedMatricesInVisum()
-            procedure = s.initialAutoAssignmentProcedure 
+            procedure = s.initialAutoAssignmentProcedure
             s.loadProcedure(os.path.join(pdir,procedure))
             s.executeProcedure(os.path.join(pdir,procedure))
             s.writeHighwaySkimZMX(start=hwySkimMatrices[0], writeBetaMatrices=True)
@@ -1684,8 +1684,8 @@ if __name__== "__main__":
             areas = [item/(5280**2) for item in areas] #from sq ft to miles
             s.service_data["AREA"] = areas
             s.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
-            s.createLocalBusSkims()            
-            procedure = s.initialTransitAssignmentProcedure 
+            s.createLocalBusSkims()
+            procedure = s.initialTransitAssignmentProcedure
             s.loadProcedure(os.path.join(pdir,procedure))
             s.executeProcedure(os.path.join(pdir,procedure))
             s.writeTransitSkimZMX(start=transitSkimMatrices[0])
