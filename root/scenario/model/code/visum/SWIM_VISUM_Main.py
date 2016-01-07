@@ -1389,8 +1389,8 @@ class SwimModel(object):
                     if udrive == 0.0:
                         udrive = sys.float_info.min
                     if upass == 0.0:
-                        upass = sys.float_info.min    
-                    new = mnest * math.log( math.exp(udrive / mnest) + math.exp(upass / mnest) )
+                        upass = sys.float_info.min
+                    new = mnest * math.log(udrive + upass)
                     mcls_mat[mcls_zones.index(zi)][mcls_zones.index(zj)] = new
 
         # write modified matrix in the place
