@@ -1358,7 +1358,7 @@ class SwimModel(object):
         
         # read utility coefficients
         tourmodechoiceparams = self.loadCSV(self.tourmodechoiceparams)
-        bcost = float(tourmodechoiceparams[1]["cost" + income][purpose])
+        bcost = float(tourmodechoiceparams[1]["cost" + income][purpose]) * float(self.auto_op_cost)
         apass = float(tourmodechoiceparams[1]["passAuto" + auto_suff][purpose])
         btime = float(tourmodechoiceparams[1]["ivt"][purpose])
         mnest = float(tourmodechoiceparams[1]["nest"][purpose])
@@ -1384,11 +1384,13 @@ class SwimModel(object):
                     time = tt_mat[tt_zones.index(zi)][tt_zones.index(zj)]
                     dist = di_mat[di_zones.index(zi)][di_zones.index(zj)]
                     #simplified utility equations
-                    udrive = 2 * (time * btime + auto_op_cost * dist * bcost)
-                    upass  = 2 * (time * btime + auto_op_cost * dist * bcost + apass)
-                    new = mnest * math.log(
-                        math.exp(udrive / mnest) + math.exp(upass / mnest)
-                    )
+                    udrive = math.exp(2 * (time * btime + dist * bcost) / mnest)
+                    upass  = math.exp(2 * (time * btime + dist * bcost + apass) / mnest)
+                    if udrive == 0.0:
+                        udrive = sys.float_info.min
+                    if upass == 0.0:
+                        upass = sys.float_info.min    
+                    new = mnest * math.log( math.exp(udrive / mnest) + math.exp(upass / mnest) )
                     mcls_mat[mcls_zones.index(zi)][mcls_zones.index(zj)] = new
 
         # write modified matrix in the place
