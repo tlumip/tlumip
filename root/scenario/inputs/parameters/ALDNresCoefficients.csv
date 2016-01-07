@@ -12,16 +12,16 @@ Bq1,FLR Office,-2.128986782
 Bq1,FLR Retail,-0.509894872
 Bq1,FLR Warehouse,-1.922216267
 Bq2,,0.874474814
-Bq3,FLR Accommodation,0
-Bq3,FLR Government Support,0
-Bq3,FLR K12,0
-Bq3,FLR Heavy Industry,0
-Bq3,FLR Hospital,0
-Bq3,FLR Institutional,0
-Bq3,FLR Light Industry,0
-Bq3,FLR Office,0
-Bq3,FLR Retail,0
-Bq3,FLR Warehouse,0
+Bq3,FLR Accommodation,-1.390874
+Bq3,FLR Government Support,-1.998696
+Bq3,FLR K12,-1.048652
+Bq3,FLR Heavy Industry,-0.66752
+Bq3,FLR Hospital,-1.03011
+Bq3,FLR Institutional,-1.058415
+Bq3,FLR Light Industry,-1.830717
+Bq3,FLR Office,-2.648114
+Bq3,FLR Retail,-1.394915
+Bq3,FLR Warehouse,-1.823896
 Bq4,,0.932353006
 Lp,,0.075
 Stc,,1
@@ -32,7 +32,7 @@ B6f,,0.347738206
 B7f,,0.248169894
 B8f,,5.817253156
 B9f,,0.002110781
-Df,,0.0001
+Df,,0.11659328
 B1v,,0.278924056
 B2v,,1.968481828
 B3v,,0.399308996
