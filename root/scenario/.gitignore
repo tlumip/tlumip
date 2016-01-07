@@ -5,3 +5,11 @@ event-performance.log
 *.py~
 OptionSizeLog.csv
 .DS_Store
+FloorspaceCalib_*
+event_*
+AllFloorspaceCalib.csv
+FloorspaceCalib.csv
+Summary.csv
+calib.log
+inputs/parameters/TechnologyOptionsI_*
+

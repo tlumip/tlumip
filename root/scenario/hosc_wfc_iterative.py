@@ -24,8 +24,8 @@ wfc_dir = "WFC_#" # Where to put backed-up WFC files. The # symbol will be repla
 
 wfc_setup_files = [] # WFC input files that need to be restored before each run; file given by first element of each tuple gets copied to the path given by the second element.
 
-wfc_status = path.join("FloorSpaceResults", "FloorspaceCalib.csv") # Where to find the WFC status file.
-wfc_files = [path.join("outputs","t19", "FloorspaceI.csv"), wfc_status, path.join("outputs","t19", "aa.properties")] # WFC files to back up every iteration.
+wfc_status = "AllFloorspaceCalib.csv" # Where to find the WFC status file.
+wfc_files = [path.join("outputs","t19", "FloorspaceI.csv"), wfc_status, path.join("outputs","t19", "aa.properties"), "Summary.csv"] # WFC files to back up every iteration.
 wfc_it_files = [path.join("outputs","t19", "FloorspaceI_#_.csv"), path.join("outputs","t19", "ExchangeResults_#_.csv"), "event_#_.log"] # WFC backup files that need to be backed up every iteration. The # symbol will be replaced by every WFC iteration number.
 
 base_setup_files = [] # Default input files that need to be restored before the baseline and final confirmation runs; file given by first element of each tuple gets copied to the path given by the second element.
@@ -44,16 +44,16 @@ it3_hosc_its = 5
 it3_wfc_its = 8
 
 # Initial convergence criteria for AA.
-hosc_init_spec_clear = 10
-hosc_init_total_clear = 10
-wfc_init_spec_clear = 10
-wfc_init_total_clear = 10
+hosc_init_spec_clear = 0.01
+hosc_init_total_clear = 0.001
+wfc_init_spec_clear = 0.01
+wfc_init_total_clear = 0.001
 
 # Final convergence criteria for AA.
-hosc_final_spec_clear = 0.03
-hosc_final_total_clear = 0.0002
-wfc_final_spec_clear = 0.03
-wfc_final_total_clear = 0.0002
+hosc_final_spec_clear = 0.02
+hosc_final_total_clear = 0.00001
+wfc_final_spec_clear = 0.02
+wfc_final_total_clear = 0.00001
 
 def make_clear(dir):
     if not path.exists(dir):
@@ -157,7 +157,19 @@ def main():
         # Run WFC.
         for pair in wfc_setup_files:
             shutil.copy(*pair)
-        wfc.main(wfc_its, True, wfc_init_spec_clear, wfc_spec_clear, wfc_init_total_clear, wfc_total_clear)
+        class Properties(object):
+            pass
+
+        props = Properties()
+        props.maxIts = wfc_its
+        props.rampup = True
+        props.initSpecClear = wfc_init_spec_clear
+        props.finalSpecClear = wfc_spec_clear
+        props.initTotalClear = wfc_init_total_clear
+        props.finalTotalClear = wfc_total_clear
+        props.backup = True
+
+        wfc.main(props)
         
         # Back up output files produced by WFC.
         itd = path.join(dir, wfc_dir.replace("#", str(i)))

@@ -15,36 +15,36 @@ from calib import Calibrator
 ###################################################################
 
 # define the files to access; these should be standard.
-year = "2005"
+year = "t19"
 # name of floorspace file
-spaceFileName = path.join(year, "FloorspaceI.csv")
+spaceFileName = path.join("outputs", year, "FloorspaceI.csv")
 # file containing floorspace quantity targets
-spaceTargetFileName = path.join(year, "FloorspaceTargets.csv")
+spaceTargetFileName = path.join("outputs", year, "FloorspaceTargets.csv")
 # file containing space price targets
-priceTargetFileName = path.join(year, "ExchangeResultsTargets.csv")
+priceTargetFileName = path.join("outputs", year, "ExchangeResultsTargets.csv")
 # has most recent exchange results
-resultsFileName = path.join(year, "ExchangeResults.csv")
-xresi_fname = path.join(year, "ExchangeResultsI.csv")
+resultsFileName = path.join("outputs", year, "ExchangeResults.csv")
+xresi_fname = path.join("outputs", year, "ExchangeResultsI.csv")
 # TAZ->LUZ correspondence
-tazFileName = path.join("AllYears", "Inputs", "FloorspaceZonesI.csv")
+tazFileName = path.join("outputs", year, "alpha2beta.csv")
 # name of floorspace overrides file (specify None if not used)
 overrideFileName = None
-logFileName = path.join(year, "aa-event.log")
+logFileName = "event.log"
 
 # The floorspace file often needs to be copied somewhere else after calibration
 # (e.g. FloorspaceCalc). Specify the target path here, or None if not needed.
-finalSpaceFileName = path.join(year, "FloorspaceCalc.csv")
+finalSpaceFileName = "CalibratedFloorspaceForVisum.csv"
 
 checkFileName = "FloorspaceCalib.csv"  # for tracking calibration progress
 calibLogFileName = "calib.log" # logfile for calibration output
-modelCommand = "python run_aa2005.py"  #the file that runs AA
-modelProps = path.join(year, "aa.properties") # the AA properties file
+modelCommand = "python run_aa.py"  #the file that runs AA
+modelProps = path.join("outputs", year, "aa.properties") # the AA properties file
 runModel = True
 
 # Column names
 # In the TAZ->LUZ correspondence
-TAZLUZ_TAZ = "TAZ"
-TAZLUZ_LUZ = "LUZ"
+TAZLUZ_TAZ = "Azone"
+TAZLUZ_LUZ = "Bzone"
 # In the price targets file
 PTARG_COMMOD = "Commodity"
 PTARG_ZONE = "ZoneNumber"
@@ -56,9 +56,9 @@ STARG_ZONE = "ZoneNumber"
 STARG_TARG = "TargetFloorspace"
 STARG_STDEV = "Tolerance"
 # In floor space file
-SPACE_ZONE = "TAZ"
-SPACE_COMMOD = "Commodity"
-SPACE_AMT = "Quantity"
+SPACE_ZONE = "taz"
+SPACE_COMMOD = "commodity"
+SPACE_AMT = "quantity"
 # In exchange results (current prices) file
 XRES_COMMOD = "Commodity"
 XRES_ZONE = "ZoneNumber"
@@ -68,7 +68,7 @@ XRES_DERIV = "Derivative"
 
 
 taz_fspace = True # set to False if FloorspaceI is LUZ-based rather than TAZ-based.
-maxIts = 50     # maximum number of iterations to run
+maxIts = 5     # maximum number of iterations to run
 initStep = 0.35    # initial step size
 minStep = 0.02
 maxStep = 1
@@ -76,7 +76,7 @@ stepInc = 1.25   # factor to increase the step size by if the error improved
 stepDec = 0.8   # factor to decrease the step size by if the error did not improve
 minRatio = 0.5  # minimum allowed ratio between new and old floorspace amounts
 maxRatio = 2. # maximum allowed ratio between new and old floorspace amounts
-minSpace = 100   # minimum allowed floorspace
+minSpace = 1000   # minimum allowed floorspace
 
 rampup = False # Whether to tighten the AA convergence criteria every iteration. If set to false, the following four parameters will be ignored and the convergence criteria from the properties file will be used.
 initSpecClear = 10 # First-iteration value for maximum specific clearance in AA
@@ -85,7 +85,7 @@ initTotalClear = 1 # First-iteration value for maximum total clearance in AA
 finalTotalClear = 0.01 # Last-iteration value for maximum total clearance in AA
 
 # Whether to feed previous iteration's ExchangeResults back into AA.
-aa_cascading = False
+aa_cascading = True
 
 def main(props):
     calib = WeightFSCalib(props)
@@ -184,21 +184,23 @@ class WeightFSCalib(Calibrator):
         flspace.save_floorspace()
     
     def tear_down(self):
-        super(WeightFSCalib, self).tear_down()
         try:
             flspace = self.__flspace
         except AttributeError:
             self.log("Floorspace not yet initialized")
         else:
             # Get rid of any artifacts of the minimum floor space cutoff.
-            if minSpace is not None:
-                flspace.load_floorspace(su.backup_name(spaceFileName, "final"),
+            try:
+                if minSpace is not None:
+                    flspace.load_floorspace(su.backup_name(spaceFileName, "final"),
                                         SPACE_ZONE, SPACE_COMMOD, SPACE_AMT)
-                basespace = flspace.basespace
-                for sptype, zone in self.__originally_zero:
-                    if basespace[zone][sptype] <= minSpace:
-                        basespace[zone][sptype] = 0
-                flspace.save_floorspace()
+                    basespace = flspace.basespace
+                    for sptype, zone in self.__originally_zero:
+                        if basespace[zone][sptype] <= minSpace:
+                            basespace[zone][sptype] = 0
+                    flspace.save_floorspace()
+            except IOError:
+                pass
         
         # Copy floor space to its final destination.
         if finalSpaceFileName is not None:
@@ -209,6 +211,7 @@ class WeightFSCalib(Calibrator):
             except IOError:
                 self.log("Did not copy the best floor space; "
                          "no iterations completed.")
+        super(WeightFSCalib, self).tear_down()
     
     def read_parameters(self):
         self.log("Reading current space quantities...")

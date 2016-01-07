@@ -18,7 +18,7 @@ techFile = "inputs/parameters/TechnologyOptionsI.csv"     # name of Technology O
 logFile = "event.log" # name of log file, which we want to back up each year
 
 outFile = "ResOptSizeResults/OptSizeCheck.csv"    # output file name
-modelCommand = "run_aa.py"     # the file that runs AA
+modelCommand = "python run_aa.py"     # the file that runs AA
 modelProps = "outputs/t19/aa.properties" # the AA properties file
 runModel = True
 
@@ -231,18 +231,12 @@ def main(numIts = numIts, rampup = rampup, initSpecClear = initSpecClear, finalS
         if runModel:
             os.system(modelCommand)        
 
-
         targetDictionary = buildTargetDictionary()
-
 
         targetDictionary = readTechOptSum(targetDictionary)
 
-        
         currentError = writeStatus(targetDictionary)
         
-        ex
-        
-
         readWriteTechOptions(targetDictionary)
 
         if keepAllFiles:            
