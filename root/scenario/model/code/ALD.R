@@ -72,6 +72,7 @@
 #9/09/11 CRF - Added conditional expression for writing out floorspace data: different formats used for pi and aa
 #4/17/14 AB - Update for PECAS code, for PECAS version of SWIM, FloorspaceInventor and Increment inputs and outputs are in SQFT, not MSQFT
 #7/28/15 AB - Removed PI functionality
+#1/15/16 AB - Brought the capacity calculation function hirer up in the model stream and added capacity to the calc floorspace by type and region step, so that capacity could be entered as a hard constraint
 
 #DEFINE POINTERS TO DIRECTORIES AND FILES TO LOAD
 #================================================
@@ -169,6 +170,18 @@
         nres_$Cf_[["B6v"]], nres_$Cf_[["B7v"]], nres_$Cf_[["B8v"]], nres_$Asc4.Rg)
 
 
+#Calculate floor space capacities by alpha zone and floorspace type
+#-----------------------------------------------------------------
+
+#Capacity calculations are done for the whole model area, not on a region basis.
+
+#::
+
+    FloorspaceCapacities_ <- calcFloorCapacity(LandSqft.Fd, Compat.FdZc, Zoning.AzZc, Far.FdZc, 
+        res_$Cf_$Lp, res_$Cf_$Stc, FloorDef_)
+    Cap.AzFr <- FloorspaceCapacities_$ResCap.AzFr
+    Cap.AzFn <- FloorspaceCapacities_$NresCap.AzFn
+
 #Calculate the residential and nonresidential floor space increases by type for each region
 #------------------------------------------------------------------------------------------
 
@@ -177,7 +190,7 @@
     # Calculate the residential increases
     Nivq.RgFr <- array(0, dim=c(length(Rg), length(Fr)), dimnames=list(Rg, Fr))
     for(rg in Rg){
-        Nivq.RgFr[rg,] <- allocateFloorProd(ResNivq.Rg, Occupied.BzFr, Quant.AzFr, Costs.Fr, Price.AzFr,
+        Nivq.RgFr[rg,] <- allocateFloorProd(ResNivq.Rg, Occupied.BzFr, Quant.AzFr, Costs.Fr, Price.AzFr, Cap.AzFr,
             res_$Cf_[["Lq1"]], res_$Cf_[["Bq1"]], res_$Cf_[["Bq2"]], res_$Asc1.RgFr[rg,], 
             AlphaBeta_, rg)$Nivq.Fx
         }
@@ -186,7 +199,7 @@
     # Calculate the nonresidential increases
     Nivq.RgFn <- array(0, dim=c(length(Rg), length(Fn)), dimnames=list(Rg, Fn))
     for(rg in Rg){
-        Nivq.RgFn[rg,] <- allocateFloorProd(NresNivq.Rg, Occupied.BzFn, Quant.AzFn, Costs.Fn, Price.AzFn,
+        Nivq.RgFn[rg,] <- allocateFloorProd(NresNivq.Rg, Occupied.BzFn, Quant.AzFn, Costs.Fn, Price.AzFn, Cap.AzFn,
             nres_$Cf_[["Lq1"]], nres_$Cf_[["Bq1"]], nres_$Cf_[["Bq2"]], nres_$Asc1.RgFn[rg,],
             AlphaBeta_, rg)$Nivq.Fx
         }
@@ -246,18 +259,6 @@
         }
 
             
-#Calculate floor space capacities by alpha zone and floorspace type
-#-----------------------------------------------------------------
-
-#Capacity calculations are done for the whole model area, not on a region basis.
-
-#::
-
-    FloorspaceCapacities_ <- calcFloorCapacity(LandSqft.Fd, Compat.FdZc, Zoning.AzZc, Far.FdZc, 
-        res_$Cf_$Lp, res_$Cf_$Stc, FloorDef_)
-    Cap.AzFr <- FloorspaceCapacities_$ResCap.AzFr
-    Cap.AzFn <- FloorspaceCapacities_$NresCap.AzFn
-
 
 #Allocate the residential and nonresidential floor space increases to Alpha zones
 #--------------------------------------------------------------------------------

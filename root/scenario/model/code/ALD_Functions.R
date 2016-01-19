@@ -28,6 +28,7 @@
 #3/23/15 AB - updated calcFloorCapacity function to vary capacity based on first what is allowed to be built, but also to react to demand.
 #6/11/15 AB - updated calcFloorCapacity function again to adjust capacity based regional demand totals as well as zonal demand.
 #7/10/15 AB - update calcFloorCapacity function again to ensure that if zoning allows for a floorspace type that it always has the abiltiy to grow.
+#1/15/16 AB - updated allocateFloorProd function to add a hard capacity constraint - to stop building a given floorspace type if there is no more room.
 
 #PURPOSE AND DESCRIPTION
 #=======================
@@ -325,6 +326,8 @@
 #:Argument: Occupied.BzFx - quantity of occupied floor space by beta zone and floor space type
 #:Argument: Prevq.AzFx - floor space quantity for the previous year by alpha zone and floor space type
 #:Argument: Cost.Fx - construction cost by floor space type
+#:Argument: Price.AzFx - a matrix of floor space prices by floor space type and alpha zone
+#:Argument: Cap.AzFx - matrix of floor space capacities by alpha zone and floor space type
 #:Argument: Lq1 - Lamda coefficient for logit function
 #:Argument: Bq1.Fx - Coefficients for utility function differentiated by floor space type
 #:Argument: Bq2 - Coefficient for utility function
@@ -335,13 +338,14 @@
 
 #::
 
-    Funs_$allocateFloorProd <- function(Nivq.Rg, Occupied.BzFx, Prevq.AzFx, Cost.Fx, Price.AzFx,
+    Funs_$allocateFloorProd <- function(Nivq.Rg, Occupied.BzFx, Prevq.AzFx, Cost.Fx, Price.AzFx, Cap.AzFx,
         Lq1, Bq1.Fx, Bq2, Asc1.Fx, AlphaBeta_, Region){
         # Extract the portions of Nivq.Rg, Occupied.BzFx and Prevq.AzFx for the region
         Nivq <- Nivq.Rg[Region]
         Occupied.BxFx <- Occupied.BzFx[unique(AlphaBeta_$BetaZone.Az[AlphaBeta_$Region.Az == Region]),]
         Prevq.AxFx <- Prevq.AzFx[AlphaBeta_$Region.Az == Region,]
         Price.AxFx <- Price.AzFx[AlphaBeta_$Region.Az == Region,]
+        Cap.AxFx <- Cap.AzFx[AlphaBeta_$Region.Az == Region,]
         # Make the scalar Bq2 coefficient into a vector the length of the number of floorspace types
         Bq2.Fx <- rep(Bq2, length(Asc1.Fx))
         # Calculate average vacancy rates by floorspace type
@@ -356,13 +360,15 @@
         Tvq.Fx[is.nan(Tvq.Fx)] <- 0 # AB 4-22-2014 (adding ability for zero condition)
         # Calculate the utility functions for floorspace categories
         Util.Fx <- Bq1.Fx * Vacancy.Fx + Bq2.Fx * log(Tvq.Fx/sum(Tvq.Fx)) + Asc1.Fx
-           # 6-11-15 AB - Alex fix on hold
-           # The fix would force
-           # need to add DC.Fx to the function input (it would be the total Demand / Capacity ratio for the Region by Floorspace type
-           #utilAdj <- Util.Fx
-           #utilAdj[] <- 0
-           #utilAdj[DC.Fx > 0.9] <- -999 * (DC.Fx[DC.Fx > 0.9]-0.9)
-           #Util.Fx <- Util.Fx + utilAdj
+           # 6-11-15 AB - Alex fix on hold - 1-15-16 AB implementing this option
+           utilAdj <- Util.Fx
+           utilAdj[] <- 0
+           # from 6-11-15
+           # need to add DC.Fx to the function input - it would be the total Demand / Capacity ratio for the Region by Floorspace type
+           #1-15-16, demand is not correct, we actually want built floor space, so I am calling this Volume to Capacity - VC.Fx
+           VC.Fx <- TotalSpace.Fx/colSums(Cap.AxFx)
+           utilAdj[VC.Fx > 0.9] <- -999 * (VC.Fx[VC.Fx > 0.9]-0.9)
+           Util.Fx <- Util.Fx + utilAdj
         # Create a list to hold the results
         Nivq_ <- list()
         # Allocate floorspace $ quantities among floorspace types
