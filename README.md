@@ -13,8 +13,6 @@ The model is able to run two different types of scenario: a full scenario and a 
 - _To create a full scenario_, copy the `root/scenario/` folder with a new name.
 - _To create a small scenario_, copy the `root/swim_small/` folder with a new name and copy the `root/scenario/model`^[**NOT** the `root/model/` directory!] folder containing the model code into the new small scenario folder.
 
-#### Initial Highway Skims
-The model requires initial year highway skims that are not included in the repository for space reasons. The analyst needs to create these skims for bare scenarios or scenarios where the zone geometry has changed from the reference scenario. To make these skims, open `root/%scenario_name%/inputs/t18/globalTemplateUpdate.properties` and edit the token
 
 ```py
 new.zone.system=True
