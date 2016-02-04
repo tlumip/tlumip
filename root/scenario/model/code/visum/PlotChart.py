@@ -42,8 +42,6 @@ class plotChart(object):
         print("draw chart")
         PrTAssQualityList = self.visum.Lists.CreatePrTAssQualityList
         PrTAssQualityList.AddKeyColumns()
-        PrTAssQualityList.AddColumn(self.dSegCode)
-        PrTAssQualityList.AddColumn(self.iteration)
         PrTAssQualityList.AddColumn(self.dualityGap)
         PrTAssQualityList.AddColumn(self.relativeGap)
         self.assignmentList = PrTAssQualityList.SaveToArray()
