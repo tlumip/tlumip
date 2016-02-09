@@ -220,9 +220,20 @@ class SwimModel(object):
 
 
     def startVisum(self):
-        print("start VISUM")
+        print("start VISUM " + str(self.visum_version))
 
-        self.Visum = VisumHelpers.CreateVisum(self.visum_version)
+        numtry = 5
+        pauseSec = 10
+        for i in range(numtry):
+          try:
+            self.Visum = VisumHelpers.CreateVisum(self.visum_version)
+            break
+          except:
+            print("Failed starting VISUM COM server")
+            time.sleep(pauseSec)
+        
+        if (i+1)==numtry:
+          print("Failed to start VISUM COM server")
 
         #sets working directories in VISUM to use relative file names
         for i in range(0,len(pathNo)):
