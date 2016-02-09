@@ -1316,23 +1316,23 @@ class SwimModel(object):
         #get empty list
         volumeFactors = VisumHelpers.GetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR")
 
-        factor = self.calcVolumeFactorDebug("ampeak")
+        factor = self.calcVolumeFactor("ampeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor
         VisumHelpers.SetMulti(self.Visum.Net.Links, "PK_VOL_FACTOR", volumeFactors)
 
-        factor = self.calcVolumeFactorDebug("mdoffpeak")
+        factor = self.calcVolumeFactor("mdoffpeak")
         for i in range(len(volumeFactors)):
             volumeFactors[i] = factor
         VisumHelpers.SetMulti(self.Visum.Net.Links, "OP_VOL_FACTOR", volumeFactors)
 
         if s.assignmentPeriods == "ALL":
-            factor = self.calcVolumeFactorDebug("pmpeak")
+            factor = self.calcVolumeFactor("pmpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "PM_VOL_FACTOR", volumeFactors)
 
-            factor = self.calcVolumeFactorDebug("ntoffpeak")
+            factor = self.calcVolumeFactor("ntoffpeak")
             for i in range(len(volumeFactors)):
                 volumeFactors[i] = factor
             VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
@@ -1496,7 +1496,7 @@ class SwimModel(object):
 
 
 ############################################################
-    def calcVolumeFactorDebug(self, timePeriod):
+    def calcVolumeFactor(self, timePeriod):
 
         print('calculate volume factor')
 
@@ -1542,107 +1542,6 @@ class SwimModel(object):
 
         return (volumeFactor)
 
-############################################################
-    def calcVolumeFactor(self, timePeriod):
-
-        print('calculate volume factor')
-
-        volumeFactor = 0.0
-        startHour = 0
-        endHour = 0
-        hours = 0
-
-        #get time period definitions from property files
-        if timePeriod.lower().find('ampeak') > -1:
-            startHour = self.ampeakstart
-            endHour = self.ampeakend
-            hours = (endHour + 41 - startHour) / 100.0 #convert 59th min to 100th min
-
-        elif timePeriod.lower().find('pmpeak') > -1:
-            startHour = self.pmpeakstart
-            endHour = self.pmpeakend
-            hours = (endHour + 41 - startHour) / 100.0;
-
-        elif timePeriod.lower().find('mdoffpeak') > -1:
-            startHour = self.mdoffpeakstart
-            endHour = self.mdoffpeakend
-            hours = (endHour + 41 - startHour) / 100.0;
-
-        elif timePeriod.lower().find('ntoffpeak') > -1:
-            startHour = self.ntoffpeakstart
-            endHour = self.ntoffpeakend
-            hours = (endHour + 41 + (2400 - startHour)) / 100.0;
-
-        else:
-            print ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." )
-            return -1
-
-        #read PT time-of-day vmt file
-        headers, timePeriodPercents = self.loadCSV(self.sdtTODTripsFile)
-
-        #calculate volume factor based on PT time period
-        times = timePeriodPercents["TIME"]
-        tripstarts = timePeriodPercents["VMT"]
-
-        #log results
-        print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print( "volume factor calculation based on sdt trip times")
-        print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-        print( "time period: " + timePeriod + " (" + str(startHour) + "-" + str(endHour) + ", " + str(hours) + " hours )")
-
-        #demand by hour and demand in time period
-        hourTrips = []
-        hourTripsInTimePeriod = []
-
-        for i in range(24):
-            print( "hour: " + str(times[i]) + ", " + str(tripstarts[i]) + " trips")
-            #demand in each hour
-            hourTrips.append(int(tripstarts[i]))
-
-            #demand in time period
-            if timePeriod.lower().find('ntoffpeak') > -1:
-
-                if(int(times[i]) >= startHour):
-                    hourTripsInTimePeriod.append(int(tripstarts[i]))
-
-                if(int(times[i]) <= endHour):
-                    hourTripsInTimePeriod.append(int(tripstarts[i]))
-            else :
-            	if(int(times[i]) >= startHour and int(times[i]) <= endHour):
-            		hourTripsInTimePeriod.append(int(tripstarts[i]))
-
-
-        #get max demand hour of the day
-        maxTrips = max(hourTrips)
-        maxHour = hourTrips.index(maxTrips) + 1
-
-        #sort demand in time period and calculate demand based on percentile
-        demandInTimePeriod = 0
-        if(hours > 1):
-            hourTripsInTimePeriod.sort()
-            offset = int(self.volumeFactorPercentile * (hours - 1))
-            lower = hourTripsInTimePeriod[offset]
-            upper = hourTripsInTimePeriod[offset+1]
-            remainder = offset - math.floor(offset)
-            demandInTimePeriod = (lower + (upper - lower) * remainder) * hours
-        else:
-            demandInTimePeriod = hourTripsInTimePeriod.pop()
-
-        #calculate volume factor
-        volumeFactor = 0
-        if(demandInTimePeriod > 0):
-            volumeFactor = maxTrips / demandInTimePeriod
-
-
-        #log results
-        print( "max demand hour of the day: " + str(maxHour) + " hr (" + str(maxTrips) + " trips )")
-        print( "volume factor percentile: " + str(self.volumeFactorPercentile))
-        print( "demand in time period: " + str(demandInTimePeriod))
-        print( "calculated volume factor: " + str(volumeFactor))
-        print( "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-
-        return (volumeFactor)
-
 
 ############################################################
 #Main entry point
@@ -1651,7 +1550,7 @@ if __name__== "__main__":
 
     #run modes can be:
     # inputs - create swim inputs
-    # highway - run highway assignment
+    # highway - run highway assignmentl
     # transit - run transit assignment
 
     property_file = sys.argv[1]
