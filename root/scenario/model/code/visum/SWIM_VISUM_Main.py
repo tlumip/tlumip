@@ -222,7 +222,7 @@ class SwimModel(object):
     def startVisum(self):
         print("start VISUM " + str(self.visum_version))
 
-        numtry = 5
+        numtry = 20
         pauseSec = 30
         for i in range(numtry):
           try:
