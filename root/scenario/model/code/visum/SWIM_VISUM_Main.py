@@ -1410,22 +1410,26 @@ class SwimModel(object):
     def editskims(self):
         """
         Edit the moodechoice logsum skims
+        PT squeezes beta zone mcls skims and puts an illogical value of 100. This
+        corrects that illogical value.
         """
 
         skim_dir = self.mclsmatrixdir
         tt = skim_dir + "betapkautofftime.zmx"
         di = skim_dir + "betapkautodist.zmx"
 
-        self.recomputeWMLS(skim_dir + 'b4mcls_beta.zmx', tt, di, 1, "I", "Med")
-        self.recomputeWMLS(skim_dir + 'b5mcls_beta.zmx', tt, di, 1, "S", "Med")
-        self.recomputeWMLS(skim_dir + 'b8mcls_beta.zmx', tt, di, 1, "S", "Hi")
-        self.recomputeWMLS(skim_dir + 'c4mcls_beta.zmx', tt, di, 2, "I", "Med")
-        self.recomputeWMLS(skim_dir + 'o4mcls_beta.zmx', tt, di, 5, "I", "Med")
-        self.recomputeWMLS(skim_dir + 's4mcls_beta.zmx', tt, di, 3, "I", "Med")
-        self.recomputeWMLS(skim_dir + 'w1mcls_beta.zmx', tt, di, 1, "0", "Low")
-        self.recomputeWMLS(skim_dir + 'w4mcls_beta.zmx', tt, di, 1, "I", "Med")
-        self.recomputeWMLS(skim_dir + 'w7mcls_beta.zmx', tt, di, 1, "S", "Hi")
-
+        # only recompute mode choice logsums for the main model; skim in small
+        if len(self.zoneNo) > maxMiniModelZones:
+            self.recomputeWMLS(skim_dir + 'b4mcls_beta.zmx', tt, di, 1, "I", "Med")
+            self.recomputeWMLS(skim_dir + 'b5mcls_beta.zmx', tt, di, 1, "S", "Med")
+            self.recomputeWMLS(skim_dir + 'b8mcls_beta.zmx', tt, di, 1, "S", "Hi")
+            self.recomputeWMLS(skim_dir + 'c4mcls_beta.zmx', tt, di, 2, "I", "Med")
+            self.recomputeWMLS(skim_dir + 'o4mcls_beta.zmx', tt, di, 5, "I", "Med")
+            self.recomputeWMLS(skim_dir + 's4mcls_beta.zmx', tt, di, 3, "I", "Med")
+            self.recomputeWMLS(skim_dir + 'w1mcls_beta.zmx', tt, di, 1, "0", "Low")
+            self.recomputeWMLS(skim_dir + 'w4mcls_beta.zmx', tt, di, 1, "I", "Med")
+            self.recomputeWMLS(skim_dir + 'w7mcls_beta.zmx', tt, di, 1, "S", "Hi")
+        
 
 
 ############################################################
@@ -1607,13 +1611,13 @@ if __name__== "__main__":
             #Air skims
             s.createAirSkims()
             
-        # recompute mode choice logsums to external zones
-        s.editskims()
         s.startVisum()
         s.loadVersion()
+        s.zonefieldVariables()
         s.createModelInput()
         s.saveVersion()
         s.closeVisum()
+        s.editskims()  # recompute mode choice logsums to external beta zones
         s.copyActivityLocations()
 
     #path based highway assignment
