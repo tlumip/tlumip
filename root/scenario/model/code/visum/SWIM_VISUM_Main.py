@@ -223,10 +223,11 @@ class SwimModel(object):
         print("start VISUM " + str(self.visum_version))
 
         numtry = 5
-        pauseSec = 10
+        pauseSec = 30
         for i in range(numtry):
           try:
             self.Visum = VisumHelpers.CreateVisum(self.visum_version)
+            print("Sucessfully started VISUM COM server")
             break
           except:
             print("Failed starting VISUM COM server")
