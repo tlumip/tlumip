@@ -1,8 +1,0 @@
-name    IP             PROCESSORS  RAM   OS       Description
-Athena  192.168.1.221  4           8     Windows  "File server"
-Chaos   192.168.1.222  4           8     Windows  "Worker"
-Dione   192.168.1.223  4           8     Windows  "Worker"
-Enyo    192.168.1.224  4           8     Windows  "Worker"
-Zufa    192.168.1.141  2           2     Windows  "Jim's T60"
-Gaia    192.168.1.212  2           16    Linux    "Vista DTA 1"
-Hera    192.168.1.213  2           16    Linux    "Vista DTA 2"

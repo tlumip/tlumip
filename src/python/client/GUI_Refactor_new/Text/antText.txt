@@ -1,6 +1,0 @@
-Buildfile: \models\tlumip\runtime\tlumip.xml
-
-BUILD FAILED
-Target `runRUNALLAPPLICATIONS' does not exist in this project. 
-
-Total time: 0 seconds
