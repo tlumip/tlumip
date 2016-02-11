@@ -1031,7 +1031,6 @@ links = read.csv("AllLinks.csv")
  
 #Write tables to DB
 colnames(links) = toupper(colnames(links))
-colnames(links)[colnames(links)=="NO"] = "AZONE"
 dbWriteTable(db, "LINK_DATA", links, row.names=F)
 
 #########################################################################
