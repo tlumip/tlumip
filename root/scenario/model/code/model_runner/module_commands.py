@@ -112,9 +112,15 @@ class ModuleCommands(object):
         return self.conditionalIfNotExists(destination,'XCOPY ' + o + ' /E /K ' + d)
         
     def zip(self,inputFilesOrFolders,outputFile,update=False):
-        """
-        Zip inputFilesOrFolders to outputFile. If update, then add to the zip file,
-        otherwise overwrite.
+        """ Zip files to compressed archive.
+        
+        Uses "7z.exe" with zip compression.
+        
+        Args:
+            inputFilesOrFolders (str): A single file, folder, or set of files. Multiple files are supported.
+            outputFile (str): The compressed archive file path.
+            update (bool): Update archive with new file if TRUE; overwrite with FALSE (default).
+            
         """
         #if just one file/folder listed then put it in a list
         createOrUpdate = 'a'
