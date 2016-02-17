@@ -1,27 +1,16 @@
 # SWIM-TLUMIP
 This is the model repository for the Oregon Statewide Integrated land use/transport model (SWIM).
 
-## Setting up the model
-There are a few steps that the analyst needs to take after cloning a fresh version of the repository in order to set up the model.
-1. _Download the ACS PUMS files._ Follow the instructions in `root/model/census/README.md`
-2. _Unpack and install the model software._ Follow the instructions in `root/model/lib/README.md`
+The complete user's guide is on the [project wiki](https://github.com/pbsag/tlumip/wiki).
 
-Additionally, the computer needs to have Visum $>=$ 14.0 under an active license.
+## Installation
+Check out the repository. This repository uses [`git-lfs`](https://git-lfs.github.com), which the user will need to install separately.
 
-### Preparing a Scenario
-The model is able to run two different types of scenario: a full scenario and a "small" scenario with a limited number of zones to quickly test new model functionality. The actual model code is installed in the full scenario.
-- _To create a full scenario_, copy the `root/scenario/` folder with a new name.
-- _To create a small scenario_, copy the `root/swim_small/` folder with a new name and copy the `root/scenario/model`^[**NOT** the `root/model/` directory!] folder containing the model code into the new small scenario folder.
+On initial checkout, the user will need to:
 
+  1. Expand [`root/model/lib/dependencies64.zip`](root/model/lib): included versions of Python, Java, and R.
+  2. Download ACS PUMS data into [`root/model/census`](root/model/census), using the [`download.bash`](root/model/census/download.bash) script.
 
-```py
-new.zone.system=True
-```
+SWIM uses [Visum 15](http://vision-traffic.ptvgroup.com/en-us/products/ptv-visum/) to manage network data and run highway assignments. The user will need to install a licensed version of this software prior to running SWIM.
 
-#### Running a scenario
-To run a scenario, run the two batch batch files in the scenario directory in sequence.
-
-```
-build_run.bat 
-run_model.bat
-```
+The current version of the model requires a computer with a 64-bit Windows operating system. The computer should have 48 gigabytes or more of RAM, and at least a few hundred gigabytes of free space on the model hard drive (a given model run may take up to 100 GB or more of hard drive space when finished). 
