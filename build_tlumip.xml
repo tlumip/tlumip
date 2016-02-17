@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="tlumip" default="all">
+  
+  <property environment="env"/>
+  <property file="build.properties"/>
+
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="256m"/>
+
+  <patternset id="compiler.excluded"/>
+  <patternset id="compiler.resources">
+    <include name="**/?*.properties"/>
+    <include name="**/?*.xml"/>
+    <include name="**/?*.gif"/>
+    <include name="**/?*.png"/>
+    <include name="**/?*.jpeg"/>
+    <include name="**/?*.jpg"/>
+    <include name="**/?*.html"/>
+    <include name="**/?*.dtd"/>
+    <include name="**/?*.tld"/>
+  </patternset>
+
+  <!-- JDK definitions -->
+  <!--<property name="jdk.home" value="${env.JAVA_HOME_5}"/>-->
+    <property name="jdk.home" value="${env.JAVA_HOME}"/>
+
+  <path id="jdk.classpath">
+    <fileset dir="${jdk.home}">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <!-- project.jdk values used in module build files -->
+  <property name="project.jdk.home" value="${jdk.home}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath"/>
+
+  
+
+  <!-- Import module build files -->
+  <import file="${basedir}/../../cmf/common-base/module_common-base.xml"/>
+  
+  <import file="${basedir}/../../cmf/common-daf-v2/module_common-daf-v2.xml"/>
+
+  <import file="${basedir}/../../cmf/common-daf-v3/module_common-daf-v3.xml"/>
+
+  <import file="${basedir}/../../models/utils/module_utils.xml"/>
+
+  <import file="${basedir}/../../models/pecas/module_pecas.xml"/>
+
+  <import file="${basedir}/../../models/reference/module_reference.xml"/>
+
+  <import file="${basedir}/../../models/censusdata/module_censusdata.xml"/>
+
+  <import file="${basedir}/../../models/synpop/module_synpop.xml"/>
+
+  <import file="${basedir}/../../models/pasaat_swim/module_pasaat.xml"/>
+
+  <!--<import file="${basedir}/../pasaat_swim/module_pasaat.xml"/>-->
+
+  <import file="${basedir}/../tlumip/module_tlumip.xml" />
+
+
+    <!-- Perform build initialization in this target -->
+  <target name="init" description="Build initialization">
+    <echo message="***** JAVA_HOME=${jdk.home}"/>
+  </target>
+  
+  <target name="clean" depends="clean.module.common-base, clean.module.common-daf-v2, clean.module.common-daf-v3, clean.module.utils, clean.module.pecas,clean.module.reference, clean.module.censusdata, clean.module.synpop, clean.module.pasaat, clean.module.tlumip" description="cleanup all"/>
+  
+  <target name="compile" depends="init, clean, compile.module.common-base, compile.module.common-daf-v2, compile.module.common-daf-v3, compile.module.utils, compile.module.pecas, compile.module.reference, compile.module.censusdata, compile.module.synpop, compile.module.pasaat, compile.module.tlumip" description="build all source files"/>
+  <property name="ant.build.javac.target" value="1.7"/>
+  <property name="ant.build.javac.source" value="1.7"/>
+  <target name="all" depends="init, clean, compile, makejar, release" description="clean, build all source and make jar file"/>
+
+  <!-- Release directory is in the current directory -->
+  <property name="jar.dir" value="${basedir}/../${ant.project.name}/release"/>
+
+  <!-- Create a Jar file with all zip/jar files unpacked -->
+  <target name="makejar" depends="init">
+    <tstamp/>
+    <mkdir dir="${jar.dir}"/>
+    <delete file="${jar.dir}/${ant.project.name}.jar"/>
+    <jar destfile="${jar.dir}/${ant.project.name}.jar">
+
+        <zipgroupfileset dir="${basedir}/../../cmf/common-base/lib" includes="*.zip,*.jar"/>
+        <zipgroupfileset dir="${basedir}/../../third-party/logging-log4j-1.2.9" includes="log4j-1.2.9.jar"/>
+        <zipgroupfileset dir="${basedir}/../../cmf/common-daf-v3/lib" includes="groovy-all-1.0-jsr-03.jar"/>
+
+        <fileset dir="${basedir}/../../cmf/common-base/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../../cmf/common-daf-v2/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../../cmf/common-daf-v3/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../../models/utils/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../../models/pecas/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../../models/reference/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../../models/censusdata/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../../models/synpop/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../../models/pasaat_swim/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+        <fileset dir="${basedir}/../tlumip/build/classes">
+          <include name="**/*.class"/>
+        </fileset>
+
+    </jar>
+  </target>
+
+    <target name="release" depends="makejar">
+
+        <!-- copy dependencies to release directory -->
+        <copy file="${basedir}/../../cmf/common-daf-v3/lib/commons-codec-1.3.jar" todir="${jar.dir}"/>
+        <copy file="${basedir}/../../cmf/common-daf-v3/lib/xmlrpc-2.0.jar" todir="${jar.dir}"/>
+
+    </target>
+
+</project>

@@ -5,7 +5,7 @@
 ]>
 
 <project name="tlumip" default="usage" basedir=".">
-	&properties;
+	  &properties;
     &targets;
     
     
@@ -15,7 +15,7 @@
         <pathelement location="${common-base.dir}/build/classes"/>
         <pathelement location="${reference.dir}/build/classes"/>
         <pathelement location="${common-daf-v2.dir}/build/classes"/>
-    	<pathelement location="${common-daf-v3.dir}/build/classes"/>
+    	  <pathelement location="${common-daf-v3.dir}/build/classes"/>
         <pathelement location ="${pecas.dir}/build/classes"/>
         <pathelement location ="${utils.dir}/build/classes"/>
         <pathelement location ="${pasaat_swim.dir}/build/classes"/>
@@ -65,7 +65,7 @@
         <copy file="${common-base.dir}/release/common-base.jar" todir="${release.dir}"/>
         <copy file="${reference.dir}/release/reference.jar" todir="${release.dir}"/>
         <copy file="${common-daf-v2.dir}/release/common-daf-v2.jar" todir="${release.dir}"/>
-    	<copy file="${common-daf-v3.dir}/release/common-daf-v3.jar" todir="${release.dir}"/>
+    	  <copy file="${common-daf-v3.dir}/release/common-daf-v3.jar" todir="${release.dir}"/>
         <copy file="${pecas.dir}/release/pecas.jar" todir="${release.dir}"/>
         <copy file="${censusdata.dir}/release/censusdata.jar" todir="${release.dir}"/>
         <copy file="${utils.dir}/release/utils.jar" todir="${release.dir}"/>
@@ -78,13 +78,13 @@
     		<zipgroupfileset dir="${release.dir}" includes="tlumip.jar"/>
     		<zipgroupfileset dir="${release.dir}" includes="common-base.jar"/>
     		<zipgroupfileset dir="${release.dir}" includes="reference.jar"/>
-			<zipgroupfileset dir="${release.dir}" includes="common-daf-v2.jar"/>
-			<zipgroupfileset dir="${release.dir}" includes="common-daf-v3.jar"/>
-			<zipgroupfileset dir="${release.dir}" includes="pecas.jar"/>
-			<zipgroupfileset dir="${release.dir}" includes="censusdata.jar"/>
-			<zipgroupfileset dir="${release.dir}" includes="utils.jar"/>
-			<zipgroupfileset dir="${release.dir}" includes="pasaat.jar"/>
-			<zipgroupfileset dir="${release.dir}" includes="synpop.jar"/>
+			  <zipgroupfileset dir="${release.dir}" includes="common-daf-v2.jar"/>
+			  <zipgroupfileset dir="${release.dir}" includes="common-daf-v3.jar"/>
+			  <zipgroupfileset dir="${release.dir}" includes="pecas.jar"/>
+			  <zipgroupfileset dir="${release.dir}" includes="censusdata.jar"/>
+			  <zipgroupfileset dir="${release.dir}" includes="utils.jar"/>
+			  <zipgroupfileset dir="${release.dir}" includes="pasaat.jar"/>
+			  <zipgroupfileset dir="${release.dir}" includes="synpop.jar"/>
     		<zipgroupfileset dir="${release.dir}" includes="log4j-1.2.9.jar"/>
     	</zip>  	
     	<move file="${release.dir}/tlumip2.jar" tofile="${release.dir}/tlumip.jar"/>
