@@ -16,7 +16,7 @@ MAIN_EVENT_FILE_KEY = 'main'
 AA_MAIN_EVENT_FILE_KEY = 'aa_main'
 FILE_MONITORY_FILE_KEY = 'file_monitor'
 NODE_0_FILE_KEY = 'node0'
-
+MAX_FILE_SIZE = '500MB'
 
 class AppenderType:
     """
@@ -42,7 +42,7 @@ class AppenderSpec:
     rolling, then max_file_size defines its rolling cutoff. conversion_pattern is the
     string used to construct a log message (if omitted then a default will be used).
     """
-    def __init__(self,type,conversion_pattern=None,file=None,append=True,max_file_size='10MB'):
+    def __init__(self,type,conversion_pattern=None,file=None,append=True,max_file_size=MAX_FILE_SIZE):
         self.type = type
         self.conversion_pattern = conversion_pattern
         self.file = file
