@@ -76,8 +76,6 @@
   <target name="clean" depends="clean.module.common-base, clean.module.common-daf-v2, clean.module.common-daf-v3, clean.module.utils, clean.module.pecas,clean.module.reference, clean.module.censusdata, clean.module.synpop, clean.module.pasaat, clean.module.tlumip" description="cleanup all"/>
   
   <target name="compile" depends="init, clean, compile.module.common-base, compile.module.common-daf-v2, compile.module.common-daf-v3, compile.module.utils, compile.module.pecas, compile.module.reference, compile.module.censusdata, compile.module.synpop, compile.module.pasaat, compile.module.tlumip" description="build all source files"/>
-  <property name="ant.build.javac.target" value="1.7"/>
-  <property name="ant.build.javac.source" value="1.7"/>
   <target name="all" depends="init, clean, compile, makejar, release" description="clean, build all source and make jar file"/>
 
   <!-- Release directory is in the current directory -->
