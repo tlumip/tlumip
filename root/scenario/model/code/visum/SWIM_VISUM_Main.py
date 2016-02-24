@@ -622,13 +622,45 @@ class SwimModel(object):
             self.Visum.Net.RemoveLineRoute(self.Visum.Net.LineRoutes.ItemByID(lineID[i]))
 
 
+    def assignLinkAzone(self):
+      
+      print('Populate Link AZONE field with nearest ZONE')
+      
+      #get link UDAs
+      udaNames = []
+      for i in self.Visum.Net.Links.Attributes.GetAll:
+        if i.category=="User-defined attributes":
+          udaNames.append(i.Name)
+      if "AZONE" not in udaNames:
+        self.Visum.Net.Links.AddUserDefinedAttribute("AZONE","AZONE","AZONE",2,3) #1=int, 2=float, 5=text
+    
+      #assign each node to a zone and then select zone for closest ANODE or BNODE of link      
+      zone_no     = VisumHelpers.GetMulti(self.Visum.Net.Zones, "NO")
+      zone_xcoord = VisumHelpers.GetMulti(self.Visum.Net.Zones, "XCOORD")
+      zone_ycoord = VisumHelpers.GetMulti(self.Visum.Net.Zones, "YCOORD")
+      
+      link_fnodex = VisumHelpers.GetMulti(self.Visum.Net.Links, "FROMNODE\XCOORD")
+      link_fnodey = VisumHelpers.GetMulti(self.Visum.Net.Links, "FROMNODE\YCOORD")
+      link_tnodex = VisumHelpers.GetMulti(self.Visum.Net.Links, "TONODE\XCOORD")
+      link_tnodey = VisumHelpers.GetMulti(self.Visum.Net.Links, "TONODE\YCOORD")
+      azones      = VisumHelpers.GetMulti(self.Visum.Net.Links, "AZONE")
+      
+      for i in range(len(link_fnodex)):
+        fn_x = np.repeat(link_fnodex[i], len(zone_no))
+        fn_y = np.repeat(link_fnodey[i], len(zone_no))
+        tn_x = np.repeat(link_tnodex[i], len(zone_no))
+        tn_y = np.repeat(link_tnodey[i], len(zone_no))
+        fn_dist = ((fn_x-zone_xcoord)**2 + (fn_y-zone_ycoord)**2)**0.5
+        tn_dist = ((tn_x-zone_xcoord)**2 + (tn_y-zone_ycoord)**2)**0.5
+        azones[i] = int(zone_no[np.argmin(fn_dist)] if (np.min(fn_dist) < np.min(tn_dist)) else zone_no[np.argmin(tn_dist)])
+
+      VisumHelpers.SetMulti(self.Visum.Net.Links, "AZONE", azones)
 
     def createVizOutput(self):
-        print('Create SWIM Link outputs for Viz')
-
-        headers, fieldDictionary = self.loadCSV(self.swimVizOutputs)
-
+        
         #write SWIM input files
+        print('Create SWIM Link outputs for Viz')
+        headers, fieldDictionary = self.loadCSV(self.swimVizOutputs)
         fileNames = list(set(fieldDictionary[headers[1]]))
 
         for fileIndex in range(0,len(fileNames)):
@@ -1615,6 +1647,7 @@ if __name__== "__main__":
         s.startVisum()
         s.loadVersion()
         s.zonefieldVariables()
+        s.assignLinkAzone()
         s.createModelInput()
         s.saveVersion()
         s.closeVisum()
