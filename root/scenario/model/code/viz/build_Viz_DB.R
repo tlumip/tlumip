@@ -12,6 +12,7 @@
 #######################################################################
 
 library(RSQLite)
+library(dplyr)
 
 #########################################################################
 #parameters
@@ -534,6 +535,25 @@ hhData = read.csv("HouseholdData.csv")
 
 #read and process trip file
 trips = read.csv("Trips_SDTPerson.csv")
+
+
+# create trip length frequency distribution
+tlfd <- trips %>%
+  select(azone = origin, mode = tripMode, purpose = tripPurpose, distance) %>%
+  mutate(
+    # gather into 1-mile bins
+    distance = plyr::round_any(distance, 1, floor),
+    # cap at 30 miles
+    distance = pmin(distance, 30)
+  ) %>%
+  #
+  group_by(azone, mode, purpose, distance) %>%
+  summarise(trips = n())
+
+
+# Write tlfd to database
+dbWriteTable(db, "TLFD_SDT", tlfd, append = TRUE, row.names = FALSE)
+
 
 #remove extra fields
 trips = trips[,c("hhID","origin","destination","tripStartTime","tripPurpose","tripMode","income","distance")]
