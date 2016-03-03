@@ -164,7 +164,7 @@ for y in range(len(years)): #for each year entry (in order) defined in tsteps fi
     # don't know why anyone would do this, but crazier stuff has happened
     # this doesn't change functionality, just keeps things consistent
     update_template_properties = Properties()
-    for update_year in range(int(year)):
+    for update_year in range(int(year)+1):
         update_template_properties_file = os.path.join(scenario_inputs,'t' + str(update_year),'globalTemplateUpdate.properties')
         if os.path.exists(update_template_properties_file):
             update_template_properties.loadPropertyFile(update_template_properties_file)
