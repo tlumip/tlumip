@@ -218,6 +218,7 @@ class SwimModel(object):
                 if os.path.isfile(newPath):
                     print("Copying version file from " + newToken + " to " + currentToken)
                     shutil.copy(newPath,self.version)
+                    break
 
 
     def startVisum(self):
