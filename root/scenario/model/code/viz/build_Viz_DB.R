@@ -552,7 +552,7 @@ tlfd <- trips %>%
 
 
 # Write tlfd to database
-dbWriteTable(db, "TLFD_SDT", tlfd, append = TRUE, row.names = FALSE)
+dbWriteTable(db, "TLFD_SDT", as.data.frame(tlfd), append = TRUE, row.names = FALSE)
 
 
 #remove extra fields
