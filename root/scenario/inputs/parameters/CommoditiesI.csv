@@ -39,20 +39,20 @@ SCTG39_OTH_FURN,139,100,63.37568999,1,-1,0.000642068,1,1,7.98E-05,-0.811180822,-
 SCTG40_OTH_MISC,140,25.35445582,100,1,-1,0.002568272,1,1,1.98E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
 SCTG41_WASTE_SCRAP,141,58.4197083,58.4197083,1,-1,0.000213297,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
 Energy,142,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Retail Trade,143,10.0222463,10.0222463,10,-1,0.043213922,1,1,0,4.273504274,0,0,s4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Transport,144,100,100,1,-1,0.0009,1,1,0,-0.2869496,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Wholesale Trade,145,100,100,1,-1,0.0009,1,1,0,-0.3663225,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Construction,146,100,100,1,-1,0,1,1,0.001799,-0.1472195,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
-Communications and Utilities,147,45.1372396,45.1372396,1,-1,0.001799,1,1,0,-0.2348265,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Accommodations,148,100,100,1,-1,0.001799,1,1,0,-0.2074261,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Personal and Other Services and Amusements,149,11.53300781,11.53300781,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Entertainment Services,150,1.507235662,1.507235662,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Food Services,151,20,20,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Teaching K12,152,15,15,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Higher Education,153,5,5,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Health Services,154,30,30,1,-1,0.018425305,1,1,0,4.273504274,0,0,o4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Fire Business and Professional Services,155,100,100,1,-1,0,1,1,0.001,-0.2847265,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
-Government Administration,156,95.02665042,95.02665042,1,-1,0.018425305,1,1,0,0.934579439,0,0,b4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Retail Trade,143,29.71910158,29.71910158,1,-1,0.043213922,1,1,0,4.273504274,0,0,s4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Transport,144,100,100,1,-1,0.001577142,1,1,0,-0.2869496,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
+Wholesale Trade,145,100,100,1,-1,0.001577142,1,1,0,-0.3663225,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
+Construction,146,100,100,1,-1,0,1,1,0.001577142,-0.1472195,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
+Communications and Utilities,147,48.24131425,48.24131425,1,-1,0.001577142,1,1,0,-0.2348265,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
+Accommodations,148,100,100,1,-1,0.001577142,1,1,0,-0.2074261,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
+Personal and Other Services and Amusements,149,33.9308598,33.9308598,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Entertainment Services,150,5,5,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Food Services,151,30.375,30.375,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Teaching K12,152,91.125,91.125,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Higher Education,153,45.5625,45.5625,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Health Services,154,100,100,1,-1,0.018425305,1,1,0,4.273504274,0,0,o4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Fire Business and Professional Services,155,100,100,1,-1,0,1,1,0.001577142,-0.2847265,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
+Government Administration,156,100,100,1,-1,0.001577,1,1,0,3.205128,0,0,b4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Resources,157,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Energy,158,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Construction,159,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
@@ -71,34 +71,34 @@ Return Investment Receipts,304,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,no
 Capital Transfer Receipts,305,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Education Reports to Sponsors,306,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Proprietor Income Receipts,307,100,100,1,-1,0,1,1,0,1,1,1,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-A1-Mgmt Bus,401,27.05855552,27.05855552,1,-1,0,1,1,0.0040304,7.6923077,0,0,w7mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B1-Prof Specialty,402,26.92905886,26.92905886,1,-1,0,1,1,0.0040319,7.6923077,0,0,w7mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B2-Education,403,39.98965833,39.98965833,1,-1,0,1,1,0.0056716,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B3-Health,404,34.08028461,34.08028461,1,-1,0,1,1,0.0032277,7.6923077,0,0,w7mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B4-Technical Unskilled,405,100,100,1,-1,0,1,1,0.01,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C1-Sales Clerical Professionals,406,68.6225157,68.6225157,1,-1,0,1,1,0.0048769,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C2-Sales Service,407,30.7351702,30.7351702,1,-1,0,1,1,0.0070781,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C3-Clerical,408,31.70559177,31.70559177,1,-1,0,1,1,0.0076858,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+A1-Mgmt Bus,401,78.97277152,78.97277152,1,-1,0,1,1,0.0040304,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+B1-Prof Specialty,402,50,50,1,-1,0,1,1,0.0040319,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+B2-Education,403,63.25231484,63.25231484,1,-1,0,1,1,0.0056716,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+B3-Health,404,80.80032346,80.80032346,1,-1,0,1,1,0.0032277,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+B4-Technical Unskilled,405,100,100,1,-1,0,1,1,0.006569722,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+C1-Sales Clerical Professionals,406,100,100,1,-1,0,1,1,0.0048769,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+C2-Sales Service,407,48.54546585,48.54546585,1,-1,0,1,1,0.0070781,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+C3-Clerical,408,51.97655892,51.97655892,1,-1,0,1,1,0.0076858,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 C4-Sales Clerical Unskilled,409,100,100,1,-1,0,1,1,0.0111272,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D1-Production Specialists,410,34.25063164,34.25063164,1,-1,0,1,1,0.0064099,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D2-MaintConstRepair Specialists,411,31.17725573,31.17725573,1,-1,0,1,1,0.00566,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D3-ProtectTrans Specialists,412,28.44792961,28.44792961,1,-1,0,1,1,0.0061657,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+D1-Production Specialists,410,40.57137425,40.57137425,1,-1,0,1,1,0.0064099,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+D2-MaintConstRepair Specialists,411,40.56448193,40.56448193,1,-1,0,1,1,0.00566,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+D3-ProtectTrans Specialists,412,52.86222145,52.86222145,1,-1,0,1,1,0.0061657,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 D4-Blue Collar Unskilled,413,100,100,1,-1,0,1,1,0.0085101,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 FLR Agriculture,501,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE
 FLR Logging,502,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE
-FLR Hospital,503,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR Retail,504,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR Office,505,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR Heavy Industry,506,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR Light Industry,507,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR Warehouse,508,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR Institutional,509,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR Accommodation,510,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR Government Support,511,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR K12,512,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR SFD,513,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR AT,514,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR MH,515,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR RRMH,516,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR RRSFD,517,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
-FLR MF,518,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,1,TRUE,1,unknown,FALSE,TRUE
+FLR Hospital,503,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.60268612,TRUE,16.60268612,unknown,FALSE,TRUE
+FLR Retail,504,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,13.29613918,TRUE,13.29613918,unknown,FALSE,TRUE
+FLR Office,505,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.88941767,TRUE,16.88941767,unknown,FALSE,TRUE
+FLR Heavy Industry,506,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.260711703,TRUE,6.260711703,unknown,FALSE,TRUE
+FLR Light Industry,507,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.311623664,TRUE,6.311623664,unknown,FALSE,TRUE
+FLR Warehouse,508,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,7.209906607,TRUE,7.209906607,unknown,FALSE,TRUE
+FLR Institutional,509,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.1304673,TRUE,16.1304673,unknown,FALSE,TRUE
+FLR Accommodation,510,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.29494053,TRUE,16.29494053,unknown,FALSE,TRUE
+FLR Government Support,511,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.3303225,TRUE,16.3303225,unknown,FALSE,TRUE
+FLR K12,512,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.22744561,TRUE,16.22744561,unknown,FALSE,TRUE
+FLR SFD,513,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.132406129,TRUE,6.132406129,unknown,FALSE,TRUE
+FLR AT,514,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,5.022311515,TRUE,5.022311515,unknown,FALSE,TRUE
+FLR MH,515,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.677708597,TRUE,6.677708597,unknown,FALSE,TRUE
+FLR RRMH,516,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,3.245782124,TRUE,3.245782124,unknown,FALSE,TRUE
+FLR RRSFD,517,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,2.549265941,TRUE,2.549265941,unknown,FALSE,TRUE
+FLR MF,518,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,7.054531068,TRUE,7.054531068,unknown,FALSE,TRUE
