@@ -1453,7 +1453,7 @@ class SwimModel(object):
         tt = skim_dir + "betapkautofftime.zmx"
         di = skim_dir + "betapkautodist.zmx"
 
-        # only recompute mode choice logsums for the main model; skim in small
+        # only recompute mode choice logsums for the main model; skip in small
         if len(self.zoneNo) > maxMiniModelZones:
             self.recomputeWMLS(skim_dir + 'b4mcls_beta.zmx', tt, di, 1, "I", "Med")
             self.recomputeWMLS(skim_dir + 'b5mcls_beta.zmx', tt, di, 1, "S", "Med")
@@ -1464,6 +1464,7 @@ class SwimModel(object):
             self.recomputeWMLS(skim_dir + 'w1mcls_beta.zmx', tt, di, 1, "0", "Low")
             self.recomputeWMLS(skim_dir + 'w4mcls_beta.zmx', tt, di, 1, "I", "Med")
             self.recomputeWMLS(skim_dir + 'w7mcls_beta.zmx', tt, di, 1, "S", "Hi")
+            self.recomputeWMLS(skim_dir + 'w8mcls_beta.zmx', tt, di, 1, "S", "Hi")
         
 
 
