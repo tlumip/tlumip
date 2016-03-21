@@ -71,19 +71,19 @@ Return Investment Receipts,304,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,no
 Capital Transfer Receipts,305,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Education Reports to Sponsors,306,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Proprietor Income Receipts,307,100,100,1,-1,0,1,1,0,1,1,1,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-A1-Mgmt Bus,401,78.97277152,78.97277152,1,-1,0,1,1,0.0040304,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B1-Prof Specialty,402,50,50,1,-1,0,1,1,0.0040319,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B2-Education,403,63.25231484,63.25231484,1,-1,0,1,1,0.0056716,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B3-Health,404,80.80032346,80.80032346,1,-1,0,1,1,0.0032277,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B4-Technical Unskilled,405,100,100,1,-1,0,1,1,0.006569722,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+A1-Mgmt Bus,401,62.58421848,62.58421848,1,-1,0,1,1,0.0040304,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+B1-Prof Specialty,402,56.20690455,56.20690455,1,-1,0,1,1,0.0040319,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+B2-Education,403,59.60637395,59.60637395,1,-1,0,1,1,0.0056716,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+B3-Health,404,74.45883232,74.45883232,1,-1,0,1,1,0.0032277,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+B4-Technical Unskilled,405,335.3321272,335.3321272,1,-1,0,1,1,0.006569722,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 C1-Sales Clerical Professionals,406,100,100,1,-1,0,1,1,0.0048769,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C2-Sales Service,407,48.54546585,48.54546585,1,-1,0,1,1,0.0070781,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C3-Clerical,408,51.97655892,51.97655892,1,-1,0,1,1,0.0076858,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+C2-Sales Service,407,50.1922144,50.1922144,1,-1,0,1,1,0.0070781,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+C3-Clerical,408,55.82780153,55.82780153,1,-1,0,1,1,0.0076858,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 C4-Sales Clerical Unskilled,409,100,100,1,-1,0,1,1,0.0111272,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D1-Production Specialists,410,40.57137425,40.57137425,1,-1,0,1,1,0.0064099,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D2-MaintConstRepair Specialists,411,40.56448193,40.56448193,1,-1,0,1,1,0.00566,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D3-ProtectTrans Specialists,412,52.86222145,52.86222145,1,-1,0,1,1,0.0061657,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D4-Blue Collar Unskilled,413,100,100,1,-1,0,1,1,0.0085101,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+D1-Production Specialists,410,46.46677265,46.46677265,1,-1,0,1,1,0.0064099,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+D2-MaintConstRepair Specialists,411,43.92117268,43.92117268,1,-1,0,1,1,0.00566,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+D3-ProtectTrans Specialists,412,48.53393195,48.53393195,1,-1,0,1,1,0.0061657,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
+D4-Blue Collar Unskilled,413,79.94989584,79.94989584,1,-1,0,1,1,0.0085101,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 FLR Agriculture,501,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE
 FLR Logging,502,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE
 FLR Hospital,503,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.60268612,TRUE,16.60268612,unknown,FALSE,TRUE
