@@ -57,8 +57,8 @@ def read_retail_types(fname):
     considered suitable space for retail of that commodity.
     """
     types = {}
-    with open(fname, "rb") as file:
-        reader = csv.reader(file, excelOne)
+    with open(fname, "rU") as file:
+        reader = csv.reader(file)
         header = reader.next()
         for row in reader:
             commod = row[header.index(retail_commod_col)]
@@ -75,8 +75,8 @@ def read_flspace(fname):
     Returns a dictionary from each TAZ-space type pair to the amount of floorspace of that type in that TAZ.
     """
     space = {}
-    with open(fname, "rb") as file:
-        reader = csv.reader(file, excelOne)
+    with open(fname, "rU") as file:
+        reader = csv.reader(file)
         header = reader.next()
         for row in reader:
             taz = int(float(row[header.index(flspace_taz_col)]))
@@ -95,8 +95,8 @@ def read_exchange(fname):
     as a list of strings.
     """
     exchange = {}
-    with open(fname, "rb") as file:
-        reader = csv.reader(file, excelOne)
+    with open(fname, "rU") as file:
+        reader = csv.reader(file)
         header = reader.next()
         for row in reader:
             luz = int(row[header.index(exchange_luz_col)])
@@ -119,7 +119,7 @@ def write_exchange(fname, header, exchange):
     all regular rows in alphabetical order by commodity name and then numerical order by LUZ number.
     """
     
-    with open(fname, "wb") as file:
+    with open(fname, "w") as file:
         writer = csv.writer(file, excelOne)
         writer.writerow(header)
         
@@ -181,7 +181,7 @@ def main(year):
                         exchange[key] = row
     
     # Write out modified ExchangeImportExportI file.
-    write_exchange(exchange_fname, header, exchange)
+    write_exchange(exchange_fname.replace("%year%", str(year)), header, exchange)
 
 if __name__ == "__main__":
     main(sys.argv[1])
