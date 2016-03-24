@@ -7,10 +7,17 @@ from os.path import join
 import csv
 
 # File names.
-zone_fname = join("outputs", "%year%", "alpha2beta.csv") # Name of file with TAZ->LUZ correspondence.
-flspace_fname = join("outputs", "%year%", "FloorspaceI.csv")   # Name of floorspace file.
-retail_types_fname = join("inputs", "parameters", "ExchangeSizeTermTypes.csv")   # Name of file that gives retail floorspace types for each retail commodity.
-exchange_fname = join("inputs", "parameters", "ExchangeImportExportI.csv")  # Name of file where size terms should be stored.
+
+# Name of file with TAZ->LUZ correspondence.
+zone_fname = join("outputs", "%year%", "alpha2beta.csv")
+# Name of floorspace file.
+flspace_fname = join("outputs", "%year%", "FloorspaceI.csv")
+# Name of file that gives retail floorspace types for each retail commodity.
+retail_types_fname = join("inputs", "parameters", "ExchangeSizeTermTypes.csv")
+# Name of the base size term file.
+exchange_base_fname = join("inputs", "parameters", "ExchangeImportExportI.csv")
+# Name of file where size terms should be stored.
+exchange_fname = join("outputs", "%year%", "ExchangeImportExportI.csv")
 
 # Column name constants.
 zone_taz_col = "Azone"
@@ -141,7 +148,7 @@ def main(year):
     flspace = read_flspace(flspace_fname.replace("%year%", str(year)))
     
     # Read in templates from ExchangeImportExportI file.
-    header, exchange = read_exchange(exchange_fname)
+    header, exchange = read_exchange(exchange_base_fname)
     
     # Add size terms in ExchangeImportExportI.
     for commod, fltypes in retail_types.items():
