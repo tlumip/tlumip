@@ -1,0 +1,92 @@
+Commodity,BuyingSelling,Group
+A1-Mgmt Bus,selling,LaborA+B1
+Accommodations,buying,Accommodations
+B1-Prof Specialty,selling,LaborA+B1
+B2-Education,selling,B2-Education
+B3-Health,selling,B3-Health
+B4-Technical Unskilled,selling,B4-Technical Unskilled
+C1-Sales Clerical Professionals,selling,C1-Sales Clerical Professionals
+C2-Sales Service,selling,LaborC2-3
+C3-Clerical,selling,LaborC2-3
+C4-Sales Clerical Unskilled,selling,C4-Sales Clerical Unskilled
+Communications and Utilities,buying,Communication
+Construction,selling,Construction
+D1-Production Specialists,selling,D1-Production Specialists
+D2-MaintConstRepair Specialists,selling,LaborC4+D2-3
+D3-ProtectTrans Specialists,selling,LaborC4+D2-3
+D4-Blue Collar Unskilled,selling,D4-Blue Collar Unskilled
+Entertainment Services,buying,Entertainment
+Fire Business and Professional Services,selling,FIRE
+Food Services,buying,Food
+Government Administration,buying,Government
+Health Services,buying,Institutions
+Higher Education,buying,Higher Education
+Internal Services Construction,selling,InternalServices
+Internal Services Education k12,selling,InternalServices
+Internal Services Energy,selling,InternalServices
+Internal Services Government Administration,selling,InternalServices
+Internal Services Information,selling,InternalServices
+Internal Services Manufacturing,selling,InternalServices
+Internal Services Resources,selling,InternalServices
+Internal Services Retail Store,selling,InternalServices
+Internal Services Utilities,selling,InternalServices
+Internal Services Wholesale,selling,InternalServices
+Internal ServicesTransport,selling,InternalServices
+Personal and Other Services and Amusements,buying,Personal
+Retail Trade,buying,Retail
+SCTG01_FKP_LVSK,buying,SCTG01_FKP_LVSK_buy
+SCTG02_FKP_AGRI_cereal,buying,SCTG02_FKP_AGRI_cereal_buy
+SCTG03_FKP_AGRI_other,buying,SCTG03_FKP_AGRI_other_buy
+SCTG04_FKP_FEED,buying,SCTG04_FKP_FEED_buy
+SCTG05_FKP_FOOD_meat,buying,SCTG05_FKP_FOOD_meat_buy
+SCTG06_FKP_AGRI_grain,buying,SCTG06_FKP_AGRI_grain_buy
+SCTG07_FKP_FOOD_prep,buying,SCTG07_FKP_FOOD_prep_buy
+SCTG08_FKP_FOOD_alc,buying,SCTG08_FKP_FOOD_alc_buy
+SCTG10_CMS_CLAY,buying,SCTG10_CMS_CLAY_buy
+SCTG11_CMS_SAND,buying,SCTG11_CMS_SAND_buy
+SCTG13_CMS_MINE_nonmet,buying,SCTG13_CMS_MINE_nonmet_buy
+SCTG14_CMS_MINE_met,buying,SCTG14_CMS_MINE_met_buy
+SCTG15_PCC_COAL,buying,SCTG15_PCC_COAL_buy
+SCTG16_PCC_PETR_crude,buying,SCTG16_PCC_PETR_crude_buy
+SCTG17_PCC_FUEL,buying,SCTG17_PCC_FUEL_buy
+SCTG18_PCC_PETR_oil,buying,SCTG18_PCC_PETR_oil_buy
+SCTG19_PCC_COAL_prod,buying,SCTG19_PCC_COAL_prod_buy
+SCTG20_PCC_CHEM_basic,buying,SCTG20_PCC_CHEM_basic_buy
+SCTG21_PCC_CHEM_pharma,buying,SCTG21_PCC_CHEM_pharma_buy
+SCTG22_PCC_CHEM_fert,buying,SCTG22_PCC_CHEM_fert_buy
+SCTG23_PCC_CHEM_prod,buying,SCTG23_PCC_CHEM_prod_buy
+SCTG24_PCC_PETR_plast,buying,SCTG24_PCC_PETR_plast_buy
+SCTG25_FWP_LOGS,buying,SCTG25_FWP_LOGS_buy
+SCTG26_FWP_WOOD,buying,SCTG26_FWP_WOOD_buy
+SCTG27_PPP_PAPR_puplp,buying,SCTG27_PPP_PAPR_puplp_buy
+SCTG28_PPP_PAPR_paper,buying,SCTG28_PPP_PAPR_paper_buy
+SCTG29_PPP_PAPR_print,buying,SCTG29_PPP_PAPR_print_buy
+SCTG30_OTH_CLTH,buying,SCTG30_OTH_CLTH_buy
+SCTG31_CMS_MIN,buying,SCTG31_CMS_MIN_buy
+SCTG32_MIT_METL_base,buying,SCTG32_MIT_METL_base_buy
+SCTG33_MIT_METL_prod,buying,SCTG33_MIT_METL_prod_buy
+SCTG34_MIT_MACH,buying,SCTG34_MIT_MACH_buy
+SCTG35_MIT_ELCT,buying,SCTG35_MIT_ELCT_buy
+SCTG36_MIT_TRAN,buying,SCTG36_MIT_TRAN_buy
+SCTG37_MIT_INST_transp,buying,SCTG37_MIT_INST_transp_buy
+SCTG38_MIT_INST_prec,buying,SCTG38_MIT_INST_prec_buy
+SCTG39_OTH_FURN,buying,SCTG39_OTH_FURN_buy
+SCTG40_OTH_MISC,buying,SCTG40_OTH_MISC_buy
+SCTG41_WASTE_SCRAP,buying,SCTG41_WASTE_SCRAP_buy
+SCTG04_FKP_FEED,selling,SCTG04_FKP_FEED_sell
+SCTG05_FKP_FOOD_meat,selling,SCTG05_FKP_FOOD_meat_sell
+SCTG06_FKP_AGRI_grain,selling,SCTG06_FKP_AGRI_grain_sell
+SCTG07_FKP_FOOD_prep,selling,SCTG07_FKP_FOOD_prep_sell
+SCTG08_FKP_FOOD_alc,selling,SCTG08_FKP_FOOD_alc_sell
+SCTG17_PCC_FUEL,selling,SCTG17_PCC_FUEL_sell
+SCTG18_PCC_PETR_oil,selling,SCTG18_PCC_PETR_oil_sell
+SCTG21_PCC_CHEM_pharma,selling,SCTG21_PCC_CHEM_pharma_sell
+SCTG23_PCC_CHEM_prod,selling,SCTG23_PCC_CHEM_prod_sell
+SCTG29_PPP_PAPR_print,selling,SCTG29_PPP_PAPR_print_sell
+SCTG30_OTH_CLTH,selling,SCTG30_OTH_CLTH_sell
+SCTG36_MIT_TRAN,selling,SCTG36_MIT_TRAN_sell
+SCTG39_OTH_FURN,selling,SCTG39_OTH_FURN_sell
+SCTG40_OTH_MISC,selling,SCTG40_OTH_MISC_sell
+Teaching K12,buying,Teaching K12
+Transport,buying,Transport
+Wholesale Trade,buying,Wholesale
