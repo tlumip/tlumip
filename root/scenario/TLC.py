@@ -8,23 +8,23 @@ import time
 ###################################################################
 
 # define the files to access; these are/will be standard.
-targetFileName = "TLCTargetsI.csv"   # name of target file
+targetFileName = "TLCTargetsIAll.csv"   # name of target file
 groupFileName = "TLCGroupsI.csv"     # name of group definition file
 histoFileName = "outputs/t19/Histograms.csv"     # histogram file created by AA
 commodFileName = "inputs/parameters/CommoditiesI.csv"  # commoditiesI file from AA
 
 outFileName = "TLCCalib.csv"  # output file name
-modelCommand = "run_model.bat"  #the file that runs AA
+modelCommand = "python model/code/run_aa.py"  #the file that runs AA
 
 filesToVersion = ["outputs/t19/Histograms.csv"] # copy all files in this list after each run
 
 upperClip = 1.5 # the maximum increase in param. value between iterations default 2
 lowerClip = 0.75  # the minimum increase in param. value between iterations default 0.5
-maxIts = 10     # maximum number of iterations to run
+maxIts = 0    # maximum number of iterations to run
 gapRange = 0.05  # stop calibration when all errors are +/- this value
 initScale = 1.2  # initial scale factor; adjust parameters by this for second run
 parmup = 100 # Upper limit for dispersion parameter
-parmlow = 5 # lower limit for dispersion parameter
+parmlow = 1 # lower limit for dispersion parameter
 
 ###################################################################
 
@@ -293,7 +293,7 @@ def main():
     
     # Run AA once to initialize
         # write the parameters, run the model
-    writeParams(paramList, groupDict, commodFileName)
+    #writeParams(paramList, groupDict, commodFileName)
     os.system(modelCommand)
     versionFiles(filesToVersion, -2)
         
@@ -373,3 +373,4 @@ def main():
 
 
 main()
+#os.system("shutdown now -h")
