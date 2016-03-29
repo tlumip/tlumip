@@ -1,4 +1,6 @@
 !*
+!inputs/*
+!/inputs/
 event.log
 event-performance.log
 *.pyc
