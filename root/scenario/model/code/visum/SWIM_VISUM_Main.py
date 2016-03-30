@@ -20,23 +20,10 @@ year_offset = 1990
 #change file paths in Visum
 pathNo = [15,5,8,57,69,1,7,12,62,41,52,25,11,2,37]
 
-#Year = "_07_12"                #user specific (depends on year considered)
-vdfField = "VDF"
-linkTypeField = "TypeNo"
-
-#vdf look up
-vdf0 = [0,1,2,14,22,23,101]        #Link type = 0 for these vdf functions
-vdf1 = [3,4,5,6,7,8,9,10,11,12,15,16,17,18,19,20,30,31,32,33,34,35,36,37,
-        38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,102]
-                                #Link type = 1 for these vdf functions
-vdf2 = [13,21,90,105]           #Link type = 2 for these vdf functions
-vdf3 = [103]                    #Link type = 3 for these vdf functions
-vdf4 = [104]                    #Link type = 4 for these vdf functions
-
 #Truck passenger car units ;1.7 is the default
 #Was 0.1, changed after Rick's new CT (11/24/2014) YMM
 truckPCU = 1
-truckDemandClass = "e"
+truckDemandClass = "d"
 
 #zone no and main zone no in Visum
 a_zone = 'NO' #azone field in Visum
@@ -60,7 +47,7 @@ speed = 50.0/60.0    #Visum outputs skim in minutes and distance in miles
 #peak and offpeak time periods for which skim is saved
 timePeriods = ['pk','op','pm','nt']
 hwyDemandMatrices = [1,16] #start and end of matrices
-hwySkimMatrices = [21,60] #start and end of matrices
+hwySkimMatrices = [21,52] #start and end of matrices
 ldtDemandMatrices = [9,12] #start and end of matrices
 sdtDemandMatrices = [13,16] #start and end of matrices
 transitSkimMatrices = [21,50] #start and end of matrices
@@ -751,24 +738,6 @@ class SwimModel(object):
         impField = VisumHelpers.GetMulti(self.Visum.Net.Links, impFieldName)
         expField = VisumHelpers.SetMulti(self.Visum.Net.Links, expFieldName, impField)
 
-
-    def vdfLookup(self):
-        vdfLookup = VisumHelpers.GetMulti(self.Visum.Net.Links, vdfField)
-        typeNo = list()
-
-        for i in range(0,len(vdfLookup)):
-            if vdfLookup[i] in vdf0:
-                typeNo.append(0)
-            elif vdfLookup[i] in vdf1:
-                typeNo.append(1)
-            elif vdfLookup[i] in vdf2:
-                typeNo.append(2)
-            elif vdfLookup[i] in vdf3:
-                typeNo.append(3)
-            elif vdfLookup[i] in vdf4:
-                typeNo.append(4)
-        VisumHelpers.SetMulti(self.Visum.Net.Links, linkTypeField, typeNo)
-
     def aggregateMatSortAverage(self, mat, mainZones):
 
         #this function is valid for sum,len, min and max functions and default function is sum
@@ -1453,7 +1422,7 @@ class SwimModel(object):
         tt = skim_dir + "betapkautofftime.zmx"
         di = skim_dir + "betapkautodist.zmx"
 
-        # only recompute mode choice logsums for the main model; skip in small
+        # only recompute mode choice logsums for the main model; skim in small
         if len(self.zoneNo) > maxMiniModelZones:
             self.recomputeWMLS(skim_dir + 'b4mcls_beta.zmx', tt, di, 1, "I", "Med")
             self.recomputeWMLS(skim_dir + 'b5mcls_beta.zmx', tt, di, 1, "S", "Med")
@@ -1464,7 +1433,6 @@ class SwimModel(object):
             self.recomputeWMLS(skim_dir + 'w1mcls_beta.zmx', tt, di, 1, "0", "Low")
             self.recomputeWMLS(skim_dir + 'w4mcls_beta.zmx', tt, di, 1, "I", "Med")
             self.recomputeWMLS(skim_dir + 'w7mcls_beta.zmx', tt, di, 1, "S", "Hi")
-            self.recomputeWMLS(skim_dir + 'w8mcls_beta.zmx', tt, di, 1, "S", "Hi")
         
 
 
@@ -1584,7 +1552,7 @@ class SwimModel(object):
 
         volumeFactor = 0
         if(hours > 0):
-            volumeFactor = 1 / hours
+            volumeFactor = hours
 
 
         #log results
@@ -1665,7 +1633,6 @@ if __name__== "__main__":
         s.startVisum()
         s.loadVersion()
         s.insertMatrixInVisum('auto and truck', start=hwyDemandMatrices[0], end=hwyDemandMatrices[1])
-        s.vdfLookup()
         s.createVolumeFactor()
         s.saveVersion()
         s.closeVisum()
@@ -1719,11 +1686,11 @@ if __name__== "__main__":
             s.saveVersion("_NT_PATHS")
             s.closeVisum()
 
-            s.startVisum()
-            s.loadVersion("_DAILY_PATHS")
-            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+32)
-            s.saveVersion("_DAILY_PATHS")
-            s.closeVisum()
+            #s.startVisum()
+            #s.loadVersion("_DAILY_PATHS")
+            #s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+32)
+            #s.saveVersion("_DAILY_PATHS")
+            #s.closeVisum()
         else:
             s.startVisum()
             s.loadVersion("_OP_PATHS")
