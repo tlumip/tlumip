@@ -39,20 +39,20 @@ SCTG39_OTH_FURN,139,100,63.37568999,1,-1,0.000642068,1,1,7.98E-05,-0.811180822,-
 SCTG40_OTH_MISC,140,25.35445582,100,1,-1,0.002568272,1,1,1.98E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
 SCTG41_WASTE_SCRAP,141,58.4197083,58.4197083,1,-1,0.000213297,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
 Energy,142,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Retail Trade,143,100,100,1,-1,0.043213922,1,1,0,4.273504274,0,0,s4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Retail Trade,143,100,100,1,-1,0.028809281,1,1,0,4.273504274,0,0,s4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Transport,144,100,100,1,-1,0.001577142,1,1,0,-0.2869496,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
 Wholesale Trade,145,100,100,1,-1,0.001577142,1,1,0,-0.3663225,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
 Construction,146,100,100,1,-1,0,1,1,0.001577142,-0.1472195,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
 Communications and Utilities,147,48.24131425,48.24131425,1,-1,0.001577142,1,1,0,-0.2348265,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
 Accommodations,148,100,100,1,-1,0.001577142,1,1,0,-0.2074261,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Personal and Other Services and Amusements,149,50,50,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Entertainment Services,150,5,5,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Food Services,151,80,80,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Teaching K12,152,100,100,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Higher Education,153,80,80,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Health Services,154,100,100,1,-1,0.018425305,1,1,0,4.273504274,0,0,o4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Personal and Other Services and Amusements,149,50,50,1,-1,0.04,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Entertainment Services,150,5,5,1,-1,0.058626182,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Food Services,151,80,80,1,-1,0.058626182,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Teaching K12,152,100,100,1,-1,0.047327386,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Higher Education,153,80,80,1,-1,0.01,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Health Services,154,100,100,1,-1,0.012283537,1,1,0,4.273504274,0,0,o4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Fire Business and Professional Services,155,100,100,1,-1,0,1,1,0.001577142,-0.2847265,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
-Government Administration,156,100,100,1,-1,0.001577,1,1,0,3.205128,0,0,b4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
+Government Administration,156,100,100,1,-1,0.001577142,1,1,0,3.205128,0,0,b4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Resources,157,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Energy,158,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Construction,159,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
