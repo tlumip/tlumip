@@ -1,8 +1,3 @@
-#SWIM-TS to VISUM main file
-#Ben Stabler, stabler@pbworld.com, 03/22/13
-#Palvinder Singh, singhp@pbworld.com, 03/22/13
-#Yegor Malinovskiy, malinovskiyy@pbworld, 06/03/13
-############################################################
 
 #import libraries
 import os, shutil, sys, csv, time, struct, zipfile, numpy as np, math
@@ -100,12 +95,7 @@ class SwimModel(object):
         self.assigmentProcedureDirectory = properties['ta.assignment.parameters.directory']
         self.initialAutoAssignmentProcedure = properties['ta.initial.auto.assignment.parameters']
         self.initialTransitAssignmentProcedure = properties['ta.initial.transit.assignment.parameters']
-        self.pathAssignmentProcedure = properties['ta.path.assignment.parameters']
-        self.LUCEAssignmentProcedure = properties['ta.luce.assignment.parameters']
         self.pathAllPeriodAssignmentProcedure = properties['ta.path.allperiod.assignment.parameters']
-        self.LUCEAllPeriodAssignmentProcedure = properties['ta.luce.allperiod.assignment.parameters']
-        self.assignmentType = properties['ta.assignment.type']
-        self.assignmentPeriods = properties['ta.assignment.periods']
 
         self.externalStationList = map(int, properties['external.stations'].strip().split(' '))
 
@@ -245,17 +235,14 @@ class SwimModel(object):
 
     def closeVisum(self):
         print("close visum window")
-
         self.Visum = 0
 
     def loadProcedure(self,parFileName):
         print("load procedure file: " + parFileName)
-
         self.Visum.Procedures.Open(parFileName)
 
     def executeProcedure(self,parFileName):
         print("execute stored procedure: " + parFileName)
-
         self.Visum.Procedures.Execute()
 
     def loadCSV(self,csvFileName):
@@ -948,6 +935,12 @@ class SwimModel(object):
                     losList.append(los_data[losheaders[7]][lo])
 
         self.service_data["LOS"] = losList
+        
+        #add AREA as well
+        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREASQFT")
+        areas = [item/(5280**2) for item in areas] #from sq ft to miles
+        self.service_data["AREA"] = areas
+        self.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
 
     #calculate service area data for LTF
     def calcServiceAreaData(self):
@@ -1341,16 +1334,15 @@ class SwimModel(object):
             volumeFactors[i] = factor
         VisumHelpers.SetMulti(self.Visum.Net.Links, "OP_VOL_FACTOR", volumeFactors)
 
-        if s.assignmentPeriods == "ALL":
-            factor = self.calcVolumeFactor("pmpeak")
-            for i in range(len(volumeFactors)):
-                volumeFactors[i] = factor
-            VisumHelpers.SetMulti(self.Visum.Net.Links, "PM_VOL_FACTOR", volumeFactors)
+        factor = self.calcVolumeFactor("pmpeak")
+        for i in range(len(volumeFactors)):
+            volumeFactors[i] = factor
+        VisumHelpers.SetMulti(self.Visum.Net.Links, "PM_VOL_FACTOR", volumeFactors)
 
-            factor = self.calcVolumeFactor("ntoffpeak")
-            for i in range(len(volumeFactors)):
-                volumeFactors[i] = factor
-            VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
+        factor = self.calcVolumeFactor("ntoffpeak")
+        for i in range(len(volumeFactors)):
+            volumeFactors[i] = factor
+        VisumHelpers.SetMulti(self.Visum.Net.Links, "NT_VOL_FACTOR", volumeFactors)
 
     def recomputeWMLS(self, mcls, tt, di, purpose, auto_suff, income):
         """
@@ -1434,10 +1426,6 @@ class SwimModel(object):
             self.recomputeWMLS(skim_dir + 'w4mcls_beta.zmx', tt, di, 1, "I", "Med")
             self.recomputeWMLS(skim_dir + 'w7mcls_beta.zmx', tt, di, 1, "S", "Hi")
         
-
-
-############################################################
-
     def createAirSkims(self):
         for timeperiod in timeMatNames:
             headers, airInputs = self.loadCSV(self.airInputsFile)
@@ -1513,8 +1501,6 @@ class SwimModel(object):
                        print 'writing airfwt skim matrix ' + air_skim
                        self.writeZMX(air_skim, self.zoneNames, airfwt)
 
-
-############################################################
     def calcVolumeFactor(self, timePeriod):
 
         print('calculate volume factor')
@@ -1549,11 +1535,9 @@ class SwimModel(object):
             print ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." )
             return -1
 
-
         volumeFactor = 0
         if(hours > 0):
             volumeFactor = hours
-
 
         #log results
         print( "calculated volume factor: " + str(volumeFactor))
@@ -1600,10 +1584,6 @@ if __name__== "__main__":
             s.loadVersion()
             s.zoneServiceLookup()
             s.insertSeedMatricesInVisum()
-            areas = VisumHelpers.GetMulti(s.Visum.Net.Zones, "AREASQFT")
-            areas = [item/(5280**2) for item in areas] #from sq ft to miles
-            s.service_data["AREA"] = areas
-            s.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
             s.createLocalBusSkims()
             procedure = s.initialTransitAssignmentProcedure
             s.loadProcedure(os.path.join(pdir,procedure))
@@ -1637,26 +1617,16 @@ if __name__== "__main__":
         s.saveVersion()
         s.closeVisum()
 
-        #execute procedure file
-        if s.assignmentType == "PATHBASED":
-            if s.assignmentPeriods == "ALL":
-                procedure = s.pathAllPeriodAssignmentProcedure
-            else:
-                procedure = s.pathAssignmentProcedure
-        elif s.assignmentType == "LUCE":
-            if s.assignmentPeriods == "ALL":
-                procedure = s.LUCEAllPeriodAssignmentProcedure
-            else:
-                procedure = s.LUCEAssignmentProcedure
-
+        #execute procedure file - four assigments - one for each time period
+        #note NT output version file also contains link attributes with the total daily volumes
         s.startVisum()
         s.loadVersion()
-        s.loadProcedure(os.path.join(pdir,procedure))
-        s.executeProcedure(os.path.join(pdir,procedure))
+        s.loadProcedure(os.path.join(pdir,s.pathAllPeriodAssignmentProcedure))
+        s.executeProcedure(os.path.join(pdir,s.pathAllPeriodAssignmentProcedure))
         s.saveVersion()
         s.closeVisum()
 
-        #write skim matrices in *.zmx files
+        #write PK and OP skim matrices
         s.startVisum()
         s.loadVersion()
         s.zonefieldVariables()
@@ -1665,42 +1635,20 @@ if __name__== "__main__":
         s.saveVersion()
         s.closeVisum()
 
-
-        ####CLEAN UP PATHS#####
-        if s.assignmentPeriods == "ALL":
-            s.startVisum()
-            s.loadVersion("_OP_PATHS")
-            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+8)
-            s.saveVersion("_OP_PATHS")
-            s.closeVisum()
-
-            s.startVisum()
-            s.loadVersion("_PM_PATHS")
-            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+16)
-            s.saveVersion("_PM_PATHS")
-            s.closeVisum()
-
-            s.startVisum()
-            s.loadVersion("_NT_PATHS")
-            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+24)
-            s.saveVersion("_NT_PATHS")
-            s.closeVisum()
-
-            #s.startVisum()
-            #s.loadVersion("_DAILY_PATHS")
-            #s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+32)
-            #s.saveVersion("_DAILY_PATHS")
-            #s.closeVisum()
-        else:
-            s.startVisum()
-            s.loadVersion("_OP_PATHS")
-            s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+8)
-            s.saveVersion("_OP_PATHS")
-            s.closeVisum()
-
+        #delete other period skims in the output version files since the procedure accumulates 
+        #the skims from each time period (i.e. the fourth assignment has four sets of skims)
+        savedVersionFileNames = ["OP_PATHS.ver","PM_PATHS.ver","NT_PATHS.ver"] #in par file
+        for i in range(len(savedVersionFileNames)):
+          s.startVisum()
+          s.Visum.LoadVersion(savedVersionFileNames[i])
+          s.deleteSkimMatrices(start=hwySkimMatrices[0], end=hwySkimMatrices[0]+(8*(i+1)))
+          s.Visum.SaveVersion(savedVersionFileNames[i])
+          s.closeVisum()
+        
     #transit assignment
     ######################################################
     if mode == 'transit':
+        
         #local bus ivt and ovt functions and premium connector build
         s.startVisum()
         s.loadVersion()
@@ -1752,7 +1700,7 @@ if __name__== "__main__":
         s.saveVersion("_TR")
         s.closeVisum()
 
-        #write skim matrices in *.zmx files
+        #write skim matrices
         s.startVisum()
         s.loadVersion("_TR")
         s.zonefieldVariables()
