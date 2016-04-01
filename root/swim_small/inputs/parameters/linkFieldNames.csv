@@ -3,7 +3,7 @@ NO,AllLinks.csv
 TSYSSET,AllLinks.csv
 LENGTH,AllLinks.csv
 NUMLANES,AllLinks.csv
-TEMP_CAPACITY,AllLinks.csv
+CAP_PER_HR,AllLinks.csv
 V0PRT,AllLinks.csv
 PLANNO,AllLinks.csv
 AUTO_COST,AllLinks.csv
@@ -45,3 +45,4 @@ ANODEY,AllLinks.csv
 BNODEY,AllLinks.csv
 ANODEX,AllLinks.csv
 BNODEX,AllLinks.csv
+AZONE,AllLinks.csv
