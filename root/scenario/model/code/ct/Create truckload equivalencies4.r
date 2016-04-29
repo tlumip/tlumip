@@ -1,10 +1,6 @@
 # Convert FAF3 tons to trucks using Oak Ridge methdology in place of older 
 # Oregon-specific factors
-require(dplyr)
-require(stringr)
-require(data.table)
-require(reshape2)
-require(doParallel)
+require(dplyr); require(stringr); require(data.table); require(reshape2); require(doParallel)
 
 create_FAF_annual_truckloads <- function() {
     # Announce yourself and start. No random seed is passed, as everything here
@@ -130,8 +126,9 @@ create_FAF_annual_truckloads <- function() {
         # Create a separate record for the combined groups and merge with the
         # data from the flow record. Note that we drop the original value and
         # tons, as they are now split among the various loaded truck types.
-        loaded <- loaded %>% mutate(percent = annual_trucks/sum(annual_trucks),
-            tons = percent*tons, value = percent*value) %>% select(-percent)
+        loaded <- mutate(loaded, percent = annual_trucks/sum(annual_trucks),
+            tons = percent*tons, value = as.numeric(percent*value)) %>%
+            select(-percent)
         empty <- mutate(empty, tons=0.0, value=0.0)
         together <- rbind(loaded, empty) %>% filter(annual_trucks>0)
         # Add the SCTG code back in, as we will use that to merge the two tables
