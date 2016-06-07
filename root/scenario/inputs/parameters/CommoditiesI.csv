@@ -1,57 +1,57 @@
 Commodity,Number,BuyingDispersionParameter,SellingDispersionParameter,BuyingSizeCoefficient,BuyingPriceCoefficient,BuyingTransportCoefficient,SellingSizeCoefficient,SellingPriceCoefficient,SellingTransportCoefficient,InterchangeCoefficient1,InterchangeCoefficient2,InterchangeCoefficient3,InterchangeName1,InterchangeName2,InterchangeName3,ExchangeType,GOFWeighting,FloorspaceCommodity,ExpectedPrice,Units,ManualSizeTerms,Search
-SCTG01_FKP_LVSK,101,68.99778825,68.99778825,1,-1,2.85E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG02_FKP_AGRI_cereal,102,23.00337835,23.00337835,1,-1,0.000134375,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG03_FKP_AGRI_other,103,74.79868672,74.79868672,1,-1,4.86E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG04_FKP_FEED,104,36.9973849,23.24851165,1,-1,0.002568272,1,1,0.00018895,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG05_FKP_FOOD_meat,105,26.75682476,100,1,-1,0.002568272,1,1,3.05E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG06_FKP_AGRI_grain,106,27.18961426,100,1,-1,0.002568272,1,1,0.000154881,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG07_FKP_FOOD_prep,107,27.35677225,100,1,-1,0.002568272,1,1,4.68E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG08_FKP_FOOD_alc,108,27.65632472,31.80529896,1,-1,0.002568272,1,1,0.000197953,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG10_CMS_CLAY,110,21.82380006,21.82380006,1,-1,0.000706579,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG11_CMS_SAND,111,7.05739871,7.05739871,1,-1,0.002030271,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG13_CMS_MINE_nonmet,113,14.73894574,14.73894574,1,-1,0.000574161,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG14_CMS_MINE_met,114,61.2700712,61.2700712,1,-1,0.000139928,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG15_PCC_COAL,115,8.524472644,8.524472644,1,-1,0.000988249,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG16_PCC_PETR_crude,116,100,100,1,-1,5.72E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG17_PCC_FUEL,117,13.36430396,100,1,-1,0.005136545,1,1,7.42E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG18_PCC_PETR_oil,118,28.25536209,29.71536956,1,-1,0.002568272,1,1,0.000194455,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG19_PCC_COAL_prod,119,11.85443056,11.85443056,1,-1,0.00023957,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG20_PCC_CHEM_basic,120,9.909680012,9.909680012,1,-1,0.000379294,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG21_PCC_CHEM_pharma,121,26.77268493,16.68372649,1,-1,0.002568272,1,1,7.92E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG22_PCC_CHEM_fert,122,26.00917392,26.00917392,1,-1,0.000105957,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG23_PCC_CHEM_prod,123,28.2606988,78.86148836,1,-1,0.002568272,1,1,3.65E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG24_PCC_PETR_plast,124,68.74834362,68.74834362,1,-1,5.28E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG25_FWP_LOGS,125,35.62708051,35.62708051,1,-1,0.000241601,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG26_FWP_WOOD,126,29.58313807,29.58313807,1,-1,0.000125408,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG27_PPP_PAPR_puplp,127,92.39576724,92.39576724,1,-1,0.000144006,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG28_PPP_PAPR_paper,128,41.14231668,41.14231668,1,-1,0.000298769,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG29_PPP_PAPR_print,129,24.26853349,100,1,-1,0.002568272,1,1,4.47E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG30_OTH_CLTH,130,25.85158686,100,1,-1,0.002568272,1,1,1.35E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG31_CMS_MIN,131,16.594327,16.594327,1,-1,0.000421876,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG32_MIT_METL_base,132,48.0594385,48.0594385,1,-1,7.82E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG33_MIT_METL_prod,133,94.92926355,94.92926355,1,-1,4.13E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG34_MIT_MACH,134,100,100,1,-1,7.85E-06,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG35_MIT_ELCT,135,100,100,1,-1,1.24E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG36_MIT_TRAN,136,100,100,1,-1,0.000513654,1,1,2.99E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG37_MIT_INST_transp,137,100,100,1,-1,4.65E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG38_MIT_INST_prec,138,100,100,1,-1,1.95E-05,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG39_OTH_FURN,139,100,63.37568999,1,-1,0.000642068,1,1,7.98E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG40_OTH_MISC,140,25.35445582,100,1,-1,0.002568272,1,1,1.98E-05,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG41_WASTE_SCRAP,141,58.4197083,58.4197083,1,-1,0.000213297,1,1,0,-0.811180822,-0.233620077,-0.01,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG01_FKP_LVSK,101,68.99778825,68.99778825,1,-1,2.85E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG02_FKP_AGRI_cereal,102,23.00337835,23.00337835,1,-1,0.000134375,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG03_FKP_AGRI_other,103,74.79868672,74.79868672,1,-1,4.86E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG04_FKP_FEED,104,36.9973849,23.24851165,1,-1,0.002568272,1,1,0.00018895,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG05_FKP_FOOD_meat,105,26.75682476,100,1,-1,0.002568272,1,1,3.05E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG06_FKP_AGRI_grain,106,27.18961426,100,1,-1,0.002568272,1,1,0.000154881,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG07_FKP_FOOD_prep,107,27.35677225,100,1,-1,0.002568272,1,1,4.68E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG08_FKP_FOOD_alc,108,27.65632472,31.80529896,1,-1,0.002568272,1,1,0.000197953,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG10_CMS_CLAY,110,21.82380006,21.82380006,1,-1,0.000706579,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG11_CMS_SAND,111,7.05739871,7.05739871,1,-1,0.002030271,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG13_CMS_MINE_nonmet,113,14.73894574,14.73894574,1,-1,0.000574161,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG14_CMS_MINE_met,114,61.2700712,61.2700712,1,-1,0.000139928,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG15_PCC_COAL,115,8.524472644,8.524472644,1,-1,0.000988249,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG16_PCC_PETR_crude,116,100,100,1,-1,5.72E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG17_PCC_FUEL,117,13.36430396,100,1,-1,0.005136545,1,1,7.42E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG18_PCC_PETR_oil,118,28.25536209,29.71536956,1,-1,0.002568272,1,1,0.000194455,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG19_PCC_COAL_prod,119,11.85443056,11.85443056,1,-1,0.00023957,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG20_PCC_CHEM_basic,120,9.909680012,9.909680012,1,-1,0.000379294,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG21_PCC_CHEM_pharma,121,26.77268493,16.68372649,1,-1,0.002568272,1,1,7.92E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG22_PCC_CHEM_fert,122,26.00917392,26.00917392,1,-1,0.000105957,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG23_PCC_CHEM_prod,123,28.2606988,78.86148836,1,-1,0.002568272,1,1,3.65E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG24_PCC_PETR_plast,124,68.74834362,68.74834362,1,-1,5.28E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG25_FWP_LOGS,125,35.62708051,35.62708051,1,-1,0.000241601,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG26_FWP_WOOD,126,29.58313807,29.58313807,1,-1,0.000125408,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG27_PPP_PAPR_puplp,127,92.39576724,92.39576724,1,-1,0.000144006,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG28_PPP_PAPR_paper,128,41.14231668,41.14231668,1,-1,0.000298769,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG29_PPP_PAPR_print,129,24.26853349,100,1,-1,0.002568272,1,1,4.47E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG30_OTH_CLTH,130,25.85158686,100,1,-1,0.002568272,1,1,1.35E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG31_CMS_MIN,131,16.594327,16.594327,1,-1,0.000421876,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG32_MIT_METL_base,132,48.0594385,48.0594385,1,-1,7.82E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG33_MIT_METL_prod,133,94.92926355,94.92926355,1,-1,4.13E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG34_MIT_MACH,134,100,100,1,-1,7.85E-06,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG35_MIT_ELCT,135,100,100,1,-1,1.24E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG36_MIT_TRAN,136,100,100,1,-1,0.000513654,1,1,2.99E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG37_MIT_INST_transp,137,100,100,1,-1,4.65E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG38_MIT_INST_prec,138,100,100,1,-1,1.95E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
+SCTG39_OTH_FURN,139,100,63.37568999,1,-1,0.000642068,1,1,7.98E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG40_OTH_MISC,140,25.35445582,100,1,-1,0.002568272,1,1,1.98E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
+SCTG41_WASTE_SCRAP,141,58.4197083,58.4197083,1,-1,0.000213297,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
 Energy,142,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 Retail Trade,143,29.71910158,29.71910158,1,-1,0.043213922,1,1,0,4.273504274,0,0,s4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Transport,144,100,100,1,-1,0.001577142,1,1,0,-0.2869496,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Wholesale Trade,145,100,100,1,-1,0.001577142,1,1,0,-0.3663225,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Construction,146,100,100,1,-1,0,1,1,0.001577142,-0.1472195,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
-Communications and Utilities,147,48.24131425,48.24131425,1,-1,0.001577142,1,1,0,-0.2348265,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Accommodations,148,100,100,1,-1,0.001577142,1,1,0,-0.2074261,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
+Transport,144,100,100,1,-1,0.001577142,1,1,0,-0.2869496,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
+Wholesale Trade,145,100,100,1,-1,0.001577142,1,1,0,-0.3663225,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
+Construction,146,100,100,1,-1,0,1,1,0.001577142,-0.1472195,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
+Communications and Utilities,147,48.24131425,48.24131425,1,-1,0.001577142,1,1,0,-0.2348265,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
+Accommodations,148,100,100,1,-1,0.001577142,1,1,0,-0.2074261,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
 Personal and Other Services and Amusements,149,33.9308598,33.9308598,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Entertainment Services,150,5,5,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Food Services,151,30.375,30.375,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Teaching K12,152,91.125,91.125,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Higher Education,153,45.5625,45.5625,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Health Services,154,100,100,1,-1,0.018425305,1,1,0,4.273504274,0,0,o4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Fire Business and Professional Services,155,100,100,1,-1,0,1,1,0.001577142,-0.2847265,-0.1209223,-0.01,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
+Fire Business and Professional Services,155,100,100,1,-1,0,1,1,0.001577142,-0.2847265,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
 Government Administration,156,100,100,1,-1,0.001577,1,1,0,3.205128,0,0,b4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Resources,157,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 Internal Services Energy,158,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
@@ -70,7 +70,7 @@ Investing Receipts,303,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,F
 Return Investment Receipts,304,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Capital Transfer Receipts,305,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 Education Reports to Sponsors,306,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-Proprietor Income Receipts,307,100,100,1,-1,0,1,1,0,1,1,1,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
+Proprietor Income Receipts,307,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
 A1-Mgmt Bus,401,62.58421848,62.58421848,1,-1,0,1,1,0.0040304,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 B1-Prof Specialty,402,56.20690455,56.20690455,1,-1,0,1,1,0.0040319,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
 B2-Education,403,59.60637395,59.60637395,1,-1,0,1,1,0.0056716,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
