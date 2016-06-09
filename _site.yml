@@ -1,9 +1,24 @@
 name: "SWIM-TLUMIP"
+output_dir: "."
 navbar:
   title: "SWIM-TLUMIP"
   left:
-    - text: "Home"
-      href: index.html
-    - text: "About"
-      href: about.html
-      
+    - text: Acceptance Testing
+      menu:
+        - text: "Reference Scenario"
+          href: Reference.html
+  right:
+    - text: "User's Guide"
+      href: https://github.com/pbsag/tlumip/wiki
+    - icon: fa-github fa-lg
+      href: https://github.com/pbsag/tlumip
+output:
+  html_document:
+    theme: flatly
+    highlight: tango
+    mathjax: null
+    toc_float:
+      collapsed: false
+    includes:
+        after_body: include/after_body.html
+    css: styles.css
