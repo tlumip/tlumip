@@ -1,0 +1,9 @@
+name: "SWIM-TLUMIP"
+navbar:
+  title: "SWIM-TLUMIP"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+      
