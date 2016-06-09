@@ -36,7 +36,7 @@ navbar:
       href: https://github.com/pbsag/tlumip
 output:
   html_document:
-    theme: flatly
+    theme: yeti
     highlight: tango
     mathjax: null
     toc_float:
