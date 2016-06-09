@@ -1,0 +1,283 @@
+---
+title: "Reference Scenario"
+author: "Parsons Brinckerhoff"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:  html_document
+---
+
+```{r setup, echo = FALSE, message=FALSE, warning = FALSE}
+library(knitr)
+opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE,
+  fig.width=8, fig.height=6, error = TRUE
+)
+
+library(swimr)
+```
+
+```{r setdb}
+# This is the path to the scenario SWIM databases; direct these to your
+# local paths.
+db_path <- "../data/Reference.db"
+db <- src_sqlite(db_path)
+scenario_name <- "Reference"
+
+# Update to reflect scope of analysis.
+# If you wish to focus on the Metro and Bend MPOs, for instance, change `facet`
+# to "MPO" and facet_levels to `c("Metro", "Bend")`
+facet <- "COUNTY" 
+facet_levels <-  c("Multnomah", "Washington", "Clackamas")
+
+# The tables will only show data from these years.
+years <- c(2010, 2016, 2022)
+
+# The leaflet plots show a comparison between the scenarios in a specific year.
+# Set this to the year you wish to study.
+diff_year <- 2012 
+
+# show leaflet plots; FALSE will skip them (saving disk space and time)
+use_leaflet <- FALSE
+```
+
+
+
+# Scenario Description 
+
+
+```{r scenario, results='asis'}
+# update to reflect current scenario
+scen_info <- data_frame(
+  Name = basename(db_path),
+  Scenario = scenario_name,
+  `File date` = file.info(db_path)$mtime
+)
+
+kable(scen_info, caption = "Scenario Information")
+```
+
+# Socioeconomics {.tabset}
+
+## Population 
+
+```{r leaflet, fig.cap="Change in socioeconomic data over model run."}
+if(use_leaflet){
+  change_leaflet(db, year1 = 2010, year2 = 2040)
+} else {
+  print("Leaflet plots skipped with `use_leaflet` option")
+}
+```
+
+```{r se}
+se <- extract_se(db, "MPO") %>%
+  filter(year %in% years)
+```
+
+```{r tab_pop, results='asis'}
+pop <- se %>% filter(var == "population") %>%
+  yearly_summary(group = "MPO", var = "y")
+
+kable(pop, caption = "Population by MPO", digits = 2)
+```
+
+
+## Employment
+```{r tab_emp, results='asis'}
+emp <- se %>% filter(var == "employment") %>%
+  yearly_summary(group = "MPO", var = "y")
+
+kable(emp, caption = "Employment by MPO", digits = 2)
+```
+
+
+```{r plot_se, fig.cap="Population and employment in selected areas."}
+plot_sevar(db, facet, facet_levels)
+```
+
+```{r plot_se_index, fig.cap="Indexed Population and employment in selected areas."}
+plot_sevar(db, facet, facet_levels, index = TRUE)
+```
+
+```{r plot_se_mpo, fig.cap="Population and employment - all MPOs."}
+plot_sevar(db, "MPO")
+```
+
+```{r plot_se_mpo_index, fig.cap="Indexed population and employment - all MPOs."}
+plot_sevar(db, "MPO", index = TRUE)
+```
+
+## Historical Trends
+```{r plot_history, fig.cap="Historical population trends in selected areas."}
+plot_history(db, facet_levels)
+```
+
+
+# Transportation {.tabset}
+
+## Link Validation
+```{r plot_validation, fig.cap="Link Validation"}
+plot_countcomparison(db)
+```
+
+```{r plot_facility_validation, fig.cap = "Link Validation by Facility Type"}
+plot_countcomparison(db) + facet_wrap(~ FacType, scales = "free")
+```
+
+```{r plot_historical_atr, fig.cap="AAWDT count and projection at selected ATR locations"}
+plot_traffic_count(db, atr = c(3011, 10006, 3013, 34009, 24022, 
+                               15020, 3018, 10008, 18018, 21006))
+```
+
+
+## VMT
+
+```{r tab_vmt}
+vmt <- extract_vmt(db, "MPO", index = FALSE) %>%
+  filter(year %in% years) %>%
+  group_by(year, MPO) %>%
+  summarise(vmt = sum(vmt)) %>%
+  yearly_summary("MPO", "vmt")
+
+kable(vmt, caption = "VMT by MPO", digits = 2)
+```
+
+
+```{r plot_vmt, fig.cap="VMT by facility type."}
+plot_vmt(db, facet, facet_levels, index = FALSE)
+```
+
+```{r plot_vmt_index, fig.cap="Indexed VMT by facility type."}
+plot_vmt(db, facet, facet_levels)
+```
+
+```{r plot_vmt_mpo, fig.cap="VMT by facility type - all MPO's."}
+plot_vmt(db, "MPO")
+```
+
+
+
+## Mode Split
+```{r tab_trips, results='asis'}
+trips <- extract_trips(db, "MPO") %>%
+  filter(year %in% years) %>%
+  group_by(year, facet_var) %>%
+  summarise(trips = sum(trips)) %>%
+  yearly_summary("facet_var", "trips")
+
+kable(trips, caption = "Total Trips by MPO", digits = 2)
+```
+
+```{r tab_trips_mpo, results='asis'}
+tab_mode <- extract_trips(db, "MPO", facet_levels = c("Metro", "OOO")) %>%
+  filter(year %in% years) %>%
+  filter(facet_var == "Metro") %>%
+  group_by(year, mode) %>%
+  summarise(trips = sum(trips)) %>%
+  yearly_summary("mode", "trips")
+
+kable(tab_mode, caption = "Metro MPO Trips by Mode", digits = 2)
+```
+
+```{r mode_share, fig.cap="Share of trips produced by mode"}
+plot_trips(db, facet, facet_levels, share = TRUE)
+```
+
+```{r mode_share_mpo, fig.cap="Share of trips produced by mode - all MPOs"}
+plot_trips(db,  share = TRUE)
+```
+
+```{r mode_vol, fig.cap="Total trips produced by mode."}
+plot_trips(db, facet, facet_levels, share = FALSE)
+```
+
+```{r mode_vol_mpo, fig.cap="Total trips produced by mode - all MPOs"}
+plot_trips(db, share = FALSE)
+```
+
+
+
+## TLFD
+
+```{r plot_tlfd, fig.cap = "Trip length frequency distribution."}
+plot_tlfd(db, facet, facet_levels)
+```
+
+```{r plot_tlfd_cum, fig.cap = "Cumulative trip length frequency distribution."}
+plot_tlfd(db, facet, facet_levels, cumulative = TRUE)
+```
+
+```{r plot_tlfd_mpo, fig.cap = "Trip length frequency distribution - all MPO's."}
+plot_tlfd(db, "MPO", c("Bend", "Corvallis", "EugeneSpringfield",
+                       "Metro", "NonMPO", "RogueValley", "SalemKeizer"))
+```
+
+## Log Sums
+```{r plot_logsum, fig.cap = "Destination choice model logsums."}
+plot_logsums(db, facet, facet_levels)
+```
+
+```{r plot_logsum_mpo, fig.cap = "Destination choice model logsums - all MPO's"}
+plot_logsums(db, "MPO", c("Bend", "Corvallis", "EugeneSpringfield",
+                       "Metro", "NonMPO", "RogueValley", "SalemKeizer"))
+```
+
+
+# Economics{.tabset}
+
+## Built Floorspace
+```{r plot_floorspace, fig.cap="Floorspace by type."}
+plot_floorspace(db, facet, facet_levels)
+```
+
+```{r plot_floorspace_mpo, fig.cap="Floorspace by type - all MPO's."}
+plot_floorspace(db)
+```
+
+## Rent and Occupancy Rate
+```{r plot_rent, fig.cap = "Unit rent by floorspace type."}
+plot_floorspace(db, facet, facet_levels, price = TRUE)
+```
+
+```{r plot_rent_mpo, fig.cap = "Unit rent by floorspace type - all MPO's"}
+plot_floorspace(db, price = TRUE)
+```
+
+```{r plot_occupancy, fig.cap = "Occupancy rate by floorspace type."}
+plot_occupancy(db, facet, facet_levels)
+```
+
+```{r plot_occupancy_mpo, fig.cap = "Occupancy rate by floorspace type - all MPO's"}
+plot_occupancy(db)
+```
+
+
+## Employment
+
+```{r plot_employment, fig.cap="Labor output by sector."}
+plot_employment(db, facet, facet_levels)
+```
+
+```{r plot_employment_mpo, fig.cap="Labor output by sector - all MPO's."}
+plot_employment(db)
+```
+
+## Labor Output
+
+```{r plot_gdp, fig.cap="Comparison of labor output by sector."}
+plot_gdp(db, facet, facet_levels)
+```
+
+```{r plot_gdp_mpo, fig.cap="Comparison of labor output by sector - all MPO's."}
+plot_gdp(db)
+```
+
+## Labor Force Participation
+
+Specifically, the ratio of workers to individuals 15 or older.
+
+```{r plot_wapr, fig.cap = "Workforce participation."}
+plot_wapr(db, facet, facet_levels)
+```
+
+```{r plot_wapr_mpo, fig.cap = "Workforce participation."}
+plot_wapr(db, "MPO")
+```

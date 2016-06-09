@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Parsons Brinckerhoff" />
+
+
+<title>Reference Scenario</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 45px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+
+.section h2 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h3 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h4 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h5 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+.section h6 {
+  padding-top: 50px;
+  margin-top: -50px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.0/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+  padding-left: 10px;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">SWIM-TLUMIP</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Acceptance Testing
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="Reference.html">Reference Scenario</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Broken Bridge Scenario</li>
+    <li>
+      <a href="Bridge_1yr.html">One-year Bridge</a>
+    </li>
+    <li>
+      <a href="Bridge_2yr.html">Two-year Bridge</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Alternate Economic Futures</li>
+    <li>
+      <a href="Optimistic.html">Optimistic</a>
+    </li>
+    <li>
+      <a href="Pessimistic.html">Pessimistic</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Multifamily Development</li>
+    <li>
+      <a href="Multifamily.html">Multifamily</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Tolling</li>
+    <li>
+      <a href="salem_tolls.html">Tolls on I-5 between Salem and Portland</a>
+    </li>
+    <li>
+      <a href="columbia_tolls.html">Tolls on I-5 across Columbia River</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/pbsag/tlumip/wiki">User's Guide</a>
+</li>
+<li>
+  <a href="https://github.com/pbsag/tlumip">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Reference Scenario</h1>
+<h4 class="author"><em>Parsons Brinckerhoff</em></h4>
+<h4 class="date"><em>09 June, 2016</em></h4>
+
+</div>
+
+
+<div id="scenario-description" class="section level1">
+<h1>Scenario Description</h1>
+<table>
+<caption>Scenario Information</caption>
+<thead>
+<tr class="header">
+<th align="left">Name</th>
+<th align="left">Scenario</th>
+<th align="left">File date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Reference.db</td>
+<td align="left">Reference</td>
+<td align="left">2016-03-06 00:04:47</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="socioeconomics" class="section level1 tabset">
+<h1>Socioeconomics</h1>
+<div id="population" class="section level2">
+<h2>Population</h2>
+<pre><code>## [1] &quot;Leaflet plots skipped with `use_leaflet` option&quot;</code></pre>
+<table>
+<caption>Population by MPO</caption>
+<thead>
+<tr class="header">
+<th align="left">MPO</th>
+<th align="right">2010</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Bend</td>
+<td align="right">90555</td>
+</tr>
+<tr class="even">
+<td align="left">Corvallis</td>
+<td align="right">79007</td>
+</tr>
+<tr class="odd">
+<td align="left">EugeneSpringfield</td>
+<td align="right">266221</td>
+</tr>
+<tr class="even">
+<td align="left">Metro</td>
+<td align="right">2098551</td>
+</tr>
+<tr class="odd">
+<td align="left">NonMPO</td>
+<td align="right">1345033</td>
+</tr>
+<tr class="even">
+<td align="left">OOO</td>
+<td align="right">2047328</td>
+</tr>
+<tr class="odd">
+<td align="left">RogueValley</td>
+<td align="right">174222</td>
+</tr>
+<tr class="even">
+<td align="left">SalemKeizer</td>
+<td align="right">245309</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="employment" class="section level2">
+<h2>Employment</h2>
+<table>
+<caption>Employment by MPO</caption>
+<thead>
+<tr class="header">
+<th align="left">MPO</th>
+<th align="right">2010</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Bend</td>
+<td align="right">50760</td>
+</tr>
+<tr class="even">
+<td align="left">Corvallis</td>
+<td align="right">39007</td>
+</tr>
+<tr class="odd">
+<td align="left">EugeneSpringfield</td>
+<td align="right">139201</td>
+</tr>
+<tr class="even">
+<td align="left">Metro</td>
+<td align="right">1148060</td>
+</tr>
+<tr class="odd">
+<td align="left">NonMPO</td>
+<td align="right">449316</td>
+</tr>
+<tr class="even">
+<td align="left">OOO</td>
+<td align="right">952074</td>
+</tr>
+<tr class="odd">
+<td align="left">RogueValley</td>
+<td align="right">100308</td>
+</tr>
+<tr class="even">
+<td align="left">SalemKeizer</td>
+<td align="right">123335</td>
+</tr>
+</tbody>
+</table>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_se-1.png" alt="Population and employment in selected areas." width="768" />
+<p class="caption">
+Population and employment in selected areas.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_se_index-1.png" alt="Indexed Population and employment in selected areas." width="768" />
+<p class="caption">
+Indexed Population and employment in selected areas.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_se_mpo-1.png" alt="Population and employment - all MPOs." width="768" />
+<p class="caption">
+Population and employment - all MPOs.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_se_mpo_index-1.png" alt="Indexed population and employment - all MPOs." width="768" />
+<p class="caption">
+Indexed population and employment - all MPOs.
+</p>
+</div>
+</div>
+<div id="historical-trends" class="section level2">
+<h2>Historical Trends</h2>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_history-1.png" alt="Historical population trends in selected areas." width="768" />
+<p class="caption">
+Historical population trends in selected areas.
+</p>
+</div>
+</div>
+</div>
+<div id="transportation" class="section level1 tabset">
+<h1>Transportation</h1>
+<div id="link-validation" class="section level2">
+<h2>Link Validation</h2>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_validation-1.png" alt="Link Validation" width="768" />
+<p class="caption">
+Link Validation
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_facility_validation-1.png" alt="Link Validation by Facility Type" width="768" />
+<p class="caption">
+Link Validation by Facility Type
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_historical_atr-1.png" alt="AAWDT count and projection at selected ATR locations" width="768" />
+<p class="caption">
+AAWDT count and projection at selected ATR locations
+</p>
+</div>
+</div>
+<div id="vmt" class="section level2">
+<h2>VMT</h2>
+<table>
+<caption>VMT by MPO</caption>
+<thead>
+<tr class="header">
+<th align="left">MPO</th>
+<th align="right">2010</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Bend</td>
+<td align="right">1080040.18</td>
+</tr>
+<tr class="even">
+<td align="left">Corvallis</td>
+<td align="right">1307628.06</td>
+</tr>
+<tr class="odd">
+<td align="left">EugeneSpringfield</td>
+<td align="right">5054329.32</td>
+</tr>
+<tr class="even">
+<td align="left">EXTSTA</td>
+<td align="right">62883.91</td>
+</tr>
+<tr class="odd">
+<td align="left">Metro</td>
+<td align="right">40302826.87</td>
+</tr>
+<tr class="even">
+<td align="left">NonMPO</td>
+<td align="right">54878472.67</td>
+</tr>
+<tr class="odd">
+<td align="left">OOO</td>
+<td align="right">35560169.93</td>
+</tr>
+<tr class="even">
+<td align="left">RogueValley</td>
+<td align="right">3137277.65</td>
+</tr>
+<tr class="odd">
+<td align="left">SalemKeizer</td>
+<td align="right">5326077.18</td>
+</tr>
+</tbody>
+</table>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_vmt-1.png" alt="VMT by facility type." width="768" />
+<p class="caption">
+VMT by facility type.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_vmt_index-1.png" alt="Indexed VMT by facility type." width="768" />
+<p class="caption">
+Indexed VMT by facility type.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_vmt_mpo-1.png" alt="VMT by facility type - all MPO's." width="768" />
+<p class="caption">
+VMT by facility type - all MPO’s.
+</p>
+</div>
+</div>
+<div id="mode-split" class="section level2">
+<h2>Mode Split</h2>
+<table>
+<caption>Total Trips by MPO</caption>
+<thead>
+<tr class="header">
+<th align="left">facet_var</th>
+<th align="right">2010</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Bend</td>
+<td align="right">263380.35</td>
+</tr>
+<tr class="even">
+<td align="left">Corvallis</td>
+<td align="right">212326.33</td>
+</tr>
+<tr class="odd">
+<td align="left">EugeneSpringfield</td>
+<td align="right">758584.63</td>
+</tr>
+<tr class="even">
+<td align="left">EXTSTA</td>
+<td align="right">44821.62</td>
+</tr>
+<tr class="odd">
+<td align="left">Metro</td>
+<td align="right">5550132.99</td>
+</tr>
+<tr class="even">
+<td align="left">NonMPO</td>
+<td align="right">2990934.48</td>
+</tr>
+<tr class="odd">
+<td align="left">OOO</td>
+<td align="right">4456091.12</td>
+</tr>
+<tr class="even">
+<td align="left">RogueValley</td>
+<td align="right">504140.57</td>
+</tr>
+<tr class="odd">
+<td align="left">SalemKeizer</td>
+<td align="right">673211.67</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Metro MPO Trips by Mode</caption>
+<thead>
+<tr class="header">
+<th align="left">mode</th>
+<th align="right">2010</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">auto</td>
+<td align="right">4528878</td>
+</tr>
+<tr class="even">
+<td align="left">non-motorized</td>
+<td align="right">463453</td>
+</tr>
+<tr class="odd">
+<td align="left">transit</td>
+<td align="right">229200</td>
+</tr>
+<tr class="even">
+<td align="left">truck</td>
+<td align="right">328602</td>
+</tr>
+</tbody>
+</table>
+<div class="figure">
+<img src="Reference_files/figure-html/mode_share-1.png" alt="Share of trips produced by mode" width="768" />
+<p class="caption">
+Share of trips produced by mode
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/mode_share_mpo-1.png" alt="Share of trips produced by mode - all MPOs" width="768" />
+<p class="caption">
+Share of trips produced by mode - all MPOs
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/mode_vol-1.png" alt="Total trips produced by mode." width="768" />
+<p class="caption">
+Total trips produced by mode.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/mode_vol_mpo-1.png" alt="Total trips produced by mode - all MPOs" width="768" />
+<p class="caption">
+Total trips produced by mode - all MPOs
+</p>
+</div>
+</div>
+<div id="tlfd" class="section level2">
+<h2>TLFD</h2>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_tlfd-1.png" alt="Trip length frequency distribution." width="768" />
+<p class="caption">
+Trip length frequency distribution.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_tlfd_cum-1.png" alt="Cumulative trip length frequency distribution." width="768" />
+<p class="caption">
+Cumulative trip length frequency distribution.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_tlfd_mpo-1.png" alt="Trip length frequency distribution - all MPO's." width="768" />
+<p class="caption">
+Trip length frequency distribution - all MPO’s.
+</p>
+</div>
+</div>
+<div id="log-sums" class="section level2">
+<h2>Log Sums</h2>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_logsum-1.png" alt="Destination choice model logsums." width="768" />
+<p class="caption">
+Destination choice model logsums.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_logsum_mpo-1.png" alt="Destination choice model logsums - all MPO's" width="768" />
+<p class="caption">
+Destination choice model logsums - all MPO’s
+</p>
+</div>
+</div>
+</div>
+<div id="economics" class="section level1 tabset">
+<h1>Economics</h1>
+<div id="built-floorspace" class="section level2">
+<h2>Built Floorspace</h2>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_floorspace-1.png" alt="Floorspace by type." width="768" />
+<p class="caption">
+Floorspace by type.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_floorspace_mpo-1.png" alt="Floorspace by type - all MPO's." width="768" />
+<p class="caption">
+Floorspace by type - all MPO’s.
+</p>
+</div>
+</div>
+<div id="rent-and-occupancy-rate" class="section level2">
+<h2>Rent and Occupancy Rate</h2>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_rent-1.png" alt="Unit rent by floorspace type." width="768" />
+<p class="caption">
+Unit rent by floorspace type.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_rent_mpo-1.png" alt="Unit rent by floorspace type - all MPO's" width="768" />
+<p class="caption">
+Unit rent by floorspace type - all MPO’s
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_occupancy-1.png" alt="Occupancy rate by floorspace type." width="768" />
+<p class="caption">
+Occupancy rate by floorspace type.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_occupancy_mpo-1.png" alt="Occupancy rate by floorspace type - all MPO's" width="768" />
+<p class="caption">
+Occupancy rate by floorspace type - all MPO’s
+</p>
+</div>
+</div>
+<div id="employment-1" class="section level2">
+<h2>Employment</h2>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_employment-1.png" alt="Labor output by sector." width="768" />
+<p class="caption">
+Labor output by sector.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_employment_mpo-1.png" alt="Labor output by sector - all MPO's." width="768" />
+<p class="caption">
+Labor output by sector - all MPO’s.
+</p>
+</div>
+</div>
+<div id="labor-output" class="section level2">
+<h2>Labor Output</h2>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_gdp-1.png" alt="Comparison of labor output by sector." width="768" />
+<p class="caption">
+Comparison of labor output by sector.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_gdp_mpo-1.png" alt="Comparison of labor output by sector - all MPO's." width="768" />
+<p class="caption">
+Comparison of labor output by sector - all MPO’s.
+</p>
+</div>
+</div>
+<div id="labor-force-participation" class="section level2">
+<h2>Labor Force Participation</h2>
+<p>Specifically, the ratio of workers to individuals 15 or older.</p>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_wapr-1.png" alt="Workforce participation." width="768" />
+<p class="caption">
+Workforce participation.
+</p>
+</div>
+<div class="figure">
+<img src="Reference_files/figure-html/plot_wapr_mpo-1.png" alt="Workforce participation." width="768" />
+<p class="caption">
+Workforce participation.
+</p>
+</div>
+</div>
+</div>
+
+<br>
+<br>
+<br>
+<hr>
+<p><a href="http://pbsag.github.io/">Systems Analysis Group</a>,
+  WSP | Parsons Brinckerhoff 2016</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+
+</body>
+</html>
