@@ -7,6 +7,28 @@ navbar:
       menu:
         - text: "Reference Scenario"
           href: Reference.html
+        - text: "-----------------"
+        - text: "Broken Bridge Scenario"
+        - text: "One-year Bridge"
+          href: Bridge_1yr.html
+        - text: "Two-year Bridge"
+          href: Bridge_2yr.html
+        - text: "-----------------"
+        - text: "Alternate Economic Futures"
+        - text: "Optimistic"
+          href: Optimistic.html
+        - text: "Pessimistic"
+          href: Pessimistic.html
+        - text: "-----------------"
+        - text: "Multifamily Development"
+        - text: "Multifamily"
+          href: Multifamily.html
+        - text: "-----------------"
+        - text: "Tolling"
+        - text: "Tolls on I-5 between Salem and Portland"
+          href: salem_tolls.html
+        - text: "Tolls on I-5 across Columbia River"
+          href: columbia_tolls.html
   right:
     - text: "User's Guide"
       href: https://github.com/pbsag/tlumip/wiki
