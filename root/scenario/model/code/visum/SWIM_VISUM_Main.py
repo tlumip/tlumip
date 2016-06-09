@@ -74,6 +74,9 @@ walkSpeed = 3
 #intercity transit fare function
 intercityTransitFareFuncParams = [1.969,-0.4994]
 
+#countlocations file name
+countLocationsFileName = "countlocations.csv"
+
 class SwimModel(object):
 
     def __init__(self,property_file):
@@ -678,7 +681,15 @@ class SwimModel(object):
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Links, self.field))
 
             self.writeCSV(fileName, self.stringConcatenate(data, False))
-
+        
+        #write SWIM VIZDB count locations
+        print('Create SWIM count locations for Viz')
+        data = list()
+        fieldNames = map(lambda x: x.ID, Visum.Net.CountLocations.Attributes.GetAll)
+        data.insert(0, fieldNames) #add headers
+        for aField in fieldNames:
+            data.append(VisumHelpers.GetMulti(self.Visum.Net.CountLocations, aField))
+        self.writeCSV(countLocationsFileName, self.stringConcatenate(data, False))
 
     #read matrices in Python and then insert into Visum
     def insertMatrixInVisum(self, ODmode, start, end):

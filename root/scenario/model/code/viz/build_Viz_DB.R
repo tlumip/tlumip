@@ -1054,6 +1054,14 @@ colnames(links) = toupper(colnames(links))
 dbWriteTable(db, "LINK_DATA", links, row.names=F)
 
 #########################################################################
+#Read Count locations Table
+#########################################################################
+
+countlocations = read.csv("CountLocations.csv")
+colnames(countlocations) = toupper(colnames(countlocations))
+dbWriteTable(db, "COUNTLOCATIONS", countlocations, row.names=F)
+
+#########################################################################
 #Close and compact database
 #########################################################################
 

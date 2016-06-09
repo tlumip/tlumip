@@ -133,13 +133,13 @@ for(i in 1:length(tsteps)) {
       tableData = dbGetQuery(tdb, query)
       
       #add TSTEP field
-      if(!(tableName=="ALLZONES" | tableName=="BZONE")) { #skip since not by year
+      if(!(tableName=="ALLZONES" | tableName=="BZONE" | tableName=="COUNTLOCATIONS")) { #skip since not by year
         tableData$TSTEP = tsteps[i]
       }
       
       #write table to DB
       if(dbExistsTable(db, tableName)){
-        if(!(tableName=="ALLZONES" | tableName=="BZONE")) { #skip since not by year
+        if(!(tableName=="ALLZONES" | tableName=="BZONE" | tableName=="COUNTLOCATIONS")) { #skip since not by year
           
           #add missing fields if needed and reorder columns
           targetTableData = dbGetQuery(db, paste("SELECT * FROM", tableName, "LIMIT 1")) #to get structure
