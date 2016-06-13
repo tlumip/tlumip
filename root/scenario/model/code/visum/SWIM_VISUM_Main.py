@@ -613,7 +613,7 @@ class SwimModel(object):
       if "AZONE" not in udaNames:
         self.Visum.Net.Links.AddUserDefinedAttribute("AZONE","AZONE","AZONE",2,3) #1=int, 2=float, 5=text
     
-      #assign each node to a zone and then select zone for closest ANODE or BNODE of link      
+      #assign each node to a zone and then select zone for closest ANODE or BNODE of link
       zone_no     = VisumHelpers.GetMulti(self.Visum.Net.Zones, "NO")
       zone_xcoord = VisumHelpers.GetMulti(self.Visum.Net.Zones, "XCOORD")
       zone_ycoord = VisumHelpers.GetMulti(self.Visum.Net.Zones, "YCOORD")
@@ -1646,7 +1646,7 @@ if __name__== "__main__":
         s.saveVersion()
         s.closeVisum()
 
-        #delete other period skims in the output version files since the procedure accumulates 
+        #delete other period skims in the output version files since the procedure accumulates
         #the skims from each time period (i.e. the fourth assignment has four sets of skims)
         savedVersionFileNames = ["OP_PATHS.ver","PM_PATHS.ver","NT_PATHS.ver"] #in par file
         for i in range(len(savedVersionFileNames)):
