@@ -685,7 +685,7 @@ class SwimModel(object):
         #write SWIM VIZDB count locations
         print('Create SWIM count locations for Viz')
         data = list()
-        fieldNames = map(lambda x: x.ID, Visum.Net.CountLocations.Attributes.GetAll)
+        fieldNames = map(lambda x: x.ID, self.Visum.Net.CountLocations.Attributes.GetAll)
         data.insert(0, fieldNames) #add headers
         for aField in fieldNames:
             data.append(VisumHelpers.GetMulti(self.Visum.Net.CountLocations, aField))
