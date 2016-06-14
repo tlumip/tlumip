@@ -118,8 +118,6 @@ class SwimModel(object):
         self.transitSkimMatrixNames = properties['tr.skim.matrix.names']
         self.losInfo = properties['ta.los.info']
         self.synpopFile = properties['spg2.current.synpop.summary']
-        self.pythonDependencyDir = properties['ta.dependent.python.directory']
-        self.pythonDependencies = eval(properties['ta.dependent.python.files'].strip())
         self.lastTRansit_path = properties['transit.assign.previous.skim.path']
         self.currentTRansit_path = properties['transitSkims.directory']
         self.fareZoneFares = properties['fareZoneFares.file']
@@ -173,17 +171,12 @@ class SwimModel(object):
             "wholesale_trade_expt",
             "wholesale_trade_impt"]
 
-
         os.chdir(self.path)
 
     def copyAirSkims(self):
         for air_skim in self.air_skims:
             air_skim += ".zmx"
             shutil.copy(os.path.join(self.air_skims_directory,air_skim),os.path.join(self.currentTRansit_path,air_skim))
-
-    def copyDependencies(self):
-        for python_dependency in self.pythonDependencies:
-            shutil.copy(os.path.join(self.pythonDependencyDir,python_dependency),os.path.join(self.path,python_dependency))
 
     def copyVersion(self):
 
@@ -1576,7 +1569,6 @@ if __name__== "__main__":
     ######################################################
     if mode == 'inputs':
         s.copyVersion()
-        s.copyDependencies()
         if s.reSeedMatrices == 'True':
             #Auto seed skims
             s.startVisum()
