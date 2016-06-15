@@ -678,9 +678,8 @@ class SwimModel(object):
         #write SWIM VIZDB count locations
         print('Create SWIM count locations for Viz')
         data = list()
-        fieldNames = map(lambda x: x.ID, self.Visum.Net.CountLocations.Attributes.GetAll)
-        data.insert(0, fieldNames) #add headers
-        for aField in fieldNames:
+        self.fields = map(lambda x: x.ID, self.Visum.Net.CountLocations.Attributes.GetAll)
+        for aField in self.fields: # self.fields required by stringConcatenate 
             data.append(VisumHelpers.GetMulti(self.Visum.Net.CountLocations, aField))
         self.writeCSV(countLocationsFileName, self.stringConcatenate(data, False))
 
