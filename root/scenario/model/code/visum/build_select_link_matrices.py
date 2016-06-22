@@ -38,10 +38,7 @@ from __future__ import with_statement
 # crf - 4/2013
 ##################################################
 
-#VISUM program version
-programVersion = '14'
-
-import os,csv,sys,gc,time,threading
+import os,csv,sys,gc,time,threading,datetime
 import pythoncom
 import win32com.client as com
 import VisumPy.helpers
@@ -67,7 +64,7 @@ with open(select_link_file,'rb') as f:
 
 def loadVersion(version_file):
     #Start Visum and load file
-    Visum = com.Dispatch('visum.visum.'+programVersion)
+    Visum = com.Dispatch('visum.visum')
     Visum.LoadVersion(version_file)
     return Visum
     
@@ -163,7 +160,9 @@ class FbThread(threading.Thread):
                     activity_type_z.Add(2)
                     fb.CreateCondition(dzone,activity_type_z)
                     fb.ExecuteCurrentConditions()
-                fb.Save(fb_matrix,'O')
+
+                mtx = fb.GetOrCreateFlowBundleMatrix(self.dseg)  # flow bundle as an IMatrix object
+                mtx.Save(fb_matrix,'O')
                 fb.Clear()
                 del fb
                 del netElem
@@ -177,7 +176,8 @@ class FbThread(threading.Thread):
                     row['STATIONNUMBER'] = ft_node['STATIONNUMBER']
                     trips = total_trips[self.dseg]
                     header = True
-                    header_end = '* Flow bundle matrix'
+                    date_today = datetime.datetime.now().strftime("%m/%d/%y")
+                    header_end = '* ' + date_today # format example: '* 05/31/16'
                     print "  reading in fb matrix data"
                     line_count = 0
                     for line in open(fb_matrix,'rb'):
