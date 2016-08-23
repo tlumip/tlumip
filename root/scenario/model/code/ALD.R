@@ -169,7 +169,19 @@
         Activity.RgFc[,"nres"], ActivityChange.RgFc[,"nres"], nres_$Cf_[["B5v"]], 
         nres_$Cf_[["B6v"]], nres_$Cf_[["B7v"]], nres_$Cf_[["B8v"]], nres_$Asc4.Rg)
 
-
+    # Adjust NED construction dollars
+    # NED provides total construction sector dollars, but not all of these dollars
+    # go to land development; other uses include transportation and other 
+    # infrastructure and rennovation of existing floorspace.
+    if(CurrYearIndex>19){
+       constructionFactor <- 0.25
+       ResNivq.Rg <- ResNivq.Rg * constructionFactor
+       NresNivq.Rg <- NresNivq.Rg * constructionFactor
+       ResNdvq.Rg <- ResNdvq.Rg * constructionFactor
+       NresNdvq.Rg <- NresNdvq.Rg * constructionFactor
+       rm(constructionFactor)
+    }
+    
 #Calculate floor space capacities by alpha zone and floorspace type
 #-----------------------------------------------------------------
 
