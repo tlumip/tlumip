@@ -15,13 +15,25 @@ sample_local_truck_destinations <- function() {
     # READ THE SKIM MATRIX
     
     # Use that function to read the skim distance matrix from teh previous TA run
-    FN <- str_c(RTP[["highway.assign.previous.skim.path"]], "pkautodist.zmx")
+    FN <- str_c(params[["highway.assign.previous.skim.path"]], "pktrk1dist.zmx")
     print(str_c("Reading distance matrix from ", FN), quote=FALSE)
     skim_distances <- omxr::read_zmx(FN) 
     skim_distances_size <- object.size(skim_distances)
     print(str_c("Distance matrix size=", skim_distances_size, " (",
         round(skim_distances_size/(1024^2), 1), " MB)"), quote=FALSE)
     dzones <- as.integer(colnames(skim_distances))
+    
+    # read the trip time matrix as well;
+    skim_times <- omxr::read_zmx(file.path(
+      params[["highway.assign.previous.skim.path"]], "pktrk1time.zmx")) %>%
+      long_matrix(value = "time")
+    
+    skim_distances_long <- skim_distances %>% long_matrix(value = "distance")
+    
+    # join long skims into a single lookup value
+    skim_lookup <- dplyr::left_join(
+      skim_times, skim_distances_long,  
+      by = c("origin", "destination"))
     
     # GET REQUIRED TRIP DATA AND MODEL PROPERTIES
     # First load the truck origins and sum them by alpha zone and truck type.
@@ -138,6 +150,10 @@ sample_local_truck_destinations <- function() {
                 
         daily_trips <- rbind(daily_trips, merged_results)         
     }
+    
+    # append travel time and distance skim to the output file
+    daily_trips <- daily_trips %>%
+      dplyr::left_join(skim_lookup, by = c("Azone" = "origin", "destination"))
         
     # Write the final results to disk
     FN <- str_c(RTP[["Working_Folder"]], "ct-internal-truck-trips.RData")
