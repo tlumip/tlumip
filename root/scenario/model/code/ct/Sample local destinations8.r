@@ -13,43 +13,11 @@ sample_local_truck_destinations <- function() {
     simulation.start <- proc.time()
     
     # READ THE SKIM MATRIX
-    # Function to read zmx matrices into R matrices, graciously provided by Ben
-    readZipMat = function(fileName) {
-  
-        #define matrix
-        rowCon = unz(fileName,"_rows")
-        colCon = unz(fileName,"_columns")
-        xRowNumCon = unz(fileName,"_external row numbers")
-        xColNumCon = unz(fileName,"_external column numbers")
-        nrows = as.integer(scan(rowCon, what="", quiet=T))
-        ncols = as.integer(scan(colCon, what="", quiet=T))
-        rowNames = strsplit(scan(xRowNumCon, what="", quiet=T),",")[[1]]
-        colNames = strsplit(scan(xColNumCon, what="", quiet=T),",")[[1]]
-        close(rowCon)
-        close(colCon)
-        close(xRowNumCon)
-        close(xColNumCon)
-        
-        #create matrix
-        outMat = matrix(0, nrows, ncols)
-        rownames(outMat) = rowNames
-        colnames(outMat) = colNames
-        
-        #read records
-        zipEntries = paste("row_", 1:nrows, sep="")
-        for(i in 1:nrows) {
-          con = unz(fileName,zipEntries[i],"rb")
-          outMat[i,] = readBin(con,what=double(),n=ncols, size=4, endian="big")
-          close(con)
-        }
-        #return matrix
-        return(outMat)
-      }
     
     # Use that function to read the skim distance matrix from teh previous TA run
     FN <- str_c(RTP[["highway.assign.previous.skim.path"]], "pkautodist.zmx")
     print(str_c("Reading distance matrix from ", FN), quote=FALSE)
-    skim_distances <- readZipMat(FN)
+    skim_distances <- omxr::read_zmx(FN) 
     skim_distances_size <- object.size(skim_distances)
     print(str_c("Distance matrix size=", skim_distances_size, " (",
         round(skim_distances_size/(1024^2), 1), " MB)"), quote=FALSE)
