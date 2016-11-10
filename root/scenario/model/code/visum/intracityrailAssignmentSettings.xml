@@ -1365,72 +1365,6 @@
       </CONNECTORVDFUNCTIONSPARAMETERS>
       <LINKVDFUNCTIONSPARAMETERS>
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "0"
-          VDFUNCTIONTYPE = "CONICAL"
-          BLOCKED = "0"
-          HARDBLOCKING = "0"
-          CAPACITYFACTOR = "0.75"
-          BPR_A = "1"
-          BPR_B = "2"
-          BPR_BISREAL = "0"
-          BPR2_A = "1"
-          BPR2_B1 = "2"
-          BPR2_B2 = "2"
-          BPR3_A = "1"
-          BPR3_B = "2"
-          BPR3_D = "0"
-          INRETS_A = "1"
-          CONICAL_A = "7"
-          CONICAL_MARGINAL_A = "4"
-          QUADRATIC_A = "1"
-          QUADRATIC_B = "1"
-          QUADRATIC_D = "1"
-          LOGISTIC_A = "1"
-          LOGISTIC_B = "1"
-          LOGISTIC_D = "1"
-          LOGISTIC_F = "1"
-          SIGMOIDAL_MMF_A = "1"
-          SIGMOIDAL_MMF_B = "1"
-          SIGMOIDAL_MMF_D = "1"
-          SIGMOIDAL_MMF_F = "1"
-          TMODEL_A1 = "0"
-          TMODEL_A2 = "0"
-          TMODEL_B1 = "2"
-          TMODEL_B2 = "2"
-          TMODEL_D1 = "1"
-          TMODEL_D2 = "1"
-          TMODEL_F1 = "0"
-          TMODEL_F2 = "0"
-          TMODEL_SATCRIT = "1"
-          AKCELIK_A = "1"
-          AKCELIK_B = "1"
-          AKCELIK_D = "1800"
-          LOHSE_A = "1"
-          LOHSE_B = "3"
-          LOHSE_SATCRIT = "1"
-          SCHILLER_A = "3"
-          SCHILLER_B = "1"
-          SCHILLER_D = "0.001"
-          SCHILLER_F = "10"
-          SCHILLER_SATCRIT = "1"
-          EXPONENTIAL_A = "1"
-          EXPONENTIAL_B = "1"
-          EXPONENTIAL_D = "1"
-          EXPONENTIAL_SATCRIT = "1"
-          AKCELIK2_A = "1"
-          AKCELIK2_B = "1"
-          AKCELIK2_D = "1"
-          USER_A1 = "1"
-          USER_B1 = "1"
-          USER_D1 = "1"
-          USER_F1 = "1"
-          USER_A2 = "1"
-          USER_B2 = "1"
-          USER_D2 = "1"
-          USER_F2 = "1"
-          USER_SATCRIT = "1"
-        />        
-        <VDFUNCTION
           VDFUNCTIONNUMBER = "1"
           VDFUNCTIONTYPE = "CONICAL"
           BLOCKED = "0"
@@ -1697,106 +1631,106 @@
       </LINKVDFUNCTIONSPARAMETERS>
       <VDFUNCTIONS        USEVMIN = "0">
         <ATTRIBUTE          NAME = "VDFUNCTIONNO_LINKTYPE">
-          <ATTRITEM            SUBATTR1 = "0"            VALUE = "0"          />          
+          <ATTRITEM            SUBATTR1 = "0"            VALUE = "1"          />          
           <ATTRITEM            SUBATTR1 = "1"            VALUE = "1"          />          
           <ATTRITEM            SUBATTR1 = "2"            VALUE = "2"          />          
           <ATTRITEM            SUBATTR1 = "3"            VALUE = "3"          />          
           <ATTRITEM            SUBATTR1 = "4"            VALUE = "4"          />          
-          <ATTRITEM            SUBATTR1 = "5"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "6"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "7"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "8"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "9"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "10"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "11"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "12"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "13"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "14"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "15"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "16"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "17"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "18"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "19"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "20"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "21"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "22"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "23"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "24"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "25"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "26"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "27"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "28"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "29"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "30"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "31"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "32"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "33"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "34"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "35"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "36"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "37"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "38"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "39"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "40"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "41"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "42"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "43"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "44"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "45"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "46"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "47"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "48"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "49"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "50"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "51"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "52"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "53"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "54"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "55"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "56"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "57"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "58"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "59"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "60"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "61"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "62"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "63"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "64"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "65"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "66"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "67"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "68"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "69"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "70"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "71"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "72"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "73"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "74"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "75"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "76"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "77"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "78"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "79"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "80"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "81"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "82"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "83"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "84"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "85"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "86"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "87"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "88"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "89"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "90"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "91"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "92"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "93"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "94"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "95"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "96"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "97"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "98"            VALUE = "0"          />          
-          <ATTRITEM            SUBATTR1 = "99"            VALUE = "0"          />          
+          <ATTRITEM            SUBATTR1 = "5"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "6"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "7"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "8"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "9"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "10"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "11"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "12"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "13"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "14"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "15"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "16"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "17"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "18"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "19"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "20"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "21"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "22"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "23"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "24"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "25"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "26"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "27"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "28"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "29"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "30"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "31"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "32"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "33"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "34"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "35"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "36"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "37"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "38"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "39"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "40"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "41"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "42"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "43"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "44"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "45"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "46"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "47"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "48"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "49"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "50"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "51"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "52"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "53"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "54"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "55"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "56"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "57"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "58"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "59"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "60"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "61"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "62"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "63"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "64"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "65"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "66"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "67"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "68"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "69"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "70"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "71"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "72"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "73"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "74"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "75"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "76"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "77"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "78"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "79"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "80"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "81"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "82"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "83"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "84"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "85"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "86"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "87"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "88"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "89"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "90"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "91"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "92"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "93"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "94"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "95"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "96"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "97"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "98"            VALUE = "1"          />          
+          <ATTRITEM            SUBATTR1 = "99"            VALUE = "1"          />          
         </ATTRIBUTE>
       </VDFUNCTIONS>
     </VDFUNCTIONSPARAMETERS>
@@ -2328,7 +2262,7 @@
       USETURNCAP = "0"
       TURNCAPMODEL = "BBACKTURNCAPMODEL_CAPPRT"
       SCALINGFACTOR = "1"
-      AVERAGESPACEPERCARUNIT = "22.965879265091861ft"
+      AVERAGESPACEPERCARUNIT = "22.965879265091857ft"
       DURATIONPHASE1 = "1h"
       NUMBEROFVOLUMESLICESPHASE1 = "10"
     />    

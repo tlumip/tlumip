@@ -350,26 +350,6 @@
     <OPERATION
       NO = "16"
       CODE = ""
-      OPERATIONTYPE = "Script"
-      ACTIVE = "1"
-      COMMENT = "create convergence plot"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <EXECUTESCRIPTPARA        FILENAME = "AssignmentQuality.py"        USEINTERNALSCRIPTCODE = "0">
-        <INTERNALSCRIPTCODE>
-<![CDATA[]]>
-        </INTERNALSCRIPTCODE>
-      </EXECUTESCRIPTPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "17"
-      CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
       COMMENT = "calculate skim matrix for auto-peak"
@@ -394,7 +374,64 @@
         SUMUPTURNS = "1"
         SUMUPORIGCONNS = "1"
         SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
+        USEEXISTINGPATHS = "0"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "17"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = "calculate skim matrix for truck-peak"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "d_peak"
+        FILENAME = "Truck_Peak_Assignment"
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Comma"
+        FORMAT = "CSV"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "0"
         SEARCHCRITERION = "Impedance"
         WEIGHTING = "Route Vol Avg"
         SELECTODRELATIONTYPE = "All">
@@ -427,63 +464,6 @@
     <OPERATION
       NO = "18"
       CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = "calculate skim matrix for truck-peak"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "d_peak"
-        FILENAME = "Truck_Peak_Assignment"
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Comma"
-        FORMAT = "CSV"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "19"
-      CODE = ""
       OPERATIONTYPE = "SaveVersion"
       ACTIVE = "1"
       COMMENT = "save peak assignment paths in a version file"
@@ -495,10 +475,10 @@
       RESULTMESSAGE = ""
       SUCCESS = "0"
       COMPUTENODE = "">
-      <SAVEVERSIONPARA        FILENAME = "swimNetworkAttributes_PK_PATHS"        APPENDGOTOCOUNTER = "0"      />      
+      <SAVEVERSIONPARA        FILENAME = "PK_PATHS"        APPENDGOTOCOUNTER = "0"      />      
     </OPERATION>
     <OPERATION
-      NO = "20"
+      NO = "19"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -520,7 +500,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "21"
+      NO = "20"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"
@@ -536,7 +516,7 @@
       <ASSIGNMENTINITPARA        INITPUT = "0"        INITPRT = "1"      />      
     </OPERATION>
     <OPERATION
-      NO = "22"
+      NO = "21"
       CODE = ""
       OPERATIONTYPE = "PrTAssignment"
       ACTIVE = "1"
@@ -580,7 +560,7 @@
       </PRTASSIGNMENTPARA>
     </OPERATION>
     <OPERATION
-      NO = "23"
+      NO = "22"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -602,7 +582,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "24"
+      NO = "23"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -624,7 +604,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "25"
+      NO = "24"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -646,7 +626,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "26"
+      NO = "25"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -668,7 +648,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "27"
+      NO = "26"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -690,7 +670,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "28"
+      NO = "27"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -712,7 +692,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "29"
+      NO = "28"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -734,7 +714,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "30"
+      NO = "29"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -756,27 +736,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "31"
-      CODE = ""
-      OPERATIONTYPE = "Script"
-      ACTIVE = "1"
-      COMMENT = "creat convergence plot"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <EXECUTESCRIPTPARA        FILENAME = "AssignmentQuality.py"        USEINTERNALSCRIPTCODE = "0">
-        <INTERNALSCRIPTCODE>
-<![CDATA[]]>
-        </INTERNALSCRIPTCODE>
-      </EXECUTESCRIPTPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "32"
+      NO = "30"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -802,7 +762,7 @@
         SUMUPTURNS = "1"
         SUMUPORIGCONNS = "1"
         SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
+        USEEXISTINGPATHS = "0"
         SEARCHCRITERION = "Impedance"
         WEIGHTING = "Route Vol Avg"
         SELECTODRELATIONTYPE = "All">
@@ -833,7 +793,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "33"
+      NO = "31"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -859,7 +819,7 @@
         SUMUPTURNS = "1"
         SUMUPORIGCONNS = "1"
         SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
+        USEEXISTINGPATHS = "0"
         SEARCHCRITERION = "Impedance"
         WEIGHTING = "Route Vol Avg"
         SELECTODRELATIONTYPE = "All">
@@ -890,7 +850,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "34"
+      NO = "32"
       CODE = ""
       OPERATIONTYPE = "SaveVersion"
       ACTIVE = "1"
@@ -903,10 +863,10 @@
       RESULTMESSAGE = ""
       SUCCESS = "0"
       COMPUTENODE = "">
-      <SAVEVERSIONPARA        FILENAME = "swimNetworkAttributes_OP_PATHS"        APPENDGOTOCOUNTER = "0"      />      
+      <SAVEVERSIONPARA        FILENAME = "OP_PATHS"        APPENDGOTOCOUNTER = "0"      />      
     </OPERATION>
     <OPERATION
-      NO = "35"
+      NO = "33"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -928,7 +888,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "36"
+      NO = "34"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"
@@ -944,7 +904,7 @@
       <ASSIGNMENTINITPARA        INITPUT = "0"        INITPRT = "1"      />      
     </OPERATION>
     <OPERATION
-      NO = "37"
+      NO = "35"
       CODE = ""
       OPERATIONTYPE = "PrTAssignment"
       ACTIVE = "1"
@@ -988,7 +948,7 @@
       </PRTASSIGNMENTPARA>
     </OPERATION>
     <OPERATION
-      NO = "38"
+      NO = "36"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1010,7 +970,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "39"
+      NO = "37"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1032,7 +992,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "40"
+      NO = "38"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1054,7 +1014,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "41"
+      NO = "39"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1076,7 +1036,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "42"
+      NO = "40"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1098,7 +1058,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "43"
+      NO = "41"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1120,7 +1080,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "44"
+      NO = "42"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1142,7 +1102,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "45"
+      NO = "43"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1164,27 +1124,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "46"
-      CODE = ""
-      OPERATIONTYPE = "Script"
-      ACTIVE = "1"
-      COMMENT = "create convergence plot"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <EXECUTESCRIPTPARA        FILENAME = "AssignmentQuality.py"        USEINTERNALSCRIPTCODE = "0">
-        <INTERNALSCRIPTCODE>
-<![CDATA[]]>
-        </INTERNALSCRIPTCODE>
-      </EXECUTESCRIPTPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "47"
+      NO = "44"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -1210,7 +1150,7 @@
         SUMUPTURNS = "1"
         SUMUPORIGCONNS = "1"
         SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
+        USEEXISTINGPATHS = "0"
         SEARCHCRITERION = "Impedance"
         WEIGHTING = "Route Vol Avg"
         SELECTODRELATIONTYPE = "All">
@@ -1241,7 +1181,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "48"
+      NO = "45"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -1267,7 +1207,7 @@
         SUMUPTURNS = "1"
         SUMUPORIGCONNS = "1"
         SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
+        USEEXISTINGPATHS = "0"
         SEARCHCRITERION = "Impedance"
         WEIGHTING = "Route Vol Avg"
         SELECTODRELATIONTYPE = "All">
@@ -1298,7 +1238,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "49"
+      NO = "46"
       CODE = ""
       OPERATIONTYPE = "SaveVersion"
       ACTIVE = "1"
@@ -1311,10 +1251,10 @@
       RESULTMESSAGE = ""
       SUCCESS = "0"
       COMPUTENODE = "">
-      <SAVEVERSIONPARA        FILENAME = "swimNetworkAttributes_PM_PATHS"        APPENDGOTOCOUNTER = "0"      />      
+      <SAVEVERSIONPARA        FILENAME = "PM_PATHS"        APPENDGOTOCOUNTER = "0"      />      
     </OPERATION>
     <OPERATION
-      NO = "50"
+      NO = "47"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1336,7 +1276,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "51"
+      NO = "48"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"
@@ -1352,7 +1292,7 @@
       <ASSIGNMENTINITPARA        INITPUT = "0"        INITPRT = "1"      />      
     </OPERATION>
     <OPERATION
-      NO = "52"
+      NO = "49"
       CODE = ""
       OPERATIONTYPE = "PrTAssignment"
       ACTIVE = "1"
@@ -1396,7 +1336,7 @@
       </PRTASSIGNMENTPARA>
     </OPERATION>
     <OPERATION
-      NO = "53"
+      NO = "50"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1418,7 +1358,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "54"
+      NO = "51"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1440,7 +1380,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "55"
+      NO = "52"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1462,7 +1402,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "56"
+      NO = "53"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1484,7 +1424,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "57"
+      NO = "54"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1506,7 +1446,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "58"
+      NO = "55"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1528,7 +1468,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "59"
+      NO = "56"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1550,7 +1490,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "60"
+      NO = "57"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1572,27 +1512,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "61"
-      CODE = ""
-      OPERATIONTYPE = "Script"
-      ACTIVE = "1"
-      COMMENT = "create convergence plot"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <EXECUTESCRIPTPARA        FILENAME = "AssignmentQuality.py"        USEINTERNALSCRIPTCODE = "0">
-        <INTERNALSCRIPTCODE>
-<![CDATA[]]>
-        </INTERNALSCRIPTCODE>
-      </EXECUTESCRIPTPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "62"
+      NO = "58"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -1618,7 +1538,7 @@
         SUMUPTURNS = "1"
         SUMUPORIGCONNS = "1"
         SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
+        USEEXISTINGPATHS = "0"
         SEARCHCRITERION = "Impedance"
         WEIGHTING = "Route Vol Avg"
         SELECTODRELATIONTYPE = "All">
@@ -1649,7 +1569,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "63"
+      NO = "59"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -1675,7 +1595,7 @@
         SUMUPTURNS = "1"
         SUMUPORIGCONNS = "1"
         SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
+        USEEXISTINGPATHS = "0"
         SEARCHCRITERION = "Impedance"
         WEIGHTING = "Route Vol Avg"
         SELECTODRELATIONTYPE = "All">
@@ -1706,7 +1626,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "64"
+      NO = "60"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1725,6 +1645,94 @@
         RESULTATTRNAME = "DAILY_VOL_AUTO"
         ONLYACTIVE = "0"
         FORMULA = "[NT_VOL_AUTO]+[OP_VOL_AUTO]+[PK_VOL_AUTO]+[PM_VOL_AUTO]"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "61"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "DAILY_VOL_TRUCK"
+        ONLYACTIVE = "0"
+        FORMULA = "[NT_VOL_TRUCK]+[OP_VOL_TRUCK]+[PK_VOL_TRUCK]+[PM_VOL_TRUCK]"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "62"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "DAILY_VOL_TOTAL"
+        ONLYACTIVE = "0"
+        FORMULA = "[NT_VOL_TOTAL]+[OP_VOL_TOTAL]+[PK_VOL_TOTAL]+[PM_VOL_TOTAL]"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "63"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "CONNECTOR"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "DAILY_VOL_AUTO"
+        ONLYACTIVE = "0"
+        FORMULA = "[NT_VOL_AUTO]+[OP_VOL_AUTO]+[PK_VOL_AUTO]+[PM_VOL_AUTO]"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "64"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "CONNECTOR"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "DAILY_VOL_TRUCK"
+        ONLYACTIVE = "0"
+        FORMULA = "[NT_VOL_TRUCK]+[OP_VOL_TRUCK]+[PK_VOL_TRUCK]+[PM_VOL_TRUCK]"
       />      
     </OPERATION>
     <OPERATION
@@ -1742,103 +1750,15 @@
       SUCCESS = "0"
       COMPUTENODE = "">
       <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "LINK"
+        NETOBJECTTYPE = "CONNECTOR"
         INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "DAILY_VOL_TRUCK"
+        RESULTATTRNAME = "DAILY_VOL_TOTAL"
         ONLYACTIVE = "0"
-        FORMULA = "[NT_VOL_TRUCK]+[OP_VOL_TRUCK]+[PK_VOL_TRUCK]+[PM_VOL_TRUCK]"
+        FORMULA = "[NT_VOL_TOTAL]+[OP_VOL_TOTAL]+[PK_VOL_TOTAL]+[PM_VOL_TOTAL]"
       />      
     </OPERATION>
     <OPERATION
       NO = "66"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "LINK"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "DAILY_VOL_TOTAL"
-        ONLYACTIVE = "0"
-        FORMULA = "[NT_VOL_TOTAL]+[OP_VOL_TOTAL]+[PK_VOL_TOTAL]+[PM_VOL_TOTAL]"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "67"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "CONNECTOR"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "DAILY_VOL_AUTO"
-        ONLYACTIVE = "0"
-        FORMULA = "[NT_VOL_AUTO]+[OP_VOL_AUTO]+[PK_VOL_AUTO]+[PM_VOL_AUTO]"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "68"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "CONNECTOR"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "DAILY_VOL_TRUCK"
-        ONLYACTIVE = "0"
-        FORMULA = "[NT_VOL_TRUCK]+[OP_VOL_TRUCK]+[PK_VOL_TRUCK]+[PM_VOL_TRUCK]"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "69"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "CONNECTOR"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "DAILY_VOL_TOTAL"
-        ONLYACTIVE = "0"
-        FORMULA = "[NT_VOL_TOTAL]+[OP_VOL_TOTAL]+[PK_VOL_TOTAL]+[PM_VOL_TOTAL]"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "70"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1860,7 +1780,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "71"
+      NO = "67"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -1882,7 +1802,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "72"
+      NO = "68"
       CODE = ""
       OPERATIONTYPE = "SaveVersion"
       ACTIVE = "1"
@@ -1895,70 +1815,10 @@
       RESULTMESSAGE = ""
       SUCCESS = "0"
       COMPUTENODE = "">
-      <SAVEVERSIONPARA        FILENAME = "swimNetworkAttributes_NT_PATHS"        APPENDGOTOCOUNTER = "0"      />      
+      <SAVEVERSIONPARA        FILENAME = "NT_PATHS"        APPENDGOTOCOUNTER = "0"      />      
     </OPERATION>
     <OPERATION
-      NO = "73"
-      CODE = ""
-      OPERATIONTYPE = "Script"
-      ACTIVE = "1"
-      COMMENT = "create convergence plot"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <EXECUTESCRIPTPARA        FILENAME = "AssignmentQuality.py"        USEINTERNALSCRIPTCODE = "0">
-        <INTERNALSCRIPTCODE>
-<![CDATA[]]>
-        </INTERNALSCRIPTCODE>
-      </EXECUTESCRIPTPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "74"
-      CODE = ""
-      OPERATIONTYPE = "Script"
-      ACTIVE = "1"
-      COMMENT = "create TLF plots"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <EXECUTESCRIPTPARA        FILENAME = "TripLengthFrequency.py"        USEINTERNALSCRIPTCODE = "0">
-        <INTERNALSCRIPTCODE>
-<![CDATA[]]>
-        </INTERNALSCRIPTCODE>
-      </EXECUTESCRIPTPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "75"
-      CODE = ""
-      OPERATIONTYPE = "Script"
-      ACTIVE = "1"
-      COMMENT = "create link volumes to counts plot"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <EXECUTESCRIPTPARA        FILENAME = "VolumeStatistics.py"        USEINTERNALSCRIPTCODE = "0">
-        <INTERNALSCRIPTCODE>
-<![CDATA[]]>
-        </INTERNALSCRIPTCODE>
-      </EXECUTESCRIPTPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "76"
+      NO = "69"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"
@@ -3902,7 +3762,7 @@
       USETURNCAP = "0"
       TURNCAPMODEL = "BBACKTURNCAPMODEL_CAPPRT"
       SCALINGFACTOR = "1"
-      AVERAGESPACEPERCARUNIT = "22.965879265091861ft"
+      AVERAGESPACEPERCARUNIT = "22.965879265091854ft"
       DURATIONPHASE1 = "1h"
       NUMBEROFVOLUMESLICESPHASE1 = "10"
     />    
