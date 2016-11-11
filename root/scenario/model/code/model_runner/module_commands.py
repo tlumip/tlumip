@@ -11,6 +11,8 @@
 import os
 import build_daf_setup
 import build_log4j_config
+import pandas as pd
+from Properties import Properties
         
 def quote(string):
     """
@@ -277,7 +279,28 @@ class ModuleCommands(object):
         """
         Run the SL module.
         """
-        return self.runModule(module_set,scenario_outputs,property_file,year)
+        #find relevant properties
+        properties_set = Properties()
+        property_file = normalizeSlash(property_file)
+        print(property_file)
+        properties_set.loadPropertyFile(property_file)
+        python_executable = properties_set['python.executable']
+
+        #select link input - find if it is single link
+        select_link_input_file = properties_set['sl.input.file.select.links']
+        select_link_input = pd.read_csv(select_link_input_file)
+        print(select_link_input)
+        
+        #for single use a ptyhon script to append select link results to trips
+        if (len(select_link_input) == 1) and ('append' in property_file):
+            python_file = properties_set['sl.append.select.link.data.python.file']
+            command = [quote(python_executable.replace('/','\\')),
+                       quote(python_file.replace('/','\\')),
+                       quote(property_file)]
+            return [' '.join(command)]            
+        else:
+            #java program
+            return self.runModule(module_set,scenario_outputs,property_file,year)
 
     def runVIZ(self,module_set,scenario_outputs,property_file,year,properties):
         """
