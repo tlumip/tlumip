@@ -2,64 +2,60 @@
 # @author{Rick Donnelly} @version{0.8}  @date{24-Nov-2014}
 # This variant of destination choice uses matrix manipulations to get at the 
 # answer, which will hopefully be substantially quicker solution.
-library(data.table)
+
 library(dplyr)
 library(stringr)
 
-sample_local_truck_destinations <- function() {
+
+#' Sample local truck destinations
+#' 
+#' This function also depends on the open `omxr` package to read and write
+#' matrix skim files. Get from `https://github.com/gregmacfarlane/omxr`
+#' 
+#' @param truck_origins A \code{data_frame} containing a list of daily
+#'   truck trips from each origin
+#'   
+#' @param params An environment containing the runtime parameters for CT.
+#' 
+#' @importFrom magrittr "%>%"
+#' 
+#' @export
+#' 
+sample_local_truck_destinations <- function(truck_origins, params = RTP) {
+  
     # Announce yourself
-    set.seed(as.integer(RTP[["ct.random.seed"]]))
+    set.seed(as.integer(params[["ct.random.seed"]]))
     print(str_c("------- sample_local_truck_destinations -------"), quote=FALSE)
     simulation.start <- proc.time()
     
     # READ THE SKIM MATRIX
-    # Function to read zmx matrices into R matrices, graciously provided by Ben
-    readZipMat = function(fileName) {
-  
-        #define matrix
-        rowCon = unz(fileName,"_rows")
-        colCon = unz(fileName,"_columns")
-        xRowNumCon = unz(fileName,"_external row numbers")
-        xColNumCon = unz(fileName,"_external column numbers")
-        nrows = as.integer(scan(rowCon, what="", quiet=T))
-        ncols = as.integer(scan(colCon, what="", quiet=T))
-        rowNames = strsplit(scan(xRowNumCon, what="", quiet=T),",")[[1]]
-        colNames = strsplit(scan(xColNumCon, what="", quiet=T),",")[[1]]
-        close(rowCon)
-        close(colCon)
-        close(xRowNumCon)
-        close(xColNumCon)
-        
-        #create matrix
-        outMat = matrix(0, nrows, ncols)
-        rownames(outMat) = rowNames
-        colnames(outMat) = colNames
-        
-        #read records
-        zipEntries = paste("row_", 1:nrows, sep="")
-        for(i in 1:nrows) {
-          con = unz(fileName,zipEntries[i],"rb")
-          outMat[i,] = readBin(con,what=double(),n=ncols, size=4, endian="big")
-          close(con)
-        }
-        #return matrix
-        return(outMat)
-      }
     
     # Use that function to read the skim distance matrix from teh previous TA run
-    FN <- str_c(RTP[["highway.assign.previous.skim.path"]], "pkautodist.zmx")
+    FN <- str_c(params[["highway.assign.previous.skim.path"]], "pktrk1dist.zmx")
     print(str_c("Reading distance matrix from ", FN), quote=FALSE)
-    skim_distances <- readZipMat(FN)
+    skim_distances <- omxr::read_zmx(FN) 
     skim_distances_size <- object.size(skim_distances)
     print(str_c("Distance matrix size=", skim_distances_size, " (",
         round(skim_distances_size/(1024^2), 1), " MB)"), quote=FALSE)
     dzones <- as.integer(colnames(skim_distances))
     
+    # read the trip time matrix as well;
+    skim_times <- omxr::read_zmx(file.path(
+      params[["highway.assign.previous.skim.path"]], "pktrk1time.zmx")) %>%
+      long_matrix(value = "time")
+    
+    skim_distances_long <- skim_distances %>% long_matrix(value = "distance")
+    
+    # join long skims into a single lookup value
+    skim_lookup <- dplyr::left_join(
+      skim_times, skim_distances_long,  
+      by = c("origin", "destination"))
+    
     # GET REQUIRED TRIP DATA AND MODEL PROPERTIES
     # First load the truck origins and sum them by alpha zone and truck type.
     # Since we are assuming symmetry of flows these become our attractors for
     # destination choice.
-    FN <- str_c(RTP[["Working_Folder"]], "ct-internal-truck-origins.RData")
+    FN <- str_c(params[["Working_Folder"]], "ct-internal-truck-origins.RData")
     load(FN)
     truck_types <- unique(truck_origins$truck_type)
     
@@ -77,24 +73,24 @@ sample_local_truck_destinations <- function() {
     # each of the zones defined in the skim matrix, even if some have zero truck
     # trips associated with it. Thus, we'll substitute any missing values with
     # zeros.
-    attractors <- truck_origins %>% group_by(Azone, truck_type) %>%
-        summarise(attractors = n())
+    attractors <- truck_origins %>% dplyr::group_by(Azone, truck_type) %>%
+        dplyr::summarise(attractors = n())
     attractors$destination <- attractors$Azone  # Bug in dplyr's rename() 
 
     # Read the utility parameters by truck type
-    FN <- str_c(RTP[["ct.properties.folder"]], "/ct-destination-utility-parameters.csv")
-    alphas <- fread(FN)
+    FN <- str_c(params[["ct.properties.folder"]], "/ct-destination-utility-parameters.csv")
+    alphas <- readr::read_csv(FN)
     
     # Read the ideal trip length probabilities by truck type. These data are in
     # wide format, and we need to first append rows for distances in the skim
     # matrix but not included in the ideal distribution data. Then we'll convert
     # it to tall format to make process it easier.
-    FN <- str_c(RTP[["ct.properties.folder"]], "/ct-idealized-trip-length-distribution.csv")
-    ideal <- fread(FN)
+    FN <- str_c(params[["ct.properties.folder"]], "/ct-idealized-trip-length-distribution.csv")
+    ideal <- readr::read_csv(FN)
     max_skim_distance <- round(max(skim_distances), 0)
     # Add 1 because we'll use offset referencing because R doesn't have zero-
     # based matrix indexing
-    x <- data.table(distance = 0:max_skim_distance+1)
+    x <- dplyr::data_frame(distance = 0:max_skim_distance+1)
     ideal <- merge(ideal, x, by="distance", all.y=TRUE)
     ideal[is.na(ideal)] <- 0.0   # Replace missing values with zeros
     
@@ -102,7 +98,7 @@ sample_local_truck_destinations <- function() {
     # The ideal distributions and alpha parameters differ by truck type, so we
     # will handle each one differently. At the end of handling each truck type
     # we will add those results to a final data table that will have OD flows.
-    daily_trips <- data.table()   # Container to store the final results
+    daily_trips <- dplyr::data_frame()   # Container to store the final results
     for (t in truck_types) {
         print(str_c("Sampling destinations for ", nrow(filter(truck_origins,
             truck_type==t)), " ", t, " origins"), quote=FALSE)
@@ -124,10 +120,10 @@ sample_local_truck_destinations <- function() {
         # attractors we'll need to include missing destination zones and set 
         # their attractors to zero.
         A <- merge(data.table(destination = dzones),
-            filter(attractors, truck_type==t), by="destination", all.x=TRUE)
+            dplyr::filter(attractors, truck_type==t), by="destination", all.x=TRUE)
         A$attractors[is.na(A$attractors)] <- 0
         # Apply the scaling factor
-        A$attractors <- A$attractors*alphas$alpha2[alphas$truck_type==t]
+        A$attractors <- A$attractors * alphas$alpha2[alphas$truck_type == t]
         
         # Calculate the weighted probabilities. A nifty feature of sample() is
         # that it is too lame to ignore zero values, so when it finds instances
@@ -139,9 +135,9 @@ sample_local_truck_destinations <- function() {
         # Finally, now sample the destinations for the origins. Start by summing
         # total origins by zone, which will be the number of samples we will 
         # draw for destinations.
-        t_origins <- truck_origins %>% filter(truck_type==t) %>% 
-            group_by(Azone) %>% summarise(total_origins = n())
-        t_origins <- rename(t_origins, origin = Azone)
+        t_origins <- truck_origins %>% dplyr::filter(truck_type==t) %>% 
+            dplyr::group_by(Azone) %>% dplyr::summarise(total_origins = n())
+        t_origins <- dplyr::rename(t_origins, origin = Azone)
         results <- lapply(1:nrow(t_origins), 
             function(i) {
                 this_origin <- t_origins$origin[i]
@@ -160,24 +156,28 @@ sample_local_truck_destinations <- function() {
         merged_results <- data.table()
         for (i in 1:nrow(t_origins)) {
             this_origin <- t_origins$origin[i]
-            ti <- filter(truck_origins, Azone==this_origin, truck_type==t)
+            ti <- dplyr::filter(truck_origins, Azone==this_origin, truck_type==t)
             ti$destination <- results[[i]]
-            merged_results <- rbind(merged_results, ti)
+            merged_results <- dplyr::bind_rows(merged_results, ti)
         }
         # Maybe something I could do differently would be to use a different
         # looping variable, where instead I might say:
         #    for (ozone in 1:nrow(t_origins$origin)) { ... }
                 
-        daily_trips <- rbind(daily_trips, merged_results)         
+        daily_trips <- dplyr::bind_rows(daily_trips, merged_results)         
     }
+    
+    # append travel time and distance skim to the output file
+    daily_trips <- daily_trips %>%
+      dplyr::left_join(skim_lookup, by = c("Azone" = "origin", "destination"))
         
     # Write the final results to disk
-    FN <- str_c(RTP[["Working_Folder"]], "ct-internal-truck-trips.RData")
+    FN <- str_c(params[["Working_Folder"]], "ct-internal-truck-trips.RData")
     print(str_c("Saving ", nrow(daily_trips), " daily truck trips to ", FN), quote=FALSE)
     save(daily_trips, file=FN)
-    if (RTP[["ct.extended.trace"]]=="TRUE") {
-        FN <- str_c(RTP[["Working_Folder"]], "ct-daily-truck-trips.csv")
-        write.table(daily_trips, file=FN, sep=',', row.names=FALSE, quote=FALSE)
+    if (params[["ct.extended.trace"]]=="TRUE") {
+        FN <- str_c(params[["Working_Folder"]], "ct-daily-truck-trips.csv")
+        readr::write_csv(daily_trips, path = FN)
     }
     
     # Shut down
@@ -194,4 +194,3 @@ TD <- sample_local_truck_destinations()
  
 
  
-
