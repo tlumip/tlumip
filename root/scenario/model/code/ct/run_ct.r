@@ -19,28 +19,20 @@ if (length(args)==0) {
 } else {
     # Assume that the user has passed valid filenames
     # TO-DO: Add code that checks for existence of these files?
-    if (length(args) < 7) stop(str_c("Error: SWIM properties filename and CT ",
-        "folders must be specified when running CT"))
+    if (length(args) < 7){
+			stop("Error: SWIM properties filename and CT folders must be specified when running CT")
+		}
     swim_properties_FN <- substr(args[8],2,nchar(args[8]))
 	print(swim_properties_FN)
     ct_code_folder <- substr(args[7],2,nchar(args[7]))
 	print(ct_code_folder)
 }
 
-# If the user didn't include a trailing slash in the CT code folder path add one
-n <- nchar(ct_code_folder)
-if (substr(ct_code_folder, nchar(n), nchar(n))!="/") 
-    ct_code_folder <- str_c(ct_code_folder, "/")
-    
-# We do not require two parameter files, but we will use that many so that we
-# can separate static from dynamic parameters, which is how things will likely
-# work when running SWIM
-swimctr::get_runtime_parameters("tests/t0/default.properties")
-swimctr::get_runtime_parameters("tests/t5/t5.properties")
+swimctr::get_runtime_parameters(swim_properties_FN)
 
 # Now that we've set the runtime parameters we can finish up with calls that use
 # them
-setwd(RTP[["scenario.outputs"]])
+setwd(RTP[["ct.filePath"]])
 sink(file = RTP[["ct.logfile"]], append = FALSE, split = TRUE)
 if (!exists(RTP[["ct.cluster.logfile"]])) {
   RTP[["ct.cluster.logfile"]] <- ""  # Since several functions depend upon it
@@ -55,7 +47,7 @@ makeuse <- swimctr::create_makeuse_coefficients(RTP[["pecas.makeuse"]],
 # creates pseudo-firms that are sum of employment within each sector in each
 # alpha zone
 firms <- swimctr::create_synthetic_firms(RTP[["pecas.zonal.employment"]],
-  RTP[["ct.sector.equivalencies"]], RTP[["alpha2beta.file"]])
+  RTP[["ct.sector.equivalencies"]], RTP[["ct.alpha2beta"]])
 
 # [3] PROCESS LOCAL TRUCK TRIPS ================
 # Simulate local truck trips (those with both ends within the modeled area, to
@@ -81,8 +73,8 @@ hourly_local_trips <- swimctr::temporal_allocation(daily_local_trips,
 # depends upon a large number of parameter tables from the FAF Freight Traffic
 # Analysis report.
 annual_faf_trucks <- swimctr::create_annual_faf_truckloads(
-	RTP[["faf.flow.data"]], RTP[["faf.truck.allocation.factors"]], 
-	RTP[["faf.truck.equivalency.factors"]], RTP[["faf.empty.truck.factors"]], 
+	RTP[["faf.flow.data"]], RTP[["faf.truck.allocation.factors"]],
+	RTP[["faf.truck.equivalency.factors"]], RTP[["faf.empty.truck.factors"]],
 	as.integer(RTP[["t.year"]]))
 
 # Next we sample daily trucks, which is accomplished by first reducing annual to
@@ -113,4 +105,4 @@ sink()
 
 #To save the .Rdata file to the directory for the simulation year
 #Comment this out if working in Rgui mode
-setwd(RTP[["Working_Folder"]]) 
+setwd(RTP[["Working_Folder"]])
