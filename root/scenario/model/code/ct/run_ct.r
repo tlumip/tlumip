@@ -75,7 +75,7 @@ hourly_local_trips <- swimctr::temporal_allocation(daily_local_trips,
 annual_faf_trucks <- swimctr::create_annual_faf_truckloads(
 	RTP[["faf.flow.data"]], RTP[["faf.truck.allocation.factors"]],
 	RTP[["faf.truck.equivalency.factors"]], RTP[["faf.empty.truck.factors"]],
-	as.integer(RTP[["t.year"]]))
+	as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]))
 
 # Next we sample daily trucks, which is accomplished by first reducing annual to
 # weekly flows, and then sampling a day of the week for each discrete truck.
