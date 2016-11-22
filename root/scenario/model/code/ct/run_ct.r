@@ -54,7 +54,10 @@ firms <- swimctr::create_synthetic_firms(RTP[["pecas.zonal.employment"]],
 # include the halo), using typical sequence of model components. Start by
 # generating the trucks and their attributes.
 daily_local_origins <- swimctr::local_truck_generation(firms,
-  RTP[["ct.generation.probabilities"]])
+  RTP[["ct.generation.probabilities"]],
+	max_resampling_attempts = RTP[["ct.maximum.resampling.attempts"]],
+	max_resampling_threshold = RTP[["ct.maximum.resampling.threshold"]]
+	)
 
 # We will need to read skim matrices for the alpha zone system, and then run our
 # destination choice model
