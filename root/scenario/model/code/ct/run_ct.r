@@ -98,7 +98,7 @@ hourly_faf_trips <- swimctr::temporal_allocation(allocated_faf_trips,
 # exported, as well as a few new ones (including distance and travel time for
 # each trip)
 swimctr::export_list_list(hourly_faf_trips, hourly_local_trips,
-  "ct_exported_trips.csv")
+  RTP[["ct.truck.trips"]])
 
 # Exit stage left
 run_stop <- proc.time()
@@ -109,3 +109,4 @@ sink()
 #To save the .Rdata file to the directory for the simulation year
 #Comment this out if working in Rgui mode
 setwd(RTP[["ct.outdir"]])
+quit(save = "yes")
