@@ -108,4 +108,4 @@ sink()
 
 #To save the .Rdata file to the directory for the simulation year
 #Comment this out if working in Rgui mode
-setwd(RTP[["Working_Folder"]])
+setwd(RTP[["ct.outdir"]])
