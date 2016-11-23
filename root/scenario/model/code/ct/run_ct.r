@@ -100,6 +100,16 @@ hourly_faf_trips <- swimctr::temporal_allocation(allocated_faf_trips,
 swimctr::export_list_list(hourly_faf_trips, hourly_local_trips,
   RTP[["ct.truck.trips"]])
 
+# Also, legacy compatibility requires that there be an empty ET file
+
+# Create a table with the zero volumes between a single OD pair, for each
+# truck type. Use external stations that are not likely to be revised or
+# eliminated (based on discussion in 30-Dec-2014 teleconference).
+dplyr::data_frame(origin = "5001", destination = "5002", tripStartTime = "1300",
+	truckClass = c("TRK2", "TRK3"), truckVolume = 0) %>%
+  # Write the result
+  readr::write_csv(path=RTP[["et.truck.trips"]])
+
 # Exit stage left
 run_stop <- proc.time()
 elapsed_seconds <- round((run_stop-run_start)[["elapsed"]], 1)
