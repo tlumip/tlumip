@@ -120,4 +120,6 @@ sink()
 #To save the .Rdata file to the directory for the simulation year
 #Comment this out if working in Rgui mode
 setwd(RTP[["ct.outdir"]])
-quit(save = "yes")
+save(list = ls(all.names = TRUE), file = "CT.RData", envir = .GlobalEnv)
+quit(save = "no")
+
