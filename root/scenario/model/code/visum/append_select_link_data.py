@@ -179,6 +179,8 @@ def append_select_link(infile, timefield, mode, selectlink, tourfile = ''):
     trips_select_link = pd.merge(trips, selectlink, left_on = ['ASSIGNCLASS','origin','destination'], right_on = ['ASSIGNCLASS','FROMZONE','TOZONE'])
     trips_select_link.rename(columns = {'FROMZONE':'EXTERNAL_ZONE_ORIGIN', 'TOZONE':'EXTERNAL_ZONE_DESTINATION',
                             'PERCENT':'SELECT_LINK_PERCENT'}, inplace = True)
+
+    print('total select link trips: ' + str(len(trips_select_link)))
     
     #assign station number
     trips_select_link.EXTERNAL_ZONE_ORIGIN[trips_select_link['DIRECTION']=='IN'] = '_' + trips_select_link['STATIONNUMBER'].astype(str)
@@ -214,14 +216,14 @@ def zip_output(infile_sdt, infile_ldt, infile_ldt_vehicle, infile_ct, infile_et)
     
     #zip all files
     with zipfile.ZipFile(out_zip_file, 'w') as myzip:
-        myzip.write(infile_sdt)
-        myzip.write(infile_ldt)
-        myzip.write(infile_ldt_vehicle)
-        myzip.write(infile_ct)
-        myzip.write(infile_et)
-        myzip.write(synpop_file)
-        myzip.write(employment_file)
-        myzip.write(alpha2beta_file)
+        myzip.write(infile_sdt,os.path.basename(infile_sdt))
+        myzip.write(infile_ldt,os.path.basename(infile_ldt))
+        myzip.write(infile_ldt_vehicle,os.path.basename(infile_ldt_vehicle))
+        myzip.write(infile_ct,os.path.basename(infile_ct))
+        myzip.write(infile_et,os.path.basename(infile_et))
+        myzip.write(synpop_file,os.path.basename(synpop_file))
+        myzip.write(employment_file,os.path.basename(employment_file))
+        myzip.write(alpha2beta_file,os.path.basename(alpha2beta_file))
     
     myzip.close()
     
