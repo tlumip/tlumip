@@ -56,6 +56,7 @@ firms <- swimctr::create_synthetic_firms(RTP[["pecas.zonal.employment"]],
 daily_local_origins <- swimctr::local_truck_generation(firms,
   RTP[["ct.generation.probabilities"]],
 	max_resampling_attempts = RTP[["ct.maximum.resampling.attempts"]],
+	random_seed = RTP[["ct.random.seed"]],
 	max_resampling_threshold = RTP[["ct.maximum.resampling.threshold"]]
 	)
 
