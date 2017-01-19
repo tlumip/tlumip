@@ -98,7 +98,7 @@ hourly_faf_trips <- swimctr::temporal_allocation(allocated_faf_trips,
 # Write a combined trip list with all of the attributes that Ben had formerly
 # exported, as well as a few new ones (including distance and travel time for
 # each trip)
-swimctr::export_list_list(hourly_faf_trips, hourly_local_trips,
+swimctr::export_trip_list(hourly_faf_trips, hourly_local_trips,
   RTP[["ct.truck.trips"]])
 
 # Also, legacy compatibility requires that there be an empty ET file
