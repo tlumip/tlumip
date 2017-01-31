@@ -42,10 +42,17 @@ import os,csv,sys,gc,time,threading,datetime
 import pythoncom
 import win32com.client as com
 import VisumPy.helpers
+from Properties import Properties
 
 if len(sys.argv) < 6:
     print "Missing arguments! Usage:\n\t" + "python build_select_link_matrices.py version_file peak_paths_version_file offpeak_paths_version_file select_link_file output_file dsegs"
     sys.exit(1)
+
+#load properties
+property_file = os.path.dirname(sys.argv[1]) + '/si.properties'
+properties = Properties()
+properties.loadPropertyFile(property_file)
+programVersion = properties['visum.version']
 
 main_version_file = sys.argv[1]
 peak_path_version_file = sys.argv[2]
@@ -64,7 +71,7 @@ with open(select_link_file,'rb') as f:
 
 def loadVersion(version_file):
     #Start Visum and load file
-    Visum = com.Dispatch('visum.visum')
+    Visum = com.Dispatch('visum.visum.'+programVersion)
     Visum.LoadVersion(version_file)
     return Visum
     

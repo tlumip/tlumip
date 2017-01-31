@@ -451,6 +451,7 @@ class SwimModel(object):
                 data[4].extend([0,0,0,0,0,0])
                 data[5].extend(["WM","WM","WM","WM","WM","WM"])
                 data[6].extend([0,0,0,0,0,0])
+                data[7].extend(["WM","WM","WM","WM","WM","WM"])
                 fileTable = self.stringConcatenate(data)
 
             #Correct FloorspaceInventory field names

@@ -2,3 +2,4 @@
 *.zip filter=lfs diff=lfs merge=lfs -text
 *.7z filter=lfs diff=lfs merge=lfs -text
 *.zmx filter=lfs diff=lfs merge=lfs -text
+*.csv.gz filter=lfs diff=lfs merge=lfs -text

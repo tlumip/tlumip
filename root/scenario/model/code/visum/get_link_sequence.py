@@ -36,15 +36,19 @@ from __future__ import with_statement
 #dseg = 'a'
 ###################################################
 
-#VISUM program version
-programVersion = '14'
-
 import os,sys,csv
 import win32com.client as com
 import VisumPy.helpers
+from Properties import Properties
 
 if len(sys.argv) < 4:
     print "Missing arguments! Usage:\n\t" + "python get_link_sequence.py version_file weaving_file dseg"
+    
+#load properties
+property_file = os.path.dirname(sys.argv[1]) + '/si.properties'
+properties = Properties()
+properties.loadPropertyFile(property_file)
+programVersion = properties['visum.version']
 
 version_file = sys.argv[1]
 weaving_file = os.path.join(os.path.dirname(version_file),sys.argv[2])

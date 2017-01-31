@@ -5,3 +5,4 @@ root/model/census/*.csv
 root/model/lib/java7/
 root/model/lib/Python27/
 root/model/lib/R-3.1.2/
+.Rproj.user/
