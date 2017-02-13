@@ -282,14 +282,13 @@ class ModuleCommands(object):
         #find relevant properties
         properties_set = Properties()
         property_file = normalizeSlash(property_file)
-        print(property_file)
+
         properties_set.loadPropertyFile(property_file)
         python_executable = properties_set['python.executable']
 
         #select link input - find if it is single link
         select_link_input_file = properties_set['sl.input.file.select.links']
         select_link_input = pd.read_csv(select_link_input_file)
-        print(select_link_input)
         
         #for single use a ptyhon script to append select link results to trips
         if (len(select_link_input) == 1) and ('append' in property_file):
