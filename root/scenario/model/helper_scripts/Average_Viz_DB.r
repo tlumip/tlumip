@@ -45,38 +45,30 @@
 # INPUT AND OUTPUT FILES
 
   # Specify all input database file names as list 
-    dbFileNames = c("C:\\projects\\swinvizAVG\\Copy_SCEN_2006to2040_Reference.db",
-                    "C:\\projects\\swinvizAVG\\SCEN_2006to2040_Reference.db")
+    dbFileNames = c("M:/swim2/Repo_Reference/outputs/Repo_Reference.db",
+                    "N:/swim2/Repo_Reference/outputs/Repo_Reference.db")
   
   # Specify an output database file name
-    outputDbFileName = "C:\\projects\\swinvizAVG\\average_test0.db"
+    outputDbFileName = "C:\\USR\\SWIM\\swinvizAVG\\Reference_avgTest.db"
   
   # Option to write out contents of the database (list of tables and fields) 
-    masterTable = T 
+    masterTable = F 
     
   # Option to only compare common TSTEPs across years
     onlyCommonTstep = T
+    tablesWithNoTstep = c("ALLZONES", "BZONE", "COUNTLOCATIONS")
   
   # Specify the master table (creates this file if the "masterTable = T" or else it's an input file)   
-    outMasterTable = ("C:\\projects\\swinvizAVG\\DataBaseDescription_0.csv")
+    outMasterTable = ("C:\\USR\\SWIM\\swinvizAVG\\DataBaseDescription.csv")
     
   # Specify output file for the database checker
-    outCheckFile = ("C:\\projects\\swinvizAVG\\CheckDatabaseFiles.csv")
+    outCheckFile = ("C:\\USR\\SWIM\\swinvizAVG\\CheckDatabaseFiles.csv")
 #=========================================================================================================
 # CREATE OUTPUT DATABASE
 
 # Load SQL libraries
   library(RSQLite)
   m = dbDriver("SQLite")
-  
-  #Create database
-  cat(paste("Create Average SWIM VIZ DB", outputDbFileName, "at", Sys.time(), "\n"))
-  if(file.exists(outputDbFileName)) {
-    file.remove(outputDbFileName)
-  }
-  file.create(outputDbFileName)
-  db = dbConnect(m, dbname = outputDbFileName)
-  
   
 # FUNCTIONS
   buildQuery = function(averageFieldList, tsteps=NA) {
@@ -115,12 +107,12 @@ for (d in 1:length(dbFileNames)){
         }
   
         # Get list of tables in the input database
-           tablesDB = dbListTables(inDB,"SELECT ALL")
+           tablesDB = dbListTables(inDB)#, "SELECT ALL")
            
          # Get list of all fields in all tables
            for (f in 1:length(tablesDB)){
              tempdbn = fileName[n]
-             tempflds = dbListFields(inDB, tablesDB[f] , "SELECT ALL")
+             tempflds = dbListFields(inDB, tablesDB[f])# , "SELECT ALL")
              temptnum  = rep(f,length(tempflds))
              temptname = rep(tablesDB[f], length(tempflds))
              tempfnum  = c(1: length(tempflds))
@@ -154,7 +146,9 @@ for (d in 1:length(dbFileNames)){
 
         }  
      }
+     dbDisconnect(inDB)
 }
+
 if( continueFurther == T ) {
 # If tables are same then check if length of fields are of same length
 for (d in 2:length(dbFileNames)){
@@ -183,11 +177,11 @@ write.csv(checkTables,outCheckFile,row.names=F)
       inDB = dbConnect(m, dbname = dbFileNames[1])
     
     # Get list of tables in the input database
-      tablesDB = dbListTables(inDB,"SELECT ALL")
+      tablesDB = dbListTables(inDB)#,"SELECT ALL")
     
     # Get list of all fields in all tables
       for (f in 1:length(tablesDB)){
-        tempflds = dbListFields(inDB, tablesDB[f] , "SELECT ALL")
+        tempflds = dbListFields(inDB, tablesDB[f])# , "SELECT ALL")
         temptnum  = rep(f,length(tempflds))
         temptname = rep(tablesDB[f], length(tempflds))
         tempfnum  = c(1: length(tempflds))
@@ -208,7 +202,7 @@ write.csv(checkTables,outCheckFile,row.names=F)
       write.csv(t, outMasterTable, row.names=F)
     
     # Close database connection 
-      sqliteCloseConnection(inDB)
+      dbDisconnect(inDB)
   } 
    
 #=========================================================================================================
@@ -281,6 +275,14 @@ write.csv(checkTables,outCheckFile,row.names=F)
     averageFields[[a]] = c(tableName=as.character(sqlSet$TABLE[a]),keys=as.character(sqlSet$KEY[a]),fields=as.character(sqlSet$FLD[a]))
   }
 
+  #Create database
+  cat(paste("Create Average SWIM VIZ DB", outputDbFileName, "at", Sys.time(), "\n"))
+  if(file.exists(outputDbFileName)) {
+    file.remove(outputDbFileName)
+  }
+  file.create(outputDbFileName)
+  db = dbConnect(m, dbname = outputDbFileName)
+
 # Loop through queries
   for(i in 1:length(averageFields)) {
   
@@ -293,7 +295,11 @@ write.csv(checkTables,outCheckFile,row.names=F)
           
           # Build query with TSTEP filter if desired
           if(onlyCommonTstep) {
-          	query = buildQuery(averageFields[[i]], tsteps)
+          	if(averageFields[[i]]["tableName"] %in% tablesWithNoTstep){
+               query = buildQuery(averageFields[[i]])
+            } else {
+               query = buildQuery(averageFields[[i]], tsteps)
+            }   
           } else {
           	query = buildQuery(averageFields[[i]])
           }
@@ -318,6 +324,7 @@ write.csv(checkTables,outCheckFile,row.names=F)
                   stop("Different number of resulting records across databases for the query")
               }
           }
+          dbDisconnect(inDB)
         }
       
     # Simple average of results
@@ -327,16 +334,16 @@ write.csv(checkTables,outCheckFile,row.names=F)
        }
       
     # Write result to output db
-       dbWriteTable(db, averageFields[[i]]["tableName"], sumData, row.names=F, append=F)
-       
+       dbWriteTable(db, averageFields[[i]]["tableName"], sumData, row.names=F, append=F) 
        
   }
-}
-#=========================================================================================================
 # CLOSE AND COMPLETE
   # Close database
-    sqliteCloseConnection(db)
-    sqliteCloseConnection(inDB)
+    
+    dbDisconnect(db)
+}
+#=========================================================================================================
+
     
     cat(paste("SWIM Average VIZ DB Complete at", Sys.time(), "\n"))
 if (continueFurther == F) {
