@@ -3,13 +3,6 @@
 	<name>tlumip</name>
 	<comment></comment>
 	<projects>
-		<project>calibrator</project>
-		<project>common-base</project>
-		<project>jakarta-commons</project>
-		<project>logging-log4j-1.2.9</project>
-		<project>jakarta-commons</project>
-		<project>logging-log4j-1.2.9</project>
-		<project>pecas</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

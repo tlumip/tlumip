@@ -1,95 +1,80 @@
 <?xml version="1.0"?>
-<!DOCTYPE project [
-	<!ENTITY properties SYSTEM "file:../../cmf/common-base/config/properties.xml">
-	<!ENTITY targets SYSTEM "file:../../cmf/common-base/config/targets.xml">
-]>
 
-<project name="tlumip" default="usage" basedir=".">
-	  &properties;
-    &targets;
+<project name="tlumip" default="release" basedir=".">
+
+    <!-- Compile -->
+    <target name="build">
+        <javac srcdir="src/java"
+            destdir="build/classes" 
+            includes="**/*" 
+            debug="on"
+            optimize="off" 
+            deprecation="off">
+            <classpath refid="compile.classpath"/>
+        </javac>
+    </target>
+
+    <!-- Make a jar file with all classes and zip files combined -->
+    <target name="makejar" depends="build">
     
+        <mkdir dir="release"/>
+        <delete file="release/${ant.project.name}.jar"/>
     
+        <jar update="true" destfile="release/${ant.project.name}.jar">
+            <fileset dir="build/classes"/>
+            <zipgroupfileset dir="${basedir}" includes="lib/*.zip,lib/*.jar"/>
+        </jar>
+    </target>
+
     <!-- ********************************************************* -->
     <!-- Setup the classpath -->
     <path id="compile.classpath">
-        <pathelement location="${common-base.dir}/build/classes"/>
-        <pathelement location="${reference.dir}/build/classes"/>
-        <pathelement location="${common-daf-v2.dir}/build/classes"/>
-    	  <pathelement location="${common-daf-v3.dir}/build/classes"/>
-        <pathelement location ="${pecas.dir}/build/classes"/>
-        <pathelement location ="${utils.dir}/build/classes"/>
-        <pathelement location ="${pasaat_swim.dir}/build/classes"/>
-        <pathelement location ="${censusdata.dir}/build/classes"/>
-        <pathelement location ="${synpop.dir}/build/classes"/>
-        <pathelement path="${build.classes.dir};${basedir}/config"/>
-
-        <fileset dir="${common-base.dir}">
-            <include name="**/lib/*.jar"/>
-            <include name="**/lib/*.zip"/>
-        </fileset>
-
-    	<fileset dir="${common-daf-v3.dir}">
-    	    <include name="**/lib/*.jar"/>
-    	    <include name="**/lib/*.zip"/>
+    	
+    	<fileset dir="${basedir}">
+    	  <include name="src/censusdata.jar"/>
+    	  <include name="src/common-base.jar"/>
+    	  <include name="src/log4j-1.2.9.jar"/>
+    	  <include name="src/pecas.jar"/>
+    	  <include name="src/reference.jar"/>
+    	  <include name="src/synpop.jar"/>
+    	  <include name="src/utils.jar"/>
+    	  <include name="src/common-daf-v2.jar"/>
+    	  <include name="src/common-daf-v3.jar"/>
     	</fileset>
 
-        <fileset dir="${thirdParty.dir}">
-            <include name="**/logging-log4j-1.2.9/*.jar"/>
-            <include name="**/mtj/*.jar"/>            
-        </fileset>
-
-
     </path>
-
-
-    <!-- ********************************************************* -->
-    <!-- Compile depedencies -->
-    <target name="pre-build" >
-        <ant dir="${common-base.dir}" target="build" inheritAll="false"/>
-        <ant dir="${reference.dir}" target="build" inheritAll="false"/>
-        <ant dir="${common-daf-v2.dir}" target="build" inheritAll="false"/>
-	    <ant dir="${common-daf-v3.dir}" target="build" inheritAll="false"/>
-        <ant dir="${pecas.dir}" target="build" inheritAll="false"/>
-        <ant dir="${utils.dir}" target="build" inheritAll="false"/>
-        <ant dir="${pasaat_swim.dir}" target="build" inheritAll="false"/>
-        <ant dir="${censusdata.dir}" target="build" inheritAll="false"/>
-        <ant dir="${synpop.dir}" target="build" inheritAll="false"/>
-    </target>
-
 
     <!-- ********************************************************* -->
     <!-- Create a set of jar files for release -->
     <target name="release" depends="makejar">
     	
         <!-- copy dependencies to release directory -->
-        <copy file="${common-base.dir}/release/common-base.jar" todir="${release.dir}"/>
-        <copy file="${reference.dir}/release/reference.jar" todir="${release.dir}"/>
-        <copy file="${common-daf-v2.dir}/release/common-daf-v2.jar" todir="${release.dir}"/>
-    	  <copy file="${common-daf-v3.dir}/release/common-daf-v3.jar" todir="${release.dir}"/>
-        <copy file="${pecas.dir}/release/pecas.jar" todir="${release.dir}"/>
-        <copy file="${censusdata.dir}/release/censusdata.jar" todir="${release.dir}"/>
-        <copy file="${utils.dir}/release/utils.jar" todir="${release.dir}"/>
-        <copy file="${pasaat_swim.dir}/release/pasaat.jar" todir="${release.dir}"/>
-        <copy file="${synpop.dir}/release/synpop.jar" todir="${release.dir}"/>
-        <copy file="${thirdParty.dir}/logging-log4j-1.2.9/log4j-1.2.9.jar" todir="${release.dir}"/>
-        <copy file="${thirdParty.dir}/mtj/mtj.jar" todir="${release.dir}"/>
-    	
-    	<zip destfile="${release.dir}/tlumip2.jar">
-    		<zipgroupfileset dir="${release.dir}" includes="tlumip.jar"/>
-    		<zipgroupfileset dir="${release.dir}" includes="common-base.jar"/>
-    		<zipgroupfileset dir="${release.dir}" includes="reference.jar"/>
-			  <zipgroupfileset dir="${release.dir}" includes="common-daf-v2.jar"/>
-			  <zipgroupfileset dir="${release.dir}" includes="common-daf-v3.jar"/>
-			  <zipgroupfileset dir="${release.dir}" includes="pecas.jar"/>
-			  <zipgroupfileset dir="${release.dir}" includes="censusdata.jar"/>
-			  <zipgroupfileset dir="${release.dir}" includes="utils.jar"/>
-			  <zipgroupfileset dir="${release.dir}" includes="pasaat.jar"/>
-			  <zipgroupfileset dir="${release.dir}" includes="synpop.jar"/>
-    		<zipgroupfileset dir="${release.dir}" includes="log4j-1.2.9.jar"/>
-    	</zip>  	
-    	<move file="${release.dir}/tlumip2.jar" tofile="${release.dir}/tlumip.jar"/>
+        <copy file="src/common-base.jar" todir="release"/>
+        <copy file="src/reference.jar" todir="release"/>
+        <copy file="src/common-daf-v2.jar" todir="release"/>
+    	  <copy file="src/common-daf-v3.jar" todir="release"/>
+        <copy file="src/pecas.jar" todir="release"/>
+        <copy file="src/censusdata.jar" todir="release"/>
+        <copy file="src/utils.jar" todir="release"/>
+        <copy file="src/pasaat.jar" todir="release"/>
+        <copy file="src/synpop.jar" todir="release"/>
+        <copy file="src/log4j-1.2.9.jar" todir="release"/>
+      
+        <zip destfile="release/tlumip2.jar">
+          <zipgroupfileset dir="release" includes="tlumip.jar"/>
+          <zipgroupfileset dir="release" includes="common-base.jar"/>
+          <zipgroupfileset dir="release" includes="reference.jar"/>
+          <zipgroupfileset dir="release" includes="common-daf-v2.jar"/>
+          <zipgroupfileset dir="release" includes="common-daf-v3.jar"/>
+          <zipgroupfileset dir="release" includes="pecas.jar"/>
+          <zipgroupfileset dir="release" includes="censusdata.jar"/>
+          <zipgroupfileset dir="release" includes="utils.jar"/>
+          <zipgroupfileset dir="release" includes="pasaat.jar"/>
+          <zipgroupfileset dir="release" includes="synpop.jar"/>
+          <zipgroupfileset dir="release" includes="log4j-1.2.9.jar"/>
+        </zip>
+        <move file="release/tlumip2.jar" tofile="release/tlumip.jar"/>
 
     </target>
 
-    
 </project>
