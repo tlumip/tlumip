@@ -40,35 +40,46 @@
 
 # Revisions
 #   10/6/11 to optionally allow comparisons for TSTEPs common to all databases
+#   02/15/17 to make the output look like a regular viz db. also, error checks for field names and field types
 
 #=========================================================================================================
 # INPUT AND OUTPUT FILES
 
   # Specify all input database file names as list 
-    dbFileNames = c("M:/swim2/Repo_Reference/outputs/Repo_Reference.db",
-                    "N:/swim2/Repo_Reference/outputs/Repo_Reference.db")
-  
+    dbFileNames = c("E:\\Projects\\Clients\\odot\\Tasks\\AverageDatabases\\data\\Reference.db",
+                    "E:\\Projects\\Clients\\odot\\Tasks\\AverageDatabases\\data\\Reference.db")
+    
+      
   # Specify an output database file name
-    outputDbFileName = "C:\\USR\\SWIM\\swinvizAVG\\Reference_avgTest.db"
+    outputDbFileName = "E:\\Projects\\Clients\\odot\\Tasks\\AverageDatabases\\data\\average_test.db"
   
   # Option to write out contents of the database (list of tables and fields) 
     masterTable = F 
     
   # Option to only compare common TSTEPs across years
-    onlyCommonTstep = T
-    tablesWithNoTstep = c("ALLZONES", "BZONE", "COUNTLOCATIONS")
+    onlyCommonTstep = F
   
   # Specify the master table (creates this file if the "masterTable = T" or else it's an input file)   
-    outMasterTable = ("C:\\USR\\SWIM\\swinvizAVG\\DataBaseDescription.csv")
+    outMasterTable = ("E:\\Projects\\Clients\\odot\\Tasks\\AverageDatabases\\data\\DataBaseDescription_0.csv")
     
   # Specify output file for the database checker
-    outCheckFile = ("C:\\USR\\SWIM\\swinvizAVG\\CheckDatabaseFiles.csv")
+    outCheckFile = ("E:\\Projects\\Clients\\odot\\Tasks\\AverageDatabases\\data\\CheckDatabaseFiles.csv")
 #=========================================================================================================
 # CREATE OUTPUT DATABASE
 
 # Load SQL libraries
   library(RSQLite)
   m = dbDriver("SQLite")
+  
+  #Create database
+  if (masterTable==F){
+    cat(paste("Create Average SWIM VIZ DB", outputDbFileName, "at", Sys.time(), "\n"))
+    if(file.exists(outputDbFileName)) {
+      file.remove(outputDbFileName)
+    }
+    file.create(outputDbFileName)
+    db = dbConnect(m, dbname = outputDbFileName) 
+  }
   
 # FUNCTIONS
   buildQuery = function(averageFieldList, tsteps=NA) {
@@ -107,12 +118,12 @@ for (d in 1:length(dbFileNames)){
         }
   
         # Get list of tables in the input database
-           tablesDB = dbListTables(inDB)#, "SELECT ALL")
+           tablesDB = dbListTables(inDB,"SELECT ALL")
            
          # Get list of all fields in all tables
            for (f in 1:length(tablesDB)){
              tempdbn = fileName[n]
-             tempflds = dbListFields(inDB, tablesDB[f])# , "SELECT ALL")
+             tempflds = dbListFields(inDB, tablesDB[f] , "SELECT ALL")
              temptnum  = rep(f,length(tempflds))
              temptname = rep(tablesDB[f], length(tempflds))
              tempfnum  = c(1: length(tempflds))
@@ -146,9 +157,7 @@ for (d in 1:length(dbFileNames)){
 
         }  
      }
-     dbDisconnect(inDB)
 }
-
 if( continueFurther == T ) {
 # If tables are same then check if length of fields are of same length
 for (d in 2:length(dbFileNames)){
@@ -177,11 +186,11 @@ write.csv(checkTables,outCheckFile,row.names=F)
       inDB = dbConnect(m, dbname = dbFileNames[1])
     
     # Get list of tables in the input database
-      tablesDB = dbListTables(inDB)#,"SELECT ALL")
+      tablesDB = dbListTables(inDB,"SELECT ALL")
     
     # Get list of all fields in all tables
       for (f in 1:length(tablesDB)){
-        tempflds = dbListFields(inDB, tablesDB[f])# , "SELECT ALL")
+        tempflds = dbListFields(inDB, tablesDB[f] , "SELECT ALL")
         temptnum  = rep(f,length(tempflds))
         temptname = rep(tablesDB[f], length(tempflds))
         tempfnum  = c(1: length(tempflds))
@@ -221,31 +230,38 @@ write.csv(checkTables,outCheckFile,row.names=F)
       # split dataframe by table
         t_temp <- t[t$tnum==i,] 
         cntK = 0  
-        cntF = 0 
+        cntF = 0
         keyName = " "
         fldName = " "
       # loop by field names (rows in the temp table)
         for (f in 1: max(t_temp$fnum)){
-         # Check for Keys and get fields for Keys
-          if(t_temp$key_fld[f] == "KEYS") {
-            cntK=cntK+1 
-            tempKey <- unlist(t_temp$fname[f])         
-            if (cntK == 1) {
-               keyName  <- as.character(tempKey)
-             } else {
-               keyName = paste(as.character(keyName), as.character(tempKey), sep=",")
-             }
-          } 
-         # Check for Keys and get fields for Keys
-           if(t_temp$key_fld[f] == "FLDS") {
-             cntF=cntF+1 
-             tempFld <- unlist(t_temp$fname[f])         
-             if (cntF == 1) {
-                fldName  <- as.character(tempFld)
+          tempFldName <- as.character(unlist(t_temp$fname[f]))
+          
+          if (grepl("[.]",tempFldName)){
+            print(paste("Field name is not compatible: ", tempFldName))
+          } else {
+            # Check for Keys and get fields for Keys
+            if(t_temp$key_fld[f] == "FLDS") {
+              cntF=cntF+1
+              if (cntF == 1){
+                fldName = tempFldName
               } else {
-                fldName = paste(as.character(fldName), as.character(tempFld),sep=",")
+                fldName = paste(as.character(fldName), tempFldName,sep=",")
               }
-           }
+
+            } else {
+              #"KEYS" or "NULL"
+              cntK=cntK+1
+              if (cntK == 1) {
+                keyName = tempFldName
+              } else {
+                keyName = paste(as.character(keyName), tempFldName, sep=",")
+              }
+              
+            } # end if statement            
+            
+          }
+
         } # End loop by field      
          
        # Get the table name (use first record, since all table names are same for the subset) 
@@ -272,78 +288,93 @@ write.csv(checkTables,outCheckFile,row.names=F)
 # Get query builder fields into a list
   averageFields = list()
   for (a in 1:length(sqlSet$TABLE)){
-    averageFields[[a]] = c(tableName=as.character(sqlSet$TABLE[a]),keys=as.character(sqlSet$KEY[a]),fields=as.character(sqlSet$FLD[a]))
+    averageFields[[a]] = c(tableName=as.character(sqlSet$TABLE[a]),
+                           keys=as.character(sqlSet$KEY[a]),
+                           fields=as.character(sqlSet$FLD[a]))
   }
-
-  #Create database
-  cat(paste("Create Average SWIM VIZ DB", outputDbFileName, "at", Sys.time(), "\n"))
-  if(file.exists(outputDbFileName)) {
-    file.remove(outputDbFileName)
-  }
-  file.create(outputDbFileName)
-  db = dbConnect(m, dbname = outputDbFileName)
 
 # Loop through queries
-  for(i in 1:length(averageFields)) {
-  
-    # Loop through DBs
+  for (tableName in tablesDB){
+    print(tableName)
+    
+    table_exist = FALSE
+    
+    for (i in 1:length(averageFields)){
+      if (tableName == averageFields[[i]]["tableName"]) {
+        table_exist = TRUE #table exist in average fields
+        tableIndex = i
+      }
+    }
+      
+    if (table_exist){
+      # Loop through DBs
       for(j in 1:length(dbFileNames)) {
-      
+        
         # Connect to input db and query
-          cat(paste("Connect to", dbFileNames[j], "\n"))
-          inDB = dbConnect(m, dbname = dbFileNames[j])
-          
-          # Build query with TSTEP filter if desired
-          if(onlyCommonTstep) {
-          	if(averageFields[[i]]["tableName"] %in% tablesWithNoTstep){
-               query = buildQuery(averageFields[[i]])
-            } else {
-               query = buildQuery(averageFields[[i]], tsteps)
-            }   
-          } else {
-          	query = buildQuery(averageFields[[i]])
-          }
-          cat(paste(query, "\n"))
-          tableData = dbGetQuery(inDB, query)
-          colnames(tableData) = toupper(colnames(tableData))
-          
-        # Get fields to average as a vector
-          fieldsAsVector = strsplit(averageFields[[i]]["fields"],",")[[1]]
-          
-        # Add together
-          if(j==1) {
-            sumData = tableData
-          } else {
-              if(nrow(sumData) == nrow(tableData)) {
-                #loop through fields
-                for(f in fieldsAsVector) {
-                  cat(paste("Add", f, "\n"))
-                  sumData[,f] = sumData[,f] + tableData[,f] #assumes row order is the same across DBs
-                }
-              } else {
-                  stop("Different number of resulting records across databases for the query")
-              }
-          }
-          dbDisconnect(inDB)
+        cat(paste("Connect to", dbFileNames[j], "\n"))
+        inDB = dbConnect(m, dbname = dbFileNames[j])
+        
+        # Build query with TSTEP filter if desired
+        if(onlyCommonTstep) {
+          query = buildQuery(averageFields[[tableIndex]], tsteps)
+        } else {
+          query = buildQuery(averageFields[[tableIndex]])
         }
+        cat(paste(query, "\n"))
+        print(query)
+        tableData = dbGetQuery(inDB, query)
+        #tableData[is.na(tableData)] <- 0
+        colnames(tableData) = toupper(colnames(tableData))
+        
+        # Get fields to average as a vector
+        fieldsAsVector = strsplit(averageFields[[tableIndex]]["fields"],",")[[1]]
+        
+        #convert character/factor fields to numeric
+        for(f in fieldsAsVector) {
+          tableData[,f] <- as.numeric(as.character(tableData[,f]))
+        }        
+
+        # Add together
+        if(j==1) {
+          sumData = tableData
+        } else {
+          if(nrow(sumData) == nrow(tableData)) {
+            #loop through fields
+            for(f in fieldsAsVector) {
+              cat(paste("Add", f, "\n"))
+              sumData[,f] = sumData[,f] + tableData[,f] #assumes row order is the same across DBs
+            }
+          } else {
+            stop("Different number of resulting records across databases for the query")
+          }
+        }
+        dbDisconnect(inDB)
+      }
       
-    # Simple average of results
-       for(f in fieldsAsVector) {
-         cat(paste("Average", f, "\n"))
+      # Simple average of results
+      for(f in fieldsAsVector) {
+        cat(paste("Average", f, "\n"))
         sumData[,f] = sumData[,f] / length(dbFileNames)
-       }
-      
+      }
+            
+    } else {
+      print(paste("Table is NULL in the master table: ", tableName))
+      inDB = dbConnect(m, dbname = dbFileNames[1]) #get data of the first database
+      sumData = dbGetQuery(inDB, paste("SELECT * FROM ", tableName))
+    }
+    
     # Write result to output db
-       dbWriteTable(db, averageFields[[i]]["tableName"], sumData, row.names=F, append=F) 
+    dbWriteTable(db, tableName, sumData, row.names=F, append=F)
        
   }
-# CLOSE AND COMPLETE
-  # Close database
-    
-    dbDisconnect(db)
+  
 }
 #=========================================================================================================
-
+# CLOSE AND COMPLETE
+  # Close database
+  if (masterTable==F){
+    dbDisconnect(db)
+  }
     
     cat(paste("SWIM Average VIZ DB Complete at", Sys.time(), "\n"))
 if (continueFurther == F) {
