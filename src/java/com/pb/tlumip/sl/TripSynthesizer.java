@@ -1007,7 +1007,17 @@ public class TripSynthesizer {
         double eeTripCounter = 0;
         double iiTripCounter = 0;
         double eiTripCounter = 0;
-
+        
+        //set to write trips to log file
+        int traceOrigin = -1;
+        int traceDest = -1;
+        if (rb.containsKey("sl.cttrips.trace.origin")) {
+        	traceOrigin = Integer.parseInt(rb.getString("sl.cttrips.trace.origin"));
+        }
+        if (rb.containsKey("sl.cttrips.trace.destination")) {
+        	traceDest = Integer.parseInt(rb.getString("sl.cttrips.trace.destination"));
+        }
+        
         PrintWriter writer = null;
         try {
             BufferedReader reader = new BufferedReader(new FileReader(tripFile.path));
@@ -1044,14 +1054,23 @@ public class TripSynthesizer {
                     ((CTTripFile) tripFile).updateCurrentTourOrigin(tripFileLine);
                 String origin = tripFileLine[originId];
                 String dest = tripFileLine[destId];
-                SelectLinkData slData = sld.get(tripFile.getTimePeriodFromRecord(tripFileLine));
+                SelectLinkData slData = sld.get(tripFile.getTimePeriodFromRecord(tripFileLine));                
                 String od = SelectLinkData.formODLookup(origin,dest);
                 String lastTripType = tripFile.getLastTripType();
                 tripFile.setLastTripType(tripFileLine);
+                
                 if (!slData.containsOd(od)) {
                     try {
                         if (internalZones.contains(Integer.parseInt(origin)) && internalZones.contains(Integer.parseInt(dest)))
                             writer.println(line.trim() + "," + origin + "," + dest + ",1.0," + tripFile.getTourHome(tripFileLine) + "," + lastTripType);
+                        
+	                        //trace debugging ct trips
+	                        if ( ctTrips & (Integer.parseInt(origin) == traceOrigin) & (Integer.parseInt(dest) == traceDest) ) {  
+	                        	String result = "ctTrips trace not in slData origin=" + traceOrigin + " dest=" + traceDest;
+	                            result = result + " " + line.trim() + "," + origin + "," + dest + ",1.0," + tripFile.getTourHome(tripFileLine) + "," + lastTripType;
+	                        	logger.info(result);
+	                        }
+                        
                     } catch (NumberFormatException e) {
                         //ignore
                     }
@@ -1095,6 +1114,7 @@ public class TripSynthesizer {
                     }
                     for (String ae : additionalEntries)
                         writer.println(line.trim() + ae);
+
                     continue;
                 }
 
@@ -1136,6 +1156,15 @@ public class TripSynthesizer {
                 }
                 for (String ae : additionalEntries)
                     writer.println(line.trim() + ae);
+                
+                //trace debugging ct trips
+                if ( ctTrips & (Integer.parseInt(origin) == traceOrigin) & (Integer.parseInt(dest) == traceDest) ) {  
+                	String result = "ctTrips trace origin=" + traceOrigin + " dest=" + traceDest + " " + line.trim();
+                	for (String ae : additionalEntries)
+                        result = result + ae;
+                	logger.info(result);
+                }
+                
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

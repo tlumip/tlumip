@@ -72,6 +72,8 @@ public class SelectLink {
                     "ta.version.file",
                     "ta.peak.paths.version.file",
                     "ta.offpeak.paths.version.file",
+                    "ta.pm.paths.version.file",
+                    "ta.ni.paths.version.file",
                     "sl.input.file.select.links",
                     "sl.output.file.select.link.results",
                     "sl.visum.demand.segment.mapping");

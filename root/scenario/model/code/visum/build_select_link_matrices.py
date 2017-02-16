@@ -29,7 +29,7 @@ from __future__ import with_statement
 #
 # This script is called as:
 #
-#      python build_select_link_matrices.py version_file peak_paths_version_file offpeak_paths_version_file select_link_file output_file dsegs
+#      python build_select_link_matrices.py version_file peak_paths_version_file offpeak_paths_version_file pm_paths_version_file ni_paths_version_file select_link_file output_file dsegs
 #
 #   where the files must be the full (absolute) paths, and dsegs is a valid python
 #   dictionary from demand segment names to their matrix index numbers (in the VISUM version
@@ -47,8 +47,8 @@ import shutil
 import ast
 from Properties import Properties
 
-if len(sys.argv) < 6:
-    print "Missing arguments! Usage:\n\t" + "python build_select_link_matrices.py version_file peak_paths_version_file offpeak_paths_version_file select_link_file output_file dsegs"
+if len(sys.argv) < 8:
+    print "Missing arguments! Usage:\n\t" + "python build_select_link_matrices.py version_file peak_paths_version_file offpeak_paths_version_file pm_paths_version_file ni_paths_version_file select_link_file output_file dsegs"
     sys.exit(1)
 
 #load properties
@@ -58,11 +58,15 @@ properties.loadPropertyFile(property_file)
 programVersion = properties['visum.version']
 addDemandMatrices = ast.literal_eval(properties['sl.add.demand.matrices'].capitalize()) #capitalize first letter to make sure that True or False strings are in the format expected by python
 main_version_file = sys.argv[1]
+
 peak_path_version_file = sys.argv[2]
 offpeak_path_version_file = sys.argv[3]
-select_link_file = sys.argv[4]
-output_file = os.path.join(os.path.dirname(main_version_file),sys.argv[5])
-dsegs = eval(sys.argv[6])
+pm_path_version_file = sys.argv[4]
+ni_path_version_file = sys.argv[5]
+
+select_link_file = sys.argv[6]
+output_file = os.path.join(os.path.dirname(main_version_file),sys.argv[7])
+dsegs = eval(sys.argv[8])
 fb_matrix = os.path.join(os.path.dirname(main_version_file),'flow_bundle_temp.mtx')
 matrix_index_next = 21 #index of the next matrix in the main version file - used to add SL and non-SL demand matrices
 
@@ -131,11 +135,14 @@ class FbThread(threading.Thread):
 
             if self.dseg.find('offpeak') > -1:
                 v_file = offpeak_path_version_file
+            elif self.dseg.find('pm') > -1:
+                v_file = pm_path_version_file
+            elif self.dseg.find('ni') > -1:
+                v_file = ni_path_version_file
             else:
-                v_file = peak_path_version_file
-
+                v_file = peak_path_version_file 
+            
             self.Visum = loadVersion(v_file)
-
             for ft_node in self.ft_nodes[self.index:]:
                 print "dseg: " + self.dseg + "   ftnode: " + str(ft_node)
                 netElem = self.Visum.CreateNetElements()
