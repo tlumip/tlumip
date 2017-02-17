@@ -218,8 +218,8 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
     print('total select link trips: ' + str(len(trips_select_link)))
     
     #assign station number
-    trips_select_link.EXTERNAL_ZONE_ORIGIN[trips_select_link['DIRECTION']=='IN'] = '_' + trips_select_link['STATIONNUMBER'].astype(str)
-    trips_select_link.EXTERNAL_ZONE_DESTINATION[trips_select_link['DIRECTION']=='OUT'] = '_' + trips_select_link['STATIONNUMBER'].astype(str)
+    trips_select_link.EXTERNAL_ZONE_DESTINATION[trips_select_link['DIRECTION']=='IN'] = '_' + trips_select_link['STATIONNUMBER'].astype(str)
+    trips_select_link.EXTERNAL_ZONE_ORIGIN[trips_select_link['DIRECTION']=='OUT'] = '_' + trips_select_link['STATIONNUMBER'].astype(str)
 
     #summary of trips by time period, stations, and direction
     if len(trips_select_link) > 0:
@@ -234,33 +234,35 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
         summary = summary.rename(columns={'SELECT_LINK_PERCENT':colname})
         summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
         summary_df = summary_df.fillna(0)
+
+        #drop unnecessary fields
+        trips_select_link = trips_select_link.drop(['ASSIGNCLASS','ASSIGNCLASS_NEW','FROMNODETONODE','DIRECTION','STATIONNUMBER', 'AUTO_SL_OD', 'TRUCK_SL_OD'], 1)
+        
+        #append HOME_ZONE and FROM_TRIP_TYPE fields
+        #trucks
+        if (colname == 'CT_TRIP') | (colname == 'ET_TRIP'):
+            #set HOME_ZONE as trip origin and FROM_TRIP_TYPE to empty
+            trips_select_link['HOME_ZONE'] = trips_select_link['origin']
+            trips_select_link['FROM_TRIP_TYPE'] = ''
+
+        #autos
+        else:
+            trips_select_link = determine_home_zone(trips_select_link)
+            if 'SDT' in infile:
+                trips_select_link = determine_sdt_trip_type(trips_select_link, trips)
+            elif 'LDT' in infile:
+                trips_select_link = determine_ldt_trip_type(trips_select_link, trips)
+            else:
+                print('Unexpected file: ' + infile)
+        
     else:
         summary_df[colname] = 0
-    
-    #drop unnecessary fields
-    trips_select_link = trips_select_link.drop(['ASSIGNCLASS','ASSIGNCLASS_NEW','FROMNODETONODE','DIRECTION','STATIONNUMBER', 'AUTO_SL_OD', 'TRUCK_SL_OD'], 1)
-    
-    #append HOME_ZONE and FROM_TRIP_TYPE fields
-    #trucks
-    if (colname == 'CT_TRIP') | (colname == 'ET_TRIP'):
-        #set HOME_ZONE as trip origin and FROM_TRIP_TYPE to empty
-        trips_select_link['HOME_ZONE'] = trips_select_link['origin']
-        trips_select_link['FROM_TRIP_TYPE'] = ''
 
-    #autos
-    else:
-        trips_select_link = determine_home_zone(trips_select_link)
-        if 'SDT' in infile:
-            trips_select_link = determine_sdt_trip_type(trips_select_link, trips)
-        elif 'LDT' in infile:
-            trips_select_link = determine_ldt_trip_type(trips_select_link, trips)
-        else:
-            print('Unexpected file: ' + infile)
-            
     print('writing trip file ...')
     outfile = os.path.splitext(infile)[0] + '_select_link.csv'
     outfile = os.path.join(output_folder, outfile)
     trips_select_link.to_csv(outfile, index = False)
+        
     
     return(outfile, summary_df)
 
