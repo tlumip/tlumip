@@ -37,17 +37,18 @@
 # Authors
 #   Ben Stabler, stabler@pbworld.com, 081810
 #   Amar Sarvepalli, sarvepalli@pbworld.com, 062411
+#   Nagendra Dhakar, nagendra.dhakar@rsginc.com, 02162017
 
 # Revisions
 #   10/6/11 to optionally allow comparisons for TSTEPs common to all databases
-#   02/15/17 to make the output look like a regular viz db. also, error checks for field names and field types
+#   02/16/17 to make the output look like a regular viz db. also, error checks for field names and field types
 
 #=========================================================================================================
 # INPUT AND OUTPUT FILES
 
   # Specify all input database file names as list 
     dbFileNames = c("E:\\Projects\\Clients\\odot\\Tasks\\AverageDatabases\\data\\Reference.db",
-                    "E:\\Projects\\Clients\\odot\\Tasks\\AverageDatabases\\data\\Reference.db")
+                    "E:\\Projects\\Clients\\odot\\Tasks\\AverageDatabases\\data\\Pessimistic.db")
     
       
   # Specify an output database file name
@@ -86,13 +87,11 @@
   
     #Get info
     tableName = averageFieldList["tableName"]
-    keys = averageFieldList["keys"]
-    fields = averageFieldList["fields"]
     
     if(is.na(tsteps)) {
-    	query = paste("SELECT", keys, ",", fields, "FROM", tableName)
+      query = paste("SELECT * FROM ", tableName)
     } else {
-      query = paste("SELECT", keys, ",", fields, "FROM", tableName, "WHERE TSTEP IN (", paste(tsteps, collapse=","), ")")
+      query = paste("SELECT * FROM ", tableName, "WHERE TSTEP IN (", paste(tsteps, collapse=","), ")")
     }
     return(query)
   } 
@@ -236,10 +235,7 @@ write.csv(checkTables,outCheckFile,row.names=F)
       # loop by field names (rows in the temp table)
         for (f in 1: max(t_temp$fnum)){
           tempFldName <- as.character(unlist(t_temp$fname[f]))
-          
-          if (grepl("[.]",tempFldName)){
-            print(paste("Field name is not compatible: ", tempFldName))
-          } else {
+        
             # Check for Keys and get fields for Keys
             if(t_temp$key_fld[f] == "FLDS") {
               cntF=cntF+1
@@ -249,7 +245,7 @@ write.csv(checkTables,outCheckFile,row.names=F)
                 fldName = paste(as.character(fldName), tempFldName,sep=",")
               }
 
-            } else {
+            } else if (t_temp$key_fld[f] == "KEYS") {
               #"KEYS" or "NULL"
               cntK=cntK+1
               if (cntK == 1) {
@@ -259,8 +255,6 @@ write.csv(checkTables,outCheckFile,row.names=F)
               }
               
             } # end if statement            
-            
-          }
 
         } # End loop by field      
          
@@ -295,12 +289,13 @@ write.csv(checkTables,outCheckFile,row.names=F)
 
 # Loop through queries
   for (tableName in tablesDB){
-    print(tableName)
+    cat(paste("Table being processed: ", tableName, "\n"))
     
-    table_exist = FALSE
+    table_exist = FALSE  #TRUE if table exists in average fields list. Dafault is FALSE
+    skip = FALSE # TRUE if number of records in the databases are not same. Default is FALSE
     
     for (i in 1:length(averageFields)){
-      if (tableName == averageFields[[i]]["tableName"]) {
+      if (toupper(tableName) == averageFields[[i]]["tableName"]){
         table_exist = TRUE #table exist in average fields
         tableIndex = i
       }
@@ -321,9 +316,7 @@ write.csv(checkTables,outCheckFile,row.names=F)
           query = buildQuery(averageFields[[tableIndex]])
         }
         cat(paste(query, "\n"))
-        print(query)
         tableData = dbGetQuery(inDB, query)
-        #tableData[is.na(tableData)] <- 0
         colnames(tableData) = toupper(colnames(tableData))
         
         # Get fields to average as a vector
@@ -333,7 +326,7 @@ write.csv(checkTables,outCheckFile,row.names=F)
         for(f in fieldsAsVector) {
           tableData[,f] <- as.numeric(as.character(tableData[,f]))
         }        
-
+        
         # Add together
         if(j==1) {
           sumData = tableData
@@ -345,18 +338,22 @@ write.csv(checkTables,outCheckFile,row.names=F)
               sumData[,f] = sumData[,f] + tableData[,f] #assumes row order is the same across DBs
             }
           } else {
-            stop("Different number of resulting records across databases for the query")
+            cat("Different number of resulting records across databases for the query. Skipping. \n")
+            sumData = tableData
+            skip = TRUE
           }
         }
         dbDisconnect(inDB)
       }
       
-      # Simple average of results
-      for(f in fieldsAsVector) {
-        cat(paste("Average", f, "\n"))
-        sumData[,f] = sumData[,f] / length(dbFileNames)
+      if (!skip){
+        # Simple average of results
+        for(f in fieldsAsVector) {
+          cat(paste("Average", f, "\n"))
+          sumData[,f] = sumData[,f] / length(dbFileNames)
+        }        
       }
-            
+
     } else {
       print(paste("Table is NULL in the master table: ", tableName))
       inDB = dbConnect(m, dbname = dbFileNames[1]) #get data of the first database
