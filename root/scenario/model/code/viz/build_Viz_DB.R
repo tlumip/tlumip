@@ -171,6 +171,10 @@ db = dbConnect(m, dbname = databaseFileName)
 #read helper tables
 allZones = read.csv(allZonesFileName)
 
+#read zone shapes
+zoneShapes = read.csv("zone_shapes.wkt",sep=";")
+allZones$WKTSURFACE = zoneShapes$WKTSURFACE[match(allZones$Azone, zoneShapes$NO)]
+
 #create allzones tables
 dbWriteTable(db,"ALLZONES",allZones, row.names=F)
 azones = dbGetQuery(db,"SELECT AZONE FROM ALLZONES WHERE STATE != 'WM'")[[1]] #no world markets
