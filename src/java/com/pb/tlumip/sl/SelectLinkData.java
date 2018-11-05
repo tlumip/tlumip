@@ -4,6 +4,7 @@ import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.datafile.TextFile;
 import com.pb.common.util.ResourceUtil;
+
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -170,10 +171,12 @@ public class SelectLinkData {
                 if (internalZones.contains(getZoneFromLookup(od,false))) {
                     logger.info("ii pair: " + od);
                 } else {
+                	logger.info("destination is not in internal zones: " + od);
                     logger.warn("Conflict for od " + od + "; check all o and d records in the select link results input file for consistency");
                     problemOds.add(od);
                 }
             } else if (internalZones.contains(getZoneFromLookup(od,false))) {
+            	logger.info("origin is not in internal zones: " + od);
                 logger.warn("Conflict for od " + od + "; check all o and d records in the select link results input file for consistency");
                 problemOds.add(od);
             }
@@ -260,13 +263,21 @@ public class SelectLinkData {
         //todo: above line for testing - comment next two lines and 5th line down and copy file at end of method for production
         String weavingFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.weaving");
         tf.writeTo(weavingFile);
-
+        
         //generate weaving paths
         if (SelectLink.visumMode(rb)) {
+        	String pathsVersionFile = null;
+        	if (mode.contains("offpeak"))
+        		pathsVersionFile = "ta.offpeak.paths.version.file";
+        	else if (mode.contains("pm"))
+        		pathsVersionFile = "ta.pm.paths.version.file";
+          	else if (mode.contains("ni"))
+        		pathsVersionFile = "ta.ni.paths.version.file";
+          	else
+        		pathsVersionFile = "ta.peak.paths.version.file";
+        	
             SelectLink.runPythonScript("sl.select.link.node.sequence.python.file","generate select link weaving paths",rb,
-                    mode.contains("offpeak") ?  "ta.offpeak.paths.version.file" : "ta.peak.paths.version.file",
-                    "sl.output.file.select.link.weaving",
-                    mode);
+            		pathsVersionFile,"sl.output.file.select.link.weaving",mode);
         } else {
             SelectLink.runRScript("sl.select.link.node.sequence.r.file","generate select link weaving paths",rb,ResourceUtil.getProperty(rb,"sl.mode.key") + "=" + mode);
         }
@@ -280,7 +291,8 @@ public class SelectLinkData {
                 if (!odWeavingMap.containsKey(od))
                     odWeavingMap.put(od,new LinkedList<WeavingData>());
                 String[] links = tds.getStringValueAt(i,"links").split(";");
-                String[] order = tds.getStringValueAt(i,"ordering").split("\\s");
+                //String[] order = tds.getStringValueAt(i,"ordering").split("\\s");
+                String[] order = tds.getStringValueAt(i,"ordering").split(";");
                 String[] orderedLinks = new String[links.length];
                 for (int k = 0; k < orderedLinks.length; k++)
                     orderedLinks[Integer.parseInt(order[k])-1] = links[k];

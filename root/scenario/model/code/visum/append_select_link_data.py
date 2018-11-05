@@ -67,7 +67,7 @@ employment_file = properties['sdt.current.employment']
 alpha2beta_file = os.path.join(output_folder,'alpha2beta.csv')
 
 #output summary file
-out_summary_file = properties['sl.output.file.select.link.summary']
+out_errors_file = properties['sl.output.file.select.link.errors']
 
 '''
 reads a csv file
@@ -295,6 +295,7 @@ def zip_output(infile_sdt, infile_ldt, infile_ldt_vehicle, infile_ct, infile_et)
 generate summary of OD pairs in selectliLinkResults.csv by time period and mode
 '''
 def generate_select_link_summary(mydata):
+    print('Generate select link summary')
     mydata['AUTO_SL_OD'] = 0
     mydata['TRUCK_SL_OD'] = 0
     mydata['ASSIGNCLASS_NEW'] = 0
@@ -311,6 +312,8 @@ def generate_select_link_summary(mydata):
     
     summary_df = mydata.groupby(['ASSIGNCLASS_NEW', 'STATIONNUMBER','DIRECTION']).sum()[['AUTO_SL_OD', 'TRUCK_SL_OD']].reset_index()
     summary_df = summary_df.rename(columns = {'ASSIGNCLASS_NEW': 'ASSIGNCLASS'})
+    
+    print('Finished select link summary')
 
     return(summary_df)
 
@@ -319,11 +322,14 @@ main function that appends select link data to trip files
 '''
 def main():
     global select_link_summary
+    
     #read select link data
-    select_link_result = read_data(select_link_file, full_file_path = False)
+    print('Read select link data')
+    select_link_result = read_data(select_link_file, full_file_path = False)   
     select_link_summary = generate_select_link_summary(select_link_result)
     
     #append select link result to trips
+    print('Append select link results to trips')
     outfile_sdt, select_link_summary = append_select_link(trips_sdt_file, 'tripStartTime', select_link_result, tourfile=tours_sdt_file, colname='SDT_PERSON_TRIP', summary_df=select_link_summary)
     outfile_ldt, select_link_summary = append_select_link(trips_ldt_file, 'tripStartTime', select_link_result, tourfile=tours_ldt_file, colname='LDT_PERSON_TRIP', summary_df=select_link_summary)
     outfile_ldt_vehicle, select_link_summary = append_select_link(trips_ldt_vehicle_file, 'tripStartTime', select_link_result, tourfile=tours_ldt_file, colname='LDT_VEHICLE_TRIP', summary_df=select_link_summary)
@@ -331,9 +337,11 @@ def main():
     outfile_et, select_link_summary = append_select_link(trips_et_file, 'tripStartTime', select_link_result, tourfile=None, colname='ET_TRIP', summary_df=select_link_summary)
 
     #zip outputs
+    print('Zip outputs')
     zip_output(outfile_sdt, outfile_ldt, outfile_ldt_vehicle, outfile_ct, outfile_et)
 
     #write summary
+    print('Write select link summary')
     select_link_summary.to_csv(os.path.join(output_folder, out_summary_file), header=True, index=False) 
     
 if __name__ == "__main__":

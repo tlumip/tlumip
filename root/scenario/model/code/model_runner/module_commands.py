@@ -289,17 +289,29 @@ class ModuleCommands(object):
         #select link input - find if it is single link
         select_link_input_file = properties_set['sl.input.file.select.links']
         select_link_input = pd.read_csv(select_link_input_file)
-        
+
+        #add error checking
+        python_file = properties_set['sl.check.select.link.output.python.file']
+        commands = [quote(python_executable.replace('/','\\')),
+                   quote(python_file.replace('/','\\')),
+                   quote(property_file)]        
         #for single use a ptyhon script to append select link results to trips
         if (len(select_link_input) == 1) and ('append' in property_file):
             python_file = properties_set['sl.append.select.link.data.python.file']
             command = [quote(python_executable.replace('/','\\')),
                        quote(python_file.replace('/','\\')),
                        quote(property_file)]
-            return [' '.join(command)]            
+            command = ' '.join(command)
+            commands = [command] + [' '.join(commands)]
         else:
             #java program
-            return self.runModule(module_set,scenario_outputs,property_file,year)
+            command = self.runModule(module_set,scenario_outputs,property_file,year)
+            if ('append' in property_file):
+                commands = command + [' '.join(commands)]
+            else:
+                commands = command
+        return commands
+        
 
     def runVIZ(self,module_set,scenario_outputs,property_file,year,properties):
         """
