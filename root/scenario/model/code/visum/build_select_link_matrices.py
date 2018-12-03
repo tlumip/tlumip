@@ -247,6 +247,7 @@ class FbThread(threading.Thread):
                 if(addDemandMatrices):
                     #initialize an array
                     matrix_sl = np.zeros((len(zones),len(zones)))
+                    matrix_sl_count = np.zeros((len(zones),len(zones)))
                 
                 if self.normal:
                     row = {}
@@ -276,6 +277,7 @@ class FbThread(threading.Thread):
                         
                         if(addDemandMatrices):
                             matrix_sl[zone_indices[from_zone],zone_indices[to_zone]] = float(data[2]) #set demand for the OD pair
+                            matrix_sl_count[zone_indices[from_zone],zone_indices[to_zone]] = 1 #set select link count for the OD pair. if the same pair is encountered in another link, it will get added. then later we divide SL trips by SL count.
                         
                         ttrips = trips[zone_indices[from_zone]][zone_indices[to_zone]]
                         if ttrips > 0:
@@ -291,14 +293,19 @@ class FbThread(threading.Thread):
                     #total SL demand
                     if self.index==0:
                         matrix_dseg_sl = matrix_sl
+                        matrix_dseg_sl_count = matrix_sl_count
                     else:
                         matrix_dseg_sl += matrix_sl
+                        matrix_dseg_sl_count += matrix_sl_count
 
                 self.index += 1
             
             del self.Visum
 
             if (addDemandMatrices):
+                #divide SL demand by number of select link count
+                matrix_dseg_sl = np.divide(matrix_dseg_sl, matrix_dseg_sl_count, out=np.zeros_like(matrix_dseg_sl), where=matrix_dseg_sl_count!=0)
+                
                 print("adding SL demand matrix to main version file: " + self.dseg)
                 Visum = loadVersion(main_version_file_sl)
                 
