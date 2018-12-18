@@ -302,7 +302,7 @@ public class SelectLinkData {
             throw new RuntimeException(e);
         }
 
-        copyFile(new File(weavingFile), new File(weavingFile.replace(".csv","_" + mode + ".csv")));
+        //copyFile(new File(weavingFile), new File(weavingFile.replace(".csv","_" + mode + ".csv")));
     }
 
     private void copyFile(File sourceFile, File destFile) {

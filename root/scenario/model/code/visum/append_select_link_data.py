@@ -67,6 +67,7 @@ employment_file = properties['sdt.current.employment']
 alpha2beta_file = os.path.join(output_folder,'alpha2beta.csv')
 
 #output summary file
+out_summary_file = properties['sl.output.file.select.link.summary']
 out_errors_file = properties['sl.output.file.select.link.errors']
 
 '''
@@ -233,6 +234,25 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
         summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).count()['SELECT_LINK_PERCENT'].reset_index()
         summary = summary.rename(columns={'SELECT_LINK_PERCENT':colname})
         summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
+
+        if (colname == 'SDT_PERSON_TRIP')|(colname == 'LDT_PERSON_TRIP'):
+            trips_select_link['VEHICLETRIP'] = 0
+            trips_select_link.VEHICLETRIP[trips_select_link['tripMode']=='DA'] = 1
+            trips_select_link.VEHICLETRIP[trips_select_link['tripMode']=='SR2'] = 1/2
+            trips_select_link.VEHICLETRIP[trips_select_link['tripMode']=='SR3P'] = 1/3.5
+            #trips_select_link['VEHICLETRIP'] = trips_select_link['VEHICLETRIP'] * trips_select_link['SELECT_LINK_PERCENT']
+
+            if (colname == 'SDT_PERSON_TRIP'):
+                colname = 'SDT_VEHICLE_TRIP'
+            else:
+                colname = 'LDT_VEHICLE_TRIP_1'
+
+            summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).sum()['VEHICLETRIP'].reset_index()
+            summary['VEHICLETRIP'] = summary['VEHICLETRIP'].astype(int)
+            summary = summary.rename(columns={'VEHICLETRIP':colname})
+            
+            summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
+        
         summary_df = summary_df.fillna(0)
 
         #drop unnecessary fields

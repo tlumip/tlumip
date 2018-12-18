@@ -22,6 +22,7 @@ import numpy as np
 import zipfile
 import warnings
 from Properties import Properties
+from pandas.api.types import is_string_dtype
 
 #do not print warnings
 warnings.filterwarnings("ignore")
@@ -100,15 +101,21 @@ def determine_assign_class(mydata, field_time, mode_classes):
 def determine_direction(mydata):
     print('determine direction')
     mydata['DIRECTION'] = ''
-    mydata.DIRECTION[mydata['EXTERNAL_ZONE_ORIGIN'].str.contains('_')] ='IN'
-    mydata.DIRECTION[mydata['EXTERNAL_ZONE_DESTINATION'].str.contains('_')] = 'OUT'
-    mydata.DIRECTION[(mydata['EXTERNAL_ZONE_ORIGIN'].str.contains('_')) & (mydata['EXTERNAL_ZONE_DESTINATION'].str.contains('_'))] = 'EXT'
+    
+    if is_string_dtype(mydata['EXTERNAL_ZONE_ORIGIN']):
+        mydata.DIRECTION[mydata['EXTERNAL_ZONE_ORIGIN'].str.contains('_')] ='IN'
+
+    if is_string_dtype(mydata['EXTERNAL_ZONE_DESTINATION']):    
+        mydata.DIRECTION[mydata['EXTERNAL_ZONE_DESTINATION'].str.contains('_')] = 'OUT'
+        
+    if (is_string_dtype(mydata['EXTERNAL_ZONE_ORIGIN'])) & (is_string_dtype(mydata['EXTERNAL_ZONE_DESTINATION'])):    
+        mydata.DIRECTION[(mydata['EXTERNAL_ZONE_ORIGIN'].str.contains('_')) & (mydata['EXTERNAL_ZONE_DESTINATION'].str.contains('_'))] = 'EXT'
 
 
     mydata['STATIONNUMBER'] = ''
-    mydata.STATIONNUMBER[mydata['EXTERNAL_ZONE_ORIGIN'].str.contains('_')] =  mydata.EXTERNAL_ZONE_ORIGIN[mydata['EXTERNAL_ZONE_ORIGIN'].str.contains('_')]
-    mydata.STATIONNUMBER[mydata['EXTERNAL_ZONE_DESTINATION'].str.contains('_')] = mydata.EXTERNAL_ZONE_DESTINATION[mydata['EXTERNAL_ZONE_DESTINATION'].str.contains('_')]
-    mydata.STATIONNUMBER[(mydata['EXTERNAL_ZONE_ORIGIN'].str.contains('_')) & (mydata['EXTERNAL_ZONE_DESTINATION'].str.contains('_'))] = mydata.EXTERNAL_ZONE_DESTINATION[mydata['EXTERNAL_ZONE_DESTINATION'].str.contains('_')]
+    mydata.STATIONNUMBER[mydata['DIRECTION']=='IN'] =  mydata.EXTERNAL_ZONE_ORIGIN[mydata['DIRECTION']=='IN']
+    mydata.STATIONNUMBER[mydata['DIRECTION']=='OUT'] = mydata.EXTERNAL_ZONE_DESTINATION[mydata['DIRECTION']=='OUT']
+    mydata.STATIONNUMBER[mydata['DIRECTION']=='EXT'] = mydata.EXTERNAL_ZONE_DESTINATION[mydata['DIRECTION']=='EXT']
     
     return(mydata)
 

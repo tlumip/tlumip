@@ -88,34 +88,34 @@ public class TripSynthesizer {
         	
         	slSummaryData.get(strKey).add(autoOD);
         	slSummaryData.get(strKey).add(truckOD);
-        	slSummaryData.get(strKey).add(0.0); //2-SDT trips
-        	slSummaryData.get(strKey).add(0.0); //3-LDT person trips
-        	slSummaryData.get(strKey).add(0.0); //4-LDT vehicle trips
-        	slSummaryData.get(strKey).add(0.0); //5-CT trips
-        	slSummaryData.get(strKey).add(0.0); //6-ET trips
-        	//logger.info(strKey);
+        	slSummaryData.get(strKey).add(0.0); //2-SDT person trips
+        	slSummaryData.get(strKey).add(0.0); //3-SDT vehicle trips
+        	slSummaryData.get(strKey).add(0.0); //4-LDT person trips
+        	slSummaryData.get(strKey).add(0.0); //5-LDT vehicle trips - from person trip file
+        	slSummaryData.get(strKey).add(0.0); //6-LDT vehicle trips - from vehicle trip file
+        	slSummaryData.get(strKey).add(0.0); //7-CT trips
+        	slSummaryData.get(strKey).add(0.0); //8-ET trips
+        	
         }
         
         logger.info("Synthesizing SDT");
         synthesizeTripsAndAppendToTripFile(sdtTripFile,true,buildSelectLinkTripFile(sdtTripFile),internalZones,slSummaryData,2);
         logger.info("Synthesizing LDT Vehicle");
-        synthesizeTripsAndAppendToTripFile(ldtTripFile,true,buildSelectLinkTripFile(ldtTripFile),internalZones,slSummaryData,4);
+        synthesizeTripsAndAppendToTripFile(ldtTripFile,true,buildSelectLinkTripFile(ldtTripFile),internalZones,slSummaryData,6);
         logger.info("Synthesizing LDT Person");
         //TripFile ldtPersonStub = new LDTPersonTripFileStub(rb,null);
-        synthesizeTripsAndAppendToTripFile(ldtPersonStub,true,buildSelectLinkTripFile(ldtPersonStub),internalZones,slSummaryData,3);
+        synthesizeTripsAndAppendToTripFile(ldtPersonStub,true,buildSelectLinkTripFile(ldtPersonStub),internalZones,slSummaryData,4);
         logger.info("Synthesizing CT");
-        synthesizeTripsAndAppendToTripFile(ctTripFile,false,buildSelectLinkTripFile(ctTripFile),internalZones,slSummaryData,5);
+        synthesizeTripsAndAppendToTripFile(ctTripFile,false,buildSelectLinkTripFile(ctTripFile),internalZones,slSummaryData,7);
         logger.info("Synthesizing ET");
-        synthesizeTripsAndAppendToTripFile(etTripFile,false,buildSelectLinkTripFile(etTripFile),internalZones,slSummaryData,6);
+        synthesizeTripsAndAppendToTripFile(etTripFile,false,buildSelectLinkTripFile(etTripFile),internalZones,slSummaryData,8);
         
-        //close summary file
-        //writer_summary.close();
         
-    	String newHeader = "ASSIGNCLASS,STATIONNUMBER,DIRECTION,AUTO_SL_OD,TRUCK_SL_OD,SDT_PESON_TRIP,LDT_PERSON_TRIP,LDT_VEHICLE_TRIP,CT_TRIP,ET_TRIP";
+    	String newHeader = "ASSIGNCLASS,STATIONNUMBER,DIRECTION,AUTO_SL_OD,TRUCK_SL_OD,SDT_PERSON_TRIP,SDT_VEHICLE_TRIP,LDT_PERSON_TRIP,LDT_VEHICLE_TRIP_1,LDT_VEHICLE_TRIP,CT_TRIP,ET_TRIP";
     	
         PrintWriter writer = null;
         String newSummaryFile = summaryFile;
-        //String newSummaryFile = "E:/Projects/Clients/ODOT/Model/tlumip_v26/root/scenario/outputs/t20/sl_summary_test.csv";
+
 		try {
 			writer = new PrintWriter(newSummaryFile);
 			writer.println(newHeader); 
@@ -125,7 +125,7 @@ public class TripSynthesizer {
 	        		line = line + "," + value.intValue();
 	        	}
 	        	writer.write(line + "\n");
-	        	//writer.write(key + "," + slSummaryData.get(key) + "\n");
+	        	
 	        }
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -1097,9 +1097,12 @@ public class TripSynthesizer {
 
 
         boolean ctTrips = tripFile instanceof CTTripFile;
+        boolean sdtTrips = tripFile instanceof SDTTripFile;
+        boolean ldtTrips = tripFile instanceof LDTPersonTripFileStub;
         double tripsLostToWeaving = 0.0; //trips that can't be used because od has a weaving path
         int originId = -1;
         int destId = -1;
+        int modeId = -1;
         double tripCounter = 0;
         double eeTripCounter = 0;
         double iiTripCounter = 0;
@@ -1108,7 +1111,7 @@ public class TripSynthesizer {
         //double[] tripSmmary = {0,0,0,0};
         //Map<String, Integer> tripSummary = new HashMap<String, Integer>();
         //String keySummary = assignClass + stationNum + direction;
-        
+                
         //set to write trips to log file
         int traceOrigin = -1;
         int traceDest = -1;
@@ -1134,9 +1137,11 @@ public class TripSynthesizer {
                     originId = counter;
                 else if (h.equals(tripFile.destField))
                     destId = counter;
+                else if (h.equals("tripMode"))
+                	modeId = counter;
                 counter++;
             }
-            logger.info("origin dest fields " + originId + " " + destId);
+            logger.info("origin dest fields " + originId + " " + destId + " " + modeId);
 
             String newHeader = line.trim() + ",EXTERNAL_ZONE_ORIGIN,EXTERNAL_ZONE_DESTINATION,SELECT_LINK_PERCENT,HOME_ZONE,FROM_TRIP_TYPE";
             writer.println(newHeader);
@@ -1148,6 +1153,8 @@ public class TripSynthesizer {
             String dir_string = null;
             String strKey = null;
             Double totalTrips = null;
+            Double vehicleTrips = null;
+            Double vehicleTrip = null;
 
             //read trips
             counter = 0;
@@ -1162,6 +1169,8 @@ public class TripSynthesizer {
                     ((CTTripFile) tripFile).updateCurrentTourOrigin(tripFileLine);
                 String origin = tripFileLine[originId];
                 String dest = tripFileLine[destId];
+                String mode = null;
+                if (sdtTrips || ldtTrips) mode = tripFileLine[modeId];
                 SelectLinkData slData = sld.get(tripFile.getTimePeriodFromRecord(tripFileLine));                
                 String od = SelectLinkData.formODLookup(origin,dest);
                 String lastTripType = tripFile.getLastTripType();
@@ -1178,6 +1187,19 @@ public class TripSynthesizer {
                 	tod_string = "pm";
                 else
                 	tod_string = "ni";
+                
+                //trip mode
+                if (sdtTrips || ldtTrips) {
+                    vehicleTrip = 0.0;
+                    
+                    if (mode.equals("DA"))
+                    	vehicleTrip = 1.0;
+                    else if (mode.equals("SR2"))
+                    	vehicleTrip = 1.0/2.0;
+                    else if (mode.equals("SR3P"))
+                    	vehicleTrip = 1.0/3.5;
+                    //logger.info("\tTrip mode:" + mode + ", vehicle trips: " + vehicleTrip);
+                }
                 
                 //if od pair is not in the select link file
                 if (!slData.containsOd(od)) {
@@ -1242,7 +1264,13 @@ public class TripSynthesizer {
                                 strKey = tod_string + "," + station + "," + dir_string;
                             	totalTrips = slSummaryData.get(strKey).get(fieldIndex);
                             	totalTrips += wd.getPercentage();
-                            	slSummaryData.get(strKey).set(fieldIndex, totalTrips);                                
+                            	slSummaryData.get(strKey).set(fieldIndex, totalTrips); 
+                            	
+                            	if (sdtTrips || ldtTrips) {
+                            		vehicleTrips = slSummaryData.get(strKey).get(fieldIndex+1);
+                            		vehicleTrips += vehicleTrip * wd.getPercentage();
+                            		slSummaryData.get(strKey).set(fieldIndex+1, vehicleTrips);
+                            	}
                                 
                             }
                                 
@@ -1266,7 +1294,13 @@ public class TripSynthesizer {
                             strKey = tod_string + "," + station + "," + dir_string;
                         	totalTrips = slSummaryData.get(strKey).get(fieldIndex);
                         	totalTrips += wd.getPercentage();
-                        	slSummaryData.get(strKey).set(fieldIndex, totalTrips);                             
+                        	slSummaryData.get(strKey).set(fieldIndex, totalTrips); 
+                        	
+                        	if (sdtTrips || ldtTrips) {
+                        		vehicleTrips = slSummaryData.get(strKey).get(fieldIndex+1);
+                        		vehicleTrips += vehicleTrip * wd.getPercentage();
+                        		slSummaryData.get(strKey).set(fieldIndex+1, vehicleTrips);
+                        	}
                         }
                     }
                     for (String ae : additionalEntries)
@@ -1329,6 +1363,12 @@ public class TripSynthesizer {
                     	totalTrips = slSummaryData.get(strKey).get(fieldIndex);
                     	totalTrips += ld.getOdPercentage(od);
                     	slSummaryData.get(strKey).set(fieldIndex, totalTrips);
+                    	
+                    	if (sdtTrips || ldtTrips) {
+                    		vehicleTrips = slSummaryData.get(strKey).get(fieldIndex+1);
+                    		vehicleTrips += vehicleTrip * ld.getOdPercentage(od);
+                    		slSummaryData.get(strKey).set(fieldIndex+1, vehicleTrips);
+                    	}
                     }
                 }
                 for (String ae : additionalEntries)
