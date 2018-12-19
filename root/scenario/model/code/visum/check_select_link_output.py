@@ -16,7 +16,7 @@
 #Run from the tstep year outputs folder such as D:\swim2\scenario_16\outputs\t23
 #D:/swim2/model/lib/Python27/python.exe ..\..\model\code\visum\check_select_link_output.py
 
-import os, sys
+import os, sys, shutil
 import pandas as pd
 import numpy as np
 import zipfile
@@ -57,7 +57,7 @@ auto_classes = properties['sl.auto.classes'].split(",") #am, md, pm, ni
 truck_classes = properties['sl.truck.classes'].split(",") #am, md, pm, ni
 
 select_link_file = properties['sl.output.file.select.link.results'] #only file name - no full file path
-select_link_errors_file = properties['sl.output.file.select.link.errors'] #only file name - no full file path
+select_link_review_file = properties['sl.output.file.select.link.review'] #only file name - no full file path
 
 def unzip_output():
     basename = os.path.basename(out_zip_file)
@@ -119,13 +119,12 @@ def determine_direction(mydata):
     
     return(mydata)
 
-def error_check_data(data_dir):
+def review_data(data_dir):
+    #read SL outputs
     sdt = read_file(trips_sdt_file,data_dir)
     ldt = read_file(trips_ldt_file,data_dir)
     ct = read_file(trips_ct_file,data_dir)
     et = read_file(trips_et_file,data_dir)
-
-    #auto_modes = ["DA","SR2","SR3P"]
 
     sdt = determine_assign_class(sdt,"tripStartTime",auto_classes)
     ldt = determine_assign_class(ldt,"tripStartTime",auto_classes)
@@ -153,11 +152,11 @@ def error_check_data(data_dir):
     summary = summary_temp.groupby(["ASSIGNCLASS","DIRECTION","origin","destination"]).sum()
     summary = summary.reset_index()
 
-    #errors = summary_temp[summary_temp['SELECT_LINK_PERCENT']<0.99]
-    errors = summary[summary['SELECT_LINK_PERCENT']<0.99]
+    #od_review = summary_temp[summary_temp['SELECT_LINK_PERCENT']<0.99]
+    od_review = summary[summary['SELECT_LINK_PERCENT']<0.99]
     
     #return(summary)
-    return(errors)
+    return(od_review)
     
 
 '''
@@ -169,12 +168,17 @@ def main():
     print('Unzip select link outputs')
     data_dir = unzip_output()
 
-    print('Read select link outputs')
-    sl_errors = error_check_data(data_dir)
-    
+    print('Review select link outputs')
+    sl_review = review_data(data_dir)
+
     #write summary
     print('Write select link summary')
-    sl_errors.to_csv(os.path.join(output_folder, select_link_errors_file), header=True, index=False) 
+    sl_review.to_csv(os.path.join(output_folder, select_link_review_file), header=True, index=False)
+    
+    #remove the un-zipped folder
+    print('Delete unzipped outputs')
+    if os.path.isdir(data_dir):
+        shutil.rmtree(data_dir)
     
 if __name__ == "__main__":
     main()

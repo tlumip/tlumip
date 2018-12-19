@@ -229,11 +229,12 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
         trips_select_link.ASSIGNCLASS[trips_select_link['ASSIGNCLASS'].str.contains('_offpeak')] = 'offpeak'
         trips_select_link.ASSIGNCLASS[trips_select_link['ASSIGNCLASS'].str.contains('_ni')] = 'ni'
         trips_select_link.ASSIGNCLASS[trips_select_link['ASSIGNCLASS'].str.contains('_pm')] = 'pm'
-    
-        #summary of trips by time period, station number and direction
-        summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).count()['SELECT_LINK_PERCENT'].reset_index()
-        summary = summary.rename(columns={'SELECT_LINK_PERCENT':colname})
-        summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
+        
+        if (colname != 'LDT_VEHICLE_TRIP'):
+            #summary of trips by time period, station number and direction
+            summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).count()['SELECT_LINK_PERCENT'].reset_index()
+            summary = summary.rename(columns={'SELECT_LINK_PERCENT':colname})
+            summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
 
         if (colname == 'SDT_PERSON_TRIP')|(colname == 'LDT_PERSON_TRIP'):
             trips_select_link['VEHICLETRIP'] = 0
@@ -245,7 +246,7 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
             if (colname == 'SDT_PERSON_TRIP'):
                 colname = 'SDT_VEHICLE_TRIP'
             else:
-                colname = 'LDT_VEHICLE_TRIP_1'
+                colname = 'LDT_VEHICLE_TRIP'
 
             summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).sum()['VEHICLETRIP'].reset_index()
             summary['VEHICLETRIP'] = summary['VEHICLETRIP'].astype(int)
@@ -282,7 +283,6 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
     outfile = os.path.splitext(infile)[0] + '_select_link.csv'
     outfile = os.path.join(output_folder, outfile)
     trips_select_link.to_csv(outfile, index = False)
-        
     
     return(outfile, summary_df)
 
