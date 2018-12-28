@@ -42,6 +42,7 @@ import os,csv,sys,gc,time,threading,datetime
 import pythoncom
 import win32com.client as com
 import VisumPy.helpers
+import pandas as pd
 import numpy as np
 import shutil
 import ast
@@ -70,6 +71,9 @@ dsegs = eval(sys.argv[8])
 fb_matrix = os.path.join(os.path.dirname(main_version_file),'flow_bundle_temp.mtx')
 matrix_index_next = 21 #index of the next matrix in the main version file - used to add SL and non-SL demand matrices
 
+out_zip_file = properties['sl.output.bundle.file']
+output_folder = os.path.dirname(out_zip_file)
+
 #collect select link data
 ft_nodes = []
 with open(select_link_file,'rb') as f:
@@ -88,7 +92,49 @@ def loadVersion(version_file):
     Visum = com.Dispatch('visum.visum.'+programVersion)
     Visum.LoadVersion(version_file)
     return Visum
+
+
+'''
+reads a csv file
+'''
+def read_data(infile, full_file_path = True):
     
+    if (full_file_path==False):
+        infile = os.path.join(output_folder, infile)
+    
+    mydata = pd.read_csv(infile)
+
+    return(mydata)
+
+'''
+generate summary of OD pairs in selectliLinkResults.csv by time period and mode
+'''
+def generate_select_link_summary(mydata):
+    print('Generate select link summary')
+    mydata.head()
+    mydata['AUTO_SL_OD'] = 0
+    mydata['TRUCK_SL_OD'] = 0
+    mydata['ASSIGNCLASS_NEW'] = 0
+
+    #mode
+    mydata.AUTO_SL_OD[mydata['ASSIGNCLASS'].str.contains('a_')] = 1
+    mydata.TRUCK_SL_OD[mydata['ASSIGNCLASS'].str.contains('d_')] = 1
+
+    #time period
+    mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_peak')] = 'peak'
+    mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_offpeak')] = 'offpeak'
+    mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_ni')] = 'ni'
+    mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_pm')] = 'pm'
+    
+    summary_df = mydata.groupby(['ASSIGNCLASS_NEW', 'STATIONNUMBER','DIRECTION']).sum()[['AUTO_SL_OD', 'TRUCK_SL_OD']].reset_index()
+    summary_df = summary_df.rename(columns = {'ASSIGNCLASS_NEW': 'ASSIGNCLASS'})
+    
+    print('Finished select link summary')
+
+    return(summary_df)
+    
+
+
 Visum = loadVersion(main_version_file)
 
 #make a copy of the main version file, if SL demand matrices need to be added
@@ -201,6 +247,7 @@ class FbThread(threading.Thread):
                 if(addDemandMatrices):
                     #initialize an array
                     matrix_sl = np.zeros((len(zones),len(zones)))
+                    matrix_sl_count = np.zeros((len(zones),len(zones)))
                 
                 if self.normal:
                     row = {}
@@ -230,6 +277,7 @@ class FbThread(threading.Thread):
                         
                         if(addDemandMatrices):
                             matrix_sl[zone_indices[from_zone],zone_indices[to_zone]] = float(data[2]) #set demand for the OD pair
+                            matrix_sl_count[zone_indices[from_zone],zone_indices[to_zone]] = 1 #set select link count for the OD pair. if the same pair is encountered in another link, it will get added. then later we divide SL trips by SL count.
                         
                         ttrips = trips[zone_indices[from_zone]][zone_indices[to_zone]]
                         if ttrips > 0:
@@ -245,14 +293,19 @@ class FbThread(threading.Thread):
                     #total SL demand
                     if self.index==0:
                         matrix_dseg_sl = matrix_sl
+                        matrix_dseg_sl_count = matrix_sl_count
                     else:
                         matrix_dseg_sl += matrix_sl
+                        matrix_dseg_sl_count += matrix_sl_count
 
                 self.index += 1
             
             del self.Visum
 
             if (addDemandMatrices):
+                #divide SL demand by number of select link count
+                matrix_dseg_sl = np.divide(matrix_dseg_sl, matrix_dseg_sl_count, out=np.zeros_like(matrix_dseg_sl), where=matrix_dseg_sl_count!=0)
+                
                 print("adding SL demand matrix to main version file: " + self.dseg)
                 Visum = loadVersion(main_version_file_sl)
                 
@@ -306,3 +359,14 @@ with open(output_file,'wb') as f:
 
 if os.path.exists(fb_matrix):
     os.remove(fb_matrix)
+
+
+#read select link data
+print('Read select link data')
+select_link_result = read_data(output_file, full_file_path = True)   
+select_link_summary = generate_select_link_summary(select_link_result)
+
+#write summary
+print('Write select link summary')
+out_summary_file = properties['sl.output.file.select.link.summary']
+select_link_summary.to_csv(os.path.join(output_folder, out_summary_file), header=True, index=False) 

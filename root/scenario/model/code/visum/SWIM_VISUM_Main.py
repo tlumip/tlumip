@@ -1549,7 +1549,16 @@ class SwimModel(object):
 
         return (volumeFactor)
 
-
+    def writeZoneShapes(self):
+        print('write zones shapes in VISUM order to WKT format')
+        zoneNO = VisumHelpers.GetMulti(self.Visum.Net.Zones, "NO")
+        zoneWKTSURFACE = VisumHelpers.GetMulti(self.Visum.Net.Zones, "WKTSURFACE")
+        f = open("zone_shapes.wkt","w")
+        f.write("NO;WKTSURFACE\n")
+        for i in range(len(zoneNO)):
+          f.write(str(zoneNO[i]) + ";" + zoneWKTSURFACE[i] + "\n")
+        f.close()
+ 
 ############################################################
 #Main entry point
 
@@ -1603,6 +1612,7 @@ if __name__== "__main__":
         s.zonefieldVariables()
         s.assignLinkAzone()
         s.createModelInput()
+        s.writeZoneShapes()
         s.saveVersion()
         s.closeVisum()
         s.editskims()  # recompute mode choice logsums to external beta zones

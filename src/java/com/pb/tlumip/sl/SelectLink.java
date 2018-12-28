@@ -142,11 +142,15 @@ public class SelectLink {
                     if (line.length() > 0)
                         internalZones.add(Integer.parseInt(line));
                 }
+                reader.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        ts.synthesizeTripsAndAppendToTripFile(internalZones);
+        
+        String summaryFile = null;
+        summaryFile = rb.getString("sl.current.directory") + rb.getString("sl.output.file.select.link.summary");
+        ts.synthesizeTripsAndAppendToTripFile(internalZones, summaryFile);
         bundleAndZipOutputs(ts);
         for (File f : ts.getSelectLinkTripFiles())
             f.delete();

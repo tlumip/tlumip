@@ -70,13 +70,13 @@ with open(weaving_file,'rb') as f:
         (origin,destination) = map(int,od_pair)
         #links = map(int,row['links'].strip().split(';'))
         links = [(int(x[0]),int(x[1])) for x in map(str.split,row['links'].strip().split(';'))]
-        
         if not od_pair in paths:
+            #print("od pair is not in paths: " + str(origin) + "," + str(destination))
             paths[od_pair] = {}
-
             #build equivalent path links in paths
             segment = Visum.Net.DemandSegments.ItemByKey(dseg)
             num_paths = segment.GetNumPaths(origin,destination)
+            #print("number of paths for the od pair: " + str(num_paths))
             for path_id in range(1,num_paths+1):
                 paths[od_pair][path_id] = []
                 path_nodes = segment.GetPathNodes(origin,destination,path_id).GetAll
@@ -86,17 +86,21 @@ with open(weaving_file,'rb') as f:
                     bnode = int(path_nodes[n].AttValue('No'))
                     if not (anode,bnode) in links:
                         continue
-                    linkno = Visum.Net.Links.ItemByKey(anode,bnode).AttValue('No')
-                    paths[od_pair][path_id].append(linkno)
+                    #linkno = Visum.Net.Links.ItemByKey(anode,bnode).AttValue('No')
+                    #paths[od_pair][path_id].append(linkno)
+                    paths[od_pair][path_id].append((anode,bnode))
                     anode = bnode
 
         for path_id in paths[od_pair]:
+            #print("for loop, path id: " + str(path_id))
             link_path = paths[od_pair][path_id]
             if len(link_path) == len(links):
                 #found it, hopefully
                 order = []
                 success = True
                 for link in links:
+                    #this compares link id with from and to nodes - not right. it will never pass this test.
+                    #should compare link ids with links
                     if not link in link_path:
                         success = False
                         break
@@ -106,6 +110,7 @@ with open(weaving_file,'rb') as f:
                 new_row['ordering'] = ";".join(order)
                 output_rows.append(new_row)
                 break
+            
         else:
             #didn't find it
             print "ERROR: could not find weaving path for od pair " + str(od_pair) + ", links " + str(links)

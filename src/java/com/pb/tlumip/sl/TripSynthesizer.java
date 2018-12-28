@@ -3,6 +3,7 @@ package com.pb.tlumip.sl;
 import com.pb.common.datafile.CSVFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.*;
+import com.pb.tlumip.sl.SelectLinkData.LinkData;
 import com.pb.tlumip.ts.DemandHandler;
 
 import java.io.*;
@@ -26,6 +27,7 @@ public class TripSynthesizer {
     private final TripFile ldtTripFile;
     private final TripFile ctTripFile;
     private final TripFile etTripFile;
+    private final TripFile ldtPersonStub;
 
     //private final double[] factors; - not needed; want vehicles, not auto-equivalent trips
 
@@ -45,6 +47,7 @@ public class TripSynthesizer {
         ldtTripFile = new LDTTripFile(rb,ldtClassifier);
         ctTripFile = new CTTripFile(rb,ctClassifier);
         etTripFile = new ETTripFile(rb,etClassifier);
+        ldtPersonStub = new LDTPersonTripFileStub(rb,ldtClassifier);
 
         balanceOn = false; //indicates if balancing on; if not, then only origin scaling factor will be used for autobalancing
                            //NOTE: I think balancing will not work, because there is not a consistent way to deal with weaving
@@ -59,19 +62,78 @@ public class TripSynthesizer {
         return tf.path.substring(0,i) + "_select_link" + tf.path.substring(i);
     }
 
-    public void synthesizeTripsAndAppendToTripFile(Set<Integer> internalZones) {
-        logger.info("Synthesizing SDT");
-        synthesizeTripsAndAppendToTripFile(sdtTripFile,true,buildSelectLinkTripFile(sdtTripFile),internalZones);
-        logger.info("Synthesizing LDT");
-        synthesizeTripsAndAppendToTripFile(ldtTripFile,true,buildSelectLinkTripFile(ldtTripFile),internalZones);
-        logger.info("Synthesizing LDT Person");
-        TripFile ldtPersonStub = new LDTPersonTripFileStub(rb,null);
-        synthesizeTripsAndAppendToTripFile(ldtPersonStub,true,buildSelectLinkTripFile(ldtPersonStub),internalZones);
-        logger.info("Synthesizing CT");
-        synthesizeTripsAndAppendToTripFile(ctTripFile,false,buildSelectLinkTripFile(ctTripFile),internalZones);
-        logger.info("Synthesizing ET");
-        synthesizeTripsAndAppendToTripFile(etTripFile,false,buildSelectLinkTripFile(etTripFile),internalZones);
+    public void synthesizeTripsAndAppendToTripFile(Set<Integer> internalZones, String summaryFile) {
+    	//write summary file
+    	    	
+    	TableDataSet slSummary;
+        try {
+            slSummary = new CSVFileReader().readFile(new File(summaryFile));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }    	
+    	
+        //Integer rowCount = slSummary.getRowCount();
+        Map<String,List<Double>> slSummaryData = new HashMap<String,List<Double>>();
 
+        for (int i = 1; i <= slSummary.getRowCount(); i++) {
+        	String assignClass = slSummary.getStringValueAt(i, "ASSIGNCLASS");
+        	String stationNumber = slSummary.getStringValueAt(i, "STATIONNUMBER");
+        	String direction = slSummary.getStringValueAt(i, "DIRECTION");
+        	Double autoOD = (double) slSummary.getValueAt(i, "AUTO_SL_OD");
+        	Double truckOD = (double) slSummary.getValueAt(i, "TRUCK_SL_OD");
+        	String strKey = assignClass + "," + stationNumber + "," + direction;
+        	
+        	if (!slSummaryData.containsKey(strKey))
+        		slSummaryData.put(strKey, new ArrayList<Double>());
+        	
+        	slSummaryData.get(strKey).add(autoOD);
+        	slSummaryData.get(strKey).add(truckOD);
+        	slSummaryData.get(strKey).add(0.0); //2-SDT person trips
+        	slSummaryData.get(strKey).add(0.0); //3-SDT vehicle trips
+        	slSummaryData.get(strKey).add(0.0); //4-LDT person trips
+        	slSummaryData.get(strKey).add(0.0); //5-LDT vehicle trips - from person trip file
+        	//slSummaryData.get(strKey).add(0.0); //6-LDT vehicle trips - from vehicle trip file
+        	slSummaryData.get(strKey).add(0.0); //7-CT trips
+        	slSummaryData.get(strKey).add(0.0); //8-ET trips
+        	
+        }
+        
+        logger.info("Synthesizing SDT");
+        synthesizeTripsAndAppendToTripFile(sdtTripFile,true,buildSelectLinkTripFile(sdtTripFile),internalZones,slSummaryData,2);
+        logger.info("Synthesizing LDT Vehicle");
+        synthesizeTripsAndAppendToTripFile(ldtTripFile,true,buildSelectLinkTripFile(ldtTripFile),internalZones,slSummaryData,8);
+        logger.info("Synthesizing LDT Person");
+        //TripFile ldtPersonStub = new LDTPersonTripFileStub(rb,null);
+        synthesizeTripsAndAppendToTripFile(ldtPersonStub,true,buildSelectLinkTripFile(ldtPersonStub),internalZones,slSummaryData,4);
+        logger.info("Synthesizing CT");
+        synthesizeTripsAndAppendToTripFile(ctTripFile,false,buildSelectLinkTripFile(ctTripFile),internalZones,slSummaryData,6);
+        logger.info("Synthesizing ET");
+        synthesizeTripsAndAppendToTripFile(etTripFile,false,buildSelectLinkTripFile(etTripFile),internalZones,slSummaryData,7);
+        
+    	String newHeader = "ASSIGNCLASS,STATIONNUMBER,DIRECTION,AUTO_SL_OD,TRUCK_SL_OD,SDT_PERSON_TRIP,SDT_VEHICLE_TRIP,LDT_PERSON_TRIP,LDT_VEHICLE_TRIP,CT_TRIP,ET_TRIP";
+    	
+        PrintWriter writer = null;
+        String newSummaryFile = summaryFile;
+
+		try {
+			writer = new PrintWriter(newSummaryFile);
+			writer.println(newHeader); 
+	        for (String key: slSummaryData.keySet()){
+	        	String line = key;
+	        	for (Double value: slSummaryData.get(key)){
+	        		line = line + "," + value.intValue();
+	        	}
+	        	writer.write(line + "\n");
+	        	
+	        }
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+        writer.flush();
+        writer.close();
+        
     }
 
     protected List<File> getSelectLinkTripFiles() {
@@ -770,15 +832,65 @@ public class TripSynthesizer {
     }
 
     private class LDTPersonTripFileStub extends TripFile {
-        private LDTPersonTripFileStub(ResourceBundle rb, TripClassifier classifier) {
+        private final String daId;
+        private final String sr2Id;
+        private final String sr3Id;
+        private final double daTrip = 1.0;
+        private final double sr2Trip = 0.5;
+        private final double sr3Trip = 1/ DemandHandler.AVERAGE_SR3P_AUTO_OCCUPANCY;
+        private final ResourceBundle rb;
+        
+    	private LDTPersonTripFileStub(ResourceBundle rb, TripClassifier classifier) {
             //0        1         2       3        4          5              6      7           8         9               10           11         12
             //hhID	memberID	tourID	income	tourPurpose	tourMode	origin	destination	distance	time	tripStartTime	tripPurpose	tripMode	vehicleTrip
             //hhID  memberID    tourID income   tourPurpose tourMode    origin  destination distance    time    tripStartTime,tripPurpose,tripMode,vehicleTrip
             super(rb.getString("ldt.person.trips"),"origin","destination",classifier,rb);
+            this.rb = rb;
+            this.daId = rb.getString("driveAlone.identifier");
+            this.sr2Id = rb.getString("sharedRide2.identifier");
+            this.sr3Id = rb.getString("sharedRide3p.identifier");
         }
 
-        long getTourId(String ... data) {
-            return ((long) Integer.parseInt(data[0])) * 1000 + Integer.parseInt(data[1])*10 + Integer.parseInt(data[2]);
+        double getTripFromRecord(String ... data) {
+            String mode = data[12];
+            if (mode.equalsIgnoreCase(daId)) return daTrip;
+            else if (mode.equalsIgnoreCase(sr2Id)) return sr2Trip;
+            else if (mode.equalsIgnoreCase(sr3Id)) return sr3Trip;
+//            logger.warn("Unknown sdt mode for trip: " + mode);
+            return 0;
+        }
+
+        int getTripTimeFromRecord(String ... data) {
+            return (int) Double.parseDouble(data[10]);
+        }
+
+        String getTripTypeFromRecord(String ... data) {
+            return data[11];
+        }
+
+        PATripType getPATripTypeFromRecord(String ... data) {
+            String homeTaz = "" + TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb);
+            String workType = "WORKRELATED";
+            if (data[6].equals(homeTaz) || data[7].equals(homeTaz))
+                return data[11].equals(workType) ? PATripType.HBW : PATripType.HBO;
+            return PATripType.NHB;
+        }
+
+        boolean tripEndsAtHome(String ... data) {
+            String homeTaz = "" + TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb);
+            return data[7].equals(homeTaz);
+        }
+
+        public String getTourTypeFromRecord(String ... data) {
+            return data[4];
+        }
+
+        public String getOriginTripFromRecord(String ... data) {
+            return data[6].equals("" + TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb)) ? "HOME" : getTripTypeFromRecord(data);
+        }
+
+        public String getDestTripFromRecord(String ... data) {
+            return data[7].equals("" + TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb)) ? "HOME" : getTripTypeFromRecord(data);
         }
 
         @Override
@@ -786,24 +898,8 @@ public class TripSynthesizer {
             return TripClassifier.getOriginZone(Integer.parseInt(data[0]),rb);
         }
 
-        @Override
-        int getTripTimeFromRecord(String... data) {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        String getTripTypeFromRecord(String... data) {
-            return data[11];
-        }
-
-        @Override
-        PATripType getPATripTypeFromRecord(String... data) {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        boolean tripEndsAtHome(String... data) {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+        long getTourId(String ... data) {
+            return ((long) Integer.parseInt(data[0])) * 1000 + Integer.parseInt(data[1])*10 + Integer.parseInt(data[2]);
         }
     }
 
@@ -973,7 +1069,7 @@ public class TripSynthesizer {
         HBW,HBO,NHB
     }
 
-    private void synthesizeTripsAndAppendToTripFile(TripFile tripFile, boolean autoClass, String newFile, Set<Integer> internalZones) {
+    private void synthesizeTripsAndAppendToTripFile(TripFile tripFile, boolean autoClass, String newFile, Set<Integer> internalZones, Map<String, List<Double>> slSummaryData, Integer fieldIndex) {
         Map<Integer,SelectLinkData> sld = autoClass ? autoSelectLinkData : truckSelectLinkData;
         Set<SelectLinkData> uniqueSld = new HashSet<>();
         for (SelectLinkData slData : sld.values())
@@ -1000,14 +1096,22 @@ public class TripSynthesizer {
 
 
         boolean ctTrips = tripFile instanceof CTTripFile;
+        boolean sdtTrips = tripFile instanceof SDTTripFile;
+        boolean ldtTrips = tripFile instanceof LDTPersonTripFileStub;
+        boolean ldtVehTrips = tripFile instanceof LDTTripFile;
         double tripsLostToWeaving = 0.0; //trips that can't be used because od has a weaving path
         int originId = -1;
         int destId = -1;
+        int modeId = -1;
         double tripCounter = 0;
         double eeTripCounter = 0;
         double iiTripCounter = 0;
+        double ieTripCounter = 0;
         double eiTripCounter = 0;
-        
+        //double[] tripSmmary = {0,0,0,0};
+        //Map<String, Integer> tripSummary = new HashMap<String, Integer>();
+        //String keySummary = assignClass + stationNum + direction;
+                
         //set to write trips to log file
         int traceOrigin = -1;
         int traceDest = -1;
@@ -1033,13 +1137,24 @@ public class TripSynthesizer {
                     originId = counter;
                 else if (h.equals(tripFile.destField))
                     destId = counter;
+                else if (h.equals("tripMode"))
+                	modeId = counter;
                 counter++;
             }
-            logger.info("origin dest fields " + originId + " " + destId);
+            logger.info("origin dest fields " + originId + " " + destId + " " + modeId);
 
             String newHeader = line.trim() + ",EXTERNAL_ZONE_ORIGIN,EXTERNAL_ZONE_DESTINATION,SELECT_LINK_PERCENT,HOME_ZONE,FROM_TRIP_TYPE";
             writer.println(newHeader);
-
+            
+            //for summary
+            String tod_string = null;
+            Integer station = null;
+            boolean direction = true;
+            String dir_string = null;
+            String strKey = null;
+            Double totalTrips = null;
+            Double vehicleTrips = null;
+            Double vehicleTrip = null;
 
             //read trips
             counter = 0;
@@ -1054,11 +1169,39 @@ public class TripSynthesizer {
                     ((CTTripFile) tripFile).updateCurrentTourOrigin(tripFileLine);
                 String origin = tripFileLine[originId];
                 String dest = tripFileLine[destId];
+                String mode = null;
+                if (sdtTrips || ldtTrips) mode = tripFileLine[modeId];
                 SelectLinkData slData = sld.get(tripFile.getTimePeriodFromRecord(tripFileLine));                
                 String od = SelectLinkData.formODLookup(origin,dest);
                 String lastTripType = tripFile.getLastTripType();
                 tripFile.setLastTripType(tripFileLine);
                 
+                //for summary file
+                Integer tod = tripFile.getTimePeriodFromRecord(tripFileLine);
+                
+                if (tod==0)
+                	tod_string = "peak";
+                else if (tod==1)
+                	tod_string = "offpeak";
+                else if (tod==2)
+                	tod_string = "pm";
+                else
+                	tod_string = "ni";
+                
+                //trip mode
+                if (sdtTrips || ldtTrips) {
+                    vehicleTrip = 0.0;
+                    
+                    if (mode.equals("DA"))
+                    	vehicleTrip = 1.0;
+                    else if (mode.equals("SR2"))
+                    	vehicleTrip = 1.0/2.0;
+                    else if (mode.equals("SR3P"))
+                    	vehicleTrip = 1.0/3.5;
+                    //logger.info("\tTrip mode:" + mode + ", vehicle trips: " + vehicleTrip);
+                }
+                
+                //if od pair is not in the select link file
                 if (!slData.containsOd(od)) {
                     try {
                         if (internalZones.contains(Integer.parseInt(origin)) && internalZones.contains(Integer.parseInt(dest)))
@@ -1076,13 +1219,15 @@ public class TripSynthesizer {
                     }
                     continue;
                 }
-
+                
+                // od pair is in the select link file
                 double trips = tripFile.getTripFromRecord(tripFileLine);//*factors[tripFile.getModeIdFromRecord(tripFileLine)];
 
                 tripCounter += trips;
                 int mo = zoneMatrixMap.containsKey(origin) ? zoneMatrixMap.get(origin) : -1;
                 int md = zoneMatrixMap.containsKey(dest) ? zoneMatrixMap.get(dest) : -1;
 
+                //od pair is in weaving data
                 List<String> additionalEntries = new LinkedList<String>();
                 if (slData.getWeavingZones().contains(od)) {
                     List<SelectLinkData.WeavingData> wds = slData.getWeavingData(od);
@@ -1103,14 +1248,68 @@ public class TripSynthesizer {
                         for (String link : links) {
                             SelectLinkData.LinkData ld = wd.getRepresentativeLinkData(lcounter);
                             int lid = zoneMatrixMap.get(ld.getMatrixEntryName());
-                            if (!skip && wd.getPercentage() > 0.0)
-                                additionalEntries.add("," + reverseZoneMatrixMap.get(lastId) + "," + reverseZoneMatrixMap.get(lid) + "," + wd.getPercentage() + "," + tripFile.getTourHome(tripFileLine) + "," + lastTripType);
+                            
+                            if (!skip && wd.getPercentage() > 0.0){
+                            	additionalEntries.add("," + reverseZoneMatrixMap.get(lastId) + "," + reverseZoneMatrixMap.get(lid) + "," + wd.getPercentage() + "," + tripFile.getTourHome(tripFileLine) + "," + lastTripType);
+                            	
+                                direction = ld.getIn();
+                                station = ld.getExternalStation();
+                                
+                                //set direction in string format
+                                if (direction)
+                                	dir_string = "IN";
+                                else
+                                	dir_string = "OUT";
+                                
+                                if(!ldtVehTrips){
+                                    strKey = tod_string + "," + station + "," + dir_string;
+                                	totalTrips = slSummaryData.get(strKey).get(fieldIndex);
+                                	//totalTrips += wd.getPercentage();
+                                	totalTrips += 1;
+                                	slSummaryData.get(strKey).set(fieldIndex, totalTrips);                                 	
+                                }
+                                
+                            	if (sdtTrips || ldtTrips) {
+                            		vehicleTrips = slSummaryData.get(strKey).get(fieldIndex+1);
+                            		//vehicleTrips += vehicleTrip * wd.getPercentage();
+                            		vehicleTrips += vehicleTrip;
+                            		slSummaryData.get(strKey).set(fieldIndex+1, vehicleTrips);
+                            	}
+                                
+                            }
+                                
                             skip ^= true; //skip every other link
                             lastId = lid;
                             lcounter++;
                         }
-                        if (!skip && wd.getPercentage() > 0.0)
+                        
+                        if (!skip && wd.getPercentage() > 0.0){
                             additionalEntries.add("," + reverseZoneMatrixMap.get(lastId) + "," + reverseZoneMatrixMap.get(md) + "," + wd.getPercentage() + "," + tripFile.getTourHome(tripFileLine) + "," + lastTripType);
+                            SelectLinkData.LinkData ld = wd.getRepresentativeLinkData(0);
+                            direction = ld.getIn();
+                            station = ld.getExternalStation();
+                            
+                            //set direction in string format
+                            if (direction)
+                            	dir_string = "IN";
+                            else
+                            	dir_string = "OUT";
+                            
+                            if(!ldtVehTrips){
+                                strKey = tod_string + "," + station + "," + dir_string;
+                            	totalTrips = slSummaryData.get(strKey).get(fieldIndex);
+                            	//totalTrips += wd.getPercentage();
+                            	totalTrips += 1;
+                            	slSummaryData.get(strKey).set(fieldIndex, totalTrips);                             	
+                            }
+
+                        	if (sdtTrips || ldtTrips) {
+                        		vehicleTrips = slSummaryData.get(strKey).get(fieldIndex+1);
+                        		//vehicleTrips += vehicleTrip * wd.getPercentage();
+                        		vehicleTrips += vehicleTrip;
+                        		slSummaryData.get(strKey).set(fieldIndex+1, vehicleTrips);
+                        	}
+                        }
                     }
                     for (String ae : additionalEntries)
                         writer.println(line.trim() + ae);
@@ -1121,10 +1320,16 @@ public class TripSynthesizer {
                 //set interior/exterior
                 boolean ee = exteriorZones.contains(origin) && exteriorZones.contains(dest);
                 boolean ii = !exteriorZones.contains(origin) && !exteriorZones.contains(dest);
+                boolean ie = !exteriorZones.contains(origin) && exteriorZones.contains(dest);
+                boolean ei = exteriorZones.contains(origin) && !exteriorZones.contains(dest);
+                
                 if (ee)
                     eeTripCounter += trips;
+                	//station = reverseZoneMatrixMap.get(lid);
                 else if (ii)
                     iiTripCounter += trips;
+                else if (ie)
+                	ieTripCounter += trips;
                 else
                     eiTripCounter += trips;
 
@@ -1134,6 +1339,15 @@ public class TripSynthesizer {
                     if (!zoneMatrixMap.containsKey(ld.getMatrixEntryName()))
                         continue; //skip, because this class didn't use this external station
                     int lid = zoneMatrixMap.get(ld.getMatrixEntryName());
+                    direction = ld.getIn();
+                    station = ld.getExternalStation();
+                    
+                    //set direction in string format
+                    if (direction)
+                    	dir_string = "IN";
+                    else
+                    	dir_string = "OUT";
+
                     if (ld.getOdPercentage(od) > 0.0) {
                         if (ii) {
                             if (ld.getIn())
@@ -1152,11 +1366,26 @@ public class TripSynthesizer {
                                     if (!ldo.getIn())
                                         additionalEntries.add("," + reverseZoneMatrixMap.get(lid) + "," + ldo.getMatrixEntryName() + "," + ld.getOdPercentage(od)*ldo.getOdPercentage(od) + "," + tripFile.getTourHome(tripFileLine) + "," + lastTripType);
                         }
+                        
+                        if(!ldtVehTrips){
+                            strKey = tod_string + "," + station + "," + dir_string;
+                        	totalTrips = slSummaryData.get(strKey).get(fieldIndex);
+                        	//totalTrips += ld.getOdPercentage(od);
+                        	totalTrips += 1;
+                        	slSummaryData.get(strKey).set(fieldIndex, totalTrips);                        	
+                        }
+                    	
+                    	if (sdtTrips || ldtTrips) {
+                    		vehicleTrips = slSummaryData.get(strKey).get(fieldIndex+1);
+                    		//vehicleTrips += vehicleTrip * ld.getOdPercentage(od);
+                    		vehicleTrips += vehicleTrip;
+                    		slSummaryData.get(strKey).set(fieldIndex+1, vehicleTrips);
+                    	}
                     }
                 }
                 for (String ae : additionalEntries)
                     writer.println(line.trim() + ae);
-                
+                       
                 //trace debugging ct trips
                 if ( ctTrips & (Integer.parseInt(origin) == traceOrigin) & (Integer.parseInt(dest) == traceDest) ) {  
                 	String result = "ctTrips trace origin=" + traceOrigin + " dest=" + traceDest + " " + line.trim();
@@ -1174,7 +1403,8 @@ public class TripSynthesizer {
         }
 
         logger.info("Total ee trips tallied: " + Math.round(eeTripCounter));
-        logger.info("Total ei/ie trips tallied: " + Math.round(eiTripCounter));
+        logger.info("Total ie trips tallied: " + Math.round(ieTripCounter));
+        logger.info("Total ei trips tallied: " + Math.round(eiTripCounter));
         logger.info("Total ii trips tallied: " + Math.round(iiTripCounter));
         logger.info("Total trips tallied: " + Math.round(tripCounter));
         logger.info(String.format("Trips lost to weaving: %.2f (%.2f%%)",tripsLostToWeaving,tripsLostToWeaving / tripCounter * 100));

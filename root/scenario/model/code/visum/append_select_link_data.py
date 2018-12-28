@@ -68,6 +68,7 @@ alpha2beta_file = os.path.join(output_folder,'alpha2beta.csv')
 
 #output summary file
 out_summary_file = properties['sl.output.file.select.link.summary']
+out_errors_file = properties['sl.output.file.select.link.errors']
 
 '''
 reads a csv file
@@ -228,11 +229,31 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
         trips_select_link.ASSIGNCLASS[trips_select_link['ASSIGNCLASS'].str.contains('_offpeak')] = 'offpeak'
         trips_select_link.ASSIGNCLASS[trips_select_link['ASSIGNCLASS'].str.contains('_ni')] = 'ni'
         trips_select_link.ASSIGNCLASS[trips_select_link['ASSIGNCLASS'].str.contains('_pm')] = 'pm'
-    
-        #summary of trips by time period, station number and direction
-        summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).count()['SELECT_LINK_PERCENT'].reset_index()
-        summary = summary.rename(columns={'SELECT_LINK_PERCENT':colname})
-        summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
+        
+        if (colname != 'LDT_VEHICLE_TRIP'):
+            #summary of trips by time period, station number and direction
+            summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).count()['SELECT_LINK_PERCENT'].reset_index()
+            summary = summary.rename(columns={'SELECT_LINK_PERCENT':colname})
+            summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
+
+        if (colname == 'SDT_PERSON_TRIP')|(colname == 'LDT_PERSON_TRIP'):
+            trips_select_link['VEHICLETRIP'] = 0
+            trips_select_link.VEHICLETRIP[trips_select_link['tripMode']=='DA'] = 1
+            trips_select_link.VEHICLETRIP[trips_select_link['tripMode']=='SR2'] = 1/2
+            trips_select_link.VEHICLETRIP[trips_select_link['tripMode']=='SR3P'] = 1/3.5
+            #trips_select_link['VEHICLETRIP'] = trips_select_link['VEHICLETRIP'] * trips_select_link['SELECT_LINK_PERCENT']
+
+            if (colname == 'SDT_PERSON_TRIP'):
+                colname = 'SDT_VEHICLE_TRIP'
+            else:
+                colname = 'LDT_VEHICLE_TRIP'
+
+            summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).sum()['VEHICLETRIP'].reset_index()
+            summary['VEHICLETRIP'] = summary['VEHICLETRIP'].astype(int)
+            summary = summary.rename(columns={'VEHICLETRIP':colname})
+            
+            summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
+        
         summary_df = summary_df.fillna(0)
 
         #drop unnecessary fields
@@ -262,7 +283,6 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
     outfile = os.path.splitext(infile)[0] + '_select_link.csv'
     outfile = os.path.join(output_folder, outfile)
     trips_select_link.to_csv(outfile, index = False)
-        
     
     return(outfile, summary_df)
 
@@ -295,6 +315,7 @@ def zip_output(infile_sdt, infile_ldt, infile_ldt_vehicle, infile_ct, infile_et)
 generate summary of OD pairs in selectliLinkResults.csv by time period and mode
 '''
 def generate_select_link_summary(mydata):
+    print('Generate select link summary')
     mydata['AUTO_SL_OD'] = 0
     mydata['TRUCK_SL_OD'] = 0
     mydata['ASSIGNCLASS_NEW'] = 0
@@ -311,6 +332,8 @@ def generate_select_link_summary(mydata):
     
     summary_df = mydata.groupby(['ASSIGNCLASS_NEW', 'STATIONNUMBER','DIRECTION']).sum()[['AUTO_SL_OD', 'TRUCK_SL_OD']].reset_index()
     summary_df = summary_df.rename(columns = {'ASSIGNCLASS_NEW': 'ASSIGNCLASS'})
+    
+    print('Finished select link summary')
 
     return(summary_df)
 
@@ -319,11 +342,14 @@ main function that appends select link data to trip files
 '''
 def main():
     global select_link_summary
+    
     #read select link data
-    select_link_result = read_data(select_link_file, full_file_path = False)
+    print('Read select link data')
+    select_link_result = read_data(select_link_file, full_file_path = False)   
     select_link_summary = generate_select_link_summary(select_link_result)
     
     #append select link result to trips
+    print('Append select link results to trips')
     outfile_sdt, select_link_summary = append_select_link(trips_sdt_file, 'tripStartTime', select_link_result, tourfile=tours_sdt_file, colname='SDT_PERSON_TRIP', summary_df=select_link_summary)
     outfile_ldt, select_link_summary = append_select_link(trips_ldt_file, 'tripStartTime', select_link_result, tourfile=tours_ldt_file, colname='LDT_PERSON_TRIP', summary_df=select_link_summary)
     outfile_ldt_vehicle, select_link_summary = append_select_link(trips_ldt_vehicle_file, 'tripStartTime', select_link_result, tourfile=tours_ldt_file, colname='LDT_VEHICLE_TRIP', summary_df=select_link_summary)
@@ -331,9 +357,11 @@ def main():
     outfile_et, select_link_summary = append_select_link(trips_et_file, 'tripStartTime', select_link_result, tourfile=None, colname='ET_TRIP', summary_df=select_link_summary)
 
     #zip outputs
+    print('Zip outputs')
     zip_output(outfile_sdt, outfile_ldt, outfile_ldt_vehicle, outfile_ct, outfile_et)
 
     #write summary
+    print('Write select link summary')
     select_link_summary.to_csv(os.path.join(output_folder, out_summary_file), header=True, index=False) 
     
 if __name__ == "__main__":
