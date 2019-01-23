@@ -1,0 +1,33 @@
+$VISION
+* Oregon DOT
+* 03/07/17
+* 
+* Table: Version block
+* 
+$VERSION:VERSNR;FILETYPE;LANGUAGE;UNIT
+10.000;Net;ENG;MI
+
+* 
+* Table: Demand segments
+* 
+$DEMANDSEGMENT:CODE;NAME;MODE
+sl_a_ni;sl_auto-night;a
+sl_a_offpeak;sl_auto-offpeak;a
+sl_a_peak;sl_auto-peak;a
+sl_a_pm;sl_auto-pm;a
+sl_a_daily;sl_auto-daily;a
+sl_d_ni;sl_truck-night;d
+sl_d_offpeak;sl_truck-offpeak;d
+sl_d_peak;sl_truck-peak;d
+sl_d_pm;sl_truck-pm;d
+sl_d_daily;sl_truck-daily;d
+rem_a_ni;remainder-auto-night;a
+rem_a_offpeak;remainder-auto-offpeak;a
+rem_a_peak;remainder-auto-peak;a
+rem_a_pm;remainder-auto-pm;a
+rem_a_daily;remainder_auto-daily;a
+rem_d_ni;remainder-truck-night;d
+rem_d_offpeak;remainder-truck-offpeak;d
+rem_d_peak;remainder-truck-peak;d
+rem_d_pm;remainder-truck-pm;d
+rem_d_daily;remainder_truck-daily;d

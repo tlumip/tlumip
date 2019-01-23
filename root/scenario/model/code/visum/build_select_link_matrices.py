@@ -58,6 +58,7 @@ properties = Properties()
 properties.loadPropertyFile(property_file)
 programVersion = properties['visum.version']
 addDemandMatrices = ast.literal_eval(properties['sl.add.demand.matrices'].capitalize()) #capitalize first letter to make sure that True or False strings are in the format expected by python
+runSLAssignment = ast.literal_eval(properties['sl.run.select.link.assignment'].capitalize()) #capitalize first letter to make sure that True or False strings are in the format expected by python
 main_version_file = sys.argv[1]
 
 peak_path_version_file = sys.argv[2]
@@ -93,7 +94,6 @@ def loadVersion(version_file):
     Visum.LoadVersion(version_file)
     return Visum
 
-
 '''
 reads a csv file
 '''
@@ -127,13 +127,12 @@ def generate_select_link_summary(mydata):
     mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_pm')] = 'pm'
     
     summary_df = mydata.groupby(['ASSIGNCLASS_NEW', 'STATIONNUMBER','DIRECTION']).sum()[['AUTO_SL_OD', 'TRUCK_SL_OD']].reset_index()
-    summary_df = summary_df.rename(columns = {'ASSIGNCLASS_NEW': 'ASSIGNCLASS'})
+    summary_df = summary_df.rename(columns = {'ASSIGNCLASS_NEW': 'PERIOD'})
     
     print('Finished select link summary')
 
     return(summary_df)
     
-
 
 Visum = loadVersion(main_version_file)
 
@@ -370,3 +369,46 @@ select_link_summary = generate_select_link_summary(select_link_result)
 print('Write select link summary')
 out_summary_file = properties['sl.output.file.select.link.summary']
 select_link_summary.to_csv(os.path.join(output_folder, out_summary_file), header=True, index=False) 
+
+#run assignment using added SL demand matrices
+if (runSLAssignment):
+    #inputs
+    netFile = properties['sl.assign.demand.segments']
+    procedureFile = properties['sl.assign.procedure.file']
+    gpFile = properties['sl.assign.graphic.file']
+
+    print("loading version file ... ")
+    Visum = loadVersion(main_version_file_sl)
+
+    demSegs = eval(properties['sl.assign.demand.segment.mapping'])
+    demSegsFormula = {'sl_a_daily':"Matrix([NO] = 25)+Matrix([NO] = 27)+Matrix([NO] = 29)+Matrix([NO] = 35)",
+                      'sl_d_daily':"Matrix([NO] = 21)+Matrix([NO] = 23)+Matrix([NO] = 31)+Matrix([NO] = 33)",
+                      'rem_a_daily':"Matrix([NO] = 26)+Matrix([NO] = 28)+Matrix([NO] = 30)+Matrix([NO] = 36)",
+                      'rem_d_daily':"Matrix([NO] = 22)+Matrix([NO] = 24)+Matrix([NO] = 32)+Matrix([NO] = 34)"} 
+
+    print("adding new daily demand matrices ... ")
+    for dseg in demSegs:
+        #add a formula matrix
+        Visum.Net.AddMatrixWithFormula(int(demSegs[dseg]),demSegsFormula[dseg])
+        Visum.Net.Matrices.ItemByKey(int(demSegs[dseg])).SetAttValue("Name", dseg)
+        Visum.Net.Matrices.ItemByKey(int(demSegs[dseg])).SetAttValue("Code", dseg)
+
+    print("adding new demand segments ... ")
+    Visum.LoadNet(netFile, ReadAdditive = True)
+    
+    #add DSegCode - needed to assign demand matrix to a demand segment
+    for dseg in demSegs:
+        Visum.Net.Matrices.ItemByKey(int(demSegs[dseg])).SetAttValue("DSegCode", dseg) #this works only after adding semand segments. so cannot be done in the previous loop.
+
+    print("running assignment for select link analysis ... ")
+    Visum.Procedures.Open(procedureFile)
+    Visum.Procedures.Execute() #suppresses warnings
+
+    print("open graphic parameter file ... ")
+    Visum.Net.GraphicParameters.Open(gpFile)
+
+    #save edits
+    Visum.SaveVersion(main_version_file_sl)
+        
+    #close the version file
+    del Visum

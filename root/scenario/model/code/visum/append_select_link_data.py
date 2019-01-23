@@ -68,7 +68,6 @@ alpha2beta_file = os.path.join(output_folder,'alpha2beta.csv')
 
 #output summary file
 out_summary_file = properties['sl.output.file.select.link.summary']
-out_errors_file = properties['sl.output.file.select.link.errors']
 
 '''
 reads a csv file
@@ -251,13 +250,12 @@ def append_select_link(infile, timefield, selectlink, tourfile, colname, summary
             summary = trips_select_link.groupby(['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION']).sum()['VEHICLETRIP'].reset_index()
             summary['VEHICLETRIP'] = summary['VEHICLETRIP'].astype(int)
             summary = summary.rename(columns={'VEHICLETRIP':colname})
-            
             summary_df = pd.merge(summary_df, summary, on = ['ASSIGNCLASS', 'STATIONNUMBER','DIRECTION'], how = 'left')
         
         summary_df = summary_df.fillna(0)
 
         #drop unnecessary fields
-        trips_select_link = trips_select_link.drop(['ASSIGNCLASS','ASSIGNCLASS_NEW','FROMNODETONODE','DIRECTION','STATIONNUMBER', 'AUTO_SL_OD', 'TRUCK_SL_OD'], 1)
+        trips_select_link = trips_select_link.drop(['ASSIGNCLASS','FROMNODETONODE','DIRECTION','STATIONNUMBER'], 1)
         
         #append HOME_ZONE and FROM_TRIP_TYPE fields
         #trucks
@@ -312,32 +310,6 @@ def zip_output(infile_sdt, infile_ldt, infile_ldt_vehicle, infile_ct, infile_et)
     os.remove(infile_et)
 
 '''
-generate summary of OD pairs in selectliLinkResults.csv by time period and mode
-'''
-def generate_select_link_summary(mydata):
-    print('Generate select link summary')
-    mydata['AUTO_SL_OD'] = 0
-    mydata['TRUCK_SL_OD'] = 0
-    mydata['ASSIGNCLASS_NEW'] = 0
-
-    #mode
-    mydata.AUTO_SL_OD[mydata['ASSIGNCLASS'].str.contains('a_')] = 1
-    mydata.TRUCK_SL_OD[mydata['ASSIGNCLASS'].str.contains('d_')] = 1
-
-    #time period
-    mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_peak')] = 'peak'
-    mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_offpeak')] = 'offpeak'
-    mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_ni')] = 'ni'
-    mydata.ASSIGNCLASS_NEW[mydata['ASSIGNCLASS'].str.contains('_pm')] = 'pm'
-    
-    summary_df = mydata.groupby(['ASSIGNCLASS_NEW', 'STATIONNUMBER','DIRECTION']).sum()[['AUTO_SL_OD', 'TRUCK_SL_OD']].reset_index()
-    summary_df = summary_df.rename(columns = {'ASSIGNCLASS_NEW': 'ASSIGNCLASS'})
-    
-    print('Finished select link summary')
-
-    return(summary_df)
-
-'''
 main function that appends select link data to trip files
 '''
 def main():
@@ -345,8 +317,10 @@ def main():
     
     #read select link data
     print('Read select link data')
-    select_link_result = read_data(select_link_file, full_file_path = False)   
-    select_link_summary = generate_select_link_summary(select_link_result)
+    select_link_result = read_data(select_link_file, full_file_path = False)
+    select_link_summary = read_data(out_summary_file, full_file_path = False)
+    select_link_summary = select_link_summary[['PERIOD', 'STATIONNUMBER','DIRECTION', 'AUTO_SL_OD', 'TRUCK_SL_OD']] #keep only selected columns, so that it works even rerunning the append step
+    select_link_summary.rename(columns = {'PERIOD':'ASSIGNCLASS'}, inplace = True)
     
     #append select link result to trips
     print('Append select link results to trips')
@@ -362,6 +336,7 @@ def main():
 
     #write summary
     print('Write select link summary')
+    select_link_summary.rename(columns = {'ASSIGNCLASS':'PERIOD'}, inplace = True)
     select_link_summary.to_csv(os.path.join(output_folder, out_summary_file), header=True, index=False) 
     
 if __name__ == "__main__":

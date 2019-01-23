@@ -57,6 +57,7 @@ auto_classes = properties['sl.auto.classes'].split(",") #am, md, pm, ni
 truck_classes = properties['sl.truck.classes'].split(",") #am, md, pm, ni
 
 select_link_file = properties['sl.output.file.select.link.results'] #only file name - no full file path
+select_link_summary_file = properties['sl.output.file.select.link.summary'] #only file name - no full file path
 select_link_review_file = properties['sl.output.file.select.link.review'] #only file name - no full file path
 
 def unzip_output():
@@ -154,11 +155,11 @@ def review_data(data_dir):
 
     #od_review = summary_temp[summary_temp['SELECT_LINK_PERCENT']<0.99]
     od_review = summary[summary['SELECT_LINK_PERCENT']<0.99]
+    od_review.rename(columns = {"origin" : "ORIGIN", "destination" : "DESTINATION"})
     
     #return(summary)
     return(od_review)
     
-
 '''
 main function that appends select link data to trip files
 '''
@@ -172,13 +173,20 @@ def main():
     sl_review = review_data(data_dir)
 
     #write summary
-    print('Write select link summary')
-    sl_review.to_csv(os.path.join(output_folder, select_link_review_file), header=True, index=False)
+    print('Write select link review file')
+    if (not sl_review.empty):
+        print("There are suspect issues. Please check sl_review.csv in the output folder. ")
+        sl_review.to_csv(os.path.join(output_folder, select_link_review_file), header=True, index=False)
     
     #remove the un-zipped folder
     print('Delete unzipped outputs')
     if os.path.isdir(data_dir):
         shutil.rmtree(data_dir)
+
+    #sort select link summary file. Done here so that we do not need to do that in two places: python and java.
+    select_link_summary = pd.read_csv(os.path.join(output_folder, select_link_summary_file))
+    select_link_summary = select_link_summary.sort(['STATIONNUMBER', 'DIRECTION', 'PERIOD'])
+    select_link_summary[['STATIONNUMBER','DIRECTION','PERIOD','AUTO_SL_OD','TRUCK_SL_OD','SDT_PERSON_TRIP','SDT_VEHICLE_TRIP','LDT_PERSON_TRIP','LDT_VEHICLE_TRIP','CT_TRIP','ET_TRIP']].to_csv(os.path.join(output_folder, select_link_summary_file), header=True, index=False) 
     
 if __name__ == "__main__":
     main()
