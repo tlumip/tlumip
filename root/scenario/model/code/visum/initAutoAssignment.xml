@@ -68,50 +68,6 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "4"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "CONNECTOR"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "T0_TSYS(A)"
-        ONLYACTIVE = "0"
-        FORMULA = "Floor(3600*[LENGTH]/25)"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "5"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "CONNECTOR"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "T0_TSYS(D)"
-        ONLYACTIVE = "0"
-        FORMULA = "Floor(3600*[LENGTH]/25)"
-      />      
-    </OPERATION>
-    <OPERATION
       NO = "6"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
