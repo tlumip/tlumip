@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/censusdata.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/common-base.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/log4j-1.2.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/pecas.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/reference.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/utils.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/common-daf-v2.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/common-daf-v3.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/pasaat.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/projects/development/tlumip/src/synpop.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="src/censusdata.jar"/>
+	<classpathentry kind="lib" path="src/common-base.jar"/>
+	<classpathentry kind="lib" path="src/common-daf-v2.jar"/>
+	<classpathentry kind="lib" path="src/common-daf-v3.jar"/>
+	<classpathentry kind="lib" path="src/log4j-1.2.9.jar"/>
+	<classpathentry kind="lib" path="src/pecas.jar"/>
+	<classpathentry kind="lib" path="src/reference.jar"/>
+	<classpathentry kind="lib" path="src/utils.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pasaat_swim"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/synpop"/>
+	<classpathentry kind="lib" path="src/pasaat.jar"/>
+	<classpathentry kind="lib" path="src/synpop.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
