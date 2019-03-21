@@ -1142,10 +1142,10 @@ class SwimModel(object):
             ivtskim, ovtskim = self.createLocalBusSkimMatrix(timemat, distmat, isPeak, NAMatrix)
 
             #post matrices to bank
-            self.Visum.Net.AddSkimMatrix (ivtMatNums[index])
+            self.Visum.Net.AddMatrix (ivtMatNums[index])
             self.Visum.Net.Matrices.ItemByKey(ivtMatNums[index]).SetAttValue("Name", ivtFileNames[index])
             VisumHelpers.SetSkimMatrix(self.Visum, ivtMatNums[index], ivtskim)
-            self.Visum.Net.AddSkimMatrix (ovtMatNums[index])
+            self.Visum.Net.AddMatrix (ovtMatNums[index])
             self.Visum.Net.Matrices.ItemByKey(ovtMatNums[index]).SetAttValue("Name", ovtFileNames[index])
             VisumHelpers.SetSkimMatrix(self.Visum, ovtMatNums[index], ovtskim)
 
