@@ -1,4 +1,4 @@
-Year,SI,NED,ALD,SPG1,AA,SPG2,PT,CT,TA,TR,PT - Logsums Only,SL - Generate Select Link Data,SL - Append Select Link To Trips,VIZ,MICROVIZ
+Year,SI,NED,ALD,SPG1,AA,SPG2,PT,CT,TA,TR,PT - Logsums Only,SL - Generate Select Link Data,SL - Append Select Link To Trips,VIZ,MICROVIZ,SWIMR_reference,SWIMR_compare
 18,,,,,i,,,,,,,,,,
 19,1,1,i,i,1,i,i,i,i,i,i,,,,
 20,1,1,1,1,1,1,1,1,1,1,1,,,,
@@ -31,4 +31,4 @@ Year,SI,NED,ALD,SPG1,AA,SPG2,PT,CT,TA,TR,PT - Logsums Only,SL - Generate Select 
 47,1,1,1,1,1,1,1,1,1,1,1,,,,
 48,1,1,1,1,1,1,,,,,,,,,
 49,1,1,1,1,1,1,,,,,,,,,
-50,1,1,1,1,1,1,1,1,1,1,1,,,1,
+50,1,1,1,1,1,1,1,1,1,1,1,,,1,1,1

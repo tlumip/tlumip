@@ -334,4 +334,42 @@ class ModuleCommands(object):
         if properties['viz.micro.zip.final.db'].lower().strip() == 'true':
             commands += self.zip(properties['viz.micro.final.db'],properties['viz.micro.zip.file'])
         return commands
-        
+
+    def runSWIMR_REFERENCE(self, module_set, scenario_outputs, property_file, year, properties):
+        """
+        Run the SWIMR reference scenario graphics.
+
+        Uses the R executable to run a script that calls SWIMR RMarkdown files.
+
+        Args:
+            properties: a properties object
+
+        """
+        template = 'Reference'
+        r_exe = quote(normalizeBackslash(self.properties['r.executable']))
+        rscript_exe = r_exe.replace('R.exe', 'Rscript.exe')
+
+        command = [rscript_exe, template,
+                   quote(normalizeBackslash(self.properties['swimr.render.script'])),
+                   quote(normalizeBackslash(self.properties['viz.final.db']))]
+        return [' '.join(command)]
+
+    def runSWIMR_COMPARE(self, module_set, scenario_outputs, property_file, year, properties):
+        """
+        Run the SWIMR compare scenario graphics.
+
+        Uses the R executable to run a script that calls SWIMR RMarkdown files.
+
+        Args:
+            properties: a properties object
+
+        """
+        template = 'Compare'
+        r_exe = quote(normalizeBackslash(self.properties['r.executable']))
+        rscript_exe = r_exe.replace('R.exe', 'Rscript.exe')
+
+        command = [rscript_exe, template,
+                   quote(normalizeBackslash(self.properties['swimr.render.script'])),
+                   quote(normalizeBackslash(self.properties['viz.final.db'])),
+                   quote(normalizeBackslash(self.properties['swimr.reference.db']))]
+        return [' '.join(command)]
