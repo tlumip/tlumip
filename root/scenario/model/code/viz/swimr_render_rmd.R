@@ -4,50 +4,33 @@
 
 # <template> argument can be 'reference' or 'compare'
 
+args <- commandArgs()  # Use argparse package for more flexibility
+
+# Get location of executable and use only the library in that installation
+exe <- args[1]
+libPath <- gsub("bin\\\\x64\\\\Rterm.exe", "library", exe)
+.libPaths(libPath)
+
+# For testing
+# cat("\n-----Args------\n")
+# cat(paste(args, collapse="\n"))
+# cat("\n\nReference arg:", which(args == "Reference"), "\n")
+# cat("\nlibPaths:", .libPaths(), '\n')
+
+
 # Load libraries --------------------------------------------------------------
 library('rmarkdown')
 
 # Define functions ------------------------------------------------------------
 
-# # read.properties function is modified from the properties package
-# read_properties <- function (file, fields = NULL, encoding = "UTF-8"){
-#     if (is.character(file)) {
-#         file <- file(file, "r", encoding = encoding)
-#         on.exit(close(file))
-#     }
-#     if (!inherits(file, "connection"))
-#         stop("'file' must be a character string or connection")
-#     lines <- readLines(file)
-#     commentedLines <- grepl("^#.*$", lines)
-#     lines <- lines[!commentedLines]
-#     line_is_not_empty <- !grepl("^[[:space:]]*$", lines)
-#     lines <- lines[line_is_not_empty]
-#     line_has_tag <- grepl("^[^[:blank:]][^=:]*=", lines)
-#     ind <- which(!line_has_tag)
-#     if (length(ind)) {
-#         lines <- strtrim(lines[ind], 0.7 * getOption("width"))
-#         stop("Invalid Java properties file format.\nContinuation lines must not start a record.\nOffending lines start with:\n%s",
-#             paste("  ", lines, sep = "", collapse = "\n"))
-#     }
-#     keys <- gsub("^([^= ]+) *= *[^ ].*$", "\\1", lines)
-#     values <- gsub("^[^= ]+ *= *([^ ].*)$", "\\1", lines)
-#     names(values) <- keys
-#     out <- as.list(values)
-#     out <- if (!is.null(fields))
-#         out[fields]
-#     else out
-#     return(out)
-# }
-
 
 # Main -----------------------------------------------------------------------
 
-args <- commandArgs(trailingOnly = TRUE)  # Use argparse package for more flexibility
-template <- args[1]
+template <- args[6]
 
 if ( template == 'Reference' ){
 
-  ref_db = args[2]
+  ref_db = args[7]
 
   template_folder <- 'single_scenario'
 
@@ -56,8 +39,8 @@ if ( template == 'Reference' ){
 
 } else if ( template == 'Compare' ){
 
-  current_db = args[2]
-  ref_db = args[3]
+  current_db = args[7]
+  ref_db = args[8]
 
   template_folder <- 'compare_scenario'
 
@@ -66,9 +49,9 @@ if ( template == 'Reference' ){
 
 } else if ( template == 'Population' ){
 
-  current_db = args[2]
-  ref_db = args[3]
-  compare_db = args[4]
+  current_db = args[7]
+  ref_db = args[8]
+  compare_db = args[9]
 
   template_folder <- 'population'
 
