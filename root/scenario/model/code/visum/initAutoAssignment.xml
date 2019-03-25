@@ -1,589 +1,5 @@
 <?xml  version = "1.0"  encoding = "UTF-8"?>
-<PROCEDURES  VERSION = "18">
-  <OPERATIONS>
-    <OPERATION
-      NO = "1"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "LINK"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "AUTO_COST"
-        ONLYACTIVE = "0"
-        FORMULA = "Floor(144*[TOLL_PRTSYS(A)]+17.28*[LENGTH])"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "2"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "LINK"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "TRUCK_COST"
-        ONLYACTIVE = "0"
-        FORMULA = "Floor(144*[TOLL_PRTSYS(D)]+17.28*[LENGTH])"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "3"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "LINK"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "CAPPRT"
-        ONLYACTIVE = "0"
-        FORMULA = "Floor(10000000)"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "6"
-      CODE = ""
-      OPERATIONTYPE = "InitAssignment"
-      ACTIVE = "1"
-      COMMENT = "initialize assignment"
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ASSIGNMENTINITPARA        INITPUT = "1"        INITPRT = "1"      />      
-    </OPERATION>
-    <OPERATION
-      NO = "7"
-      CODE = ""
-      OPERATIONTYPE = "PrTAssignment"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTASSIGNMENTPARA        PRTASSIGNMENTVARIANT = "Equilibrium"        DSEGSET = "a_ni,a_offpeak,a_peak,a_pm,d_ni,d_offpeak,d_peak,d_pm">
-        <EQUILIBRIUMPARA>
-          <EQUIINITIALSOLUTIONPARA            USECURRENTSOLUTION = "0">
-            <DEMANDSHAREPARA>
-              <ATTRIBUTE                NAME = "DEMANDSHARE">
-                <ATTRITEM                  SUBATTR1 = "1"                  VALUE = "100"                />                
-                <ATTRITEM                  SUBATTR1 = "2"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "3"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "4"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "5"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "6"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "7"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "8"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "9"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "10"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "11"                  VALUE = "0"                />                
-                <ATTRITEM                  SUBATTR1 = "12"                  VALUE = "0"                />                
-              </ATTRIBUTE>
-            </DEMANDSHAREPARA>
-          </EQUIINITIALSOLUTIONPARA>
-          <EQUISTOPCRITERIAPARA
-            MAXNUMOUTERIT = "3"
-            MAXABSIMPDEV = "0"
-            MAXRELIMPDEV = "0"
-            MAXRELATIVEGAP = "0.05">
-            <NETBALANCING              GENERALVALUE = "3"            />            
-          </EQUISTOPCRITERIAPARA>
-        </EQUILIBRIUMPARA>
-      </PRTASSIGNMENTPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "8"
-      CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "a_peak"
-        FILENAME = ""
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Blank"
-        FORMAT = "V"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "9"
-      CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "d_peak"
-        FILENAME = ""
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Blank"
-        FORMAT = "V"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "10"
-      CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "a_offpeak"
-        FILENAME = ""
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Blank"
-        FORMAT = "V"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "11"
-      CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "d_offpeak"
-        FILENAME = ""
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Blank"
-        FORMAT = "V"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "12"
-      CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "a_pm"
-        FILENAME = ""
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Blank"
-        FORMAT = "V"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "13"
-      CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "d_pm"
-        FILENAME = ""
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Blank"
-        FORMAT = "V"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "14"
-      CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "a_ni"
-        FILENAME = ""
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Blank"
-        FORMAT = "V"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-    <OPERATION
-      NO = "15"
-      CODE = ""
-      OPERATIONTYPE = "PrTSkimMatrixCalculation"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <PRTSKIMMATRIXPARA
-        DSEG = "d_ni"
-        FILENAME = ""
-        VISEMMODE = "4"
-        CONFIRMOVERWRITE = "1"
-        USEVISEMMODE = "1"
-        SEPARATOR = "Blank"
-        FORMAT = "V"
-        ONLYRELATIONSWITHDEMAND = "0"
-        SUMUPLINKS = "1"
-        SUMUPTURNS = "1"
-        SUMUPORIGCONNS = "1"
-        SUMUPDESTCONNS = "1"
-        USEEXISTINGPATHS = "1"
-        SEARCHCRITERION = "Impedance"
-        WEIGHTING = "Route Vol Avg"
-        SELECTODRELATIONTYPE = "All">
-        <SINGLESKIMMATRIXPARA
-          NAME = "T0"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TCUR"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TRIPDIST"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-        <SINGLESKIMMATRIXPARA
-          NAME = "TOLL"
-          CALCULATE = "1"
-          SAVETOFILE = "0"
-          OPEN = "0"
-        />        
-      </PRTSKIMMATRIXPARA>
-    </OPERATION>
-  </OPERATIONS>
+<PROCEDURES  VERSION = "1804">
   <FUNCTIONS>
     <PUTSKIMMATRIXSETTINGS
       USELONGLENGTH = "1"
@@ -595,7 +11,7 @@
       DISCOMFORTPARAB = "4.5">
       <SINGLESKIMMATRIXSETTINGS
         NAME = "JOURNEYTIME"
-        FILEEXTENSION = "JRT"
+        CODE = "JRT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -609,7 +25,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "JOURNEYTIMEADAPTED"
-        FILEEXTENSION = "JRTA"
+        CODE = "JRTA"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -623,7 +39,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "RIDETIME"
-        FILEEXTENSION = "RIT"
+        CODE = "RIT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -637,7 +53,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "RIDETIMEADAPTED"
-        FILEEXTENSION = "RITA"
+        CODE = "RITA"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -651,7 +67,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "INVEHTIME"
-        FILEEXTENSION = "IVT"
+        CODE = "IVT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -665,7 +81,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "PUTAUXTIME"
-        FILEEXTENSION = "AXT"
+        CODE = "AXT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -679,7 +95,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ORIGINWAITTIME"
-        FILEEXTENSION = "OWT"
+        CODE = "OWT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -693,7 +109,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ORIGINWAITTIMEADAPTED"
-        FILEEXTENSION = "OWTA"
+        CODE = "OWTA"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -707,7 +123,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "TRANSFERWAITTIME"
-        FILEEXTENSION = "TWT"
+        CODE = "TWT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -721,7 +137,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "TRANSFERWAITTIMEADAPTED"
-        FILEEXTENSION = "TWTA"
+        CODE = "TWTA"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -735,7 +151,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "EXTTRANSFERWAITTIME"
-        FILEEXTENSION = "XTWT"
+        CODE = "XTWT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -749,7 +165,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "WEIGHTEDORIGINWAITTIME"
-        FILEEXTENSION = "WOWT"
+        CODE = "WOWT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -763,7 +179,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "WEIGHTEDTRANSFERWAITTIME"
-        FILEEXTENSION = "WTWT"
+        CODE = "WTWT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -777,7 +193,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "WALKTIME"
-        FILEEXTENSION = "WKT"
+        CODE = "WKT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -791,7 +207,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ACCESSTIME"
-        FILEEXTENSION = "ACT"
+        CODE = "ACT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -805,7 +221,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "EGRESSTIME"
-        FILEEXTENSION = "EGT"
+        CODE = "EGT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -819,7 +235,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "PERCEIVEDJOURNEYTIME"
-        FILEEXTENSION = "PJT"
+        CODE = "PJT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -833,7 +249,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "NUMTRANSFERS"
-        FILEEXTENSION = "NTR"
+        CODE = "NTR"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -847,7 +263,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "EXTIMPEDANCE"
-        FILEEXTENSION = "XIMP"
+        CODE = "XIMP"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -861,7 +277,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "SERVICEFREQUENCY"
-        FILEEXTENSION = "SFQ"
+        CODE = "SFQ"
         IGNOREDODVALUE = "0"
         NOPATHSFOUNDVALUE = "0"
         DIAGONALTYPE = "CONST"
@@ -875,7 +291,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "SHARINGTRAVELTIME"
-        FILEEXTENSION = "SHTT"
+        CODE = "SHTT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -888,8 +304,8 @@
         NUMDECPLACES = "2"
       />      
       <SINGLESKIMMATRIXSETTINGS
-        NAME = "SHARINGACCESSTIME"
-        FILEEXTENSION = "SHAT"
+        NAME = "DRTTIME"
+        CODE = "DRTT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -902,8 +318,8 @@
         NUMDECPLACES = "2"
       />      
       <SINGLESKIMMATRIXSETTINGS
-        NAME = "SHARINGTRAVELDISTANCE"
-        FILEEXTENSION = "SHTD"
+        NAME = "SHARINGRENTALPROCESSTIME"
+        CODE = "SHAT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -916,8 +332,64 @@
         NUMDECPLACES = "2"
       />      
       <SINGLESKIMMATRIXSETTINGS
-        NAME = "SHARINGEGRESSTIME"
-        FILEEXTENSION = "SHET"
+        NAME = "SHARINGTRAVELDIST"
+        CODE = "SHTD"
+        IGNOREDODVALUE = "999999"
+        NOPATHSFOUNDVALUE = "999999"
+        DIAGONALTYPE = "CONST"
+        DIAGONALVALUE = "0"
+        DIAGONALATTR = "1.0"
+        DIAGONALNUMZONES = "3"
+        DIAGONALFACTOR = "1"
+        MINVALUE = "0"
+        MAXVALUE = "999999"
+        NUMDECPLACES = "2"
+      />      
+      <SINGLESKIMMATRIXSETTINGS
+        NAME = "DRTDIST"
+        CODE = "DRTD"
+        IGNOREDODVALUE = "999999"
+        NOPATHSFOUNDVALUE = "999999"
+        DIAGONALTYPE = "CONST"
+        DIAGONALVALUE = "0"
+        DIAGONALATTR = "1.0"
+        DIAGONALNUMZONES = "3"
+        DIAGONALFACTOR = "1"
+        MINVALUE = "0"
+        MAXVALUE = "999999"
+        NUMDECPLACES = "2"
+      />      
+      <SINGLESKIMMATRIXSETTINGS
+        NAME = "SHARINGRETURNPROCESSTIME"
+        CODE = "SHET"
+        IGNOREDODVALUE = "999999"
+        NOPATHSFOUNDVALUE = "999999"
+        DIAGONALTYPE = "CONST"
+        DIAGONALVALUE = "0"
+        DIAGONALATTR = "1.0"
+        DIAGONALNUMZONES = "3"
+        DIAGONALFACTOR = "1"
+        MINVALUE = "0"
+        MAXVALUE = "999999"
+        NUMDECPLACES = "2"
+      />      
+      <SINGLESKIMMATRIXSETTINGS
+        NAME = "SHAREOFODTRIPSWITHRELEVANTDELAY"
+        CODE = "STRD"
+        IGNOREDODVALUE = "999999"
+        NOPATHSFOUNDVALUE = "999999"
+        DIAGONALTYPE = "CONST"
+        DIAGONALVALUE = "0"
+        DIAGONALATTR = "1.0"
+        DIAGONALNUMZONES = "3"
+        DIAGONALFACTOR = "1"
+        MINVALUE = "0"
+        MAXVALUE = "999999"
+        NUMDECPLACES = "2"
+      />      
+      <SINGLESKIMMATRIXSETTINGS
+        NAME = "RISKOFDELAYPERPERSON"
+        CODE = "RDP"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -931,7 +403,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "DIRECTDIST"
-        FILEEXTENSION = "DID"
+        CODE = "DID"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -945,7 +417,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "JOURNEYDIST"
-        FILEEXTENSION = "JRD"
+        CODE = "JRD"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -959,7 +431,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "RIDEDIST"
-        FILEEXTENSION = "RID"
+        CODE = "RID"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -973,7 +445,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "INVEHDIST"
-        FILEEXTENSION = "IVD"
+        CODE = "IVD"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -987,7 +459,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "PUTAUXDIST"
-        FILEEXTENSION = "AXD"
+        CODE = "AXD"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1001,7 +473,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "WALKDIST"
-        FILEEXTENSION = "WKD"
+        CODE = "WKD"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1015,7 +487,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ACCESSDIST"
-        FILEEXTENSION = "ACD"
+        CODE = "ACD"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1029,7 +501,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "EGRESSDIST"
-        FILEEXTENSION = "EGD"
+        CODE = "EGD"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1043,7 +515,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "JOURNEYSPEED"
-        FILEEXTENSION = "JRS"
+        CODE = "JRS"
         IGNOREDODVALUE = "0"
         NOPATHSFOUNDVALUE = "0"
         DIAGONALTYPE = "CONST"
@@ -1057,7 +529,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "DIRECTDISTSPEED"
-        FILEEXTENSION = "DIS"
+        CODE = "DIS"
         IGNOREDODVALUE = "0"
         NOPATHSFOUNDVALUE = "0"
         DIAGONALTYPE = "CONST"
@@ -1071,7 +543,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "FARE"
-        FILEEXTENSION = "FAR"
+        CODE = "FAR"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1085,7 +557,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "NUMFZ"
-        FILEEXTENSION = "NFZ"
+        CODE = "NFZ"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1099,7 +571,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "NUMOPERATORCHANGES"
-        FILEEXTENSION = "NOC"
+        CODE = "NOC"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1113,7 +585,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "INVEHDISTBYTSYS"
-        FILEEXTENSION = "IVTD"
+        CODE = "IVTD"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1127,7 +599,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "INVEHDISTPERCBYTSYS"
-        FILEEXTENSION = "IVTP"
+        CODE = "IVTP"
         IGNOREDODVALUE = "0"
         NOPATHSFOUNDVALUE = "0"
         DIAGONALTYPE = "CONST"
@@ -1141,7 +613,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "INVEHTIMEBYTSYS"
-        FILEEXTENSION = "IVTT"
+        CODE = "IVTT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1155,7 +627,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "IMPEDANCE"
-        FILEEXTENSION = "IPD"
+        CODE = "IPD"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1168,8 +640,22 @@
         NUMDECPLACES = "3"
       />      
       <SINGLESKIMMATRIXSETTINGS
+        NAME = "IMPEDANCELOGSUM"
+        CODE = "ILS"
+        IGNOREDODVALUE = "999999"
+        NOPATHSFOUNDVALUE = "999999"
+        DIAGONALTYPE = "CONST"
+        DIAGONALVALUE = "0"
+        DIAGONALATTR = "1.0"
+        DIAGONALNUMZONES = "3"
+        DIAGONALFACTOR = "1"
+        MINVALUE = "-999999"
+        MAXVALUE = "999999"
+        NUMDECPLACES = "3"
+      />      
+      <SINGLESKIMMATRIXSETTINGS
         NAME = "UTILITY"
-        FILEEXTENSION = "UTL"
+        CODE = "UTL"
         IGNOREDODVALUE = "0"
         NOPATHSFOUNDVALUE = "0"
         DIAGONALTYPE = "CONST"
@@ -1183,7 +669,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "PATHLEGATTRIBUTE"
-        FILEEXTENSION = "PLA"
+        CODE = "PLA"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1197,7 +683,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ADAPTATIONTIME"
-        FILEEXTENSION = "ADT"
+        CODE = "ADT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1211,7 +697,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "EXTADAPTATIONTIME"
-        FILEEXTENSION = "XADT"
+        CODE = "XADT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1225,7 +711,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "EQUIVALENTJOURNEYTIME"
-        FILEEXTENSION = "EJT"
+        CODE = "EJT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1239,7 +725,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "DISCOMFORT"
-        FILEEXTENSION = "DISC"
+        CODE = "DISC"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1297,7 +783,7 @@
       </USERDEFSKIM>
       <SINGLESKIMMATRIXSETTINGS
         NAME = "T0"
-        FILEEXTENSION = "TT0"
+        CODE = "TT0"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "MIN"
@@ -1311,7 +797,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "TCUR"
-        FILEEXTENSION = "TTC"
+        CODE = "TTC"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "MIN"
@@ -1325,7 +811,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "V0"
-        FILEEXTENSION = "VP0"
+        CODE = "VP0"
         IGNOREDODVALUE = "0"
         NOPATHSFOUNDVALUE = "0"
         DIAGONALTYPE = "MIN"
@@ -1339,7 +825,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "VCUR"
-        FILEEXTENSION = "VPC"
+        CODE = "VPC"
         IGNOREDODVALUE = "0"
         NOPATHSFOUNDVALUE = "0"
         DIAGONALTYPE = "MIN"
@@ -1353,7 +839,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "IMPEDANCE"
-        FILEEXTENSION = "IMP"
+        CODE = "IMP"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "MIN"
@@ -1367,7 +853,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "TRIPDIST"
-        FILEEXTENSION = "DIS"
+        CODE = "DIS"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "MIN"
@@ -1381,7 +867,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "DIRECTDIST"
-        FILEEXTENSION = "DID"
+        CODE = "DID"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "MIN"
@@ -1395,7 +881,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ADDVAL1"
-        FILEEXTENSION = "AD1"
+        CODE = "AD1"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1409,7 +895,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ADDVAL2"
-        FILEEXTENSION = "AD2"
+        CODE = "AD2"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1423,7 +909,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ADDVAL3"
-        FILEEXTENSION = "AD3"
+        CODE = "AD3"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1437,7 +923,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "ADDVAL_TSYS"
-        FILEEXTENSION = "ADS"
+        CODE = "ADS"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1451,7 +937,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "TOLL"
-        FILEEXTENSION = "TOL"
+        CODE = "TOL"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "MIN"
@@ -1465,7 +951,7 @@
       />      
       <SINGLESKIMMATRIXSETTINGS
         NAME = "USERDEF"
-        FILEEXTENSION = "UDS"
+        CODE = "UDS"
         IGNOREDODVALUE = "0"
         NOPATHSFOUNDVALUE = "0"
         DIAGONALTYPE = "CONST"
@@ -1481,7 +967,8 @@
     <VDFUNCTIONSPARAMETERS>
       <CONNECTORVDFUNCTIONSPARAMETERS>
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "1"
+          NO = "1"
+          NAME = ""
           VDFUNCTIONTYPE = "BPR"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -1549,7 +1036,8 @@
       </CONNECTORVDFUNCTIONSPARAMETERS>
       <LINKVDFUNCTIONSPARAMETERS>
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "1"
+          NO = "1"
+          NAME = ""
           VDFUNCTIONTYPE = "CONICAL"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -1615,7 +1103,8 @@
           USER_SATCRIT = "1"
         />        
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "2"
+          NO = "2"
+          NAME = ""
           VDFUNCTIONTYPE = "CONICAL"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -1681,7 +1170,8 @@
           USER_SATCRIT = "1"
         />        
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "3"
+          NO = "3"
+          NAME = ""
           VDFUNCTIONTYPE = "BPR"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -1747,7 +1237,8 @@
           USER_SATCRIT = "1"
         />        
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "4"
+          NO = "4"
+          NAME = ""
           VDFUNCTIONTYPE = "BPR"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -1813,7 +1304,8 @@
           USER_SATCRIT = "1"
         />        
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "5"
+          NO = "5"
+          NAME = ""
           VDFUNCTIONTYPE = "Constant"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -2100,6 +1592,10 @@
       ICAIDEALSATURATIONFLOWRATE = "1900"
       ICAIDEALSATURATIONFLOWRATEICU1 = "1600"
       ICAIDEALSATURATIONFLOWRATEICU2 = "1600"
+      ICAIDEALSATURATIONFLOWRATECCG = "1850"
+      ICAPCULENGTH = "19.685039370078737ft"
+      ICAPEDESTRIANWALKINGSPEED = "236.22047244094492fpm"
+      ICARIGHTTURNPEDESTRIANFACTOR = "Toronto"
       USEMAXICATWOWAYSTOP = "1"
       MAXICATWOWAYSTOP = "10min"
       USEMAXICAROUNDABOUT = "1"
@@ -2117,7 +1613,8 @@
       ICAMETHODALLWAYSTOP = "HCM 2000">
       <UNCONTROLLEDNODEVDFUNCTIONPARAMETERS>
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "1"
+          NO = "1"
+          NAME = ""
           VDFUNCTIONTYPE = "BPR2"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -2185,7 +1682,8 @@
       </UNCONTROLLEDNODEVDFUNCTIONPARAMETERS>
       <NODEVDFUNCTIONSPARAMETERS>
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "1"
+          NO = "1"
+          NAME = ""
           VDFUNCTIONTYPE = "TMODEL_NODES"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -2357,7 +1855,8 @@
       </NODEVDFUNCTIONSPARAMETERS>
       <TURNVDFUNCTIONSPARAMETERS>
         <VDFUNCTION
-          VDFUNCTIONNUMBER = "1"
+          NO = "1"
+          NAME = ""
           VDFUNCTIONTYPE = "Constant"
           BLOCKED = "0"
           HARDBLOCKING = "0"
@@ -2512,10 +2011,12 @@
       USETURNCAP = "0"
       TURNCAPMODEL = "BBACKTURNCAPMODEL_CAPPRT"
       SCALINGFACTOR = "1"
-      AVERAGESPACEPERCARUNIT = "22.965879265091861ft"
+      AVERAGESPACEPERCARUNIT = "22.965879265091857ft"
       DURATIONPHASE1 = "1h"
       NUMBEROFVOLUMESLICESPHASE1 = "10"
+      CALCULATIONVARIANT = "SEQUENTIALROUTEPROCESSING"
     />    
+    <PATHSEQUENCESKIMMATRIXSETTINGS    />    
     <ANALYSISTIMES
       USEONPUTRESULTS = "0"
       USEONPRTRESULTS = "0"
@@ -2532,5 +2033,799 @@
       CREATEASSIGNEDVOLUMEFORMULAMATRICES = "0"
       ASSIGNEDVOLUMEFORMULAMATRIXCODE = "AssignedVol"
     />    
+    <REMOTEOPERATIONFLOWPARA      DELETETEMPFILESONCALCULATIONSERVER = "1">
+      <ATTRIBUTE        NAME = "UPLOAD">
+        <ATTRITEM          SUBATTR1 = "VERSION"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "ATTRIBUTE"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "FILTER"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "SURVEYDATA"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "EXTERNAL_SC"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "VBS"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "CONNECTIONIO"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "ROUTEIMPORT"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "ICA"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "USERVDFDLLS"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "VISUMADDIN"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "MATRIX"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "OTHERINPUTDATA"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "OTHEROUTPUTDATA"          VALUE = "0"        />        
+      </ATTRIBUTE>
+      <ATTRIBUTE        NAME = "DOWNLOAD">
+        <ATTRITEM          SUBATTR1 = "VERSION"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "ATTRIBUTE"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "FILTER"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "SURVEYDATA"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "EXTERNAL_SC"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "VBS"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "CONNECTIONIO"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "ROUTEIMPORT"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "ICA"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "USERVDFDLLS"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "VISUMADDIN"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "MATRIX"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "OTHERINPUTDATA"          VALUE = "0"        />        
+        <ATTRITEM          SUBATTR1 = "OTHEROUTPUTDATA"          VALUE = "0"        />        
+      </ATTRIBUTE>
+    </REMOTEOPERATIONFLOWPARA>
   </FUNCTIONS>
+  <OPERATIONS>
+    <OPERATION
+      NO = "1"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = "peak auto cost calculation"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "AUTO_COST"
+        ONLYACTIVE = "0"
+        FORMULA = "Floor(186.63*[TOLL_PRTSYS(A)]+22.40*[LENGTH])"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "2"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "TRUCK_COST"
+        ONLYACTIVE = "0"
+        FORMULA = "Floor(92.21*[TOLL_PRTSYS(D)]+11.07*[LENGTH])"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "3"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "CAPPRT"
+        ONLYACTIVE = "0"
+        FORMULA = "Floor(10000000)"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "4"
+      CODE = ""
+      OPERATIONTYPE = "InitAssignment"
+      ACTIVE = "1"
+      COMMENT = "initialize assignment"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ASSIGNMENTINITPARA        INITPUT = "1"        INITPRT = "1"      />      
+    </OPERATION>
+    <OPERATION
+      NO = "5"
+      CODE = ""
+      OPERATIONTYPE = "PrTAssignment"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTASSIGNMENTPARA        PRTASSIGNMENTVARIANT = "Equilibrium"        DSEGSET = "a_peak,a_pm,d_peak,d_pm">
+        <EQUILIBRIUMPARA>
+          <DEMANDSHAREPARA>
+            <ATTRIBUTE              NAME = "DEMANDSHARE">
+              <ATTRITEM                SUBATTR1 = "1"                VALUE = "100"              />              
+              <ATTRITEM                SUBATTR1 = "2"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "3"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "4"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "5"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "6"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "7"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "8"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "9"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "10"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "11"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "12"                VALUE = "0"              />              
+            </ATTRIBUTE>
+          </DEMANDSHAREPARA>
+          <EQUIINITIALSOLUTIONPARA            USECURRENTSOLUTION = "0"          />          
+          <EQUISTOPCRITERIAPARA
+            MAXNUMOUTERIT = "3"
+            MAXABSIMPDEV = "0"
+            MAXRELIMPDEV = "0"
+            MAXRELATIVEGAP = "0.05"
+          />          
+          <NETBALANCING            GENERALVALUE = "3"          />          
+        </EQUILIBRIUMPARA>
+      </PRTASSIGNMENTPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "6"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "a_peak"
+        FILENAME = ""
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Blank"
+        FORMAT = "V"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "1"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "7"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "d_peak"
+        FILENAME = ""
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Blank"
+        FORMAT = "V"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "1"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "8"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "a_pm"
+        FILENAME = ""
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Blank"
+        FORMAT = "V"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "1"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "9"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "d_pm"
+        FILENAME = ""
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Blank"
+        FORMAT = "V"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "1"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "10"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = "offpeak auto cost calculation"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "AUTO_COST"
+        ONLYACTIVE = "0"
+        FORMULA = "Floor(280.59*[TOLL_PRTSYS(A)]+33.67*[LENGTH])"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "11"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "CAPPRT"
+        ONLYACTIVE = "0"
+        FORMULA = "Floor(10000000)"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "12"
+      CODE = ""
+      OPERATIONTYPE = "InitAssignment"
+      ACTIVE = "1"
+      COMMENT = "initialize assignment"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ASSIGNMENTINITPARA        INITPUT = "1"        INITPRT = "1"      />      
+    </OPERATION>
+    <OPERATION
+      NO = "13"
+      CODE = ""
+      OPERATIONTYPE = "PrTAssignment"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTASSIGNMENTPARA        PRTASSIGNMENTVARIANT = "Equilibrium"        DSEGSET = "a_ni,a_offpeak,d_ni,d_offpeak">
+        <EQUILIBRIUMPARA>
+          <DEMANDSHAREPARA>
+            <ATTRIBUTE              NAME = "DEMANDSHARE">
+              <ATTRITEM                SUBATTR1 = "1"                VALUE = "100"              />              
+              <ATTRITEM                SUBATTR1 = "2"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "3"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "4"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "5"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "6"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "7"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "8"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "9"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "10"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "11"                VALUE = "0"              />              
+              <ATTRITEM                SUBATTR1 = "12"                VALUE = "0"              />              
+            </ATTRIBUTE>
+          </DEMANDSHAREPARA>
+          <EQUIINITIALSOLUTIONPARA            USECURRENTSOLUTION = "0"          />          
+          <EQUISTOPCRITERIAPARA
+            MAXNUMOUTERIT = "3"
+            MAXABSIMPDEV = "0"
+            MAXRELIMPDEV = "0"
+            MAXRELATIVEGAP = "0.05"
+          />          
+          <NETBALANCING            GENERALVALUE = "3"          />          
+        </EQUILIBRIUMPARA>
+      </PRTASSIGNMENTPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "14"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "a_offpeak"
+        FILENAME = ""
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Blank"
+        FORMAT = "V"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "1"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "15"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "d_offpeak"
+        FILENAME = ""
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Blank"
+        FORMAT = "V"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "1"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "16"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "a_ni"
+        FILENAME = ""
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Blank"
+        FORMAT = "V"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "1"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+    <OPERATION
+      NO = "17"
+      CODE = ""
+      OPERATIONTYPE = "PrTSkimMatrixCalculation"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <PRTSKIMMATRIXPARA
+        DSEG = "d_ni"
+        FILENAME = ""
+        VISEMMODE = "4"
+        CONFIRMOVERWRITE = "1"
+        USEVISEMMODE = "1"
+        SEPARATOR = "Blank"
+        FORMAT = "V"
+        ONLYRELATIONSWITHDEMAND = "0"
+        SUMUPLINKS = "1"
+        SUMUPTURNS = "1"
+        SUMUPORIGCONNS = "1"
+        SUMUPDESTCONNS = "1"
+        USEEXISTINGPATHS = "1"
+        SEARCHCRITERION = "Impedance"
+        WEIGHTING = "Route Vol Avg"
+        SELECTODRELATIONTYPE = "All">
+        <SINGLESKIMMATRIXPARA
+          NAME = "T0"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TCUR"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TRIPDIST"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+        <SINGLESKIMMATRIXPARA
+          NAME = "TOLL"
+          CALCULATE = "1"
+          SAVETOFILE = "0"
+          OPEN = "0"
+        />        
+      </PRTSKIMMATRIXPARA>
+    </OPERATION>
+  </OPERATIONS>
+  <OPERATIONVARIABLES>
+    <DEFINITIONS    />    
+    <VALUES>
+      <OPERATIONVARIABLES      />      
+    </VALUES>
+  </OPERATIONVARIABLES>
 </PROCEDURES>
