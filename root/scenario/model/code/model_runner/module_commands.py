@@ -4,7 +4,7 @@
     of (command line) calls that, when executed in order, will completely run an entire
     module. The methods all return a list of valid command line calls, so composition
     may be achieved by using the '+' operator on the definitions.
-    
+
     crf March 18, 2013
 """
 
@@ -13,25 +13,25 @@ import build_daf_setup
 import build_log4j_config
 import pandas as pd
 from Properties import Properties
-        
+
 def quote(string):
     """
     Quote a string.
     """
     return '"' + string + '"'
-    
+
 def normalizeBackslash(string):
     """
     Normalize a (presumed path) to use backslashes for a directory separator.
     """
     return string.replace('/','\\')
-    
+
 def normalizeSlash(string):
     """
     Normalize a (presumed path) to use slashes for a directory separator.
     """
     return string.replace('\\','/')
-    
+
 def formPropertiesFileName(module_set):
     """
         Form a properties file name from an input name. The file is created by
@@ -58,7 +58,7 @@ class ModuleCommands(object):
             self.classpath = self.classpath[:-1]
         self.daf_file_map = daf_file_map
         self.log4j_file_map = log4j_file_map
-        
+
     def conditional(self,predicate,commands):
         """
         Execute commands only if predicate is true.
@@ -70,40 +70,40 @@ class ModuleCommands(object):
         for command in commands:
             new_commands.append(if_statement + command)
         return new_commands
-        
+
     def conditionalIfExists(self,fileOrFolder,commands):
         """
         Execute commands only if fileOrFolder exists.
         """
         return self.conditional('EXIST ' + quote(normalizeBackslash(fileOrFolder)),commands)
-        
+
     def conditionalIfNotExists(self,fileOrFolder,commands):
         """
         Execute commands only if fileOrFolder does not exist.
         """
         return self.conditional('NOT EXIST ' + quote(normalizeBackslash(fileOrFolder)),commands)
-        
+
     def deleteDirectory(self,directory):
         """
         Delete a directory.
         """
         d = quote(normalizeBackslash(directory))
         return self.conditionalIfExists(directory,'RMDIR /S /Q ' + d)
-        
+
     def deleteFile(self,file):
         """
         Delete a File.
         """
         f = quote(normalizeBackslash(file))
         return self.conditionalIfExists(file,'DEL /Q ' + f)
-        
+
     def makeDirectory(self,directory):
         """
         Create a directory.
         """
         d = quote(normalizeBackslash(directory))
         return self.conditionalIfNotExists(directory,'MKDIR ' + d)
-        
+
     def copy(self,directoryOrFile,destination):
         """
         Copy directoryOrFile to destination.
@@ -112,17 +112,17 @@ class ModuleCommands(object):
         o = quote(normalizeBackslash(directoryOrFile))
         d = quote(normalizeBackslash(destination))
         return self.conditionalIfNotExists(destination,'XCOPY ' + o + ' /E /K ' + d)
-        
+
     def zip(self,inputFilesOrFolders,outputFile,update=False):
         """ Zip files to compressed archive.
-        
+
         Uses "7z.exe" with zip compression.
-        
+
         Args:
             inputFilesOrFolders (str): A single file, folder, or set of files. Multiple files are supported.
             outputFile (str): The compressed archive file path.
             update (bool): Update archive with new file if TRUE; overwrite with FALSE (default).
-            
+
         """
         #if just one file/folder listed then put it in a list
         createOrUpdate = 'a'
@@ -137,13 +137,13 @@ class ModuleCommands(object):
         for f in inputFilesOrFolders:
             command.append(quote(normalizeBackslash(f)))
         return [' '.join(command)]
-        
+
     def getDafCommandFile(self):
         """
         Get the daf command filepath. (Not a command definition.)
         """
         return normalizeSlash(os.path.join(self.properties['daf.command.file.dir'],self.properties['daf.command.file']))
-        
+
     def runPause(self,seconds):
         """
         Pause for seconds.
@@ -165,7 +165,7 @@ class ModuleCommands(object):
                    quote(self.getDafCommandFile()),
                    quote(startnode_file)]
         return [' '.join(command)]
-        
+
     def runStopFileMonitor(self):
         """
         Stop the DAF file monitor.
@@ -176,7 +176,7 @@ class ModuleCommands(object):
 
     def runModule(self,module_set,scenario_outputs,property_file,year,vm_size=None,extra_args={}):
         """
-        Run a model module via the ModelEntry Java class. If vm_size is omitted, then 3 gigs will be 
+        Run a model module via the ModelEntry Java class. If vm_size is omitted, then 3 gigs will be
         used. Extra args are the extra arguments passed to the java program in the "K=V" format.
         """
         if vm_size is None: #default is 3 gigs
@@ -197,33 +197,33 @@ class ModuleCommands(object):
         for key in extra_args:
             command += [quote(key + '=' + extra_args[key])]
         return [' '.join(command)]
-        
-        
+
+
     def runSI(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the SI module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
-        
+
+
     def runNED(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the NED module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
+
     def runALD(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the ALD module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
+
     def runSPG1(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the SPG1 module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
+
     def runAA(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the AA module.
@@ -233,13 +233,13 @@ class ModuleCommands(object):
                 normalizeSlash(os.path.join(os.path.dirname(scenario_outputs),
                 "model", "code", "retexchange.py")) + " t" + year] + command
         return command
-        
+
     def runSPG2(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the SPG2 module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
+
     def runPT(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the PT module.
@@ -250,31 +250,31 @@ class ModuleCommands(object):
         command += self.conditionalIfExists(input_folder,self.zip(input_folder,output_file))
         command += self.deleteDirectory(input_folder)
         return command
-        
+
     def runCT(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the CT module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
+
     def runET(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the ET module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
+
     def runTA(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the TA module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-               
+
     def runTR(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the TR module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
-        
+
     def runSL(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the SL module.
@@ -294,7 +294,7 @@ class ModuleCommands(object):
         python_file = properties_set['sl.check.select.link.output.python.file']
         commands = [quote(python_executable.replace('/','\\')),
                    quote(python_file.replace('/','\\')),
-                   quote(property_file)]        
+                   quote(property_file)]
         #for single use a ptyhon script to append select link results to trips
         if (len(select_link_input) == 1) and ('append' in property_file):
             python_file = properties_set['sl.append.select.link.data.python.file']
@@ -311,7 +311,7 @@ class ModuleCommands(object):
             else:
                 commands = command
         return commands
-        
+
 
     def runVIZ(self,module_set,scenario_outputs,property_file,year,properties):
         """
@@ -323,7 +323,7 @@ class ModuleCommands(object):
         if properties['viz.zip.final.db'].lower().strip() == 'true':
             commands += self.zip(properties['viz.final.db'],properties['viz.zip.file'])
         return commands
-        
+
     def runMICROVIZ(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the MICROVIZ database creation.
@@ -334,4 +334,44 @@ class ModuleCommands(object):
         if properties['viz.micro.zip.final.db'].lower().strip() == 'true':
             commands += self.zip(properties['viz.micro.final.db'],properties['viz.micro.zip.file'])
         return commands
-        
+
+    def runSWIMR_REFERENCE(self, module_set, scenario_outputs, property_file, year, properties):
+        """
+        Run the SWIMR reference scenario graphics.
+
+        Uses the R executable to run a script that calls SWIMR RMarkdown files.
+
+        Args:
+            properties: a properties object
+
+        """
+        template = 'Reference'
+        r_exe = quote(normalizeBackslash(self.properties['r.executable']))
+        rscript_exe = r_exe.replace('R.exe', 'Rscript.exe')
+
+        command = [rscript_exe,
+                   quote(normalizeBackslash(self.properties['swimr.render.script'])),
+                   template,
+                   quote(normalizeBackslash(self.properties['viz.final.db']))]
+        return [' '.join(command)]
+
+    def runSWIMR_COMPARE(self, module_set, scenario_outputs, property_file, year, properties):
+        """
+        Run the SWIMR compare scenario graphics.
+
+        Uses the R executable to run a script that calls SWIMR RMarkdown files.
+
+        Args:
+            properties: a properties object
+
+        """
+        template = 'Compare'
+        r_exe = quote(normalizeBackslash(self.properties['r.executable']))
+        rscript_exe = r_exe.replace('R.exe', 'Rscript.exe')
+
+        command = [rscript_exe,
+                   quote(normalizeBackslash(self.properties['swimr.render.script'])),
+                   template,
+                   quote(normalizeBackslash(self.properties['viz.final.db'])),
+                   quote(normalizeBackslash(self.properties['swimr.reference.db']))]
+        return [' '.join(command)]

@@ -4,7 +4,6 @@ Different pieces of the model use R, Python, and Java. We bundle the appropriate
 Upon installation, extract the files in `dependencies64.zip`. This should leave you with the following directories:
 - `java8`
 - `Python27`
-- `R-3.1.2`
+- `R-3.3.2`
 
 And 7za.exe
-
