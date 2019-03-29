@@ -27,10 +27,12 @@ library('rmarkdown')
 # Main -----------------------------------------------------------------------
 
 template <- args[6]
+pandoc_exe <- args[7]
+Sys.setenv(RSTUDIO_PANDOC = pandoc_exe)
 
 if ( template == 'Reference' ){
 
-  ref_db = args[7]
+  ref_db = args[8]
 
   template_folder <- 'single_scenario'
 
@@ -39,8 +41,8 @@ if ( template == 'Reference' ){
 
 } else if ( template == 'Compare' ){
 
-  current_db = args[7]
-  ref_db = args[8]
+  current_db = args[8]
+  ref_db = args[9]
 
   template_folder <- 'compare_scenario'
 
@@ -49,9 +51,9 @@ if ( template == 'Reference' ){
 
 } else if ( template == 'Population' ){
 
-  current_db = args[7]
-  ref_db = args[8]
-  compare_db = args[9]
+  current_db = args[8]
+  ref_db = args[9]
+  compare_db = args[10]
 
   template_folder <- 'population'
 
