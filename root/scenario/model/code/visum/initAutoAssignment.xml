@@ -2092,7 +2092,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(186.63*[TOLL_PRTSYS(A)]+22.40*[LENGTH])"
+        FORMULA = "Floor(190.36*[TOLL_PRTSYS(A)]+22.84*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2118,7 +2118,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "TRUCK_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(92.21*[TOLL_PRTSYS(D)]+11.07*[LENGTH])"
+        FORMULA = "Floor(94.06*[TOLL_PRTSYS(D)]+11.29*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2481,7 +2481,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(280.59*[TOLL_PRTSYS(A)]+33.67*[LENGTH])"
+        FORMULA = "Floor(286.20*[TOLL_PRTSYS(A)]+34.34*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
