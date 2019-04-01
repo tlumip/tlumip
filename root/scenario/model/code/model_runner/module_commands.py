@@ -381,7 +381,7 @@ class ModuleCommands(object):
         Uses the R executable to run a script that calls SWIMR RMarkdown files.
 
         """
-        template = 'Compare'
+        template = 'Population'
         r_exe = quote(normalizeBackslash(self.properties['r.executable']))
         rscript_exe = r_exe.replace('R.exe', 'Rscript.exe')
         pandoc_exe = quote(normalizeBackslash(self.properties['pandoc.executable']))
