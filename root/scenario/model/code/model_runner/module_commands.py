@@ -341,17 +341,16 @@ class ModuleCommands(object):
 
         Uses the R executable to run a script that calls SWIMR RMarkdown files.
 
-        Args:
-            properties: a properties object
-
         """
         template = 'Reference'
         r_exe = quote(normalizeBackslash(self.properties['r.executable']))
         rscript_exe = r_exe.replace('R.exe', 'Rscript.exe')
+        pandoc_exe = quote(normalizeBackslash(self.properties['pandoc.executable']))
 
         command = [rscript_exe,
                    quote(normalizeBackslash(self.properties['swimr.render.script'])),
                    template,
+                   pandoc_exe,
                    quote(normalizeBackslash(self.properties['viz.final.db']))]
         return [' '.join(command)]
 
@@ -361,17 +360,37 @@ class ModuleCommands(object):
 
         Uses the R executable to run a script that calls SWIMR RMarkdown files.
 
-        Args:
-            properties: a properties object
-
         """
         template = 'Compare'
         r_exe = quote(normalizeBackslash(self.properties['r.executable']))
         rscript_exe = r_exe.replace('R.exe', 'Rscript.exe')
+        pandoc_exe = quote(normalizeBackslash(self.properties['pandoc.executable']))
 
         command = [rscript_exe,
                    quote(normalizeBackslash(self.properties['swimr.render.script'])),
                    template,
+                   pandoc_exe,
                    quote(normalizeBackslash(self.properties['viz.final.db'])),
                    quote(normalizeBackslash(self.properties['swimr.reference.db']))]
+        return [' '.join(command)]
+
+    def runSWIMR_POPEMP(self, module_set, scenario_outputs, property_file, year, properties):
+        """
+        Run the SWIMR "Population" scenario graphics.
+
+        Uses the R executable to run a script that calls SWIMR RMarkdown files.
+
+        """
+        template = 'Population'
+        r_exe = quote(normalizeBackslash(self.properties['r.executable']))
+        rscript_exe = r_exe.replace('R.exe', 'Rscript.exe')
+        pandoc_exe = quote(normalizeBackslash(self.properties['pandoc.executable']))
+
+        command = [rscript_exe,
+                   quote(normalizeBackslash(self.properties['swimr.render.script'])),
+                   template,
+                   pandoc_exe,
+                   quote(normalizeBackslash(self.properties['viz.final.db'])),
+                   quote(normalizeBackslash(self.properties['swimr.reference.db'])),
+                   quote(normalizeBackslash(self.properties['swimr.compare.db']))]
         return [' '.join(command)]

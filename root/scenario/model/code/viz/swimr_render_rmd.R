@@ -19,7 +19,18 @@ libPath <- gsub("bin\\\\x64\\\\Rterm.exe", "library", exe)
 
 
 # Load libraries --------------------------------------------------------------
+
+pandoc_exe <- args[7]
+cat("pandoc_exe:", pandoc_exe, "\n")
+
+Sys.setenv(RSTUDIO_PANDOC = dirname(pandoc_exe))
+#Sys.getenv("RSTUDIO_PANDOC")
+
 library('rmarkdown')
+rmarkdown:::find_pandoc()
+
+library('RSQLite')
+# cat('rmarkdown thinks pandoc is here:', rmarkdown:::.pandoc$dir, "\n")
 
 # Define functions ------------------------------------------------------------
 
@@ -30,7 +41,7 @@ template <- args[6]
 
 if ( template == 'Reference' ){
 
-  ref_db = args[7]
+  ref_db = args[8]
 
   template_folder <- 'single_scenario'
 
@@ -39,8 +50,8 @@ if ( template == 'Reference' ){
 
 } else if ( template == 'Compare' ){
 
-  current_db = args[7]
-  ref_db = args[8]
+  current_db = args[8]
+  ref_db = args[9]
 
   template_folder <- 'compare_scenario'
 
@@ -49,19 +60,19 @@ if ( template == 'Reference' ){
 
 } else if ( template == 'Population' ){
 
-  current_db = args[7]
-  ref_db = args[8]
-  compare_db = args[9]
+  current_db = args[8]
+  ref_db = args[9]
+  compare_db = args[10]
 
   template_folder <- 'population'
 
-  output_file <- file.path(dirname(ref_db), 'swimr_population.html')
+  output_file <- file.path(dirname(current_db), 'swimr_population.html')
   param_list <- list(ref_db = ref_db,
                  current_db = current_db,
                  compare_db = compare_db)
 
 } else {
-  stop("Template '", template, "' is unknown.  Use 'Reference' or 'Compare'")
+  stop("Template '", template, "' is unknown.  Use 'Reference', 'Compare', or 'Population'")
 }
 
 rmd_file <- system.file("rmarkdown", "templates", template_folder,
