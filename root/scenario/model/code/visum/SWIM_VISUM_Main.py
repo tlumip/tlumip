@@ -1078,8 +1078,8 @@ class SwimModel(object):
 
           if offpeak_far[i][j]==0: #0=avail;999999=NA
             if key in odKey:
-              peak_far[i][j] = fieldDict['Fare$'][odKey.index(key)]
-              offpeak_far[i][j] = fieldDict['Fare$'][odKey.index(key)]
+              peak_far[i][j] = fieldDict['Fare'][odKey.index(key)]
+              offpeak_far[i][j] = fieldDict['Fare'][odKey.index(key)]
 
       #put matrices back in
       VisumHelpers.SetSkimMatrix(self.Visum, ivtPeakIntraSkimNum + 7, peak_far)
