@@ -586,14 +586,6 @@ class SwimModel(object):
         print("Set truck PCU factor for class" + truckDemandClass + " : " + str(truckPCU))
         self.Visum.Net.TSystems.ItemByKey(truckDemandClass).SetAttValue("PCU", truckPCU)
 
-        #remove transit lines not in year
-        print("Remove transit lines not in year")
-        lineID = VisumHelpers.GetMulti(self.Visum.Net.LineRoutes, "ID")
-        inYear = VisumHelpers.GetMulti(self.Visum.Net.LineRoutes, "NET")
-        for i in range(len(inYear)):
-          if inYear[i] == 0:
-            self.Visum.Net.RemoveLineRoute(self.Visum.Net.LineRoutes.ItemByID(lineID[i]))
-
 
     def assignLinkAzone(self):
       
