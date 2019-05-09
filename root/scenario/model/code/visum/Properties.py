@@ -21,7 +21,7 @@ class Properties(dict):
     #  not be preserved - only the last occurance
     def loadPropertyFile(self,file,saveable=False):
         if not os.path.isfile(file):
-            print "Property file not found: " + file
+            print ("Property file not found: " + file)
             return
         properties = {}
         for line in open(file):
@@ -29,8 +29,8 @@ class Properties(dict):
             if len(line) == 0 or line[0] == "#" or line[0:2] == "//":
                 continue
             key_value = line.split("=",1)
-            if len(key_value) <> 2:
-                print "Property line not understood (" + file + "): \n\t" + line
+            if len(key_value) != 2:
+                print ("Property line not understood (" + file + "): \n\t" + line)
                 continue
             properties[key_value[0].strip()] = key_value[1].strip()
         self.loadProperties(properties,file)
@@ -40,12 +40,12 @@ class Properties(dict):
     def loadProperties(self,properties,set_name):
         if set_name in self.set_to_property_map:
             if self.verbose:
-                print "Note: Property set already exists, properties will be appended/replaced (" + set_name + ")"
+                print ("Note: Property set already exists, properties will be appended/replaced (" + set_name + ")")
         else:
             self.set_to_property_map[set_name] = []
         for key in properties:
             if self.verbose and key in self:
-                print "Note: Property key already defined: " + key
+                print ("Note: Property key already defined: " + key)
             self[key] = properties[key]
             if not key in self.set_to_property_map[set_name]:
                 self.set_to_property_map[set_name].append(key)
@@ -55,7 +55,7 @@ class Properties(dict):
     
     def getPropertySet(self,set_name):
         if not set_name in self.set_to_property_map:
-            print "Property set not found: " + set_name
+            print ("Property set not found: " + set_name)
             return {}
         set_properties = {}
         for key in self.set_to_property_map[set_name]:
@@ -64,10 +64,10 @@ class Properties(dict):
     
     def savePropertyFile(self,file,outfile=None):
         if not file in self.set_to_property_map:
-            print "File not loaded property file: " + file
+            print ("File not loaded property file: " + file)
             return
         if outfile == None and not file in self.savable_file_list:
-            print "Property file not saveable: " + file
+            print ("Property file not saveable: " + file)
             return
         if outfile == None:
             outfile = file
