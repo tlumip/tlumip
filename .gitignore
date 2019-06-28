@@ -2,9 +2,5 @@ build/*
 release/*
 /build/
 root/model/census/*.csv
-root/model/lib/java8/
-root/model/lib/Python27/
-root/model/lib/R-3.3.2/
-root/model/lib/7za.exe
 .Rproj.user/
 .Rproj.user
