@@ -1,0 +1,113 @@
+target,geography,seed_table,importance,control_field,expression
+num_hh,AZONE,households,1000000000,HHS,(households.WGTP > 0) & (households.WGTP < np.inf)
+hh_size_1,REGION,households,5000,HH_SIZE1,households.NP == 1
+hh_size_2,REGION,households,5000,HH_SIZE2,households.NP == 2
+hh_size_3,REGION,households,5000,HH_SIZE3,households.NP == 3
+hh_size_4,REGION,households,5000,HH_SIZE4M,households.NP >= 4
+hh_wrks_0,REGION,households,5000,HH_WRKR0,households.NWESR == 0
+hh_wrks_1,REGION,households,5000,HH_WRKR1,households.NWESR == 1
+hh_wrks_2,REGION,households,5000,HH_WRKR2,households.NWESR == 2
+hh_wrks_3,REGION,households,5000,HH_WRKR3,households.NWESR == 3
+hh_wrks_4,REGION,households,5000,HH_WRKR4,households.NWESR == 4
+hh_wrks_5m,REGION,households,5000,HH_WRKR5M,households.NWESR >= 5
+person_age0to4,REGION,persons,10000,P_AGE0,(persons.AGEP >= 0) & (persons.AGEP <= 4)
+person_age5to9,REGION,persons,10000,P_AGE5,(persons.AGEP >= 5) & (persons.AGEP <= 9)
+person_age10to14,REGION,persons,10000,P_AGE10,(persons.AGEP >= 10) & (persons.AGEP <= 14)
+person_age15to19,REGION,persons,10000,P_AGE15,(persons.AGEP >= 15) & (persons.AGEP <= 19)
+person_age20to24,REGION,persons,10000,P_AGE20,(persons.AGEP >= 20) & (persons.AGEP <= 24)
+person_age25to29,REGION,persons,10000,P_AGE25,(persons.AGEP >= 25) & (persons.AGEP <= 29)
+person_age30to34,REGION,persons,10000,P_AGE30,(persons.AGEP >= 30) & (persons.AGEP <= 34)
+person_age35to39,REGION,persons,10000,P_AGE35,(persons.AGEP >= 35) & (persons.AGEP <= 39)
+person_age40to44,REGION,persons,10000,P_AGE40,(persons.AGEP >= 40) & (persons.AGEP <= 44)
+person_age45to49,REGION,persons,10000,P_AGE45,(persons.AGEP >= 45) & (persons.AGEP <= 49)
+person_age50to54,REGION,persons,10000,P_AGE50,(persons.AGEP >= 50) & (persons.AGEP <= 54)
+person_age55to59,REGION,persons,10000,P_AGE55,(persons.AGEP >= 55) & (persons.AGEP <= 59)
+person_age60to64,REGION,persons,10000,P_AGE60,(persons.AGEP >= 60) & (persons.AGEP <= 64)
+person_age65to69,REGION,persons,10000,P_AGE65,(persons.AGEP >= 65) & (persons.AGEP <= 69)
+person_age70to74,REGION,persons,10000,P_AGE70,(persons.AGEP >= 70) & (persons.AGEP <= 74)
+person_age75to79,REGION,persons,10000,P_AGE75,(persons.AGEP >= 75) & (persons.AGEP <= 79)
+person_age80to84,REGION,persons,10000,P_AGE80,(persons.AGEP >= 80) & (persons.AGEP <= 84)
+person_age85m,REGION,persons,10000,P_AGE85,persons.AGEP >= 85
+FIRE_fnin_off,REGION,persons,10000,FIRE_fnin_off,"persons.split_industry == ""FIRE_fnin_off"""
+INFO_info_off_li,REGION,persons,10000,INFO_info_off_li,"persons.split_industry == ""INFO_info_off_li"""
+ENGY_elec_hi,REGION,persons,10000,ENGY_elec_hi,"persons.split_industry == ""ENGY_elec_hi"""
+GOV_admn_gov,REGION,persons,10000,GOV_admn_gov,"persons.split_industry == ""GOV_admn_gov"""
+HOSP_acc_acc,REGION,persons,10000,HOSP_acc_acc,"persons.split_industry == ""HOSP_acc_acc"""
+HLTH_hosp_hosp,REGION,persons,10000,HLTH_hosp_hosp,"persons.split_industry == ""HLTH_hosp_hosp"""
+RES_agmin_ag,REGION,persons,10000,RES_agmin_ag,"persons.split_industry == ""RES_agmin_ag"""
+ENGY_ptrl_hi,REGION,persons,10000,ENGY_ptrl_hi,"persons.split_industry == ""ENGY_ptrl_hi"""
+RET_stor_off,REGION,persons,10000,RET_stor_off,"persons.split_industry == ""RET_stor_off"""
+SERV_stor_ret,REGION,persons,10000,SERV_stor_ret,"persons.split_industry == ""SERV_stor_ret"""
+RES_forst_log,REGION,persons,10000,RES_forst_log,"persons.split_industry == ""RES_forst_log"""
+RET_nstor_off,REGION,persons,10000,RET_nstor_off,"persons.split_industry == ""RET_nstor_off"""
+ENGY_offc_off,REGION,persons,10000,ENGY_offc_off,"persons.split_industry == ""ENGY_offc_off"""
+RET_stor_ret,REGION,persons,10000,RET_stor_ret,"persons.split_industry == ""RET_stor_ret"""
+MFG_hvtw_li,REGION,persons,10000,MFG_hvtw_li,"persons.split_industry == ""MFG_hvtw_li"""
+GOV_offc_off,REGION,persons,10000,GOV_offc_off,"persons.split_industry == ""GOV_offc_off"""
+RET_auto_ret,REGION,persons,10000,RET_auto_ret,"persons.split_industry == ""RET_auto_ret"""
+MFG_htec_hi,REGION,persons,10000,MFG_htec_hi,"persons.split_industry == ""MFG_htec_hi"""
+SERV_home_xxx,REGION,persons,10000,SERV_home_xxx,"persons.split_industry == ""SERV_home_xxx"""
+MFG_hvtw_hi,REGION,persons,10000,MFG_hvtw_hi,"persons.split_industry == ""MFG_hvtw_hi"""
+HLTH_othr_off_li,REGION,persons,10000,HLTH_othr_off_li,"persons.split_industry == ""HLTH_othr_off_li"""
+ENGY_ngas_hi,REGION,persons,10000,ENGY_ngas_hi,"persons.split_industry == ""ENGY_ngas_hi"""
+ENT_ent_ret,REGION,persons,10000,ENT_ent_ret,"persons.split_industry == ""ENT_ent_ret"""
+MFG_lvtw_hi,REGION,persons,10000,MFG_lvtw_hi,"persons.split_industry == ""MFG_lvtw_hi"""
+MFG_htec_li,REGION,persons,10000,MFG_htec_li,"persons.split_industry == ""MFG_htec_li"""
+UTL_othr_off,REGION,persons,10000,UTL_othr_off,"persons.split_industry == ""UTL_othr_off"""
+HIED_hied_off_inst,REGION,persons,10000,HIED_hied_off_inst,"persons.split_industry == ""HIED_hied_off_inst"""
+CNST_offc_off,REGION,persons,10000,CNST_offc_off,"persons.split_industry == ""CNST_offc_off"""
+FIRE_real_off,REGION,persons,10000,FIRE_real_off,"persons.split_industry == ""FIRE_real_off"""
+HLTH_care_inst,REGION,persons,10000,HLTH_care_inst,"persons.split_industry == ""HLTH_care_inst"""
+CNST_othr_xxx,REGION,persons,10000,CNST_othr_xxx,"persons.split_industry == ""CNST_othr_xxx"""
+SERV_nonp_off_inst,REGION,persons,10000,SERV_nonp_off_inst,"persons.split_industry == ""SERV_nonp_off_inst"""
+UTL_othr_off_li,REGION,persons,10000,UTL_othr_off_li,"persons.split_industry == ""UTL_othr_off_li"""
+TRNS_trns_ware,REGION,persons,10000,TRNS_trns_ware,"persons.split_industry == ""TRNS_trns_ware"""
+SERV_bus_off,REGION,persons,10000,SERV_bus_off,"persons.split_industry == ""SERV_bus_off"""
+MFG_offc_off,REGION,persons,10000,MFG_offc_off,"persons.split_industry == ""MFG_offc_off"""
+SERV_tech_off,REGION,persons,10000,SERV_tech_off,"persons.split_industry == ""SERV_tech_off"""
+CNST_res_xxx,REGION,persons,10000,CNST_res_xxx,"persons.split_industry == ""CNST_res_xxx"""
+K12_k12_k12,REGION,persons,10000,K12_k12_k12,"persons.split_industry == ""K12_k12_k12"""
+WHSL_offc_off,REGION,persons,10000,WHSL_offc_off,"persons.split_industry == ""WHSL_offc_off"""
+CNST_main_xxx,REGION,persons,10000,CNST_main_xxx,"persons.split_industry == ""CNST_main_xxx"""
+K12_k12_off,REGION,persons,10000,K12_k12_off,"persons.split_industry == ""K12_k12_off"""
+RES_offc_off,REGION,persons,10000,RES_offc_off,"persons.split_industry == ""RES_offc_off"""
+TRNS_trns_off,REGION,persons,10000,TRNS_trns_off,"persons.split_industry == ""TRNS_trns_off"""
+HOSP_eat_ret_acc,REGION,persons,10000,HOSP_eat_ret_acc,"persons.split_industry == ""HOSP_eat_ret_acc"""
+MFG_food_li,REGION,persons,10000,MFG_food_li,"persons.split_industry == ""MFG_food_li"""
+INFO_info_off,REGION,persons,10000,INFO_info_off,"persons.split_industry == ""INFO_info_off"""
+MFG_wdppr_hi,REGION,persons,10000,MFG_wdppr_hi,"persons.split_industry == ""MFG_wdppr_hi"""
+SERV_site_li,REGION,persons,10000,SERV_site_li,"persons.split_industry == ""SERV_site_li"""
+WHSL_whsl_ware,REGION,persons,10000,WHSL_whsl_ware,"persons.split_industry == ""WHSL_whsl_ware"""
+MFG_food_hi,REGION,persons,10000,MFG_food_hi,"persons.split_industry == ""MFG_food_hi"""
+CNST_nres_xxx,REGION,persons,10000,CNST_nres_xxx,"persons.split_industry == ""CNST_nres_xxx"""
+HH0to8k1to2,AZONE,households,5000,HH0to8k1to2,"households.Category == ""HH0to8k1to2"""
+HH0to8k3plus,AZONE,households,5000,HH0to8k3plus,"households.Category == ""HH0to8k3plus"""
+HH106kUp1to2,AZONE,households,5000,HH106kUp1to2,"households.Category == ""HH106kUp1to2"""
+HH106kUp3plus,AZONE,households,5000,HH106kUp3plus,"households.Category == ""HH106kUp3plus"""
+HH15to23k1to2,AZONE,households,5000,HH15to23k1to2,"households.Category == ""HH15to23k1to2"""
+HH15to23k3plus,AZONE,households,5000,HH15to23k3plus,"households.Category == ""HH15to23k3plus"""
+HH23to32k1to2,AZONE,households,5000,HH23to32k1to2,"households.Category == ""HH23to32k1to2"""
+HH23to32k3plus,AZONE,households,5000,HH23to32k3plus,"households.Category == ""HH23to32k3plus"""
+HH32to46k1to2,AZONE,households,5000,HH32to46k1to2,"households.Category == ""HH32to46k1to2"""
+HH32to46k3plus,AZONE,households,5000,HH32to46k3plus,"households.Category == ""HH32to46k3plus"""
+HH46to61k1to2,AZONE,households,5000,HH46to61k1to2,"households.Category == ""HH46to61k1to2"""
+HH46to61k3plus,AZONE,households,5000,HH46to61k3plus,"households.Category == ""HH46to61k3plus"""
+HH61to76k1to2,AZONE,households,5000,HH61to76k1to2,"households.Category == ""HH61to76k1to2"""
+HH61to76k3plus,AZONE,households,5000,HH61to76k3plus,"households.Category == ""HH61to76k3plus"""
+HH76to106k1to2,AZONE,households,5000,HH76to106k1to2,"households.Category == ""HH76to106k1to2"""
+HH76to106k3plus,AZONE,households,5000,HH76to106k3plus,"households.Category == ""HH76to106k3plus"""
+HH8to15k1to2,AZONE,households,5000,HH8to15k1to2,"households.Category == ""HH8to15k1to2"""
+HH8to15k3plus,AZONE,households,5000,HH8to15k3plus,"households.Category == ""HH8to15k3plus"""
+A1_Mgmt_Bus,AZONE,persons,10000,A1-Mgmt Bus,"persons.occupationLabel == ""A1-Mgmt Bus"""
+B1_Prof_Specialty,AZONE,persons,10000,B1-Prof Specialty,"persons.occupationLabel == ""B1-Prof Specialty"""
+B2_Education,AZONE,persons,10000,B2-Education,"persons.occupationLabel == ""B2-Education"""
+B3_Health,AZONE,persons,10000,B3-Health,"persons.occupationLabel == ""B3-Health"""
+B4_Technical_Unskilled,AZONE,persons,10000,B4-Technical Unskilled,"persons.occupationLabel == ""B4-Technical Unskilled"""
+C1_Sales_Clerical_Professionals,AZONE,persons,10000,C1-Sales Clerical Professionals,"persons.occupationLabel == ""C1-Sales Clerical Professionals"""
+C2_Sales_Service,AZONE,persons,10000,C2-Sales Service,"persons.occupationLabel == ""C2-Sales Service"""
+C3_Clerical,AZONE,persons,10000,C3-Clerical,"persons.occupationLabel == ""C3-Clerical"""
+C4_Sales_Clerical_Unskilled,AZONE,persons,10000,C4-Sales Clerical Unskilled,"persons.occupationLabel == ""C4-Sales Clerical Unskilled"""
+D1_Production_Specialists,AZONE,persons,10000,D1-Production Specialists,"persons.occupationLabel == ""D1-Production Specialists"""
+D2_MaintConstRepair_Specialists,AZONE,persons,10000,D2-MaintConstRepair Specialists,"persons.occupationLabel == ""D2-MaintConstRepair Specialists"""
+D3_ProtectTrans_Specialists,AZONE,persons,10000,D3-ProtectTrans Specialists,"persons.occupationLabel == ""D3-ProtectTrans Specialists"""
+D4_Blue_Collar_Unskilled,AZONE,persons,10000,D4-Blue Collar Unskilled,"persons.occupationLabel == ""D4-Blue Collar Unskilled"""
