@@ -1,2 +1,3 @@
 # Model software
-Required software for TLUMIP.  Unzip any zip files in this folder before running the model.
+Required software for running TLUMIP is at https://github.com/tlumip/tlumip_dependencies.
+
