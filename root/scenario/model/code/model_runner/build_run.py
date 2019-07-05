@@ -56,7 +56,7 @@ for line in open(definition_file):
         module_init_map.append(m0)
 
 #these are the available (base) modules
-modules = ['SI','NED','ALD','SPG1','AA','PT','SPG2','CT','ET','TA','TR','SL']
+modules = ['SI','NED','ALD','SPG1','POPSIMSPG1','AA','PT','SPG2','POPSIMSPG2','CT','ET','TA','TR','SL']
 daf_modules = ['PT']
 t_map = {}
 #figure out which modules have "_LAST_RUN_YEAR" tokens in the property file
