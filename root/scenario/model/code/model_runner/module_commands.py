@@ -224,12 +224,34 @@ class ModuleCommands(object):
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
 
+    def runPOPSIMSPG1(self,module_set,scenario_outputs,property_file,year,properties):
+        """
+        Run the PopulationSim SPG1 module.
+        """
+        #find relevant properties
+        properties_set = Properties()
+        property_file = normalizeSlash(property_file)
+
+        properties_set.loadPropertyFile(property_file)
+        python_executable = properties_set['python.executable']
+        python_file = properties_set['popsim.script.file']
+
+        commands = [quote(python_executable.replace('/','\\')) + " " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1")]
+        return commands
+
     def runAA(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the AA module.
         """
+        #find relevant properties
+        properties_set = Properties()
+        property_file = normalizeSlash(property_file)
+
+        properties_set.loadPropertyFile(property_file)
+        python_executable = properties_set['python.executable']
+
         command = self.runModule(module_set,scenario_outputs,property_file,year,250)
-        command = ["..\\model\\lib\\Python27\\python.exe " +
+        command = [quote(python_executable.replace('/','\\')) + " " + 
                 normalizeSlash(os.path.join(os.path.dirname(scenario_outputs),
                 "model", "code", "retexchange.py")) + " t" + year] + command
         return command
@@ -239,6 +261,21 @@ class ModuleCommands(object):
         Run the SPG2 module.
         """
         return self.runModule(module_set,scenario_outputs,property_file,year)
+
+    def runPOPSIMSPG2(self,module_set,scenario_outputs,property_file,year,properties):
+        """
+        Run the PopulationSim SPG2 module.
+        """
+        #find relevant properties
+        properties_set = Properties()
+        property_file = normalizeSlash(property_file)
+
+        properties_set.loadPropertyFile(property_file)
+        python_executable = properties_set['python.executable']
+        python_file = properties_set['popsim.script.file']
+
+        commands = [quote(python_executable.replace('/','\\')) + " " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG2")]
+        return commands
 
     def runPT(self,module_set,scenario_outputs,property_file,year,properties):
         """
@@ -295,7 +332,7 @@ class ModuleCommands(object):
         commands = [quote(python_executable.replace('/','\\')),
                    quote(python_file.replace('/','\\')),
                    quote(property_file)]
-        #for single use a ptyhon script to append select link results to trips
+        #for single use a python script to append select link results to trips
         if (len(select_link_input) == 1) and ('append' in property_file):
             python_file = properties_set['sl.append.select.link.data.python.file']
             command = [quote(python_executable.replace('/','\\')),

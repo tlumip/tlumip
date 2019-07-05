@@ -30,8 +30,7 @@ class popsimSPG(object):
 		self.logging_yaml_spg1  = properties['logging.yaml.spg1'] 
 		self.logging_yaml_spg2  = properties['logging.yaml.spg2']
 		self.popsim_py_file = properties['popsim.py.file']
-		self.popsim_bat_file = properties['popsim.bat.file']
-		
+		self.python_exe = properties['python.executable'].replace('/','\\')
 		
 		### INPUTS
 
@@ -100,10 +99,6 @@ class popsimSPG(object):
 			os.makedirs(self.spg2_configs_directory)
 		if not os.path.exists(self.spg2_output_directory):
 			os.makedirs(self.spg2_output_directory)
-		shutil.copy(self.seed_households_file, self.spg1_data_directory)
-		shutil.copy(self.seed_persons_file, self.spg1_data_directory)
-		shutil.copy(self.seed_households_file, self.spg2_data_directory)
-		shutil.copy(self.seed_persons_file, self.spg2_data_directory)
 		shutil.copy(self.controls_csv_spg1, self.spg1_configs_directory)
 		shutil.copy(self.controls_csv_spg2, self.spg2_configs_directory)
 		shutil.copy(self.settings_yaml_spg1, self.spg1_configs_directory)
@@ -112,9 +107,14 @@ class popsimSPG(object):
 		shutil.copy(self.logging_yaml_spg2, self.spg2_configs_directory)
 		shutil.copy(self.popsim_py_file,  self.spg1_directory)
 		shutil.copy(self.popsim_py_file,  self.spg2_directory)
-		shutil.copy(self.popsim_bat_file, self.spg1_directory)
-		shutil.copy(self.popsim_bat_file, self.spg2_directory)
 		
+	def copySeeds(self):
+		
+		shutil.copy(self.seed_households_file, self.spg1_data_directory)
+		shutil.copy(self.seed_persons_file, self.spg1_data_directory)
+		shutil.copy(self.seed_households_file, self.spg2_data_directory)
+		shutil.copy(self.seed_persons_file, self.spg2_data_directory)
+
 		
 	def createXWalk(self):
 		"""
@@ -237,11 +237,6 @@ class popsimSPG(object):
 		hseed_dist.to_csv(self.hh_dist_file, index=False)
 		seed_persons.to_csv(self.seed_persons_file, index=False)
 		hseed.to_csv(self.seed_households_file, index=False)
-		
-		shutil.copy(self.seed_households_file, self.spg1_data_directory)
-		shutil.copy(self.seed_persons_file, self.spg1_data_directory)
-		shutil.copy(self.seed_households_file, self.spg2_data_directory)
-		shutil.copy(self.seed_persons_file, self.spg2_data_directory)
 
 	def workersPerHouseholdMarginal(self):
 
@@ -541,7 +536,8 @@ class popsimSPG(object):
 		spg1_geo_cross_walk.to_csv(self.spg1_geo_cross_walk_file, index=False)
 		
 	def run_spg1(self):
-		subprocess.call(os.path.join(self.spg1_directory, "RunPopulationSim.bat"))
+		cmd = self.python_exe + " " + self.popsim_py_file + " --config " + self.spg1_configs_directory + " --output " + self.spg1_output_directory + " --data " + self.spg1_data_directory
+		subprocess.call(os.path.join(self.spg1_directory, cmd))
 		
 	def spg1PostProcess(self):
 		spg1_hh = pd.read_csv(self.spg1_synthetic_households_file)
@@ -567,8 +563,8 @@ class popsimSPG(object):
 
 		puma_beta_alpha_xwalk['REGION'] = 1
 		puma_beta_alpha_xwalk['SEED'] = 1
-		spg2_geo_cross_walk = puma_beta_alpha_xwalk[['AZONE', 'SEED', 'REGION']]
-		spg2_geo_cross_walk.columns = ['AZONE', 'SEED', 'REGION']
+		spg2_geo_cross_walk = puma_beta_alpha_xwalk[['AZONE', 'PUMACE10', 'REGION']]
+		spg2_geo_cross_walk.columns = ['AZONE', 'PUMA', 'REGION']
 
 		#count workers per household category and occupation from the synthetic persons file, divide total labor dollars per
 		#hh category and occupation by the workers calculated above, this gives dollars per worker by hh category and occupation
@@ -653,8 +649,9 @@ class popsimSPG(object):
 		spg2_geo_cross_walk.to_csv(self.spg2_geo_cross_walk_file, index=False)
 	
 	def run_spg2(self):
-		subprocess.call(os.path.join(self.spg2_directory, "RunPopulationSim.bat"))
-	
+		cmd = self.python_exe + " " + self.popsim_py_file + " --config " + self.spg2_configs_directory + " --output " + self.spg2_output_directory + " --data " + self.spg2_data_directory
+		subprocess.call(os.path.join(self.spg2_directory, cmd))
+
 	def spg2PostProcess(self):
 		spg2_synthetic_households = pd.read_csv(self.spg2_synthetic_households_file)
 		spg2_synthetic_persons = pd.read_csv(self.spg2_synthetic_persons_file)
@@ -674,23 +671,14 @@ class popsimSPG(object):
 
 if __name__ == "__main__":
 
-	# run modes are -
-		# Directories
-		# Seed - call this mode only once, in the first year run
-		# runSPG1
-		# runSPG2
-
 	property_file = sys.argv[1]
 	mode = sys.argv[2]
 	p = popsimSPG(property_file)
 	
-	if mode == 'Directories':
-		p.createDirectories()
-	
-	if mode == 'Seed':	
-		p.createSeed()
-	
 	if mode == 'runSPG1':
+		p.createDirectories()
+		p.createSeed() # need to call this only once and reuse for all years
+		p.copySeeds()
 		p.spg1Controls()
 		p.run_spg1()
 		p.spg1PostProcess()
@@ -698,8 +686,10 @@ if __name__ == "__main__":
 	### AA needs to run in between these two
 	
 	if mode == 'runSPG2':
+		p.createDirectories()
+		p.copySeeds()
 		p.spg2Controls()
 		p.run_spg2()
 		p.spg2PostProcess()
 	
-	print("end SPG run - " + time.ctime())
+	print("end PopulationSim SPG run - " + mode + " - " + time.ctime())
