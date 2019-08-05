@@ -1,6 +1,6 @@
 # PUMS input files
 
-These files are needed from the Census Bureau for XXXXX  but are not included in the repository due to filesize:
+These files are needed from the Census Bureau for SPG but are not included in the repository due to filesize:
 - ss09pwa.csv
 - ss09por.csv
 - ss09pnv.csv
@@ -20,4 +20,4 @@ These files are needed from the Census Bureau for PopulationSim but are not incl
 - psam_p41.csv
 - psam_p53.csv
 
-Users can download all of the necessary files by running `download.bash` in a bash shell.
+Users can download all of the necessary files by running `download_acs.R` in R.
