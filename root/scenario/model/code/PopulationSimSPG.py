@@ -686,12 +686,8 @@ class popsimSPG(object):
 								 })
 
 		taz_summary.reset_index(inplace=True)
-		
 		taz_summary.rename(columns={'AZONE':'TAZ', 'count':'TotalHHs', 'NP':'TotalPersons', 'HHINC2009':'AvgHHInc', 'NWESR':'TotalWorkers'}, inplace=True)
-		#taz_summary.columns = ['TAZ', 'TotalHHs', 'TotalPersons', 'AvgHHInc', 'TotalWorkers']
 		taz_summary = taz_summary[['TAZ', 'AvgHHInc', 'TotalHHs', 'TotalPersons', 'TotalWorkers']]
-		
-		taz_summary.to_csv('E:/Projects/Clients/OR_DOT/github/tlumip_popsim/root/test.csv')
 
 		taz_cat = pd.DataFrame(hh.groupby('AZONE')['Category'].value_counts())
 		taz_cat.columns = ['Households']
