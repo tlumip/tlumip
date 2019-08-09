@@ -45,6 +45,7 @@ class popsimSPG(object):
 		self.spg2_synthetic_persons_file = properties['spg2.synthetic.persons']
 		self.spg2_synthetic_households_file2 = properties['spg2.synthetic.households.2']
 		self.spg2_synthetic_persons_file2 = properties['spg2.synthetic.persons.2']
+		self.spg2_current_synpop_summary_file = properties['spg2.current.synpop.summary']
 		self.laborDollarProduction = properties['spg.labor.dollars.by.zone']
 		self.householdsByHHCategory = properties['spg1.hhs.by.hh.category']
 		self.ActivityLocations2 = properties['spg.hhs.by.category.by.zone']
@@ -656,6 +657,72 @@ class popsimSPG(object):
 		spg2_synthetic_households = pd.read_csv(self.spg2_synthetic_households_file)
 		spg2_synthetic_persons = pd.read_csv(self.spg2_synthetic_persons_file)
 		
+		hh = spg2_synthetic_households
+		pp = spg2_synthetic_persons
+		azones = pd.read_csv(self.puma_beta_alpha_xwalk_file)
+		
+		hh['hhsize_cat'] = np.where(hh['NP'] <= 2, '1to2', '3plus')
+
+		hh['hhinc_cat'] = '999'
+		hh['hhinc_cat'] = np.where(hh['HHINC2009'] < 8000, '0to8k', hh['hhinc_cat'])
+		hh['hhinc_cat'] = np.where((hh['HHINC2009'] >= 8000) & (hh['HHINC2009'] < 15000) & (hh['hhinc_cat'] == '999'), '8to15k', hh['hhinc_cat'])
+		hh['hhinc_cat'] = np.where((hh['HHINC2009'] >= 15000) & (hh['HHINC2009'] < 23000) & (hh['hhinc_cat'] == '999'), '15to23k', hh['hhinc_cat'])
+		hh['hhinc_cat'] = np.where((hh['HHINC2009'] >= 23000) & (hh['HHINC2009'] < 32000) & (hh['hhinc_cat'] == '999'), '23to32k', hh['hhinc_cat'])
+		hh['hhinc_cat'] = np.where((hh['HHINC2009'] >= 32000) & (hh['HHINC2009'] < 46000) & (hh['hhinc_cat'] == '999'), '32to46k', hh['hhinc_cat'])
+		hh['hhinc_cat'] = np.where((hh['HHINC2009'] >= 46000) & (hh['HHINC2009'] < 61000) & (hh['hhinc_cat'] == '999'), '46to61k', hh['hhinc_cat'])
+		hh['hhinc_cat'] = np.where((hh['HHINC2009'] >= 61000) & (hh['HHINC2009'] < 76000) & (hh['hhinc_cat'] == '999'), '61to76k', hh['hhinc_cat'])
+		hh['hhinc_cat'] = np.where((hh['HHINC2009'] >= 76000) & (hh['HHINC2009'] < 106000) & (hh['hhinc_cat'] == '999'), '76to106k', hh['hhinc_cat'])
+		hh['hhinc_cat'] = np.where((hh['HHINC2009'] >= 106000) & (hh['hhinc_cat'] == '999'), '106kUp', hh['hhinc_cat'])
+
+		hh['Category'] = 'HH' + hh['hhinc_cat'] + hh['hhsize_cat']
+
+		hh['count'] = 1
+		pp['count'] = 1
+
+		taz_summary = hh.groupby('AZONE').agg({'HHINC2009':'mean', 
+								 'count':'sum', 
+								 'NP':'sum',
+								 'NWESR':'sum',
+								 })
+
+		taz_summary.reset_index(inplace=True)
+		
+		taz_summary.rename(columns={'AZONE':'TAZ', 'count':'TotalHHs', 'NP':'TotalPersons', 'HHINC2009':'AvgHHInc', 'NWESR':'TotalWorkers'}, inplace=True)
+		#taz_summary.columns = ['TAZ', 'TotalHHs', 'TotalPersons', 'AvgHHInc', 'TotalWorkers']
+		taz_summary = taz_summary[['TAZ', 'AvgHHInc', 'TotalHHs', 'TotalPersons', 'TotalWorkers']]
+		
+		taz_summary.to_csv('E:/Projects/Clients/OR_DOT/github/tlumip_popsim/root/test.csv')
+
+		taz_cat = pd.DataFrame(hh.groupby('AZONE')['Category'].value_counts())
+		taz_cat.columns = ['Households']
+
+		taz_cat.reset_index(inplace=True)
+		taz_cat.columns = ['TAZ', 'Category', 'Households']
+		taz_cat = taz_cat.pivot(index='TAZ', columns='Category', values='Households')
+		taz_cat = pd.DataFrame(taz_cat.to_records())
+		taz_summary = pd.merge(taz_summary, taz_cat, on = 'TAZ')
+
+		pp['age_cat'] = '999'
+		pp['age_cat'] = np.where(pp['AGEP'] < 5, 'Person0to5', pp['age_cat'])
+		pp['age_cat'] = np.where((pp['AGEP'] >= 5) & (pp['AGEP'] < 10) & (pp['age_cat'] == '999'), 'Person5to10', pp['age_cat'])
+		pp['age_cat'] = np.where((pp['AGEP'] >= 10) & (pp['AGEP'] < 15) & (pp['age_cat'] == '999'), 'Person10to15', pp['age_cat'])
+		pp['age_cat'] = np.where((pp['AGEP'] >= 15) & (pp['AGEP'] < 21) & (pp['age_cat'] == '999'), 'Person15to21', pp['age_cat'])
+		pp['age_cat'] = np.where((pp['AGEP'] >= 21) & (pp['AGEP'] < 40) & (pp['age_cat'] == '999'), 'Person21to40', pp['age_cat'])
+		pp['age_cat'] = np.where((pp['AGEP'] >= 40) & (pp['AGEP'] < 60) & (pp['age_cat'] == '999'), 'Person40to60', pp['age_cat'])
+		pp['age_cat'] = np.where((pp['AGEP'] >= 60), 'Person60plus', pp['age_cat'])
+
+		taz_age = pd.DataFrame(pp.groupby('AZONE')['age_cat'].value_counts())
+		taz_age.columns = ['Persons']
+		taz_age.reset_index(inplace=True)
+		taz_age.columns = ['TAZ', 'age_cat', 'Persons']
+		taz_age = taz_age.pivot(index='TAZ', columns='age_cat', values='Persons')
+		taz_age = pd.DataFrame(taz_age.to_records())
+		taz_summary = pd.merge(taz_summary, taz_age, on = 'TAZ')
+		
+		azones.rename(columns={'AZONE':'TAZ'}, inplace=True)
+		taz_summary = pd.merge(azones[['TAZ']], taz_summary, on = 'TAZ', how = 'left')
+		taz_summary = taz_summary.fillna(0)
+		
 		spg2_synthetic_households = spg2_synthetic_households[['household_id', 'NP', 'BLD', 'VEH', 'HHINC2009', 'AZONE']]
 		spg2_synthetic_households.columns = ['HH_ID', 'PERSONS', 'UNITS', 'AUTOS', 'RHHINC', 'Azone']
 		
@@ -664,6 +731,7 @@ class popsimSPG(object):
 		
 		spg2_synthetic_households.to_csv(self.spg2_synthetic_households_file2, index=False)
 		spg2_synthetic_persons.to_csv(self.spg2_synthetic_persons_file2, index=False)
+		taz_summary.to_csv(self.spg2_current_synpop_summary_file, index=False)
 	
 	
 ####################################################################################################################
@@ -686,10 +754,10 @@ if __name__ == "__main__":
 	### AA needs to run in between these two
 	
 	if mode == 'runSPG2':
-		p.createDirectories()
-		p.copySeeds()
-		p.spg2Controls()
-		p.run_spg2()
+		#p.createDirectories()
+		#p.copySeeds()
+		#p.spg2Controls()
+		#p.run_spg2()
 		p.spg2PostProcess()
 	
 	print("end PopulationSim SPG run - " + mode + " - " + time.ctime())
