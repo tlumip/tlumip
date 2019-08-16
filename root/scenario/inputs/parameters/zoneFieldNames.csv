@@ -262,3 +262,7 @@ CEE,LandSQFTxZoning.csv
 CPE,LandSQFTxZoning.csv
 O,LandSQFTxZoning.csv
 WATER,LandSQFTxZoning.csv
+BZONE,puma_beta_alpha_xwalk.csv
+PUMACE10,puma_beta_alpha_xwalk.csv
+COUNTY,puma_beta_alpha_xwalk.csv
+STATE,puma_beta_alpha_xwalk.csv

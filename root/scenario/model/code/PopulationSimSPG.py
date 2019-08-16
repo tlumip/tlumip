@@ -51,8 +51,6 @@ class popsimSPG(object):
 		self.ActivityLocations2 = properties['spg.hhs.by.category.by.zone']
 		self.puma_beta_alpha_xwalk_file = properties['puma.beta.alpha.xwalk']
 		self.acs_occ_file = properties['acs.sw.occupation.correspondence.edited.file.name']
-		self.swim_pumas_file = properties['swim.pumas.file']
-		self.puma_alpha_unclean_file = properties['puma.alpha.unclean.file']
 		self.pseed_or_file = properties['pseed_or']
 		self.pseed_wa_file = properties['pseed_wa']
 		self.pseed_ca_file = properties['pseed_ca']
@@ -75,7 +73,6 @@ class popsimSPG(object):
 
 	# The following functions perform the tasks listed below -
 		# createDirectories - creates the PopulationSim directories
-		# createXWalk - creates the puma beta alpha cross walk for the swim region. DO NOT RUN!
 		# createSeed - creates the seed files for running PopulationSim. RUN ONCE ONLY!
 		# spg1Controls - creates the SPG1 controls for the model year. RUN FOR ALL YEARS!
 		# spg1PostProcess - post process SPG1 outputs for the model year. RUN FOR ALL YEARS!
@@ -116,37 +113,6 @@ class popsimSPG(object):
 		shutil.copy(self.seed_households_file, self.spg2_data_directory)
 		shutil.copy(self.seed_persons_file, self.spg2_data_directory)
 
-		
-	def createXWalk(self):
-		"""
-		THIS FUNCTION SHOULD NOT BE CALLED FOR RUNNING THE MODEL, IT WAS RUN ONCE AND THE CROSS-WALK HAS BEEN STORED IN THE INPUTS/PARAMETERS DIRECTORY.
-		
-		this portion of the script cleans the puma_alpha crosswalk shapefile, it identifies the slivers and eliminates them
-		resulting in exactly 41 pumas in the swim region, 31 OR, 9 WA and 1 CA pumas. There are 457 beta zones and 2918 alpha zones
-		"""
-		
-		puma_alpha_xwalk = pd.read_excel(self.puma_alpha_unclean_file)
-
-		counts = pd.DataFrame(puma_alpha_xwalk.NO.value_counts()).reset_index()
-		counts.columns = ['AZONE', 'Counts']
-		counts_mult = counts[counts['Counts'] > 1]
-		counts_one = counts[counts['Counts'] == 1]
-		mult_puma = pd.merge(puma_alpha_xwalk, counts_mult, left_on = ['NO'], right_on = ['AZONE'], how = 'inner')
-		mult_puma = mult_puma[['NO', 'AZONE', 'BZONE', 'PUMACE10', 'SR']]
-		mult_puma.set_index('NO')
-		maxSR_puma = pd.DataFrame(mult_puma.groupby('NO').agg({'SR': 'min'}))
-		maxSR_puma = maxSR_puma.reset_index()
-		maxSR_puma = pd.merge(maxSR_puma, mult_puma, on = ['NO', 'SR'], how = 'inner')
-		df1 = pd.merge(puma_alpha_xwalk, counts_one[['AZONE']], left_on = 'NO', right_on = 'AZONE', how = 'inner')
-		df2 = pd.merge(puma_alpha_xwalk, maxSR_puma[['NO', 'PUMACE10', 'AZONE']], on = ['NO', 'PUMACE10'], how = 'inner')
-		df2 = df2.drop_duplicates('NO')
-		df  = pd.concat([df1, df2])
-		puma_beta_alpha_xwalk = df[['AZONE', 'BZONE', 'PUMACE10', 'COUNTY', 'STATE']]
-		swim_pumas = puma_beta_alpha_xwalk[['PUMACE10', 'STATE']].drop_duplicates('PUMACE10')
-
-		swim_pumas.to_csv(self.swim_pumas_file, index=False)
-		puma_beta_alpha_xwalk.to_csv(self.puma_beta_alpha_xwalk_file, index=False)
-
 	def createSeed(self):
 
 		"""input household and person data for OR, WA and CA"""
@@ -157,7 +123,8 @@ class popsimSPG(object):
 		hseed_wa = pd.read_csv(self.hseed_wa_file)
 		hseed_ca = pd.read_csv(self.hseed_ca_file)
 		#input file to identify pumas within the SWIM modeling region
-		swim_pumas = pd.read_csv(self.swim_pumas_file)
+		swim_pumas = pd.read_csv(self.puma_beta_alpha_xwalk_file)
+		swim_pumas = swim_pumas[['PUMACE10','STATE']].groupby(["PUMACE10","STATE"]).count().reset_index()
 		#input file used to assign split industry to workers in the pums seed file
 		split_ind = pd.read_csv(self.pums_to_split_industry)
 		#input file to map workers in the seed file to acs occupation categories
@@ -715,7 +682,7 @@ class popsimSPG(object):
 		taz_age = pd.DataFrame(taz_age.to_records())
 		taz_summary = pd.merge(taz_summary, taz_age, on = 'TAZ')
 		
-		azones.rename(columns={'AZONE':'TAZ'}, inplace=True)
+		azones.rename(columns={'Azone':'TAZ'}, inplace=True)
 		taz_summary = pd.merge(azones[['TAZ']], taz_summary, on = 'TAZ', how = 'left')
 		taz_summary = taz_summary.fillna(0)
 		
