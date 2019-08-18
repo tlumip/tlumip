@@ -531,7 +531,7 @@ class popsimSPG(object):
 
 		puma_beta_alpha_xwalk['REGION'] = 1
 		puma_beta_alpha_xwalk['SEED'] = 1
-		spg2_geo_cross_walk = puma_beta_alpha_xwalk[['AZONE', 'PUMACE10', 'REGION']]
+		spg2_geo_cross_walk = puma_beta_alpha_xwalk[['Azone', 'PUMACE10', 'REGION']]
 		spg2_geo_cross_walk.columns = ['AZONE', 'PUMA', 'REGION']
 
 		#count workers per household category and occupation from the synthetic persons file, divide total labor dollars per
@@ -717,10 +717,10 @@ if __name__ == "__main__":
 	### AA needs to run in between these two
 	
 	if mode == 'runSPG2':
-		#p.createDirectories()
-		#p.copySeeds()
-		#p.spg2Controls()
-		#p.run_spg2()
+		p.createDirectories()
+		p.copySeeds()
+		p.spg2Controls()
+		p.run_spg2()
 		p.spg2PostProcess()
 	
 	print("end PopulationSim SPG run - " + mode + " - " + time.ctime())
