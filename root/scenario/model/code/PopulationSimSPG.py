@@ -70,6 +70,8 @@ class popsimSPG(object):
 		self.spg2_control_alpha_file = properties['spg2.control.alpha']
 		self.spg2_control_region_file = properties['spg2.control.region']
 		self.spg2_geo_cross_walk_file = properties['spg2.geo.cross.walk']
+		self.spg2_synpopH_file = properties['spg2.synpopH']
+		self.spg2_synpopP_file = properties['spg2.synpopP']
 
 	# The following functions perform the tasks listed below -
 		# createDirectories - creates the PopulationSim directories
@@ -695,8 +697,13 @@ class popsimSPG(object):
 		spg2_synthetic_persons = spg2_synthetic_persons[['household_id', 'per_num', 'SEX', 'AGEP', 'INDP', 'OCCP']]
 		spg2_synthetic_persons.columns = ['HH_ID', 'PERS_ID', 'SEX', 'AGE', 'INDUSTRY', 'OCCUP']
 		
+		spg2_synthetic_households = spg2_synthetic_households.astype(int)
+		spg2_synthetic_persons = spg2_synthetic_persons.astype(int)
+		
 		spg2_synthetic_households.to_csv(self.spg2_synthetic_households_file2, index=False)
 		spg2_synthetic_persons.to_csv(self.spg2_synthetic_persons_file2, index=False)
+		spg2_synthetic_households.to_csv(self.spg2_synpopH_file, index=False)
+		spg2_synthetic_persons.to_csv(self.spg2_synpopP_file, index=False)
 		taz_summary.to_csv(self.spg2_current_synpop_summary_file, index=False)
 	
 	
