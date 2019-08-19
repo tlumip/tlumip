@@ -612,6 +612,9 @@ class popsimSPG(object):
 		spg1_control_region.rename(columns={spg1_control_region.columns[0]: "REGION"}, inplace=True)
 
 		#outputs: alpha zone control, regional control and geo cross walk
+		spg2_control_alpha = spg2_control_alpha.astype(int)
+		spg1_control_region = spg1_control_region.astype(int)
+		spg2_geo_cross_walk = spg2_geo_cross_walk.astype(int)
 		spg2_control_alpha.to_csv(self.spg2_control_alpha_file, index=False)
 		spg1_control_region.to_csv(self.spg2_control_region_file, index=False)
 		spg2_geo_cross_walk.to_csv(self.spg2_geo_cross_walk_file, index=False)
