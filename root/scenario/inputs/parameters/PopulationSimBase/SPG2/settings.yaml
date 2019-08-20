@@ -95,6 +95,7 @@ output_synthetic_population:
       - SEX
       - hh_id
       - ESR
+      - SCH
       - INDP
       - OCCP
       - occupation
