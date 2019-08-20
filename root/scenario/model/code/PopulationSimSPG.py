@@ -692,10 +692,10 @@ class popsimSPG(object):
 		taz_summary = taz_summary.fillna(0)
 		
 		spg2_synthetic_households = spg2_synthetic_households[['household_id', 'NP', 'BLD', 'VEH', 'HHINC2009', 'AZONE']]
-		spg2_synthetic_households.columns = ['HH_ID', 'PERSONS', 'UNITS', 'AUTOS', 'RHHINC', 'Azone']
+		spg2_synthetic_households.columns = ['HH_ID', 'PERSONS', 'UNITS1', 'AUTOS', 'RHHINC', 'Azone']
 		
-		spg2_synthetic_persons = spg2_synthetic_persons[['household_id', 'per_num', 'SEX', 'AGEP', 'INDP', 'OCCP']]
-		spg2_synthetic_persons.columns = ['HH_ID', 'PERS_ID', 'SEX', 'AGE', 'INDUSTRY', 'OCCUP']
+		spg2_synthetic_persons = spg2_synthetic_persons[['household_id', 'per_num', 'SEX', 'AGEP', 'SCH', 'ESR', 'INDP', 'OCCP']]
+		spg2_synthetic_persons.columns = ['HH_ID', 'PERS_ID', 'SEX', 'AGE', 'STUDENT', 'RLABOR', 'INDUSTRY', 'OCCUP']
 		
 		spg2_synthetic_households = spg2_synthetic_households.astype(int)
 		spg2_synthetic_persons = spg2_synthetic_persons.astype(int)
