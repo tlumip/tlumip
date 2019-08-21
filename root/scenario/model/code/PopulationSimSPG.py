@@ -628,6 +628,7 @@ class popsimSPG(object):
 	def spg2PostProcess(self):
 		spg2_synthetic_households = pd.read_csv(self.spg2_synthetic_households_file)
 		spg2_synthetic_persons = pd.read_csv(self.spg2_synthetic_persons_file)
+		acs_occ = pd.read_csv(self.acs_occ_file)
 		
 		hh = spg2_synthetic_households
 		pp = spg2_synthetic_persons
@@ -694,8 +695,18 @@ class popsimSPG(object):
 		spg2_synthetic_households = spg2_synthetic_households[['household_id', 'NP', 'BLD', 'VEH', 'HHINC2009', 'AZONE']]
 		spg2_synthetic_households.columns = ['HH_ID', 'PERSONS', 'UNITS1', 'AUTOS', 'RHHINC', 'Azone']
 		
-		spg2_synthetic_persons = spg2_synthetic_persons[['household_id', 'per_num', 'SEX', 'AGEP', 'SCH', 'ESR', 'INDP', 'OCCP']]
-		spg2_synthetic_persons.columns = ['HH_ID', 'PERS_ID', 'SEX', 'AGE', 'STUDENT', 'RLABOR', 'INDUSTRY', 'OCCUP']
+		acs_lookup = acs_occ.groupby('occupationLabel').min().reset_index()[['occupationLabel', 'occupationIndex']]
+		spg2_synthetic_persons = pd.merge(spg2_synthetic_persons, acs_lookup, on = 'occupationLabel', how = 'left')
+		spg2_synthetic_persons = spg2_synthetic_persons[['household_id', 'per_num', 'SEX', 'AGEP', 'SCH', 'ESR', 'INDP', 'OCCP', 'split_industry_id', 'occupationIndex']]
+		spg2_synthetic_persons.columns = ['HH_ID', 'PERS_ID', 'SEX', 'AGE', 'SCHOOL', 'RLABOR', 'INDUSTRY', 'OCCUP', 'SW_UNSPLIT_IND', 'SW_OCCUP']
+		spg2_synthetic_persons['SW_SPLIT_IND'] = spg2_synthetic_persons['SW_UNSPLIT_IND']
+		
+		spg2_synthetic_persons['SCHOOL'].replace(99999, 0, inplace=True)
+		spg2_synthetic_persons['RLABOR'].replace(99999, 0, inplace=True)
+		spg2_synthetic_persons['INDUSTRY'].replace(99999, 0, inplace=True)
+		spg2_synthetic_persons['OCCUP'].replace(99999, 0, inplace=True)
+		spg2_synthetic_persons['SW_UNSPLIT_IND'].replace(999, 0, inplace=True)
+		spg2_synthetic_persons['SW_SPLIT_IND'].replace(999, 0, inplace=True)
 		
 		spg2_synthetic_households = spg2_synthetic_households.astype(int)
 		spg2_synthetic_persons = spg2_synthetic_persons.astype(int)
