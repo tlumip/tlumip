@@ -705,11 +705,21 @@ class popsimSPG(object):
 		spg2_synthetic_persons['RLABOR'].replace(99999, 0, inplace=True)
 		spg2_synthetic_persons['INDUSTRY'].replace(99999, 0, inplace=True)
 		spg2_synthetic_persons['OCCUP'].replace(99999, 0, inplace=True)
-		spg2_synthetic_persons['SW_UNSPLIT_IND'].replace(999, 0, inplace=True)
-		spg2_synthetic_persons['SW_SPLIT_IND'].replace(999, 0, inplace=True)
+		spg2_synthetic_persons['SW_UNSPLIT_IND'].replace(999, np.nan, inplace=True)
+		spg2_synthetic_persons['SW_SPLIT_IND'].replace(999, np.nan, inplace=True)
+		mask = spg2_synthetic_persons['RLABOR'].isin([1,2,4,5])
+		synpop_worker = spg2_synthetic_persons[mask]
+		synpop_nonwrk = spg2_synthetic_persons[~mask]
+		synpop_worker = synpop_worker.sort_values(['INDUSTRY', 'OCCUP'], ascending = [True, True])
+		synpop_worker[['SW_UNSPLIT_IND', 'SW_SPLIT_IND']] = synpop_worker[['SW_UNSPLIT_IND', 'SW_SPLIT_IND']].interpolate()
+		spg2_synthetic_persons = pd.concat([synpop_nonwrk, synpop_worker])
+		spg2_synthetic_persons = spg2_synthetic_persons.sort_values(["HH_ID","PERS_ID"])
+		spg2_synthetic_persons['SW_UNSPLIT_IND'].replace(np.nan, 0, inplace=True)
+		spg2_synthetic_persons['SW_SPLIT_IND'].replace(np.nan, 0, inplace=True)
 		
 		spg2_synthetic_households = spg2_synthetic_households.astype(int)
 		spg2_synthetic_persons = spg2_synthetic_persons.astype(int)
+		
 		
 		spg2_synthetic_households.to_csv(self.spg2_synthetic_households_file2, index=False)
 		spg2_synthetic_persons.to_csv(self.spg2_synthetic_persons_file2, index=False)
