@@ -143,7 +143,7 @@ if(addDemandMatrices):
 #get total trips by model/time period
 total_trips = {}
 for dseg in dsegs:
-    total_trips[dseg] = VisumPy.helpers.GetODMatrix(Visum,dsegs[dseg])
+    total_trips[dseg] = VisumPy.helpers.GetMatrix(Visum,dsegs[dseg])
 
 #get zone indices
 zones = VisumPy.helpers.GetMulti(Visum.Net.Zones,'No')
@@ -309,17 +309,17 @@ class FbThread(threading.Thread):
                 Visum = loadVersion(main_version_file_sl)
                 
                 #add SL demand
-                Visum.Net.AddODMatrix(self.matrix_index_next)
+                Visum.Net.AddMatrix(self.matrix_index_next)
                 Visum.Net.Matrices.ItemByKey(self.matrix_index_next).SetAttValue("Name", "sl_"+self.dseg)
-                VisumPy.helpers.SetODMatrix(Visum, self.matrix_index_next, matrix_dseg_sl)
+                VisumPy.helpers.SetMatrix(Visum, self.matrix_index_next, matrix_dseg_sl)
 
                 #add remaining demand
                 print("adding remaining demand matrix to main version file: " + self.dseg)
                 matrix_dseg_rem = np.asarray(total_trips[self.dseg]) - matrix_dseg_sl
                 self.matrix_index_next += 1
-                Visum.Net.AddODMatrix(self.matrix_index_next)
+                Visum.Net.AddMatrix(self.matrix_index_next)
                 Visum.Net.Matrices.ItemByKey(self.matrix_index_next).SetAttValue("Name", "rem_"+self.dseg)
-                VisumPy.helpers.SetODMatrix(Visum, self.matrix_index_next, matrix_dseg_rem)
+                VisumPy.helpers.SetMatrix(Visum, self.matrix_index_next, matrix_dseg_rem)
 
                 #save edits and close the version file
                 Visum.SaveVersion(main_version_file_sl)

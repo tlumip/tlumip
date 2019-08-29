@@ -1,0 +1,41 @@
+FROMNODE,TONODE,DIRECTION,STATIONNUMBER,AutoAADT,TruckAADT,AADT_YEAR,HWY,BEG_MP,Direction,am1_DirPdFactor,am2_DirPdFactor,md1_DirPdFactor,pm1_DirPdFactor,pm2_DirPdFactor,TVT_GR,SWIM_GR,GrowthRate,Notes
+50435,33172,IN,2148,,,,SR 14,21.77,WB,,,,,,,,,A little farther East to make a cleaner cut
+33172,50435,OUT,2148,,,,SR 14,21.77,EB,,,,,,,,,A little farther East to make a cleaner cut
+22945,180759,IN,2149,,,,I-5 N,20.14,SB,,,,,,,,,
+180758,22945,OUT,2149,,,,I-5 N,20.14,NB,,,,,,,,,
+50394,22745,IN,2150,,,,US 30 N,17.34,SB,,,,,,,,,
+22745,50394,OUT,2150,,,,US 30 N,17.34,NB,,,,,,,,,
+157267,154776,IN,2151,,,,US 26 W,34.16,EB,,,,,,,,,A little farther East to make a cleaner cut
+154776,157267,OUT,2151,,,,US 26 W,34.16,WB,,,,,,,,,A little farther East to make a cleaner cut
+155870,152739,IN,2152,,,,OR 6,32.88,EB,,,,,,,,,A little farther East to make a cleaner cut
+152739,155870,OUT,2152,,,,OR 6,32.88,WB,,,,,,,,,A little farther East to make a cleaner cut
+19760,19982,IN,2153,,,,OR 47,25.72,NB,,,,,,,,,
+19982,19760,OUT,2153,,,,OR 47,25.72,SB,,,,,,,,,
+19765,19983,IN,3001,,,,Spring Hill Rd,,NB,,,,,,,,,
+19983,19765,OUT,3001,,,,Spring Hill Rd,,SB,,,,,,,,,
+50461,19762,IN,2154,,,,Bald Peak,,EB,,,,,,,,,
+19762,50461,OUT,2154,,,,Bald Peak,,WB,,,,,,,,,
+19763,19755,IN,2155,,,,OR 219,16.46,NB,,,,,,,,,
+19755,19763,OUT,2155,,,,OR 219,16.46,SB,,,,,,,,,
+50092,50091,IN,3002,,,,NE Leander Dr,,EB,,,,,,,,,
+50091,50092,OUT,3002,,,,NE Leander Dr,,WB,,,,,,,,,
+153259,140013,IN,2156,,,,99 W,19.81,EB,,,,,,,,,
+140013,50097,OUT,2156,,,,99 W,19.81,WB,,,,,,,,,
+19775,171643,IN,3003,,,,Willsonville Rd,,EB,,,,,,,,,
+171643,19775,OUT,3003,,,,Willsonville Rd,,WB,,,,,,,,,
+20420,154128,IN,2157,,,,I-5 S,271.55,NB,,,,,,,,,Much farther N than MP (not sure where the MP came from)
+20415,20419,OUT,2157,,,,I-5 S,271.55,SB,,,,,,,,,Much farther N than MP (not sure where the MP came from)
+20293,20417,IN,3004,,,,Hubbard Cutoff Rd NE,,NB,,,,,,,,,
+20417,20293,OUT,3004,,,,Hubbard Cutoff Rd NE,,SB,,,,,,,,,
+156308,153645,IN,2158,,,,99 E,24.83,NB,,,,,,,,,
+153645,156308,OUT,2158,,,,99 E,24.83,SB,,,,,,,,,
+20284,20378,IN,3005,,,,Whiskey Hill Rd,,EB,,,,,,,,,
+20378,20284,OUT,3005,,,,Whiskey Hill Rd,,WB,,,,,,,,,
+20382,20379,IN,2159,,,,OR 211,5.2,EB,,,,,,,,,
+20379,20382,OUT,2159,,,,OR 211,5.2,WB,,,,,,,,,
+50301,156699,IN,2160,,,,OR 213,24.2,EB,,,,,,,,,
+156699,50301,OUT,2160,,,,OR 213,24.2,WB,,,,,,,,,
+158415,160465,IN,2161,,,,US 26 E,62.16,WB,,,,,,,,,Just West of Government Camp
+160465,158415,OUT,2161,,,,US 26 E,62.16,EB,,,,,,,,,Just West of Government Camp
+154144,153712,IN,2162,,,,I-84,42.88,WB,,,,,,,,,
+157597,157988,OUT,2162,,,,I-84,42.88,EB,,,,,,,,,
