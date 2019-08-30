@@ -719,7 +719,7 @@ class popsimSPG(object):
 		
 		spg2_synthetic_households = spg2_synthetic_households.astype(int)
 		spg2_synthetic_persons = spg2_synthetic_persons.astype(int)
-		
+		taz_summary = taz_summary.astype(int)
 		
 		spg2_synthetic_households.to_csv(self.spg2_synthetic_households_file2, index=False)
 		spg2_synthetic_persons.to_csv(self.spg2_synthetic_persons_file2, index=False)
