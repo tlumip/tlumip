@@ -116,97 +116,107 @@ class popsimSPG(object):
 		shutil.copy(self.seed_persons_file, self.spg2_data_directory)
 
 	def createSeed(self):
-
-		"""input household and person data for OR, WA and CA"""
-		pseed_or = pd.read_csv(self.pseed_or_file)
-		pseed_wa = pd.read_csv(self.pseed_wa_file)
-		pseed_ca = pd.read_csv(self.pseed_ca_file)
-		hseed_or = pd.read_csv(self.hseed_or_file)
-		hseed_wa = pd.read_csv(self.hseed_wa_file)
-		hseed_ca = pd.read_csv(self.hseed_ca_file)
-		#input file to identify pumas within the SWIM modeling region
-		swim_pumas = pd.read_csv(self.puma_beta_alpha_xwalk_file)
-		swim_pumas = swim_pumas[['PUMACE10','STATE']].groupby(["PUMACE10","STATE"]).count().reset_index()
-		#input file used to assign split industry to workers in the pums seed file
-		split_ind = pd.read_csv(self.pums_to_split_industry)
-		#input file to map workers in the seed file to acs occupation categories
-		acs_occ = pd.read_csv(self.acs_occ_file)
-
-		#creating PERSONID
-		pseed_or['PERSONID'] = pseed_or['SERIALNO']*100 + pseed_or['SPORDER']
-		pseed_wa['PERSONID'] = pseed_wa['SERIALNO']*100 + pseed_wa['SPORDER']
-		pseed_ca['PERSONID'] = pseed_ca['SERIALNO']*100 + pseed_ca['SPORDER']
-
-		#merging household and person files from 3 states and filtering for the pums region
-		pseed_master = pd.concat([pseed_or, pseed_ca, pseed_wa])
-		hseed_master = pd.concat([hseed_or, hseed_ca, hseed_wa])
-		pseed = pd.merge(pseed_master, swim_pumas, left_on = ['PUMA'], right_on = ['PUMACE10'], how = 'right')
-		hseed = pd.merge(hseed_master, swim_pumas, left_on = ['PUMA'], right_on = ['PUMACE10'], how = 'right')
-
-		#SPG1 runs for the entire region, so the seed data must have a unique ID to map to the region. We create a field SEED and set it
-		#to 1 for all pumas.
-		pseed['SEED'] = 1
-
-		split_ind.columns = ['pums_industry_code', 'pums_occ_code', 'split_industry_id', 'split_industry', 'proportion']
-		seed_split = pd.merge(pseed, split_ind, left_on = ['INDP', 'OCCP'], right_on = ['pums_industry_code', 'pums_occ_code'], how = 'left')
-
-		pseed['DRAW'] = np.random.uniform(0,1, size=len(pseed))
-		seed_split = pd.merge(seed_split, pseed[['PERSONID', 'DRAW']], on = 'PERSONID', how = 'left')
-		seed_split['cumprop'] = seed_split.groupby(['PERSONID'])['proportion'].apply(lambda x: x.cumsum())
-		seed_split['prev_cumprop'] = seed_split.groupby(['PERSONID'])['cumprop'].apply(lambda x: x.shift(1))
-		seed_split.prev_cumprop.fillna(0, inplace=True)
-		seed_split['select'] = np.where((seed_split['DRAW'] < seed_split['cumprop']) & (seed_split['DRAW'] > seed_split['prev_cumprop']), 1, 0)
-		seed_split['split_industry_id'].fillna(999, inplace=True)
-		seed_split['select2'] = np.where(seed_split['split_industry_id'] == 999, 1, 0)
-		seed_split['select'] = seed_split['select'] + seed_split['select2']
-
-		assigned_ind_id = seed_split[seed_split['select'] == 1]
-		assigned_ind_id.fillna(99999, inplace=True)
-		assigned_ind_id = pd.merge(assigned_ind_id, acs_occ, left_on = ['OCCP'], right_on = ['occupation'], how = 'left')
-		assigned_ind_id['occupationLabel'] = np.where(assigned_ind_id['ESR'].isin([3,6,99999]), 'No_Occupation', assigned_ind_id['occupationLabel'])
-
-		hseed = hseed[hseed['NP'] > 0]
-		hseed = hseed[hseed['TYPE'] == 1]
-		hseed['SEED'] = 1
-		hseed['NP_RECODE'] = np.where((hseed['NP'] >= 4), (np.round((hseed.loc[hseed['NP'] >= 4].NP.mean()),2)), hseed['NP'])
-		hh_pp_seed = pd.merge(hseed, pseed, on = ['SERIALNO'], how = 'left')
-		hh_pp_seed['NWESR'] = np.where(hh_pp_seed['ESR'].isin([1,2,4,5]), 1, 0)
-		workers_seed = pd.DataFrame(hh_pp_seed.groupby('SERIALNO')['NWESR'].sum()).reset_index()
-		hseed = pd.merge(hseed, workers_seed, on = 'SERIALNO', how = 'inner')
-		hseed['hh_id'] = hseed.index + 1
-
-		hseed_dist = pd.DataFrame(np.round((hseed.groupby('NP_RECODE')['WGTP'].sum()),0))
-		hseed_dist.columns = ['HH']
-		hseed_dist.reset_index(inplace=True)
-		hseed_dist['HH_PERCENT'] = np.round(((hseed_dist['HH']*100)/(hseed_dist['HH'].sum())),1)
-
-		adjfac_map = {1061971:1.007549 * 1.05401460, 1045195:1.008425 * 1.03646282, 1035988:1.001264 * 1.03468042, 
-					 1029257:1.007588 * 1.02150538, 1011189:1.011189 * 1.00000000}
-		hseed['ADJFAC'] = hseed['ADJINC'].map(adjfac_map)
-		hseed['HHINC2017'] = np.round((hseed['HINCP']*hseed['ADJFAC']),0)
-		hseed['HHINC2009'] = np.round((hseed['HHINC2017']*0.8695),0)
-
-		hseed['hhsize_cat'] = np.where(hseed['NP'] <= 2, '1to2', '3plus')
-
-		hseed['hhinc_cat'] = '999'
-		hseed['hhinc_cat'] = np.where(hseed['HHINC2009'] < 8000, '0to8k', hseed['hhinc_cat'])
-		hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 8000) & (hseed['HHINC2009'] < 15000) & (hseed['hhinc_cat'] == '999'), '8to15k', hseed['hhinc_cat'])
-		hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 15000) & (hseed['HHINC2009'] < 23000) & (hseed['hhinc_cat'] == '999'), '15to23k', hseed['hhinc_cat'])
-		hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 23000) & (hseed['HHINC2009'] < 32000) & (hseed['hhinc_cat'] == '999'), '23to32k', hseed['hhinc_cat'])
-		hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 32000) & (hseed['HHINC2009'] < 46000) & (hseed['hhinc_cat'] == '999'), '32to46k', hseed['hhinc_cat'])
-		hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 46000) & (hseed['HHINC2009'] < 61000) & (hseed['hhinc_cat'] == '999'), '46to61k', hseed['hhinc_cat'])
-		hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 61000) & (hseed['HHINC2009'] < 76000) & (hseed['hhinc_cat'] == '999'), '61to76k', hseed['hhinc_cat'])
-		hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 76000) & (hseed['HHINC2009'] < 106000) & (hseed['hhinc_cat'] == '999'), '76to106k', hseed['hhinc_cat'])
-		hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 106000) & (hseed['hhinc_cat'] == '999'), '106kUp', hseed['hhinc_cat'])
-
-		hseed['Category'] = 'HH' + hseed['hhinc_cat'] + hseed['hhsize_cat']
 		
-		seed_persons = pd.merge(assigned_ind_id, hseed[['SERIALNO', 'hh_id']], on = 'SERIALNO', how = 'left')
-
-		#outputs
-		hseed_dist.to_csv(self.hh_dist_file, index=False)
-		seed_persons.to_csv(self.seed_persons_file, index=False)
-		hseed.to_csv(self.seed_households_file, index=False)
+		try:
+			f = open(self.hh_dist_file)
+			f.close()
+			f = open(self.seed_persons_file)
+			f.close()
+			f = open(self.seed_households_file)
+			f.close()
+			
+		except IOError:
+		
+			"""input household and person data for OR, WA and CA"""
+			pseed_or = pd.read_csv(self.pseed_or_file)
+			pseed_wa = pd.read_csv(self.pseed_wa_file)
+			pseed_ca = pd.read_csv(self.pseed_ca_file)
+			hseed_or = pd.read_csv(self.hseed_or_file)
+			hseed_wa = pd.read_csv(self.hseed_wa_file)
+			hseed_ca = pd.read_csv(self.hseed_ca_file)
+			#input file to identify pumas within the SWIM modeling region
+			swim_pumas = pd.read_csv(self.puma_beta_alpha_xwalk_file)
+			swim_pumas = swim_pumas[['PUMACE10','STATE']].groupby(["PUMACE10","STATE"]).count().reset_index()
+			#input file used to assign split industry to workers in the pums seed file
+			split_ind = pd.read_csv(self.pums_to_split_industry)
+			#input file to map workers in the seed file to acs occupation categories
+			acs_occ = pd.read_csv(self.acs_occ_file)
+	
+			#creating PERSONID
+			pseed_or['PERSONID'] = pseed_or['SERIALNO']*100 + pseed_or['SPORDER']
+			pseed_wa['PERSONID'] = pseed_wa['SERIALNO']*100 + pseed_wa['SPORDER']
+			pseed_ca['PERSONID'] = pseed_ca['SERIALNO']*100 + pseed_ca['SPORDER']
+	
+			#merging household and person files from 3 states and filtering for the pums region
+			pseed_master = pd.concat([pseed_or, pseed_ca, pseed_wa])
+			hseed_master = pd.concat([hseed_or, hseed_ca, hseed_wa])
+			pseed = pd.merge(pseed_master, swim_pumas, left_on = ['PUMA'], right_on = ['PUMACE10'], how = 'right')
+			hseed = pd.merge(hseed_master, swim_pumas, left_on = ['PUMA'], right_on = ['PUMACE10'], how = 'right')
+	
+			#SPG1 runs for the entire region, so the seed data must have a unique ID to map to the region. We create a field SEED and set it
+			#to 1 for all pumas.
+			pseed['SEED'] = 1
+	
+			split_ind.columns = ['pums_industry_code', 'pums_occ_code', 'split_industry_id', 'split_industry', 'proportion']
+			seed_split = pd.merge(pseed, split_ind, left_on = ['INDP', 'OCCP'], right_on = ['pums_industry_code', 'pums_occ_code'], how = 'left')
+	
+			pseed['DRAW'] = np.random.uniform(0,1, size=len(pseed))
+			seed_split = pd.merge(seed_split, pseed[['PERSONID', 'DRAW']], on = 'PERSONID', how = 'left')
+			seed_split['cumprop'] = seed_split.groupby(['PERSONID'])['proportion'].apply(lambda x: x.cumsum())
+			seed_split['prev_cumprop'] = seed_split.groupby(['PERSONID'])['cumprop'].apply(lambda x: x.shift(1))
+			seed_split.prev_cumprop.fillna(0, inplace=True)
+			seed_split['select'] = np.where((seed_split['DRAW'] < seed_split['cumprop']) & (seed_split['DRAW'] > seed_split['prev_cumprop']), 1, 0)
+			seed_split['split_industry_id'].fillna(999, inplace=True)
+			seed_split['select2'] = np.where(seed_split['split_industry_id'] == 999, 1, 0)
+			seed_split['select'] = seed_split['select'] + seed_split['select2']
+	
+			assigned_ind_id = seed_split[seed_split['select'] == 1]
+			assigned_ind_id.fillna(99999, inplace=True)
+			assigned_ind_id = pd.merge(assigned_ind_id, acs_occ, left_on = ['OCCP'], right_on = ['occupation'], how = 'left')
+			assigned_ind_id['occupationLabel'] = np.where(assigned_ind_id['ESR'].isin([3,6,99999]), 'No_Occupation', assigned_ind_id['occupationLabel'])
+	
+			hseed = hseed[hseed['NP'] > 0]
+			hseed = hseed[hseed['TYPE'] == 1]
+			hseed['SEED'] = 1
+			hseed['NP_RECODE'] = np.where((hseed['NP'] >= 4), (np.round((hseed.loc[hseed['NP'] >= 4].NP.mean()),2)), hseed['NP'])
+			hh_pp_seed = pd.merge(hseed, pseed, on = ['SERIALNO'], how = 'left')
+			hh_pp_seed['NWESR'] = np.where(hh_pp_seed['ESR'].isin([1,2,4,5]), 1, 0)
+			workers_seed = pd.DataFrame(hh_pp_seed.groupby('SERIALNO')['NWESR'].sum()).reset_index()
+			hseed = pd.merge(hseed, workers_seed, on = 'SERIALNO', how = 'inner')
+			hseed['hh_id'] = hseed.index + 1
+	
+			hseed_dist = pd.DataFrame(np.round((hseed.groupby('NP_RECODE')['WGTP'].sum()),0))
+			hseed_dist.columns = ['HH']
+			hseed_dist.reset_index(inplace=True)
+			hseed_dist['HH_PERCENT'] = np.round(((hseed_dist['HH']*100)/(hseed_dist['HH'].sum())),1)
+	
+			adjfac_map = {1061971:1.007549 * 1.05401460, 1045195:1.008425 * 1.03646282, 1035988:1.001264 * 1.03468042, 
+						 1029257:1.007588 * 1.02150538, 1011189:1.011189 * 1.00000000}
+			hseed['ADJFAC'] = hseed['ADJINC'].map(adjfac_map)
+			hseed['HHINC2017'] = np.round((hseed['HINCP']*hseed['ADJFAC']),0)
+			hseed['HHINC2009'] = np.round((hseed['HHINC2017']*0.8695),0)
+	
+			hseed['hhsize_cat'] = np.where(hseed['NP'] <= 2, '1to2', '3plus')
+	
+			hseed['hhinc_cat'] = '999'
+			hseed['hhinc_cat'] = np.where(hseed['HHINC2009'] < 8000, '0to8k', hseed['hhinc_cat'])
+			hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 8000) & (hseed['HHINC2009'] < 15000) & (hseed['hhinc_cat'] == '999'), '8to15k', hseed['hhinc_cat'])
+			hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 15000) & (hseed['HHINC2009'] < 23000) & (hseed['hhinc_cat'] == '999'), '15to23k', hseed['hhinc_cat'])
+			hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 23000) & (hseed['HHINC2009'] < 32000) & (hseed['hhinc_cat'] == '999'), '23to32k', hseed['hhinc_cat'])
+			hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 32000) & (hseed['HHINC2009'] < 46000) & (hseed['hhinc_cat'] == '999'), '32to46k', hseed['hhinc_cat'])
+			hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 46000) & (hseed['HHINC2009'] < 61000) & (hseed['hhinc_cat'] == '999'), '46to61k', hseed['hhinc_cat'])
+			hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 61000) & (hseed['HHINC2009'] < 76000) & (hseed['hhinc_cat'] == '999'), '61to76k', hseed['hhinc_cat'])
+			hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 76000) & (hseed['HHINC2009'] < 106000) & (hseed['hhinc_cat'] == '999'), '76to106k', hseed['hhinc_cat'])
+			hseed['hhinc_cat'] = np.where((hseed['HHINC2009'] >= 106000) & (hseed['hhinc_cat'] == '999'), '106kUp', hseed['hhinc_cat'])
+	
+			hseed['Category'] = 'HH' + hseed['hhinc_cat'] + hseed['hhsize_cat']
+			
+			seed_persons = pd.merge(assigned_ind_id, hseed[['SERIALNO', 'hh_id']], on = 'SERIALNO', how = 'left')
+	
+			#outputs
+			hseed_dist.to_csv(self.hh_dist_file, index=False)
+			seed_persons.to_csv(self.seed_persons_file, index=False)
+			hseed.to_csv(self.seed_households_file, index=False)
 
 	def workersPerHouseholdMarginal(self):
 
