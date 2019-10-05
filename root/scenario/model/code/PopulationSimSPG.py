@@ -249,6 +249,7 @@ class popsimSPG(object):
 				pp_wa = pd.read_csv('./ACS Data/'+str(year)+'/csv_pwa/psam_p53.csv')
 			
 			hh = pd.concat([hh_ca, hh_or, hh_wa])
+			hh = hh[hh['NP'] > 0]
 			pp = pd.concat([pp_ca, pp_or, pp_wa])
 			
 			hh_swim = pd.merge(hh, swim_pumas, left_on = ['PUMA'], right_on = ['PUMACE10'], how = 'right')
@@ -258,7 +259,7 @@ class popsimSPG(object):
 			
 			hh_pp['WORKER'] = np.where(hh_pp['ESR'].isin([1,2,4,5]), 1, 0)
 			
-			workers = pd.DataFrame(hh_pp.groupby('SERIALNO')['WORKER', 'WGTP'].sum()).reset_index()
+			workers = pd.DataFrame(hh_pp.groupby('SERIALNO').aggregate({'WORKER': 'sum', 'WGTP': 'mean'})).reset_index()
 			wrkr_dst = pd.DataFrame(workers.groupby('WORKER')['WGTP'].sum()).reset_index()
 			wrkr_dst.columns = ['Workers', str(year)+'households']
 			
