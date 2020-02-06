@@ -1593,7 +1593,7 @@
       ICAIDEALSATURATIONFLOWRATEICU1 = "1600"
       ICAIDEALSATURATIONFLOWRATEICU2 = "1600"
       ICAIDEALSATURATIONFLOWRATECCG = "1850"
-      ICAPCULENGTH = "19.685039370078737ft"
+      ICAPCULENGTH = "19.685039370078734ft"
       ICAPEDESTRIANWALKINGSPEED = "236.22047244094492fpm"
       ICARIGHTTURNPEDESTRIANFACTOR = "Toronto"
       USEMAXICATWOWAYSTOP = "1"
@@ -2092,7 +2092,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(190.36*[TOLL_PRTSYS(A)]+22.84*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_AUTO_PK]*[TOLL_PRTSYS(A)])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2118,7 +2118,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "TRUCK_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(94.06*[TOLL_PRTSYS(D)]+11.29*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_PK]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2595,6 +2595,32 @@
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
+      COMMENT = "auto cost offpeak"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "TRUCK_COST"
+        ONLYACTIVE = "0"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_OP]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_OP]*[LENGTH])"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "19"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
       COMMENT = "off peak capacity = opvolfactor * capacity * number of lanes"
       EXECUTED = "0"
       STARTTIME = ""
@@ -2617,7 +2643,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "19"
+      NO = "20"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"
@@ -2637,7 +2663,7 @@
       <ASSIGNMENTINITPARA        INITPUT = "0"        INITPRT = "1"      />      
     </OPERATION>
     <OPERATION
-      NO = "20"
+      NO = "21"
       CODE = ""
       OPERATIONTYPE = "PrTAssignment"
       ACTIVE = "1"
@@ -2684,7 +2710,7 @@
       </PRTASSIGNMENTPARA>
     </OPERATION>
     <OPERATION
-      NO = "21"
+      NO = "22"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2710,7 +2736,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "22"
+      NO = "23"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2736,7 +2762,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "23"
+      NO = "24"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2762,7 +2788,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "24"
+      NO = "25"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2788,7 +2814,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "25"
+      NO = "26"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2814,7 +2840,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "26"
+      NO = "27"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2840,7 +2866,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "27"
+      NO = "28"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2866,7 +2892,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "28"
+      NO = "29"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2892,7 +2918,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "29"
+      NO = "30"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -2953,7 +2979,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "30"
+      NO = "31"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -3014,7 +3040,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "31"
+      NO = "32"
       CODE = ""
       OPERATIONTYPE = "SaveVersion"
       ACTIVE = "1"
@@ -3034,7 +3060,7 @@
       <SAVEVERSIONPARA        FILENAME = "OP_PATHS"        APPENDGOTOCOUNTER = "0"      />      
     </OPERATION>
     <OPERATION
-      NO = "32"
+      NO = "33"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3056,11 +3082,37 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(190.36*[TOLL_PRTSYS(A)]+22.84*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_AUTO_PK]*[TOLL_PRTSYS(A)])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
-      NO = "33"
+      NO = "34"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = "auto cost peak"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "TRUCK_COST"
+        ONLYACTIVE = "0"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_PK]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_PK]*[LENGTH])"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "35"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3086,7 +3138,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "34"
+      NO = "36"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"
@@ -3106,7 +3158,7 @@
       <ASSIGNMENTINITPARA        INITPUT = "0"        INITPRT = "1"      />      
     </OPERATION>
     <OPERATION
-      NO = "35"
+      NO = "37"
       CODE = ""
       OPERATIONTYPE = "PrTAssignment"
       ACTIVE = "1"
@@ -3153,7 +3205,7 @@
       </PRTASSIGNMENTPARA>
     </OPERATION>
     <OPERATION
-      NO = "36"
+      NO = "38"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3179,7 +3231,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "37"
+      NO = "39"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3205,7 +3257,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "38"
+      NO = "40"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3231,7 +3283,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "39"
+      NO = "41"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3257,7 +3309,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "40"
+      NO = "42"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3283,7 +3335,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "41"
+      NO = "43"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3309,7 +3361,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "42"
+      NO = "44"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3335,7 +3387,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "43"
+      NO = "45"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3361,7 +3413,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "44"
+      NO = "46"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -3422,7 +3474,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "45"
+      NO = "47"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -3483,7 +3535,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "46"
+      NO = "48"
       CODE = ""
       OPERATIONTYPE = "SaveVersion"
       ACTIVE = "1"
@@ -3503,7 +3555,7 @@
       <SAVEVERSIONPARA        FILENAME = "PM_PATHS"        APPENDGOTOCOUNTER = "0"      />      
     </OPERATION>
     <OPERATION
-      NO = "47"
+      NO = "49"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3529,7 +3581,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "48"
+      NO = "50"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3555,7 +3607,33 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "49"
+      NO = "51"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = "auto cost offpeak"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "TRUCK_COST"
+        ONLYACTIVE = "0"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_OP]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_OP]*[LENGTH])"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "52"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"
@@ -3575,7 +3653,7 @@
       <ASSIGNMENTINITPARA        INITPUT = "0"        INITPRT = "1"      />      
     </OPERATION>
     <OPERATION
-      NO = "50"
+      NO = "53"
       CODE = ""
       OPERATIONTYPE = "PrTAssignment"
       ACTIVE = "1"
@@ -3622,7 +3700,7 @@
       </PRTASSIGNMENTPARA>
     </OPERATION>
     <OPERATION
-      NO = "51"
+      NO = "54"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3648,7 +3726,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "52"
+      NO = "55"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3674,7 +3752,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "53"
+      NO = "56"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3700,7 +3778,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "54"
+      NO = "57"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3726,7 +3804,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "55"
+      NO = "58"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3752,7 +3830,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "56"
+      NO = "59"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3778,7 +3856,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "57"
+      NO = "60"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3804,7 +3882,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "58"
+      NO = "61"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -3830,7 +3908,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "59"
+      NO = "62"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -3891,7 +3969,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "60"
+      NO = "63"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -3952,84 +4030,6 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "61"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = ""
-      WARNINGCOUNT = ""
-      ERRORCOUNT = ""
-      INFORMATIONCOUNT = ""
-      OPERATIONVARIABLECOUNT = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "LINK"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "DAILY_VOL_AUTO"
-        ONLYACTIVE = "0"
-        FORMULA = "[NT_VOL_AUTO]+[OP_VOL_AUTO]+[PK_VOL_AUTO]+[PM_VOL_AUTO]"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "62"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = ""
-      WARNINGCOUNT = ""
-      ERRORCOUNT = ""
-      INFORMATIONCOUNT = ""
-      OPERATIONVARIABLECOUNT = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "LINK"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "DAILY_VOL_TRUCK"
-        ONLYACTIVE = "0"
-        FORMULA = "[NT_VOL_TRUCK]+[OP_VOL_TRUCK]+[PK_VOL_TRUCK]+[PM_VOL_TRUCK]"
-      />      
-    </OPERATION>
-    <OPERATION
-      NO = "63"
-      CODE = ""
-      OPERATIONTYPE = "EditAttribute"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = ""
-      WARNINGCOUNT = ""
-      ERRORCOUNT = ""
-      INFORMATIONCOUNT = ""
-      OPERATIONVARIABLECOUNT = "">
-      <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "LINK"
-        INCLUDESUBCATEGORIES = "0"
-        RESULTATTRNAME = "DAILY_VOL_TOTAL"
-        ONLYACTIVE = "0"
-        FORMULA = "[NT_VOL_TOTAL]+[OP_VOL_TOTAL]+[PK_VOL_TOTAL]+[PM_VOL_TOTAL]"
-      />      
-    </OPERATION>
-    <OPERATION
       NO = "64"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
@@ -4048,7 +4048,7 @@
       INFORMATIONCOUNT = ""
       OPERATIONVARIABLECOUNT = "">
       <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "CONNECTOR"
+        NETOBJECTTYPE = "LINK"
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "DAILY_VOL_AUTO"
         ONLYACTIVE = "0"
@@ -4074,7 +4074,7 @@
       INFORMATIONCOUNT = ""
       OPERATIONVARIABLECOUNT = "">
       <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "CONNECTOR"
+        NETOBJECTTYPE = "LINK"
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "DAILY_VOL_TRUCK"
         ONLYACTIVE = "0"
@@ -4100,7 +4100,7 @@
       INFORMATIONCOUNT = ""
       OPERATIONVARIABLECOUNT = "">
       <ATTRIBUTEFORMULAPARA
-        NETOBJECTTYPE = "CONNECTOR"
+        NETOBJECTTYPE = "LINK"
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "DAILY_VOL_TOTAL"
         ONLYACTIVE = "0"
@@ -4126,6 +4126,84 @@
       INFORMATIONCOUNT = ""
       OPERATIONVARIABLECOUNT = "">
       <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "CONNECTOR"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "DAILY_VOL_AUTO"
+        ONLYACTIVE = "0"
+        FORMULA = "[NT_VOL_AUTO]+[OP_VOL_AUTO]+[PK_VOL_AUTO]+[PM_VOL_AUTO]"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "68"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "CONNECTOR"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "DAILY_VOL_TRUCK"
+        ONLYACTIVE = "0"
+        FORMULA = "[NT_VOL_TRUCK]+[OP_VOL_TRUCK]+[PK_VOL_TRUCK]+[PM_VOL_TRUCK]"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "69"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "CONNECTOR"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "DAILY_VOL_TOTAL"
+        ONLYACTIVE = "0"
+        FORMULA = "[NT_VOL_TOTAL]+[OP_VOL_TOTAL]+[PK_VOL_TOTAL]+[PM_VOL_TOTAL]"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "70"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
         NETOBJECTTYPE = "LINK"
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "DAILY_TIME_AUTO"
@@ -4134,7 +4212,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "68"
+      NO = "71"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -4160,7 +4238,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "69"
+      NO = "72"
       CODE = ""
       OPERATIONTYPE = "SaveVersion"
       ACTIVE = "1"
@@ -4180,7 +4258,7 @@
       <SAVEVERSIONPARA        FILENAME = "NT_PATHS"        APPENDGOTOCOUNTER = "0"      />      
     </OPERATION>
     <OPERATION
-      NO = "70"
+      NO = "73"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"

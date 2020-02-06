@@ -395,6 +395,13 @@ class SwimModel(object):
 
         return fileTable
 
+    def push_csv_py27(self,csvFileName, attnames, data): # for python 2.7
+        print("save csv file: " + csvFileName)
+        with open(csvFileName, 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter =',')
+            writer.writerow(attnames)
+            writer.writerows(data)
+
     def cleanZonalDataOfWorldZones(self,file_table):
         cleaned_table = []
         for row in file_table:
@@ -670,11 +677,20 @@ class SwimModel(object):
         
         #write SWIM VIZDB count locations
         print('Create SWIM count locations for Viz')
-        data = list()
-        self.fields = map(lambda x: x.ID, self.Visum.Net.CountLocations.Attributes.GetAll)
-        for aField in self.fields: # self.fields required by stringConcatenate 
-            data.append(VisumHelpers.GetMulti(self.Visum.Net.CountLocations, aField))
-        self.writeCSV(countLocationsFileName, self.stringConcatenate(data, False))
+        #data = list()
+        #self.fields = map(lambda x: x.ID, self.Visum.Net.CountLocations.Attributes.GetAll)
+        #for aField in self.fields: # self.fields required by stringConcatenate 
+        #    data.append(VisumHelpers.GetMulti(self.Visum.Net.CountLocations, aField)) # VisumHelpers no longer worked with count locations for Visum 2020
+        #self.writeCSV(countLocationsFileName, self.stringConcatenate(data, False))
+
+        atts = self.Visum.Net.CountLocations.Attributes.GetAll
+        attnames = []
+        for att in atts:
+            attnames.append(att.ID)
+
+        data = map(list, self.Visum.Net.CountLocations.GetMultipleAttributes(attnames))
+
+        self.push_csv_py27(countLocationsFileName, attnames, data)
 
     #read matrices in Python and then insert into Visum
     def insertMatrixInVisum(self, ODmode, start, end):

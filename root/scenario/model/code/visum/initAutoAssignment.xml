@@ -1593,7 +1593,7 @@
       ICAIDEALSATURATIONFLOWRATEICU1 = "1600"
       ICAIDEALSATURATIONFLOWRATEICU2 = "1600"
       ICAIDEALSATURATIONFLOWRATECCG = "1850"
-      ICAPCULENGTH = "19.685039370078737ft"
+      ICAPCULENGTH = "19.685039370078734ft"
       ICAPEDESTRIANWALKINGSPEED = "236.22047244094492fpm"
       ICARIGHTTURNPEDESTRIANFACTOR = "Toronto"
       USEMAXICATWOWAYSTOP = "1"
@@ -2011,7 +2011,7 @@
       USETURNCAP = "0"
       TURNCAPMODEL = "BBACKTURNCAPMODEL_CAPPRT"
       SCALINGFACTOR = "1"
-      AVERAGESPACEPERCARUNIT = "22.965879265091857ft"
+      AVERAGESPACEPERCARUNIT = "22.965879265091854ft"
       DURATIONPHASE1 = "1h"
       NUMBEROFVOLUMESLICESPHASE1 = "10"
       CALCULATIONVARIANT = "SEQUENTIALROUTEPROCESSING"
@@ -2092,7 +2092,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(190.36*[TOLL_PRTSYS(A)]+22.84*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_AUTO_PK]*[TOLL_PRTSYS(A)])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2118,7 +2118,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "TRUCK_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(94.06*[TOLL_PRTSYS(D)]+11.29*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_PK]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2481,11 +2481,37 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(286.20*[TOLL_PRTSYS(A)]+34.34*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_AUTO_OP]*[TOLL_PRTSYS(A)])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_OP]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
       NO = "11"
+      CODE = ""
+      OPERATIONTYPE = "EditAttribute"
+      ACTIVE = "1"
+      COMMENT = "offpeak auto cost calculation"
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = ""
+      WARNINGCOUNT = ""
+      ERRORCOUNT = ""
+      INFORMATIONCOUNT = ""
+      OPERATIONVARIABLECOUNT = "">
+      <ATTRIBUTEFORMULAPARA
+        NETOBJECTTYPE = "LINK"
+        INCLUDESUBCATEGORIES = "0"
+        RESULTATTRNAME = "TRUCK_COST"
+        ONLYACTIVE = "0"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_OP]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_OP]*[LENGTH])"
+      />      
+    </OPERATION>
+    <OPERATION
+      NO = "12"
       CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
@@ -2511,7 +2537,7 @@
       />      
     </OPERATION>
     <OPERATION
-      NO = "12"
+      NO = "13"
       CODE = ""
       OPERATIONTYPE = "InitAssignment"
       ACTIVE = "1"
@@ -2531,7 +2557,7 @@
       <ASSIGNMENTINITPARA        INITPUT = "1"        INITPRT = "1"      />      
     </OPERATION>
     <OPERATION
-      NO = "13"
+      NO = "14"
       CODE = ""
       OPERATIONTYPE = "PrTAssignment"
       ACTIVE = "1"
@@ -2578,7 +2604,7 @@
       </PRTASSIGNMENTPARA>
     </OPERATION>
     <OPERATION
-      NO = "14"
+      NO = "15"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -2639,7 +2665,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "15"
+      NO = "16"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -2700,7 +2726,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "16"
+      NO = "17"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
@@ -2761,7 +2787,7 @@
       </PRTSKIMMATRIXPARA>
     </OPERATION>
     <OPERATION
-      NO = "17"
+      NO = "18"
       CODE = ""
       OPERATIONTYPE = "PrTSkimMatrixCalculation"
       ACTIVE = "1"
