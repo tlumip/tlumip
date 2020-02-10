@@ -1,10 +1,9 @@
 # Alex Bettinardi
-# 1-31-20
+# 2-10-20
 
 # T29 file copy from previous t29 run
 
 #Soure Directory
-sourceDir <- "outputs/t20/"
 sourceDir <- "D:/swim2/Ref25_0_03_77sdt/outputs/t29/"
 
 # create directories as needed
