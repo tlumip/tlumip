@@ -129,7 +129,7 @@ def determine_ldt_trip_type(mydata, mytrips):
     mytrips_grouped = mytrips[['hhID','memberID','tourID','origin','destination','tourPurpose','tripPurpose','tripMode','tripStartTime']].groupby(['hhID','memberID','tourID','origin','destination'])
     mytrips_unique = mytrips_grouped['tourPurpose','tripPurpose','tripMode','tripStartTime'].first()
     mytrips_unique = mytrips_unique.reset_index()
-    mytrips_unique = mytrips_unique.sort(['hhID','memberID','tourID','tripStartTime'])
+    mytrips_unique = mytrips_unique.sort_values(['hhID','memberID','tourID','tripStartTime'])
 
     #select link trips
     mydata_grouped = mydata[['hhID','memberID','tourID','tripMode']].groupby(['hhID','memberID','tourID'])
@@ -166,7 +166,7 @@ def determine_sdt_trip_type(mydata, mytrips):
                     on = ['hhID','memberID','tour#'])
 
     #create last_trip_type for unique select link tours/trips
-    mytrips_selectlink = mytrips_selectlink.sort(['hhID','memberID','tour#','tourSegment', 'subTour(yes/no)'])
+    mytrips_selectlink = mytrips_selectlink.sort_values(['hhID','memberID','tour#','tourSegment', 'subTour(yes/no)'])
     mytrips_triptype = mytrips_selectlink.groupby(['hhID','memberID','tour#']).apply(last_trip_type)
 
     #merge with select link data

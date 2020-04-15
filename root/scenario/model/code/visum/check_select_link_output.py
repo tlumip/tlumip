@@ -185,7 +185,7 @@ def main():
 
     #sort select link summary file. Done here so that we do not need to do that in two places: python and java.
     select_link_summary = pd.read_csv(os.path.join(output_folder, select_link_summary_file))
-    select_link_summary = select_link_summary.sort(['STATIONNUMBER', 'DIRECTION', 'PERIOD'])
+    select_link_summary = select_link_summary.sort_values(['STATIONNUMBER', 'DIRECTION', 'PERIOD'])
     select_link_summary[['STATIONNUMBER','DIRECTION','PERIOD','AUTO_SL_OD','TRUCK_SL_OD','SDT_PERSON_TRIP','SDT_VEHICLE_TRIP','LDT_PERSON_TRIP','LDT_VEHICLE_TRIP','CT_TRIP','ET_TRIP']].to_csv(os.path.join(output_folder, select_link_summary_file), header=True, index=False) 
     
 if __name__ == "__main__":
