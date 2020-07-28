@@ -2,6 +2,7 @@
 # Alex Bettinardi
 # 9-29-17 - first draft
 # 9-19-19 - re-developed / designed
+# 7-27-20 - updated a small percent change color plotting error
 
 ##############################################################
 # a script to pull population and employment data (and calucate growth rates) input regions
@@ -99,14 +100,14 @@ for(rg in 1:nrow(sr)){
    # Population  
    y <- tapply(Data[,"Pop"],list(Data$Year,Data$Scen),sum)    
    matplot(as.numeric(rownames(y)),y, col=Col[colnames(y)],type="l", lty=1, main="Population Growth", xlab="Year", ylab="Population")
-   text(as.numeric(rownames(y))[nrow(y)],y[nrow(y),], paste(round(100*((y[nrow(y),]/y[1,]-1))/sum(diff(as.numeric(rownames(y)))),1),"%",sep=""),pos=2,col=Col[names(dbs)])
+   text(as.numeric(rownames(y))[nrow(y)],y[nrow(y),], paste(round(100*((y[nrow(y),]/y[1,]-1))/sum(diff(as.numeric(rownames(y)))),1),"%",sep=""),pos=2,col=Col[colnames(y)])
    text(as.numeric(rownames(y))[1], max(y), "Overall Annual Growth Rate", pos=4)
 
    # Employment
    y <- tapply(Data[,"Emp"],list(Data$Year,Data$Scen),sum)    
    matplot(as.numeric(rownames(y)),y, col=Col[colnames(y)],type="l", lty=1, main="Employment Growth", xlab="Year", ylab="Employment")
    legend("bottomright",names(dbs),col=Col[names(dbs)],lty=1)
-   text(as.numeric(rownames(y))[nrow(y)],y[nrow(y),], paste(round(100*((y[nrow(y),]/y[1,]-1))/sum(diff(as.numeric(rownames(y)))),1),"%",sep=""),pos=2,col=Col[names(dbs)])
+   text(as.numeric(rownames(y))[nrow(y)],y[nrow(y),], paste(round(100*((y[nrow(y),]/y[1,]-1))/sum(diff(as.numeric(rownames(y)))),1),"%",sep=""),pos=2,col=Col[colnames(y)])
    text(as.numeric(rownames(y))[1], max(y), "Overall Annual Growth Rate", pos=4)
 
    # Final Title
