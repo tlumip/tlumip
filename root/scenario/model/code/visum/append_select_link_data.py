@@ -50,11 +50,11 @@ auto_classes = properties['sl.auto.classes'].split(",") #am, md, pm, ni
 truck_classes = properties['sl.truck.classes'].split(",") #am, md, pm, ni
 
 select_link_file = properties['sl.output.file.select.link.results'] #only file name - no full file path
-
+      
 #tour and trip files
 household_file = properties['sdt.household.data']
-tours_sdt_file = properties['sdt.person.tours']
-tours_ldt_file = properties['ldt.tours']
+#tours_sdt_file = properties['sdt.person.tours']
+#tours_ldt_file = properties['ldt.tours']
 trips_sdt_file = properties['sdt.person.trips']
 trips_ldt_file = properties['ldt.person.trips']
 trips_ldt_vehicle_file = properties['ldt.vehicle.trips']
@@ -324,9 +324,9 @@ def main():
     
     #append select link result to trips
     print('Append select link results to trips')
-    outfile_sdt, select_link_summary = append_select_link(trips_sdt_file, 'tripStartTime', select_link_result, tourfile=tours_sdt_file, colname='SDT_PERSON_TRIP', summary_df=select_link_summary)
-    outfile_ldt, select_link_summary = append_select_link(trips_ldt_file, 'tripStartTime', select_link_result, tourfile=tours_ldt_file, colname='LDT_PERSON_TRIP', summary_df=select_link_summary)
-    outfile_ldt_vehicle, select_link_summary = append_select_link(trips_ldt_vehicle_file, 'tripStartTime', select_link_result, tourfile=tours_ldt_file, colname='LDT_VEHICLE_TRIP', summary_df=select_link_summary)
+    outfile_sdt, select_link_summary = append_select_link(trips_sdt_file, 'tripStartTime', select_link_result, tourfile=None, colname='SDT_PERSON_TRIP', summary_df=select_link_summary)
+    outfile_ldt, select_link_summary = append_select_link(trips_ldt_file, 'tripStartTime', select_link_result, tourfile=None, colname='LDT_PERSON_TRIP', summary_df=select_link_summary)
+    outfile_ldt_vehicle, select_link_summary = append_select_link(trips_ldt_vehicle_file, 'tripStartTime', select_link_result, tourfile=None, colname='LDT_VEHICLE_TRIP', summary_df=select_link_summary)
     outfile_ct, select_link_summary = append_select_link(trips_ct_file, 'tripStartTime', select_link_result, tourfile=None, colname='CT_TRIP', summary_df=select_link_summary)
     outfile_et, select_link_summary = append_select_link(trips_et_file, 'tripStartTime', select_link_result, tourfile=None, colname='ET_TRIP', summary_df=select_link_summary)
 
