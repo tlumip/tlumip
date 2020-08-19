@@ -1,104 +1,104 @@
-Commodity,Number,BuyingDispersionParameter,SellingDispersionParameter,BuyingSizeCoefficient,BuyingPriceCoefficient,BuyingTransportCoefficient,SellingSizeCoefficient,SellingPriceCoefficient,SellingTransportCoefficient,InterchangeCoefficient1,InterchangeCoefficient2,InterchangeCoefficient3,InterchangeName1,InterchangeName2,InterchangeName3,ExchangeType,GOFWeighting,FloorspaceCommodity,ExpectedPrice,Units,ManualSizeTerms,Search
-SCTG01_FKP_LVSK,101,68.99778825,68.99778825,1,-1,2.85E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG02_FKP_AGRI_cereal,102,23.00337835,23.00337835,1,-1,0.000134375,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG03_FKP_AGRI_other,103,74.79868672,74.79868672,1,-1,4.86E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG04_FKP_FEED,104,36.9973849,23.24851165,1,-1,0.002568272,1,1,0.00018895,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG05_FKP_FOOD_meat,105,26.75682476,100,1,-1,0.002568272,1,1,3.05E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG06_FKP_AGRI_grain,106,27.18961426,100,1,-1,0.002568272,1,1,0.000154881,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG07_FKP_FOOD_prep,107,27.35677225,100,1,-1,0.002568272,1,1,4.68E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG08_FKP_FOOD_alc,108,27.65632472,31.80529896,1,-1,0.002568272,1,1,0.000197953,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG10_CMS_CLAY,110,21.82380006,21.82380006,1,-1,0.000706579,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG11_CMS_SAND,111,7.05739871,7.05739871,1,-1,0.002030271,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG13_CMS_MINE_nonmet,113,14.73894574,14.73894574,1,-1,0.000574161,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG14_CMS_MINE_met,114,61.2700712,61.2700712,1,-1,0.000139928,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG15_PCC_COAL,115,8.524472644,8.524472644,1,-1,0.000988249,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG16_PCC_PETR_crude,116,100,100,1,-1,5.72E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG17_PCC_FUEL,117,13.36430396,100,1,-1,0.005136545,1,1,7.42E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG18_PCC_PETR_oil,118,28.25536209,29.71536956,1,-1,0.002568272,1,1,0.000194455,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG19_PCC_COAL_prod,119,11.85443056,11.85443056,1,-1,0.00023957,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG20_PCC_CHEM_basic,120,9.909680012,9.909680012,1,-1,0.000379294,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG21_PCC_CHEM_pharma,121,26.77268493,16.68372649,1,-1,0.002568272,1,1,7.92E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG22_PCC_CHEM_fert,122,26.00917392,26.00917392,1,-1,0.000105957,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG23_PCC_CHEM_prod,123,28.2606988,78.86148836,1,-1,0.002568272,1,1,3.65E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG24_PCC_PETR_plast,124,68.74834362,68.74834362,1,-1,5.28E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG25_FWP_LOGS,125,35.62708051,35.62708051,1,-1,0.000241601,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG26_FWP_WOOD,126,29.58313807,29.58313807,1,-1,0.000125408,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG27_PPP_PAPR_puplp,127,92.39576724,92.39576724,1,-1,0.000144006,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG28_PPP_PAPR_paper,128,41.14231668,41.14231668,1,-1,0.000298769,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG29_PPP_PAPR_print,129,24.26853349,100,1,-1,0.002568272,1,1,4.47E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG30_OTH_CLTH,130,25.85158686,100,1,-1,0.002568272,1,1,1.35E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG31_CMS_MIN,131,16.594327,16.594327,1,-1,0.000421876,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG32_MIT_METL_base,132,48.0594385,48.0594385,1,-1,7.82E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG33_MIT_METL_prod,133,94.92926355,94.92926355,1,-1,4.13E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG34_MIT_MACH,134,100,100,1,-1,7.85E-06,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG35_MIT_ELCT,135,100,100,1,-1,1.24E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG36_MIT_TRAN,136,100,100,1,-1,0.000513654,1,1,2.99E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG37_MIT_INST_transp,137,100,100,1,-1,4.65E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG38_MIT_INST_prec,138,100,100,1,-1,1.95E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-SCTG39_OTH_FURN,139,100,63.37568999,1,-1,0.000642068,1,1,7.98E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG40_OTH_MISC,140,25.35445582,100,1,-1,0.002568272,1,1,1.98E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE
-SCTG41_WASTE_SCRAP,141,58.4197083,58.4197083,1,-1,0.000213297,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE
-Energy,142,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Retail Trade,143,29.71910158,29.71910158,1,-1,0.043213922,1,1,0,4.273504274,0,0,s4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Transport,144,100,100,1,-1,0.001577142,1,1,0,-0.2869496,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Wholesale Trade,145,100,100,1,-1,0.001577142,1,1,0,-0.3663225,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Construction,146,100,100,1,-1,0,1,1,0.001577142,-0.1472195,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
-Communications and Utilities,147,48.24131425,48.24131425,1,-1,0.001577142,1,1,0,-0.2348265,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Accommodations,148,100,100,1,-1,0.001577142,1,1,0,-0.2074261,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE
-Personal and Other Services and Amusements,149,33.9308598,33.9308598,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Entertainment Services,150,5,5,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Food Services,151,30.375,30.375,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Teaching K12,152,91.125,91.125,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Higher Education,153,45.5625,45.5625,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Health Services,154,100,100,1,-1,0.018425305,1,1,0,4.273504274,0,0,o4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Fire Business and Professional Services,155,100,100,1,-1,0,1,1,0.001577142,-0.2847265,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE
-Government Administration,156,100,100,1,-1,0.001577,1,1,0,3.205128,0,0,b4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Resources,157,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Energy,158,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Construction,159,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Manufacturing,160,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Wholesale,161,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Retail Store,162,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal ServicesTransport,163,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Information,164,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Utilities,165,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Education k12,166,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Internal Services Government Administration,167,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-Government Support Receipts,301,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-Tax Receipts,302,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-Investing Receipts,303,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-Return Investment Receipts,304,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-Capital Transfer Receipts,305,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-Education Reports to Sponsors,306,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-Proprietor Income Receipts,307,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE
-A1-Mgmt Bus,401,62.58421848,62.58421848,1,-1,0,1,1,0.0040304,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B1-Prof Specialty,402,56.20690455,56.20690455,1,-1,0,1,1,0.0040319,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B2-Education,403,59.60637395,59.60637395,1,-1,0,1,1,0.0056716,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B3-Health,404,74.45883232,74.45883232,1,-1,0,1,1,0.0032277,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-B4-Technical Unskilled,405,335.3321272,335.3321272,1,-1,0,1,1,0.006569722,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C1-Sales Clerical Professionals,406,100,100,1,-1,0,1,1,0.0048769,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C2-Sales Service,407,50.1922144,50.1922144,1,-1,0,1,1,0.0070781,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C3-Clerical,408,55.82780153,55.82780153,1,-1,0,1,1,0.0076858,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-C4-Sales Clerical Unskilled,409,100,100,1,-1,0,1,1,0.0111272,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D1-Production Specialists,410,46.46677265,46.46677265,1,-1,0,1,1,0.0064099,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D2-MaintConstRepair Specialists,411,43.92117268,43.92117268,1,-1,0,1,1,0.00566,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D3-ProtectTrans Specialists,412,48.53393195,48.53393195,1,-1,0,1,1,0.0061657,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-D4-Blue Collar Unskilled,413,79.94989584,79.94989584,1,-1,0,1,1,0.0085101,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE
-FLR Agriculture,501,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE
-FLR Logging,502,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE
-FLR Hospital,503,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.60268612,TRUE,16.60268612,unknown,FALSE,TRUE
-FLR Retail,504,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,13.29613918,TRUE,13.29613918,unknown,FALSE,TRUE
-FLR Office,505,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.88941767,TRUE,16.88941767,unknown,FALSE,TRUE
-FLR Heavy Industry,506,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.260711703,TRUE,6.260711703,unknown,FALSE,TRUE
-FLR Light Industry,507,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.311623664,TRUE,6.311623664,unknown,FALSE,TRUE
-FLR Warehouse,508,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,7.209906607,TRUE,7.209906607,unknown,FALSE,TRUE
-FLR Institutional,509,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.1304673,TRUE,16.1304673,unknown,FALSE,TRUE
-FLR Accommodation,510,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.29494053,TRUE,16.29494053,unknown,FALSE,TRUE
-FLR Government Support,511,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.3303225,TRUE,16.3303225,unknown,FALSE,TRUE
-FLR K12,512,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.22744561,TRUE,16.22744561,unknown,FALSE,TRUE
-FLR SFD,513,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.132406129,TRUE,6.132406129,unknown,FALSE,TRUE
-FLR AT,514,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,5.022311515,TRUE,5.022311515,unknown,FALSE,TRUE
-FLR MH,515,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.677708597,TRUE,6.677708597,unknown,FALSE,TRUE
-FLR RRMH,516,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,3.245782124,TRUE,3.245782124,unknown,FALSE,TRUE
-FLR RRSFD,517,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,2.549265941,TRUE,2.549265941,unknown,FALSE,TRUE
-FLR MF,518,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,7.054531068,TRUE,7.054531068,unknown,FALSE,TRUE
+Commodity,Number,BuyingDispersionParameter,SellingDispersionParameter,BuyingSizeCoefficient,BuyingPriceCoefficient,BuyingTransportCoefficient,SellingSizeCoefficient,SellingPriceCoefficient,SellingTransportCoefficient,InterchangeCoefficient1,InterchangeCoefficient2,InterchangeCoefficient3,InterchangeName1,InterchangeName2,InterchangeName3,ExchangeType,GOFWeighting,FloorspaceCommodity,ExpectedPrice,Units,ManualSizeTerms,Search,PayloadReferenceDistance,AnotherPayloadDistance,PayloadInterchangeName,MinimumPrice,MaximumPrice,TotalSizeTerm
+SCTG01_FKP_LVSK,101,7.813113798,7.813113798,1,-1,2.85E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,946494476
+SCTG02_FKP_AGRI_cereal,102,5,5,1,-1,0.000134375,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,750953625.9
+SCTG03_FKP_AGRI_other,103,23.38947374,23.38947374,1,-1,4.86E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,3965435111
+SCTG04_FKP_FEED,104,5,5,1,-1,0.002568272,1,1,0.00018895,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,1064570116
+SCTG05_FKP_FOOD_meat,105,5,5,1,-1,0.002568272,1,1,3.05E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,4702527215
+SCTG06_FKP_AGRI_grain,106,5,5,1,-1,0.002568272,1,1,0.000154881,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,2351165592
+SCTG07_FKP_FOOD_prep,107,5,5,1,-1,0.002568272,1,1,4.68E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,15951086269
+SCTG08_FKP_FOOD_alc,108,5,5,1,-1,0.002568272,1,1,0.000197953,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,3017125989
+SCTG10_CMS_CLAY,110,22.21129668,22.21129668,1,-1,0.000706579,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,188502663.6
+SCTG11_CMS_SAND,111,7.058514304,7.058514304,1,-1,0.002030271,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,134966585.3
+SCTG13_CMS_MINE_nonmet,113,19.3792053,19.3792053,1,-1,0.000574161,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,57405393.37
+SCTG14_CMS_MINE_met,114,38.31645493,38.31645493,1,-1,0.000139928,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,1016768511
+SCTG15_PCC_COAL,115,8.834596426,8.834596426,1,-1,0.000988249,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,340081646.9
+SCTG16_PCC_PETR_crude,116,100,100,1,-1,5.72E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,709010377.4
+SCTG17_PCC_FUEL,117,5,5,1,-1,0.005136545,1,1,7.42E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,4242208859
+SCTG18_PCC_PETR_oil,118,5,5,1,-1,0.002568272,1,1,0.000194455,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,2120835124
+SCTG19_PCC_COAL_prod,119,5,5,1,-1,0.00023957,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,4187483517
+SCTG20_PCC_CHEM_basic,120,5,5,1,-1,0.000379294,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,3268578128
+SCTG21_PCC_CHEM_pharma,121,5,5,1,-1,0.002568272,1,1,7.92E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,5293927130
+SCTG22_PCC_CHEM_fert,122,5,5,1,-1,0.000105957,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,776010109.7
+SCTG23_PCC_CHEM_prod,123,5,5,1,-1,0.002568272,1,1,3.65E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,3624655936
+SCTG24_PCC_PETR_plast,124,18.0170544,18.0170544,1,-1,5.28E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,6081900696
+SCTG25_FWP_LOGS,125,27.79563679,27.79563679,1,-1,0.000241601,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,1806704526
+SCTG26_FWP_WOOD,126,5,5,1,-1,0.000125408,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,5905180884
+SCTG27_PPP_PAPR_puplp,127,77.96110197,77.96110197,1,-1,0.000144006,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,4887484056
+SCTG28_PPP_PAPR_paper,128,30.65627642,30.65627642,1,-1,0.000298769,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,2250072290
+SCTG29_PPP_PAPR_print,129,5,5,1,-1,0.002568272,1,1,4.47E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,2210111986
+SCTG30_OTH_CLTH,130,5,5,1,-1,0.002568272,1,1,1.35E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,3402826540
+SCTG31_CMS_MIN,131,5,5,1,-1,0.000421876,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,2523837814
+SCTG32_MIT_METL_base,132,8.561477954,8.561477954,1,-1,7.82E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,7583070657
+SCTG33_MIT_METL_prod,133,19.23996714,19.23996714,1,-1,4.13E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,5113426976
+SCTG34_MIT_MACH,134,48.8873679,48.8873679,1,-1,7.85E-06,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,10219084291
+SCTG35_MIT_ELCT,135,28.27766156,28.27766156,1,-1,1.24E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,44852559087
+SCTG36_MIT_TRAN,136,5.659034111,5.659034111,1,-1,0.000513654,1,1,2.99E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,7624299081
+SCTG37_MIT_INST_transp,137,100,100,1,-1,4.65E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,3516797493
+SCTG38_MIT_INST_prec,138,100,100,1,-1,1.95E-05,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,5047481693
+SCTG39_OTH_FURN,139,5,5,1,-1,0.000642068,1,1,7.98E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,2599435795
+SCTG40_OTH_MISC,140,5,5,1,-1,0.002568272,1,1,1.98E-05,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,a,1,FALSE,1,unknown,TRUE,TRUE,0,0,betapktrk1dist,-10,5,5006102504
+SCTG41_WASTE_SCRAP,141,60.09445391,60.09445391,1,-1,0.000213297,1,1,0,-0.811180822,-0.233620077,-1,betapktrk1time,betapktrk1dist,betapktrk1toll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,442493097.8
+Energy,142,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,9112003189
+Retail Trade,143,53.10777939,53.10777939,1,-1,0.043213922,1,1,0,4.273504274,0,0,s4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE,5.18707483,150,betapktrk1dist,-10,5,19961935298
+Transport,144,100,100,1,-1,0.001577142,1,1,0,-0.2869496,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE,4.040885383,0,betapktrk1dist,-10,5,12546004185
+Wholesale Trade,145,100,100,1,-1,0.001577142,1,1,0,-0.3663225,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE,4.040885383,0,betapktrk1dist,-10,5,19937187078
+Construction,146,100,100,1,-1,0,1,1,0.001577142,-0.1472195,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,21802809013
+Communications and Utilities,147,47.82141193,47.82141193,1,-1,0.001577142,1,1,0,-0.2348265,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,20002473325
+Accommodations,148,100,100,1,-1,0.001577142,1,1,0,-0.2074261,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,p,1,FALSE,1,unknown,FALSE,TRUE,43,300,betapktrk1dist,-10,5,3600760048
+Personal and Other Services and Amusements,149,20.1312772,20.1312772,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE,5.878634956,30,betapktrk1dist,-10,5,9771958424
+Entertainment Services,150,58.51200857,58.51200857,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE,5.878634956,100,betapktrk1dist,-10,5,3815376127
+Food Services,151,14.63055176,14.63055176,1,-1,0.087939273,1,1,0,3.205128205,0,0,b5mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE,5.878634956,100,betapktrk1dist,-10,5,10135095772
+Teaching K12,152,30,30,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE,4.027947266,50,betapktrk1dist,-10,5,11118717666
+Higher Education,153,100,100,1,-1,0.070991079,1,1,0,3.726893262,0,0,c4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE,4.027947266,75,betapktrk1dist,-10,5,4268583032
+Health Services,154,100,100,1,-1,0.018425305,1,1,0,4.273504274,0,0,o4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE,5.49309862,300,betapktrk1dist,-10,5,30470983712
+Fire Business and Professional Services,155,87.30140534,87.30140534,1,-1,0,1,1,0.001577142,-0.2847265,-0.1209223,-1,betapkautotime,betapkautodist,betapkautotoll,c,1,FALSE,1,unknown,FALSE,TRUE,21,300,betapktrk1dist,-10,5,1.00E+11
+Government Administration,156,100,100,1,-1,0.001577,1,1,0,3.205128,0,0,b4mcls_beta,none,none,p,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,12439550067
+Internal Services Resources,157,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,517140665
+Internal Services Energy,158,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,1391880782
+Internal Services Construction,159,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,1888755682
+Internal Services Manufacturing,160,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,9105102868
+Internal Services Wholesale,161,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,1195236610
+Internal Services Retail Store,162,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,974087160.8
+Internal ServicesTransport,163,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,1675363525
+Internal Services Information,164,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,2264793867
+Internal Services Utilities,165,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,835431483.6
+Internal Services Education k12,166,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,21,100,betapktrk1dist,-10,5,2603782626
+Internal Services Government Administration,167,100,100,1,-1,0,1,1,0.001577142,6.41025641,0,0,b8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,6563499060
+Government Support Receipts,301,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,43049716613
+Tax Receipts,302,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,51692933824
+Investing Receipts,303,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,11095475987
+Return Investment Receipts,304,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,1.10E+11
+Capital Transfer Receipts,305,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,45891148125
+Education Reports to Sponsors,306,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,13200257174
+Proprietor Income Receipts,307,100,100,1,-1,0,1,1,0,0,0,0,betapkautotime,none,none,s,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,14422943686
+A1-Mgmt Bus,401,126.5353339,126.5353339,1,-1,0,1,1,0.0040304,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,17533198897
+B1-Prof Specialty,402,124.5272981,124.5272981,1,-1,0,1,1,0.0040319,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,9153145862
+B2-Education,403,66.88103184,66.88103184,1,-1,0,1,1,0.0056716,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,7876995879
+B3-Health,404,142.3281873,142.3281873,1,-1,0,1,1,0.0032277,7.6923077,0,0,w8mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,4443705088
+B4-Technical Unskilled,405,200,200,1,-1,0,1,1,0.006569722,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,5426378381
+C1-Sales Clerical Professionals,406,120,120,1,-1,0,1,1,0.0048769,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,6869128273
+C2-Sales Service,407,59.76045345,59.76045345,1,-1,0,1,1,0.0070781,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,3376778122
+C3-Clerical,408,66.32747341,66.32747341,1,-1,0,1,1,0.0076858,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,6884782798
+C4-Sales Clerical Unskilled,409,147.4528314,147.4528314,1,-1,0,1,1,0.0111272,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,3898956670
+D1-Production Specialists,410,50,50,1,-1,0,1,1,0.0064099,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,3231915256
+D2-MaintConstRepair Specialists,411,50,50,1,-1,0,1,1,0.00566,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,5582009458
+D3-ProtectTrans Specialists,412,50,50,1,-1,0,1,1,0.0061657,3.8461538,0,0,w4mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,6844695531
+D4-Blue Collar Unskilled,413,120.4902138,120.4902138,1,-1,0,1,1,0.0085101,0.9615385,0,0,w1mcls_beta,none,none,c,1,FALSE,1,unknown,FALSE,TRUE,0,0,betapktrk1dist,-10,5,6753725131
+FLR Agriculture,501,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,15780638726
+FLR Logging,502,5000,5000,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,0.02,TRUE,0.02,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,7254353575
+FLR Hospital,503,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.60268612,TRUE,16.60268612,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,16207528.97
+FLR Retail,504,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,13.29613918,TRUE,13.29613918,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,177925043.6
+FLR Office,505,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.88941767,TRUE,16.88941767,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,232066615.1
+FLR Heavy Industry,506,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.260711703,TRUE,6.260711703,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,57667840.67
+FLR Light Industry,507,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.311623664,TRUE,6.311623664,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,61261173.24
+FLR Warehouse,508,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,7.209906607,TRUE,7.209906607,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,189498777.5
+FLR Institutional,509,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.1304673,TRUE,16.1304673,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,43536416.85
+FLR Accommodation,510,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.29494053,TRUE,16.29494053,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,42788938.3
+FLR Government Support,511,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.3303225,TRUE,16.3303225,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,12977399.48
+FLR K12,512,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,16.22744561,TRUE,16.22744561,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,87282365.4
+FLR SFD,513,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.132406129,TRUE,6.132406129,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,2113178548
+FLR AT,514,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,5.022311515,TRUE,5.022311515,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,173014308.6
+FLR MH,515,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,6.677708597,TRUE,6.677708597,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,147484473.8
+FLR RRMH,516,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,3.245782124,TRUE,3.245782124,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,79146868.31
+FLR RRSFD,517,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,2.549265941,TRUE,2.549265941,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,491654703.4
+FLR MF,518,5,5,1,-1,0,1,1,0,0,0,0,betapkautotime,betapkautodist,betapkautotoll,n,7.054531068,TRUE,7.054531068,unknown,FALSE,TRUE,0,0,betapktrk1dist,,,223074007.4

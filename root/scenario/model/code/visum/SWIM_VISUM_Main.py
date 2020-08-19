@@ -25,8 +25,8 @@ a_zone = 'NO' #azone field in Visum
 b_zone = 'MainZoneNo' #bzone field in Visum
 
 #range of beta zones and external stations in aggregated skim matrices
-bzoneRange = range(0,518)
-externalStation = range(518,530)
+bzoneRange = range(0,457)
+externalStation = range(457,469)
 bzoneRangeMiniModel = range(0,2)
 externalStationMiniModel = range(2,14)
 maxMiniModelZones = 100 #mini model can have up to this number of zones

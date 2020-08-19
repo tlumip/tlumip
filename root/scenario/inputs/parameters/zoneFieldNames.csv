@@ -48,10 +48,8 @@ UTL_OTHR_OFF_LI,ActivityConstraintsI.csv
 WHSL_OFFC_OFF,ActivityConstraintsI.csv
 WHSL_WHSL_WARE,ActivityConstraintsI.csv
 CNST_MAIN_XXX,ActivityConstraintsI.csv
-CNST_NRES_XXX,ActivityConstraintsI.csv
 CNST_OFFC_OFF,ActivityConstraintsI.csv
 CNST_OTHR_XXX,ActivityConstraintsI.csv
-CNST_RES_XXX,ActivityConstraintsI.csv
 ENGY_ELEC_HI,ActivityConstraintsI.csv
 ENGY_NGAS_HI,ActivityConstraintsI.csv
 ENGY_OFFC_OFF,ActivityConstraintsI.csv
