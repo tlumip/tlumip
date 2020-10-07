@@ -18,7 +18,7 @@ def run_techscaling(year):
             self.working_dir = props["scenario.outputs"]
             self.cur_working_dir = props["aa.current.data"]
 
-            self.baseyear = 19
+            self.baseyear = props["aa.base.year"]
             self.base_working_dir = join(self.working_dir, t(self.baseyear))
             self.curyear = props["t.year"]
 
