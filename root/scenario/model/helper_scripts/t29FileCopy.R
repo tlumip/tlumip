@@ -62,7 +62,7 @@ Files <- c("Employment.csv","Increments.csv","activity_forecast.csv","households
 
 for(f in Files) file.copy(paste(sourceDir, f, sep="/"), paste("outputs", tValYear, f, sep="/"), overwrite = T)
 
-# other (version file, NED, and ALD) files to work on 
+# other (NED, and ALD) files to work on 
 Files <- c("ActivitySummary.csv","activity_forecast.csv","construction_forecast.csv","population_forecast.csv","trade_forecast.csv","government_forecast.csv",
 			"ExchangeResults.csv", "ActivityLocations.csv", "MakeUse.csv", "FloorspaceInventory.csv", "ExchangeResultsTotals.csv")
 
