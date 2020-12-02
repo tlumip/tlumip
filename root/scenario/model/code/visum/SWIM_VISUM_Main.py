@@ -5,6 +5,7 @@ import win32com.client as com, VisumPy.helpers as VisumHelpers
 import VisumPy.matrices as VisumMatrices, VisumPy.csvHelpers as VisumCSV
 from Properties import Properties
 import heapq
+import operator
 
 #parameters
 ############################################################
@@ -111,7 +112,7 @@ class SwimModel(object):
         self.copyToPreviousYear = properties['ald.copyToPreviousYear']
         self.currentActivity = properties['ald.CurrentActivity']
         self.previousActivity = properties['ald.PreviousActivity']
-        self.worldZoneDistances = properties['ta.world.zone.distances']
+        self.worldZoneDistances = properties['world.to.external.distances']
         self.mclsmatrixdir = properties['skim.data']
         self.tourmodechoiceparams = properties['sdt.tour.mode.parameters']
         self.hwySkimMatrixNames = properties['ta.skim.matrix.names']
@@ -861,6 +862,24 @@ class SwimModel(object):
         #load worldZoneDistances.csv for distance between external stations and world markets
         worldheaders, worldfieldDictionary = self.loadCSV(self.worldZoneDistances)
 
+        #sort the worldfieldDictionary by ExternalStation and WorldMarket
+        [worldfieldDictionary[worldheaders[0]], worldfieldDictionary[worldheaders[1]], worldfieldDictionary[worldheaders[2]],
+         worldfieldDictionary[worldheaders[3]]] = [list(x) for x in zip(*sorted(zip(worldfieldDictionary[worldheaders[0]],
+                                                                                    worldfieldDictionary[worldheaders[1]],
+                                                                                    worldfieldDictionary[worldheaders[2]],
+                                                                                    worldfieldDictionary[worldheaders[3]]),
+                                                                                key=lambda pair: (pair[1], pair[0])))]
+
+        #find indices of duplicate ExtStation
+        duplicate_indices = [idx for idx, item in enumerate(worldfieldDictionary[worldheaders[1]]) if
+                             item in worldfieldDictionary[worldheaders[1]][:idx]]
+
+        #remove duplicate ExtStation based on their indices
+        for item in range(0, len(worldheaders)):
+            worldfieldDictionary[worldheaders[item]] = [i for j, i in
+                                                            enumerate(worldfieldDictionary[worldheaders[item]]) if
+                                                            j not in duplicate_indices]
+
         matheaders, matName = self.loadCSV(self.hwySkimMatrixNames)
 
         for timeIndex in range(0,len(timePeriods)):
@@ -907,7 +926,7 @@ class SwimModel(object):
             azonemat[azonemat == NA] = 0
 
             #write azone skim matrices to zmx format
-            print 'writing skim matrix ' + fileName + ': ' + str(VisumMatIndex)
+            print('writing skim matrix ' + fileName + ': ' + str(VisumMatIndex))
             self.writeZMX(fileName, self.zoneNames, azonemat)
 
     #compute level of service for all the service areas
@@ -1501,16 +1520,16 @@ class SwimModel(object):
                period_token = air_skim[:2]
                if air_skim.lower().find(period_token) > -1 and timeperiod.lower().find(period_token) > -1:
                    if air_skim.lower().find('dairdrv') > -1:
-                       print 'writing airdrv skim matrix ' + air_skim
+                       print('writing airdrv skim matrix ' + air_skim)
                        self.writeZMX(air_skim, self.zoneNames, airdrv)
                    elif air_skim.lower().find('dairfar') > -1:
-                       print 'writing airfar skim matrix ' + air_skim
+                       print('writing airfar skim matrix ' + air_skim)
                        self.writeZMX(air_skim, self.zoneNames, airfar)
                    elif air_skim.lower().find('dairivt') > -1:
-                       print 'writing airivt skim matrix ' + air_skim
+                       print('writing airivt skim matrix ' + air_skim)
                        self.writeZMX(air_skim, self.zoneNames, airivt)
                    elif air_skim.lower().find('dairfwt') > -1:
-                       print 'writing airfwt skim matrix ' + air_skim
+                       print('writing airfwt skim matrix ' + air_skim)
                        self.writeZMX(air_skim, self.zoneNames, airfwt)
 
     def calcVolumeFactor(self, timePeriod):
@@ -1576,7 +1595,6 @@ if __name__== "__main__":
     # inputs - create swim inputs
     # highway - run highway assignmentl
     # transit - run transit assignment
-
     property_file = sys.argv[1]
     mode = sys.argv[2].lower()
     s = SwimModel(property_file)
