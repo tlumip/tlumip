@@ -109,6 +109,7 @@ class SwimModel(object):
         self.auto_op_cost = properties['auto.operating.cost']
         self.agForestFloorspace = properties['agforest.floorspace.file']
         self.activityTotals = properties['aa.activity.totals']
+        self.activityTotalsOther = properties['aa.activity.totals.other']
         self.copyToPreviousYear = properties['ald.copyToPreviousYear']
         self.currentActivity = properties['ald.CurrentActivity']
         self.previousActivity = properties['ald.PreviousActivity']
@@ -523,9 +524,10 @@ class SwimModel(object):
             if fileName.lower().find('activitytotalsi') > -1:
                 outTable = []
 
-                self.actTotals = self.loadCSV(self.activityTotals)[1]
+                # self.actTotals = self.loadCSV(self.activityTotals)[1]
+                self.actTotalsOther = self.loadCSV(self.activityTotalsOther)[1]
 
-                #WORLD IMPORTS/EXPORTS TOTALS
+                # WORLD IMPORTS/EXPORTS TOTALS
                 self.headers = self.loadCSV(self.worldMarketFieldnames)[1]["FIELDNAME"]
                 self.poiColumns = []
                 for id in self.headers:
@@ -534,36 +536,34 @@ class SwimModel(object):
                 for i in range(len(self.headers)):
                     outTable.append([self.headers[i], sum(self.poiColumns[i])])
 
-                #LOCAL ACTIVITY TOTALS
-                #AA requires a very particular capitalization, so this is a hack for that :/
-                #This means that a seed ActivityTotalsI.csv file is required
-                self.AA_capitalized_fields = self.actTotals["Activity"]
+                # LOCAL ACTIVITY TOTALS
+                # AA requires a very particular capitalization, so this is a hack for that :/
+                # This means that a seed ActivityTotalsI.csv file is required
                 for i in self.fields:
                     if i.lower().find('zone') < 0:
-                      activity = VisumHelpers.GetMulti(self.Visum.Net.Zones, i)
-                      value = sum(activity)
-                      l = [item.lower() for item in self.AA_capitalized_fields]
-                      name = self.AA_capitalized_fields[l.index(i.lower())]
-                      if not any(e[0] == name for e in outTable):
-                        outTable.append([name, value])
+                        activity = VisumHelpers.GetMulti(self.Visum.Net.Zones, i)
+                        value = sum(activity)
+                        # Lowercase words after the first underscore
+                        if i.find('_') > 0:
+                            l = i.split('_')
+                            l[1] = '_'.join(l[1:])
+                            l = l[:2]
+                            name = '_'.join([item.lower() if l.index(item) > 0 else item for item in l])
+                        elif i.startswith('HH'):
+                            name = i
+                        if not any(e[0] == name for e in outTable):
+                            outTable.append([name, value])
 
                 tempAttr = []
-                tempAttr.extend(self.ignoredAAZoneAttributes)
+                tempAttr.extend(self.actTotalsOther['Activity'])
 
-                for i in self.AA_capitalized_fields:
-                    if i.lower().find('zone') < 0:
-                      l = [item.lower() for item in self.fields]
-                      if i.lower() not in l and not any(e[0] == i.lower() for e in outTable):
-                          tempAttr.append(i);
-
-
-                #IGNORED ACTIVITIES (JUST USE EXISTING DATA) DONE LAST TO COMPLEMENT
+                # IGNORED ACTIVITIES (JUST USE EXISTING DATA) DONE LAST TO COMPLEMENT
                 for i in tempAttr:
-                    totalsInd = self.AA_capitalized_fields.index(i)
+                    totalsInd = self.actTotalsOther['Activity'].index(i)
                     if not any(e[0] == i for e in outTable):
-                        outTable.append([i, self.actTotals["TotalAmount"][totalsInd]])
+                        outTable.append([i, self.actTotalsOther["TotalAmount"][totalsInd]])
 
-                #add column headers
+                # add column headers
                 fileTable = outTable
                 fileTable.insert(0, ["Activity", "TotalAmount"])
                 self.writeCSV(self.activityTotals, fileTable)
