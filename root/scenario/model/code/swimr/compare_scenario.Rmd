@@ -1,0 +1,301 @@
+---
+title: "Compare Scenarios"
+author: "RSG, Inc"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_caption: true
+    theme: spacelab
+params:
+  fig.path: fig-compare_scenario/
+  ref_db: D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/fromClient/Database/Ref26_NoFB.db
+  current_db: D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/FromClient/Database/Ref26_RRA2_FB_half.db
+  ref_name: Reference
+  current_name: Current
+  facet: COUNTY
+  diff_year: 2012
+  use_leaflet: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, echo = FALSE, message=FALSE, warning = FALSE}
+library(knitr)
+opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE,
+  fig.keep = TRUE, fig.path = params$fig.path,
+  fig.width=8, fig.height=6
+)
+library(RSQLite)
+library(tidyverse)
+library(leaflet)
+library(swimr)
+```
+
+```{r setdb}
+# This is the path to the scenario SWIM databases; direct these to your
+# local paths.
+ref_db <- params$ref_db 
+cur_db <- params$current_db
+
+# These are the names for the scenarios that will show up in the scenario
+# information table and other places.
+scenario_names <- c(params$ref_name, params$current_name)
+
+# Update to reflect scope of analysis.
+# If you wish to focus on the Metro and Bend MPOs, for instance, change `facet`
+# to "MPO" and facet_levels to `c("Metro", "Bend")`
+facet <- params$facet 
+facet_levels <-  c("Multnomah", "Washington", "Clackamas")
+
+# The tables will only show data from these years.
+years <- c(2010, 2025, 2040)
+
+# The leaflet plots show a comparison between the scenarios in a specific year.
+# Set this to the year you wish to study. For bridge scenarios, it should be the
+# year after the bridge breaks. For others, it should probably be the last year
+# version of the simulation.
+diff_year <- params$diff_year 
+
+MPOs <- c("Albany","Bend", "Corvallis", "Eugene/Springfield","Medford", "METRO", "METRO_CLARK","Middle Rogue", "NonMPO", "Halo", "Salem/Keizer")
+MPOs <- c("Bend", "Corvallis", "EugeneSpringfield","Metro", "RougeValley", "NonMPO", "OOO", "SalemKeizer")
+
+# show leaflet plots; FALSE will skip them (saving disk space and time)
+use_leaflet <- params$use_leaflet
+```
+
+
+# Scenario Description
+
+
+```{r scenario, results='asis'}
+db1 <- dbConnect(SQLite(), dbname=ref_db) 
+db2 <- dbConnect(SQLite(), dbname=cur_db) 
+
+
+# update to reflect current scenario
+scen_info <- tibble(
+  Name = scenario_names,
+  Scenario = c(basename(ref_db), basename(cur_db)),
+  `File Date` = c(file.info(ref_db)$mtime, file.info(cur_db)$mtime)
+)
+
+kable(scen_info, caption = "Scenario Information")
+```
+
+
+# Socioeconomics {.tabset}
+
+## Overview
+```{r se}
+se <- left_join(
+  extract_se(db1, "MPO") %>% rename(reference = y),
+  extract_se(db2, "MPO") %>% rename(current   = y)
+) %>%
+  filter(year %in% years) %>%
+  mutate(diff = (current - reference) / reference * 100)
+```
+
+```{r tab_pop, results='asis'}
+pop <- se %>% filter(var == "population") %>%
+  select(color_var, year, Reference = reference, Current = current) %>%
+  mutate(`Pct diff` = (Current - Reference)/Reference * 100) %>%
+  gather(key = scenario, value=value, -color_var, -year) %>%
+  unite(scenario_year, scenario, year, sep = ' ') %>%
+  spread(key=scenario_year, value=value) %>%
+  select(MPO = color_var, starts_with('Reference'), starts_with('Current'), starts_with('Pct'))
+
+kable(pop, caption = "Population by MPO", digits = 2)
+```
+
+```{r tab_emp, results='asis'}
+emp <- se %>% filter(var == "employment") %>%
+  select(color_var, year, Reference = reference, Current = current) %>%
+  mutate(`Pct diff` = (Current - Reference)/Reference * 100) %>%
+  gather(key = scenario, value=value, -color_var, -year) %>%
+  unite(scenario_year, scenario, year, sep = ' ') %>%
+  spread(key=scenario_year, value=value) %>%
+  select(MPO = color_var, starts_with('Reference'), starts_with('Current'), starts_with('Pct'))
+
+kable(emp, caption = "Employment by MPO", digits = 2)
+```
+
+## Comparison
+
+```{r compare_se, fig.cap="Comparison of population and employment in selected areas."}
+compare_sevar(db1, db2, color_var = facet, color_levels = facet_levels)
+```
+
+```{r compare_se_mpo, fig.cap="Comparison of population and employment - all MPOs."}
+compare_sevar(db1, db2, color_var = "MPO")
+```
+
+## Map
+```{r compare_leaflet, fig.cap = "Spatial location of difference in SE values."}
+if(use_leaflet){
+  diff_leaflet(db1, db2, year = diff_year, variable = "pop", 
+               scen_names = scenario_names)
+} else {
+  message("Leaflet plots skipped with `use_leaflet` option")
+}
+```
+
+
+# Transportation {.tabset}
+
+## VMT
+```{r tab_vmt}
+vmt <- left_join(
+  extract_vmt(db1, "MPO") %>% rename(reference = vmt),
+  extract_vmt(db2, "MPO") %>% rename(current   = vmt)
+) %>%
+  filter(year %in% years)
+ 
+ref <- yearly_summary(vmt, "MPO", "reference") %>%
+  gather(key = 'year', value = 'Reference', -MPO)
+cur <- yearly_summary(vmt, "MPO", "current") %>%
+  gather(key = 'year', value = 'Current', -MPO)
+
+vmt <- left_join(ref, cur, by = c("MPO", "year")) %>%
+  mutate(`Pct diff` = (Current - Reference) / Reference * 100) %>%
+  gather(key='scenario', value='vmt', -MPO, -year) %>%
+  unite(col = 'scenario_year', scenario, year, sep = ' ') %>%
+  spread(key=scenario_year, value=vmt) %>%
+  select(MPO, starts_with('Reference'), starts_with('Current'), starts_with('Pct'))
+
+kable(vmt, caption = "VMT by MPO", digits = 2)
+```
+
+
+```{r compare_vmt, fig.cap="Comparison of VMT by facility type."}
+compare_vmt(db1, db2, facet, facet_levels)
+```
+
+```{r compare_vmt_mpo, fig.cap="Comparison of VMT by facility type - all MPO's."}
+compare_vmt(db1, db2, "MPO")
+```
+
+## Mode Split
+
+```{r tab_trips, results='asis'}
+trips <- left_join(
+  extract_trips(db1, "MPO") %>% rename(reference = trips),
+  extract_trips(db2, "MPO") %>% rename(current = trips)
+) %>%
+  filter(year %in% years) %>%
+  mutate(
+    diff = (current - reference) / reference * 100,
+    diff = ifelse(is.na(diff), 0, diff))
+ 
+ref <- yearly_summary(trips, "facet_var", "reference") %>%
+  gather(key = 'year', value = 'Reference', -facet_var)
+
+cur <- yearly_summary(trips, "facet_var", "current") %>%
+  gather(key = 'year', value = 'Current', -facet_var)
+
+trips <- left_join(ref, cur, by = c("facet_var", "year")) %>%
+  mutate(`Pct diff` = (Current - Reference) / Reference * 100) %>%
+  gather(key='scenario', value='value', -facet_var, -year) %>%
+  unite(col = 'scenario_year', scenario, year, sep = ' ') %>%
+  spread(key=scenario_year, value=value) %>%
+  select(MPO = facet_var, 
+         starts_with('Reference'), starts_with('Current'), starts_with('Pct'))
+
+kable(trips, caption = "Total Trips by MPO", digits = 2)
+```
+
+
+```{r compare_mode, fig.cap="Comparison of trip productions by mode."}
+compare_trips(db1, db2, facet_var = facet, facet_levels = facet_levels)
+```
+
+
+```{r compare_mode_mpo, fig.cap="Comparison of trip productions by mode - all MPOs."}
+compare_trips(db1, db2, facet_var = "MPO")
+```
+
+
+
+## TLFD
+
+
+```{r compare_tlfd, fig.cap = "Comparison of trip length frequency distribution."}
+compare_tlfd(db1, db2, facet, facet_levels, cumulative = TRUE, years = years)
+```
+
+```{r compare_tlfd_mpo, fig.cap = "Comparison of trip length frequency distribution - all MPO's."}
+compare_tlfd(db1, db2, "MPO", years = years, cumulative = TRUE, MPOs)
+```
+
+
+## Log Sums
+```{r compare_logsum, fig.cap = "Mode choice model logsums."}
+compare_logsums(db1, db2, facet, facet_levels)
+```
+
+```{r compare_logsum_mpo, fig.cap = "Mode choice model logsums - all MPO's"}
+compare_logsums(db1, db2, "MPO", MPOs)
+```
+
+# Economics{.tabset}
+
+## Built Floorspace
+
+```{r compare_floorspace, fig.cap="Comparison of floorspace by type."}
+compare_floorspace(db1, db2, facet, facet_levels)
+```
+
+```{r compare_floorspace_mpo, fig.cap="Comparison of floorspace by type - all MPO's."}
+compare_floorspace(db1, db2)
+```
+
+## Rent and occupancy rates
+```{r compare_rent, fig.cap = "Unit rent by floorspace type."}
+compare_floorspace(db1, db2, facet, facet_levels, price = TRUE)
+```
+
+```{r compare_rent_mpo, fig.cap = "Unit rent by floorspace type - all MPO's"}
+compare_floorspace(db1, db2, price = TRUE)
+```
+
+```{r compare_occupancy, fig.cap = "Occupancy rate by floorspace type."}
+compare_occupancy(db1, db2, facet, facet_levels)
+```
+
+```{r compare_occupancy_mpo, fig.cap = "Occupancy rate by floorspace type - all MPO's"}
+compare_occupancy(db1, db2)
+```
+
+## Employment
+
+```{r compare_employment, fig.cap="Comparison of labor output by sector."}
+compare_employment(db1, db2, facet, facet_levels)
+```
+
+```{r compare_employment_mpo, fig.cap="Comparison of labor output by sector - all MPO's."}
+compare_employment(db1, db2)
+```
+
+## GDP
+```{r compare_gdp, fig.cap="Comparison of labor output by sector."}
+compare_gdp(db1, db2, facet, facet_levels)
+```
+
+```{r compare_gdp_mpo, fig.cap="Comparison of labor output by sector - all MPO's."}
+compare_gdp(db1, db2)
+```
+
+
+## Workforce Participation
+
+
+```{r compare_wapr, fig.cap="Comparison of workforce participation by sector."}
+compare_wapr(db1, db2, facet, facet_levels)
+```
+
+```{r compare_wapr_mpo, fig.cap="Comparison of workforce participation by sector - all MPO's."}
+compare_wapr(db1, db2, "MPO")
+```

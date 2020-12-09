@@ -1,0 +1,146 @@
+---
+title: "Population and Employment - Multiple Scenarios"
+author: "RSG, Inc"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    toc: true
+    fig_caption: true
+    theme: spacelab
+params:
+  fig.path: fig-population/
+  ref_db: D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/fromClient/Database/Ref26_NoFB.db
+  current_db: D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/FromClient/Database/Ref26_RRA2_FB_half.db
+  compare_db: D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/FromClient/Database/Ref26_RRA2_FB_half.db
+  ref_name: Reference
+  current_name: Current
+  compare_name: Compare
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, message=FALSE}
+library(swimr, warn.conflicts = FALSE)
+library(knitr)
+library(dplyr)
+library(ggplot2)
+
+opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE,
+  fig.keep = TRUE, fig.path = params$fig.path,
+  fig.width=8, fig.height=6
+)
+```
+
+
+```{r setdb, echo = TRUE}
+ref <- src_sqlite(params$ref_db) # reference
+db1 <- src_sqlite(params$current_db) # current
+db3 <- src_sqlite(params$compare_db) # current
+
+dbset <- list(ref, db1, db3)
+db_names <- c(
+  params$ref_name, params$current_name, params$compare_name
+)
+```
+
+```{r load_zones, echo=TRUE}
+zones_shp <- extract_zones(db = ref)
+zones_data <- zones_shp@data
+zones <- fortify(zones_shp) %>%
+  left_join(zones_data, by='id')
+```
+
+# ODOT Regions
+In this report we group figures by ODOT regions.^[As a note, ODOT's region
+definitions divide counties (and TLUMIP model zones). These are approximate
+definitions that keep counties in a single region.]
+
+```{r odot}
+ggplot(zones, aes(x = long, y = lat, fill = factor(DOT_REGION), group = group)) +
+  geom_polygon() +
+  coord_map("conic", lat0 = 43)
+```
+
+# Population
+```{r fig_population, message = FALSE}
+regions = zones_data$DOT_REGION %>%
+  unique() %>%
+  sort() 
+
+for(r in regions){
+  counties <- zones_data %>% filter(DOT_REGION == r)
+
+  p <- multiple_sevar(dbset, db_names, variable = "population",    
+                      facet_var = "COUNTY",
+                      facet_levels = unique(counties$COUNTY)) +
+    ggtitle(paste("Region", r)) + theme(legend.position = "bottom")
+  
+  print(p)
+  
+  if(r < 6){
+    p <- plot_history(ref, counties = counties$COUNTY) +
+      ggtitle(paste("Historical Region (Reference)", r))
+    print(p)
+  } 
+}
+```
+
+
+# Employment
+
+```{r fig_employment, message = FALSE}
+for(r in regions){
+  counties <- zones_data %>% filter(DOT_REGION == r)
+  
+  p <- multiple_sevar(dbset, db_names, variable = "employment",   
+                      facet_var = "COUNTY",  facet_levels = counties$COUNTY)
+  
+  print(p + ggtitle(paste("Region", r)) + theme(legend.position = "bottom"))
+}
+```
+
+
+## By Sector
+```{r fig_empsector, message = FALSE}
+for(r in regions){
+  counties <- zones_data %>% filter(DOT_REGION == r)
+  
+  p <- multiple_employment(dbset, db_names,
+                           facet_var = "COUNTY", facet_levels = counties$COUNTY)
+  
+  print(p + ggtitle(paste("Region", r)) + theme(legend.position = "bottom"))
+}
+```
+
+# WAPR
+
+```{r fig_wapr, message = FALSE}
+for(r in regions){
+  counties <- zones_data %>% filter(DOT_REGION == r)
+  
+  p <- multiple_wapr(dbset, db_names, 
+                     facet_var = "COUNTY", facet_levels = counties$COUNTY)
+  
+  print(p + ggtitle(paste("Region", r)) + theme(legend.position = "bottom"))
+}
+
+```
+
+
+# Floorspace
+
+```{r fig_floorspace}
+for(r in regions){
+  counties <- zones_data %>% filter(DOT_REGION == r)
+  
+  p <- multiple_floorspace(dbset = dbset, db_names = db_names,
+                           variable = 'floorspace',
+                           facet_var = "COUNTY", facet_levels = counties$COUNTY)
+  
+  print(p + ggtitle(paste("Region", r)) + theme(legend.position = "bottom"))
+}
+```
+
+
