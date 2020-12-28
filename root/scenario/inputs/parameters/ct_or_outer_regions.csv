@@ -1,0 +1,19 @@
+dms_orig,dms_dest,description,state,entry,exit
+531,61,Los Angeles-Long Beach,CA,I5N,I5S
+531,62,Sacramento-Roseville,CA,I5N,I5S
+531,63,San Diego-Carlsbad-San Marcos,CA,I5N,I5S
+531,64,San Jose-San Francisco-Oakland,CA,I5N,I5S
+531,69,Remainder of California,CA,I5N,I5S
+539,61,Los Angeles-Long Beach,CA,I82N,US97S
+539,62,Sacramento-Roseville,CA,I82N,US97S
+539,63,San Diego-Carlsbad-San Marcos,CA,I82N,US97S
+539,64,San Jose-San Francisco-Oakland,CA,I82N,US97S
+539,69,Remainder of California,CA,I82N,US97S
+531,321,Las Vegas-Henderson,NV,I82N,I84E
+539,321,Las Vegas-Henderson,NV,I82N,I84E
+531,61,Los Angeles-Long Beach,CA,I5N,I5S
+531,62,Sacramento-Roseville,CA,I5N,I5S
+531,63,San Diego-Carlsbad-San Marcos,CA,I5N,I5S
+531,64,San Jose-San Francisco-Oakland,CA,I5N,I5S
+531,329,Remainder of Nevada,NV,I5N,OR39S
+539,329,Remainder of Nevada,NV,I82N,US95S

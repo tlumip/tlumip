@@ -38,9 +38,17 @@ if (!exists(RTP[["ct.cluster.logfile"]])) {
   RTP[["ct.cluster.logfile"]] <- ""  # Since several functions depend upon it
 }
 
+# Process the raw FAF data and transform into format that can be used by the functions below
+faf.flow.data = swimctr::preprocess_faf4_database(RTP[["faf.flow.data"]], 
+                                                  as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
+												  FALSE,
+                                                  RTP[["ct.oregon.regions"]],
+                                                  RTP[["ct.oregon.outer.regions"]],
+                                                  as.numeric(RTP[["faf.value.deflator"]]))
+
 # Import make and use coefficients from PECAS and morph into format we can use
 makeuse <- swimctr::create_makeuse_coefficients(RTP[["pecas.makeuse"]],
-  RTP[["faf.flow.data"]])
+                                                faf.flow.data)
 
 # [2] RUN FIRM SYNTHESIS =================
 # Run the synthesis with employment data from the current simulation year, which
@@ -77,7 +85,7 @@ hourly_local_trips <- swimctr::temporal_allocation(daily_local_trips,
 # depends upon a large number of parameter tables from the FAF Freight Traffic
 # Analysis report.
 annual_faf_trucks <- swimctr::create_annual_faf_truckloads(
-	RTP[["faf.flow.data"]], RTP[["faf.truck.allocation.factors"]],
+	faf.flow.data, RTP[["faf.truck.allocation.factors"]],
 	RTP[["faf.truck.equivalency.factors"]], RTP[["faf.empty.truck.factors"]],
 	as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]))
 
