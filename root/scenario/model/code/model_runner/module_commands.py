@@ -349,22 +349,28 @@ class ModuleCommands(object):
         """
         Run the VIZ database creation.
         """
-        commands = self.runModule(module_set,scenario_outputs,property_file,year,250)
-        if properties['viz.delete.subyear.dbs'].lower().strip() == 'true':
-            commands += ['FOR /F "usebackq" %%d IN (`dir "' + properties['viz.subyear.dbs.wildcard'].replace('/','\\') + '" /b /s`) DO IF EXIST %%d (DEL /Q %%d)']
-        if properties['viz.zip.final.db'].lower().strip() == 'true':
-            commands += self.zip(properties['viz.final.db'],properties['viz.zip.file'])
+        if properties['viz.final.year'].lower().strip() == year:
+            commands = self.runModule(module_set, scenario_outputs, property_file, year, 250, {'viz_years': year})
+            if properties['viz.delete.subyear.dbs'].lower().strip() == 'true':
+                commands += ['FOR /F "usebackq" %%d IN (`dir "' + properties['viz.subyear.dbs.wildcard'].replace('/','\\') + '" /b /s`) DO IF EXIST %%d (DEL /Q %%d)']
+            if properties['viz.zip.final.db'].lower().strip() == 'true':
+                commands += self.zip(properties['viz.final.db'],properties['viz.zip.file'])
+        else:
+            commands = self.runModule(module_set, scenario_outputs, property_file, year, 250, {'viz_years': year})
         return commands
 
     def runMICROVIZ(self,module_set,scenario_outputs,property_file,year,properties):
         """
         Run the MICROVIZ database creation.
         """
-        commands = self.runModule(module_set,scenario_outputs,property_file,year,250)
-        if properties['viz.micro.delete.subyear.dbs'].lower().strip() == 'true':
-            commands += ['FOR /F "usebackq" %%d IN (`dir "' + properties['viz.micro.subyear.dbs.wildcard'].replace('/','\\') + '" /b /s`) DO IF EXIST %%d (DEL /Q %%d)']
-        if properties['viz.micro.zip.final.db'].lower().strip() == 'true':
-            commands += self.zip(properties['viz.micro.final.db'],properties['viz.micro.zip.file'])
+        if properties['viz.final.year'].lower().strip() == year:
+            commands = self.runModule(module_set,scenario_outputs,property_file,year,250, {'viz_years': year})
+            if properties['viz.micro.delete.subyear.dbs'].lower().strip() == 'true':
+                commands += ['FOR /F "usebackq" %%d IN (`dir "' + properties['viz.micro.subyear.dbs.wildcard'].replace('/','\\') + '" /b /s`) DO IF EXIST %%d (DEL /Q %%d)']
+            if properties['viz.micro.zip.final.db'].lower().strip() == 'true':
+                commands += self.zip(properties['viz.micro.final.db'],properties['viz.micro.zip.file'])
+        else:
+            commands = self.runModule(module_set, scenario_outputs, property_file, year, 250, {'viz_years': year})
         return commands
 
     def runSWIMR_REFERENCE(self, module_set, scenario_outputs, property_file, year, properties):

@@ -33,6 +33,7 @@ class PropertyTokens:
     ET_LAST_RUN_YEAR              = '@ET.LAST.RUN@'
     TA_LAST_RUN_YEAR              = '@TA.LAST.RUN@'
     TR_LAST_RUN_YEAR              = '@TR.LAST.RUN@'
+    VIZ_FINAL_YEAR                 = '@VIZ.FINAL.YEAR@'
                                  
     SL_MODE                       = '@SL.MODE@'
     PT_LOGSUMS                    = '@PT.LOGSUMS@'

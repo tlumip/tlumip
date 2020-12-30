@@ -180,7 +180,7 @@ dbWriteTable(db,"ALLZONES",allZones, row.names=F)
 azones = dbGetQuery(db,"SELECT AZONE FROM ALLZONES WHERE STATE != 'WM'")[[1]] #no world markets
 
 #create BZONE table
-dbGetQuery(db,"CREATE TABLE BZONE AS SELECT DISTINCT BZONE, STATE, COUNTY, SUM(AREASQFT) AS AREASQFT, 
+dbExecute(db,"CREATE TABLE BZONE AS SELECT DISTINCT BZONE, STATE, COUNTY, SUM(AREASQFT) AS AREASQFT, 
   MPO, ACT FROM ALLZONES GROUP BY BZONE")
 bzones = dbGetQuery(db,"SELECT BZONE FROM BZONE")[[1]]
 
@@ -243,15 +243,20 @@ if(isTransportYear) {
 }
 
 #Activity quantities in 2009$ except HHs which are HHs
-dbGetQuery(db,"CREATE TABLE ActivityLocations (
+dbExecute(db,"CREATE TABLE ActivityLocations (
   BZONE INT, 
   ACTIVITY TEXT, 
   QUANTITY REAL,
   LaborUseQty REAL,
   Employment REAL
   )")
-dbWriteTable(db, "ActivityLocations", ActivityLocations[,c("ZoneNumber","Activity","Quantity","LaborUseQty","Employment")], append=T, row.names=F)
-dbGetQuery(db, "CREATE INDEX ActivityLocationsIndex ON ActivityLocations (BZONE,ACTIVITY)")
+
+ActivityLocations_db = ActivityLocations[,c("ZoneNumber","Activity","Quantity","LaborUseQty","Employment")]
+colnames(ActivityLocations_db) = c("BZONE", "ACTIVITY", "QUANTITY", "LaborUseQty", "Employment")
+
+# Change column names to match the db names
+dbWriteTable(db, "ActivityLocations", ActivityLocations_db, append=T, row.names=F)
+dbExecute(db, "CREATE INDEX ActivityLocationsIndex ON ActivityLocations (BZONE,ACTIVITY)")
 
 #########################################################################
 # Add Activity Constraints Index Table
@@ -274,7 +279,7 @@ if(file.exists("ActivityConstraintsI.csv")) {
      temp_act$QUANTITY_CON <-  actConBzQnt$QUANTITY_CON[match(KEY,rownames(actConBzQnt))] 
      temp_act$QUANTITY_CON[is.na(temp_act$QUANTITY_CON)] <- 0
     
-     dbGetQuery(db, "DROP TABLE ActivityLocations") 
+     dbExecute(db, "DROP TABLE ActivityLocations") 
      dbWriteTable(db, "ActivityLocations", temp_act, append=T, row.names=F)  
 }
  
@@ -338,7 +343,7 @@ zMakeUseMakeTable = data.frame(Zone=rownames(zMakeUseMake), Commodity=rep(colnam
 keyZ = paste(zMakeUseMakeTable$Commodity, zMakeUseMakeTable$Zone)
 ExchangeResults$MakeQty = zMakeUseMakeTable$Value[match(key,keyZ)]
 
-dbGetQuery(db,"CREATE TABLE ExchangeResults (
+dbExecute(db,"CREATE TABLE ExchangeResults (
   BZONE INTEGER,
   Commodity TEXT,
   Demand REAL,
@@ -365,8 +370,17 @@ colOrder = c("ZoneNumber","Commodity","Demand","InternalBought",
   "TransportComponent1","TransportComponent2","TransportComponent3", "TransportComponent4",
   "BoughtPriceComponent", "BoughtQuantity", "SoldPriceComponent", "SoldQuantity", "UseQty", "MakeQty"
   )
-dbWriteTable(db, "ExchangeResults", ExchangeResults[,colOrder], append=T, row.names=F)
-dbGetQuery(db, "CREATE INDEX ExchangeResultsIndex ON ExchangeResults (BZONE,Commodity)")
+newColNames = c("BZONE", "Commodity", "Demand", "InternalBought", "Exports", "Supply",
+                "InternalSold", "Imports", "Surplus", "Price", "TransportComponent1",
+                "TransportComponent2", "TransportComponent3", "TransportComponent4", 
+                "BoughtPriceComponent", "BoughtQuantity", "SoldPriceComponent",
+                "SoldQuantity", "UseQty", "MakeQty")
+
+ExchangeResults_db = ExchangeResults[,colOrder]
+colnames(ExchangeResults_db) = newColNames
+
+dbWriteTable(db, "ExchangeResults", ExchangeResults_db, append=T, row.names=F)
+dbExecute(db, "CREATE INDEX ExchangeResultsIndex ON ExchangeResults (BZONE,Commodity)")
 
 #########################################################################
 # Add Exchange Results Targets Index  Table
@@ -383,7 +397,7 @@ if(file.exists("ExchangeResultsTargetsI.csv")) {
      exTable$Region <- exRes$region[match(key1,key2)]
      exTable$Type <- exRes$type[match(key1,key2)]
      
-     dbGetQuery(db, "DROP TABLE ExchangeResults") 
+     dbExecute(db, "DROP TABLE ExchangeResults") 
      dbWriteTable(db, "ExchangeResults", exTable, append=T, row.names=F)  
 }
 
@@ -443,10 +457,10 @@ if(isALDYear) {
   FSI$BZONE = azone2bzone(FSI$AZONE,allZones$Azone,allZones$BZONE)
   dbWriteTable(db, "FloorspaceInventory", FSI, row.names=F)
   
-  dbGetQuery(db,"CREATE TABLE FLR_INVENTORY AS SELECT BZONE, COMMODITY, SUM(FLR) AS FLR, 
+  dbExecute(db,"CREATE TABLE FLR_INVENTORY AS SELECT BZONE, COMMODITY, SUM(FLR) AS FLR, 
     SUM(Cap) AS CAP, SUM(INCREMENT) AS INCREMENT FROM FloorspaceInventory GROUP BY BZONE,COMMODITY")
-  dbGetQuery(db,"DROP TABLE FloorspaceInventory")
-  dbGetQuery(db, "CREATE INDEX FLR_INVENTORYIndex ON FLR_INVENTORY (BZONE,COMMODITY)")
+  dbExecute(db,"DROP TABLE FloorspaceInventory")
+  dbExecute(db, "CREATE INDEX FLR_INVENTORYIndex ON FLR_INVENTORY (BZONE,COMMODITY)")
   
   #########################################################################
   # Add Floorspace Index Table
@@ -465,7 +479,7 @@ if(isALDYear) {
   key1 <- paste(flrTable$BZONE,flrTable$COMMODITY, sep="-")
   flrTable$QUANTITY_CON <-  flrComBzQnt$QUANTITY_CON[match(key1,rownames(flrComBzQnt))]
   
-  dbGetQuery(db, "DROP TABLE FLR_INVENTORY") 
+  dbExecute(db, "DROP TABLE FLR_INVENTORY") 
   dbWriteTable(db, "FLR_INVENTORY", flrTable, append=T, row.names=F) 
 }
 
@@ -482,12 +496,12 @@ if(length(sellingMats > 0)) {
   commodityNames = gsub(" |&","_",commodityNames) #replace " " & "&"
   commodityNames = gsub("-","_",commodityNames) #replace "-" 
     
-  dbGetQuery(db,"CREATE TABLE BuySellMatrix (
+  dbExecute(db,"CREATE TABLE BuySellMatrix (
     FROMBZONE INTEGER,
     TOBZONE INTEGER,
     PRIMARY KEY(FROMBZONE,TOBZONE)
     )")
-  dbGetQuery(db,"INSERT INTO BuySellMatrix SELECT BZ1.BZONE, BZ2.BZONE FROM BZONE AS BZ1, BZONE AS BZ2")
+  dbExecute(db,"INSERT INTO BuySellMatrix SELECT BZ1.BZONE, BZ2.BZONE FROM BZONE AS BZ1, BZONE AS BZ2")
   
   for (i in 1:length(sellingMats)) {
     
@@ -505,14 +519,14 @@ if(length(sellingMats > 0)) {
   
     #write temp table and join to BuySellMatrices
     dbWriteTable(db, "Temp", mat, append=T, row.names=F)
-    dbGetQuery(db, "CREATE INDEX TempIndex ON Temp (FROMZONE, TOZONE)")
-    dbGetQuery(db, paste("CREATE TABLE Temp2 AS SELECT bsm.*, ", colName,
+    dbExecute(db, "CREATE INDEX TempIndex ON Temp (FROMZONE, TOZONE)")
+    dbExecute(db, paste("CREATE TABLE Temp2 AS SELECT bsm.*, ", colName,
       " FROM BuySellMatrix AS bsm LEFT OUTER JOIN Temp ON bsm.FromBZone=Temp.FromZone 
       AND bsm.ToBZone=Temp.ToZone", sep=""))
-    dbGetQuery(db, "DROP TABLE Temp")
-    dbGetQuery(db, "DROP TABLE BuySellMatrix")
-    dbGetQuery(db, "ALTER TABLE Temp2 RENAME TO BuySellMatrix")
-    dbGetQuery(db, "CREATE INDEX BuySellMatrixIndex ON BuySellMatrix (FromBZone, ToBZone)")
+    dbExecute(db, "DROP TABLE Temp")
+    dbExecute(db, "DROP TABLE BuySellMatrix")
+    dbExecute(db, "ALTER TABLE Temp2 RENAME TO BuySellMatrix")
+    dbExecute(db, "CREATE INDEX BuySellMatrixIndex ON BuySellMatrix (FromBZone, ToBZone)")
   }
 }
 
@@ -522,7 +536,7 @@ if(length(sellingMats > 0)) {
 
 if((!isTransportYear) | as.logical(genSpatialOnly)) {
   #Close and compact database
-  dbGetQuery(db, "VACUUM")
+  dbExecute(db, "VACUUM")
   dbDisconnect(db)
   cat(paste("SWIM VIZ DB for", databaseFileName, "at", Sys.time(), "Created \n"))
   quit("no")
@@ -644,25 +658,25 @@ for(aMode in SDTModes) {
 rm(trips)
 
 #aggregate results
-dbGetQuery(db,"CREATE INDEX Trips_SDT_TempIndex ON Trips_SDT_Temp (BZONE)")
-dbGetQuery(db,"CREATE INDEX Trips_SDT_Home_TempIndex ON Trips_SDT_Home_Temp (HomeBZONE)")
+dbExecute(db,"CREATE INDEX Trips_SDT_TempIndex ON Trips_SDT_Temp (BZONE)")
+dbExecute(db,"CREATE INDEX Trips_SDT_Home_TempIndex ON Trips_SDT_Home_Temp (HomeBZONE)")
 
 #origin table
-dbGetQuery(db,paste("CREATE TABLE Trips_SDT AS SELECT BZONE, hhInc, tripPurpose, tripMode, 
+dbExecute(db,paste("CREATE TABLE Trips_SDT AS SELECT BZONE, hhInc, tripPurpose, tripMode, 
   SUM(amtrips) AS amtrips, SUM(mdtrips) AS mdtrips, SUM(pmtrips) AS pmtrips, SUM(nttrips) AS nttrips,
   SUM(amDistance) AS amDistance, SUM(mdDistance) AS mdDistance, SUM(pmDistance) AS pmDistance, SUM(ntDistance) AS ntDistance  
   FROM Trips_SDT_Temp GROUP BY bzone, hhInc, tripPurpose, tripMode", sep=""))
 
 #home table
-dbGetQuery(db,paste("CREATE TABLE Trips_SDT_Home AS SELECT HomeBZONE AS BZONE, hhInc, tripPurpose, tripMode, 
+dbExecute(db,paste("CREATE TABLE Trips_SDT_Home AS SELECT HomeBZONE AS BZONE, hhInc, tripPurpose, tripMode, 
   SUM(amtrips) AS amtrips, SUM(mdtrips) AS mdtrips, SUM(pmtrips) AS pmtrips, SUM(nttrips) AS nttrips,
   SUM(amDistance) AS amDistance, SUM(mdDistance) AS mdDistance, SUM(pmDistance) AS pmDistance, SUM(ntDistance) AS ntDistance  
   FROM Trips_SDT_Home_Temp GROUP BY HomeBZone, hhInc, tripPurpose, tripMode", sep=""))
 
-dbGetQuery(db, "CREATE INDEX Trips_SDTIndex ON Trips_SDT (BZONE,HHINC,TRIPPURPOSE,TRIPMODE)")
-dbGetQuery(db, "CREATE INDEX Trips_SDT_HomeIndex ON Trips_SDT_Home (BZONE,HHINC,TRIPPURPOSE,TRIPMODE)")
-dbGetQuery(db, "DROP TABLE Trips_SDT_Temp")
-dbGetQuery(db, "DROP TABLE Trips_SDT_Home_Temp")
+dbExecute(db, "CREATE INDEX Trips_SDTIndex ON Trips_SDT (BZONE,HHINC,TRIPPURPOSE,TRIPMODE)")
+dbExecute(db, "CREATE INDEX Trips_SDT_HomeIndex ON Trips_SDT_Home (BZONE,HHINC,TRIPPURPOSE,TRIPMODE)")
+dbExecute(db, "DROP TABLE Trips_SDT_Temp")
+dbExecute(db, "DROP TABLE Trips_SDT_Home_Temp")
 
 #########################################################################
 #Process Trips_ET
@@ -702,12 +716,12 @@ TripsET$ntDistance[isNT(TripsET$tripStartTime)] = TripsET$distance[isNT(TripsET$
 TripsET$Bzone = azone2bzone(TripsET$origin,allZones$Azone,allZones$BZONE)
 
 dbWriteTable(db,"TripsET",TripsET,row.names=F)
-dbGetQuery(db,"CREATE TABLE Trips_ET AS SELECT BZONE,truckClass,
+dbExecute(db,"CREATE TABLE Trips_ET AS SELECT BZONE,truckClass,
   SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips, 
   SUM(amDistance) AS amDistance, SUM(mdDistance) AS mdDistance, SUM(pmDistance) AS pmDistance, SUM(ntDistance) AS ntDistance 
   FROM TripsET GROUP BY BZONE, TruckClass")
-dbGetQuery(db,"DROP TABLE TripsET")
-dbGetQuery(db, "CREATE INDEX Trips_ETIndex ON Trips_ET (BZONE,TRUCKCLASS)")
+dbExecute(db,"DROP TABLE TripsET")
+dbExecute(db, "CREATE INDEX Trips_ETIndex ON Trips_ET (BZONE,TRUCKCLASS)")
 
 #########################################################################
 #Process Trips_CT
@@ -735,20 +749,20 @@ TripsCT$Bzone = azone2bzone(TripsCT$origin,allZones$Azone,allZones$BZONE)
 #trip origin
 dbWriteTable(db,"TripsCT",TripsCT[,c("Bzone","truckType","amVol","mdVol","pmVol","ntVol")],row.names=F)
   
-dbGetQuery(db,"CREATE TABLE Trips_CT AS SELECT BZONE,truckType AS TruckClass, 
+dbExecute(db,"CREATE TABLE Trips_CT AS SELECT BZONE,truckType AS TruckClass, 
   SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips
   FROM TripsCT GROUP BY BZONE, TruckType")
-dbGetQuery(db,"DROP TABLE TripsCT")
-dbGetQuery(db, "CREATE INDEX Trips_CTIndex ON Trips_CT (BZONE,TRUCKCLASS)")
+dbExecute(db,"DROP TABLE TripsCT")
+dbExecute(db, "CREATE INDEX Trips_CTIndex ON Trips_CT (BZONE,TRUCKCLASS)")
 
 #trip production (home zone)
 dbWriteTable(db,"TripsCT_Home",TripsCT[,c("HomeBzone","truckType","amVol","mdVol","pmVol","ntVol")],row.names=F)
   
-dbGetQuery(db,"CREATE TABLE Trips_CT_Home AS SELECT HomeBZONE AS BZONE,truckType AS TruckClass, 
+dbExecute(db,"CREATE TABLE Trips_CT_Home AS SELECT HomeBZONE AS BZONE,truckType AS TruckClass, 
   SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips
   FROM TripsCT_Home GROUP BY BZONE, TruckType")
-dbGetQuery(db,"DROP TABLE TripsCT_Home")
-dbGetQuery(db, "CREATE INDEX Trips_CT_HomeIndex ON Trips_CT_Home (BZONE,TRUCKCLASS)")
+dbExecute(db,"DROP TABLE TripsCT_Home")
+dbExecute(db, "CREATE INDEX Trips_CT_HomeIndex ON Trips_CT_Home (BZONE,TRUCKCLASS)")
 
 #########################################################################
 #Process Trips_LDT
@@ -787,23 +801,23 @@ TripsLDT$HomeBzone = azone2bzone(TripsLDT$HomeZone,allZones$Azone,allZones$BZONE
 dbWriteTable(db,"TripsLDT",TripsLDT[,c("Bzone","hhInc","tripPurpose","tripMode",
   "amVol","mdVol","pmVol","ntVol",
   "amDistance","mdDistance","pmDistance","ntDistance")],row.names=F)
-dbGetQuery(db,"CREATE TABLE Trips_LDT AS SELECT BZONE,hhInc,tripPurpose,tripMode, 
+dbExecute(db,"CREATE TABLE Trips_LDT AS SELECT BZONE,hhInc,tripPurpose,tripMode, 
   SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips,
   SUM(amDistance) AS amDistance, SUM(mdDistance) AS mdDistance, SUM(pmDistance) AS pmDistance, SUM(ntDistance) AS ntDistance 
   FROM TripsLDT GROUP BY BZONE, hhInc, tripPurpose, tripMode")
-dbGetQuery(db,"DROP TABLE TripsLDT")
-dbGetQuery(db, "CREATE INDEX Trips_LDTIndex ON Trips_LDT (BZONE,HHINC,TRIPPURPOSE,TRIPMODE)")
+dbExecute(db,"DROP TABLE TripsLDT")
+dbExecute(db, "CREATE INDEX Trips_LDTIndex ON Trips_LDT (BZONE,HHINC,TRIPPURPOSE,TRIPMODE)")
 
 #home zone table
 dbWriteTable(db,"TripsLDT_Home",TripsLDT[,c("HomeBzone","hhInc","tripPurpose","tripMode",
   "amVol","mdVol","pmVol","ntVol",
   "amDistance","mdDistance","pmDistance","ntDistance")],row.names=F)
-dbGetQuery(db,"CREATE TABLE Trips_LDT_Home AS SELECT HomeBZONE AS BZONE,hhInc,tripPurpose,tripMode, 
+dbExecute(db,"CREATE TABLE Trips_LDT_Home AS SELECT HomeBZONE AS BZONE,hhInc,tripPurpose,tripMode, 
   SUM(amVol) AS amtrips, SUM(mdVol) AS mdtrips, SUM(pmVol) AS pmtrips, SUM(ntVol) AS nttrips,
   SUM(amDistance) AS amDistance, SUM(mdDistance) AS mdDistance, SUM(pmDistance) AS pmDistance, SUM(ntDistance) AS ntDistance 
   FROM TripsLDT_Home GROUP BY HomeBZONE, hhInc, tripPurpose, tripMode")
-dbGetQuery(db,"DROP TABLE TripsLDT_Home")
-dbGetQuery(db, "CREATE INDEX Trips_LDT_HomeIndex ON Trips_LDT_Home (BZONE,HHINC,TRIPPURPOSE,TRIPMODE)")
+dbExecute(db,"DROP TABLE TripsLDT_Home")
+dbExecute(db, "CREATE INDEX Trips_LDT_HomeIndex ON Trips_LDT_Home (BZONE,HHINC,TRIPPURPOSE,TRIPMODE)")
 
 #########################################################################
 #Create AZONE OD matrices for OD flow analysis - will be deleted later
@@ -905,10 +919,10 @@ logsums$BZONE = azone2bzone(logsums$AZONE,allZones$Azone,allZones$BZONE)
 
 dbWriteTable(db, "DCLOGSUMS", logsums[,c("BZONE","PURPOSE","SEGMENT","LOGSUM")], row.names=F)
 
-dbGetQuery(db, "CREATE TABLE DC_LOGSUM AS SELECT BZONE,PURPOSE, SEGMENT,AVG(LOGSUM) AS AVGLOGSUM FROM DCLOGSUMS 
+dbExecute(db, "CREATE TABLE DC_LOGSUM AS SELECT BZONE,PURPOSE, SEGMENT,AVG(LOGSUM) AS AVGLOGSUM FROM DCLOGSUMS 
   GROUP BY BZONE, PURPOSE, SEGMENT")
-dbGetQuery(db, "CREATE INDEX DCLogsumIndex ON DC_LOGSUM (BZONE,PURPOSE,SEGMENT)")
-dbGetQuery(db, "DROP TABLE DCLOGSUMS")
+dbExecute(db, "CREATE INDEX DCLogsumIndex ON DC_LOGSUM (BZONE,PURPOSE,SEGMENT)")
+dbExecute(db, "DROP TABLE DCLOGSUMS")
 
 #########################################################################
 #Read skim matrices
@@ -949,13 +963,13 @@ for(i in 1:length(skimsToProcess)) {
     dbWriteTable(db, "SKIM", mat, row.names=F)
   } else {
     dbWriteTable(db, "TEMP", mat, append=T, row.names=F)
-    dbGetQuery(db, "CREATE INDEX TempIndex ON Temp (FROMBZONE, TOBZONE)")
-    dbGetQuery(db, paste("CREATE TABLE Temp2 AS SELECT SKIM.*, ", colName,
+    dbExecute(db, "CREATE INDEX TempIndex ON Temp (FROMBZONE, TOBZONE)")
+    dbExecute(db, paste("CREATE TABLE Temp2 AS SELECT SKIM.*, ", colName,
       " FROM SKIM LEFT OUTER JOIN Temp ON SKIM.FromBZone=Temp.FromBZone AND SKIM.ToBZone=Temp.ToBZone", sep=""))
-    dbGetQuery(db, "DROP TABLE Temp")
-    dbGetQuery(db, "DROP TABLE SKIM")
-    dbGetQuery(db, "ALTER TABLE Temp2 RENAME TO SKIM")
-    dbGetQuery(db, "CREATE INDEX SKIMIndex ON SKIM (FromBZone, ToBZone)")
+    dbExecute(db, "DROP TABLE Temp")
+    dbExecute(db, "DROP TABLE SKIM")
+    dbExecute(db, "ALTER TABLE Temp2 RENAME TO SKIM")
+    dbExecute(db, "CREATE INDEX SKIMIndex ON SKIM (FromBZone, ToBZone)")
   }
 }
 
@@ -986,13 +1000,13 @@ for(i in 1:length(matsToProcess)) {
     dbWriteTable(db, "TRIPMATRIX", mat, append=T, row.names=F)
   } else {
     dbWriteTable(db, "Temp", mat, append=T, row.names=F)
-    dbGetQuery(db, "CREATE INDEX TempIndex ON Temp (FROMBZONE, TOBZONE)")
-    dbGetQuery(db, paste("CREATE TABLE Temp2 AS SELECT TRIPMATRIX.*, ", colName,
+    dbExecute(db, "CREATE INDEX TempIndex ON Temp (FROMBZONE, TOBZONE)")
+    dbExecute(db, paste("CREATE TABLE Temp2 AS SELECT TRIPMATRIX.*, ", colName,
       " FROM TRIPMATRIX LEFT OUTER JOIN Temp ON TRIPMATRIX.FromBZone=Temp.FromBZone AND TRIPMATRIX.ToBZone=Temp.ToBZone", sep=""))
-    dbGetQuery(db, "DROP TABLE Temp")
-    dbGetQuery(db, "DROP TABLE TRIPMATRIX")
-    dbGetQuery(db, "ALTER TABLE Temp2 RENAME TO TRIPMATRIX")
-    dbGetQuery(db, "CREATE INDEX TRIPMATRIXIndex ON TRIPMATRIX (FromBZone, ToBZone)")
+    dbExecute(db, "DROP TABLE Temp")
+    dbExecute(db, "DROP TABLE TRIPMATRIX")
+    dbExecute(db, "ALTER TABLE Temp2 RENAME TO TRIPMATRIX")
+    dbExecute(db, "CREATE INDEX TRIPMATRIXIndex ON TRIPMATRIX (FromBZone, ToBZone)")
   }
   
   #delete file
@@ -1070,9 +1084,7 @@ dbWriteTable(db, "COUNTLOCATIONS", countlocations, row.names=F)
 #########################################################################
 
 #Close and compact database
-dbGetQuery(db, "VACUUM")
+dbExecute(db, "VACUUM")
 dbDisconnect(db)
 cat(paste("SWIM VIZ DB for", databaseFileName, "at", Sys.time(), "Created \n"))
 quit("no")
-
-

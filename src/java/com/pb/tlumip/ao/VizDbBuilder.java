@@ -102,12 +102,17 @@ public class VizDbBuilder {
     private void buildVizDb(String buildCommandProperty, String combineCommandProperty, String name) {
         logger.info(name + " builder started");
         buildSingleYearVizDb(buildCommandProperty,name);
+        String tYear = properties.getString("t.year");
+        String vizFinalYear = properties.getString("viz.final.year");
         if (!errorIndicator.get()) {  //shouldn't get here if this is true, but check anyway
-            logger.info("Finished building individual (" + name + ") dbs, beginning combination");
-            String[] command = buildCommand(combineCommandProperty);
-            runProgram(command,getOutputDir());
-            logger.info("Combination complete, commencing cleanup");
-
+        	if (tYear.equals(vizFinalYear)) {//If final year then run the combine script otherwise just build for single year
+                logger.info("Finished building individual (" + name + ") dbs, beginning combination");
+                String[] command = buildCommand(combineCommandProperty);
+                runProgram(command,getOutputDir());
+                logger.info("Combination complete, commencing cleanup");
+        	} else {
+        		logger.info("Finished building individual (" + name + ") dbs for Year " + tYear);
+        	}
             logger.info(name + " builder complete");
         }
         if (errorIndicator.get()) { //this covers both above processes

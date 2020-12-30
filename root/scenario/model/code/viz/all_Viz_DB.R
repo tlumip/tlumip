@@ -158,7 +158,7 @@ for(i in 1:length(tsteps)) {
             for(k in 1:length(missingFields)) {
               query = paste("ALTER TABLE", tableName, "ADD COLUMN ", missingFields[k], "REAL")
               cat(paste(query, "\n"))
-              dbGetQuery(db, query) #add field
+              dbExecute(db, query) #add field
             }
           }
           
@@ -185,7 +185,7 @@ for(i in 1:length(tsteps)) {
         #check if index already defined
         indexes = c(indexes, query)
         cat(paste(query, "\n"))
-        dbGetQuery(db, query)
+        dbExecute(db, query)
       }
     }
   }

@@ -34,6 +34,8 @@ module_init_map = [] #same as module map, but used for initialization overriding
 
 #start off by reading in the definition file to form model run structure
 header = None
+# Initiate tracking of viz final year
+viz_final_year = 0
 for line in open(definition_file):
     line = line.strip()
     if len(line) == 0:
@@ -52,6 +54,8 @@ for line in open(definition_file):
                 m.append(header[i])
             elif line[i] == 'i': #i means pretend we ran it, but don't run it
                 m0.append(header[i])
+            if 'VIZ' == header[i]:
+                viz_final_year = year
         module_map.append(m)
         module_init_map.append(m0)
 
@@ -66,7 +70,11 @@ for module in modules:
         t_map[module] = getattr(PropertyTokens,module + '_LAST_RUN_YEAR')
     except:
         pass #ignore, because no token for this module
+
 t_previous_map = {'AA' : PropertyTokens.AA_PRIOR_RUN_YEAR} #AA has special second-to-last-year parameter
+
+# # Add the viz final year run property token
+# t_map.update({'VIZ': PropertyTokens.VIZ_FINAL_YEAR})
 
 #build extra arguments needed for PT and SL
 extra_args_map = {}
@@ -133,7 +141,10 @@ token_map[PropertyTokens.SCENARIO_NAME] = scenario_name
 token_map[PropertyTokens.ROOT_DIR] = root_dir
 token_map[PropertyTokens.SCENARIO_INPUTS_DIR] = 'inputs'
 token_map[PropertyTokens.SCENARIO_OUTPUTS_DIR] = 'outputs'
-    
+
+# add viz final year token
+token_fixed_map = {}
+token_fixed_map[PropertyTokens.VIZ_FINAL_YEAR] = viz_final_year
     
 #make output dirs if they don't exist
 for year in years:
@@ -202,7 +213,8 @@ for y in range(len(years)): #for each year entry (in order) defined in tsteps fi
         property_files[module_name] = output_properties_file
         if prop_file is None:
             prop_file = output_properties_file
-        properties_file_creator.detemplifyFile(template_properties,output_properties_file,token_map,update_template_properties)
+        token_fixed_map.update(token_map)
+        properties_file_creator.detemplifyFile(template_properties,output_properties_file,token_fixed_map,update_template_properties)
         updateTokenMap(module_set,year,token_map)
 
 #load up a representative property file so we can use the generic (global) properties
@@ -371,7 +383,10 @@ for y in range(len(years)):
         module = module_set[0].upper()
         log('Starting ' + module + ' in year ' + str(year)) #log module start
         for command in getattr(commands,'run' + module)(module_set,scenario_outputs,property_files[module_name],year,properties):
-            write_command(command)
+            if ('VIZ' in module) & (year != viz_final_year):
+                write_command(command, call=True, error=True)
+            else:
+                write_command(command)
         log('Finished ' + module) #log module end
 if file_monitor:
     log('Stopping file monitor')

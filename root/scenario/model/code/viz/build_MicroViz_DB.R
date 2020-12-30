@@ -91,11 +91,11 @@ hh$AGEOFHEAD = per$AGE[per$MEMBER_ID==1][match(hh$HH_ID, per$HH_ID[per$MEMBER_ID
 #Write tables to DB
 colnames(hh) = toupper(colnames(hh))
 dbWriteTable(db, "HH", hh, row.names=F)
-dbGetQuery(db, "CREATE INDEX HHIndex ON HH (HH_ID)")
+dbExecute(db, "CREATE INDEX HHIndex ON HH (HH_ID)")
 
 colnames(per) = toupper(colnames(per))
 dbWriteTable(db, "PER", per[,c(1,21,2:20)], row.names=F)
-dbGetQuery(db, "CREATE INDEX PERIndex ON PER (HH_ID, MEMBER_ID)")
+dbExecute(db, "CREATE INDEX PERIndex ON PER (HH_ID, MEMBER_ID)")
 
 #########################################################################
 #Read LDT Tour and Trip Tables
@@ -195,7 +195,7 @@ dbWriteTable(db, "LINK_DATA", links, row.names=F)
 #########################################################################
 
 #Close and compact database
-dbGetQuery(db, "VACUUM")
+dbExecute(db, "VACUUM")
 dbDisconnect(db)
 cat(paste("SWIM MICRO VIZ DB for", databaseFileName, "at", Sys.time(), "Created \n"))
 quit("no")
