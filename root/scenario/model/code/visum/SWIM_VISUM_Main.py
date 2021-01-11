@@ -24,6 +24,7 @@ truckDemandClass = "d"
 #zone no and main zone no in Visum
 a_zone = 'NO' #azone field in Visum
 b_zone = 'MainZoneNo' #bzone field in Visum
+zoneAlias = {'AZONE': a_zone, 'BZONE': b_zone}
 
 #range of beta zones and external stations in aggregated skim matrices
 bzoneRange = range(0,457)
@@ -447,6 +448,9 @@ class SwimModel(object):
             data = list()
             for fieldCounter in range(0, len(self.fields)):
                 self.field = self.fields[fieldCounter]
+                # if BZONE then get MainZoneNo
+                if self.field.upper() == 'BZONE':
+                    self.field = zoneAlias.get(self.field.upper())
                 data.append(VisumHelpers.GetMulti(self.Visum.Net.Zones, self.field))
 
             #Make list of lists (rows)
