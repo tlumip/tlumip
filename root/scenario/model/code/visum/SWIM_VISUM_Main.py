@@ -143,36 +143,6 @@ class SwimModel(object):
 
         self.reSeedMatrices = properties['new.zone.system']
 
-        self.ignoredAAZoneAttributes = ["accommodations_expt",
-            "accommodations_impt",
-            "communications_and_utilities_expt",
-            "communications_and_utilities_impt",
-            "construction_expt",
-            "construction_impt",
-            "education_reports_to_sponsors_expt",
-            "education_reports_to_sponsors_impt",
-            "energy_expt",
-            "energy_impt",
-            "entertainment_services_expt",
-            "entertainment_services_impt",
-            "fire_business_and_professional_services_expt",
-            "fire_business_and_professional_services_impt",
-            "food_services_expt",
-            "food_services_impt",
-            "government_administration_expt",
-            "government_administration_impt",
-            "health_services_expt",
-            "health_services_impt",
-            "higher_education_expt",
-            "higher_education_impt",
-            "personal_and_other_services_and_amusements_expt",
-            "personal_and_other_services_and_amusements_impt",
-            "retail_trade_expt",
-            "retail_trade_impt",
-            "transport_expt",
-            "transport_impt",
-            "wholesale_trade_expt",
-            "wholesale_trade_impt"]
 
         os.chdir(self.path)
 
@@ -503,21 +473,6 @@ class SwimModel(object):
                     for i in range(len(self.headers)):
                         row = [wmrkts[z], self.headers[i], self.poiColumns[i][z]]
                         outTable.append(row)
-
-                #merge regular zone data
-                self.fields.extend(self.ignoredAAZoneAttributes)
-
-                for i in range(1,len(fileTable)):
-                  fileTable[i].extend([0] * len(self.ignoredAAZoneAttributes))
-                  row = fileTable[i]
-                  for j in range(len(row)):
-                    azone = row[0]
-                    attr = self.fields[j]
-
-                    value = row[j]
-                    if j > 0:
-                      outTable.append([azone, attr, value])
-
 
                 #add column headers
                 fileTable = outTable
