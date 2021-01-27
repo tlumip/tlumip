@@ -374,6 +374,8 @@ if file_monitor:
    for command in commands.runPause(30):
         write_command(command)
 
+write_bat_line('IF EXIST "viz_failed.txt" del -f viz_failed.txt')
+
 #loop over all of the years and modules and write out module commands
 for y in range(len(years)):
     year = years[y]
@@ -381,6 +383,9 @@ for y in range(len(years)):
     for module_name in module_map[y]:
         module_set = parseModuleName(module_name)
         module = module_set[0].upper()
+        if ('VIZ' in module):
+            command = 'IF EXIST "viz_failed.txt" set ERRORLEVEL=<viz_failed.txt'
+            write_command(command)
         log('Starting ' + module + ' in year ' + str(year)) #log module start
         for command in getattr(commands,'run' + module)(module_set,scenario_outputs,property_files[module_name],year,properties):
             if ('VIZ' in module) & (year != viz_final_year):

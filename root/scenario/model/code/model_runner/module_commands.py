@@ -357,6 +357,7 @@ class ModuleCommands(object):
                 commands += self.zip(properties['viz.final.db'],properties['viz.zip.file'])
         else:
             commands = self.runModule(module_set, scenario_outputs, property_file, year, 250, {'viz_years': year})
+            commands = ['cmd /C "' + command + ' || call echo %%^ERRORLEVEL%%>viz_failed.txt"' for command in commands]
         return commands
 
     def runMICROVIZ(self,module_set,scenario_outputs,property_file,year,properties):
