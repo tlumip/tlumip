@@ -2,6 +2,10 @@
 # PopulationSim Properties
 ####################################################################
 
+# Multiprocess parameters
+multiprocess: True
+num_processes: 2
+slice_geography: PUMA
 
 # Algorithm/Software Configuration
 # ------------------------------------------------------------------
@@ -106,8 +110,7 @@ output_synthetic_population:
 
 # Steps for base mode
 # ------------------------------------------------------------------
-run_list:
-  steps:
+models:
     - input_pre_processor
     - setup_data_structures
     - initial_seed_balancing
@@ -119,5 +122,26 @@ run_list:
     - summarize
     - write_tables
     - write_synthetic_population
+    
+    
+multiprocess_steps:
+  - name: mp_seed_balancing
+    begin: input_pre_processor
+  - name: mp_sub_balancing_AZONE
+    begin: sub_balancing.geography=AZONE
+    num_processes: 32
+    slice:
+      tables:
+        - slice_crosswalk
+        - crosswalk
+      # don't slice any tables not explicitly listed above in slice.tables
+      except: True
+      # the following tables are added by sub_balancer and should be coalesced
+      coalesce:
+        - AZONE_weights
+        - AZONE_weights_sparse
+        - trace_AZONE_weights
+  - name: mp_summarize
+    begin: expand_households
 
-  #resume_after: expand_households
+resume_after:
