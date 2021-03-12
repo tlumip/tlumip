@@ -29,8 +29,10 @@ opts_chunk$set(
   fig.keep = TRUE, fig.path = params$fig.path,
   fig.width=8, fig.height=6
 )
-library(RSQLite)
+library(methods)
 library(tidyverse)
+library(DT)
+library(RSQLite)
 library(leaflet)
 library(swimr)
 ```
