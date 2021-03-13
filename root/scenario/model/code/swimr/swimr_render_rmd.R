@@ -19,16 +19,16 @@ args = commandArgs()  # Use argparse package for more flexibility
 # )
 
 # Compare
-args = c(
-  'root/model/lib/R-3.3.2/bin/x64/Rterm.exe',
-  '--no-restore',
-  '--no-save',
-  '--file=root/scenario/model/code/swimr/swimr_render_rmd.R',
-  'Compare',
-  'root/model/lib/pandoc/pandoc.exe',
-  'D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/FromClient/Database/Ref26_NoFB.db',
-  'D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/FromClient/Database/Ref26_RRA2_FB_half.db'
-)
+# args = c(
+#   'root/model/lib/R-3.3.2/bin/x64/Rterm.exe',
+#   '--no-restore',
+#   '--no-save',
+#   '--file=root/scenario/model/code/swimr/swimr_render_rmd.R',
+#   'Compare',
+#   'root/model/lib/pandoc/pandoc.exe',
+#   'D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/FromClient/Database/Ref26_NoFB.db',
+#   'D:/Projects/Clients/OR_DOT/SWIM_WOC7/Data/FromClient/Database/Ref26_RRA2_FB_half.db'
+# )
 
 # # Population
 # args = c(
@@ -72,6 +72,8 @@ library('rmarkdown')
 
 library('RSQLite')
 
+sessionInfo()
+print(Sys.getenv("R_HOME"))
 # Define functions ------------------------------------------------------------
 
 
@@ -94,6 +96,8 @@ if ( template == 'Reference' ){
   rmd_file = file.path(this_dir, 'compare_scenario.Rmd')
   current_db = db_args[1]
   ref_db = db_args[2]
+  print(current_db)
+  print(ref_db)
 
   output_file <- file.path(dirname(current_db), 'swimr_compare_scenarios.html')
   param_list <- list(current_db =current_db, ref_db = ref_db)
