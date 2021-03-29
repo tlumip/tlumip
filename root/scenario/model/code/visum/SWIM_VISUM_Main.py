@@ -761,18 +761,19 @@ class SwimModel(object):
         self.zoneNo = map(int, self.zoneNo)
         self.zoneNames = map(str, self.zoneNo)
 
-        self.mainZoneNo = VisumHelpers.GetMulti(self.Visum.Net.Zones, b_zone)
-        self.mainZoneNo = map(int, self.mainZoneNo)
-        self.uniqueMainZoneNo = VisumMatrices.unique(self.mainZoneNo)
-        self.uniqueMainZoneNo.sort()
-        self.uniqueMainZoneNo = list(self.uniqueMainZoneNo)
-
         #mini model run if less than max mini size
         global externalStation
         global bzoneRange
         if len(self.zoneNo) < maxMiniModelZones:
           bzoneRange = bzoneRangeMiniModel
           externalStation = externalStationMiniModel
+
+        self.mainZoneNo = VisumHelpers.GetMulti(self.Visum.Net.Zones, b_zone)
+        self.mainZoneNo = map(int, self.mainZoneNo)
+        self.mainZoneNo = [bzone if bzone > 0 else self.zoneNo[index] for index, bzone in enumerate(self.mainZoneNo)]
+        self.uniqueMainZoneNo = VisumMatrices.unique(self.mainZoneNo)
+        self.uniqueMainZoneNo.sort()
+        self.uniqueMainZoneNo = list(self.uniqueMainZoneNo)
 
         #delete external station no.s from uniqueMainZoneNo
         self.uniqueMainZoneNo = [i for j, i in enumerate(self.uniqueMainZoneNo) if j not in externalStation]
