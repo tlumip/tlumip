@@ -148,7 +148,7 @@ token_fixed_map[PropertyTokens.VIZ_FINAL_YEAR] = viz_final_year
     
 #make output dirs if they don't exist
 for year in years:
-    year_dir = os.path.join(scenario_outputs,'t' + year)
+    year_dir = os.path.join(scenario_outputs,'t' + year).replace('\\','/')
     if not os.path.exists(year_dir):
         os.mkdir(year_dir)
 

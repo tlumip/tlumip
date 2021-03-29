@@ -233,10 +233,15 @@ class ModuleCommands(object):
         property_file = normalizeSlash(property_file)
 
         properties_set.loadPropertyFile(property_file)
-        python_executable = properties_set['python.executable']
+        python_executable = properties_set['python.popsim.executable']
         python_file = properties_set['popsim.script.file']
 
-        commands = [quote(python_executable.replace('/','\\')) + " " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1")]
+        python_dir = os.path.dirname(python_executable)
+        activate_command = os.path.join(python_dir, "Scripts", "activate.bat")
+        deactivate_command = "deactivate"
+        
+        commands = [quote(activate_command.replace('/','\\')) + " && python " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1") + " && " + deactivate_command]
+        # commands = [quote(python_executable.replace('/','\\')) + " " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1")]
         return commands
 
     def runAA(self,module_set,scenario_outputs,property_file,year,properties):
@@ -266,10 +271,15 @@ class ModuleCommands(object):
         property_file = normalizeSlash(property_file)
 
         properties_set.loadPropertyFile(property_file)
-        python_executable = properties_set['python.executable']
+        python_executable = properties_set['python.popsim.executable']
         python_file = properties_set['popsim.script.file']
 
-        commands = [quote(python_executable.replace('/','\\')) + " " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG2")]
+        python_dir = os.path.dirname(python_executable)
+        activate_command = os.path.join(python_dir, "Scripts", "activate.bat")
+        deactivate_command = "deactivate"
+        
+        commands = [quote(activate_command.replace('/','\\')) + " && python " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1") + " && " + deactivate_command]
+        # commands = [quote(python_executable.replace('/','\\')) + " " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG2")]
         return commands
 
     def runPT(self,module_set,scenario_outputs,property_file,year,properties):
