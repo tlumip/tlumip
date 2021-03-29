@@ -1,5 +1,6 @@
 #import libraries
 import pandas as pd, numpy as np
+import multiprocessing as mp
 import sys, os, subprocess, time, shutil
 from functools import reduce
 from Properties import Properties
@@ -30,7 +31,9 @@ class popsimSPG(object):
 		self.logging_yaml_spg1  = properties['logging.yaml.spg1'] 
 		self.logging_yaml_spg2  = properties['logging.yaml.spg2']
 		self.popsim_py_file = properties['popsim.py.file']
-		self.python_exe = properties['python.executable'].replace('/','\\')
+		self.python_exe = properties['python.popsim.executable'].replace('/','\\')
+		self.spg2_num_processes = min(int(properties['spg2.num.processors']), 
+									  max(mp.cpu_count()-1, 1))
 		
 		### INPUTS
 
@@ -342,19 +345,19 @@ class popsimSPG(object):
 			hhs = row['HHS']
 			
 			if (siz1) == (sizm):
-				spg1_control_subseed.set_value(index, 'HH_SIZE1', siz1 + sizd)
+				spg1_control_subseed.at[index, 'HH_SIZE1'] = siz1 + sizd
 				sizd = sizd - sizd
 				sizm = sizm + sizd
 			elif (siz2) == (sizm):
-				spg1_control_subseed.set_value(index, 'HH_SIZE2', siz2 + sizd)
+				spg1_control_subseed.at[index, 'HH_SIZE2'] = siz2 + sizd
 				sizd = sizd - sizd
 				sizm = sizm + sizd
 			elif (siz3) == (sizm):
-				spg1_control_subseed.set_value(index, 'HH_SIZE3', siz3 + sizd)
+				spg1_control_subseed.at[index, 'HH_SIZE3'] = siz3 + sizd
 				sizd = sizd - sizd
 				sizm = sizm + sizd
 			elif (siz4) == (sizm):
-				spg1_control_subseed.set_value(index, 'HH_SIZE4M', siz4 + sizd)
+				spg1_control_subseed.at[index, 'HH_SIZE4M'] = siz4 + sizd
 				sizd = sizd - sizd
 				sizm = sizm + sizd
 				
@@ -374,27 +377,27 @@ class popsimSPG(object):
 			#hhs = row['HHS']
 			
 			if (WRKR0) == (WRKRm):
-				spg1_control_subseed.set_value(index, 'HH_WRKR0', WRKR0 + WRKRd)
+				spg1_control_subseed.at[index, 'HH_WRKR0'] = WRKR0 + WRKRd
 				WRKRd = WRKRd - WRKRd
 				WRKRm = WRKRm + WRKRd
 			elif (WRKR1) == (WRKRm):
-				spg1_control_subseed.set_value(index, 'HH_WRKR1', WRKR1 + WRKRd)
+				spg1_control_subseed.at[index, 'HH_WRKR1'] = WRKR1 + WRKRd
 				WRKRd = WRKRd - WRKRd
 				WRKRm = WRKRm + WRKRd
 			elif (WRKR2) == (WRKRm):
-				spg1_control_subseed.set_value(index, 'HH_WRKR2', WRKR2 + WRKRd)
+				spg1_control_subseed.at[index, 'HH_WRKR2'] = WRKR2 + WRKRd
 				WRKRd = WRKRd - WRKRd
 				WRKRm = WRKRm + WRKRd
 			elif (WRKR3) == (WRKRm):
-				spg1_control_subseed.set_value(index, 'HH_WRKR3', WRKR3 + WRKRd)
+				spg1_control_subseed.at[index, 'HH_WRKR3'] = WRKR3 + WRKRd
 				WRKRd = WRKRd - WRKRd
 				WRKRm = WRKRm + WRKRd
 			elif (WRKR4) == (WRKRm):
-				spg1_control_subseed.set_value(index, 'HH_WRKR4', WRKR4 + WRKRd)
+				spg1_control_subseed.at[index, 'HH_WRKR4'] = WRKR4 + WRKRd
 				WRKRd = WRKRd - WRKRd
 				WRKRm = WRKRm + WRKRd
 			elif (WRKR5) == (WRKRm):
-				spg1_control_subseed.set_value(index, 'HH_WRKR5M', WRKR5 + WRKRd)
+				spg1_control_subseed.at[index, 'HH_WRKR5M'] = WRKR5 + WRKRd
 				WRKRd = WRKRd - WRKRd
 				WRKRm = WRKRm + WRKRd
 				
@@ -432,75 +435,75 @@ class popsimSPG(object):
 			pers = row['PERS']
 			
 			if (AGE0) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE0', AGE0 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE0'] = AGE0 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE5) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE5', AGE5 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE5'] = AGE5 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE10) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE10', AGE10 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE10'] = AGE10 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE15) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE15', AGE15 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE15'] = AGE15 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE20) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE20', AGE20 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE20'] = AGE20 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE25) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE25', AGE25 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE25'] = AGE25 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE30) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE30', AGE30 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE30'] = AGE30 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE35) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE35', AGE35 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE35'] = AGE35 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE40) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE40', AGE40 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE40'] = AGE40 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE45) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE45', AGE45 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE45'] = AGE45 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE50) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE50', AGE50 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE50'] = AGE50 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE55) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE55', AGE55 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE55'] = AGE55 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE60) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE60', AGE60 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE60'] = AGE60 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE65) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE65', AGE65 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE65'] = AGE65 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE70) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE70', AGE70 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE70'] = AGE70 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE75) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE75', AGE75 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE75'] = AGE75 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE80) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE70', AGE70 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE70'] = AGE70 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 			elif (AGE85) == (AGEm):
-				spg1_control_subseed.set_value(index, 'P_AGE85', AGE85 + AGEd)
+				spg1_control_subseed.at[index, 'P_AGE85'] = AGE85 + AGEd
 				AGEd = AGEd - AGEd
 				AGEm = AGEm + AGEd
 
@@ -517,8 +520,8 @@ class popsimSPG(object):
 		spg1_geo_cross_walk.to_csv(self.spg1_geo_cross_walk_file, index=False)
 		
 	def run_spg1(self):
-		cmd = self.python_exe + " " + self.popsim_py_file + " --config " + self.spg1_configs_directory + " --output " + self.spg1_output_directory + " --data " + self.spg1_data_directory
-		subprocess.call(os.path.join(self.spg1_directory, cmd))
+		cmd = "python " + self.popsim_py_file + " --config " + self.spg1_configs_directory + " --output " + self.spg1_output_directory + " --data " + self.spg1_data_directory
+		subprocess.call(cmd)
 		
 	def spg1PostProcess(self):
 		spg1_hh = pd.read_csv(self.spg1_synthetic_households_file)
@@ -631,10 +634,21 @@ class popsimSPG(object):
 		spg2_control_alpha.to_csv(self.spg2_control_alpha_file, index=False)
 		spg1_control_region.to_csv(self.spg2_control_region_file, index=False)
 		spg2_geo_cross_walk.to_csv(self.spg2_geo_cross_walk_file, index=False)
+
+	def spg2Settings(self):
+		settings_yaml_spg2_output = os.path.join(self.spg2_configs_directory,os.path.basename(self.settings_yaml_spg2))
+		update_num_processes = {'@POPSIMSPG2.NUM.PROCESSES@': self.spg2_num_processes}
+		f = open(settings_yaml_spg2_output,'w')
+		for line in open(self.settings_yaml_spg2):
+			# line = line.strip()
+			for key in update_num_processes:
+				line = line.replace(key,str(update_num_processes[key]))
+			f.write(line)
+		f.close()
 	
 	def run_spg2(self):
-		cmd = self.python_exe + " " + self.popsim_py_file + " --config " + self.spg2_configs_directory + " --output " + self.spg2_output_directory + " --data " + self.spg2_data_directory
-		subprocess.call(os.path.join(self.spg2_directory, cmd))
+		cmd = "python " + self.popsim_py_file + " --config " + self.spg2_configs_directory + " --output " + self.spg2_output_directory + " --data " + self.spg2_data_directory
+		subprocess.call(cmd)
 
 	def spg2PostProcess(self):
 		spg2_synthetic_households = pd.read_csv(self.spg2_synthetic_households_file)
@@ -762,6 +776,7 @@ if __name__ == "__main__":
 		p.createDirectories()
 		p.copySeeds()
 		p.spg2Controls()
+		p.spg2Settings()
 		p.run_spg2()
 		p.spg2PostProcess()
 	

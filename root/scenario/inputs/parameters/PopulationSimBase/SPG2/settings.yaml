@@ -4,7 +4,7 @@
 
 # Multiprocess parameters
 multiprocess: True
-num_processes: 2
+num_processes: @POPSIMSPG2.NUM.PROCESSES@
 slice_geography: PUMA
 
 # Algorithm/Software Configuration
@@ -129,7 +129,7 @@ multiprocess_steps:
     begin: input_pre_processor
   - name: mp_sub_balancing_AZONE
     begin: sub_balancing.geography=AZONE
-    num_processes: 2
+    num_processes: @POPSIMSPG2.NUM.PROCESSES@
     slice:
       tables:
         - slice_crosswalk
