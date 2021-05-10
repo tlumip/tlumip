@@ -4,6 +4,7 @@ import multiprocessing as mp
 import sys, os, subprocess, time, shutil
 from functools import reduce
 from Properties import Properties
+from collections import Mapping
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -34,6 +35,8 @@ class popsimSPG(object):
 		self.python_exe = properties['python.popsim.executable'].replace('/','\\')
 		self.spg2_num_processes = min(int(properties['spg2.num.processors']), 
 									  max(mp.cpu_count()-1, 1))
+		self.spg2_max_iterations = max(int(properties['spg2.max.iterations']), 
+									  100)
 		
 		### INPUTS
 
@@ -638,11 +641,14 @@ class popsimSPG(object):
 	def spg2Settings(self):
 		settings_yaml_spg2_output = os.path.join(self.spg2_configs_directory,os.path.basename(self.settings_yaml_spg2))
 		update_num_processes = {'@POPSIMSPG2.NUM.PROCESSES@': self.spg2_num_processes}
+		update_max_iterations = {'@POPSIMSPG2.MAX.ITERATIONS@': self.spg2_max_iterations}
 		f = open(settings_yaml_spg2_output,'w')
 		for line in open(self.settings_yaml_spg2):
 			# line = line.strip()
 			for key in update_num_processes:
 				line = line.replace(key,str(update_num_processes[key]))
+			for key in update_max_iterations:
+				line = line.replace(key,str(update_max_iterations[key]))
 			f.write(line)
 		f.close()
 	

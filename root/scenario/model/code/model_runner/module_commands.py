@@ -240,7 +240,7 @@ class ModuleCommands(object):
         activate_command = os.path.join(python_dir, "Scripts", "activate.bat")
         deactivate_command = "deactivate"
         
-        commands = [quote(activate_command.replace('/','\\')) + " && python " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1") + " && " + deactivate_command]
+        commands = ["cmd /C \"" + quote(activate_command.replace('/','\\')) + " && python " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1") + " && " + deactivate_command + "\""]
         # commands = [quote(python_executable.replace('/','\\')) + " " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1")]
         return commands
 
@@ -278,7 +278,7 @@ class ModuleCommands(object):
         activate_command = os.path.join(python_dir, "Scripts", "activate.bat")
         deactivate_command = "deactivate"
         
-        commands = [quote(activate_command.replace('/','\\')) + " && python " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG1") + " && " + deactivate_command]
+        commands = ["cmd /C \"" + quote(activate_command.replace('/','\\')) + " && python " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG2") + " && " + deactivate_command + "\""]
         # commands = [quote(python_executable.replace('/','\\')) + " " + quote(python_file) + " " + quote(property_file) + " " + quote("runSPG2")]
         return commands
 
