@@ -77,6 +77,8 @@ county_fips = {'Baker': '001',
                'Yamhill': '071',
                'EXTSTA': '0'}
 
+# Conversion factor for mi^2 to acres
+Mi2Acres = 640
 
 #range of beta zones and external stations in aggregated skim matrices
 bzoneRange = range(0,457)
@@ -481,6 +483,8 @@ class SwimModel(object):
                 elif self.field.upper() == 'COUNTYFIPS':
                     data.append([county_fips.get(county_name) for county_name in
                                  VisumHelpers.GetMulti(self.Visum.Net.Zones, county_label[0])])
+                elif self.field.upper() == 'GRIDACRES':
+                    data.append([AreaMi2 * Mi2Acres for AreaMi2 in VisumHelpers.GetMulti(self.Visum.Net.Zones, 'AREAMI2')])
                 else:
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Zones, self.field))
 
