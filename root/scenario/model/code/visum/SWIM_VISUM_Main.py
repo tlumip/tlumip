@@ -26,6 +26,58 @@ a_zone = 'NO' #azone field in Visum
 b_zone = 'MainZoneNo' #bzone field in Visum
 zoneAlias = {'AZONE': a_zone, 'BZONE': b_zone}
 
+#state and county fips codes
+state_fips = {'CA': 6, 'OR': 41, 'WA': 53}
+county_fips = {'Baker': '001',
+               'Benton': '003',
+               'Benton_WA': '005',
+               'Clackamas': '005',
+               'Clark_WA': '011',
+               'Clatsop': '007',
+               'Columbia': '009',
+               'Coos': '011',
+               'Cowlitz_WA': '015',
+               'Crook': '013',
+               'Curry': '015',
+               'DelNorte_CA': '015',
+               'Deschutes': '017',
+               'Douglas': '019',
+               'Franklin_WA': '021',
+               'Gilliam': '021',
+               'Grant': '023',
+               'Harney': '025',
+               'Hood River': '027',
+               'Jackson': '029',
+               'Jefferson': '031',
+               'Josephine': '033',
+               'Klamath': '035',
+               'Klickitat_WA': '039',
+               'Lake': '037',
+               'Lane': '039',
+               'Lincoln': '041',
+               'Linn': '043',
+               'Malheur': '045',
+               'Marion': '047',
+               'Morrow': '049',
+               'Multnomah': '051',
+               'Pacific_WA': '049',
+               'Polk': '053',
+               'Sherman': '055',
+               'Siskiyou_CA': '093',
+               'Skamania_WA': '059',
+               'Tillamook': '057',
+               'Umatilla': '059',
+               'Union': '061',
+               'Wahkiakum_WA': '069',
+               'WallaWalla_WA': '071',
+               'Wallowa': '063',
+               'Wasco': '065',
+               'Washington': '067',
+               'Wheeler': '069',
+               'Yamhill': '071',
+               'EXTSTA': '0'}
+
+
 #range of beta zones and external stations in aggregated skim matrices
 bzoneRange = range(0,457)
 externalStation = range(457,469)
@@ -416,17 +468,28 @@ class SwimModel(object):
 
             #get required attributes table from Visum
             data = list()
+            state_label = [field for field in self.fields if field.upper() == 'STATE']
+            county_label = [field for field in self.fields if field.upper() == 'COUNTY']
             for fieldCounter in range(0, len(self.fields)):
                 self.field = self.fields[fieldCounter]
                 # if BZONE then get MainZoneNo
                 if self.field.upper() == 'BZONE':
                     self.field = zoneAlias.get(self.field.upper())
-                data.append(VisumHelpers.GetMulti(self.Visum.Net.Zones, self.field))
+                if self.field.upper() == 'STATEFIPS':
+                    data.append([state_fips.get(state_name) for state_name in
+                                 VisumHelpers.GetMulti(self.Visum.Net.Zones, state_label[0])])
+                elif self.field.upper() == 'COUNTYFIPS':
+                    data.append([county_fips.get(county_name) for county_name in
+                                 VisumHelpers.GetMulti(self.Visum.Net.Zones, county_label[0])])
+                else:
+                    data.append(VisumHelpers.GetMulti(self.Visum.Net.Zones, self.field))
 
             #Make list of lists (rows)
             if not fileName.lower().find('allzones') > -1:
                 fileTable = self.cleanZonalDataOfWorldZones(self.stringConcatenate(data))
             elif fileName.lower().find('allzones') > -1:
+                # Replace 0s in Bzone with external stations
+                data[1] = [bzone if bzone > 0 else data[0][index] for index, bzone in enumerate(data[1])]
                 data[0].extend(["6001.0","6002.0","6003.0","6004.0","6005.0","6006.0"])
                 data[1].extend(["6001.0","6002.0","6003.0","6004.0","6005.0","6006.0"])
                 data[2].extend(["WM","WM","WM","WM","WM","WM"])
