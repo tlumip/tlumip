@@ -20,4 +20,4 @@ These files are needed from the Census Bureau for PopulationSim but are not incl
 - psam_p41.csv
 - psam_p53.csv
 
-Users can download all of the necessary files by running `download.bash` in a bash shell.
+Users can download all of the necessary files by running `download_census.bat` in a command prompt.
