@@ -713,9 +713,16 @@ class SwimModel(object):
         atts = self.Visum.Net.CountLocations.Attributes.GetAll
         attnames = []
         for att in atts:
-            attnames.append(att.ID)
+            try:
+                self.Visum.Net.CountLocations.GetMultiAttValues(att.ID)
+                print ("success in getting attribute: {}".format(att.ID))
+                attnames.append(att.ID)
+            except:
+                print ("failed to get attribute: {}".format(att.ID))
 
         data = map(list, self.Visum.Net.CountLocations.GetMultipleAttributes(attnames))
+        # future Python 3.9 potential solution
+        #data = [ *map(list,self.Visum.Net.CountLocations.GetMultipleAttributes(attnames)) ]        
 
         self.push_csv_py27(countLocationsFileName, attnames, data)
 
