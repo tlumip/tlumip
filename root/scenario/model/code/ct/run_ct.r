@@ -19,7 +19,7 @@ if (length(args)==0) {
 } else {
     # Assume that the user has passed valid filenames
     # TO-DO: Add code that checks for existence of these files?
-    if (length(args) < 7){
+    if (length(args) < 6){
 			stop("Error: SWIM properties filename and CT folders must be specified when running CT")
 		}
     swim_properties_FN <- substr(args[8],2,nchar(args[8]))
@@ -38,13 +38,17 @@ if (!exists(RTP[["ct.cluster.logfile"]])) {
   RTP[["ct.cluster.logfile"]] <- ""  # Since several functions depend upon it
 }
 
+local({
+if(is.character(ct.oregon.regions)){
+ct.oregon.regions = as.integer(unlist(strsplit(ct.oregon.regions,",")))
+}}, envir = RTP)
+
 # Process the raw FAF data and transform into format that can be used by the functions below
 faf.flow.data = swimctr::preprocess_faf4_database(RTP[["faf.flow.data"]], 
-                                                  as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
+                                                  2015,#as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
 												  FALSE,
                                                   RTP[["ct.oregon.regions"]],
-                                                  RTP[["ct.oregon.outer.regions"]],
-                                                  as.numeric(RTP[["faf.value.deflator"]]))
+                                                  RTP[["ct.oregon.outer.regions"]])
 
 # Import make and use coefficients from PECAS and morph into format we can use
 makeuse <- swimctr::create_makeuse_coefficients(RTP[["pecas.makeuse"]],
@@ -84,15 +88,13 @@ hourly_local_trips <- swimctr::temporal_allocation(daily_local_trips,
 # Start by creating annual truckload equivalencies from the FAF data, which
 # depends upon a large number of parameter tables from the FAF Freight Traffic
 # Analysis report.
-annual_faf_trucks <- swimctr::create_annual_faf_truckloads(
+annual_faf_trucks <- swimctr::create_annual_truckload_equivalents(
 	faf.flow.data, RTP[["faf.truck.allocation.factors"]],
-	RTP[["faf.truck.equivalency.factors"]], RTP[["faf.empty.truck.factors"]],
-	as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]))
+	RTP[["ct.cvs.payload.wt.dist"]], RTP[["ct.cvs.stop.pattern.freq"]])
 
 # Next we sample daily trucks, which is accomplished by first reducing annual to
 # weekly flows, and then sampling a day of the week for each discrete truck.
-daily_faf_trucks <- swimctr::sample_daily_faf_truckloads(annual_faf_trucks,
-  external_scaling_factor = as.numeric(RTP[["faf.external.scaling.factor"]]))
+daily_faf_trucks <- swimctr::sample_daily_faf_truckloads(annual_faf_trucks)
 
 # Allocate them to zones within the modeled area
 allocated_faf_trips <- swimctr::allocate_faf_to_zones(daily_faf_trucks, firms,
@@ -106,8 +108,9 @@ hourly_faf_trips <- swimctr::temporal_allocation(allocated_faf_trips,
 # Write a combined trip list with all of the attributes that Ben had formerly
 # exported, as well as a few new ones (including distance and travel time for
 # each trip)
-swimctr::export_trip_list(hourly_faf_trips, hourly_local_trips,
-  RTP[["ct.truck.trips"]])
+swimctr::export_trip_list(hourly_faf_trips, hourly_local_trips) %>%
+readr::write_csv(path=RTP[["ct.truck.trips"]])
+
 
 # Also, legacy compatibility requires that there be an empty ET file
 
