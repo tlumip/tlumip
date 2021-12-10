@@ -36,6 +36,7 @@
 #9/15/11 CF - Divide ExchangeResults floorspace values by 1000000 when using AA
 #4/17/14 AB - Update for PECAS code, for PECAS version of SWIM, FloorspaceInventor and Increment inputs and outputs are in SQFT, not MSQFT
 #7/28/15 AB - Removed PI functionality
+#12/9/21 AB - removed refernce to PUMA 1990
 
 #LOAD THE MODEL INPUT DATA
 #=========================
@@ -115,13 +116,13 @@
     # Read the data file
     AlphaBeta.. <- read.csv(Input_$AlphaBetaCorrespondence, as.is=TRUE)
     AlphaBeta.. <- AlphaBeta..[,c("Azone", "Bzone", "ALDRegion", "State", "COUNTY", "STATEFIPS",
-        "COUNTYFIPS", "PUMA1990", "PUMA2000")]
+        "COUNTYFIPS", "PUMA2000")]
     names(AlphaBeta..) <- c("AlphaZone", "BetaZone", "Region", "State", "County", "StateFips",
-        "CountyFips", "Puma1990", "Puma2000")
+        "CountyFips", "Puma2000")
     AlphaBeta.. <- setDataframeClasses(AlphaBeta.., rep("character", ncol(AlphaBeta..)))
     # Order by alpha zone and select columns to keep
     AlphaBeta.. <- AlphaBeta..[order(as.numeric(AlphaBeta..$AlphaZone)),
-        c("AlphaZone", "BetaZone", "Region", "State", "County", "StateFips", "CountyFips", "Puma1990", 
+        c("AlphaZone", "BetaZone", "Region", "State", "County", "StateFips", "CountyFips", #"Puma1990", 
             "Puma2000")]
     # Make a new unique FIPS code for counties that combines the state and county codes
     AlphaBeta..$Fips <- paste(
@@ -147,8 +148,8 @@
     Cc <- unique(AlphaBeta..$Fips)
     Cc <- Cc[order(as.numeric(Cc))]
     # Define Puma1990 naming vector
-    Pm1 <- unique(AlphaBeta..$Puma1990)
-    Pm1 <- Pm1[order(as.numeric(Pm1))]
+    #Pm1 <- unique(AlphaBeta..$Puma1990)
+    #Pm1 <- Pm1[order(as.numeric(Pm1))]
     # Define Puma1990 naming vector
     Pm2 <- unique(AlphaBeta..$Puma2000)
     Pm2 <- Pm2[order(as.numeric(Pm2))]

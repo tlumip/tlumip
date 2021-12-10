@@ -485,6 +485,8 @@ class SwimModel(object):
                                  VisumHelpers.GetMulti(self.Visum.Net.Zones, county_label[0])])
                 elif self.field.upper() == 'GRIDACRES':
                     data.append([AreaMi2 * Mi2Acres for AreaMi2 in VisumHelpers.GetMulti(self.Visum.Net.Zones, 'AREAMI2')])
+                elif self.field.upper() == 'AREASQFT':
+                    data.append([AreaMi2 * 52800 * 5280 for AreaMi2 in VisumHelpers.GetMulti(self.Visum.Net.Zones, 'AREAMI2')])
                 else:
                     data.append(VisumHelpers.GetMulti(self.Visum.Net.Zones, self.field))
 
@@ -712,7 +714,9 @@ class SwimModel(object):
 
         atts = self.Visum.Net.CountLocations.Attributes.GetAll
         attnames = []
+        
         for att in atts:
+            #attnames.append(att.ID)
             try:
                 self.Visum.Net.CountLocations.GetMultiAttValues(att.ID)
                 print ("success in getting attribute: {}".format(att.ID))
@@ -721,8 +725,7 @@ class SwimModel(object):
                 print ("failed to get attribute: {}".format(att.ID))
 
         data = map(list, self.Visum.Net.CountLocations.GetMultipleAttributes(attnames))
-        # future Python 3.9 potential solution
-        #data = [ *map(list,self.Visum.Net.CountLocations.GetMultipleAttributes(attnames)) ]        
+        #data = [ *map(list,self.Visum.Net.CountLocations.GetMultipleAttributes(attnames)) ] 
 
         self.push_csv_py27(countLocationsFileName, attnames, data)
 
@@ -1002,8 +1005,9 @@ class SwimModel(object):
         self.service_data["LOS"] = losList
         
         #add AREA as well
-        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREASQFT")
-        areas = [item/(5280**2) for item in areas] #from sq ft to miles
+        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREAMI2")
+        # Changing pointer to Visums AREAMI2 from User attribute AREASQMI, so this line is no longer needed
+        #areas = [item/(5280**2) for item in areas] #from sq ft to miles
         self.service_data["AREA"] = areas
         self.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
 
@@ -1011,8 +1015,9 @@ class SwimModel(object):
     def calcServiceAreaData(self):
 
         #get zone area
-        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREASQFT")
-        areas = [item/(5280**2) for item in areas] #from sq ft to miles
+        areas = VisumHelpers.GetMulti(self.Visum.Net.Zones, "AREAMI2")
+        # Changing pointer to Visums AREAMI2 from User attribute AREASQMI, so this line is no longer needed
+        #areas = [item/(5280**2) for item in areas] #from sq ft to miles
         self.service_data["AREA"] = areas
 
         #read synpop summary table
