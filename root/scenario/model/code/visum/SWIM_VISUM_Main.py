@@ -543,6 +543,15 @@ class SwimModel(object):
                         row = [wmrkts[z], self.headers[i], self.poiColumns[i][z]]
                         outTable.append(row)
 
+                for i in range(1,len(fileTable)):
+                  row = fileTable[i]
+                  for j in range(len(row)):
+                    azone = row[0]
+                    attr = self.fields[j]
+
+                    value = row[j]
+                    if j > 0:
+                      outTable.append([azone, attr, value])
                 #add column headers
                 fileTable = outTable
                 fileTable.insert(0, ["Azone", "activity", "quantity"])
