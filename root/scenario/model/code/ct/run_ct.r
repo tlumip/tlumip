@@ -45,10 +45,11 @@ ct.oregon.regions = as.integer(unlist(strsplit(ct.oregon.regions,",")))
 
 # Process the raw FAF data and transform into format that can be used by the functions below
 faf.flow.data = swimctr::preprocess_faf4_database(RTP[["faf.flow.data"]], 
-                                                  2015,#as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
+                                                  as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
 												  FALSE,
                                                   RTP[["ct.oregon.regions"]],
-                                                  RTP[["ct.oregon.outer.regions"]])
+                                                  RTP[["ct.oregon.outer.regions"]],
+                                                  as.numeric(RTP[["faf.value.deflator"]]))
 
 # Import make and use coefficients from PECAS and morph into format we can use
 makeuse <- swimctr::create_makeuse_coefficients(RTP[["pecas.makeuse"]],
