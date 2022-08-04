@@ -125,6 +125,8 @@ for(Field in AggFields[2:length(AggFields)]){
 rm(Field,temp)
 
 # remove "ignore fields"
+az.. <- az..[!is.na(az..$sArea),]
+act.. <- act..[!is.na(act..$sArea),]
 az.. <- az..[az..$sArea != Ignore,]
 act.. <- act..[act..$sArea != Ignore,]
 
