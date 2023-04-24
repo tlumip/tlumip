@@ -1,4 +1,5 @@
 occupation,occupationLabel,occupationIndex
+0,No_Occupation,0
 10,A1-Mgmt Bus,1
 20,A1-Mgmt Bus,1
 40,A1-Mgmt Bus,1
@@ -7,21 +8,17 @@ occupation,occupationLabel,occupationIndex
 100,A1-Mgmt Bus,1
 110,A1-Mgmt Bus,1
 120,A1-Mgmt Bus,1
-130,A1-Mgmt Bus,1
 135,A1-Mgmt Bus,1
 136,A1-Mgmt Bus,1
 137,A1-Mgmt Bus,1
 140,A1-Mgmt Bus,1
 150,A1-Mgmt Bus,1
 160,A1-Mgmt Bus,1
-200,A1-Mgmt Bus,1
 205,A1-Mgmt Bus,1
-210,A1-Mgmt Bus,1
 220,A1-Mgmt Bus,1
 230,A1-Mgmt Bus,1
 300,A1-Mgmt Bus,1
 310,A1-Mgmt Bus,1
-320,A1-Mgmt Bus,1
 330,A1-Mgmt Bus,1
 340,A1-Mgmt Bus,1
 350,A1-Mgmt Bus,1
@@ -35,19 +32,15 @@ occupation,occupationLabel,occupationIndex
 520,A1-Mgmt Bus,1
 530,A1-Mgmt Bus,1
 540,A1-Mgmt Bus,1
-560,A1-Mgmt Bus,1
 565,A1-Mgmt Bus,1
 600,A1-Mgmt Bus,1
-620,A1-Mgmt Bus,1
 630,A1-Mgmt Bus,1
 640,A1-Mgmt Bus,1
 650,A1-Mgmt Bus,1
 700,A1-Mgmt Bus,1
 710,A1-Mgmt Bus,1
-720,A1-Mgmt Bus,1
 725,A1-Mgmt Bus,1
 726,A1-Mgmt Bus,1
-730,A1-Mgmt Bus,1
 735,A1-Mgmt Bus,1
 740,A1-Mgmt Bus,1
 800,A1-Mgmt Bus,1
@@ -62,20 +55,17 @@ occupation,occupationLabel,occupationIndex
 930,A1-Mgmt Bus,1
 940,A1-Mgmt Bus,1
 950,A1-Mgmt Bus,1
-1000,B1-Prof Specialty,2
 1005,B1-Prof Specialty,2
 1006,B1-Prof Specialty,2
 1007,B1-Prof Specialty,2
 1010,B1-Prof Specialty,2
 1020,B1-Prof Specialty,2
 1030,B1-Prof Specialty,2
-1050,B1-Prof Specialty,2
+1050,B4-Technical Unskilled,5
 1060,B1-Prof Specialty,2
-1100,B1-Prof Specialty,2
-1105,B1-Prof Specialty,2
-1106,B1-Prof Specialty,2
-1107,B1-Prof Specialty,2
-1110,B1-Prof Specialty,2
+1105,B4-Technical Unskilled,5
+1106,B4-Technical Unskilled,5
+1107,B4-Technical Unskilled,5
 1200,B1-Prof Specialty,2
 1220,B1-Prof Specialty,2
 1240,B1-Prof Specialty,2
@@ -94,6 +84,9 @@ occupation,occupationLabel,occupationIndex
 1460,B1-Prof Specialty,2
 1520,B1-Prof Specialty,2
 1530,B1-Prof Specialty,2
+1540,B4-Technical Unskilled,5
+1550,B4-Technical Unskilled,5
+1560,B4-Technical Unskilled,5
 1600,B1-Prof Specialty,2
 1610,B1-Prof Specialty,2
 1640,B1-Prof Specialty,2
@@ -104,34 +97,55 @@ occupation,occupationLabel,occupationIndex
 1740,B1-Prof Specialty,2
 1760,B1-Prof Specialty,2
 1800,B1-Prof Specialty,2
-1810,B1-Prof Specialty,2
 1820,B1-Prof Specialty,2
 1840,B1-Prof Specialty,2
 1860,B1-Prof Specialty,2
+1900,B4-Technical Unskilled,5
+1910,B4-Technical Unskilled,5
+1920,B4-Technical Unskilled,5
+1930,B4-Technical Unskilled,5
+1965,B4-Technical Unskilled,5
 2000,B1-Prof Specialty,2
 2010,B1-Prof Specialty,2
 2015,B1-Prof Specialty,2
-2016,B1-Prof Specialty,2
-2025,B1-Prof Specialty,2
+2016,B4-Technical Unskilled,5
+2025,B4-Technical Unskilled,5
 2040,B1-Prof Specialty,2
 2050,B1-Prof Specialty,2
 2060,B1-Prof Specialty,2
 2100,B1-Prof Specialty,2
-2600,B1-Prof Specialty,2
+2105,B1-Prof Specialty,2
+2145,B4-Technical Unskilled,5
+2160,B4-Technical Unskilled,5
+2200,B2-Education,3
+2300,B4-Technical Unskilled,5
+2310,B2-Education,3
+2320,B2-Education,3
+2330,B2-Education,3
+2340,B4-Technical Unskilled,5
+2400,B2-Education,3
+2430,B2-Education,3
+2440,B4-Technical Unskilled,5
+2540,B4-Technical Unskilled,5
+2550,B2-Education,3
+2600,B4-Technical Unskilled,5
+2630,B1-Prof Specialty,2
+2700,B4-Technical Unskilled,5
 2710,B1-Prof Specialty,2
+2720,B4-Technical Unskilled,5
+2740,B4-Technical Unskilled,5
+2750,B1-Prof Specialty,2
+2760,B4-Technical Unskilled,5
+2800,B4-Technical Unskilled,5
 2810,B1-Prof Specialty,2
-2820,B1-Prof Specialty,2
 2825,B1-Prof Specialty,2
 2830,B1-Prof Specialty,2
 2840,B1-Prof Specialty,2
 2850,B1-Prof Specialty,2
-2200,B2-Education,3
-2310,B2-Education,3
-2320,B2-Education,3
-2330,B2-Education,3
-2400,B2-Education,3
-2430,B2-Education,3
-2550,B2-Education,3
+2860,B4-Technical Unskilled,5
+2900,B4-Technical Unskilled,5
+2910,B4-Technical Unskilled,5
+2920,B1-Prof Specialty,2
 3000,B3-Health,4
 3010,B3-Health,4
 3030,B3-Health,4
@@ -140,64 +154,29 @@ occupation,occupationLabel,occupationIndex
 3060,B3-Health,4
 3110,B3-Health,4
 3120,B3-Health,4
-3130,B3-Health,4
 3140,B3-Health,4
 3150,B3-Health,4
 3160,B3-Health,4
 3200,B3-Health,4
 3210,B3-Health,4
+3220,B4-Technical Unskilled,5
 3230,B3-Health,4
-3240,B3-Health,4
 3245,B3-Health,4
 3250,B3-Health,4
 3255,B3-Health,4
 3256,B3-Health,4
 3258,B3-Health,4
 3260,B3-Health,4
-3420,B3-Health,4
-3535,B3-Health,4
-3540,B3-Health,4
-1040,B4-Technical Unskilled,5
-1540,B4-Technical Unskilled,5
-1550,B4-Technical Unskilled,5
-1560,B4-Technical Unskilled,5
-1900,B4-Technical Unskilled,5
-1910,B4-Technical Unskilled,5
-1920,B4-Technical Unskilled,5
-1930,B4-Technical Unskilled,5
-1960,B4-Technical Unskilled,5
-1965,B4-Technical Unskilled,5
-2020,B4-Technical Unskilled,5
-2105,B4-Technical Unskilled,5
-2140,B4-Technical Unskilled,5
-2145,B4-Technical Unskilled,5
-2150,B4-Technical Unskilled,5
-2160,B4-Technical Unskilled,5
-2300,B4-Technical Unskilled,5
-2340,B4-Technical Unskilled,5
-2440,B4-Technical Unskilled,5
-2540,B4-Technical Unskilled,5
-2630,B4-Technical Unskilled,5
-2700,B4-Technical Unskilled,5
-2720,B4-Technical Unskilled,5
-2740,B4-Technical Unskilled,5
-2750,B4-Technical Unskilled,5
-2760,B4-Technical Unskilled,5
-2800,B4-Technical Unskilled,5
-2860,B4-Technical Unskilled,5
-2900,B4-Technical Unskilled,5
-2910,B4-Technical Unskilled,5
-2920,B4-Technical Unskilled,5
-3220,B4-Technical Unskilled,5
 3300,B4-Technical Unskilled,5
 3310,B4-Technical Unskilled,5
 3320,B4-Technical Unskilled,5
 3400,B4-Technical Unskilled,5
-3410,B4-Technical Unskilled,5
+3420,B4-Technical Unskilled,5
 3500,B4-Technical Unskilled,5
 3510,B4-Technical Unskilled,5
 3520,B4-Technical Unskilled,5
-3530,B4-Technical Unskilled,5
+3535,B4-Technical Unskilled,5
+3540,B3-Health,4
 3600,B4-Technical Unskilled,5
 3610,B4-Technical Unskilled,5
 3620,B4-Technical Unskilled,5
@@ -208,209 +187,7 @@ occupation,occupationLabel,occupationIndex
 3647,B4-Technical Unskilled,5
 3648,B4-Technical Unskilled,5
 3649,B4-Technical Unskilled,5
-3650,B4-Technical Unskilled,5
 3655,B4-Technical Unskilled,5
-4300,C1-Sales Clerical Professionals,6
-4540,C1-Sales Clerical Professionals,6
-4550,C1-Sales Clerical Professionals,6
-4620,C1-Sales Clerical Professionals,6
-4710,C1-Sales Clerical Professionals,6
-4800,C1-Sales Clerical Professionals,6
-4810,C1-Sales Clerical Professionals,6
-4820,C1-Sales Clerical Professionals,6
-4830,C1-Sales Clerical Professionals,6
-4840,C1-Sales Clerical Professionals,6
-4850,C1-Sales Clerical Professionals,6
-4920,C1-Sales Clerical Professionals,6
-4930,C1-Sales Clerical Professionals,6
-4960,C1-Sales Clerical Professionals,6
-5000,C1-Sales Clerical Professionals,6
-5150,C1-Sales Clerical Professionals,6
-5200,C1-Sales Clerical Professionals,6
-5250,C1-Sales Clerical Professionals,6
-5320,C1-Sales Clerical Professionals,6
-5410,C1-Sales Clerical Professionals,6
-5600,C1-Sales Clerical Professionals,6
-5910,C1-Sales Clerical Professionals,6
-5920,C1-Sales Clerical Professionals,6
-5930,C1-Sales Clerical Professionals,6
-5940,C1-Sales Clerical Professionals,6
-4040,C2-Sales Service,7
-4320,C2-Sales Service,7
-4340,C2-Sales Service,7
-4460,C2-Sales Service,7
-4465,C2-Sales Service,7
-4510,C2-Sales Service,7
-4640,C2-Sales Service,7
-4700,C2-Sales Service,7
-4760,C2-Sales Service,7
-4965,C2-Sales Service,7
-5010,C3-Clerical,8
-5020,C3-Clerical,8
-5030,C3-Clerical,8
-5100,C3-Clerical,8
-5110,C3-Clerical,8
-5120,C3-Clerical,8
-5130,C3-Clerical,8
-5140,C3-Clerical,8
-5160,C3-Clerical,8
-5165,C3-Clerical,8
-5220,C3-Clerical,8
-5230,C3-Clerical,8
-5240,C3-Clerical,8
-5260,C3-Clerical,8
-5300,C3-Clerical,8
-5310,C3-Clerical,8
-5330,C3-Clerical,8
-5340,C3-Clerical,8
-5350,C3-Clerical,8
-5360,C3-Clerical,8
-5400,C3-Clerical,8
-5420,C3-Clerical,8
-5500,C3-Clerical,8
-5510,C3-Clerical,8
-5520,C3-Clerical,8
-5530,C3-Clerical,8
-5540,C3-Clerical,8
-5550,C3-Clerical,8
-5560,C3-Clerical,8
-5700,C3-Clerical,8
-5800,C3-Clerical,8
-5810,C3-Clerical,8
-5820,C3-Clerical,8
-5840,C3-Clerical,8
-5850,C3-Clerical,8
-5860,C3-Clerical,8
-5900,C3-Clerical,8
-4000,C4-Sales Clerical Unskilled,9
-4010,C4-Sales Clerical Unskilled,9
-4020,C4-Sales Clerical Unskilled,9
-4030,C4-Sales Clerical Unskilled,9
-4050,C4-Sales Clerical Unskilled,9
-4060,C4-Sales Clerical Unskilled,9
-4110,C4-Sales Clerical Unskilled,9
-4120,C4-Sales Clerical Unskilled,9
-4130,C4-Sales Clerical Unskilled,9
-4140,C4-Sales Clerical Unskilled,9
-4150,C4-Sales Clerical Unskilled,9
-4350,C4-Sales Clerical Unskilled,9
-4400,C4-Sales Clerical Unskilled,9
-4410,C4-Sales Clerical Unskilled,9
-4420,C4-Sales Clerical Unskilled,9
-4430,C4-Sales Clerical Unskilled,9
-4500,C4-Sales Clerical Unskilled,9
-4520,C4-Sales Clerical Unskilled,9
-4530,C4-Sales Clerical Unskilled,9
-4600,C4-Sales Clerical Unskilled,9
-4610,C4-Sales Clerical Unskilled,9
-4650,C4-Sales Clerical Unskilled,9
-4720,C4-Sales Clerical Unskilled,9
-4740,C4-Sales Clerical Unskilled,9
-4750,C4-Sales Clerical Unskilled,9
-4900,C4-Sales Clerical Unskilled,9
-4940,C4-Sales Clerical Unskilled,9
-4950,C4-Sales Clerical Unskilled,9
-5610,C4-Sales Clerical Unskilled,9
-5620,C4-Sales Clerical Unskilled,9
-5630,C4-Sales Clerical Unskilled,9
-6005,D1-Production Specialists,10
-6010,D1-Production Specialists,10
-7700,D1-Production Specialists,10
-7710,D1-Production Specialists,10
-7720,D1-Production Specialists,10
-7730,D1-Production Specialists,10
-7740,D1-Production Specialists,10
-7750,D1-Production Specialists,10
-7900,D1-Production Specialists,10
-7920,D1-Production Specialists,10
-7930,D1-Production Specialists,10
-7940,D1-Production Specialists,10
-7950,D1-Production Specialists,10
-8010,D1-Production Specialists,10
-8030,D1-Production Specialists,10
-8040,D1-Production Specialists,10
-8060,D1-Production Specialists,10
-8100,D1-Production Specialists,10
-8130,D1-Production Specialists,10
-8140,D1-Production Specialists,10
-8150,D1-Production Specialists,10
-8210,D1-Production Specialists,10
-8220,D1-Production Specialists,10
-8230,D1-Production Specialists,10
-8240,D1-Production Specialists,10
-8250,D1-Production Specialists,10
-8260,D1-Production Specialists,10
-8500,D1-Production Specialists,10
-8550,D1-Production Specialists,10
-8600,D1-Production Specialists,10
-8610,D1-Production Specialists,10
-8620,D1-Production Specialists,10
-8630,D1-Production Specialists,10
-8640,D1-Production Specialists,10
-8720,D1-Production Specialists,10
-8730,D1-Production Specialists,10
-8740,D1-Production Specialists,10
-8750,D1-Production Specialists,10
-8760,D1-Production Specialists,10
-8830,D1-Production Specialists,10
-8910,D1-Production Specialists,10
-8930,D1-Production Specialists,10
-8940,D1-Production Specialists,10
-4200,D2-MaintConstRepair Specialists,11
-4210,D2-MaintConstRepair Specialists,11
-4240,D2-MaintConstRepair Specialists,11
-6200,D2-MaintConstRepair Specialists,11
-6210,D2-MaintConstRepair Specialists,11
-6350,D2-MaintConstRepair Specialists,11
-6355,D2-MaintConstRepair Specialists,11
-6360,D2-MaintConstRepair Specialists,11
-6430,D2-MaintConstRepair Specialists,11
-6440,D2-MaintConstRepair Specialists,11
-6515,D2-MaintConstRepair Specialists,11
-6520,D2-MaintConstRepair Specialists,11
-6530,D2-MaintConstRepair Specialists,11
-6660,D2-MaintConstRepair Specialists,11
-6700,D2-MaintConstRepair Specialists,11
-6720,D2-MaintConstRepair Specialists,11
-6730,D2-MaintConstRepair Specialists,11
-6740,D2-MaintConstRepair Specialists,11
-6760,D2-MaintConstRepair Specialists,11
-6765,D2-MaintConstRepair Specialists,11
-6800,D2-MaintConstRepair Specialists,11
-6820,D2-MaintConstRepair Specialists,11
-6830,D2-MaintConstRepair Specialists,11
-6840,D2-MaintConstRepair Specialists,11
-7000,D2-MaintConstRepair Specialists,11
-7010,D2-MaintConstRepair Specialists,11
-7020,D2-MaintConstRepair Specialists,11
-7030,D2-MaintConstRepair Specialists,11
-7040,D2-MaintConstRepair Specialists,11
-7100,D2-MaintConstRepair Specialists,11
-7110,D2-MaintConstRepair Specialists,11
-7120,D2-MaintConstRepair Specialists,11
-7130,D2-MaintConstRepair Specialists,11
-7140,D2-MaintConstRepair Specialists,11
-7160,D2-MaintConstRepair Specialists,11
-7200,D2-MaintConstRepair Specialists,11
-7210,D2-MaintConstRepair Specialists,11
-7220,D2-MaintConstRepair Specialists,11
-7240,D2-MaintConstRepair Specialists,11
-7300,D2-MaintConstRepair Specialists,11
-7310,D2-MaintConstRepair Specialists,11
-7315,D2-MaintConstRepair Specialists,11
-7320,D2-MaintConstRepair Specialists,11
-7330,D2-MaintConstRepair Specialists,11
-7340,D2-MaintConstRepair Specialists,11
-7350,D2-MaintConstRepair Specialists,11
-7360,D2-MaintConstRepair Specialists,11
-7410,D2-MaintConstRepair Specialists,11
-7420,D2-MaintConstRepair Specialists,11
-7430,D2-MaintConstRepair Specialists,11
-7510,D2-MaintConstRepair Specialists,11
-7540,D2-MaintConstRepair Specialists,11
-7560,D2-MaintConstRepair Specialists,11
-7620,D2-MaintConstRepair Specialists,11
-7630,D2-MaintConstRepair Specialists,11
 3700,D3-ProtectTrans Specialists,12
 3710,D3-ProtectTrans Specialists,12
 3720,D3-ProtectTrans Specialists,12
@@ -423,11 +200,249 @@ occupation,occupationLabel,occupationIndex
 3850,D3-ProtectTrans Specialists,12
 3900,D3-ProtectTrans Specialists,12
 3910,D3-ProtectTrans Specialists,12
-3920,D3-ProtectTrans Specialists,12
 3930,D3-ProtectTrans Specialists,12
 3940,D3-ProtectTrans Specialists,12
 3945,D3-ProtectTrans Specialists,12
-3955,D3-ProtectTrans Specialists,12
+3955,D4-Blue Collar Unskilled,13
+4000,C4-Sales Clerical Unskilled,9
+4010,C2-Sales Service,7
+4020,C4-Sales Clerical Unskilled,9
+4030,C4-Sales Clerical Unskilled,9
+4040,C2-Sales Service,7
+4050,C4-Sales Clerical Unskilled,9
+4060,C4-Sales Clerical Unskilled,9
+4110,C4-Sales Clerical Unskilled,9
+4120,C4-Sales Clerical Unskilled,9
+4130,C4-Sales Clerical Unskilled,9
+4140,C4-Sales Clerical Unskilled,9
+4150,C4-Sales Clerical Unskilled,9
+4200,D4-Blue Collar Unskilled,13
+4210,D2-MaintConstRepair Specialists,11
+4220,D4-Blue Collar Unskilled,13
+4230,D4-Blue Collar Unskilled,13
+4240,D2-MaintConstRepair Specialists,11
+4250,D4-Blue Collar Unskilled,13
+4300,C2-Sales Service,7
+4320,C2-Sales Service,7
+4340,C2-Sales Service,7
+4350,C2-Sales Service,7
+4400,C2-Sales Service,7
+4410,C2-Sales Service,7
+4420,C4-Sales Clerical Unskilled,9
+4430,C4-Sales Clerical Unskilled,9
+4460,C2-Sales Service,7
+4465,C1-Sales Clerical Professionals,6
+4500,C2-Sales Service,7
+4510,C2-Sales Service,7
+4520,C4-Sales Clerical Unskilled,9
+4530,C2-Sales Service,7
+4540,C1-Sales Clerical Professionals,6
+4600,C4-Sales Clerical Unskilled,9
+4610,C4-Sales Clerical Unskilled,9
+4620,C1-Sales Clerical Professionals,6
+4640,C2-Sales Service,7
+4650,C2-Sales Service,7
+4700,C2-Sales Service,7
+4710,C1-Sales Clerical Professionals,6
+4720,C4-Sales Clerical Unskilled,9
+4740,C2-Sales Service,7
+4750,C2-Sales Service,7
+4760,C2-Sales Service,7
+4800,C1-Sales Clerical Professionals,6
+4810,C1-Sales Clerical Professionals,6
+4820,C1-Sales Clerical Professionals,6
+4830,C1-Sales Clerical Professionals,6
+4840,C1-Sales Clerical Professionals,6
+4850,C1-Sales Clerical Professionals,6
+4900,C2-Sales Service,7
+4920,C1-Sales Clerical Professionals,6
+4930,C1-Sales Clerical Professionals,6
+4940,C2-Sales Service,7
+4950,C4-Sales Clerical Unskilled,9
+4965,C1-Sales Clerical Professionals,6
+5000,C1-Sales Clerical Professionals,6
+5010,C3-Clerical,8
+5020,C1-Sales Clerical Professionals,6
+5030,C1-Sales Clerical Professionals,6
+5100,C3-Clerical,8
+5110,C3-Clerical,8
+5120,C3-Clerical,8
+5130,C3-Clerical,8
+5140,C1-Sales Clerical Professionals,6
+5150,C1-Sales Clerical Professionals,6
+5160,C3-Clerical,8
+5165,C1-Sales Clerical Professionals,6
+5200,C1-Sales Clerical Professionals,6
+5220,C1-Sales Clerical Professionals,6
+5230,C1-Sales Clerical Professionals,6
+5240,C3-Clerical,8
+5250,C1-Sales Clerical Professionals,6
+5260,C4-Sales Clerical Unskilled,9
+5300,C3-Clerical,8
+5310,C3-Clerical,8
+5320,C1-Sales Clerical Professionals,6
+5330,C1-Sales Clerical Professionals,6
+5340,C3-Clerical,8
+5350,C3-Clerical,8
+5360,C1-Sales Clerical Professionals,6
+5400,C3-Clerical,8
+5410,C3-Clerical,8
+5420,C1-Sales Clerical Professionals,6
+5500,C3-Clerical,8
+5510,C3-Clerical,8
+5520,C3-Clerical,8
+5530,C3-Clerical,8
+5540,C3-Clerical,8
+5550,C3-Clerical,8
+5560,C1-Sales Clerical Professionals,6
+5600,C1-Sales Clerical Professionals,6
+5610,C4-Sales Clerical Unskilled,9
+5620,C4-Sales Clerical Unskilled,9
+5630,C4-Sales Clerical Unskilled,9
+5700,C3-Clerical,8
+5800,C1-Sales Clerical Professionals,6
+5810,C3-Clerical,8
+5820,C3-Clerical,8
+5840,C1-Sales Clerical Professionals,6
+5850,C3-Clerical,8
+5860,C3-Clerical,8
+5900,C4-Sales Clerical Unskilled,9
+5910,C1-Sales Clerical Professionals,6
+5920,C1-Sales Clerical Professionals,6
+5940,C1-Sales Clerical Professionals,6
+6005,D4-Blue Collar Unskilled,13
+6010,D1-Production Specialists,10
+6040,D4-Blue Collar Unskilled,13
+6050,D4-Blue Collar Unskilled,13
+6100,D4-Blue Collar Unskilled,13
+6120,D4-Blue Collar Unskilled,13
+6130,D4-Blue Collar Unskilled,13
+6200,D2-MaintConstRepair Specialists,11
+6210,D2-MaintConstRepair Specialists,11
+6220,D2-MaintConstRepair Specialists,11
+6230,D4-Blue Collar Unskilled,13
+6240,D4-Blue Collar Unskilled,13
+6250,D4-Blue Collar Unskilled,13
+6260,D4-Blue Collar Unskilled,13
+6300,D4-Blue Collar Unskilled,13
+6320,D2-MaintConstRepair Specialists,11
+6330,D4-Blue Collar Unskilled,13
+6355,D2-MaintConstRepair Specialists,11
+6360,D2-MaintConstRepair Specialists,11
+6400,D4-Blue Collar Unskilled,13
+6420,D4-Blue Collar Unskilled,13
+6440,D2-MaintConstRepair Specialists,11
+6460,D4-Blue Collar Unskilled,13
+6515,D4-Blue Collar Unskilled,13
+6520,D2-MaintConstRepair Specialists,11
+6530,D2-MaintConstRepair Specialists,11
+6600,D4-Blue Collar Unskilled,13
+6660,D2-MaintConstRepair Specialists,11
+6700,D2-MaintConstRepair Specialists,11
+6710,D4-Blue Collar Unskilled,13
+6720,D4-Blue Collar Unskilled,13
+6730,D2-MaintConstRepair Specialists,11
+6740,D2-MaintConstRepair Specialists,11
+6765,D4-Blue Collar Unskilled,13
+6800,D2-MaintConstRepair Specialists,11
+6820,D2-MaintConstRepair Specialists,11
+6830,D4-Blue Collar Unskilled,13
+6840,D2-MaintConstRepair Specialists,11
+6940,D2-MaintConstRepair Specialists,11
+7000,D2-MaintConstRepair Specialists,11
+7010,D2-MaintConstRepair Specialists,11
+7020,D2-MaintConstRepair Specialists,11
+7030,D2-MaintConstRepair Specialists,11
+7040,D2-MaintConstRepair Specialists,11
+7100,D2-MaintConstRepair Specialists,11
+7110,D2-MaintConstRepair Specialists,11
+7120,D2-MaintConstRepair Specialists,11
+7130,D2-MaintConstRepair Specialists,11
+7140,D2-MaintConstRepair Specialists,11
+7150,D4-Blue Collar Unskilled,13
+7160,D4-Blue Collar Unskilled,13
+7200,D2-MaintConstRepair Specialists,11
+7210,D2-MaintConstRepair Specialists,11
+7220,D2-MaintConstRepair Specialists,11
+7240,D2-MaintConstRepair Specialists,11
+7260,D2-MaintConstRepair Specialists,11
+7300,D2-MaintConstRepair Specialists,11
+7315,D2-MaintConstRepair Specialists,11
+7320,D2-MaintConstRepair Specialists,11
+7330,D2-MaintConstRepair Specialists,11
+7340,D2-MaintConstRepair Specialists,11
+7350,D2-MaintConstRepair Specialists,11
+7360,D2-MaintConstRepair Specialists,11
+7410,D2-MaintConstRepair Specialists,11
+7420,D2-MaintConstRepair Specialists,11
+7430,D2-MaintConstRepair Specialists,11
+7510,D2-MaintConstRepair Specialists,11
+7540,D2-MaintConstRepair Specialists,11
+7560,D2-MaintConstRepair Specialists,11
+7610,D4-Blue Collar Unskilled,13
+7630,D2-MaintConstRepair Specialists,11
+7700,D1-Production Specialists,10
+7710,D4-Blue Collar Unskilled,13
+7720,D4-Blue Collar Unskilled,13
+7730,D1-Production Specialists,10
+7740,D1-Production Specialists,10
+7750,D4-Blue Collar Unskilled,13
+7800,D1-Production Specialists,10
+7810,D4-Blue Collar Unskilled,13
+7830,D4-Blue Collar Unskilled,13
+7840,D4-Blue Collar Unskilled,13
+7850,D4-Blue Collar Unskilled,13
+7855,D4-Blue Collar Unskilled,13
+7900,D1-Production Specialists,10
+7920,D1-Production Specialists,10
+7930,D4-Blue Collar Unskilled,13
+7940,D1-Production Specialists,10
+7950,D4-Blue Collar Unskilled,13
+8030,D1-Production Specialists,10
+8040,D4-Blue Collar Unskilled,13
+8100,D4-Blue Collar Unskilled,13
+8130,D1-Production Specialists,10
+8140,D1-Production Specialists,10
+8220,D1-Production Specialists,10
+8250,D1-Production Specialists,10
+8255,D1-Production Specialists,10
+8256,D1-Production Specialists,10
+8300,D4-Blue Collar Unskilled,13
+8310,D4-Blue Collar Unskilled,13
+8320,D4-Blue Collar Unskilled,13
+8330,D4-Blue Collar Unskilled,13
+8350,D1-Production Specialists,10
+8400,D4-Blue Collar Unskilled,13
+8420,D4-Blue Collar Unskilled,13
+8450,D4-Blue Collar Unskilled,13
+8460,D4-Blue Collar Unskilled,13
+8500,D4-Blue Collar Unskilled,13
+8510,D4-Blue Collar Unskilled,13
+8530,D4-Blue Collar Unskilled,13
+8540,D4-Blue Collar Unskilled,13
+8550,D4-Blue Collar Unskilled,13
+8600,D1-Production Specialists,10
+8610,D1-Production Specialists,10
+8620,D1-Production Specialists,10
+8630,D1-Production Specialists,10
+8640,D1-Production Specialists,10
+8650,D1-Production Specialists,10
+8710,D4-Blue Collar Unskilled,13
+8720,D1-Production Specialists,10
+8730,D1-Production Specialists,10
+8740,D1-Production Specialists,10
+8750,D1-Production Specialists,10
+8760,D1-Production Specialists,10
+8800,D4-Blue Collar Unskilled,13
+8810,D4-Blue Collar Unskilled,13
+8830,D1-Production Specialists,10
+8850,D1-Production Specialists,10
+8910,D1-Production Specialists,10
+8920,D1-Production Specialists,10
+8930,D1-Production Specialists,10
+8940,D1-Production Specialists,10
+8950,D4-Blue Collar Unskilled,13
+8965,D1-Production Specialists,10
 9000,D3-ProtectTrans Specialists,12
 9030,D3-ProtectTrans Specialists,12
 9040,D3-ProtectTrans Specialists,12
@@ -438,95 +453,28 @@ occupation,occupationLabel,occupationIndex
 9140,D3-ProtectTrans Specialists,12
 9150,D3-ProtectTrans Specialists,12
 9200,D3-ProtectTrans Specialists,12
-9230,D3-ProtectTrans Specialists,12
 9240,D3-ProtectTrans Specialists,12
 9260,D3-ProtectTrans Specialists,12
 9300,D3-ProtectTrans Specialists,12
 9310,D3-ProtectTrans Specialists,12
 9350,D3-ProtectTrans Specialists,12
+9360,D4-Blue Collar Unskilled,13
 9410,D3-ProtectTrans Specialists,12
 9415,D3-ProtectTrans Specialists,12
 9420,D3-ProtectTrans Specialists,12
 9510,D3-ProtectTrans Specialists,12
-9560,D3-ProtectTrans Specialists,12
+9520,D4-Blue Collar Unskilled,13
+9560,D4-Blue Collar Unskilled,13
+9600,D4-Blue Collar Unskilled,13
+9610,D4-Blue Collar Unskilled,13
+9620,D4-Blue Collar Unskilled,13
+9630,D3-ProtectTrans Specialists,12
+9640,D4-Blue Collar Unskilled,13
 9650,D3-ProtectTrans Specialists,12
-9750,D3-ProtectTrans Specialists,12
+9720,D3-ProtectTrans Specialists,12
+9750,D4-Blue Collar Unskilled,13
 9800,D3-ProtectTrans Specialists,12
 9810,D3-ProtectTrans Specialists,12
 9820,D3-ProtectTrans Specialists,12
 9830,D3-ProtectTrans Specialists,12
-3950,D4-Blue Collar Unskilled,13
-4220,D4-Blue Collar Unskilled,13
-4230,D4-Blue Collar Unskilled,13
-4250,D4-Blue Collar Unskilled,13
-6000,D4-Blue Collar Unskilled,13
-6040,D4-Blue Collar Unskilled,13
-6050,D4-Blue Collar Unskilled,13
-6100,D4-Blue Collar Unskilled,13
-6120,D4-Blue Collar Unskilled,13
-6130,D4-Blue Collar Unskilled,13
-6220,D4-Blue Collar Unskilled,13
-6230,D4-Blue Collar Unskilled,13
-6240,D4-Blue Collar Unskilled,13
-6250,D4-Blue Collar Unskilled,13
-6260,D4-Blue Collar Unskilled,13
-6300,D4-Blue Collar Unskilled,13
-6320,D4-Blue Collar Unskilled,13
-6330,D4-Blue Collar Unskilled,13
-6400,D4-Blue Collar Unskilled,13
-6420,D4-Blue Collar Unskilled,13
-6460,D4-Blue Collar Unskilled,13
-6500,D4-Blue Collar Unskilled,13
-6510,D4-Blue Collar Unskilled,13
-6600,D4-Blue Collar Unskilled,13
-6710,D4-Blue Collar Unskilled,13
-6940,D4-Blue Collar Unskilled,13
-7150,D4-Blue Collar Unskilled,13
-7260,D4-Blue Collar Unskilled,13
-7550,D4-Blue Collar Unskilled,13
-7610,D4-Blue Collar Unskilled,13
-7800,D4-Blue Collar Unskilled,13
-7810,D4-Blue Collar Unskilled,13
-7830,D4-Blue Collar Unskilled,13
-7840,D4-Blue Collar Unskilled,13
-7850,D4-Blue Collar Unskilled,13
-7855,D4-Blue Collar Unskilled,13
-7960,D4-Blue Collar Unskilled,13
-8000,D4-Blue Collar Unskilled,13
-8200,D4-Blue Collar Unskilled,13
-8255,D4-Blue Collar Unskilled,13
-8256,D4-Blue Collar Unskilled,13
-8300,D4-Blue Collar Unskilled,13
-8310,D4-Blue Collar Unskilled,13
-8320,D4-Blue Collar Unskilled,13
-8330,D4-Blue Collar Unskilled,13
-8340,D4-Blue Collar Unskilled,13
-8350,D4-Blue Collar Unskilled,13
-8400,D4-Blue Collar Unskilled,13
-8410,D4-Blue Collar Unskilled,13
-8420,D4-Blue Collar Unskilled,13
-8450,D4-Blue Collar Unskilled,13
-8460,D4-Blue Collar Unskilled,13
-8510,D4-Blue Collar Unskilled,13
-8530,D4-Blue Collar Unskilled,13
-8540,D4-Blue Collar Unskilled,13
-8650,D4-Blue Collar Unskilled,13
-8710,D4-Blue Collar Unskilled,13
-8800,D4-Blue Collar Unskilled,13
-8810,D4-Blue Collar Unskilled,13
-8850,D4-Blue Collar Unskilled,13
-8860,D4-Blue Collar Unskilled,13
-8920,D4-Blue Collar Unskilled,13
-8950,D4-Blue Collar Unskilled,13
-8960,D4-Blue Collar Unskilled,13
-8965,D4-Blue Collar Unskilled,13
-9360,D4-Blue Collar Unskilled,13
-9520,D4-Blue Collar Unskilled,13
-9600,D4-Blue Collar Unskilled,13
-9610,D4-Blue Collar Unskilled,13
-9620,D4-Blue Collar Unskilled,13
-9630,D4-Blue Collar Unskilled,13
-9640,D4-Blue Collar Unskilled,13
-9720,D4-Blue Collar Unskilled,13
-0,No_Occupation,0
 9920,No_Occupation,0
