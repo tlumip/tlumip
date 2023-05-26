@@ -1,15 +1,5 @@
 target,geography,seed_table,importance,control_field,expression
 num_hh,SUBSEED,households,1000000000,HHS,(households.WGTP > 0) & (households.WGTP < np.inf)
-hh_size_1,SUBSEED,households,5000,HH_SIZE1,households.NP == 1
-hh_size_2,SUBSEED,households,5000,HH_SIZE2,households.NP == 2
-hh_size_3,SUBSEED,households,5000,HH_SIZE3,households.NP == 3
-hh_size_4,SUBSEED,households,5000,HH_SIZE4M,households.NP >= 4
-hh_wrks_0,SUBSEED,households,5000,HH_WRKR0,households.NWESR == 0
-hh_wrks_1,SUBSEED,households,5000,HH_WRKR1,households.NWESR == 1
-hh_wrks_2,SUBSEED,households,5000,HH_WRKR2,households.NWESR == 2
-hh_wrks_3,SUBSEED,households,5000,HH_WRKR3,households.NWESR == 3
-hh_wrks_4,SUBSEED,households,5000,HH_WRKR4,households.NWESR == 4
-hh_wrks_5m,SUBSEED,households,5000,HH_WRKR5M,households.NWESR >= 5
 person_age0to4,SUBSEED,persons,10000,P_AGE0,(persons.AGEP >= 0) & (persons.AGEP <= 4)
 person_age5to9,SUBSEED,persons,10000,P_AGE5,(persons.AGEP >= 5) & (persons.AGEP <= 9)
 person_age10to14,SUBSEED,persons,10000,P_AGE10,(persons.AGEP >= 10) & (persons.AGEP <= 14)

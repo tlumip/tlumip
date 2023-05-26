@@ -42,7 +42,7 @@ class popsimSPG(object):
 
 		self.pums_to_split_industry = properties['pums.to.split.industry.file']
 		self.JobsToWorkersFactor = properties['spg1.workers.per.job.factors']
-		self.workersPerHouseholdMarginalxYEAR = properties['spg1.workers.per.household.marginals']
+		#self.workersPerHouseholdMarginalxYEAR = properties['spg1.workers.per.household.marginals']
 		self.activity_forecast = properties['ned.activity_forecast.path']
 		self.population_forecast = properties['ned.population_forecast.path']
 		self.spg1_synthetic_households_file = properties['spg1.synthetic.households']
@@ -393,6 +393,9 @@ class popsimSPG(object):
 
 		hh_by_hhcategory.to_csv(self.householdsByHHCategory, index=False)
 
+	def control_rounding(self, x_array):
+		return np.diff(np.rint(np.cumsum(x_array)), prepend=0)
+
 	def spg2Controls(self):
 
 		"""input files: SPG1 outputs, AA outputs, puma-alpha crosswalk and spg1 control"""
@@ -427,20 +430,21 @@ class popsimSPG(object):
 		total_dollars = pd.merge(total_dollars, percap_dollar, on = ['occupation', 'hhCategory'], how = 'left')
 		total_dollars['Workers'] = total_dollars['total_dollars']/total_dollars['percap_dollar']
 		total_dollars.fillna(0, inplace=True)
-		wk_list = total_dollars['Workers'].tolist()
+		# wk_list = total_dollars['Workers'].tolist()
 
 		#Bucket rounding workers count to match total workers
 
-		rv = [np.round((total_dollars.at[0, 'Workers']),0)]
-		res = total_dollars.at[0, 'Workers'] - np.round((total_dollars.at[0, 'Workers']),0)
+		# rv = [np.round((total_dollars.at[0, 'Workers']),0)]
+		# res = total_dollars.at[0, 'Workers'] - np.round((total_dollars.at[0, 'Workers']),0)
 
-		for i in wk_list[1:]:
-			i = i + res
-			ri = np.round(i, 0)
-			res = ri - i
-			rv.append(ri)
+		# for i in wk_list[1:]:
+		# 	i = i + res
+		# 	ri = np.round(i, 0)
+		# 	res = ri - i
+		# 	rv.append(ri)
 
-		total_dollars['Workers'] = rv
+		# total_dollars['Workers'] = rv
+		total_dollars['Workers'] = self.control_rounding(total_dollars['Workers'].values)
 
 		difference = (total_dollars.Workers.sum() - workers_occ.sum().sum()).astype(int)
 		if (difference > 0):
@@ -463,17 +467,18 @@ class popsimSPG(object):
 		
 		#Rouding float number of households from AA to create controls
 		#act_loc2['Households'] = act_loc2['Households'].astype(int)
-		hh_list = act_loc2['Households'].tolist()
-		av = [np.round((act_loc2.at[0, 'Households']),0)]
-		aes = act_loc2.at[0, 'Households'] - np.round((act_loc2.at[0, 'Households']),0)
+		# hh_list = act_loc2['Households'].tolist()
+		# av = [np.round((act_loc2.at[0, 'Households']),0)]
+		# aes = act_loc2.at[0, 'Households'] - np.round((act_loc2.at[0, 'Households']),0)
 
-		for i in hh_list[1:]:
-			i = i + aes
-			ai = np.round(i, 0)
-			aes = ai - i
-			av.append(ai)
+		# for i in hh_list[1:]:
+		# 	i = i + aes
+		# 	ai = np.round(i, 0)
+		# 	aes = ai - i
+		# 	av.append(ai)
 
-		act_loc2['Households'] = av
+		# act_loc2['Households'] = av
+		act_loc2['Households'] = self.control_rounding(act_loc2['Households'].values)
 
 		total_alpha_hh = np.round((act_loc2['Households'].sum()),0)
 		alpha_hhcat = act_loc2.pivot_table(index = ['zoneNumber'], columns = ['hhCategory'])
