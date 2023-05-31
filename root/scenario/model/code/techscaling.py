@@ -9,10 +9,11 @@ from sqlutil import Querier
 
 def run_techscaling(year):
     props = read_props(year)
-    # Update base year for years 2017 and above
-    if year > 26:
-        props['aa.base.year'] = props.get('aa.activitytotals.base.year', props['aa.base.year'])
-        props['aa.base.data'] = props.get('aa.activitytotalsi.technologyoptionsi.dir', props['aa.base.data'])
+    # Update the AA base year and base data location with aa.activitytotals.base.year and aa.activitytotalsi.technologyoptionsi.dir
+    # This will ensure that for t26 and onwards the AA base year and base data location is different based on the value set in
+    # globalTemplateUpdate.properties file in t26 folder.
+    props['aa.base.year'] = props.get('aa.activitytotals.base.year', props['aa.base.year'])
+    props['aa.base.data'] = props.get('aa.activitytotalsi.technologyoptionsi.dir', props['aa.base.data'])
 
     class Settings(object):
         def __init__(self):
