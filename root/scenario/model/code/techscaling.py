@@ -10,7 +10,7 @@ from sqlutil import Querier
 def run_techscaling(year):
     props = read_props(year)
     # Update base year for years 2017 and above
-    if year > 16:
+    if year > 26:
         props['aa.base.year'] = props.get('aa.activitytotals.base.year', props['aa.base.year'])
         props['aa.base.data'] = props.get('aa.activitytotalsi.technologyoptionsi.dir', props['aa.base.data'])
 
