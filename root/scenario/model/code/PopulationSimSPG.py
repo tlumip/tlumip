@@ -16,7 +16,7 @@ class popsimSPG(object):
 		properties = Properties()
 		properties.loadPropertyFile(property_file)
 
-		#self.current_year = properties['t.year']
+		self.current_year = int(properties['t.year'])
 		self.spg1_directory = properties['spg1_directory']
 		self.spg2_directory = properties['spg2_directory']
 		self.spg1_data_directory = properties['spg1_data_directory']
@@ -64,6 +64,9 @@ class popsimSPG(object):
 		self.hseed_or_file = properties['hseed_or']
 		self.hseed_wa_file = properties['hseed_wa']
 		self.hseed_ca_file = properties['hseed_ca']
+		self.r_executable = properties['r.executable']
+		self.update_seed_script = properties['spg.update.seed.script']
+		self.update_seed_year = [int(update_year) for update_year in properties['spg.update.seed.year'].split(",") if update_year.strip().isdigit()]
 
 
 		### OUTPUTS
@@ -516,6 +519,10 @@ class popsimSPG(object):
 	def run_spg2(self):
 		cmd = "python " + self.popsim_py_file + " --config " + self.spg2_configs_directory + " --output " + self.spg2_output_directory + " --data " + self.spg2_data_directory
 		subprocess.call(cmd)
+	
+	def run_update_seed(self, property_file):
+		cmd = self.r_executable + " CMD BATCH --no-save --no-restore" + " -" + property_file + " " + self.update_seed_script + " " + self.spg1_data_directory + "/log_spg_update.Rout"
+		subprocess.call(cmd)
 
 	def spg2PostProcess(self):
 		spg2_synthetic_households = pd.read_csv(self.spg2_synthetic_households_file)
@@ -634,6 +641,8 @@ if __name__ == "__main__":
 		p.createSeed() # need to call this only once and reuse for all years
 		p.copySeeds()
 		p.spg1Controls()
+		if p.current_year in p.update_seed_year:
+			 p.run_update_seed(property_file)
 		p.run_spg1()
 		p.spg1PostProcess()
 	
