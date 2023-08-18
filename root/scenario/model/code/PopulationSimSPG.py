@@ -189,8 +189,8 @@ class popsimSPG(object):
 			np.random.seed(2020)
 			pseed['DRAW'] = np.random.uniform(0, 1, size=len(pseed))
 			seed_split = pd.merge(seed_split, pseed[['PERSONID', 'DRAW']], on='PERSONID', how='left')
-			seed_split['cumprop'] = seed_split.groupby(['PERSONID'])['proportion'].apply(lambda x: x.cumsum())
-			seed_split['prev_cumprop'] = seed_split.groupby(['PERSONID'])['cumprop'].apply(lambda x: x.shift(1))
+			seed_split['cumprop'] = seed_split.groupby(['PERSONID'], as_index=False)['proportion'].apply(lambda x: x.cumsum()).reset_index(level=0,drop=True)
+			seed_split['prev_cumprop'] = seed_split.groupby(['PERSONID'], as_index=False)['cumprop'].apply(lambda x: x.shift(1)).reset_index(level=0,drop=True)
 			seed_split.prev_cumprop.fillna(0, inplace=True)
 			seed_split['select'] = np.where(
 				(seed_split['DRAW'] < seed_split['cumprop']) & (seed_split['DRAW'] > seed_split['prev_cumprop']), 1, 0)
