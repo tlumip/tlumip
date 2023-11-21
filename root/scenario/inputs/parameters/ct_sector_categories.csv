@@ -1,4 +1,4 @@
-sector,naics,space_type,category
+Activity,naics,space_type,category
 CNST_main_xxx,23,construction,construction
 CNST_nres_xxx,23,construction,construction
 CNST_offc_off,23,office,services

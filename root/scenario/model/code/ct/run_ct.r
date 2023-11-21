@@ -33,27 +33,39 @@ swimctr::get_runtime_parameters(swim_properties_FN)
 # Now that we've set the runtime parameters we can finish up with calls that use
 # them
 setwd(RTP[["ct.filePath"]])
-sink(file = RTP[["ct.logfile"]], append = FALSE, split = TRUE)
+sink(file = file.path(RTP[["ct.outdir"]], RTP[["ct.logfile"]]), append = FALSE, split = TRUE)
 if (!exists(RTP[["ct.cluster.logfile"]])) {
   RTP[["ct.cluster.logfile"]] <- ""  # Since several functions depend upon it
+} else {
+  RTP[["ct.cluster.logfile"]] <- file.path(RTP[["ct.outdir"]], RTP[["ct.cluster.logfile"]])
 }
 
-local({
-if(is.character(ct.oregon.regions)){
-ct.oregon.regions = as.integer(unlist(strsplit(ct.oregon.regions,",")))
-}}, envir = RTP)
+#local({
+#if(is.character(ct.oregon.regions)){
+#ct.oregon.regions = as.integer(unlist(strsplit(ct.oregon.regions,",")))
+#}}, envir = RTP)
 
 # Process the raw FAF data and transform into format that can be used by the functions below
-faf.flow.data = swimctr::preprocess_faf4_database(RTP[["faf.flow.data"]], 
-                                                  as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
-												  FALSE,
-                                                  RTP[["ct.oregon.regions"]],
-                                                  RTP[["ct.oregon.outer.regions"]],
-                                                  as.numeric(RTP[["faf.value.deflator"]]))
+# If preprocessing is needed then:
+#local({
+#faf.flow.data  = append_weighted_distances(faf.flow.data, faf.flow.distances, internal_regions=ct.oregon.regions, ignore_regions = c(151, 159))
+#}, envir = RTP)
+#
+#faf.flow.data = swimctr::preprocess_faf_database(RTP[["faf.flow.data"]], 
+#                                                  2017,#as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
+#												  FALSE,
+#                                                  RTP[["ct.oregon.regions"]],
+#                                                  RTP[["ct.oregon.outer.regions"]]))
+# else												  
+#faf.flow.data = swimctr::load_annual_faf_data(RTP[["faf.flow.data"]],
+#                                                  2017,#as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
+#												  FALSE)
+#												  
+
 
 # Import make and use coefficients from PECAS and morph into format we can use
 makeuse <- swimctr::create_makeuse_coefficients(RTP[["pecas.makeuse"]],
-                                                faf.flow.data)
+                                                RTP[["ct.sector.equivalencies"]])
 
 # [2] RUN FIRM SYNTHESIS =================
 # Run the synthesis with employment data from the current simulation year, which
@@ -67,11 +79,7 @@ firms <- swimctr::create_synthetic_firms(RTP[["pecas.zonal.employment"]],
 # include the halo), using typical sequence of model components. Start by
 # generating the trucks and their attributes.
 daily_local_origins <- swimctr::local_truck_generation(firms,
-  RTP[["ct.generation.probabilities"]],
-	max_resampling_attempts = RTP[["ct.maximum.resampling.attempts"]],
-	random_seed = RTP[["ct.random.seed"]],
-	max_resampling_threshold = RTP[["ct.maximum.resampling.threshold"]]
-	)
+  RTP[["ct.generation.probabilities"]])
 
 # We will need to read skim matrices for the alpha zone system, and then run our
 # destination choice model
@@ -86,20 +94,28 @@ hourly_local_trips <- swimctr::temporal_allocation(daily_local_trips,
   RTP[["ct.temporal.factors"]])
 
 # [4] PROCESS INTER-REGIONAL TRUCK TRIPS ============
-# Start by creating annual truckload equivalencies from the FAF data, which
-# depends upon a large number of parameter tables from the FAF Freight Traffic
-# Analysis report.
-annual_faf_trucks <- swimctr::create_annual_truckload_equivalents(
-	faf.flow.data, RTP[["faf.truck.allocation.factors"]],
-	RTP[["ct.cvs.payload.wt.dist"]], RTP[["ct.cvs.stop.pattern.freq"]])
+# The proprocessed FAF flows are stored in the `swimctr` repo so do not need to
+# recreated. But we will need to extract the truck commodity flows for the
+# target year.
+target_year <- as.numeric(RTP[["t.year"]])+as.numeric(RTP[['base.year']])
+annual_faf_flows <- swimctr::load_annual_faf_data(RTP[["faf.flow.data"]], target_year)
 
-# Next we sample daily trucks, which is accomplished by first reducing annual to
-# weekly flows, and then sampling a day of the week for each discrete truck.
-daily_faf_trucks <- swimctr::sample_daily_faf_truckloads(annual_faf_trucks)
+# Recode the FAF regions outside of the SWIM modeled area to SWIM external zones
+recoded_flows <- swimctr::recode_external_faf_regions(annual_faf_flows,  
+  RTP[["faf.external.equivalencies"]], RTP[["faf.through.equivalencies"]])
+  
+# Generate annual truckload equivalents
+annual_truckloads <- swimctr::create_annual_truckload_equivalents(recoded_flows,
+  RTP[["faf.truck.allocation.factors"]], RTP[["ct.cvs.payload.wt.dist"]])
+  
+# Sample daily truckloads using user-specified constraints at the external
+# stations
+daily_faf_trucks <- swimctr::sample_daily_faf_flows(annual_truckloads,
+  as.numeric(RTP[["t.year"]]), RTP[["faf.external.constraints"]])
 
 # Allocate them to zones within the modeled area
 allocated_faf_trips <- swimctr::allocate_faf_to_zones(daily_faf_trucks, firms,
-  makeuse, RTP[["ct.intermodal.connectors"]], RTP[["ct.external.gateways"]])
+  makeuse, RTP[["ct.intermodal.connectors"]])
 
 # Read the temporal allocation factors and apply them to the daily FAF trips
 hourly_faf_trips <- swimctr::temporal_allocation(allocated_faf_trips,

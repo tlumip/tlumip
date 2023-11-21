@@ -1,5 +1,7 @@
 faf_region,taz,mode,weight,label
 411,3089,Air,1.0,PDX
-411,3091,Water,1.0,Port of Portland
+411,5012,Water,1.0,Port of Portland
 419,3089,Air,1.0,PDX
 419,2145,Water,1.0,Port of Coos Bay
+532,3089,Air,1.0,PDX
+532,5012,Water,1.0,Port of Portland
