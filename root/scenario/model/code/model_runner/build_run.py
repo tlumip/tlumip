@@ -35,7 +35,7 @@ module_init_map = [] #same as module map, but used for initialization overriding
 #start off by reading in the definition file to form model run structure
 header = None
 # Initiate tracking of viz final year
-viz_final_year = 0
+viz_final_year = '0'
 for line in open(definition_file):
     line = line.strip()
     if len(line) == 0:
