@@ -40,29 +40,6 @@ if (!exists(RTP[["ct.cluster.logfile"]])) {
   RTP[["ct.cluster.logfile"]] <- file.path(RTP[["ct.outdir"]], RTP[["ct.cluster.logfile"]])
 }
 
-#local({
-#if(is.character(ct.oregon.regions)){
-#ct.oregon.regions = as.integer(unlist(strsplit(ct.oregon.regions,",")))
-#}}, envir = RTP)
-
-# Process the raw FAF data and transform into format that can be used by the functions below
-# If preprocessing is needed then:
-#local({
-#faf.flow.data  = append_weighted_distances(faf.flow.data, faf.flow.distances, internal_regions=ct.oregon.regions, ignore_regions = c(151, 159))
-#}, envir = RTP)
-#
-#faf.flow.data = swimctr::preprocess_faf_database(RTP[["faf.flow.data"]], 
-#                                                  2017,#as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
-#												  FALSE,
-#                                                  RTP[["ct.oregon.regions"]],
-#                                                  RTP[["ct.oregon.outer.regions"]]))
-# else												  
-#faf.flow.data = swimctr::load_annual_faf_data(RTP[["faf.flow.data"]],
-#                                                  2017,#as.numeric(RTP[["t.year"]]) +  as.numeric(RTP[["base.year"]]),
-#												  FALSE)
-#												  
-
-
 # Import make and use coefficients from PECAS and morph into format we can use
 makeuse <- swimctr::create_makeuse_coefficients(RTP[["pecas.makeuse"]],
                                                 RTP[["ct.sector.equivalencies"]])
@@ -98,7 +75,7 @@ hourly_local_trips <- swimctr::temporal_allocation(daily_local_trips,
 # recreated. But we will need to extract the truck commodity flows for the
 # target year.
 target_year <- as.numeric(RTP[["t.year"]])+as.numeric(RTP[['base.year']])
-annual_faf_flows <- swimctr::load_annual_faf_data(RTP[["faf.flow.data"]], target_year)
+annual_faf_flows <- swimctr::load_annual_faf_data(RTP[["faf.flow.data"]], target_year, value_deflator=as.numeric(RTP[["faf.value.deflator"]]))
 
 # Recode the FAF regions outside of the SWIM modeled area to SWIM external zones
 recoded_flows <- swimctr::recode_external_faf_regions(annual_faf_flows,  
@@ -120,6 +97,10 @@ allocated_faf_trips <- swimctr::allocate_faf_to_zones(daily_faf_trucks, firms,
 # Read the temporal allocation factors and apply them to the daily FAF trips
 hourly_faf_trips <- swimctr::temporal_allocation(allocated_faf_trips,
   RTP[["ct.temporal.factors"]])
+  
+# Rename exp_value to value because that's what is being dumped out by the
+# export_trip_list_function
+hourly_faf_trips <- hourly_faf_trips %>% mutate(value=exp_value)
 
 # [5] EXPORT TRUCK TRIP LIST
 # Write a combined trip list with all of the attributes that Ben had formerly
