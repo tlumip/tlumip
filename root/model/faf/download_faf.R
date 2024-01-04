@@ -1,6 +1,7 @@
 # Define FAF file name and links
-faf_name="FAF4.5.1_csv"
-faf_url= "https://www.bts.gov/sites/bts.dot.gov/files/legacy/AdditionalAttachmentFiles/xxx.zip"
+faf_name="FAF5.5.1"
+faf_url= "https://faf.ornl.gov/faf5/data/download_files/xxx.zip"
+#faf_url= "https://www.bts.gov/sites/bts.dot.gov/files/legacy/AdditionalAttachmentFiles/xxx.zip"
 
 # Download FAF file
 faf_file_url <- gsub("xxx", faf_name, faf_url)

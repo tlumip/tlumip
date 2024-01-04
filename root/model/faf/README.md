@@ -1,8 +1,8 @@
 # FAF input files
 
-These files are needed from the Freight Analysis Framework (Bureau of Transportation Statistics) but are not included in the repository due to filesize:
-- FAF4.5.1.csv
+The TLUMIP SWIM v2.6 model uses preprocessed FAF 5.4.1. The preprocessed FAF 5.4.1 is already present in the `root/scenario/inputs/parameters/prebuild_faf_multiyear.csv.xz` and no additional steps are needed.
 
-Users can download all of the necessary files by running `download_faf.bat` in a command prompt.
-If the link is not active then user can access the latest FAF file here:
+Follow the instructions to update [FAF inputs](https://github.com/tlumip/tlumip/wiki/CT#updating-faf-inputs-to-ct-model) to use the latest version of FAF which is FAF 5.5.1 (as of 01/04/2024).
+
+The batch script can be used to only download FAF v5.5.1. If the batch script doesn't work then user can access the latest FAF file here:
 https://www.bts.gov/faf/
