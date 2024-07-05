@@ -1,5 +1,5 @@
 <?xml  version = "1.0"  encoding = "UTF-8"?>
-<PROCEDURES  VERSION = "1804">
+<PROCEDURES  VERSION = "1902">
   <FUNCTIONS>
     <PUTSKIMMATRIXSETTINGS
       USELONGLENGTH = "1"
@@ -306,6 +306,20 @@
       <SINGLESKIMMATRIXSETTINGS
         NAME = "DRTTIME"
         CODE = "DRTT"
+        IGNOREDODVALUE = "999999"
+        NOPATHSFOUNDVALUE = "999999"
+        DIAGONALTYPE = "CONST"
+        DIAGONALVALUE = "0"
+        DIAGONALATTR = "1.0"
+        DIAGONALNUMZONES = "3"
+        DIAGONALFACTOR = "1"
+        MINVALUE = "0"
+        MAXVALUE = "999999"
+        NUMDECPLACES = "2"
+      />      
+      <SINGLESKIMMATRIXSETTINGS
+        NAME = "DRTWAITTIME"
+        CODE = "DRTWT"
         IGNOREDODVALUE = "999999"
         NOPATHSFOUNDVALUE = "999999"
         DIAGONALTYPE = "CONST"
@@ -1989,8 +2003,12 @@
       PUTWALKFROMORTOCONNECTORS = "WALKFROMORTOCONNECTORS_FREE"
       MAXWALKTIME = "30min"
       MAXPUTAUXTIME = "2h"
+      MAXDRTTIME = "2h"
       STOPPOINTVOLUMEMATRIXPATHSTORAGE = "0"
-      STOPPOINTVOLUMEMATRIXPATHLEGSTORAGE = "0">
+      STOPPOINTVOLUMEMATRIXPATHLEGSTORAGE = "0"
+      USENUMDECPLACES = "1"
+      MULTIPLEOF = "0.025"
+      STOREVOLUMEFORDEMANDINTERVALS = "0">
       <ATTRIBUTE        NAME = "MAXSHARINGTIME"      />      
     </PUTVOLUMESPARA>
     <PUTREVENUESPARA
@@ -2017,12 +2035,6 @@
       CALCULATIONVARIANT = "SEQUENTIALROUTEPROCESSING"
     />    
     <PATHSEQUENCESKIMMATRIXSETTINGS    />    
-    <ANALYSISTIMES
-      USEONPUTRESULTS = "0"
-      USEONPRTRESULTS = "0"
-      STARTDAYINDEX = "1"
-      ENDDAYINDEX = "1"
-    />    
     <VOLUMESPARA      ORIGDSEG = "iclt_offpeak"      SAVEASDSEG = "iclt_offpeak"    />    
     <VOLUMESPARA      ORIGDSEG = "iclt_peak"      SAVEASDSEG = "iclt_peak"    />    
     <VOLUMESPARA      ORIGDSEG = "icr_offpeak"      SAVEASDSEG = "icr_offpeak"    />    
@@ -2082,7 +2094,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2092,7 +2104,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "(3600/[NETWORK\VOT_AUTO_PK]*[TOLL_PRTSYS(A)])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_PK]*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_AUTO_PK]*[TOLL_AUTO_PK])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2108,7 +2120,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2118,7 +2130,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "TRUCK_COST"
         ONLYACTIVE = "0"
-        FORMULA = "(3600/[NETWORK\VOT_TRUCK_PK]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_PK]*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_PK]*[TOLL_TRUCK_PK])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2134,7 +2146,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2144,7 +2156,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "CAPPRT"
         ONLYACTIVE = "0"
-        FORMULA = "Floor([PK_VOL_FACTOR]*[CAP_PER_HR]*[NUMLANES])"
+        FORMULA = "Floor([PK_VOL_FACTOR]*([CAP_PER_HR]-[METER_PK])*[NUMLANES])"
       />      
     </OPERATION>
     <OPERATION
@@ -2160,7 +2172,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2180,13 +2192,13 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
       OPERATIONVARIABLECOUNT = "">
       <PRTASSIGNMENTPARA        PRTASSIGNMENTVARIANT = "Equilibrium"        DSEGSET = "a_peak,d_peak">
-        <EQUILIBRIUMPARA>
+        <EQUILIBRIUMPARA          WRITEUDAS = "0"          USEEXTENDEDSTABILITYCRITERIA = "0">
           <DEMANDSHAREPARA>
             <ATTRIBUTE              NAME = "DEMANDSHARE">
               <ATTRITEM                SUBATTR1 = "1"                VALUE = "20"              />              
@@ -2208,9 +2220,21 @@
             MAXNUMOUTERIT = "50"
             MAXABSIMPDEV = "0"
             MAXRELIMPDEV = "0"
-            MAXRELATIVEGAP = "0.001"
           />          
           <NETBALANCING            GENERALVALUE = "5"          />          
+          <EXTENDEDSTABILITYCRITERIAPARA
+            MAXGAP = "0.001"
+            NUMCHECKEDSUBSEQUENTITERATIONS = "4"
+            IGNOREVOLUMESMALLERTHAN = "1"
+            MAXRELDIFFLINKVOL = "0.01"
+            FRACTIONMAXRELDIFFLINKVOL = "0.98"
+            MAXRELDIFFTURNVOL = "0.01"
+            FRACTIONMAXRELDIFFTURNVOL = "0.98"
+            MAXRELDIFFLINKIMP = "0.01"
+            FRACTIONMAXRELDIFFLINKIMP = "0.98"
+            MAXRELDIFFTURNIMP = "0.01"
+            FRACTIONMAXRELDIFFTURNIMP = "0.98"
+          />          
         </EQUILIBRIUMPARA>
       </PRTASSIGNMENTPARA>
     </OPERATION>
@@ -2227,7 +2251,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2253,7 +2277,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2279,7 +2303,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2305,7 +2329,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2331,7 +2355,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2357,7 +2381,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2383,7 +2407,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2409,7 +2433,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2435,7 +2459,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2496,7 +2520,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2557,7 +2581,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2577,7 +2601,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2587,7 +2611,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(286.20*[TOLL_PRTSYS(A)]+34.34*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_AUTO_OP]*[TOLL_AUTO_OP])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_OP]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2603,7 +2627,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2613,7 +2637,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "TRUCK_COST"
         ONLYACTIVE = "0"
-        FORMULA = "(3600/[NETWORK\VOT_TRUCK_OP]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_OP]*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_OP]*[TOLL_TRUCK_OP])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_OP]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -2629,7 +2653,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2639,7 +2663,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "CAPPRT"
         ONLYACTIVE = "0"
-        FORMULA = "Floor([OP_VOL_FACTOR]*[CAP_PER_HR]*[NUMLANES])"
+        FORMULA = "Floor([OP_VOL_FACTOR]*([CAP_PER_HR]-[METER_OP])*[NUMLANES])"
       />      
     </OPERATION>
     <OPERATION
@@ -2655,7 +2679,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2675,13 +2699,13 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
       OPERATIONVARIABLECOUNT = "">
       <PRTASSIGNMENTPARA        PRTASSIGNMENTVARIANT = "Equilibrium"        DSEGSET = "a_offpeak,d_offpeak">
-        <EQUILIBRIUMPARA>
+        <EQUILIBRIUMPARA          WRITEUDAS = "0"          USEEXTENDEDSTABILITYCRITERIA = "0">
           <DEMANDSHAREPARA>
             <ATTRIBUTE              NAME = "DEMANDSHARE">
               <ATTRITEM                SUBATTR1 = "1"                VALUE = "20"              />              
@@ -2703,9 +2727,21 @@
             MAXNUMOUTERIT = "5"
             MAXABSIMPDEV = "0"
             MAXRELIMPDEV = "0"
-            MAXRELATIVEGAP = "0.0001"
           />          
           <NETBALANCING            GENERALVALUE = "5"          />          
+          <EXTENDEDSTABILITYCRITERIAPARA
+            MAXGAP = "0.0001"
+            NUMCHECKEDSUBSEQUENTITERATIONS = "4"
+            IGNOREVOLUMESMALLERTHAN = "1"
+            MAXRELDIFFLINKVOL = "0.01"
+            FRACTIONMAXRELDIFFLINKVOL = "0.98"
+            MAXRELDIFFTURNVOL = "0.01"
+            FRACTIONMAXRELDIFFTURNVOL = "0.98"
+            MAXRELDIFFLINKIMP = "0.01"
+            FRACTIONMAXRELDIFFLINKIMP = "0.98"
+            MAXRELDIFFTURNIMP = "0.01"
+            FRACTIONMAXRELDIFFTURNIMP = "0.98"
+          />          
         </EQUILIBRIUMPARA>
       </PRTASSIGNMENTPARA>
     </OPERATION>
@@ -2722,7 +2758,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2748,7 +2784,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2774,7 +2810,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2800,7 +2836,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2826,7 +2862,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2852,7 +2888,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2878,7 +2914,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2904,7 +2940,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2930,7 +2966,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -2991,7 +3027,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3052,7 +3088,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3072,7 +3108,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3082,7 +3118,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "(3600/[NETWORK\VOT_AUTO_PK]*[TOLL_PRTSYS(A)])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_PK]*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_AUTO_PK]*[TOLL_AUTO_PM])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -3098,7 +3134,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3108,7 +3144,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "TRUCK_COST"
         ONLYACTIVE = "0"
-        FORMULA = "(3600/[NETWORK\VOT_TRUCK_PK]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_PK]*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_PK]*[TOLL_TRUCK_PM])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_PK]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -3124,7 +3160,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3134,7 +3170,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "CAPPRT"
         ONLYACTIVE = "0"
-        FORMULA = "Floor([PM_VOL_FACTOR]*[CAP_PER_HR]*[NUMLANES])"
+        FORMULA = "Floor([PM_VOL_FACTOR]*([CAP_PER_HR]-[METER_PM])*[NUMLANES])"
       />      
     </OPERATION>
     <OPERATION
@@ -3150,7 +3186,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3170,13 +3206,13 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
       OPERATIONVARIABLECOUNT = "">
       <PRTASSIGNMENTPARA        PRTASSIGNMENTVARIANT = "Equilibrium"        DSEGSET = "a_pm,d_pm">
-        <EQUILIBRIUMPARA>
+        <EQUILIBRIUMPARA          WRITEUDAS = "0"          USEEXTENDEDSTABILITYCRITERIA = "0">
           <DEMANDSHAREPARA>
             <ATTRIBUTE              NAME = "DEMANDSHARE">
               <ATTRITEM                SUBATTR1 = "1"                VALUE = "20"              />              
@@ -3198,9 +3234,21 @@
             MAXNUMOUTERIT = "5"
             MAXABSIMPDEV = "0"
             MAXRELIMPDEV = "0"
-            MAXRELATIVEGAP = "0.0001"
           />          
           <NETBALANCING            GENERALVALUE = "5"          />          
+          <EXTENDEDSTABILITYCRITERIAPARA
+            MAXGAP = "0.0001"
+            NUMCHECKEDSUBSEQUENTITERATIONS = "4"
+            IGNOREVOLUMESMALLERTHAN = "1"
+            MAXRELDIFFLINKVOL = "0.01"
+            FRACTIONMAXRELDIFFLINKVOL = "0.98"
+            MAXRELDIFFTURNVOL = "0.01"
+            FRACTIONMAXRELDIFFTURNVOL = "0.98"
+            MAXRELDIFFLINKIMP = "0.01"
+            FRACTIONMAXRELDIFFLINKIMP = "0.98"
+            MAXRELDIFFTURNIMP = "0.01"
+            FRACTIONMAXRELDIFFTURNIMP = "0.98"
+          />          
         </EQUILIBRIUMPARA>
       </PRTASSIGNMENTPARA>
     </OPERATION>
@@ -3217,7 +3265,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3243,7 +3291,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3269,7 +3317,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3295,7 +3343,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3321,7 +3369,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3347,7 +3395,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3373,7 +3421,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3399,7 +3447,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3425,7 +3473,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3486,7 +3534,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3547,7 +3595,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3567,7 +3615,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3593,7 +3641,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3603,7 +3651,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "AUTO_COST"
         ONLYACTIVE = "0"
-        FORMULA = "Floor(286.20*[TOLL_PRTSYS(A)]+34.34*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_AUTO_OP]*[TOLL_AUTO_NT])+(3600*[NETWORK\AOC_AUTO]/[NETWORK\VOT_AUTO_OP]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -3619,7 +3667,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3629,7 +3677,7 @@
         INCLUDESUBCATEGORIES = "0"
         RESULTATTRNAME = "TRUCK_COST"
         ONLYACTIVE = "0"
-        FORMULA = "(3600/[NETWORK\VOT_TRUCK_OP]*[TOLL_PRTSYS(D)])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_OP]*[LENGTH])"
+        FORMULA = "(3600/[NETWORK\VOT_TRUCK_OP]*[TOLL_TRUCK_NT])+(3600*[NETWORK\AOC_TRUCK]/[NETWORK\VOT_TRUCK_OP]*[LENGTH])"
       />      
     </OPERATION>
     <OPERATION
@@ -3645,7 +3693,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3665,13 +3713,13 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
       OPERATIONVARIABLECOUNT = "">
       <PRTASSIGNMENTPARA        PRTASSIGNMENTVARIANT = "Equilibrium"        DSEGSET = "a_ni,d_ni">
-        <EQUILIBRIUMPARA>
+        <EQUILIBRIUMPARA          WRITEUDAS = "0"          USEEXTENDEDSTABILITYCRITERIA = "0">
           <DEMANDSHAREPARA>
             <ATTRIBUTE              NAME = "DEMANDSHARE">
               <ATTRITEM                SUBATTR1 = "1"                VALUE = "20"              />              
@@ -3693,9 +3741,21 @@
             MAXNUMOUTERIT = "5"
             MAXABSIMPDEV = "0"
             MAXRELIMPDEV = "0"
-            MAXRELATIVEGAP = "0.0001"
           />          
           <NETBALANCING            GENERALVALUE = "5"          />          
+          <EXTENDEDSTABILITYCRITERIAPARA
+            MAXGAP = "0.0001"
+            NUMCHECKEDSUBSEQUENTITERATIONS = "4"
+            IGNOREVOLUMESMALLERTHAN = "1"
+            MAXRELDIFFLINKVOL = "0.01"
+            FRACTIONMAXRELDIFFLINKVOL = "0.98"
+            MAXRELDIFFTURNVOL = "0.01"
+            FRACTIONMAXRELDIFFTURNVOL = "0.98"
+            MAXRELDIFFLINKIMP = "0.01"
+            FRACTIONMAXRELDIFFLINKIMP = "0.98"
+            MAXRELDIFFTURNIMP = "0.01"
+            FRACTIONMAXRELDIFFTURNIMP = "0.98"
+          />          
         </EQUILIBRIUMPARA>
       </PRTASSIGNMENTPARA>
     </OPERATION>
@@ -3712,7 +3772,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3738,7 +3798,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3764,7 +3824,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3790,7 +3850,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3816,7 +3876,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3842,7 +3902,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3868,7 +3928,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3894,7 +3954,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3920,7 +3980,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -3981,7 +4041,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4042,7 +4102,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4068,7 +4128,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4094,7 +4154,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4120,7 +4180,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4146,7 +4206,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4172,7 +4232,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4198,7 +4258,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4224,7 +4284,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4250,7 +4310,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""
@@ -4270,7 +4330,7 @@
       MESSAGES = ""
       RESULTMESSAGE = ""
       SUCCESS = "0"
-      COMPUTENODE = ""
+      COMPUTENODES = ""
       WARNINGCOUNT = ""
       ERRORCOUNT = ""
       INFORMATIONCOUNT = ""

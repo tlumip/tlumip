@@ -18,7 +18,7 @@ pathNo = [15,5,8,57,69,1,7,12,62,41,52,25,11,2,37]
 
 #Truck passenger car units ;1.7 is the default
 #Was 0.1, changed after Rick's new CT (11/24/2014) YMM
-truckPCU = 1
+truckPCU = 1.7
 truckDemandClass = "d"
 
 #zone no and main zone no in Visum
