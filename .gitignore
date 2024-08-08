@@ -4,3 +4,4 @@ release/*
 root/model/census/*.csv
 .Rproj.user/
 .Rproj.user
+*.ver
