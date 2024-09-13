@@ -345,10 +345,17 @@ class ModuleCommands(object):
                        quote(property_file)]
             command = ' '.join(command)
             commands = [command] + [' '.join(commands)]
+        elif ('update' in property_file):
+            python_file = properties_set['sl.update.start.time.python.file']
+            command = [quote(python_executable.replace('/','\\')),
+                       quote(python_file.replace('/','\\')),
+                       quote(property_file)]
+            command = ' '.join(command)
+            commands = [command]
         else:
             #java program
             command = self.runModule(module_set,scenario_outputs,property_file,year)
-            if ('append' in property_file):
+            if (('append' in property_file) or ('update' in property_file)):
                 commands = command + [' '.join(commands)]
             else:
                 commands = command

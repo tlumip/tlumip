@@ -95,6 +95,7 @@ sl_mode_map['GENERATE_PATHS'] = 'g'
 sl_mode_map['GENERATE_SELECT_LINK_DATA'] = 'd'
 sl_mode_map['CREATE_SUBAREA_MATRIX'] = 's'
 sl_mode_map['APPEND_SELECT_LINK_TO_TRIPS'] = 'a'
+sl_mode_map['UPDATE_START_TIME'] = 'true'
 sl_mode_map[DEFAULT_EXTRA_ARG_KEY] = 'none' #to throw an error
 sl_map[PropertyTokens.SL_MODE] = sl_mode_map
 extra_args_map['SL'] = sl_map
