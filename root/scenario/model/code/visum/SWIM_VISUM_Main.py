@@ -190,6 +190,16 @@ class SwimModel(object):
         self.ntoffpeakstart = int(properties['nt.offpeak.start'])
         self.ntoffpeakend = int(properties['nt.offpeak.end'])
 
+        self.ampeakcapadj = float(properties['am.peak.capacity.adjustment'])
+        self.pmpeakcapadj = float(properties['pm.peak.capacity.adjustment'])
+        self.mdoffpeakcapadj = float(properties['md.offpeak.capacity.adjustment'])
+        self.ntoffpeakcapadj = float(properties['nt.offpeak.capacity.adjustment'])
+
+        self.imp_penalty_interstate = float(properties['imp.penalty.interstate'])
+        self.imp_penalty_principal_arterial = float(properties['imp.penalty.principal.arterial'])
+        self.imp_penalty_minor_arterial = float(properties['imp.penalty.minor.arterial'])
+        self.imp_penalty_other_roads = float(properties['imp.penalty.other.roads'])
+
         self.volumeFactorPercentile = float(properties['ta.volume.factor.percentile'])
         self.worldMarketFieldnames = properties['world.market.fieldnames.file']
         self.sdtTODTripsFile = properties['sdt.tod.trips.file']
@@ -665,6 +675,35 @@ class SwimModel(object):
         azones[i] = int(zone_no[np.argmin(fn_dist)] if (np.min(fn_dist) < np.min(tn_dist)) else zone_no[np.argmin(tn_dist)])
 
       VisumHelpers.SetMulti(self.Visum.Net.Links, "AZONE", azones)
+
+
+    def assignLinkImpPenalty(self):
+      
+      print('Populate Link IMP_Penalty field with nearest penalties defined in global properties')
+      
+      #get link UDAs
+      udaNames = []
+      for i in self.Visum.Net.Links.Attributes.GetAll:
+        if i.category=="User-defined attributes":
+          udaNames.append(i.Name)
+      if "IMP_Penalty" not in udaNames:
+        self.Visum.Net.Links.AddUserDefinedAttribute("IMP_Penalty","IMP_Penalty","IMP_Penalty",2,3, DefVal=self.imp_penalty_other_roads) #1=int, 2=float, 5=text
+    
+      #assign each node to a zone and then select zone for closest ANODE or BNODE of link
+      link_fn_class     = VisumHelpers.GetMulti(self.Visum.Net.Links, "PLANNO")
+      imp_penalty = VisumHelpers.GetMulti(self.Visum.Net.Links, "IMP_Penalty")
+      
+      for i in range(len(link_fn_class)):
+        if link_fn_class[i] in [1,11]:
+            imp_penalty[i] = self.imp_penalty_interstate
+        elif link_fn_class[i] in [2,12]:
+            imp_penalty[i] = self.imp_penalty_principal_arterial
+        elif link_fn_class[i] in [4,14]:
+            imp_penalty[i] = self.imp_penalty_minor_arterial
+        else:
+            imp_penalty[i] = self.imp_penalty_other_roads
+
+      VisumHelpers.SetMulti(self.Visum.Net.Links, "IMP_Penalty", imp_penalty)
 
     def createVizOutput(self):
         
@@ -1591,24 +1630,28 @@ class SwimModel(object):
 
         #get time period definitions from property files
         if timePeriod.lower().find('ampeak') > -1:
-            startHour = self.ampeakstart
-            endHour = self.ampeakend
-            hours = (endHour + 41 - startHour) / 100.0 #convert 59th min to 100th min
+            # startHour = self.ampeakstart
+            # endHour = self.ampeakend
+            # hours = (endHour + 41 - startHour) / 100.0 #convert 59th min to 100th min
+            hours = self.ampeakcapadj
 
         elif timePeriod.lower().find('pmpeak') > -1:
-            startHour = self.pmpeakstart
-            endHour = self.pmpeakend
-            hours = (endHour + 41 - startHour) / 100.0;
+            # startHour = self.pmpeakstart
+            # endHour = self.pmpeakend
+            # hours = (endHour + 41 - startHour) / 100.0
+            hours = self.pmpeakcapadj
 
         elif timePeriod.lower().find('mdoffpeak') > -1:
-            startHour = self.mdoffpeakstart
-            endHour = self.mdoffpeakend
-            hours = (endHour + 41 - startHour) / 100.0;
+            # startHour = self.mdoffpeakstart
+            # endHour = self.mdoffpeakend
+            # hours = (endHour + 41 - startHour) / 100.0
+            hours = self.mdoffpeakcapadj
 
         elif timePeriod.lower().find('ntoffpeak') > -1:
-            startHour = self.ntoffpeakstart
-            endHour = self.ntoffpeakend
-            hours = (endHour + 41 + (2400 - startHour)) / 100.0;
+            # startHour = self.ntoffpeakstart
+            # endHour = self.ntoffpeakend
+            # hours = (endHour + 41 + (2400 - startHour)) / 100.0
+            hours = self.ntoffpeakcapadj
 
         else:
             print ( "time period specifed as: " + timePeriod + ", but must be either 'ampeak', 'mdoffpeak', 'pmpeak', or 'ntoffpeak'." )
@@ -1686,6 +1729,7 @@ if __name__== "__main__":
         s.zonefieldVariables()
         s.assignLinkAzone()
         s.createModelInput()
+        s.assignLinkImpPenalty()
         s.writeZoneShapes()
         s.saveVersion()
         s.closeVisum()
