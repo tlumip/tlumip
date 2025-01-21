@@ -207,6 +207,11 @@ class SwimModel(object):
 
         self.reSeedMatrices = properties['new.zone.system']
 
+        self.ta_num_processors = properties['ta.num.processors']
+        self.tr_num_processors = properties['tr.num.processors']
+        self.userPreferenceFile = os.path.join(self.path, properties['user.preference.file'])
+        self.scenario_root = properties['scenario.root']
+
 
         os.chdir(self.path)
 
@@ -251,6 +256,9 @@ class SwimModel(object):
         #sets working directories in VISUM to use relative file names
         for i in range(0,len(pathNo)):
             self.Visum.SetPath(pathNo[i], self.path)
+
+        self.Visum.UserPreferences.EnvironmentUserPreferences.SetAttValue("NUMCPUCORESUSED", num_processors)
+
 
     def loadVersion(self, suffix=""):
         print("load version file: " + str(self.version)[:-4] + suffix + ".ver")
@@ -1057,7 +1065,7 @@ class SwimModel(object):
         # Changing pointer to Visums AREAMI2 from User attribute AREASQMI, so this line is no longer needed
         #areas = [item/(5280**2) for item in areas] #from sq ft to miles
         self.service_data["AREA"] = areas
-        self.service_data["P2EDEN"] = [0]*len(s.service_data["AREA"])
+        self.service_data["P2EDEN"] = [0]*len(self.service_data["AREA"])
 
     #calculate service area data for LTF
     def calcServiceAreaData(self):
@@ -1688,6 +1696,10 @@ if __name__== "__main__":
     # transit - run transit assignment
     property_file = sys.argv[1]
     mode = sys.argv[2].lower()
+    if(len(sys.argv)>2):
+        num_cores = int(sys.argv[3])
+    else:
+        num_cores = -1
     s = SwimModel(property_file)
     pdir = s.assigmentProcedureDirectory
 
@@ -1741,7 +1753,8 @@ if __name__== "__main__":
     if mode == 'highway':
 
         #multiclass private transport assignment
-        s.startVisum()
+        num_cores = s.ta_num_processors if num_cores < 0 else num_cores
+        s.startVisum(num_cores)
         s.loadVersion()
         s.insertMatrixInVisum('auto and truck', start=hwyDemandMatrices[0], end=hwyDemandMatrices[1])
         s.createVolumeFactor()
@@ -1750,7 +1763,7 @@ if __name__== "__main__":
 
         #execute procedure file - four assigments - one for each time period
         #note NT output version file also contains link attributes with the total daily volumes
-        s.startVisum()
+        s.startVisum(num_cores)
         s.loadVersion()
         s.loadProcedure(os.path.join(pdir,s.pathAllPeriodAssignmentProcedure))
         s.executeProcedure(os.path.join(pdir,s.pathAllPeriodAssignmentProcedure))
@@ -1758,7 +1771,7 @@ if __name__== "__main__":
         s.closeVisum()
 
         #write PK and OP skim matrices
-        s.startVisum()
+        s.startVisum(num_cores)
         s.loadVersion()
         s.zonefieldVariables()
         s.writeHighwaySkimZMX(start=hwySkimMatrices[0], writeBetaMatrices=True)
@@ -1781,7 +1794,8 @@ if __name__== "__main__":
     if mode == 'transit':
         
         #local bus ivt and ovt functions and premium connector build
-        s.startVisum()
+        num_cores = s.tr_num_processors if num_cores < 0 else num_cores
+        s.startVisum(num_cores)
         s.loadVersion()
         s.zoneServiceLookup()
         s.calcServiceAreaData()
@@ -1791,7 +1805,7 @@ if __name__== "__main__":
         s.closeVisum()
 
         #intercity transit assignment
-        s.startVisum()
+        s.startVisum(num_cores)
         s.loadVersion("_TR")
         s.insertMatrixInVisum('intercity transit', start=ldtDemandMatrices[0], end=ldtDemandMatrices[1])
         s.saveVersion("_TR")
@@ -1799,7 +1813,7 @@ if __name__== "__main__":
 
         #load and execute procedure file
         procedure = s.intercityRailAssignmentProcedure
-        s.startVisum()
+        s.startVisum(num_cores)
         s.loadVersion("_TR")
         s.loadProcedure(os.path.join(pdir,procedure))
         s.executeProcedure(os.path.join(pdir,procedure))
@@ -1807,7 +1821,7 @@ if __name__== "__main__":
         s.closeVisum()
 
         #intracity transit assignment
-        s.startVisum()
+        s.startVisum(num_cores)
         s.loadVersion("_TR")
         s.insertMatrixInVisum('intracity transit', start=sdtDemandMatrices[0], end=sdtDemandMatrices[1])
         s.saveVersion("_TR")
@@ -1815,7 +1829,7 @@ if __name__== "__main__":
 
         #load and execute procedure file
         procedure = s.intracityRailAssignmentProcedure
-        s.startVisum()
+        s.startVisum(num_cores)
         s.loadVersion("_TR")
         s.loadProcedure(os.path.join(pdir,procedure))
         s.executeProcedure(os.path.join(pdir,procedure))
@@ -1823,7 +1837,7 @@ if __name__== "__main__":
         s.closeVisum()
 
         #Adjust skimmed SDT IVT and LTF IVT and OVT skims
-        s.startVisum()
+        s.startVisum(num_cores)
         s.loadVersion("_TR")
         s.calcFareMatrices()
         s.adjustSkimsDueToLTF(isPeak=True)
@@ -1832,7 +1846,7 @@ if __name__== "__main__":
         s.closeVisum()
 
         #write skim matrices
-        s.startVisum()
+        s.startVisum(num_cores)
         s.loadVersion("_TR")
         s.zonefieldVariables()
         s.writeTransitSkimZMX(start=transitSkimMatrices[0])
