@@ -209,7 +209,6 @@ class SwimModel(object):
 
         self.ta_num_processors = properties['ta.num.processors']
         self.tr_num_processors = properties['tr.num.processors']
-        self.userPreferenceFile = os.path.join(self.path, properties['user.preference.file'])
         self.scenario_root = properties['scenario.root']
 
 
@@ -236,7 +235,7 @@ class SwimModel(object):
                     break
 
 
-    def startVisum(self):
+    def startVisum(self,num_processors=None):
         print("start VISUM " + str(self.visum_version))
 
         numtry = 20
@@ -257,7 +256,8 @@ class SwimModel(object):
         for i in range(0,len(pathNo)):
             self.Visum.SetPath(pathNo[i], self.path)
 
-        self.Visum.UserPreferences.EnvironmentUserPreferences.SetAttValue("NUMCPUCORESUSED", num_processors)
+        if num_processors:
+            self.Visum.UserPreferences.EnvironmentUserPreferences.SetAttValue("NUMCPUCORESUSED", num_processors)
 
 
     def loadVersion(self, suffix=""):
@@ -1696,7 +1696,7 @@ if __name__== "__main__":
     # transit - run transit assignment
     property_file = sys.argv[1]
     mode = sys.argv[2].lower()
-    if(len(sys.argv)>2):
+    if(len(sys.argv)>3):
         num_cores = int(sys.argv[3])
     else:
         num_cores = -1
