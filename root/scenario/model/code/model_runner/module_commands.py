@@ -286,11 +286,22 @@ class ModuleCommands(object):
         """
         Run the PT module.
         """
+        #find relevant properties
+        properties_set = Properties()
+        property_file = normalizeSlash(property_file)
+        properties_set.loadPropertyFile(property_file)
+        
         command =  self.runModule(module_set,scenario_outputs,property_file,year,250)
         input_folder = os.path.join(scenario_outputs,'t' + year,'debug')
         output_file = os.path.join(scenario_outputs,'t' + year,'debug.zip')
         command += self.conditionalIfExists(input_folder,self.zip(input_folder,output_file))
         command += self.deleteDirectory(input_folder)
+        command += [
+            "..\\model\\lib\\Python27\\python.exe " + quote(normalizeSlash(
+                os.path.join(os.path.dirname(scenario_outputs), "model", "code", "post_process_ldt.py"))) + " " +
+                quote(properties_set['ldt.person.trips']) + " " + 
+                quote(properties_set['ldt.vehicle.trips'])
+        ]
         return command
 
     def runCT(self,module_set,scenario_outputs,property_file,year,properties):

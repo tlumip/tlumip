@@ -330,22 +330,6 @@
     <OPERATION
       NO = "6"
       CODE = ""
-      OPERATIONTYPE = "InitAssignment"
-      ACTIVE = "1"
-      COMMENT = ""
-      EXECUTED = "0"
-      STARTTIME = ""
-      ENDTIME = ""
-      DURATION = ""
-      MESSAGES = ""
-      RESULTMESSAGE = ""
-      SUCCESS = "0"
-      COMPUTENODE = "">
-      <ASSIGNMENTINITPARA        INITPUT = "1"        INITPRT = "0"      />      
-    </OPERATION>
-    <OPERATION
-      NO = "7"
-      CODE = ""
       OPERATIONTYPE = "EditAttribute"
       ACTIVE = "1"
       COMMENT = ""
@@ -364,6 +348,22 @@
         ONLYACTIVE = "0"
         FORMULA = "[PTRIPSUNLINKED(AP)]"
       />      
+    </OPERATION>
+    <OPERATION
+      NO = "7"
+      CODE = ""
+      OPERATIONTYPE = "InitAssignment"
+      ACTIVE = "1"
+      COMMENT = ""
+      EXECUTED = "0"
+      STARTTIME = ""
+      ENDTIME = ""
+      DURATION = ""
+      MESSAGES = ""
+      RESULTMESSAGE = ""
+      SUCCESS = "0"
+      COMPUTENODE = "">
+      <ASSIGNMENTINITPARA        INITPUT = "1"        INITPRT = "0"      />      
     </OPERATION>
     <OPERATION
       NO = "8"
